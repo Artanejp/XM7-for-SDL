@@ -17,7 +17,7 @@
  *	定数定義
  */
 #define SNDBUF		20					/* WAV最大同時発音数 */
-
+#define XM7_PCM_MAX_VOLUME 0x3fff
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,32 +78,6 @@ extern UINT uClipCount;
 /* クリッピングカウンタ */
 #define SND_MAX_BANK 8
 
-typedef struct {
-BYTE *buffer;  /* サウンドバッファ */
-BYTE *uBufBegin[SND_MAX_BANK];
-  int iCounter;
-  int iWrote;
-  BOOL bEndFlag;
-DWORD uBufSize;
-DWORD dwPlayC;
-BYTE TotalVolume;
-SDL_sem * playing;
-BOOL isEnabled;
-BOOL isEmpty;
-}sndCallbackData;
-
-  /* PCMデータ用FIFO */
-typedef struct {
-  BYTE *data;
-  int bufSize;
-  int readPtr;
-  int writePtr;
-  int dataSize;
-  //int lastReadSize;
-  BOOL bOverFlow;
-  BOOL bUnderFlow;
-  SDL_sem *fifo_sem;
-} sndFifo;
 
 #define SND_FIFO_SIZE (96000 * sizeof(WORD) * 2 * 1000)/1000
 

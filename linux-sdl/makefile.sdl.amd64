@@ -5,8 +5,9 @@
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
+#OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH -DUSE_OPENGL
 OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
-#OPTION		= -DMOUSE -DMR2 -DMEMWATCH
+#OPTION		= -DMOUSE -DMR2 -DMEMWATCH 
 
 COMMONSRC = \
         aluline.c \
@@ -140,6 +141,11 @@ LIBS +=     -lgthread-2.0 \
 LIBS +=  \
         -lSDL-1.2 -lSDL_mixer
 
+######
+# OpenGLはまだBuggyです。20100124
+
+#LIBS += \
+#     -lGL
 
 
 all:	xm7.sdl

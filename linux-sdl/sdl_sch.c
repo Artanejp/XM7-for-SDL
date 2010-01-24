@@ -84,7 +84,6 @@ void FASTCALL InitSch(void)
 	bAutoSpeedAdjust = FALSE;
 	uTimerResolution = 1;
 	bTapeModeType = FALSE;
-
 	return;
 }
 
@@ -243,7 +242,6 @@ static void *ThreadSch(void* param)
 	ResetSpeedAdjuster();
         /* SDLイベントハンドラ登録 */
 
-
 	/* 無限ループ(クローズ指示があれば終了) */
 	while (!bCloseReq) {
 		/* いきなりロック */
@@ -288,10 +286,11 @@ static void *ThreadSch(void* param)
 		/* 時間を比較 */
 		if (dwTempTime <= dwExecTime) {
 			/* 時間が余っているが、描画できるか */
-			if (bDrawVsync) {
-				DrawSch();
+                                                   if (bDrawVsync) {
+                                                     DrawSch();
 				nFrameSkip = 0;
 				bDrawVsync = FALSE;
+
 			}
 
 			/* 再度、時間を取得(49日でのループを考慮) */
@@ -386,9 +385,10 @@ static void *ThreadSch(void* param)
 
 		/* Break対策 */
 		if (!run_flag) {
-			DrawSch();
-			bDrawVsync = FALSE;
-			nFrameSkip = 0;
+
+                  DrawSch();
+                  bDrawVsync = FALSE;
+                  nFrameSkip = 0;
 			UnlockVM();
 			continue;
 		}
@@ -425,12 +425,12 @@ static void *ThreadSch(void* param)
 		if (nFrameSkip >= tmp) {
 			/* 無描画が続いているので、ここで一回描画 */
 			DrawSch();
+
 			ResetSch();
 			bDrawVsync = FALSE;
 		}
 		UnlockVM();
 	}
-
 	/* 終了を明示するため、要求フラグを降ろす */
 	bCloseReq = FALSE;
 }

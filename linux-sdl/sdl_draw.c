@@ -22,6 +22,9 @@
 #include "device.h"
 #include "sdl.h"
 #include "sdl_draw.h"
+#if defined(USE_OPENGL)
+#include <SDL/SDL_opengl.h>
+#endif /* USE_OPENGL */
 
 /*
  *	グローバル ワーク
@@ -31,11 +34,13 @@ DWORD rgbAnalogGDI[4096];					/* アナログパレット */
 //guchar pBitsGDI[400*640*3];					/* ビットデータ */
 BYTE GDIDrawFlag[4000];						/* 8x8 再描画領域フラグ */
 BOOL bFullScan;								/* フルスキャン(Window) */
+BOOL bDirectDraw; /* 直接書き込みフラグ */
 
 /*
  *	スタティック ワーク
  */
 #if XM7_VER >= 3
+static SDL_Surface *realDrawArea;
 static BYTE bMode;							/* 画面モード */
 #else
 static BOOL bAnalog;						/* アナログモードフラグ */
@@ -54,6 +59,9 @@ static WORD nWindowDy1;						/* ウィンドウ左上Y座標 */
 static WORD nWindowDx2;						/* ウィンドウ右下X座標 */
 static WORD nWindowDy2;						/* ウィンドウ右下Y座標 */
 #endif
+#if defined(USE_OPENGL)
+GLuint src_texture = 0;
+#endif
 
 /*
  *	プロトタイプ宣言
@@ -66,10 +74,10 @@ static void FASTCALL SetDrawFlag(BOOL flag);
 static void FASTCALL SETDOT(WORD x, WORD y, DWORD c)
 {
   //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
-   Uint8 *addr = (Uint8 *)drawArea->pixels + y * drawArea->pitch + x * drawArea->format->BytesPerPixel;
-        SDL_LockSurface(drawArea);
+   Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+        SDL_LockSurface(realDrawArea);
         *(DWORD *)addr = c;
-        SDL_UnlockSurface(drawArea);
+        SDL_UnlockSurface(realDrawArea);
    
 } 
 
@@ -81,117 +89,192 @@ static inline void __SETDOT(WORD x, WORD y, DWORD c)
 {
 
   //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
-  Uint8 *addr = (Uint8 *)drawArea->pixels + y * drawArea->pitch + x * drawArea->format->BytesPerPixel;
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+  DWORD *addr32 = (DWORD *)addr;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN   
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
+  //#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+  //addr[3] = 0xff; /* A */   
+                    //addr[2] = c & 0xff;
+	   //addr[1] = (c >>8 ) & 0xff;
+	   //addr[0] = (c >>16) & 0xff;
+           //#else
+           //addr[0] = 0xff; /* A */
+                    //addr[1] = c & 0xff;  /* B */
+                    //addr[2] = ( c>>8 ) & 0xff; /* R */
+                    //addr[3] = (c >>16) & 0xff; /* G */
+
+                    //#endif
+  /*
+   * 少しでも速度を稼ぐために[ABRG]に１バイトづつ書くのではなく、
+   * Uint32(DOWRD)で一気に書き込む
+   */	   
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    *addr32 = ( c >> 8) | 0xff000000; 
 #else
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    *addr32 = ( c << 8) | 0x000000ff; 
 
 #endif	   
    
+} 
+static inline void __SETDOT_DDRAW(WORD x, WORD y, DWORD c)
+{
+
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+  addr[3] = 0xff; /* A */   
+  addr[2] = c & 0xff;
+  addr[1] = (c >>8 ) & 0xff;
+  addr[0] = (c >>16) & 0xff;
+#else
+  addr[0] = 0xff; /* A */
+  addr[1] = c & 0xff;  /* B */
+  addr[2] = ( c>>8 ) & 0xff; /* R */
+  addr[3] = (c >>16) & 0xff; /* G */
+#endif
 } 
 
 static inline void __SETDOT_640i(WORD x, WORD y, DWORD c)
 {
 
   //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
-  Uint8 *addr = (Uint8 *)drawArea->pixels + y * drawArea->pitch + x * drawArea->format->BytesPerPixel;
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN   
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+  DWORD *addr32 = (DWORD *)addr;
+  
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    *addr32 = ( c >> 8) | 0xff000000; 
 #else
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    *addr32 = ( c << 8) | 0x000000ff; 
 
 #endif	   
    
 } 
-static inline void __SETDOT_640p(WORD x, WORD y, DWORD c)
+/*
+ * 直接SDLの画面を叩くときに使う
+ */
+static inline void __SETDOT_DDRAW_640i(WORD x, WORD y, DWORD c)
 {
 
   //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
-  Uint8 *addr = (Uint8 *)drawArea->pixels + y * drawArea->pitch + x * drawArea->format->BytesPerPixel;
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN   
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
-                    addr += drawArea->pitch;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
-
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+  DWORD *addr32 = (DWORD *)addr;
+  
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr[2] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[0] = (c >>16) & 0xff; /* G */
 #else
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
-                    addr += drawArea->pitch;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
-
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
 
 #endif	   
    
 } 
 
 /*
+ * 640x200モード、プログレッシブ点打ち。
+ * ビット配列は[ABRG]である
+ * 20100124 32bit前提になった為、Uint32 (DWORD)で一気に書き込むようにする。
+ */
+static inline void __SETDOT_640p(WORD x, WORD y, DWORD c)
+{
+
+  //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+  DWORD *addr32;
+  
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+#else
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c <<8) | 0x000000ff;
+
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c <<8) | 0x000000ff;
+#endif	   
+   
+} 
+
+/*
+ * 640x200モード、プログレッシブ点打ち。(DIRECT DRAW)
+ * ビット配列は[BRG]である
+ */
+static inline void __SETDOT_DDRAW_640p(WORD x, WORD y, DWORD c)
+{
+
+  //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
+  
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+#else
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += realDrawArea->pitch;
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+
+#endif	   
+   
+} 
+
+
+/*
  * SETDOT（inline） 拡大モード
- * 24bpp前提,SurfaceLockしません!!
+ * 32bpp前提,SurfaceLockしません!!
  */
 static inline void __SETDOT_DOUBLE(WORD x, WORD y, DWORD c)
 {
   //Uint8 *addr = (Uint8 *)displayArea->pixels + y * 2 * displayArea->pitch + x * 2 * displayArea->format->BytesPerPixel;
-  Uint8 *addr = (Uint8 *)drawArea->pixels + y * 2 * drawArea->pitch + x * 2 * drawArea->format->BytesPerPixel;
+  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * 2 * realDrawArea->pitch + x * 2 * realDrawArea->format->BytesPerPixel;
+  DWORD *addr32;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN   
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
-           //addr += displayArea->format->BytesPerPixel;
-           addr += drawArea->format->BytesPerPixel;
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
-	   //addr += displayArea->pitch;
-           addr += drawArea->pitch;
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
-           //addr -= displayArea->format->BytesPerPixel;
-           addr -= drawArea->format->BytesPerPixel;
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr -= realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
 #else
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
+
 	   /* 横拡大 */
-           //addr += displayArea->format->BytesPerPixel;
-           addr += drawArea->format->BytesPerPixel;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
+
 	   /* 縦拡大 */
-	   //addr += displayArea->pitch;
-           addr += drawArea->pitch;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
-           //addr -= displayArea->format->BytesPerPixel;
-           addr -= drawArea->format->BytesPerPixel;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
+
+                    addr -= realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
 #endif	   
 } 
 
@@ -200,68 +283,204 @@ static inline void __SETDOT_DOUBLE(WORD x, WORD y, DWORD c)
  */
 static inline void __SETDOT_320i(WORD x, WORD y, DWORD c)
 {
-        Uint8 *addr = (Uint8 *)drawArea->pixels + y * drawArea->pitch + x * 2 * drawArea->format->BytesPerPixel;
+        Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * 2 * realDrawArea->format->BytesPerPixel;
+        DWORD *addr32;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN   
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
-           //addr += displayArea->format->BytesPerPixel;
-           addr += drawArea->format->BytesPerPixel;
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
 #else
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
+                    addr += realDrawArea->format->BytesPerPixel;
 	   /* 横拡大 */
-           //addr += displayArea->format->BytesPerPixel;
-           addr += drawArea->format->BytesPerPixel;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
+
+#endif	   
+}
+/*
+ * 320x200 (DDRAW)
+ */
+static inline void __SETDOT_DDRAW_320i(WORD x, WORD y, DWORD c)
+{
+        Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * 2 * realDrawArea->format->BytesPerPixel;
+        DWORD *addr32;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+#else
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+
+
 #endif	   
 }
 
 static inline void __SETDOT_320p(WORD x, WORD y, DWORD c)
 {
-        Uint8 *addr = (Uint8 *)drawArea->pixels + y * drawArea->pitch + x * 2 * drawArea->format->BytesPerPixel;
+        Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * 2 * realDrawArea->format->BytesPerPixel;
+        DWORD *addr32;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN   
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
-           //addr += displayArea->format->BytesPerPixel;
-           addr += drawArea->format->BytesPerPixel;
-	   addr[2] = c & 0xff;
-	   addr[1] = (c >>8 ) & 0xff;
-	   addr[0] = (c >>16) & 0xff;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN 
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+                    addr -= realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
 #else
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
 	   /* 横拡大 */
-           //addr += displayArea->format->BytesPerPixel;
-           addr += drawArea->format->BytesPerPixel;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
-           /* 縦拡大 */
-           addr += drawArea->pitch;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    //addr += displayArea->format->BytesPerPixel;
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
+                    /* 縦拡大 */
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
 
-           addr -= drawArea->format->BytesPerPixel;
-	   addr[0] = c & 0xff;
-	   addr[1] = ( c>>8 ) & 0xff;
-	   addr[2] = (c >>16) & 0xff;
+                    addr -= realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c << 8) | 0x000000ff;
            
 #endif	   
 }
 
+static inline void __SETDOT_DDRAW_320p(WORD x, WORD y, DWORD c)
+{
+        Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * 2 * realDrawArea->format->BytesPerPixel;
+        DWORD *addr32;
 
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN 
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+                    addr += realDrawArea->pitch;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+                    addr -= realDrawArea->format->BytesPerPixel;
+                    addr32 = (DWORD *)addr;
+                    *addr32 = (c >> 8) | 0xff000000;
+#else
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += realDrawArea->format->BytesPerPixel;
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += realDrawArea->pitch;
+
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr -= realDrawArea->format->BytesPerPixel;
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+#endif	   
+}
+
+
+#if defined(USE_OPENGL)
+/*
+ * BITBLT(OpenGL)...まだうごかない。SEGVする
+ */
+static BOOL OpenGL_BitBlt()
+{
+
+   GLuint texture[4];
+   int w, h;
+   GLfloat texAttr[4];
+   SDL_Surface *textureArea;
+
+   displayArea = SDL_GetVideoSurface();
+#if 0
+   textureArea = SDL_CreateRGBSurface(SDL_SWSURFACE,
+                                      w, h,
+   w = 1024; /* 640x400... w,h は2^nであること。 */
+   h = 512; 
+                                      32,
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN /* OpenGL RGBA masks */
+			0x000000FF, 
+			0x0000FF00, 
+			0x00FF0000, 
+			0xFF000000
+#else
+			0xFF000000,
+			0x00FF0000, 
+			0x0000FF00, 
+			0x000000FF
+#endif
+		       );
+#endif 
+   /*
+    * OpenGLでは描画した画面をテクスチャとして扱う
+    */
+   texAttr[0] = 0.0f; /* X始点 */
+   texAttr[1] = 0.0f; /* Y始点 */
+   texAttr[2] = (GLfloat)640 / w; /* X大きさ(比率) */
+   texAttr[3] = (GLfloat)400 / h; /* X大きさ(比率) */
+   //SDL_GL_LoadTexture(displayArea, texAttr);
+   glClear(GL_COLOR_BUFFER_BIT);
+
+   glGenTextures(1, texture);
+   glBindTexture(GL_TEXTURE_2D, texture[0]);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+   glTexImage2D(GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                w, h,
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                realDrawArea->pixels);
+
+
+   glBegin(GL_TRIANGLE_STRIP);
+   glTexCoord2f(texAttr[0], texAttr[1]);
+   glVertex2i(0, 0);
+   glTexCoord2f(texAttr[2], texAttr[1]);
+   glVertex2i(640, 0);
+   glTexCoord2f(texAttr[0], texAttr[3]);
+   glVertex2i(0, 400);
+   glTexCoord2f(texAttr[2], texAttr[3]);
+   glVertex2i(640 , 400);
+   glEnd();
+
+
+   SDL_GL_SwapBuffers();
+
+
+}
+#endif
 
 /*
  * BITBLT
@@ -269,6 +488,7 @@ static inline void __SETDOT_320p(WORD x, WORD y, DWORD c)
 static BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight, int nSrcLeft, int nSrcTop)
 {
    SDL_Rect srcrect,dstrect;
+
    srcrect.x = nSrcLeft;
    srcrect.y = nSrcTop;
    srcrect.w = (Uint16)nWidth;
@@ -281,12 +501,63 @@ static BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight, int nSr
 
    /* SurfaceLock */
    /* データ転送 */
-   SDL_UpdateRect(drawArea, 0, 0, drawArea->w, drawArea->h);
-   SDL_BlitSurface(drawArea, &srcrect ,displayArea ,&dstrect );
+   displayArea = SDL_GetVideoSurface();
+   if(!bDirectDraw) {
+   SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
+   }
+#if defined(USE_OPENGL)
+   //SDL_BlitSurface(drawArea, &srcrect ,displayArea ,&dstrect );
+   OpenGL_BitBlt();
+#else /* OpenGL */
+   if(!bDirectDraw) {
+   SDL_BlitSurface(realDrawArea, &srcrect ,displayArea ,&dstrect );
+   }
    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
    //printf("BitBlt %d %d\n",drawArea->w, drawArea->h);
-
+#endif /* OpenGL */
 }
+
+#define XM7_DRAWMODE_SDL SDL_SWSURFACE
+#define XM7_DRAW_WIDTH 640
+#define XM7_DRAW_HEIGHT 400
+#define XM7_DRAW_MAX_BPP 24 /* 32bitもやるか？遅いが */
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN /* BIGENDIAN */
+#if XM7_DRAW_MAX_BPP == 32
+#define XM7_DRAW_RMASK 0xff000000 /* R */
+#define XM7_DRAW_GMASK 0x00ff0000 /* G */
+#define XM7_DRAW_BMASK 0x0000ff00 /* B */
+#define XM7_DRAW_AMASK 0x000000ff /* ALPHA */
+#elif XM7_DRAW_MAX_BPP == 24 /* 24bit */
+#define XM7_DRAW_RMASK 0x00ff0000
+#define XM7_DRAW_GMASK 0x0000ff00
+#define XM7_DRAW_BMASK 0x000000ff
+#define XM7_DRAW_AMASK 0x00000000
+#else
+#define XM7_DRAW_RMASK 0x0000f000
+#define XM7_DRAW_GMASK 0x00000f00
+#define XM7_DRAW_BMASK 0x000000f0
+#define XM7_DRAW_AMASK 0x0000000f
+#endif
+#else /* SDL_BYTEORDER */
+#if XM7_DRAW_MAX_BPP ==32
+#define XM7_DRAW_RMASK 0x000000ff
+#define XM7_DRAW_GMASK 0x0000ff00
+#define XM7_DRAW_BMASK 0x00ff0000
+#define XM7_DRAW_AMASK 0xff000000
+#elif XM7_DRAW_MAX_BPP == 24 /* 24bit */
+#define XM7_DRAW_RMASK 0x00000000
+#define XM7_DRAW_GMASK 0x00000000
+#define XM7_DRAW_BMASK 0x00000000
+#define XM7_DRAW_AMASK 0x00000000
+#else /* not 32bit */
+#define XM7_DRAW_RMASK 0x0000000f
+#define XM7_DRAW_GMASK 0x000000f0
+#define XM7_DRAW_BMASK 0x00000f00
+#define XM7_DRAW_AMASK 0x0000f000
+#endif
+#endif
+
 
 /*
  *	初期化
@@ -317,6 +588,14 @@ void FASTCALL InitDraw(void)
 	nWindowDx2 = 0;
 	nWindowDy2 = 0;
 #endif
+        bDirectDraw = TRUE;
+        /* 直接書き込み */
+        realDrawArea = SDL_GetVideoSurface();
+        //realDrawArea = drawArea;
+#ifdef USE_OPENGL
+        //glEnable(GL_TEXTURE_2D);
+#endif
+
         
 }
 
@@ -475,23 +754,32 @@ BOOL FASTCALL SelectDraw(void)
 		return TRUE;
 	}
 
+        displayArea = SDL_GetVideoSurface();
         rect.h = displayArea->h;
         rect.w = displayArea->w;
         rect.x = 0;
         rect.y = 0;
 	/* すべてクリア */
         SDL_LockSurface(displayArea);
-        SDL_FillRect(displayArea, &rect, 0x00000000); 
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
+        SDL_FillRect(displayArea, &rect, 0x000000ff);
+#else
+        SDL_FillRect(displayArea, &rect, 0xff000000);
+#endif 
         SDL_UnlockSurface(displayArea);
 
-        rect.h = drawArea->h;
-        rect.w = drawArea->w;
+        rect.h = realDrawArea->h;
+        rect.w = realDrawArea->w;
         rect.x = 0;
         rect.y = 0;
 	/* すべてクリア */
-        SDL_LockSurface(drawArea);
-        SDL_FillRect(drawArea, &rect, 0x00000000); 
-        SDL_UnlockSurface(drawArea);
+        SDL_LockSurface(realDrawArea);
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
+        SDL_FillRect(realDrawArea, &rect, 0x000000ff); 
+#else
+        SDL_FillRect(realDrawArea, &rect, 0xff000000); 
+#endif
+        SDL_UnlockSurface(realDrawArea);
 
    
 	/* セレクト */
@@ -518,23 +806,37 @@ BOOL FASTCALL SelectDraw(void)
 static void FASTCALL AllClear(void)
 {
         SDL_Rect rect;
+
+        displayArea = SDL_GetVideoSurface();
         rect.h = displayArea->h;
         rect.w = displayArea->w;
         rect.x = 0;
         rect.y = 0;
 	/* すべてクリア */
         SDL_LockSurface(displayArea);
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
         SDL_FillRect(displayArea, &rect, 0x00000000); 
+#else
+        SDL_FillRect(displayArea, &rect, 0x00000000); 
+#endif
         SDL_UnlockSurface(displayArea);
-
-        rect.h = drawArea->h;
-        rect.w = drawArea->w;
+        if(bDirectDraw) {
+          realDrawArea = SDL_GetVideoSurface();
+        } else {
+          realDrawArea = drawArea;
+        }
+        rect.h = realDrawArea->h;
+        rect.w = realDrawArea->w;
         rect.x = 0;
         rect.y = 0;
 	/* すべてクリア */
-        SDL_LockSurface(drawArea);
-        SDL_FillRect(drawArea, &rect, 0x00000000); 
-        SDL_UnlockSurface(drawArea);
+        SDL_LockSurface(realDrawArea);
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
+        SDL_FillRect(realDrawArea, &rect, 0x00000000);
+#else
+        SDL_FillRect(realDrawArea, &rect, 0x00000000);
+#endif
+        SDL_UnlockSurface(realDrawArea);
 
 
 	/* 全領域をレンダリング対象とする */
@@ -557,15 +859,10 @@ static void FASTCALL RenderFullScan(void)
 	WORD u;
         Uint32 pitch;
 
-        // SDL_LockSurface(displayArea);
+        SDL_LockSurface(realDrawArea);
 	/* ポインタ初期化 */
-        //p = (BYTE *)displayArea->pixels + nDrawTop * displayArea->pitch;
-        //q = p + displayArea->pitch;
-        //pitch = displayArea->pitch;
-        SDL_LockSurface(drawArea);
-	/* ポインタ初期化 */
-        p = (BYTE *)drawArea->pixels + nDrawTop * drawArea->pitch;
-        pitch = drawArea->pitch;
+        p = (BYTE *)realDrawArea->pixels + nDrawTop * realDrawArea->pitch;
+        pitch = realDrawArea->pitch;
         q = p + pitch;
 
 
@@ -575,10 +872,8 @@ static void FASTCALL RenderFullScan(void)
 		p += pitch *2;
 		q += pitch *2;
 	}
-        //SDL_UnlockSurface(displayArea);
-        //SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-        SDL_UnlockSurface(drawArea);
-        SDL_UpdateRect(drawArea, 0, 0, drawArea->w, drawArea->h);
+        SDL_UnlockSurface(realDrawArea);
+        SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
 
 }
 
@@ -594,17 +889,21 @@ static void FASTCALL RenderSetOddLine(void)
 
 	/* ポインタ初期化 */
 
-        p = drawArea->pixels + (nDrawTop + 1) * drawArea->pitch;
-        pitch = drawArea->pitch;
-        SDL_LockSurface(drawArea);
+        p = realDrawArea->pixels + (nDrawTop + 1) * realDrawArea->pitch;
+        pitch = realDrawArea->pitch;
+        SDL_LockSurface(realDrawArea);
 
 	/* ループ */
 	for (u=nDrawTop; u<nDrawBottom; u += (WORD)2) {
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
 	   	memset(p, 0x00, pitch );
+#else
+	   	memset(p, 0x00, pitch );
+#endif
 		p += pitch * 2;
 	}
-        SDL_UnlockSurface(drawArea);
-        SDL_UpdateRect(drawArea, 0, 0, drawArea->w, drawArea->h);
+        SDL_UnlockSurface(realDrawArea);
+        SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
 
 }
 
@@ -665,8 +964,8 @@ static void FASTCALL Draw640Sub(int top, int bottom) {
         BYTE cb,cr,cg;
         int addr;
 
-	//SDL_LockSurface(displayArea);
-        SDL_LockSurface(drawArea);
+
+        SDL_LockSurface(realDrawArea);
 	/* yループ */
 	for (y=top; y<bottom; y++) {
 
@@ -697,6 +996,27 @@ static void FASTCALL Draw640Sub(int top, int bottom) {
 		       c5 = ((cb & 0x20) >>5)  + ((cr & 0x20) >>4) + ((cg & 0x20) >>3);  
 		       c6 = ((cb & 0x40) >>6)  + ((cr & 0x40) >>5) + ((cg & 0x40) >>4);  
 		       c7 = ((cb & 0x80) >>7)  + ((cr & 0x80) >>6) + ((cg & 0x80) >>5);
+                       if(bDirectDraw) {
+                         if(bFullScan) {
+		       __SETDOT_DDRAW_640p((x<<3)+0  ,y<<1 ,rgbTTLGDI[c7]);
+		       __SETDOT_DDRAW_640p((x<<3)+1  ,y<<1 ,rgbTTLGDI[c6]);
+  		       __SETDOT_DDRAW_640p((x<<3)+2  ,y<<1 ,rgbTTLGDI[c5]);
+   		       __SETDOT_DDRAW_640p((x<<3)+3  ,y<<1 ,rgbTTLGDI[c4]);
+   		       __SETDOT_DDRAW_640p((x<<3)+4  ,y<<1 ,rgbTTLGDI[c3]);
+   		       __SETDOT_DDRAW_640p((x<<3)+5  ,y<<1 ,rgbTTLGDI[c2]);
+   		       __SETDOT_DDRAW_640p((x<<3)+6  ,y<<1 ,rgbTTLGDI[c1]);
+   		       __SETDOT_DDRAW_640p((x<<3)+7  ,y<<1 ,rgbTTLGDI[c0]);
+                       } else {
+		       __SETDOT_DDRAW_640i((x<<3)+0  ,y<<1 ,rgbTTLGDI[c7]);
+		       __SETDOT_DDRAW_640i((x<<3)+1  ,y<<1 ,rgbTTLGDI[c6]);
+  		       __SETDOT_DDRAW_640i((x<<3)+2  ,y<<1 ,rgbTTLGDI[c5]);
+   		       __SETDOT_DDRAW_640i((x<<3)+3  ,y<<1 ,rgbTTLGDI[c4]);
+   		       __SETDOT_DDRAW_640i((x<<3)+4  ,y<<1 ,rgbTTLGDI[c3]);
+   		       __SETDOT_DDRAW_640i((x<<3)+5  ,y<<1 ,rgbTTLGDI[c2]);
+   		       __SETDOT_DDRAW_640i((x<<3)+6  ,y<<1 ,rgbTTLGDI[c1]);
+   		       __SETDOT_DDRAW_640i((x<<3)+7  ,y<<1 ,rgbTTLGDI[c0]);
+                       } 
+                       } else {
                        if(bFullScan) {
 		       __SETDOT_640p((x<<3)+0  ,y<<1 ,rgbTTLGDI[c7]);
 		       __SETDOT_640p((x<<3)+1  ,y<<1 ,rgbTTLGDI[c6]);
@@ -716,13 +1036,14 @@ static void FASTCALL Draw640Sub(int top, int bottom) {
    		       __SETDOT_640i((x<<3)+6  ,y<<1 ,rgbTTLGDI[c1]);
    		       __SETDOT_640i((x<<3)+7  ,y<<1 ,rgbTTLGDI[c0]);
                        }
+                       }
 
 		}
 	   
 	}
 
-        //SDL_UnlockSurface(displayArea);
-        SDL_UnlockSurface(drawArea);
+
+        SDL_UnlockSurface(realDrawArea);
 }
 
 #if XM7_VER >= 3
@@ -742,8 +1063,8 @@ static void FASTCALL Draw640WSub(int top, int bottom, int left, int right) {
         BYTE cb,cr,cg;
         int addr;
 
-	//SDL_LockSurface(displayArea);
-        SDL_LockSurface(drawArea);
+
+        SDL_LockSurface(realDrawArea);
 	/* yループ */
 	for (y=top; y<bottom; y++) {
 
@@ -770,6 +1091,27 @@ static void FASTCALL Draw640WSub(int top, int bottom, int left, int right) {
 		       c5 = ((cb & 0x20) >>5)  + ((cr & 0x20) >>4) + ((cg & 0x20) >>3);  
 		       c6 = ((cb & 0x40) >>6)  + ((cr & 0x40) >>5) + ((cg & 0x40) >>4);  
 		       c7 = ((cb & 0x80) >>7)  + ((cr & 0x80) >>6) + ((cg & 0x80) >>5);
+                       if(bDirectDraw) {
+                         if(bFullScan) {
+		       __SETDOT_DDRAW_640p((x<<3)+0  ,y<<1 ,rgbTTLGDI[c7]);
+		       __SETDOT_DDRAW_640p((x<<3)+1  ,y<<1 ,rgbTTLGDI[c6]);
+  		       __SETDOT_DDRAW_640p((x<<3)+2  ,y<<1 ,rgbTTLGDI[c5]);
+   		       __SETDOT_DDRAW_640p((x<<3)+3  ,y<<1 ,rgbTTLGDI[c4]);
+   		       __SETDOT_DDRAW_640p((x<<3)+4  ,y<<1 ,rgbTTLGDI[c3]);
+   		       __SETDOT_DDRAW_640p((x<<3)+5  ,y<<1 ,rgbTTLGDI[c2]);
+   		       __SETDOT_DDRAW_640p((x<<3)+6  ,y<<1 ,rgbTTLGDI[c1]);
+   		       __SETDOT_DDRAW_640p((x<<3)+7  ,y<<1 ,rgbTTLGDI[c0]);
+                       } else {
+		       __SETDOT_DDRAW_640i((x<<3)+0  ,y<<1 ,rgbTTLGDI[c7]);
+		       __SETDOT_DDRAW_640i((x<<3)+1  ,y<<1 ,rgbTTLGDI[c6]);
+  		       __SETDOT_DDRAW_640i((x<<3)+2  ,y<<1 ,rgbTTLGDI[c5]);
+   		       __SETDOT_DDRAW_640i((x<<3)+3  ,y<<1 ,rgbTTLGDI[c4]);
+   		       __SETDOT_DDRAW_640i((x<<3)+4  ,y<<1 ,rgbTTLGDI[c3]);
+   		       __SETDOT_DDRAW_640i((x<<3)+5  ,y<<1 ,rgbTTLGDI[c2]);
+   		       __SETDOT_DDRAW_640i((x<<3)+6  ,y<<1 ,rgbTTLGDI[c1]);
+   		       __SETDOT_DDRAW_640i((x<<3)+7  ,y<<1 ,rgbTTLGDI[c0]);
+                       } 
+                       } else {
                        if(bFullScan) {
 		       __SETDOT_640p((x<<3)+0  ,y<<1 ,rgbTTLGDI[c7]);
 		       __SETDOT_640p((x<<3)+1  ,y<<1 ,rgbTTLGDI[c6]);
@@ -789,11 +1131,12 @@ static void FASTCALL Draw640WSub(int top, int bottom, int left, int right) {
    		       __SETDOT_640i((x<<3)+6  ,y<<1 ,rgbTTLGDI[c1]);
    		       __SETDOT_640i((x<<3)+7  ,y<<1 ,rgbTTLGDI[c0]);
                        }
+                       }
 
-		}
-	}
-        //SDL_UnlockSurface(displayArea);
-	   SDL_UnlockSurface(drawArea);
+                }
+        }
+
+	   SDL_UnlockSurface(realDrawArea);
 }
 #endif
 
@@ -862,11 +1205,7 @@ static void FASTCALL Draw640(void)
 #else
 		Draw640Sub(nDrawTop >> 1, nDrawBottom >> 1);
 #endif
-
-		if (bFullScan) {
-                  //RenderFullScan();
-		}
-		else {
+		if(!bFullScan){
 			RenderSetOddLine();
 		}
 	}
@@ -899,8 +1238,8 @@ static void FASTCALL Draw400lSub(int top, int bottom) {
         BYTE c0,c1,c2,c3,c4,c5,c6,c7;
         BYTE cb,cr,cg;
 
-        //SDL_LockSurface(displayArea);
-        SDL_LockSurface(drawArea);
+
+        SDL_LockSurface(realDrawArea);
 	/* yループ */
 	for (y=top; y<bottom; y++) {
 
@@ -923,6 +1262,16 @@ static void FASTCALL Draw400lSub(int top, int bottom) {
 		       c5 = ((cb & 0x20) >>5)  + ((cr & 0x20) >>4) + ((cg & 0x20) >>3);  
 		       c6 = ((cb & 0x40) >>6)  + ((cr & 0x40) >>5) + ((cg & 0x40) >>4);  
 		       c7 = ((cb & 0x80) >>7)  + ((cr & 0x80) >>6) + ((cg & 0x80) >>5);
+                       if(bDirectDraw) {
+		       __SETDOT_DDRAW((x<<3)+0  ,y ,rgbTTLGDI[c7]);
+		       __SETDOT_DDRAW((x<<3)+1  ,y ,rgbTTLGDI[c6]);
+  		       __SETDOT_DDRAW((x<<3)+2  ,y ,rgbTTLGDI[c5]);
+   		       __SETDOT_DDRAW((x<<3)+3  ,y ,rgbTTLGDI[c4]);
+   		       __SETDOT_DDRAW((x<<3)+4  ,y ,rgbTTLGDI[c3]);
+   		       __SETDOT_DDRAW((x<<3)+5  ,y ,rgbTTLGDI[c2]);
+   		       __SETDOT_DDRAW((x<<3)+6  ,y ,rgbTTLGDI[c1]);
+   		       __SETDOT_DDRAW((x<<3)+7  ,y ,rgbTTLGDI[c0]);
+                       } else {
 		       __SETDOT((x<<3)+0  ,y ,rgbTTLGDI[c7]);
 		       __SETDOT((x<<3)+1  ,y ,rgbTTLGDI[c6]);
   		       __SETDOT((x<<3)+2  ,y ,rgbTTLGDI[c5]);
@@ -931,11 +1280,11 @@ static void FASTCALL Draw400lSub(int top, int bottom) {
    		       __SETDOT((x<<3)+5  ,y ,rgbTTLGDI[c2]);
    		       __SETDOT((x<<3)+6  ,y ,rgbTTLGDI[c1]);
    		       __SETDOT((x<<3)+7  ,y ,rgbTTLGDI[c0]);
-
+                       }
 		}
 	}
         //SDL_UnlockSurface(displayArea);
-        SDL_UnlockSurface(drawArea);
+        SDL_UnlockSurface(realDrawArea);
 
 }
 
@@ -954,7 +1303,7 @@ static void FASTCALL Draw400lWSub(int top, int bottom, int left, int right) {
         BYTE c0,c1,c2,c3,c4,c5,c6,c7;
         BYTE cb,cr,cg;
         //        SDL_LockSurface(displayArea);
-        SDL_LockSurface(drawArea);
+        SDL_LockSurface(realDrawArea);
 	/* yループ */
 	for (y=top; y<bottom; y++) {
 
@@ -977,6 +1326,16 @@ static void FASTCALL Draw400lWSub(int top, int bottom, int left, int right) {
 		       c5 = ((cb & 0x20) >>5)  + ((cr & 0x20) >>4) + ((cg & 0x20) >>3);  
 		       c6 = ((cb & 0x40) >>6)  + ((cr & 0x40) >>5) + ((cg & 0x40) >>4);  
 		       c7 = ((cb & 0x80) >>7)  + ((cr & 0x80) >>6) + ((cg & 0x80) >>5);
+                       if(bDirectDraw) {
+		       __SETDOT_DDRAW((x<<3)+0  ,y ,rgbTTLGDI[c7]);
+		       __SETDOT_DDRAW((x<<3)+1  ,y ,rgbTTLGDI[c6]);
+  		       __SETDOT_DDRAW((x<<3)+2  ,y ,rgbTTLGDI[c5]);
+   		       __SETDOT_DDRAW((x<<3)+3  ,y ,rgbTTLGDI[c4]);
+   		       __SETDOT_DDRAW((x<<3)+4  ,y ,rgbTTLGDI[c3]);
+   		       __SETDOT_DDRAW((x<<3)+5  ,y ,rgbTTLGDI[c2]);
+   		       __SETDOT_DDRAW((x<<3)+6  ,y ,rgbTTLGDI[c1]);
+   		       __SETDOT_DDRAW((x<<3)+7  ,y ,rgbTTLGDI[c0]);
+                       } else {
 		       __SETDOT((x<<3)+0  ,y ,rgbTTLGDI[c7]);
 		       __SETDOT((x<<3)+1  ,y ,rgbTTLGDI[c6]);
   		       __SETDOT((x<<3)+2  ,y ,rgbTTLGDI[c5]);
@@ -985,11 +1344,12 @@ static void FASTCALL Draw400lWSub(int top, int bottom, int left, int right) {
    		       __SETDOT((x<<3)+5  ,y ,rgbTTLGDI[c2]);
    		       __SETDOT((x<<3)+6  ,y ,rgbTTLGDI[c1]);
    		       __SETDOT((x<<3)+7  ,y ,rgbTTLGDI[c0]);
+                       }
 
 		}
 	}
         //        SDL_UnlockSurface(displayArea);
-        SDL_UnlockSurface(drawArea);
+        SDL_UnlockSurface(realDrawArea);
 
 }
 
@@ -1148,7 +1508,7 @@ static void FASTCALL Draw320Sub(int top, int bottom)
         BYTE b[8], r[8], g[8];
         Uint32 dat[8];
         //        SDL_LockSurface(displayArea);
-        SDL_LockSurface(drawArea);
+        SDL_LockSurface(realDrawArea);
 
 	/* yループ */
 	for (y=top; y<bottom; y++) {
@@ -1274,6 +1634,27 @@ static void FASTCALL Draw320Sub(int top, int bottom)
                               + ((r[0] & 0x80)>>3) + ((r[1] & 0x80)>>2) + ((r[2] & 0x80)>>1) + ((r[3] & 0x80))
                               + ((g[0] & 0x80)<<1) + ((g[1] & 0x80)<<2) + ((g[2] & 0x80)<<3) + ((g[3] & 0x80)<<4);
                           
+                          if(bDirectDraw) {
+                            if(bFullScan) { 
+                              __SETDOT_DDRAW_320p((x<<3)+7  ,y<<1 ,rgbAnalogGDI[dat[7]]);
+                              __SETDOT_DDRAW_320p((x<<3)+6  ,y<<1 ,rgbAnalogGDI[dat[6]]);
+                              __SETDOT_DDRAW_320p((x<<3)+5  ,y<<1 ,rgbAnalogGDI[dat[5]]);
+                              __SETDOT_DDRAW_320p((x<<3)+4  ,y<<1 ,rgbAnalogGDI[dat[4]]);
+                              __SETDOT_DDRAW_320p((x<<3)+3  ,y<<1 ,rgbAnalogGDI[dat[3]]);
+                              __SETDOT_DDRAW_320p((x<<3)+2  ,y<<1 ,rgbAnalogGDI[dat[2]]);
+                              __SETDOT_DDRAW_320p((x<<3)+1  ,y<<1 ,rgbAnalogGDI[dat[1]]);
+                              __SETDOT_DDRAW_320p((x<<3)+0  ,y<<1 ,rgbAnalogGDI[dat[0]]);
+                          } else {
+                              __SETDOT_DDRAW_320i((x<<3)+7  ,y<<1 ,rgbAnalogGDI[dat[7]]);
+                              __SETDOT_DDRAW_320i((x<<3)+6  ,y<<1 ,rgbAnalogGDI[dat[6]]);
+                              __SETDOT_DDRAW_320i((x<<3)+5  ,y<<1 ,rgbAnalogGDI[dat[5]]);
+                              __SETDOT_DDRAW_320i((x<<3)+4  ,y<<1 ,rgbAnalogGDI[dat[4]]);
+                              __SETDOT_DDRAW_320i((x<<3)+3  ,y<<1 ,rgbAnalogGDI[dat[3]]);
+                              __SETDOT_DDRAW_320i((x<<3)+2  ,y<<1 ,rgbAnalogGDI[dat[2]]);
+                              __SETDOT_DDRAW_320i((x<<3)+1  ,y<<1 ,rgbAnalogGDI[dat[1]]);
+                              __SETDOT_DDRAW_320i((x<<3)+0  ,y<<1 ,rgbAnalogGDI[dat[0]]);
+                          }
+                          } else {
                           if(bFullScan) { 
                             __SETDOT_320p((x<<3)+7  ,y<<1 ,rgbAnalogGDI[dat[7]]);
                             __SETDOT_320p((x<<3)+6  ,y<<1 ,rgbAnalogGDI[dat[6]]);
@@ -1293,14 +1674,14 @@ static void FASTCALL Draw320Sub(int top, int bottom)
                             __SETDOT_320i((x<<3)+1  ,y<<1 ,rgbAnalogGDI[dat[1]]);
                             __SETDOT_320i((x<<3)+0  ,y<<1 ,rgbAnalogGDI[dat[0]]);
                           }
-
+                          }
 
 
 
                 }
                 }
         //SDL_UnlockSurface(displayArea);
-        SDL_UnlockSurface(drawArea);
+        SDL_UnlockSurface(realDrawArea);
 
 }
 
@@ -1320,7 +1701,7 @@ static void FASTCALL Draw320WSub(int top, int bottom, int left, int right)
                  BYTE b[4], r[4], g[4];
 
                  //SDL_LockSurface(displayArea);
-                 SDL_LockSurface(drawArea);
+                 SDL_LockSurface(realDrawArea);
 	/* yループ */
 	for (y=top; y<bottom; y++) {
 
@@ -1392,6 +1773,27 @@ static void FASTCALL Draw320WSub(int top, int bottom, int left, int right)
                               + ((r[0] & 0x80)>>3) + ((r[1] & 0x80)>>2) + ((r[2] & 0x80)>>1) + ((r[3] & 0x80))
                               + ((g[0] & 0x80)<<1) + ((g[1] & 0x80)<<2) + ((g[2] & 0x80)<<3) + ((g[3] & 0x80)<<4);
 
+                          if(bDirectDraw) {
+                            if(bFullScan) { 
+                              __SETDOT_DDRAW_320p((x<<3)+7  ,y<<1 ,rgbAnalogGDI[dat[7]]);
+                              __SETDOT_DDRAW_320p((x<<3)+6  ,y<<1 ,rgbAnalogGDI[dat[6]]);
+                              __SETDOT_DDRAW_320p((x<<3)+5  ,y<<1 ,rgbAnalogGDI[dat[5]]);
+                              __SETDOT_DDRAW_320p((x<<3)+4  ,y<<1 ,rgbAnalogGDI[dat[4]]);
+                              __SETDOT_DDRAW_320p((x<<3)+3  ,y<<1 ,rgbAnalogGDI[dat[3]]);
+                              __SETDOT_DDRAW_320p((x<<3)+2  ,y<<1 ,rgbAnalogGDI[dat[2]]);
+                              __SETDOT_DDRAW_320p((x<<3)+1  ,y<<1 ,rgbAnalogGDI[dat[1]]);
+                              __SETDOT_DDRAW_320p((x<<3)+0  ,y<<1 ,rgbAnalogGDI[dat[0]]);
+                          } else {
+                              __SETDOT_DDRAW_320i((x<<3)+7  ,y<<1 ,rgbAnalogGDI[dat[7]]);
+                              __SETDOT_DDRAW_320i((x<<3)+6  ,y<<1 ,rgbAnalogGDI[dat[6]]);
+                              __SETDOT_DDRAW_320i((x<<3)+5  ,y<<1 ,rgbAnalogGDI[dat[5]]);
+                              __SETDOT_DDRAW_320i((x<<3)+4  ,y<<1 ,rgbAnalogGDI[dat[4]]);
+                              __SETDOT_DDRAW_320i((x<<3)+3  ,y<<1 ,rgbAnalogGDI[dat[3]]);
+                              __SETDOT_DDRAW_320i((x<<3)+2  ,y<<1 ,rgbAnalogGDI[dat[2]]);
+                              __SETDOT_DDRAW_320i((x<<3)+1  ,y<<1 ,rgbAnalogGDI[dat[1]]);
+                              __SETDOT_DDRAW_320i((x<<3)+0  ,y<<1 ,rgbAnalogGDI[dat[0]]);
+                          }
+                          } else {
                           if(bFullScan) { 
                             __SETDOT_320p((x<<3)+7  ,y<<1 ,rgbAnalogGDI[dat[7]]);
                             __SETDOT_320p((x<<3)+6  ,y<<1 ,rgbAnalogGDI[dat[6]]);
@@ -1411,10 +1813,12 @@ static void FASTCALL Draw320WSub(int top, int bottom, int left, int right)
                             __SETDOT_320i((x<<3)+1  ,y<<1 ,rgbAnalogGDI[dat[1]]);
                             __SETDOT_320i((x<<3)+0  ,y<<1 ,rgbAnalogGDI[dat[0]]);
                           }
+                          }
+
 		}
 	}
         //SDL_UnlockSurface(displayArea);
-        SDL_UnlockSurface(drawArea);
+        SDL_UnlockSurface(realDrawArea);
 }
 #endif
 
@@ -1523,7 +1927,7 @@ static void FASTCALL Draw256k(void)
 		return;
 	}
         //SDL_LockSurface(displayArea);
-        SDL_LockSurface(drawArea);
+        SDL_LockSurface(realDrawArea);
 	/* yループ */
 	for (y=nDrawTop >> 1; y<nDrawBottom >> 1; y++) {
 
@@ -1608,17 +2012,20 @@ static void FASTCALL Draw256k(void)
 				if (!crt_flag) {
 					color = 0;
 				}
-				__SETDOT_320p((x<<3)+i  ,y<<1 ,color);
-
+                                if(bDirectDraw) {
+                                  __SETDOT_DDRAW_320p((x<<3)+i  ,y<<1 ,color);
+                                } else {
+                                  __SETDOT_320p((x<<3)+i  ,y<<1 ,color);
+                                }
 				/* 次のビットへ */
 				bit >>= 1;
 			}
 		}
 	}
         //SDL_UnlockSurface(displayArea);
-        SDL_UnlockSurface(drawArea);
-	if (bFullScan) {
-		RenderFullScan();
+        SDL_UnlockSurface(realDrawArea);
+	if (!bFullScan) {
+		RenderSetOddLine();
 	}
 
 	BitBlt(nDrawLeft, nDrawTop,
@@ -1672,10 +2079,12 @@ void FASTCALL OnDraw(void)
 gint FASTCALL OnPaint(GtkWidget *widget, GdkEventExpose *event)
 {
         SDL_Rect srcrect,dstrect;
+        displayArea = SDL_GetVideoSurface();
+
         srcrect.x = 0;
         srcrect.y = 0;
-        srcrect.w = (Uint16)drawArea->w;
-        srcrect.h = (Uint16)drawArea->h;
+        srcrect.w = (Uint16)realDrawArea->w;
+        srcrect.h = (Uint16)realDrawArea->h;
    
         dstrect.x = 0;
         dstrect.y = 0;
@@ -1683,12 +2092,13 @@ gint FASTCALL OnPaint(GtkWidget *widget, GdkEventExpose *event)
         dstrect.h = (Uint16)displayArea->h;
 	
 
-        SDL_BlitSurface(drawArea ,&srcrect ,displayArea ,&dstrect);
-
-        SDL_UpdateRect(drawArea ,0 ,0 ,drawArea->w ,drawArea->h);
+        SDL_UpdateRect(realDrawArea ,0 ,0 ,realDrawArea->w ,realDrawArea->h);
+        if(!bDirectDraw) {
+        SDL_BlitSurface(realDrawArea ,&srcrect ,displayArea ,&dstrect);
+        }
         SDL_UpdateRect(displayArea ,0 ,0 ,displayArea->w ,displayArea->h);
-        printf("paint");
-	return FALSE;
+        //printf("paint");
+         return FALSE;
 }
 
 /*-[ VMとの接続 ]-----------------------------------------------------------*/
@@ -1955,14 +2365,15 @@ void FASTCALL window_notify(void)
 
  void OnFullScreen(void)
  {
+   displayArea = SDL_GetVideoSurface();
    SDL_WM_ToggleFullScreen(displayArea);
    
  }
 
  void OnWindowedScreen(void)
  {
+   displayArea = SDL_GetVideoSurface();
    SDL_WM_ToggleFullScreen(displayArea);
-
  }
 
 #endif	/* _XWIN */
