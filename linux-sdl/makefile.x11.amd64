@@ -1,0 +1,149 @@
+###
+###	FM-7 EMULATOR "XM7"
+###
+###	Copyright (C) 2004 GIMONS
+###	[ Makefile GTK For Linux]
+XM7_VER		= 3
+OPTION		= -DMOUSE -DMR2 -DFDDSND
+
+COMMONSRC = \
+        aluline.c \
+        apalet.c \
+        disasm.c \
+        display.c \
+	dmac.c \
+	fdc.c \
+	jcard.c \
+	jsubsys.c \
+	kanji.c \
+	keyboard.c \
+	maincpu.c \
+	mainetc.c \
+	mainmem.c \
+	midi.c \
+	mmr.c \
+	mouse.c \
+	multipag.c \
+	opn.c \
+	rtc.c \
+	schedule.c \
+	subcpu.c \
+	subctrl.c \
+	submem.c \
+	system.c \
+	tapelp.c \
+	tools.c \
+	ttlpalet.c \
+	opna.cpp \
+	psg.cpp \
+	fmgen.cpp \
+	juliet.cpp \
+	vm_sub.asm \
+	cpu_x86.asm
+
+#	aluline.c    fdc.c        keyboard.c   multipag.c  subcpu.c \
+#	tools.c      apalet.c     fmgen.cpp    maincpu.c   opn.c \
+#	subctrl.c    ttlpalet.c   cpu_x86.asm  fmtimer.cpp  mainetc.c \
+#	opna.cpp     submem.c     vm_sub.asm   disasm.c    jcard.c \
+#	mainmem.c    psg.cpp      system.c     whg.c       display.c \
+#	mmr.c        rtc.c        tapelp.c    dmac.c \
+#	kanji.c      mouse.c      schedule.c   thg.c
+
+LOCALSRC = \
+	xw_sub.asm xw_dlg.c xw_cfg.c xw_prop.c xw_inifile.c xw_bar.c xw_cmd.c xw_sch.c xw_draw.c xw_kbd.c xw_file.c xw_snd.cpp xw_main.c
+
+COMMONOBJ = \
+        aluline.o \
+        apalet.o \
+        disasm.o \
+        display.o \
+	dmac.o \
+	fdc.o \
+	jcard.o \
+	jsubsys.o \
+	kanji.o \
+	keyboard.o \
+	maincpu.o \
+	mainetc.o \
+	mainmem.o \
+	midi.o \
+	mmr.o \
+	mouse.o \
+	multipag.o \
+	opn.o \
+	rtc.o \
+	schedule.o \
+	subcpu.o \
+	subctrl.o \
+	submem.o \
+	system.o \
+	tapelp.o \
+	tools.o \
+	ttlpalet.o \
+	opna.cpp \
+	psg.cpp \
+	fmgen.cpp \
+	juliet.cpp \
+	cpu_x86.o \
+	vm_sub.o
+
+
+
+LOCALOBJ = \
+	xw_sub.o xw_dlg.o xw_cfg.o xw_prop.o xw_inifile.o xw_bar.o xw_cmd.o xw_sch.o xw_draw.o xw_kbd.o xw_file.o xw_snd.o xw_main.o
+
+.SUFFIXES: .c .cpp .asm .o
+
+SRCS =	${COMMONSRC} ${LOCALSRC}
+OBJS =	${COMMONOBJ} ${LOCALOBJ}
+
+LIBS = -L/usr/lib32 -lX11 -lXt -lXext -lm -lc -lstdc++ 
+
+IA32BOOTSTRAPED = /emul/ia32-linux-bootstraped
+
+
+#CFLAGS = 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DCPU_ASM -O3 -I/usr/X11R6/include -I. `pkg-config --cflags  gtk+-2.0 gthread-2.0`
+CFLAGS = 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG \
+                -DCPU_ASM -O3 -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)/usr/X11R6/include -I. \
+		-D_REENTRANT -pthread -I$(IA32BOOTSTRAPED)/usr/include/gtk-2.0 \
+                -I$(IA32BOOTSTRAPED)/usr/lib/gtk-2.0/include \
+                -I$(IA32BOOTSTRAPED)/usr/include/atk-1.0 -I$(IA32BOOTSTRAPED)/usr/include/cairo \
+                -I$(IA32BOOTSTRAPED)/usr/include/pango-1.0 -I$(IA32BOOTSTRAPED)/usr/include/pixman-1 \
+		-I$(IA32BOOTSTRAPED)/usr/include/freetype2 -I$(IA32BOOTSTRAPED)/usr/include/directfb \
+                -I$(IA32BOOTSTRAPED)/usr/include/libpng12 -I$(IA32BOOTSTRAPED)/usr/include/glib-2.0 \
+                -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include \
+		-pthread -I/usr/include/glib-2.0 -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include
+
+ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
+
+LIBS += -L$(IA32BOOTSTRAPED)/usr/lib32 \
+        -pthread -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 \
+        -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lgio-2.0 -lcairo \
+        -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 \
+        -lgmodule-2.0 -lrt \
+        -lglib-2.0
+	
+LIBS += -L$(IA32BOOTSTRAPED)/usr/lib32 \
+        -lgthread-2.0 \
+	-lrt -lglib-2.0
+
+
+all:	xm7
+
+xm7:	${OBJS}
+	gcc -m32 -o xm7 ${OBJS} ${LIBS}
+#xm7:	${OBJS}
+#	gcc -m32 -static -o xm7 ${OBJS} ${LIBS}
+
+
+.c.o:
+	gcc ${CFLAGS} -o $@ -c $<
+
+.cpp.o:
+	g++ ${CFLAGS} -o $@ -c $<
+
+.asm.o:
+	nasm ${ASFLAGS} $<
+
+clean:
+	rm -f xm7 *.o *~

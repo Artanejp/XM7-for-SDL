@@ -1,0 +1,144 @@
+------------------------------------------------------------------------------
+ 
+  FM-7 EMULATOR XM7 (V2.8L31a/V3.3L31a)  For Linux Ver1.05(2005/07/03)
+  Copyright (C) 2004-2005 GIMONS
+
+  コンパイル方法(COMPILE.TXT)
+ 
+------------------------------------------------------------------------------
+
+■前堤となる環境(というか開発した環境)
+ LinuxOS i386 kernel2.4
+ GTK+-2.0 ：The GIMP Toolkit
+ gcc3.2.2 ：コンパイラ gcc(GCC)
+ nasm0.98 ：アセンブラ NASM(Netwide Assembler)
+
+ NASMはバージョン0.98を推奨します。
+
+
+ *GIMONSはRedHat9 FTP版にNASMをインストールした環境です
+
+
+■用意するもの
+ (1)オリジナルのXM7(V3.3L31a)のソースファイル
+    たけがみ りう氏のホームページからxm7_3331as.lzhをダウンロード
+
+ (2)Linux+GTK対応のソースファイル
+    GIMONSのホームページからxm7_linux_src.tgzをダウンロード
+
+ ＊以下のコンパイル方法の説明ではホームディレクトリ上のdownloadディレクトリ
+   にダウンロードしたと仮定する
+
+
+■コンパイル方法
+ (1)作業用のディレクトリを作成
+    コンパイル作業用のディレクトリをxm7_3331asという名前で作成する
+
+    例:
+     mkdir xm7_3331as
+
+ (2)オリジナルXM7のソースを解凍
+    作業用ディレクトリであるxm7_3331asに移動しダウンロードしたxm7_3331as.lzhを
+    lhaコマンドで解凍します
+
+    例:
+     cd xm7_3331as
+     cp ~/download/xm7_3331as.lzh ./xm7_3331as.lzh
+     lha x xm7_3331as.lzh
+
+ (3)Linux+GTK対応のソースファイルを解凍
+
+    例:
+     tar zxvf ~/download/xm7_linux_src.tgz
+
+ (4)解凍されたソースの確認
+    作業用ディレクトリには下記のようになってますよね?
+
+    例:
+     ls -F
+
+    borland/  linux/  tool/  vm/  win32/  xm7src.txt
+
+
+  (5)VMディレクトリのソースを漢字コード&改行コード変換
+    Linuxの漢字コードはEucだし、改行コードはLFなので変換する必要がある。
+    適当に変換してください。
+
+    GIMONSはこんな感じでvm_eucに変換したソースを作成してみた
+    例(CSHでnkfを使う場合):
+
+     mkdir vm_euc
+     cd vm
+     foreach x (*)
+     foreach? nkf -e -Lu $x > ../vm_euc/$x
+     foreach? end
+     cd ..
+
+
+  (6)漢字コードと改行コードを変換したVMのソースをlinuxディレクトリにコピー
+     
+    例:
+     cp -r vm_euc/* linux/
+
+  (7)win32ディレクトリのリソースディレクトリ(アイコンファイル群)をコピー
+
+    例:
+     cp -r win32/resource linux/
+
+
+  (8)コンパイルエラーを回避するためにfmgen.hの183行目を修正する
+
+    例:
+     cd linux/
+     vi fmgen.h
+
+     元のソース
+	     friend void __stdcall FM_NextPhase(Operator* op);
+
+     修正したソース
+	     friend void __attribute__((__stdcall__)) FM_NextPhase(Operator* op);
+
+   (9)コンパイル
+    ちなみにxm7_3331as_linuxのソースはユニコードでお願いします。GTK+-2.0は
+    ユニコードじゃないとだめです。
+
+    V3モード
+     make -f makefile.x11 XM7_VER=3
+
+    V2モード
+     make -f makefile.x11 XM7_VER=2
+   
+
+    しばらく待つ...xm7が出来ているはず?
+
+
+  (10)実行前の準備
+    XM7の実行に必要なのはxm7が通常必要とするROMファイルとリソースディレクトリ
+    のアイコンファイルです。ROMやresouceディレクトリはxm7が存在するディレクトリ
+    に存在することを想定していますので、同じディレクトリに以下のファイルがあれば
+    xm7を実行できます。なのでROMをコピーしておきましょう。
+
+    BOOT_BAS.ROM
+    BOOT_DOS.ROM
+    DICROM.ROM(*1)
+    EXTSUB.ROM(*1)
+    FBASIC30.ROM
+    INITIATE.ROM
+    KANJI.ROM
+    KANJI2.ROM(*1)
+    SUBSYSCG.ROM
+    SUBSYS_A.ROM
+    SUBSYS_B.ROM
+    SUBSYS_C.ROM
+    resource
+    xm7
+
+    *1:XM7_VER=2(V2.8L31aとしてコンパイル)では必要ありません。
+
+  (11)XM7を実行する
+
+    例:
+    ./xm7
+
+どううごいた?
+

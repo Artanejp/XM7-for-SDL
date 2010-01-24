@@ -1,0 +1,57 @@
+###
+###	FM-7 EMULATOR "XM7"
+###
+###	Copyright (C) 2004 GIMONS
+###	[ Makefile GTK For Linux]
+XM7_VER		= 3
+OPTION		= -DMOUSE -DMR2 -DFDDSND
+
+COMMONSRC = \
+	aluline.c    fdc.c        keyboard.c   multipag.c  subcpu.c \
+	tools.c      apalet.c     fmgen.cpp    maincpu.c   opn.c \
+	subctrl.c    ttlpalet.c   cpu_x86.asm  fmtimer.cpp  mainetc.c \
+	opna.cpp     submem.c     vm_sub.asm   disasm.c    jcard.c \
+	mainmem.c    psg.cpp      system.c     whg.c       display.c \
+	mmr.c        rtc.c        tapelp.c    dmac.c \
+	kanji.c      mouse.c      schedule.c   thg.c
+
+LOCALSRC = \
+	xw_sub.asm xw_dlg.c xw_cfg.c xw_prop.c xw_inifile.c xw_bar.c xw_cmd.c xw_sch.c xw_draw.c xw_kbd.c xw_file.c xw_snd.cpp xw_main.c
+
+COMMONOBJ = \
+	aluline.o    fdc.o        keyboard.o   multipag.o  subcpu.o \
+	tools.o      apalet.o     fmgen.o      maincpu.o   opn.o \
+	subctrl.o    ttlpalet.o   cpu_x86.o    fmtimer.o   mainetc.o \
+	opna.o       submem.o     vm_sub.o     disasm.o    jcard.o \
+	mainmem.o    psg.o        system.o     whg.o       display.o \
+	mmr.o        rtc.o        tapelp.o    dmac.o \
+	kanji.o      mouse.o      schedule.o   thg.o
+
+LOCALOBJ = \
+	xw_sub.o xw_dlg.o xw_cfg.o xw_prop.o xw_inifile.o xw_bar.o xw_cmd.o xw_sch.o xw_draw.o xw_kbd.o xw_file.o xw_snd.o xw_main.o
+
+.SUFFIXES: .c .cpp .asm .o
+
+SRCS =	${COMMONSRC} ${LOCALSRC}
+OBJS =	${COMMONOBJ} ${LOCALOBJ}
+LIBS = -L/usr/X11R6/lib -lX11 -lXt -lXext -lm -lc -lstdc++ `pkg-config --libs  gtk+-2.0 gthread-2.0`
+
+CFLAGS = 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DCPU_ASM -O3 -I/usr/X11R6/include -I. `pkg-config --cflags  gtk+-2.0 gthread-2.0`
+ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
+
+all:	xm7
+
+xm7:	${OBJS}
+	gcc -o xm7 ${OBJS} ${LIBS}
+
+.c.o:
+	gcc ${CFLAGS} -o $@ -c $<
+
+.cpp.o:
+	g++ ${CFLAGS} -o $@ -c $<
+
+.asm.o:
+	nasm ${ASFLAGS} $<
+
+clean:
+	rm -f xm7 *.o *~
