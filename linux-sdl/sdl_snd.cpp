@@ -88,7 +88,7 @@ static DWORD *lpsbuf;
 
 
 /* 音声合成用のバッファ */
-static BYTE *sndSrcBuf[11]; /* バッファは別々にとる */
+static BYTE *sndSrcBuf[XM7_SND_END - XM7_SND_WAV_RELAY_ON + 1]; /* バッファは別々にとる */
 static Mix_Chunk *sndDstBuf[11]; /* バッファは別々にとる */
 static BYTE *opnBuf[3];
 static BYTE *psgBuf;
@@ -295,9 +295,15 @@ void FASTCALL InitSnd(void)
 	/* SDL用変数 */
 
         for(i = 0; i < XM7_SND_END ; i++) {
-          sndSrcBuf[i] = NULL;
           sndDstBuf[i] = NULL;
         }
+        for(i = 0 ; i < XM7_SND_END - XM7_SND_WAV_RELAY_ON; i++){
+          if(sndSrcBuf[i]) {
+            free(sndSrcBuf[i]);
+            sndSrcBuf[i] = NULL;
+          }
+        }
+
         CopySoundBuffer = CopySoundBufferGeneric;
         InitFDDSnd();
 
@@ -342,7 +348,7 @@ void FASTCALL CleanSnd(void)
         if(psgBuf != NULL) free(psgBuf);
         psgBuf = NULL;
 
-        for(i = 0 ; i <XM7_SND_END ; i++){
+        for(i = 0 ; i < XM7_SND_END - XM7_SND_WAV_RELAY_ON; i++){
           if(sndSrcBuf[i]) {
             free(sndSrcBuf[i]);
             sndSrcBuf[i] = NULL;
@@ -612,17 +618,8 @@ BOOL FASTCALL SelectSnd(void)
 		return FALSE;
 	}
 	memset(lpdsb, 0, uBufSize);
-        for(i = XM7_SND_FMBOARD ; i <= XM7_SND_TAPE ; i++ )
-          {
-            sndSrcBuf[i] = (BYTE *)malloc(uBufSize);
-            if(sndSrcBuf[i] == NULL) {
-              printf("Err: Can't alloc sound buffer %d \n",i);
-              return FALSE;
-            }
-            memset(sndSrcBuf[i], 0, uBufSize);
-          }
         /* WAVEバッファ */
-        for(i = XM7_SND_WAV_RELAY_ON; i <= XM7_SND_END ; i++ ) {
+        for(i = 0; i < XM7_SND_END - XM7_SND_WAV_RELAY_ON; i++ ) {
           sndSrcBuf[i] = NULL;
         }
 
@@ -715,37 +712,14 @@ BOOL FASTCALL SelectSnd(void)
           memset(sndDstBuf[i], 0 , sizeof(Mix_Chunk));
         }
         /* 各バッファとChunkの紐づけ */
-        /* OPN */
-        for(i = XM7_SND_FMBOARD; i < (XM7_SND_FM_THG - XM7_SND_FMBOARD + 1) ; i++) {
-          sndDstBuf[i]->allocated = TRUE;
-          sndDstBuf[i]->abuf = (Uint8 *)opnBuf[i];
-          sndDstBuf[i]->alen = uBufSize * 2;
-          sndDstBuf[i]->volume = MIX_MAX_VOLUME;
-        }
-        /* PSG */
-        i = XM7_SND_PSG;
-        sndDstBuf[i]->allocated = TRUE;
-        sndDstBuf[i]->abuf = (Uint8 *)psgBuf;
-        sndDstBuf[i]->alen = uBufSize * 2;
-        sndDstBuf[i]->volume = MIX_MAX_VOLUME;
-        /* BEEP */
-        i = XM7_SND_BEEP;
-        sndDstBuf[i]->allocated = TRUE;
-        sndDstBuf[i]->abuf = sndSrcBuf[i]; 
-        sndDstBuf[i]->alen = uBufSize;
-        sndDstBuf[i]->volume = MIX_MAX_VOLUME;
-        /* Tape */
-        i = XM7_SND_TAPE;
-        sndDstBuf[i]->allocated = TRUE;
-        sndDstBuf[i]->abuf = sndSrcBuf[i]; 
-        sndDstBuf[i]->alen = uBufSize;
-        sndDstBuf[i]->volume = MIX_MAX_VOLUME;
-        /* Main */
-        i = XM7_SND_MAIN;
+   for(i = 0 ; i< 2; i++) {
+	
         sndDstBuf[i]->allocated = TRUE;
         sndDstBuf[i]->abuf = lpdsb; 
         sndDstBuf[i]->alen = uBufSize;
         sndDstBuf[i]->volume = MIX_MAX_VOLUME;
+   }
+   
 
 #ifdef FDDSND
         /* 予めOpenしてあったWAVデータの読み込み */
@@ -758,28 +732,27 @@ BOOL FASTCALL SelectSnd(void)
               continue;
             }
             printf("BuildCVT #%d (%s) ...sample = %d ch = %d freq = %d \n", i, WavName[i], WavSpec[i]->samples, WavSpec[i]->channels, WavSpec[i]->freq);
-            //sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] = (BYTE *)malloc(WavSpec[i]->samples * uChannels * sizeof(WORD));
-            sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] = (BYTE *)malloc(96000 * uChannels * 2 * sizeof(WORD)); /* WAVバッファを最大レンジで取る */
+            sndSrcBuf[i] = (BYTE *)malloc(96000 * uChannels * 2 * sizeof(WORD)); /* WAVバッファを最大レンジで取る */
 
-            if(sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] == NULL) {
+            if(sndSrcBuf[i] == NULL) {
               printf("Warn: Unable to use WAV #%d (%s)\n", i, WavName[i]);
               continue;
             }
             printf("CVT #%d (%s)...", i, WavName[i]);
-            memset(sndSrcBuf[XM7_SND_WAV_RELAY_ON + i], 0, WavSpec[i]->samples * uChannels * sizeof(WORD));
-            memcpy(sndSrcBuf[XM7_SND_WAV_RELAY_ON + i], WavBuf[i], WavLen[i]);
-            cvt.buf = sndSrcBuf[XM7_SND_WAV_RELAY_ON + i];
+            memset(sndSrcBuf[i], 0, WavSpec[i]->samples * uChannels * sizeof(WORD));
+            memcpy(sndSrcBuf[i], WavBuf[i], WavLen[i]);
+            cvt.buf = sndSrcBuf[i];
             cvt.len = WavLen[i];
             if(SDL_ConvertAudio(&cvt)<0) {
               printf("Warn: Unable to use WAV #%d (%s)\n", i, WavName[i]);
-              free(sndSrcBuf[XM7_SND_WAV_RELAY_ON + i]);
-              //sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] = NULL;
+              free(sndSrcBuf[i]);
+              sndSrcBuf[i] = NULL;
               continue;
             }
             printf("...Done.\n");
             if(sndDstBuf[XM7_SND_WAV_RELAY_ON + i] != NULL) {
               sndDstBuf[XM7_SND_WAV_RELAY_ON + i]->allocated = 1;
-              sndDstBuf[XM7_SND_WAV_RELAY_ON + i]->abuf = sndSrcBuf[XM7_SND_WAV_RELAY_ON + i];
+              sndDstBuf[XM7_SND_WAV_RELAY_ON + i]->abuf = sndSrcBuf[i];
               sndDstBuf[XM7_SND_WAV_RELAY_ON + i]->alen = WavSpec[i]->samples * uChannels * sizeof(WORD);
               sndDstBuf[XM7_SND_WAV_RELAY_ON + i]->volume = MIX_MAX_VOLUME - 1;
             } else {
@@ -1007,11 +980,11 @@ static void WaveSnd()
  {
    int i;
    return; /* デバッグ */
-   for( i = XM7_SND_WAV_RELAY_ON ; i < XM7_SND_WAV_FDD ; i++) {
+   for( i = XM7_SND_WAV_RELAY_ON ; i < ( XM7_SND_WAV_FDD + 1 ) ; i++) {
      if(bWavPlay[i-XM7_SND_WAV_RELAY_ON]) {
        if(sndDstBuf[ i - XM7_SND_WAV_RELAY_ON ] != NULL) {
-         if(sndSrcBuf[i - XM7_SND_WAV_RELAY_ON ] != NULL) {
-           //Mix_PlayChannel(i, sndDstBuf[i], 0);
+         if(sndSrcBuf[i - XM7_SND_WAV_RELAY_ON  ] != NULL) {
+           Mix_PlayChannel(i - XM7_SND_WAV_RELAY_ON + 1, sndDstBuf[i], 0);
          }
        }
      }
@@ -1228,11 +1201,9 @@ static int FASTCALL AddSnd(BOOL bFill, BOOL bZero)
             if(uSample > 0) {
               CopySoundBufferGeneric(q, p, i);
               sndDstBuf[XM7_SND_MAIN]->allocated = 1;
-              //sndDstBuf[XM7_SND_MAIN]->abuf = (Uint8 *)&lpdsb[dwPlayC];
               sndDstBuf[XM7_SND_MAIN]->abuf = (Uint8 *)lpdsb;
               sndDstBuf[XM7_SND_MAIN]->alen = (Uint32)(uSample * uChannels * 2);
               sndDstBuf[XM7_SND_MAIN]->volume = iTotalVolume;
-              //printf("Play: %d %d %d\n", wsize, dwPlayC, SDL_GetTicks());
               Mix_PlayChannel(0,sndDstBuf[XM7_SND_MAIN], 0);
             }
           }
@@ -1814,10 +1785,7 @@ void FASTCALL wav_notify(BYTE no)
       if (no == SOUND_STOP) {
 		/* 停止 */
           for (i=0; i< 3; i++) {
-                  //WavP[i].bPlay = FALSE;
             bWavPlay[i] = FALSE;
-            //Mix_HaltChannel(XM7_SND_WAV_RELAY_ON + i);
-            //Mix_Pause(XM7_SND_WAV_RELAY_ON + i);
           }
       }
       else {
@@ -1826,13 +1794,9 @@ void FASTCALL wav_notify(BYTE no)
             /* 演奏 */
             if(sndDstBuf[XM7_SND_WAV_RELAY_ON + no]) {
               /* 重くなるのでここでは鳴らさない */
-              //Mix_PlayChannel(XM7_SND_WAV_RELAY_ON + no, sndDstBuf[XM7_SND_WAV_RELAY_ON + no], 0);
-
               bWavPlay[no] = TRUE;
-              //  bWavPlay[no] = FALSE;
             } else {
               /* 演奏止める */
-              //Mix_Pause(XM7_SND_WAV_RELAY_ON + no);
               bWavPlay[no] = FALSE;
             }
           }
