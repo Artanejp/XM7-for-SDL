@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ メインCPUメモリ ]
  */
@@ -21,8 +21,6 @@
 #include "opn.h"
 #include "mmr.h"
 #include "apalet.h"
-//#include "whg.h"
-//#include "thg.h"
 #ifdef MIDI
 #include "midi.h"
 #endif
@@ -62,12 +60,6 @@ BYTE *init_rom;							/* イニシエータROM $2000 */
 BOOL initrom_en;						/* イニシエータROMイネーブルフラグ */
 #endif
 
-
-#ifdef BINTEST
-BYTE *test_bin;
-BOOL testbin_en;
-#endif
-
 /*
  *	スタティック ワーク
  */
@@ -100,11 +92,6 @@ BOOL FASTCALL mainmem_init(void)
 	init_rom = NULL;
 #endif
 	boot_ram = NULL;
-
-#ifdef BINTEST
-	test_bin = NULL;
-	testbin_en = FALSE;
-#endif
 
 	/* RAM */
 	mainram_a = (BYTE *)malloc(0x8000);
@@ -179,14 +166,6 @@ BOOL FASTCALL mainmem_init(void)
 	if (boot_ram == NULL) {
 		return FALSE;
 	}
-
-#ifdef BINTEST
-	/* SAVEROMテスト用 */
-	test_bin = (BYTE *)malloc(0x4000);
-	if (test_bin == NULL) {
-		return FALSE;
-	}
-#endif
 
 	/* ROMファイル読み込み */
 	if (!file_load(FBASIC_ROM, basic_rom, 0x7c00)) {
@@ -322,10 +301,6 @@ void FASTCALL mainmem_cleanup(void)
 #endif
 	ASSERT(boot_ram);
 
-#ifdef BINTEST
-	ASSERT(test_bin);
-#endif
-
 	/* 初期化途中で失敗した場合を考慮 */
 	if (mainram_a) {
 		free(mainram_a);
@@ -374,12 +349,6 @@ void FASTCALL mainmem_cleanup(void)
 	if (boot_ram) {
 		free(boot_ram);
 	}
-
-#ifdef BINTEST
-	if (test_bin) {
-		free(test_bin);
-	}
-#endif
 }
 
 /*
@@ -388,10 +357,6 @@ void FASTCALL mainmem_cleanup(void)
  */
 void FASTCALL mainmem_reset(void)
 {
-#ifdef BINTEST
-	int	handle;
-#endif
-
 	/* I/O空間・I/Oアクセスカウンタ初期化 */
 	memset(main_io, 0xff, 0x0100);
 	ioaccess_count = 0;
@@ -445,36 +410,6 @@ void FASTCALL mainmem_reset(void)
 #else
 	/* ブート領域書き込み禁止 */
 	bootram_rw = FALSE;
-#endif
-
-#ifdef BINTEST
-	/* SAVEROM用でばっぐる〜ちん */
-	handle = file_open("TEST.BIN", OPEN_R);
-	if (handle != -1) {
-		file_read(handle, test_bin, 0x4000);
-		file_close(handle);
-		memcpy(&mainram_a[0x1000], test_bin, 0x4000);
-#if XM7_VER >= 2
-		init_rom[0x1ffe] = 0x10;
-		init_rom[0x1fff] = 0x00;
-#else
-		boot_bas[0x1fe] = 0x10;
-		boot_bas[0x1ff] = 0x00;
-#endif
-		boot_ram[0x1fe] = 0x10;
-		boot_ram[0x1ff] = 0x00;
-	}
-	else {
-#if XM7_VER >= 2
-		init_rom[0x1ffe] = 0x60;
-		init_rom[0x1fff] = 0x00;
-#else
-		boot_bas[0x1fe] = 0xfe;
-		boot_bas[0x1ff] = 0x00;
-#endif
-		boot_ram[0x1fe] = 0xfe;
-		boot_ram[0x1ff] = 0x00;
-	}
 #endif
 }
 

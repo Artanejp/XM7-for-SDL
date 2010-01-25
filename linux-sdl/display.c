@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ ディスプレイ ]
  */
@@ -114,6 +114,22 @@ static BOOL FASTCALL display_cursor_blink(void);/* カーソルブリンクイ�
 #if (XM7_VER >= 3) && (defined(_OMF) || defined(_WIN32) || defined(FMT))
 extern void memcpy400l(BYTE *, BYTE *, int);
 										/* 400ラインスクロール用メモリ転送 */
+#endif
+
+/*
+ *	24/32bit Color用輝度テーブル
+ */
+#if XM7_VER >= 3
+const BYTE truecolorbrightness[64] = {
+	  0,	  4,	  8,	 12,	 16,	 20,	 24,	 28,
+	 32,	 36,	 40,	 45,	 49,	 53,	 57,	 61,
+	 65,	 69,	 73,	 77,	 81,	 85,	 89,	 93,
+	 97,	101,	105,	109,	113,	117,	121,	125,
+	130,	134,	138,	142,	146,	150,	154,	158,
+	162,	166,	170,	174,	178,	182,	186,	190,
+	194,	198,	202,	206,	210,	215,	219,	223,
+	227,	231,	235,	239,	243,	247,	251,	255,
+};
 #endif
 
 

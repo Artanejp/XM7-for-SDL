@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ システム管理 ]
  */
@@ -25,8 +25,6 @@
 #include "aluline.h"
 #include "apalet.h"
 #include "rtc.h"
-//#include "whg.h"
-//#include "thg.h"
 #include "mouse.h"
 #include "jsubsys.h"
 /* XM7/SDL依存 */

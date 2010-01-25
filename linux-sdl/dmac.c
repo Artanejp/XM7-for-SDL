@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ DMAC(HD6844) AV40仕様対応版 ]
  */

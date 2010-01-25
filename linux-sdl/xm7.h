@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ 共通定義 ]
  */
@@ -24,20 +24,13 @@
 #define	VERSION		"V1.1"
 #endif
 #if XM7_VER == 1
-#define	LEVEL		"L12"
+#define	LEVEL		"L20"
 //#define	BETAVER
 #else
-#define	LEVEL		"L23"
+#define	LEVEL		"L30"
 //#define	BETAVER
 #endif
-#define	DATE		"2009/08/23"
-
-/*
- *	プラグマ定義
- */
-#ifdef _M_AMD64
-#pragma warning(disable : 4996)
-#endif
+#define	DATE		"2010/01/23"
 
 /*
  *	定数、型定義
@@ -63,7 +56,7 @@
 #endif
 
 /* 最適化 */
-#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_AMD64))))
+#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && (defined(_M_IX86))))
 #define FASTCALL		__fastcall
 #else
 #define FASTCALL

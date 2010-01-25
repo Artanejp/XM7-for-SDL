@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ スケジューラ ]
  */
@@ -15,7 +15,7 @@
 #include "mmr.h"
 #include "fdc.h"
 #include "jsubsys.h"
-#if XM7_VER >= 3
+	#if XM7_VER >= 3
 #include "dmac.h"
 #endif
 #include "device.h"

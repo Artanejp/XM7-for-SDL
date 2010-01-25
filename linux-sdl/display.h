@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ ディスプレイ ]
  */
@@ -136,6 +136,10 @@ extern WORD cursor_addr;
 										/* カーソルアドレス */
 extern BOOL cursor_blink;
 										/* カーソルブリンク状態 */
+#endif
+#if XM7_VER >= 3
+extern const BYTE truecolorbrightness[64];
+										/* 24/32bit Color用輝度テーブル */
 #endif
 
 #ifdef __cplusplus

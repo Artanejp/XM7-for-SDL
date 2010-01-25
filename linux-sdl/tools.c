@@ -1,11 +1,12 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2009 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2009 Ryu Takegami
+ *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2010 Ryu Takegami
  *
  *	[ 補助ツール ]
  */
+
 
 #include <string.h>
 #include <stdlib.h>
@@ -1503,9 +1504,9 @@ static BOOL FASTCALL bmp_256k_sub(int fileh, BOOL fullscan)
 	int offset;
 	int i;
 	BYTE buffer[2][1920];
-	DWORD dat;
 	BYTE bit;
-
+	BYTE r, g, b;
+	
 	ASSERT(fileh >= 0);
 
 	/* 初期オフセット設定 */
@@ -1522,86 +1523,86 @@ static BOOL FASTCALL bmp_256k_sub(int fileh, BOOL fullscan)
 			bit = 0x80;
 			/* ビットループ */
 			for (i=0; i<8; i++) {
-				dat = 0;
+				r = g = b = 0;
 
 				if (!(multi_page & 0x40)) {
 					/* G評価 */
 					if (vram_c[offset + 0x10000] & bit) {
-						dat |= 0x008300;
+						g |= 0x20;
 					}
 					if (vram_c[offset + 0x12000] & bit) {
-						dat |= 0x004300;
+						g |= 0x10;
 					}
 					if (vram_c[offset + 0x14000] & bit) {
-						dat |= 0x002300;
+						g |= 0x08;
 					}
 					if (vram_c[offset + 0x16000] & bit) {
-						dat |= 0x001300;
+						g |= 0x04;
 					}
 					if (vram_c[offset + 0x28000] & bit) {
-						dat |= 0x000b00;
+						g |= 0x02;
 					}
 					if (vram_c[offset + 0x2a000] & bit) {
-						dat |= 0x000700;
+						g |= 0x01;
 					}
 				}
 
 				if (!(multi_page & 0x20)) {
 					/* R評価 */
 					if (vram_c[offset + 0x08000] & bit) {
-						dat |= 0x830000;
+						r |= 0x20;
 					}
 					if (vram_c[offset + 0x0a000] & bit) {
-						dat |= 0x430000;
+						r |= 0x10;
 					}
 					if (vram_c[offset + 0x0c000] & bit) {
-						dat |= 0x230000;
+						r |= 0x08;
 					}
 					if (vram_c[offset + 0x0e000] & bit) {
-						dat |= 0x130000;
+						r |= 0x04;
 					}
 					if (vram_c[offset + 0x20000] & bit) {
-						dat |= 0x0b0000;
+						r |= 0x02;
 					}
 					if (vram_c[offset + 0x22000] & bit) {
-						dat |= 0x070000;
+						r |= 0x01;
 					}
 				}
 
 				if (!(multi_page & 0x10)) {
 					/* B評価 */
 					if (vram_c[offset + 0x00000] & bit) {
-						dat |= 0x000083;
+						b |= 0x20;
 					}
 					if (vram_c[offset + 0x02000] & bit) {
-						dat |= 0x000043;
+						b |= 0x10;
 					}
 					if (vram_c[offset + 0x04000] & bit) {
-						dat |= 0x000023;
+						b |= 0x08;
 					}
 					if (vram_c[offset + 0x06000] & bit) {
-						dat |= 0x000013;
+						b |= 0x04;
 					}
 					if (vram_c[offset + 0x18000] & bit) {
-						dat |= 0x00000b;
+						b |= 0x02;
 					}
 					if (vram_c[offset + 0x1a000] & bit) {
-						dat |= 0x000007;
+						b |= 0x01;
 					}
 				}
 
 				/* CRTフラグ */
 				if (!crt_flag) {
-					dat = 0;
+					r = g = b = 0;
 				}
 
 				/* ２回続けて同じものを書き込む */
-				buffer[1][x * 48 + i * 6 + 0] = (BYTE)(dat & 255);
-				buffer[1][x * 48 + i * 6 + 1] = (BYTE)((dat >> 8) & 255);
-				buffer[1][x * 48 + i * 6 + 2] = (BYTE)((dat >> 16) & 255);
-				buffer[1][x * 48 + i * 6 + 3] = (BYTE)(dat & 255);
-				buffer[1][x * 48 + i * 6 + 4] = (BYTE)((dat >> 8) & 255);
-				buffer[1][x * 48 + i * 6 + 5] = (BYTE)((dat >> 16) & 255);
+				buffer[1][x * 48 + i * 6 + 0] = (BYTE)truecolorbrightness[b];
+				buffer[1][x * 48 + i * 6 + 1] = (BYTE)truecolorbrightness[g];
+				buffer[1][x * 48 + i * 6 + 2] = (BYTE)truecolorbrightness[r];
+				buffer[1][x * 48 + i * 6 + 3] = (BYTE)truecolorbrightness[b];
+				buffer[1][x * 48 + i * 6 + 4] = (BYTE)truecolorbrightness[g];
+				buffer[1][x * 48 + i * 6 + 5] = (BYTE)truecolorbrightness[r];
 
 				/* 次のビットへ */
 				bit >>= 1;
@@ -2198,8 +2199,8 @@ static BOOL FASTCALL bmp_256k_sub2(int fileh)
 	int offset;
 	int i;
 	BYTE buffer[960];
-	DWORD dat;
 	BYTE bit;
+	BYTE r, g, b;
 
 	ASSERT(fileh >= 0);
 
@@ -2214,83 +2215,82 @@ static BOOL FASTCALL bmp_256k_sub2(int fileh)
 			bit = 0x80;
 			/* ビットループ */
 			for (i=0; i<8; i++) {
-				dat = 0;
+				r = g = b = 0;
 
 				if (!(multi_page & 0x40)) {
 					/* G評価 */
 					if (vram_c[offset + 0x10000] & bit) {
-						dat |= 0x008300;
+						g |= 0x20;
 					}
 					if (vram_c[offset + 0x12000] & bit) {
-						dat |= 0x004300;
+						g |= 0x10;
 					}
 					if (vram_c[offset + 0x14000] & bit) {
-						dat |= 0x002300;
+						g |= 0x08;
 					}
 					if (vram_c[offset + 0x16000] & bit) {
-						dat |= 0x001300;
+						g |= 0x04;
 					}
 					if (vram_c[offset + 0x28000] & bit) {
-						dat |= 0x000b00;
+						g |= 0x02;
 					}
 					if (vram_c[offset + 0x2a000] & bit) {
-						dat |= 0x000700;
+						g |= 0x01;
 					}
 				}
 
 				if (!(multi_page & 0x20)) {
 					/* R評価 */
 					if (vram_c[offset + 0x08000] & bit) {
-						dat |= 0x830000;
+						r |= 0x20;
 					}
 					if (vram_c[offset + 0x0a000] & bit) {
-						dat |= 0x430000;
+						r |= 0x10;
 					}
 					if (vram_c[offset + 0x0c000] & bit) {
-						dat |= 0x230000;
+						r |= 0x08;
 					}
 					if (vram_c[offset + 0x0e000] & bit) {
-						dat |= 0x130000;
+						r |= 0x04;
 					}
 					if (vram_c[offset + 0x20000] & bit) {
-						dat |= 0x0b0000;
+						r |= 0x02;
 					}
 					if (vram_c[offset + 0x22000] & bit) {
-						dat |= 0x070000;
+						r |= 0x01;
 					}
 				}
 
 				if (!(multi_page & 0x10)) {
 					/* B評価 */
 					if (vram_c[offset + 0x00000] & bit) {
-						dat |= 0x000083;
+						b |= 0x20;
 					}
 					if (vram_c[offset + 0x02000] & bit) {
-						dat |= 0x000043;
+						b |= 0x10;
 					}
 					if (vram_c[offset + 0x04000] & bit) {
-						dat |= 0x000023;
+						b |= 0x08;
 					}
 					if (vram_c[offset + 0x06000] & bit) {
-						dat |= 0x000013;
+						b |= 0x04;
 					}
 					if (vram_c[offset + 0x18000] & bit) {
-						dat |= 0x00000b;
+						b |= 0x02;
 					}
 					if (vram_c[offset + 0x1a000] & bit) {
-						dat |= 0x000007;
+						b |= 0x01;
 					}
 				}
 
 				/* CRTフラグ */
 				if (!crt_flag) {
-					dat = 0;
+					r = g = b = 0;
 				}
 
-				/* ２回続けて同じものを書き込む */
-				buffer[x * 24 + i * 3 + 0] = (BYTE)(dat & 255);
-				buffer[x * 24 + i * 3 + 1] = (BYTE)((dat >> 8) & 255);
-				buffer[x * 24 + i * 3 + 2] = (BYTE)((dat >> 16) & 255);
+				buffer[x * 24 + i * 3 + 0] = (BYTE)truecolorbrightness[b];
+				buffer[x * 24 + i * 3 + 1] = (BYTE)truecolorbrightness[g];
+				buffer[x * 24 + i * 3 + 2] = (BYTE)truecolorbrightness[r];
 
 				/* 次のビットへ */
 				bit >>= 1;
