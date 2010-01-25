@@ -170,22 +170,19 @@ static WORD WAVE_FORMAT_PCM=0x0001;
 extern "C" {
 #endif
 void (*CopySoundBuffer)(DWORD *src, WORD *dst, int count);
-//extern void CopySndBufMMX(DWORD *src, WORD *dst, int count);
+  //extern void CopySndBufMMX(DWORD *src, WORD *dst, int count);
   //extern void CopySndBuf(DWORD *src, WORD *dst, int count);
 #ifdef __cplusplus
 }
 #endif
 
-//static void WaveSnd();
-static void FASTCALL WaveSnd(int32 *buf, int samples);
+static void WaveSnd();
 /*
  * サウンドバッファへのコピー
  * XM7内のサウンドレンダリングは32bitで格納されてるので
  * 上位)16bitを切り捨てる
  * 場合に依っては高速化が必要。
  */
-
-//extern void CopySndBufMMX(DWORD *from, WORD *to, int size);
 
 static void CopySoundBufferGeneric(DWORD *from, WORD *to, int size)
 {
@@ -200,34 +197,20 @@ static void CopySoundBufferGeneric(DWORD *from, WORD *to, int size)
     for(j=0 ; j<i ;j+=4){
 
       tmp1 = p[j];
-      if(tmp1 > XM7_PCM_MAX_VOLUME) tmp1 = XM7_PCM_MAX_VOLUME;
-      if(tmp1 < -XM7_PCM_MAX_VOLUME) tmp1 = -XM7_PCM_MAX_VOLUME;
       t[j] = (int16)(tmp1 & 0x0000ffff);
-
       tmp1 = p[j+1];
-      if(tmp1 > XM7_PCM_MAX_VOLUME) tmp1 = XM7_PCM_MAX_VOLUME;
-      if(tmp1 < -XM7_PCM_MAX_VOLUME) tmp1 = -XM7_PCM_MAX_VOLUME;
       t[j+1] = (int16)(tmp1 & 0x0000ffff);
-
       tmp1 = p[j+2];
-      if(tmp1 > XM7_PCM_MAX_VOLUME) tmp1 = XM7_PCM_MAX_VOLUME;
-      if(tmp1 < -XM7_PCM_MAX_VOLUME) tmp1 = -XM7_PCM_MAX_VOLUME;
       t[j+2] = (int16)(tmp1 & 0x0000ffff);
-
       tmp1 = p[j+3];
-      if(tmp1 > XM7_PCM_MAX_VOLUME) tmp1 = XM7_PCM_MAX_VOLUME;
-      if(tmp1 < -XM7_PCM_MAX_VOLUME) tmp1 = -XM7_PCM_MAX_VOLUME;
       t[j+3] = (int16)(tmp1 & 0x0000ffff);
 
     }
-    j = size - i;
+    i = size - i;
     for(j=0; j<i ; j++) {
       tmp1 = p[j];
-      if(tmp1 > XM7_PCM_MAX_VOLUME) tmp1 = XM7_PCM_MAX_VOLUME;
-      if(tmp1 < -XM7_PCM_MAX_VOLUME) tmp1 = -XM7_PCM_MAX_VOLUME;
       t[j] = (int16)(tmp1 & 0x0000ffff);
     }
-
 }
 
 
@@ -238,6 +221,8 @@ static void CopySoundBufferGeneric(DWORD *from, WORD *to, int size)
 static DWORD  timeGetTime(void) {
   struct timeval t;
   
+  //gettimeofday(&t, 0);
+  //return (t.tv_sec*1000000 + t.tv_usec)/1000;
   return SDL_GetTicks();
 
 	
@@ -313,11 +298,9 @@ void FASTCALL InitSnd(void)
           sndSrcBuf[i] = NULL;
           sndDstBuf[i] = NULL;
         }
-        //CopySoundBuffer = CopySndBufMMX;
-       CopySoundBuffer = CopySoundBufferGeneric;
-#ifdef FDDSND   
+        CopySoundBuffer = CopySoundBufferGeneric;
         InitFDDSnd();
-#endif
+
         SDL_InitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -677,18 +660,25 @@ BOOL FASTCALL SelectSnd(void)
 	pOPN[0]->Init(OPN_CLOCK * 100, uRate, bMode, NULL);
 	pOPN[0]->Reset();
 	pOPN[0]->SetReg(0x27, 0);
+        pOPN[0]->SetVolumeFM(-10); /* FM音源:音に「ビビリ」出ているので音量下げる */
+        pOPN[0]->SetVolumePSG(-6); /* PSG:音に「ビビリ」出ているので音量下げる */
 
 	/* OPNデバイス(WHG)を作成 */
 	pOPN[1] = new FM::OPN;
 	pOPN[1]->Init(OPN_CLOCK * 100, uRate, bMode, NULL);
 	pOPN[1]->Reset();
 	pOPN[1]->SetReg(0x27, 0);
+        pOPN[1]->SetVolumeFM(-10); /* FM音源:音に「ビビリ」出ているので音量下げる */
+        pOPN[1]->SetVolumePSG(-6); /* PSG:音に「ビビリ」出ているので音量下げる */
 
 	/* OPNデバイス(THG)を作成 */
 	pOPN[2] = new FM::OPN;
 	pOPN[2]->Init(OPN_CLOCK * 100, uRate, bMode, NULL);
 	pOPN[2]->Reset();
 	pOPN[2]->SetReg(0x27, 0);
+        pOPN[2]->SetVolumeFM(-10); /* FM音源:音に「ビビリ」出ているので音量下げる */
+        pOPN[2]->SetVolumePSG(-6); /* PSG:音に「ビビリ」出ているので音量下げる */
+
 
 	/* 再セレクトに備え、レジスタ設定 */
 	nScale[0] = 0;
@@ -708,8 +698,9 @@ BOOL FASTCALL SelectSnd(void)
 	ASSERT(hWavCapture == -1);
 	ASSERT(!bWavCapture);
 	/* SDL用に仕様変更 */
-        //Mix_Init(0);
-        if(Mix_OpenAudio(uRate, AUDIO_S16SYS, uChannels, uBufSize) == -1) {
+
+        //if(Mix_OpenAudio(uRate, AUDIO_S16SYS, uChannels, uBufSize) == -1) {
+	 if(Mix_OpenAudio(uRate, AUDIO_S16SYS, uChannels, uBufSize / (2 * sizeof(int16) * uChannels) ) == -1) {
           printf("Warning: Audio can't initialize!\n"); /* 後でダイアログにする */
           return FALSE;
         }
@@ -760,12 +751,14 @@ BOOL FASTCALL SelectSnd(void)
         /* 予めOpenしてあったWAVデータの読み込み */
         for(i = 0; i < (XM7_SND_WAV_FDD - XM7_SND_WAV_RELAY_ON + 1 ) ; i++ ){
           if((WavBuf[i]  != NULL) && (WavSpec[i] != NULL)) {
+            //sndDstBuf[XM7_SND_WAV_RELAY_ON + i] = Mix_QuickLoad_WAV(wavBuf[i]);
             /* Wavデータのレート変換 */
             if(SDL_BuildAudioCVT(&cvt, WavSpec[i]->format, WavSpec[i]->channels, WavSpec[i]->freq, AUDIO_S16SYS, uChannels, uRate) == 0) {
               printf("Warn: Unable to use WAV #%d (%s)\n", i, WavName[i]);
               continue;
             }
             printf("BuildCVT #%d (%s) ...sample = %d ch = %d freq = %d \n", i, WavName[i], WavSpec[i]->samples, WavSpec[i]->channels, WavSpec[i]->freq);
+            //sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] = (BYTE *)malloc(WavSpec[i]->samples * uChannels * sizeof(WORD));
             sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] = (BYTE *)malloc(96000 * uChannels * 2 * sizeof(WORD)); /* WAVバッファを最大レンジで取る */
 
             if(sndSrcBuf[XM7_SND_WAV_RELAY_ON + i] == NULL) {
@@ -874,7 +867,6 @@ void FASTCALL StopSnd()
     Mix_CloseAudio();
     ret = Mix_QuerySpec(&freq, &format, &channels);
   } while(ret != 0);
-   if(musicSem) SDL_SemPost(musicSem);        
 
 }
 
@@ -1007,6 +999,33 @@ static void BeepSnd(int32 *sbuf, int samples)
  *	WAVデータ合成 (FDD/CMT)
  */
 #ifdef FDDSND
+/*
+ * WAVデータは自動でMixされる(by SDL_Mixer)
+ * WAVデータ合成（演奏)
+ */
+static void WaveSnd()
+ {
+   int i;
+   return; /* デバッグ */
+   for( i = XM7_SND_WAV_RELAY_ON ; i < XM7_SND_WAV_FDD ; i++) {
+     if(bWavPlay[i-XM7_SND_WAV_RELAY_ON]) {
+       if(sndDstBuf[ i - XM7_SND_WAV_RELAY_ON ] != NULL) {
+         if(sndSrcBuf[i - XM7_SND_WAV_RELAY_ON ] != NULL) {
+           //Mix_PlayChannel(i, sndDstBuf[i], 0);
+         }
+       }
+     }
+   }
+ }
+#else
+static void WaveSnd()
+
+{
+  return;
+}
+
+
+
 #if 0
 static void FASTCALL WaveSnd(int32 *buf, int samples)
 {
@@ -1043,31 +1062,9 @@ static void FASTCALL WaveSnd(int32 *buf, int samples)
 		}
 	}
 }
-
+#endif
 #endif
 
-static void FASTCALL WaveSnd(int32 *buf, int samples)
-{
-	int i;
-	int j;
-	short dat;
-
-	/* サンプル書き込み */
-       for (i=0; i<samples; i++) {
-          for (j=0; j<(XM7_SND_WAV_FDD -XM7_SND_WAV_RELAY_ON + 1); j++) {
-            if (bWavPlay[j]) {
-                         dat = *((int16*)sndSrcBuf[XM7_SND_WAV_RELAY_ON] + j);
-                          dat = (int16)(((int)dat * uSeekVolume) >> 8);
-                          *buf++ += (int32)dat;
-                          if (uChannels == 2) {
-                            *buf++ += (int32)dat;
-                          }
-            }
-          }
-        }
-}
-
-#endif /* FDD */
 #if 1
 /*
  *	サウンド作成バッファへ追加
@@ -1215,8 +1212,8 @@ static int FASTCALL AddSnd(BOOL bFill, BOOL bZero)
 
 #ifdef FDDSND
 		/* WAVサウンド */
-                  q = &lpsbuf[uSample * uChannels];
-                  WaveSnd((int32 *)q, samples);
+
+		WaveSnd();
 #endif
 
 	}
@@ -1363,7 +1360,7 @@ void FASTCALL ProcessSnd(BOOL bZero)
   //printf("Wrote: %d %d %d\n", wsize, dwPlayC, SDL_GetTicks());
 
         
-  dwPlayC ++;
+
   /* 書き込み位置とバンクから、必要性を判断 */
   bWrite = FALSE;
   if(bNowBank) {
@@ -1378,7 +1375,7 @@ void FASTCALL ProcessSnd(BOOL bZero)
   if(dwPlayC >= uTick){
     dwPlayC = 0;
   }
-//  dwPlayC ++;
+  dwPlayC ++;
   /* サウンドデータの生成 */
           
           /* 書き込む必要がなければ、リターン */
@@ -1829,9 +1826,13 @@ void FASTCALL wav_notify(BYTE no)
             /* 演奏 */
             if(sndDstBuf[XM7_SND_WAV_RELAY_ON + no]) {
               /* 重くなるのでここでは鳴らさない */
+              //Mix_PlayChannel(XM7_SND_WAV_RELAY_ON + no, sndDstBuf[XM7_SND_WAV_RELAY_ON + no], 0);
+
               bWavPlay[no] = TRUE;
+              //  bWavPlay[no] = FALSE;
             } else {
               /* 演奏止める */
+              //Mix_Pause(XM7_SND_WAV_RELAY_ON + no);
               bWavPlay[no] = FALSE;
             }
           }
