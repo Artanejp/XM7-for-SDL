@@ -19,6 +19,9 @@
 #if XM7_VER == 1 && defined(L4CARD)
 #include "l4font.h"
 #endif
+/* XM7/SDL依存 */
+#include <sdl.h>
+#include <sdl_draw.h>
 
 /*
  *	グローバル ワーク

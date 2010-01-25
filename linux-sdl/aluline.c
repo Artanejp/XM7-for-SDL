@@ -18,6 +18,9 @@
 #include "subctrl.h"
 #include "multipag.h"
 #include "device.h"
+/* XM7/SDL依存 */
+#include <sdl.h>
+#include <sdl_draw.h>
 
 /*
  *	グローバル ワーク

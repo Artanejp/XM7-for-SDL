@@ -20,18 +20,18 @@ extern "C" {
 /*
  *	主要エントリ
  */
-void FASTCALL InitDraw(void);
+void InitDraw(void);
 										/* 初期化 */
-void FASTCALL CleanDraw(void);
+void CleanDraw(void);
 										/* クリーンアップ */
-BOOL FASTCALL SelectDraw(void);
+BOOL SelectDraw(void);
 										/* セレクト */
-void FASTCALL OnDraw(void);
+void OnDraw(void);
 										/* 描画 */
-gint FASTCALL OnPaint(GtkWidget *widget, GdkEventExpose *event);
+gint OnPaint(GtkWidget *widget, GdkEventExpose *event);
 										/* 再描画 */
-  void OnFullScreen(void);
-  void OnWindowedScreen(void);
+void OnFullScreen(void);
+void OnWindowedScreen(void);
 
 
 

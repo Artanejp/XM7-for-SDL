@@ -20,6 +20,9 @@
 #include "keyboard.h"
 #include "kanji.h"
 #include "event.h"
+/* XM7/SDL依存 */
+#include <sdl.h>
+#include <sdl_draw.h>
 
 /*
  *	グローバル ワーク

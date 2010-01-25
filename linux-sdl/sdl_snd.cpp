@@ -170,7 +170,7 @@ static WORD WAVE_FORMAT_PCM=0x0001;
 extern "C" {
 #endif
 void (*CopySoundBuffer)(DWORD *src, WORD *dst, int count);
-  //extern void CopySndBufMMX(DWORD *src, WORD *dst, int count);
+//extern void CopySndBufMMX(DWORD *src, WORD *dst, int count);
   //extern void CopySndBuf(DWORD *src, WORD *dst, int count);
 #ifdef __cplusplus
 }
@@ -185,6 +185,7 @@ static void FASTCALL WaveSnd(int32 *buf, int samples);
  * 場合に依っては高速化が必要。
  */
 
+//extern void CopySndBufMMX(DWORD *from, WORD *to, int size);
 
 static void CopySoundBufferGeneric(DWORD *from, WORD *to, int size)
 {
@@ -312,9 +313,11 @@ void FASTCALL InitSnd(void)
           sndSrcBuf[i] = NULL;
           sndDstBuf[i] = NULL;
         }
-        CopySoundBuffer = CopySoundBufferGeneric;
+        //CopySoundBuffer = CopySndBufMMX;
+       CopySoundBuffer = CopySoundBufferGeneric;
+#ifdef FDDSND   
         InitFDDSnd();
-
+#endif
         SDL_InitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -871,6 +874,7 @@ void FASTCALL StopSnd()
     Mix_CloseAudio();
     ret = Mix_QuerySpec(&freq, &format, &channels);
   } while(ret != 0);
+   if(musicSem) SDL_SemPost(musicSem);        
 
 }
 
@@ -1359,7 +1363,7 @@ void FASTCALL ProcessSnd(BOOL bZero)
   //printf("Wrote: %d %d %d\n", wsize, dwPlayC, SDL_GetTicks());
 
         
-
+  dwPlayC ++;
   /* 書き込み位置とバンクから、必要性を判断 */
   bWrite = FALSE;
   if(bNowBank) {
@@ -1374,7 +1378,7 @@ void FASTCALL ProcessSnd(BOOL bZero)
   if(dwPlayC >= uTick){
     dwPlayC = 0;
   }
-  dwPlayC ++;
+//  dwPlayC ++;
   /* サウンドデータの生成 */
           
           /* 書き込む必要がなければ、リターン */

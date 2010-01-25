@@ -6,8 +6,8 @@
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
 #OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH -DUSE_OPENGL
-OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
-#OPTION		= -DMOUSE -DMR2 -DMEMWATCH 
+#OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
+OPTION		= -DMOUSE -DMR2 -DMEMWATCH 
 
 COMMONSRC = \
         aluline.c \
@@ -42,7 +42,9 @@ COMMONSRC = \
 	fmgen.cpp \
 	juliet.cpp \
 	vm_sub.c \
-	cpu_x86.asm
+	cpu_x86.asm 
+
+#	xw_sub.asm
 
 #	aluline.c    fdc.c        keyboard.c   multipag.c  subcpu.c \
 #	tools.c      apalet.c     fmgen.cpp    maincpu.c   opn.c \
@@ -54,8 +56,9 @@ COMMONSRC = \
 
 LOCALSRC = \
 	sdl_gtkdlg.c sdl_cfg.c sdl_prop.c sdl_inifile.c sdl_bar.c \
-                sdl_cmd.c sdl_sch.c sdl_draw.c sdl_kbd.c sdl_file.c sdl_snd.cpp \
+                 sdl_cmd.c sdl_sch.c sdl_draw.c sdl_kbd.c sdl_file.c sdl_snd.cpp \
 	sdl_main.c \
+                 sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c
 #xw_sub.asm 
 
 COMMONOBJ = \
@@ -89,16 +92,19 @@ COMMONOBJ = \
 	opna.cpp \
 	psg.cpp \
 	fmgen.cpp \
-	juliet.cpp \
+	juliet.o \
 	cpu_x86.o \
-	vm_sub.o
+	vm_sub.o \
+#	xw_sub.o
 
 
 
 LOCALOBJ = \
 	sdl_gtkdlg.o sdl_cfg.o sdl_prop.o sdl_inifile.o sdl_bar.o \
-	sdl_cmd.o sdl_sch.o sdl_draw.o sdl_kbd.o sdl_file.o \
-	sdl_snd.o sdl_main.o
+	sdl_cmd.o sdl_sch.o sdl_kbd.o sdl_file.o \
+	sdl_snd.o sdl_main.o \
+                 sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o \
+                 sdl_draw.o 
 #	xw_sub.o 
 
 .SUFFIXES: .c .cpp .asm .o

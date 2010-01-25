@@ -15,6 +15,9 @@
 #include "apalet.h"
 #include "display.h"
 #include "subctrl.h"
+/* XM7/SDL依存 */
+#include <sdl.h>
+#include <sdl_draw.h>
 
 /*
  *	グローバル ワーク
