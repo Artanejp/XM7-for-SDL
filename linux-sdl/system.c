@@ -470,7 +470,6 @@ BOOL FASTCALL system_save(char *filename)
 #endif
 	file_close(fileh);
 
-                 file_chmod(filename, OPEN_RW); /* 読み書きモードに属性変更する */
 	return flag;
 }
 

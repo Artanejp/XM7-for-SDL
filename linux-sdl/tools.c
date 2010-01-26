@@ -95,6 +95,7 @@ BOOL FASTCALL make_new_d77(char *fname, char *name, BOOL mode2dd)
 	/* assert */
 	ASSERT(fname);
 
+        
 	/* ファイルオープン */
 	fileh = file_open(fname, OPEN_W);
 	if (fileh == -1) {
@@ -153,14 +154,18 @@ BOOL FASTCALL make_new_d77(char *fname, char *name, BOOL mode2dd)
 		}
 		offset += 0x1600;
 	}
+
 #if XM7_VER >= 3
+
 	if (mode2dd) {
+
 		for (i=0; i<80; i++) {
 			if (!make_d77_sub(fileh, offset)) {
 				file_close(fileh);
 				return FALSE;
 			}
 			offset += 0x1600;
+
 		}
 	}
 	else {
@@ -169,6 +174,7 @@ BOOL FASTCALL make_new_d77(char *fname, char *name, BOOL mode2dd)
 			file_close(fileh);
 			return FALSE;
 		}
+
 	}
 #else
 	/* ヘッダ書き込み */
@@ -178,17 +184,20 @@ BOOL FASTCALL make_new_d77(char *fname, char *name, BOOL mode2dd)
 	}
 #endif
 
-	/* ヌルデータ書き込み */
+  	/* ヌルデータ書き込み */
 	memset(header, 0, sizeof(header));
 	for (i=0; i<84; i++) {
+
 		for (j=0; j<11; j++) {
-			if (!file_write(fileh, header, 0x200)) {
+      			if (!file_write(fileh, header, 0x200)) {
 				file_close(fileh);
 				return FALSE;
 			}
 		}
 	}
+
 #if XM7_VER >= 3
+
 	if (mode2dd) {
 		for (i=0; i<80; i++) {
 			for (j=0; j<11; j++) {
@@ -200,7 +209,6 @@ BOOL FASTCALL make_new_d77(char *fname, char *name, BOOL mode2dd)
 		}
 	}
 #endif
-
 	/* ok */
 	file_close(fileh);
 	return TRUE;

@@ -93,7 +93,7 @@ int FASTCALL file_open(char *fname, int mode)
 		case OPEN_W:
 			return open(fname,
                                                                O_CREAT | O_TRUNC | O_WRONLY, 
-                                                               S_IWRITE);
+                                                               S_IWRITE | S_IRUSR | S_IWUSR);
 			break;
 		case OPEN_RW:
 			return open(fname, O_RDWR);
