@@ -107,6 +107,8 @@ BOOL FASTCALL file_load2(char *fname, BYTE *buf, int ptr, int size);
 BOOL FASTCALL file_save(char *fname, BYTE *buf, int size);
 										/* ファイルセーブ(学習RAM専用) */
 int FASTCALL file_open(char *fname, int mode);
+
+void file_chmod(char *fname, int mode);
 										/* ファイルオープン */
 void FASTCALL file_close(int handle);
 										/* ファイルクローズ */

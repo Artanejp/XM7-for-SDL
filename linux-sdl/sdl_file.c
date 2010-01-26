@@ -92,8 +92,8 @@ int FASTCALL file_open(char *fname, int mode)
 			break;
 		case OPEN_W:
 			return open(fname,
-						O_CREAT | O_TRUNC | O_WRONLY,
-						S_IWRITE);
+                                                               O_CREAT | O_TRUNC | O_WRONLY, 
+                                                               S_IWRITE);
 			break;
 		case OPEN_RW:
 			return open(fname, O_RDWR);
@@ -103,6 +103,27 @@ int FASTCALL file_open(char *fname, int mode)
 	ASSERT(FALSE);
 	return -1;
 }
+
+/*
+ * ファイルの属性を変える(Linuxなど)
+ */
+void file_chmod(char *fname, int mode)
+{
+  switch(mode) {
+  case OPEN_R: /*読み込み専用 */
+    chmod(fname, S_IRUSR);
+    break;
+  case OPEN_W:
+    chmod(fname, S_IRUSR | S_IWUSR); /* 読み書き属性に変更する */
+    break;
+  case OPEN_RW:
+    chmod(fname, S_IRUSR | S_IWUSR);
+    break;
+  default:
+    break;
+  }
+}
+
 
 /*
  *	ファイルクローズ

@@ -13,8 +13,8 @@
 #include<gtk/gtk.h>
 #include "xm7.h"
 #include "sdl.h"
-#include "xw_cfg.h"
-#include "xw_dlg.h"
+#include "sdl_cfg.h"
+#include "sdl_dlg.h"
 
 /*-[メッセージダイアログ]-----------------------------------------------------*/
 

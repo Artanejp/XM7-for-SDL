@@ -344,7 +344,7 @@ BOOL FASTCALL system_save(char *filename)
 	ASSERT(filename);
 
 	/* ファイルオープン */
-	fileh = file_open(filename, OPEN_W);
+	fileh = file_open(filename, OPEN_W); /* BUG: U*ixではWのみのファイルは読み込めない */
 	if (fileh == -1) {
 		return FALSE;
 	}
@@ -468,8 +468,9 @@ BOOL FASTCALL system_save(char *filename)
 		flag = FALSE;
 	}
 #endif
-
 	file_close(fileh);
+
+                 file_chmod(filename, OPEN_RW); /* 読み書きモードに属性変更する */
 	return flag;
 }
 
@@ -614,119 +615,119 @@ int FASTCALL system_load(char *filename)
 	if (!mainmem_load(fileh, ver)) {
 		flag = FALSE;
 	}
-        printf("Load: mainmem\n");
+
 	if (!submem_load(fileh, ver)) {
 		flag = FALSE;
 	}
-        printf("Load: submem\n");
+
 	if (!maincpu_load(fileh, ver)) {
 		flag = FALSE;
 	}
-        printf("Load: maincpu\n");
+
 	if (!subcpu_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: subcpu\n");
+
 	if (!schedule_load(fileh, ver, old_scheduler)) {
 		flag = FALSE;
 	}
-           printf("Load: sch\n");
+
 	if (!display_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: display\n");
+
 	if (!ttlpalet_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: ttlpalet\n");
+
 	if (!subctrl_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: subctrl\n");
+
 	if (!keyboard_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: key\n");
+
 	if (!fdc_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: fdc\n");
+
 	if (!mainetc_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: mainetc\n");
+
 	if (!multipag_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: multipage\n");
+
 	if (!kanji_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: kanji\n");
+
 	if (!tapelp_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: tapelp\n");
+
 	if (!opn_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: opn\n");
+
 	if (!mmr_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: mmr\n");
+
 #if XM7_VER >= 2
 	if (!aluline_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: aluline\n");
+
 	if (!rtc_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: rtc\n");
+
 	if (!apalet_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: apallet\n");
+
 #endif
 	if (!whg_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: whg\n");
+
 	if (!thg_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: thg\n");
+
 #if XM7_VER >= 3
 	if (!jcard_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: jcard\n");
+
 	if (!dmac_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: dmac\n");
+
 #endif
 #ifdef MOUSE
 	if (!mos_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: mouse\n");
+
 #endif
 #ifdef MIDI
 	if (!midi_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: midi\n");
+
 #endif
 #if (XM7_VER == 1) && defined(JSUB)
 	if (!jsubsys_load(fileh, ver)) {
 		flag = FALSE;
 	}
-           printf("Load: jsub\n");
+
 #endif
 	file_close(fileh);
-           printf("Load: OK.\n");
+
 
 #if XM7_VER >= 3
 	/* 400ラインモードのみVRAM配置補正が必要 */
@@ -736,17 +737,17 @@ int FASTCALL system_load(char *filename)
 		}
 	}
 #endif
-   printf("Load:Fix VRAM OK.\n");
+
 	/* 画面再描画 */
 	display_notify();
-   printf("Load: Redraw OK.\n");
+
 	/* CPU速度比率設定 */
 	speed_ratio = 10000;
 
 	if (!flag) {
 		return STATELOAD_ERROR;
 	}
-           printf("Load: Success.\n");
+
 	return STATELOAD_SUCCESS;
 }
 

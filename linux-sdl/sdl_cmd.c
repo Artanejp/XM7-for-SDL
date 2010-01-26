@@ -117,14 +117,9 @@ static void FASTCALL OnOpen(GtkWidget *widget, gpointer data)
 	LockVM();
 	StopSnd();
 	StateLoad(dlg.sFilename);
- 
-        SDL_Delay(100);
 	PlaySnd();
-   printf("Restart Sound\n");
 	ResetSch();
-   printf("Restart SCH\n");
 	UnlockVM();
-       printf("Unlock VM\n");
 	/* 画面再描画 */
 	//OnRefresh();
 

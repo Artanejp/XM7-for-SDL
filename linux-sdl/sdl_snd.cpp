@@ -316,58 +316,68 @@ void FASTCALL InitSnd(void)
 void FASTCALL CleanSnd(void)
 {
 	int i;
+                 int freq;
+                 Uint16 format;
+                 int channels;
+                 int ret;
 
 	//SDL_KillThread(playThread);
 	/* サウンド停止 */
 	StopSnd();
-        for(i = XM7_SND_FMBOARD ; i < XM7_SND_END + 1 ; i++ ) {
-          if(sndDstBuf[i]) {
-            free(sndDstBuf[i]); /* CloseしたらFreeChunk不要 ? */
-            sndDstBuf[i] = NULL;
-          }
-        }
+        //do { /* StopSNDでCloseしてはならない 20100126 */
+        //           Mix_CloseAudio();
+        //           ret = Mix_QuerySpec(&freq, &format, &channels);
+        //         } while(ret != 0);
+        
+
+                 for(i = XM7_SND_FMBOARD ; i < XM7_SND_END + 1 ; i++ ) {
+                   if(sndDstBuf[i]) {
+                     free(sndDstBuf[i]); /* CloseしたらFreeChunk不要 ? */
+                     sndDstBuf[i] = NULL;
+                   }
+                 }
 
 	//SDL_LockAudio();
 	//SDL_CloseAudio();
 
 	/* OPNを解放 */
-	for (i=0; i< 3; i++) {
-          if (pOPN[i]) {
-			delete pOPN[i];
-			pOPN[i] = NULL;
-          }
-	}
+                 for (i=0; i< 3; i++) {
+                   if (pOPN[i]) {
+                     delete pOPN[i];
+                     pOPN[i] = NULL;
+                   }
+                 }
 
 
-        for(i = 0; i < 3 ; i++) {
-          if(opnBuf[i] != NULL) {
-            free(opnBuf[i]);
-          }
-          opnBuf[i] = NULL;
-        }
-        if(psgBuf != NULL) free(psgBuf);
-        psgBuf = NULL;
-
-        for(i = 0 ; i < XM7_SND_END - XM7_SND_WAV_RELAY_ON; i++){
-          if(sndSrcBuf[i]) {
-            free(sndSrcBuf[i]);
-            sndSrcBuf[i] = NULL;
-          }
-        }
+                 for(i = 0; i < 3 ; i++) {
+                   if(opnBuf[i] != NULL) {
+                     free(opnBuf[i]);
+                   }
+                   opnBuf[i] = NULL;
+                 }
+                 if(psgBuf != NULL) free(psgBuf);
+                 psgBuf = NULL;
+                 
+                 for(i = 0 ; i < XM7_SND_END - XM7_SND_WAV_RELAY_ON; i++){
+                   if(sndSrcBuf[i]) {
+                     free(sndSrcBuf[i]);
+                     sndSrcBuf[i] = NULL;
+                   }
+                 }
 	/* サウンド作成バッファを解放 */
-	if (lpdsb) {
-		free(lpdsb);
-		lpdsb = NULL;
+                 if (lpdsb) {
+                   free(lpdsb);
+                   lpdsb = NULL;
 	}
 
 	/* サウンド作成バッファを解放 */
-	if (lpsbuf) {
-		free(lpsbuf);
-		lpsbuf = NULL;
-	}
+                 if (lpsbuf) {
+                   free(lpsbuf);
+                   lpsbuf = NULL;
+                 }
 	/* uRateをクリア */
 	uRate = 0;
-        Mix_CloseAudio();
+                 Mix_CloseAudio();
 #if 1 /* WAVキャプチャは後で作る */
 	/* キャプチャ関連 */
 	if (hWavCapture >= 0) {
@@ -829,18 +839,9 @@ void FASTCALL PlaySnd()
  */
 void FASTCALL StopSnd()
 {
-  int freq;
-  Uint16 format;
-  int channels;
-  int ret;
   //if(musicSem) {
   //  SDL_SemWait(musicSem);
   //}
-  do {
-    Mix_CloseAudio();
-    ret = Mix_QuerySpec(&freq, &format, &channels);
-  } while(ret != 0);
-
 }
 
 /*
