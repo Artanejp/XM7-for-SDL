@@ -91,7 +91,8 @@ void FASTCALL UnlockVM(void)
 
 #define XM7_DRAWMODE_SDL SDL_SWSURFACE
 #define XM7_DRAW_WIDTH 640
-#define XM7_DRAW_HEIGHT 400
+#define XM7_DRAW_HEIGHT 480
+//#define XM7_DRAW_HEIGHT 400
 #define XM7_DRAW_MAX_BPP 24 /* 32bitもやるか？遅いが */
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN /* BIGENDIAN */
@@ -193,8 +194,11 @@ static void CreateDrawSDL(GtkWidget *parent)
    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 #else
-   ret = SDL_SetVideoMode(640 , 400 , 24 ,
+//   ret = SDL_SetVideoMode(640 , 400 , 24 ,
+ //  		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+    ret = SDL_SetVideoMode(640 , 400 , 24 ,
    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+
 #endif /* USE_OPENGL */
    
    if(ret == NULL) {
@@ -230,6 +234,7 @@ static void CreateDrawGTK(GtkWidget *parent)
         gtk_widget_show(gtkDrawArea);
 
 }
+
 
    
 /*-[ メインウインドウ ]-----------------------------------------------------*/
@@ -472,7 +477,7 @@ static void FASTCALL InitInstance(void)
         /* イベント */
 
    
-	OnCreate(vbox);
+	         OnCreate(vbox);
                  SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
                  //gtk_widget_realize(wndMain);
 

@@ -36,6 +36,7 @@ BYTE GDIDrawFlag[80*50]; /* 8x8ドットのメッシュを作る */						/* 8x8 
 BOOL bFullScan;								/* フルスキャン(Window) */
 BOOL bDirectDraw; /* 直接書き込みフラグ */
 SDL_Surface *realDrawArea; /* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
+extern GtkWidget *gtkDrawArea;
 
 /*
  *	スタティック ワーク
@@ -822,10 +823,60 @@ void apalet_notify(void)
 }
 
 /*
+ * 似非フルスクリーン(GTK)。
+ */
+void fullscreen_notify_gtk(void)
+{
+        char EnvMainWindow[64];
+        /* Test Code */
+           gtk_widget_set_usize(gtkDrawArea, 1280, 800);
+
+        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
+        SDL_putenv(EnvMainWindow);
+
+        SDL_SetVideoMode(1280,800,24, 
+	    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+}
+
+/*
+ * 似非フルスクリーン(GTK)。
+ */
+void standard_notify_gtk(void)
+{
+        char EnvMainWindow[64];
+        /* Test Code */
+           gtk_widget_set_usize(gtkDrawArea, 640, 400);
+
+        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
+        SDL_putenv(EnvMainWindow);
+
+        SDL_SetVideoMode(640,400,24, 
+	    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+}
+
+   /*
+ * 似非フルスクリーン(GTK)。
+ */
+void half_notify_gtk(void)
+{
+        char EnvMainWindow[64];
+        /* Test Code */
+           gtk_widget_set_usize(gtkDrawArea, 320, 200);
+
+        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
+        SDL_putenv(EnvMainWindow);
+
+        SDL_SetVideoMode(320,200,24, 
+	    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+}
+
+   
+/*
  *	再描画要求
  */
 void display_notify(void)
 {
+
 	/* 再描画 */
 	nDrawTop = 0;
 	nDrawBottom = 400;
@@ -834,6 +885,7 @@ void display_notify(void)
 	bPaletFlag = TRUE;
 	bClearFlag = TRUE;
 	SetDrawFlag(TRUE);
+
 }
 
 /*
