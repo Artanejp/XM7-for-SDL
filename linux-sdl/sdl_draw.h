@@ -39,6 +39,8 @@ void OnWindowedScreen(void);
  *	主要ワーク
  */
 extern BOOL bFullScan;
+extern WORD nDrawWidth;
+extern WORD nDrawHeight;
 										/* フルスキャン(Window) */
 #ifdef __cplusplus
 }

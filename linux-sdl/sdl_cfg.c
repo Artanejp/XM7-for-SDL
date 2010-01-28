@@ -64,13 +64,15 @@ typedef struct {
 
   /* JOYSTICK */
    
-        int nJoyType[2];
-        int nJoyRapid[2][2];
-  int nJoyCode[2][7];
+                 int nJoyType[2];
+                 int nJoyRapid[2][2];
+                 int nJoyCode[2][7];
    
 	BOOL bFullScan;						/* 400ラインタイミングモード */
     	BOOL bFullScanFS;
-
+  
+                 WORD uWidth; /* 表示サイズ(横) */
+                 WORD uHeight; /* 表示サイズ(縦) */
    
 	BOOL bOPNEnable;					/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;					/* WHG有効フラグ */
@@ -379,7 +381,9 @@ void FASTCALL LoadCfg(void)
 	/* Screenセクション */
 	SetCfgSection("Screen");
 	configdat.bFullScan = LoadCfgBool("FullScan", FALSE);
-
+        /* 現状、uWIDTH, uHeightは初期値固定 */
+                 configdat.uWidth = 640;
+                 configdat.uHeight = 400;
 	/* Optionセクション */
 	SetCfgSection("Option");
 	configdat.bOPNEnable = LoadCfgBool("OPNEnable", TRUE);
@@ -590,6 +594,8 @@ void FASTCALL ApplyCfg(void)
 
 	/* Screenセクション */
 	bFullScan = configdat.bFullScan;
+                 nDrawHeight = configdat.uHeight;
+                 nDrawWidth  = configdat.uWidth;
 	display_notify();
 
 	/* Optionセクション */
@@ -1411,6 +1417,20 @@ static void FASTCALL ScrPageInit(void)
 	else {
 		CheckDlgButton(SCP_24K, BST_UNCHECKED);
 	}
+        switch(propdat.uHeight) {
+        case 400:
+            CheckDlgButton(SCP_640X400, BST_CHECKED);
+            CheckDlgButton(SCP_1280X800, BST_UNCHECKED);
+            break;
+        case 800:
+            CheckDlgButton(SCP_640X400, BST_UNCHECKED);
+            CheckDlgButton(SCP_1280X800, BST_CHECKED);
+            break;
+        default: /* どれにも当てはまらなければ等倍 */
+            CheckDlgButton(SCP_640X400, BST_CHECKED);
+            CheckDlgButton(SCP_1280X800, BST_UNCHECKED);
+            break;
+        }
 
 }
 
@@ -1422,6 +1442,18 @@ static void FASTCALL ScrPageApply(void)
 {
 	/* ステート変更 */
 	uPropertyState = 2;
+
+	/* ウィンドウモード時フルスキャン(24k) */
+	if (IsDlgButtonChecked(SCP_640X400) == BST_CHECKED) {
+		propdat.uWidth = 640;
+		propdat.uHeight = 400;
+	}else if (IsDlgButtonChecked(SCP_1280X800) == BST_CHECKED) {
+		propdat.uWidth = 1280;
+		propdat.uHeight = 800;
+                 } else {
+		propdat.uWidth = 640;
+		propdat.uHeight = 400;
+                 }
 
 	/* ウィンドウモード時フルスキャン(24k) */
 	if (IsDlgButtonChecked(SCP_24K) == BST_CHECKED) {

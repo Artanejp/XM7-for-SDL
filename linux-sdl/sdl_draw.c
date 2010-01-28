@@ -52,8 +52,13 @@ WORD nDrawTop;						/* 描画範囲上 */
 WORD nDrawBottom;					/* 描画範囲下 */
 WORD nDrawLeft;						/* 描画範囲左 */
 WORD nDrawRight;						/* 描画範囲右 */
+WORD nDrawWidth;
+WORD nDrawHeight;
 BOOL bPaletFlag;						/* パレット変更フラグ */
-BOOL bClearFlag;						/* クリアフラグ */
+BOOL bClearFlag;
+						/* クリアフラグ */
+static WORD nOldDrawWidth;
+static WORD nOldDrawHeight;
 #if XM7_VER >= 3
 static BOOL bWindowOpen;					/* ハードウェアウィンドウ状態 */
 static WORD nWindowDx1;						/* ウィンドウ左上X座標 */
@@ -213,6 +218,59 @@ static BOOL OpenGL_BitBlt()
 
 }
 #endif
+static void ChangeResolution()
+{
+        /* ビデオモード再設定 */
+        if((nDrawWidth != nOldDrawWidth) || (nDrawHeight != nOldDrawHeight)) {
+          {
+            char EnvMainWindow[64];
+            SDL_Surface *tmpSurface;
+            SDL_Rect srcrect,dstrect;
+
+            /* まずは現在のサーフェイスを退避する */
+            tmpSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, nOldDrawWidth, nOldDrawHeight, 24, 0, 0, 0, 0);
+            displayArea = SDL_GetVideoSurface();
+            srcrect.x = 0;
+            srcrect.y = 0;
+            srcrect.w = displayArea->w;
+            srcrect.h = displayArea->h;
+
+            dstrect.x = 0;
+            dstrect.y = 0;
+            dstrect.w = tmpSurface->w;
+            dstrect.h = tmpSurface->h;
+
+            if(srcrect.w >dstrect.w) srcrect.w = dstrect.w;
+            if(srcrect.h >dstrect.h) srcrect.h = dstrect.h;
+            SDL_BlitSurface(displayArea, &srcrect, tmpSurface, &dstrect);
+            /* 表示部分のリサイズ */
+            gtk_widget_set_usize(gtkDrawArea, nDrawWidth, nDrawHeight);
+            sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
+            SDL_putenv(EnvMainWindow);
+            drawArea = SDL_SetVideoMode(nDrawWidth, nDrawHeight, 24, 
+                             SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+            printf("RESO CHG: %d x %d -> %d x %d\n", nOldDrawWidth ,nOldDrawHeight, nDrawWidth, nDrawHeight);
+            /* 退避したエリアの復帰（原寸…) */
+            dstrect.x = 0;
+            dstrect.y = 0;
+            dstrect.w = displayArea->w;
+            dstrect.h = displayArea->h;
+
+            srcrect.x = 0;
+            srcrect.y = 0;
+            srcrect.w = tmpSurface->w;
+            srcrect.h = tmpSurface->h;
+
+            if(srcrect.w >dstrect.w) srcrect.w = dstrect.w;
+            if(srcrect.h >dstrect.h) srcrect.h = dstrect.h;
+            SDL_BlitSurface(tmpSurface, &srcrect, displayArea, &dstrect);
+            SDL_FreeSurface(tmpSurface);
+            /* 以下に、全画面強制再描画処理を入れる */
+          }
+          nOldDrawHeight = nDrawHeight;
+          nOldDrawWidth = nDrawWidth;
+        }
+}
 
 /*
  * BITBLT
@@ -245,6 +303,9 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight, int nSrcLeft, 
    SDL_BlitSurface(realDrawArea, &srcrect ,displayArea ,&dstrect );
    }
    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+
+   /* ここまでやっておいてから解像度を変更する */
+   ChangeResolution();
    //printf("BitBlt %d %d\n",drawArea->w, drawArea->h);
 #endif /* OpenGL */
 }
@@ -310,6 +371,11 @@ void InitDraw(void)
 	nDrawBottom = 400;
 	nDrawLeft = 0;
 	nDrawRight = 640;
+	nOldDrawHeight = 400;
+	nOldDrawWidth = 640;
+	nDrawHeight = 400;
+	nDrawWidth = 640;
+
 	bPaletFlag = FALSE;
 	SetDrawFlag(FALSE);
 
@@ -816,9 +882,9 @@ void apalet_notify(void)
 {
 	bPaletFlag = TRUE;
 	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
+        //	nDrawBottom = 400;
+        	nDrawLeft = 0;
+        //nDrawRight = 640;
 	SetDrawFlag(TRUE);
 }
 
@@ -882,10 +948,10 @@ void display_notify(void)
 	nDrawBottom = 400;
 	nDrawLeft = 0;
 	nDrawRight = 640;
+                 
 	bPaletFlag = TRUE;
 	bClearFlag = TRUE;
 	SetDrawFlag(TRUE);
-
 }
 
 /*

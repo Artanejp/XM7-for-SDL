@@ -85,6 +85,8 @@ GtkWidget *JOY_RAPID12[2][4];
 GtkWidget *JOY_RAPID25[2][4];
 
 GtkWidget *SCP_24K;
+GtkWidget *SCP_640X400;
+GtkWidget *SCP_1280X800;
 GtkWidget *OP_OPNB;
 GtkWidget *OP_WHGB;
 GtkWidget *OP_THGB;
@@ -246,6 +248,7 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
                  GtkWidget *hbox30;
                  GtkWidget *hbox31;
                  GtkWidget *hbox32;
+
                  GtkWidget *lblJoy1;
                  GtkWidget *lblJoy2;
                  GtkWidget *lblJoyStick1;   
@@ -265,6 +268,13 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	GtkWidget *frmScreen;
 	GtkWidget *lblScreen;
 	GtkWidget *lblScreen2;
+	GSList *RESO_group = NULL;
+                 GtkWidget *hbox40;
+                 GtkWidget *vbox30;
+                 GtkWidget *vbox31;
+                 GtkWidget *vbox32;
+                 GtkWidget *frmScpReso;
+                 GtkWidget *lblScpReso;
 	GtkWidget *vbox14;
 	GtkWidget *hbox19;
 	GtkWidget *frmOpn;
@@ -884,17 +894,59 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	gtk_label_set_justify (GTK_LABEL (lblJoyStick2), GTK_JUSTIFY_LEFT);
           
 
+          /* 解像度 */
+	vbox30 = gtk_vbox_new (FALSE, 8);
+	gtk_widget_show (vbox30);
+	gtk_container_add (GTK_CONTAINER (propertySheet), vbox30);
+	gtk_container_set_border_width (GTK_CONTAINER (vbox30), 4);
+
+
+	vbox31 = gtk_vbox_new (FALSE, 8);
+	gtk_widget_show (vbox31);
+	gtk_container_add (GTK_CONTAINER (vbox30), vbox31);
+	gtk_container_set_border_width (GTK_CONTAINER (vbox31), 4);
+
+                 frmScpReso = gtk_frame_new (NULL);
+          	gtk_widget_show (frmScpReso);
+                 gtk_container_add (GTK_CONTAINER (vbox31), frmScpReso);
+          	gtk_container_set_border_width (GTK_CONTAINER (frmScpReso), 4);
+
+	vbox32 = gtk_vbox_new (FALSE, 8);
+	gtk_widget_show (vbox32);
+	gtk_container_add (GTK_CONTAINER (frmScpReso), vbox32);
+	gtk_container_set_border_width (GTK_CONTAINER (vbox32), 4);
+
+
+	SCP_640X400 = gtk_radio_button_new_with_mnemonic (NULL, "640x400");
+	gtk_widget_show (SCP_640X400);
+	gtk_box_pack_start (GTK_BOX (vbox32), SCP_640X400, FALSE, FALSE, 0);
+	gtk_radio_button_set_group (GTK_RADIO_BUTTON (SCP_640X400), RESO_group);
+	RESO_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (SCP_640X400));
+
+	SCP_1280X800 = gtk_radio_button_new_with_mnemonic (NULL, "1280x800");
+	gtk_widget_show (SCP_1280X800);
+	gtk_box_pack_start (GTK_BOX (vbox32), SCP_1280X800, FALSE, FALSE, 0);
+	gtk_radio_button_set_group (GTK_RADIO_BUTTON (SCP_1280X800), RESO_group);
+	RESO_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (SCP_1280X800));
+
+
 	frmScreen = gtk_frame_new (NULL);
 	gtk_widget_show (frmScreen);
-	gtk_container_add (GTK_CONTAINER (propertySheet), frmScreen);
+	gtk_container_add (GTK_CONTAINER (vbox30), frmScreen);
 	gtk_container_set_border_width (GTK_CONTAINER (frmScreen), 4);
 
 
 	SCP_24K =
 		gtk_check_button_new_with_mnemonic ("ウィンドウモード時に24Hz表示をエミュレート");
-	gtk_widget_show (SCP_24K);
+                 gtk_widget_show (SCP_24K);
 	gtk_container_add (GTK_CONTAINER (frmScreen), SCP_24K);
 	gtk_container_set_border_width (GTK_CONTAINER (SCP_24K), 4);
+
+
+	lblScpReso = gtk_label_new ("描画サイズ");
+                 gtk_widget_show (lblScpReso);
+	gtk_frame_set_label_widget (GTK_FRAME (frmScpReso), lblScpReso);
+	gtk_label_set_justify (GTK_LABEL (lblScpReso), GTK_JUSTIFY_LEFT);
 
 	lblScreen = gtk_label_new ("その他");
 	gtk_widget_show (lblScreen);

@@ -82,6 +82,9 @@ extern GtkWidget *JOY_RAPID12[2][4];
 extern GtkWidget *JOY_RAPID25[2][4];
 
 extern GtkWidget *SCP_24K;
+extern GtkWidget *SCP_640X400;
+extern GtkWidget *SCP_1280X800;
+
 extern GtkWidget *OP_OPNB;
 extern GtkWidget *OP_WHGB;
 extern GtkWidget *OP_THGB;
