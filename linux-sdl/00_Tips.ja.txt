@@ -1,0 +1,10 @@
+* XM7/SDLを使う上でのTIPS、もしくは覚書 *
+* Jan 29,2010 K.Ohta (whatisthis.sowhat at gmail.com)
+*
+1.SDLのサウンドドライバがALSAである場合、音飛びが良くおきますが、これはOSカーネルのスケジューラ側の問題です。
+　/etc/security/limits.confをいじって以下の様にいじって見てください
+---
+foo      -        rtprio          99
+foo      -        nice            -2
+---
+こうすると,ユーザfooのリアルタイム優先度が最高まで上がった上にreniceで-2まで指定できるので、XM7の優先度を上げることが加能です。

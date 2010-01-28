@@ -145,79 +145,6 @@ static inline void __SETDOT_DOUBLE(WORD x, WORD y, DWORD c)
 
 
 
-#if defined(USE_OPENGL)
-/*
- * BITBLT(OpenGL)...まだうごかない。SEGVする
- */
-static BOOL OpenGL_BitBlt()
-{
-
-   GLuint texture[4];
-   int w, h;
-   GLfloat texAttr[4];
-   SDL_Surface *textureArea;
-
-   displayArea = SDL_GetVideoSurface();
-#if 0
-   textureArea = SDL_CreateRGBSurface(SDL_SWSURFACE,
-                                      w, h,
-   w = 1024; /* 640x400... w,h は2^nであること。 */
-   h = 512; 
-                                      32,
-#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN /* OpenGL RGBA masks */
-			0x000000FF, 
-			0x0000FF00, 
-			0x00FF0000, 
-			0xFF000000
-#else
-			0xFF000000,
-			0x00FF0000, 
-			0x0000FF00, 
-			0x000000FF
-#endif
-		       );
-#endif 
-   /*
-    * OpenGLでは描画した画面をテクスチャとして扱う
-    */
-   texAttr[0] = 0.0f; /* X始点 */
-   texAttr[1] = 0.0f; /* Y始点 */
-   texAttr[2] = (GLfloat)640 / w; /* X大きさ(比率) */
-   texAttr[3] = (GLfloat)400 / h; /* X大きさ(比率) */
-   //SDL_GL_LoadTexture(displayArea, texAttr);
-   glClear(GL_COLOR_BUFFER_BIT);
-
-   glGenTextures(1, texture);
-   glBindTexture(GL_TEXTURE_2D, texture[0]);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D,
-                0,
-                GL_RGBA,
-                w, h,
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                realDrawArea->pixels);
-
-
-   glBegin(GL_TRIANGLE_STRIP);
-   glTexCoord2f(texAttr[0], texAttr[1]);
-   glVertex2i(0, 0);
-   glTexCoord2f(texAttr[2], texAttr[1]);
-   glVertex2i(640, 0);
-   glTexCoord2f(texAttr[0], texAttr[3]);
-   glVertex2i(0, 400);
-   glTexCoord2f(texAttr[2], texAttr[3]);
-   glVertex2i(640 , 400);
-   glEnd();
-
-
-   SDL_GL_SwapBuffers();
-
-
-}
-#endif
 static void ChangeResolution()
 {
         /* ビデオモード再設定 */
@@ -247,8 +174,8 @@ static void ChangeResolution()
             gtk_widget_set_usize(gtkDrawArea, nDrawWidth, nDrawHeight);
             sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
             SDL_putenv(EnvMainWindow);
-            drawArea = SDL_SetVideoMode(nDrawWidth, nDrawHeight, 24, 
-                             SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+            displayArea = SDL_SetVideoMode(nDrawWidth, nDrawHeight, 24, 
+                             SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF |  0);
             printf("RESO CHG: %d x %d -> %d x %d\n", nOldDrawWidth ,nOldDrawHeight, nDrawWidth, nDrawHeight);
             /* 退避したエリアの復帰（原寸…) */
             dstrect.x = 0;
@@ -264,8 +191,10 @@ static void ChangeResolution()
             if(srcrect.w >dstrect.w) srcrect.w = dstrect.w;
             if(srcrect.h >dstrect.h) srcrect.h = dstrect.h;
             SDL_BlitSurface(tmpSurface, &srcrect, displayArea, &dstrect);
+
             SDL_FreeSurface(tmpSurface);
             /* 以下に、全画面強制再描画処理を入れる */
+
           }
           nOldDrawHeight = nDrawHeight;
           nOldDrawWidth = nDrawWidth;
@@ -295,19 +224,13 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight, int nSrcLeft, 
    if(!bDirectDraw) {
    SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
    }
-#if defined(USE_OPENGL)
-   //SDL_BlitSurface(drawArea, &srcrect ,displayArea ,&dstrect );
-   OpenGL_BitBlt();
-#else /* OpenGL */
+
    if(!bDirectDraw) {
    SDL_BlitSurface(realDrawArea, &srcrect ,displayArea ,&dstrect );
    }
    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
 
-   /* ここまでやっておいてから解像度を変更する */
-   ChangeResolution();
-   //printf("BitBlt %d %d\n",drawArea->w, drawArea->h);
-#endif /* OpenGL */
+
 }
 
 #define XM7_DRAWMODE_SDL SDL_SWSURFACE
@@ -389,10 +312,6 @@ void InitDraw(void)
         bDirectDraw = TRUE;
         /* 直接書き込み */
         realDrawArea = SDL_GetVideoSurface();
-        //realDrawArea = drawArea;
-#ifdef USE_OPENGL
-        //glEnable(GL_TEXTURE_2D);
-#endif
 
         
 }
@@ -688,22 +607,41 @@ void RenderSetOddLine(void)
 	BYTE *p;
 	WORD u;
         Uint32 pitch;
-
-	/* ポインタ初期化 */
-
-        p = realDrawArea->pixels + (nDrawTop + 1) * realDrawArea->pitch;
-        pitch = realDrawArea->pitch;
+        
         SDL_LockSurface(realDrawArea);
-
-	/* ループ */
-	for (u=nDrawTop; u<nDrawBottom; u += (WORD)2) {
+        switch(nDrawWidth) {
+        case 1280:
+          p = realDrawArea->pixels + ((nDrawTop + 1)<<1) * realDrawArea->pitch;
+          pitch = realDrawArea->pitch;
+          for (u=nDrawTop; u<nDrawBottom; u += (WORD)2) {
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-	   	memset(p, 0x00, pitch );
+            memset(p, 0x00, nDrawWidth>>3 );
+            p += pitch;
+            memset(p, 0x00, nDrawWidth>>3 );
+            p += pitch * 3;
 #else
-	   	memset(p, 0x00, pitch );
+            memset(p, 0x00, nDrawWidth>>3 );
+            p += pitch;
+            memset(p, 0x00, nDrawWidth>>3 );
+            p += pitch * 3;
 #endif
-		p += pitch * 2;
-	}
+          }
+          break;
+        case 640:
+        default:
+          p = realDrawArea->pixels + (nDrawTop + 1) * realDrawArea->pitch;
+          pitch = realDrawArea->pitch;
+
+          for (u=nDrawTop; u<nDrawBottom; u += (WORD)2) {
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
+            memset(p, 0x00, nDrawWidth>>3 );
+#else
+            memset(p, 0x00, nDrawWidth>>3 );
+#endif
+            p += pitch * 2;
+          }
+        break;
+        }        
         SDL_UnlockSurface(realDrawArea);
         SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
 
@@ -723,6 +661,10 @@ void RenderSetOddLine(void)
  */
 void OnDraw(void)
 {
+   /* ここまでやっておいてから解像度を変更する */
+   ChangeResolution();
+
+
 	/* 640-320 自動切り替え */
 	SelectDraw();
 
@@ -772,6 +714,9 @@ gint OnPaint(GtkWidget *widget, GdkEventExpose *event)
         dstrect.y = 0;
         dstrect.w = (Uint16)displayArea->w;
         dstrect.h = (Uint16)displayArea->h;
+        /* ここまでやっておいてから解像度を変更する */
+        ChangeResolution();
+
 	
 
         SDL_UpdateRect(realDrawArea ,0 ,0 ,realDrawArea->w ,realDrawArea->h);
@@ -882,9 +827,9 @@ void apalet_notify(void)
 {
 	bPaletFlag = TRUE;
 	nDrawTop = 0;
-        //	nDrawBottom = 400;
+        	nDrawBottom = 400;
         	nDrawLeft = 0;
-        //nDrawRight = 640;
+                nDrawRight = 640;
 	SetDrawFlag(TRUE);
 }
 

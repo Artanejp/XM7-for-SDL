@@ -140,66 +140,9 @@ static void CreateDrawSDL(GtkWidget *parent)
 
   SDL_Surface *ret;
 
-#if defined(USE_OPENGL)
-  drawArea = SDL_CreateRGBSurface(
-			SDL_SWSURFACE,
-			1024, 512, /* OpenGL使う場合はw,hは2^nでなければならない */ 
-			32,
-#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN /* OpenGL RGBA masks */
-			0x000000FF, 
-			0x0000FF00, 
-			0x00FF0000, 
-			0xFF000000
-#else
-			0xFF000000,
-			0x00FF0000, 
-			0x0000FF00, 
-			0x000000FF
-#endif
-		       );
-#else
-  drawArea = SDL_CreateRGBSurface(
-                                  SDL_SWSURFACE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0 ,
-                                  XM7_DRAW_WIDTH, XM7_DRAW_HEIGHT, 
-                                  32,
-#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN /* OpenGL RGBA masks */
-                                  0x000000FF, 
-                                  0x0000FF00, 
-                                  0x00FF0000, 
-                                  0xFF000000
-#else
-                                  0xFF000000,
-                                  0x00FF0000, 
-                                  0x0000FF00, 
-                                  0x000000FF
-#endif
-                                  );
-#endif /* USE_OPENGL */
-        //drawArea = SDL_CreateRGBSurface(SDL_SWSURFACE | SDL_ASYNCBLIT, XM7_DRAW_WIDTH, XM7_DRAW_HEIGHT, 
-        //                           32, 0, 0, 0, 0 );
-   
-   if(drawArea == NULL) {
-	perror("SDL can't get drawing area"); /* 最終的にはWidget独立でPopup出す */
-	exit(1);
-     }
-
-#if defined(USE_OPENGL)
-   ret = SDL_SetVideoMode(640 , 400 , 32 ,
-   		  SDL_OPENGL);
-
-   SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
-   SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
-   SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
-   SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
-   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-#else
-//   ret = SDL_SetVideoMode(640 , 400 , 24 ,
- //  		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
     ret = SDL_SetVideoMode(640 , 400 , 24 ,
-   		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+   		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | 0);
 
-#endif /* USE_OPENGL */
    
    if(ret == NULL) {
         perror("SDL can't get display area."); /* 最終的にはWidget独立でPopup出す */

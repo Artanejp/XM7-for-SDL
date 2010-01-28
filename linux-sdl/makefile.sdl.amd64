@@ -120,8 +120,8 @@ LIBS = ${LDFLAGS} -lX11 -lXt -lXext -lm -lc -lstdc++ -lmemwatch
 
 
 #CFLAGS = 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DCPU_ASM -O3 -I/usr/X11R6/include -I. `pkg-config --cflags  gtk+-2.0 gthread-2.0`
-#CFLAGS =        -g -O0 
-CFLAGS =        -O3
+CFLAGS =        -g -O0 
+#CFLAGS =        -O3
 CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG 
 CFLAGS +=        -DCPU_ASM -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)/usr/local/include -I$(IA32BOOTSTRAPED)/usr/X11R6/include -I. \
 	-D_REENTRANT -pthread -I$(IA32BOOTSTRAPED)/usr/include/gtk-2.0 \
