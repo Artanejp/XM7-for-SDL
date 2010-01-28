@@ -59,6 +59,28 @@ extern GtkWidget *SP_FDDSOUND;
 extern GtkWidget *KP_ARROW8DIR;
 extern GtkWidget *KP_USEARROWFOR10;
 extern GtkWidget *KP_KBDREAL;
+
+extern GtkWidget *JOY1_UNUSED;
+extern GtkWidget *JOY1_PORT1;
+extern GtkWidget *JOY1_PORT2;
+extern GtkWidget *JOY1_KBD;
+extern GtkWidget *JOY1_DEMPA;
+extern GtkWidget *JOY2_UNUSED;
+extern GtkWidget *JOY2_PORT1;
+extern GtkWidget *JOY2_PORT2;
+extern GtkWidget *JOY2_KBD;
+extern GtkWidget *JOY2_DEMPA;
+extern GtkWidget *JOY_RAPID[2][4];
+extern GtkWidget *JOY_RAPID1[2][4];
+extern GtkWidget *JOY_RAPID2[2][4];
+extern GtkWidget *JOY_RAPID3[2][4];
+extern GtkWidget *JOY_RAPID4[2][4];
+extern GtkWidget *JOY_RAPID5[2][4];
+extern GtkWidget *JOY_RAPID6[2][4];
+extern GtkWidget *JOY_RAPID8[2][4];
+extern GtkWidget *JOY_RAPID12[2][4];
+extern GtkWidget *JOY_RAPID25[2][4];
+
 extern GtkWidget *SCP_24K;
 extern GtkWidget *OP_OPNB;
 extern GtkWidget *OP_WHGB;

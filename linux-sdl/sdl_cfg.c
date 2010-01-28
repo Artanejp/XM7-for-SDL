@@ -66,7 +66,7 @@ typedef struct {
    
         int nJoyType[2];
         int nJoyRapid[2][2];
-        int nJoyCode[2][7];
+  int nJoyCode[2][7];
    
 	BOOL bFullScan;						/* 400ラインタイミングモード */
     	BOOL bFullScanFS;
@@ -1154,6 +1154,244 @@ static void FASTCALL KbdPageApply(void)
 }
 
 
+/*-[ ジョイスティックページ ]-----------------------------------------------------*/
+
+/*
+ *	キーボードページ
+ *	ダイアログ初期化
+ */
+static void FASTCALL JsPageInit(void)
+{
+	int index;
+	int i;
+	char string[128];
+
+	/* シート初期化 */
+	SheetInit();
+
+        /* JOYSTICK1 */
+        switch(propdat.nJoyType[0]) {
+        case 1: /* Port1 */
+          CheckDlgButton(JOY1_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT1, BST_CHECKED);
+          CheckDlgButton(JOY1_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY1_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY1_DEMPA, BST_UNCHECKED);
+          break;
+        case 2: /* Port2 */
+          CheckDlgButton(JOY1_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT2, BST_CHECKED);
+          CheckDlgButton(JOY1_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY1_DEMPA, BST_UNCHECKED);
+          break;
+        case 3: /* JOY-KBD */
+          CheckDlgButton(JOY1_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY1_KBD, BST_CHECKED);
+          CheckDlgButton(JOY1_DEMPA, BST_UNCHECKED);
+          break;
+        case 4: /* DEMPA */
+          CheckDlgButton(JOY1_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY1_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY1_DEMPA, BST_CHECKED);
+          break;
+        default: /* Undefined */
+          CheckDlgButton(JOY1_UNUSED, BST_CHECKED);
+          CheckDlgButton(JOY1_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY1_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY1_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY1_DEMPA, BST_UNCHECKED);
+          propdat.nJoyType[0] = 0;
+          break;
+        }
+
+        /* JOYSTICK2 */
+        switch(propdat.nJoyType[1]) {
+        /* テンキーエミュレーション */
+        case 1: /* Port1 */
+          CheckDlgButton(JOY2_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT1, BST_CHECKED);
+          CheckDlgButton(JOY2_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY2_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY2_DEMPA, BST_UNCHECKED);
+          break;
+        case 2: /* Port2 */
+          CheckDlgButton(JOY2_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT2, BST_CHECKED);
+          CheckDlgButton(JOY2_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY2_DEMPA, BST_UNCHECKED);
+          break;
+        case 3: /* JOY-KBD */
+          CheckDlgButton(JOY2_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY2_KBD, BST_CHECKED);
+          CheckDlgButton(JOY2_DEMPA, BST_UNCHECKED);
+          break;
+        case 4: /* DEMPA */
+          CheckDlgButton(JOY2_UNUSED, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY2_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY2_DEMPA, BST_CHECKED);
+          break;
+        default: /* Undefined -> JS1に */
+          CheckDlgButton(JOY2_UNUSED, BST_CHECKED);
+          CheckDlgButton(JOY2_PORT1, BST_UNCHECKED);
+          CheckDlgButton(JOY2_PORT2, BST_UNCHECKED);
+          CheckDlgButton(JOY2_KBD, BST_UNCHECKED);
+          CheckDlgButton(JOY2_DEMPA, BST_UNCHECKED);
+          propdat.nJoyType[1] = 0;
+          break;
+        }
+        /* JOY-KBD のコードアサインに付いては後ほど ^^; 20100127 */
+}
+/*
+ *	キーボードページ
+ *	適用
+ */
+static void FASTCALL JsPageApply(void)
+{
+	/* ステート変更 */
+	uPropertyState = 2;
+
+        /* JS1 */
+        if(IsDlgButtonChecked(JOY1_UNUSED) == BST_CHECKED) {
+          propdat.nJoyType[0] = 0;
+        } else if(IsDlgButtonChecked(JOY1_PORT1) == BST_CHECKED) {
+          propdat.nJoyType[0] = 1;
+        } else if(IsDlgButtonChecked(JOY1_PORT2) == BST_CHECKED) {
+          propdat.nJoyType[0] = 2;
+        } else if(IsDlgButtonChecked(JOY1_KBD) == BST_CHECKED) {
+          propdat.nJoyType[0] = 3;
+        } else if(IsDlgButtonChecked(JOY1_DEMPA) == BST_CHECKED) {
+          propdat.nJoyType[0] = 4;
+        } else { /* どのラジオボタンにもチェックがなかった →Unused */
+          propdat.nJoyType[0] = 0;
+        }
+
+        /* JS2 */
+        if(IsDlgButtonChecked(JOY2_UNUSED) == BST_CHECKED) {
+          propdat.nJoyType[1] = 0;
+        } else if(IsDlgButtonChecked(JOY2_PORT1) == BST_CHECKED) {
+          propdat.nJoyType[1] = 1;
+        } else if(IsDlgButtonChecked(JOY2_PORT2) == BST_CHECKED) {
+          propdat.nJoyType[1] = 2;
+        } else if(IsDlgButtonChecked(JOY2_KBD) == BST_CHECKED) {
+          propdat.nJoyType[1] = 3;
+        } else if(IsDlgButtonChecked(JOY2_DEMPA) == BST_CHECKED) {
+          propdat.nJoyType[1] = 4;
+        } else { /* どのラジオボタンにもチェックがなかった →Unused */
+          propdat.nJoyType[1] = 0;
+        }
+
+
+}
+
+/*
+ * 連射設定ページ
+ */
+static void JsRapidPageInit(void)
+{
+  int i,j;
+  int rapid;
+  for(j=0 ; j<2 ; j++) {
+    for(i=0 ; i<2 ; i++ ){
+      switch(propdat.nJoyRapid[i][j])
+        {
+        case 1:
+          rapid = 1;
+          break;
+        case 2:
+          rapid = 2;
+          break;
+        case 3:
+          rapid = 3;
+          break;
+        case 4:
+          rapid = 4;
+          break;
+        case 5:
+          rapid = 5;
+          break;
+        case 6:
+          rapid = 6;
+          break;
+        case 7:
+          rapid = 7;
+          break;
+        case 8:
+          rapid = 8;
+          break;
+        case 9:
+          rapid = 9;
+          break;
+        case 0:
+        default:
+          rapid = 0;
+          break;
+        }
+      SelectOptionMenu(JOY_RAPID[i][j], rapid);
+        
+    }
+  }
+}
+
+/*
+ * 連射設定
+ */
+
+static void JsRapidPageApply(void)
+{
+  int i,j;
+  int rapid;
+  for(j=0 ; j<2 ; j++) {
+    for(i=0 ; i<2 ; i++ ){
+      rapid = GetIdxOptionMenu(JOY_RAPID[i][j]);
+      switch(rapid)
+        {
+        case 1:
+          propdat.nJoyRapid[i][j] = 1;
+          break;
+        case 2:
+          propdat.nJoyRapid[i][j] = 2;
+          break;
+        case 3:
+          propdat.nJoyRapid[i][j] = 3;
+          break;
+        case 4:
+          propdat.nJoyRapid[i][j] = 4;
+          break;
+        case 5:
+          propdat.nJoyRapid[i][j] = 5;
+          break;
+        case 6:
+          propdat.nJoyRapid[i][j] = 6;
+         break;
+        case 7:
+          propdat.nJoyRapid[i][j] = 7;
+          break;
+        case 8:
+          propdat.nJoyRapid[i][j] = 8;
+          break;
+        case 9:
+          propdat.nJoyRapid[i][j] = 9;
+          break;
+        case 0:
+        default:
+          propdat.nJoyRapid[i][j] = 0;
+          break;
+        }
+    }
+  }
+}
+
+
 
 /*-[ スクリーンページ ]-----------------------------------------------------*/
 
@@ -1370,6 +1608,8 @@ void FASTCALL OnConfig(GtkWidget *widget, gpointer data)
 	GeneralPageInit();
 	SoundPageInit();
 	KbdPageInit();
+                 JsPageInit();
+                 JsRapidPageInit();
 	ScrPageInit();
 	OptPageInit();
 }
@@ -1386,6 +1626,8 @@ void FASTCALL OnConfig_OK(GtkWidget *widget, gpointer data)
 	GeneralPageApply();
 	SoundPageApply();
 	KbdPageApply();
+                 JsPageApply();
+                 JsRapidPageApply();
 	ScrPageApply();
 	OptPageApply();
 

@@ -62,14 +62,27 @@ GtkWidget *SP_FDDSOUND;
 GtkWidget *KP_ARROW8DIR;
 GtkWidget *KP_USEARROWFOR10;
 GtkWidget *KP_KBDREAL;
+GtkWidget *JOY1_UNUSED;
 GtkWidget *JOY1_PORT1;
 GtkWidget *JOY1_PORT2;
 GtkWidget *JOY1_KBD;
 GtkWidget *JOY1_DEMPA;
+GtkWidget *JOY2_UNUSED;
 GtkWidget *JOY2_PORT1;
 GtkWidget *JOY2_PORT2;
 GtkWidget *JOY2_KBD;
 GtkWidget *JOY2_DEMPA;
+GtkWidget *JOY_RAPID[2][4];
+GtkWidget *JOY_RAPID0[2][4];
+GtkWidget *JOY_RAPID1[2][4];
+GtkWidget *JOY_RAPID2[2][4];
+GtkWidget *JOY_RAPID3[2][4];
+GtkWidget *JOY_RAPID4[2][4];
+GtkWidget *JOY_RAPID5[2][4];
+GtkWidget *JOY_RAPID6[2][4];
+GtkWidget *JOY_RAPID8[2][4];
+GtkWidget *JOY_RAPID12[2][4];
+GtkWidget *JOY_RAPID25[2][4];
 
 GtkWidget *SCP_24K;
 GtkWidget *OP_OPNB;
@@ -172,6 +185,8 @@ static void FASTCALL OnKP_USEARROWFOR10Clicked(GtkWidget *widget, gpointer data)
  */
 GtkWidget* FASTCALL OpenPropertyPage(void)
 {
+  int i,j;
+  char stmp[64];
 	GtkWidget *vbox1;
 	GtkWidget *propertySheet;
 	GtkWidget *vbox2;
@@ -233,9 +248,19 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
                  GtkWidget *hbox32;
                  GtkWidget *lblJoy1;
                  GtkWidget *lblJoy2;
-                 GtkWidget *lblJoyStick;   
+                 GtkWidget *lblJoyStick1;   
+                 GtkWidget *lblJoyStick2;   
 	GSList *JOY1_group = NULL;
 	GSList *JOY2_group = NULL;
+
+                 GtkWidget *frmJS1b[2];
+
+                 GtkWidget *menu_js_rapid[2][4];
+                 GtkWidget *vbox23[2]; 
+                 GtkWidget *vbox24; 
+                 GtkWidget *vbox25; 
+                 GtkWidget *lblJoyrapidButton[2][4]; /* 4ボタンまでリザーブしておく */
+                 GtkWidget *lblRapid[2];
 
 	GtkWidget *frmScreen;
 	GtkWidget *lblScreen;
@@ -681,6 +706,11 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	gtk_container_add (GTK_CONTAINER (frmJS1), vbox21);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox21), 4);
 
+	JOY1_UNUSED = gtk_radio_button_new_with_mnemonic (NULL, "UNUSED");
+	gtk_widget_show (JOY1_UNUSED);
+	gtk_box_pack_start (GTK_BOX (vbox21), JOY1_UNUSED, FALSE, FALSE, 0);
+	gtk_radio_button_set_group (GTK_RADIO_BUTTON (JOY1_UNUSED), JOY1_group);
+	JOY1_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (JOY1_UNUSED));
 
 	JOY1_PORT1 = gtk_radio_button_new_with_mnemonic (NULL, "Port1");
 	gtk_widget_show (JOY1_PORT1);
@@ -706,6 +736,8 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	gtk_radio_button_set_group (GTK_RADIO_BUTTON (JOY1_DEMPA), JOY1_group);
 	JOY1_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (JOY1_DEMPA));
 
+
+
 	lblJoy1 = gtk_label_new ("JOYSTICK#1");
                  gtk_widget_show (lblJoy1);
 	gtk_frame_set_label_widget (GTK_FRAME (frmJS1), lblJoy1);
@@ -722,6 +754,12 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	gtk_widget_show (vbox22);
 	gtk_container_add (GTK_CONTAINER (frmJS2), vbox22);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox22), 4);
+
+	JOY2_UNUSED = gtk_radio_button_new_with_mnemonic (NULL, "UNUSED");
+	gtk_widget_show (JOY2_UNUSED);
+	gtk_box_pack_start (GTK_BOX (vbox22), JOY2_UNUSED, FALSE, FALSE, 0);
+	gtk_radio_button_set_group (GTK_RADIO_BUTTON (JOY2_UNUSED), JOY2_group);
+	JOY2_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (JOY2_UNUSED));
 
 	JOY2_PORT1 = gtk_radio_button_new_with_mnemonic (NULL, "Port1");
 	gtk_widget_show (JOY2_PORT1);
@@ -748,22 +786,109 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	gtk_radio_button_set_group (GTK_RADIO_BUTTON (JOY2_DEMPA), JOY2_group);
 	JOY2_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (JOY2_DEMPA));
 
+
 	lblJoy2 = gtk_label_new ("JOYSTICK#2");
                  gtk_widget_show (lblJoy2);
 	gtk_frame_set_label_widget (GTK_FRAME (frmJS2), lblJoy2);
 	gtk_label_set_justify (GTK_LABEL (lblJoy2), GTK_JUSTIFY_LEFT);
 
-	lblJoyStick = gtk_label_new ("ジョイスティック");
-	gtk_widget_show (lblJoyStick);
+	lblJoyStick1 = gtk_label_new ("ジョイスティック");
+	gtk_widget_show (lblJoyStick1);
 	gtk_notebook_set_tab_label (GTK_NOTEBOOK (propertySheet),
-	gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 3), lblJoyStick);
-	gtk_label_set_justify (GTK_LABEL (lblJoyStick), GTK_JUSTIFY_LEFT);
+	gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 3), lblJoyStick1);
+	gtk_label_set_justify (GTK_LABEL (lblJoyStick1), GTK_JUSTIFY_LEFT);
 
+          /* JOYSTICK B (連射関連) */
+	hbox31 = gtk_hbox_new (FALSE, 8);
+	gtk_widget_show (hbox31);
+	gtk_container_add (GTK_CONTAINER (propertySheet), hbox31);
+	gtk_container_set_border_width (GTK_CONTAINER (hbox31), 4);
+          for(j=0; j<2 ; j++) {
+	frmJS1b[j] = gtk_frame_new (NULL);
+	gtk_widget_show (frmJS1b[j]);
+	gtk_box_pack_start (GTK_BOX (hbox31), frmJS1b[j], TRUE, TRUE, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (frmJS1b[j]), 4);
+
+	vbox23[j] = gtk_vbox_new (FALSE, 8);
+	gtk_widget_show (vbox23[j]);
+	gtk_container_add (GTK_CONTAINER (frmJS1b[j]), vbox23[j]);
+	gtk_container_set_border_width (GTK_CONTAINER (vbox23[j]), 4);
+
+                 for(i=0; i<2; i++) {
+                   sprintf(stmp, "ボタン%d", i);
+                   lblJoyrapidButton[j][i] = gtk_label_new (stmp);
+	gtk_widget_show (lblJoyrapidButton[j][i]);
+	gtk_box_pack_start (GTK_BOX (vbox23[j]), lblJoyrapidButton[j][i], FALSE, FALSE, 0);
+	gtk_label_set_justify (GTK_LABEL (lblJoyrapidButton[j][i]), GTK_JUSTIFY_LEFT);
+
+
+          /* 連射関連 */
+                 JOY_RAPID[j][i] = gtk_option_menu_new ();
+	gtk_widget_show (JOY_RAPID[j][i]);
+	gtk_box_pack_start (GTK_BOX (vbox23[j]), JOY_RAPID[j][i], FALSE, FALSE, 0);
+
+	menu_js_rapid[j][i] = gtk_menu_new ();
+
+	JOY_RAPID0[j][i] = gtk_menu_item_new_with_mnemonic ("連射なし");
+	gtk_widget_show (JOY_RAPID0[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID0[j][i]);
+
+	JOY_RAPID1[j][i] = gtk_menu_item_new_with_mnemonic ("1連射");
+	gtk_widget_show (JOY_RAPID1[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID1[j][i]);
+
+	JOY_RAPID2[j][i] = gtk_menu_item_new_with_mnemonic ("2連射");
+	gtk_widget_show (JOY_RAPID2[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID2[j][i]);
+
+	JOY_RAPID3[j][i] = gtk_menu_item_new_with_mnemonic ("3連射");
+	gtk_widget_show (JOY_RAPID3[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID3[j][i]);
+
+	JOY_RAPID4[j][i] = gtk_menu_item_new_with_mnemonic ("4連射");
+	gtk_widget_show (JOY_RAPID4[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID4[j][i]);
+
+	JOY_RAPID5[j][i] = gtk_menu_item_new_with_mnemonic ("5連射");
+	gtk_widget_show (JOY_RAPID5[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID5[j][i]);
+          
+	JOY_RAPID6[j][i] = gtk_menu_item_new_with_mnemonic ("6連射");
+	gtk_widget_show (JOY_RAPID6[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID6[j][i]);
+
+	JOY_RAPID8[j][i] = gtk_menu_item_new_with_mnemonic ("8連射");
+	gtk_widget_show (JOY_RAPID8[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID8[j][i]);
+
+	JOY_RAPID12[j][i] = gtk_menu_item_new_with_mnemonic ("12連射");
+	gtk_widget_show (JOY_RAPID12[j][i]);
+                 gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID12[j][i]);
+
+	JOY_RAPID25[j][i] = gtk_menu_item_new_with_mnemonic ("25連射");
+	gtk_widget_show (JOY_RAPID25[j][i]);
+	gtk_container_add (GTK_CONTAINER (menu_js_rapid[j][i]), JOY_RAPID25[j][i]);
+
+	gtk_option_menu_set_menu (GTK_OPTION_MENU (JOY_RAPID[j][i]), menu_js_rapid[j][i]);
+          }
+                 sprintf(stmp, "#%d", j);
+                 lblRapid[j] = gtk_label_new (stmp);
+                 gtk_widget_show (lblRapid[j]);
+	gtk_frame_set_label_widget (GTK_FRAME (frmJS1b[j]), lblRapid[j]);
+	gtk_label_set_justify (GTK_LABEL (lblRapid[j]), GTK_JUSTIFY_LEFT);
+          }
+	lblJoyStick2 = gtk_label_new ("連射");
+	gtk_widget_show (lblJoyStick2);
+	gtk_notebook_set_tab_label (GTK_NOTEBOOK (propertySheet),
+	gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 4), lblJoyStick2);
+	gtk_label_set_justify (GTK_LABEL (lblJoyStick2), GTK_JUSTIFY_LEFT);
+          
 
 	frmScreen = gtk_frame_new (NULL);
 	gtk_widget_show (frmScreen);
 	gtk_container_add (GTK_CONTAINER (propertySheet), frmScreen);
 	gtk_container_set_border_width (GTK_CONTAINER (frmScreen), 4);
+
 
 	SCP_24K =
 		gtk_check_button_new_with_mnemonic ("ウィンドウモード時に24Hz表示をエミュレート");
@@ -779,7 +904,7 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	lblScreen2 = gtk_label_new ("スクリーン");
 	gtk_widget_show (lblScreen2);
 	gtk_notebook_set_tab_label (GTK_NOTEBOOK (propertySheet),
-		gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 4), lblScreen2);
+		gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 5), lblScreen2);
 	gtk_label_set_justify (GTK_LABEL (lblScreen2), GTK_JUSTIFY_LEFT);
 
 	vbox14 = gtk_vbox_new (FALSE, 4);
@@ -890,7 +1015,7 @@ GtkWidget* FASTCALL OpenPropertyPage(void)
 	lblOption = gtk_label_new ("オプション");
 	gtk_widget_show (lblOption);
 	gtk_notebook_set_tab_label (GTK_NOTEBOOK (propertySheet),
-		gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 5), lblOption);
+                                    gtk_notebook_get_nth_page (GTK_NOTEBOOK (propertySheet), 6), lblOption);
 	gtk_label_set_justify (GTK_LABEL (lblOption), GTK_JUSTIFY_LEFT);
 
 	hbox20 = gtk_hbox_new (FALSE, 8);
