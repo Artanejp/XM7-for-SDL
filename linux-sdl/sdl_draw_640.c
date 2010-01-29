@@ -144,6 +144,43 @@ static inline void __SETDOT_DDRAW_640p(Uint8 *addr, int pitch, DWORD c)
    
 } 
 
+/*
+ * 640x200モード、横二倍拡大プログレッシブ点打ち。(DIRECT DRAW)
+ * ビット配列は[BRG]である
+ */
+static inline void __SETDOT_DDRAW_640p_DBL(Uint8 *addr, int bpp, int pitch, DWORD c)
+{
+
+  
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                    addr[2] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[0] = (c >>16) & 0xff; /* G */
+                    addr += pitch;
+                    addr[2] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[0] = (c >>16) & 0xff; /* G */
+
+#else
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += bpp;
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += (pitch - bpp);
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+                    addr += bpp;
+                    addr[0] = c & 0xff;  /* B */
+                    addr[1] = ( c>>8 ) & 0xff; /* R */
+                    addr[2] = (c >>16) & 0xff; /* G */
+#endif	   
+   
+} 
+
 static inline void __SETBYTE_DDRAW_640p(Uint8 *addr, int bpp, int pitch, DWORD *c)
 {
     __SETDOT_DDRAW_640p(addr, pitch, c[7]);
@@ -186,66 +223,67 @@ static inline void __SETBYTE_DDRAW_640i(Uint8 *addr, int bpp, int pitch, DWORD *
 
 static void __SETBYTE_DDRAW_1280p(Uint8 *addr, int bpp, int pitch, DWORD *c)
 {
-  int i;
-  DWORD c0, c1, c2, c3;
-  for(i = 7; i >=0 ; i-=4) {
-    c0 = c[i];
-    c1 = c[i-1];
-    c2 = c[i-2];
-    c3 = c[i-3];
-    __SETDOT_DDRAW_640p(addr, pitch, c0);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c0);
-    __SETDOT_DDRAW_640p(addr + pitch * 2, pitch, c0);
-    __SETDOT_DDRAW_640p(addr + bpp + pitch * 2, pitch, c0);
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[7]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[7]);
     addr += bpp * 2;
 
-    __SETDOT_DDRAW_640p(addr, pitch, c1);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c1);
-    __SETDOT_DDRAW_640p(addr + pitch * 2, pitch, c1);
-    __SETDOT_DDRAW_640p(addr + bpp + pitch * 2, pitch, c1);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[6]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[6]);
     addr += bpp * 2;
 
-    __SETDOT_DDRAW_640p(addr, pitch, c2);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c2);
-    __SETDOT_DDRAW_640p(addr + pitch * 2, pitch, c2);
-    __SETDOT_DDRAW_640p(addr + bpp + pitch * 2, pitch, c2);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[5]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[5]);
     addr += bpp * 2;
 
-    __SETDOT_DDRAW_640p(addr, pitch, c3);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c3);
-    __SETDOT_DDRAW_640p(addr + pitch * 2, pitch, c3);
-    __SETDOT_DDRAW_640p(addr + bpp + pitch * 2, pitch, c3);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[4]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[4]);
     addr += bpp * 2;
 
-  }
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[3]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[3]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[2]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[2]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[1]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[1]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[0]);
+    __SETDOT_DDRAW_640p_DBL(addr + pitch * 2, bpp, pitch, c[0]);
+    //addr += bpp * 2;
+
+
 }
 
 static void __SETBYTE_DDRAW_1280i(Uint8 *addr, int bpp, int pitch, DWORD *c)
 {
-  int i;
-  DWORD c0, c1, c2, c3;
-  for(i = 7; i >=0 ; i-=4) {
-    c0 = c[i];
-    c1 = c[i-1];
-    c2 = c[i-2];
-    c3 = c[i-3];
-    __SETDOT_DDRAW_640p(addr, pitch, c0);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c0);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[7]);
     addr += bpp * 2;
 
-    __SETDOT_DDRAW_640p(addr, pitch, c1);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c1);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[6]);
     addr += bpp * 2;
 
-    __SETDOT_DDRAW_640p(addr, pitch, c2);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c2);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[5]);
     addr += bpp * 2;
 
-    __SETDOT_DDRAW_640p(addr, pitch, c3);
-    __SETDOT_DDRAW_640p(addr + bpp, pitch, c3);
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[4]);
     addr += bpp * 2;
 
-  }
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[3]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[2]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[1]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL(addr, bpp, pitch, c[0]);
+    addr += bpp * 2;
 
 }
 
@@ -645,9 +683,9 @@ void Draw640(void)
 #else
 		Draw640Sub(nDrawTop >> 1, nDrawBottom >> 1);
 #endif
-		if(!bFullScan){
-			RenderSetOddLine();
-		}
+		//if(!bFullScan){
+		//	RenderSetOddLine();
+		//}
 	}
 
 	BitBlt(nDrawLeft, nDrawTop,

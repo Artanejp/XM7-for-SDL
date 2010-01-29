@@ -56,7 +56,8 @@ WORD nDrawWidth;
 WORD nDrawHeight;
 BOOL bPaletFlag;						/* パレット変更フラグ */
 BOOL bClearFlag;
-						/* クリアフラグ */
+
+static BOOL bOldFullScan;						/* クリアフラグ */
 static WORD nOldDrawWidth;
 static WORD nOldDrawHeight;
 #if XM7_VER >= 3
@@ -80,70 +81,18 @@ extern void Palet640(void);
 extern void Draw400l(void);
 extern void Draw256k(void);
 void SetDrawFlag(BOOL flag);
-
+void RenderSetOddLine(void);
 
 /*
  * SETDOT（そのまま）
  */
 static void SETDOT(WORD x, WORD y, DWORD c)
 {
-  //Uint8 *addr = (Uint8 *)displayArea->pixels + y * displayArea->pitch + x * displayArea->format->BytesPerPixel;
    Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * realDrawArea->pitch + x * realDrawArea->format->BytesPerPixel;
         SDL_LockSurface(realDrawArea);
         *(DWORD *)addr = c;
         SDL_UnlockSurface(realDrawArea);
-   
 } 
-
-
-
-
-/*
- * SETDOT（inline） 拡大モード
- * 32bpp前提,SurfaceLockしません!!
- */
-static inline void __SETDOT_DOUBLE(WORD x, WORD y, DWORD c)
-{
-  //Uint8 *addr = (Uint8 *)displayArea->pixels + y * 2 * displayArea->pitch + x * 2 * displayArea->format->BytesPerPixel;
-  Uint8 *addr = (Uint8 *)realDrawArea->pixels + y * 2 * realDrawArea->pitch + x * 2 * realDrawArea->format->BytesPerPixel;
-  DWORD *addr32;
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c >> 8) | 0xff000000;
-
-                    addr += realDrawArea->format->BytesPerPixel;
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c >> 8) | 0xff000000;
-
-                    addr += realDrawArea->pitch;
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c >> 8) | 0xff000000;
-
-                    addr -= realDrawArea->format->BytesPerPixel;
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c >> 8) | 0xff000000;
-#else
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c << 8) | 0x000000ff;
-
-	   /* 横拡大 */
-                    addr += realDrawArea->format->BytesPerPixel;
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c << 8) | 0x000000ff;
-
-	   /* 縦拡大 */
-                    addr += realDrawArea->pitch;
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c << 8) | 0x000000ff;
-
-                    addr -= realDrawArea->format->BytesPerPixel;
-                    addr32 = (DWORD *)addr;
-                    *addr32 = (c << 8) | 0x000000ff;
-#endif	   
-} 
-
-
 
 static void ChangeResolution()
 {
@@ -171,11 +120,13 @@ static void ChangeResolution()
             if(srcrect.h >dstrect.h) srcrect.h = dstrect.h;
             SDL_BlitSurface(displayArea, &srcrect, tmpSurface, &dstrect);
             /* 表示部分のリサイズ */
+#if 1 /* Use GTK */
             gtk_widget_set_usize(gtkDrawArea, nDrawWidth, nDrawHeight);
             sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
+#endif
             SDL_putenv(EnvMainWindow);
             displayArea = SDL_SetVideoMode(nDrawWidth, nDrawHeight, 24, 
-                             SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF |  0);
+                             SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF |  SDL_ASYNCBLIT | 0);
             printf("RESO CHG: %d x %d -> %d x %d\n", nOldDrawWidth ,nOldDrawHeight, nDrawWidth, nDrawHeight);
             /* 退避したエリアの復帰（原寸…) */
             dstrect.x = 0;
@@ -194,11 +145,18 @@ static void ChangeResolution()
 
             SDL_FreeSurface(tmpSurface);
             /* 以下に、全画面強制再描画処理を入れる */
-
+            if(!bFullScan) {
+              RenderSetOddLine();
+            }
           }
-          nOldDrawHeight = nDrawHeight;
-          nOldDrawWidth = nDrawWidth;
         }
+        if(bDirectDraw) {
+          realDrawArea = SDL_GetVideoSurface();
+        } else {
+          realDrawArea = drawArea;
+        }
+        nOldDrawHeight = nDrawHeight;
+        nOldDrawWidth = nDrawWidth;
 }
 
 /*
@@ -221,6 +179,13 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight, int nSrcLeft, 
    /* SurfaceLock */
    /* データ転送 */
    displayArea = SDL_GetVideoSurface();
+   /* 擬似インタレース設定をここでやる */
+   if(bOldFullScan != bFullScan) {
+     if(!bFullScan) {
+       RenderSetOddLine();
+     }
+   }
+   bOldFullScan = bFullScan;
    if(!bDirectDraw) {
    SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
    }
@@ -229,7 +194,6 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight, int nSrcLeft, 
    SDL_BlitSurface(realDrawArea, &srcrect ,displayArea ,&dstrect );
    }
    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-
 
 }
 
@@ -298,7 +262,7 @@ void InitDraw(void)
 	nOldDrawWidth = 640;
 	nDrawHeight = 400;
 	nDrawWidth = 640;
-
+                 bOldFullScan = TRUE;
 	bPaletFlag = FALSE;
 	SetDrawFlag(FALSE);
 
@@ -329,6 +293,7 @@ void CleanDraw(void)
 void SetDrawFlag(BOOL flag)
 {
 	memset(GDIDrawFlag, (BYTE)flag, sizeof(GDIDrawFlag));
+
 }
 
 /*
@@ -498,7 +463,7 @@ BOOL SelectDraw(void)
         SDL_FillRect(realDrawArea, &rect, 0xff000000); 
 #endif
         SDL_UnlockSurface(realDrawArea);
-
+        bOldFullScan = bFullScan;
    
 	/* セレクト */
 #if XM7_VER >= 3
@@ -833,53 +798,6 @@ void apalet_notify(void)
 	SetDrawFlag(TRUE);
 }
 
-/*
- * 似非フルスクリーン(GTK)。
- */
-void fullscreen_notify_gtk(void)
-{
-        char EnvMainWindow[64];
-        /* Test Code */
-           gtk_widget_set_usize(gtkDrawArea, 1280, 800);
-
-        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
-        SDL_putenv(EnvMainWindow);
-
-        SDL_SetVideoMode(1280,800,24, 
-	    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
-}
-
-/*
- * 似非フルスクリーン(GTK)。
- */
-void standard_notify_gtk(void)
-{
-        char EnvMainWindow[64];
-        /* Test Code */
-           gtk_widget_set_usize(gtkDrawArea, 640, 400);
-
-        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
-        SDL_putenv(EnvMainWindow);
-
-        SDL_SetVideoMode(640,400,24, 
-	    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
-}
-
-   /*
- * 似非フルスクリーン(GTK)。
- */
-void half_notify_gtk(void)
-{
-        char EnvMainWindow[64];
-        /* Test Code */
-           gtk_widget_set_usize(gtkDrawArea, 320, 200);
-
-        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x", gdk_x11_drawable_get_xid(gtkDrawArea->window));
-        SDL_putenv(EnvMainWindow);
-
-        SDL_SetVideoMode(320,200,24, 
-	    		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
-}
 
    
 /*

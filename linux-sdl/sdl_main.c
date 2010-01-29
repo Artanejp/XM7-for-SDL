@@ -141,7 +141,7 @@ static void CreateDrawSDL(GtkWidget *parent)
   SDL_Surface *ret;
 
     ret = SDL_SetVideoMode(640 , 400 , 24 ,
-   		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | 0);
+   		  SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
 
    
    if(ret == NULL) {
