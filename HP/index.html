@@ -1,0 +1,119 @@
+<!--Created by GeoCities Home Page Generator-->
+<html><head><!--����-->
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>XM-7 for SDL</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<FONT SIZE=+4>FM-7 Emulator "XM7" for SDL.</FONT><BR>
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<BR>
+<B>現在のリリースは、
+*  Version 0.1r15 (αレベル) Jan.31,2010<BR>
+です。</B><BR>
+・ダウンロード：<BR>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-bin.0.1.r15.tar.bz2">GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+<BR>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-src.0.1.r15.tar.bz2">ソースコード</A><BR>
+<BR>
+このソフトウェアは無保証です。その上、初期リリースなのでうごかなかったり何かをこわしたりするかも知れません。<BR>
+<BR>
+<HR>
+<BR>
+以下、READMEより：
+<blockquote>
+****<BR>
+* FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux<BR>
+*  Version 0.1r15 (αレベル)<BR>
+*  Copyright (C) 1999-2003 ＰＩ．(ytanaka＠ipc-tokai.or.jp)<BR> 
+*  Copyright (C) 2001-2003 Ryu Takegami<BR>
+*  Copyright (C) 2004 GIMONS<BR>
+*  Copyright (C) 2010 K.Ohta <BR>
+*<BR>
+* 2010.01.31 Artane.<BR>
+* HP:<BR>
+* <A HREF="http://sky.geocities.jp/artanejp/">http://sky.geocities.jp/artanejp/</A><BR>
+* 仮設SVN:<BR>
+* <A HREF="http://xm7-sdl.unfuddle.com/">http://xm7-sdl.unfuddle.com/</A><BR>
+<BR>
+<H3>1.はじめに</H1><BR>
+ 非常に古いマイコンであるFM-7のエミュレータに、XM-7(*0)と言う物があります。<BR>
+ このエミュレータ自体はWin32上で動くものですが、基本的にLinuxしか使っていない私にはあれこれもどかしい物がありました。<BR>
+ そういう事もあって、SDLへの移植をこの一年ちょっと目論んでいたのですが、GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに弄り始めたのでした。<BR>
+(*0) <A HREF="http://retropc.net/ryu/xm7/">http://retropc.net/ryu/xm7/</A><BR>
+(*1) <A HREF="http://www.geocities.jp/kugimoto0715/">http://www.geocities.jp/kugimoto0715/</A><BR>
+
+<H3>2.SDL版の特徴</H1><BR>
+・XM7 V3.4L30ベースです(但し、描画まわりやダイアログが出来ていない所もある)<BR>
+・SDLのダイレクト描画機能を使っている上に多少細工してあるのでそこそこ高速です。<BR>
+・SDL版オリジナル機能として、1280x800ドット描画機能を追加してあります。(*2)<BR>
+<BR>
+(*2) U*ix/SDL向けPC-88エミュレータである<A HREF="http://www.117.ne.jp/~show/pc8801/pc88emu.html">Quasi88</A>に同等の機能があったので…<BR>
+
+<H3>3.ビルド</H1><BR>
+ 以下の物が、必要です。<BR>
+・GTK2/GLIB2<BR>
+・SDL1.2以上<BR>
+・U*ix系OSの場合にはX Window Systemと開発環境、FontConfigなどなど。<BR>
+・GCC 4<BR>
+・SDL_mixer ( <A HREF="http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer">http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer</A>
+)<BR>
+・NASM<BR>
+・GNU MAKE<BR>
+以下は、デバッグ用に使っています。(バイナリにもリンクしてある)<BR>
+・libmemwatch (<A HREF="http://www.linkdata.se/sourcecode/memwatch">http://www.linkdata.se/sourcecode/memwatch</A>
+)<BR>
+
+現状では6809エミュレーションをXM7添付のアセンブラコアでやっているので、ia32でしかビルドできません。（最終的にはSDLMAMEのCコアに移行する予定）<BR>
+amd64環境の方はクロスビルドする必要がありますが、そのままmake出来ちゃいます。多分。<BR>
+<BR>
+libmemwatchはメモリリークをチェックする為の物なので…<BR>
+<BR>
+<H3>4.つかいかた</H3><BR>
+a.xm7の実行型式があるディレクトリィに、以下の物を入れます。<BR>
+・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM<BR>
+・FDDシークの為のWAV<BR>
+<BR>
+b.<BR>
+$ cd [インストールしたディレクトリィ]<BR>
+$ ./xm7<BR>
+
+c.<BR>
+ 手持ちのFD・テープをD77・T77形式に変換した物を動かして見てください。<BR>
+<BR>
+*** 動くことを願っています(ぉぃ ***<BR>
+<BR>
+<H3>5.TIPS</H3><BR>
+<BR>
+a.GNU/Linuxの場合、サウンドドライバとしてALSAを使っていると音飛びなどが目立つと思います。<BR>
+　これは、カーネルのタスクスケジューラの優先度の問題なので、/etc/security/limits.confを変えてやるとほぼ解消出来ます（重い処理の時
+には厳しいですが。)<BR>
+(例)<BR>
+---<BR>
+hoge      -        rtprio          99<BR>
+hoge      -        nice            -2<BR>
+---<BR>
+hogeはユーザ名など。<BR>
+詳しくは、man limits.conf してみてください。<BR>
+
+b.memwatchなどのビルドでクロスビルドが必要になるかもしれません。<BR>
+　詳しくはmakefile.sdl.amd64を読んで見てください(無責任…)<BR>
+</blockquote>
+<HR>
+<P ALIGN="right">Jan. 31,2010 Artane. (whatisthis.sowhat AT gmail.com )</P>
+<!--LINE2-->
+<p>
+<!--LINE3-->
+<p>
+<!--LINE4-->
+<p>
+</body>
+</html>
+
