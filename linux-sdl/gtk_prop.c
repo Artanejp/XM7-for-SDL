@@ -1,21 +1,21 @@
 /*
- *  FM-7 EMULATOR "XM7"  Copyright (C) 2004 GIMONS  [ XWIN
- * プロパティウィンドウ ] 
- */  
-    
-#ifdef _XWIN
-    
-#include<gtk/gtk.h>
+ *  FM-7 EMULATOR "XM7"
+ *  Copyright (C) 2004 GIMONS
+ * [ XWINプロパティウィンドウ ] 
+ */
+#ifdef USE_GTK
+
+#include <gtk/gtk.h>
 #include "xm7.h"
 #include "sdl.h"
 #include "sdl_cfg.h"
 #include "sdl_prop.h"
-    
-    /*
-     *  グローバル ワーク 
-     */ 
-    GtkWidget * winProperty;
-GtkWidget * GP_FM7;
+
+/*
+ *  グローバル ワーク 
+ */
+GtkWidget      *winProperty;
+GtkWidget      *GP_FM7;
 GtkWidget * GP_FM77AV;
 #if XM7_VER >= 3
 GtkWidget      *GP_AV40EX;
@@ -102,24 +102,24 @@ int             GP_CPUCOMBO_IDX;
 /*-[ サポート関数 ]-----------------------------------------------------*/ 
     
     /*
-     *  チェック、ラジオボタンのチェック 
-     */ 
+     *  チェック、ラジオボタンのチェック 
+     */
 void            FASTCALL
 CheckDlgButton(GtkWidget * widget, BOOL b)
 {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), (gboolean) b);
-} 
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), (gboolean) b);
+}
     /*
-     *  オプションメニューのインデックス移動 
-     */ 
+     *  オプションメニューのインデックス移動 
+     */
 void            FASTCALL
 SelectOptionMenu(GtkWidget * widget, guint i)
 {
-    gtk_option_menu_set_history(GTK_OPTION_MENU(widget), i);
-} 
+    gtk_option_menu_set_history(GTK_OPTION_MENU(widget), i);
+}
     /*
-     *  オプションメニューのインデックス取得 
-     */ 
+     *  オプションメニューのインデックス取得 
+     */
 int             FASTCALL
 GetIdxOptionMenu(GtkWidget * widget)
 {

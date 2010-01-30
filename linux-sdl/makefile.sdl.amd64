@@ -5,9 +5,9 @@
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
-#OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH -DUSE_OPENGL
 OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
 #OPTION		= -DMOUSE -DMR2 -DMEMWATCH 
+OPTION		+= -DUSE_GTK
 
 COMMONSRC = \
         aluline.c \
@@ -55,10 +55,11 @@ COMMONSRC = \
 #	kanji.c      mouse.c      schedule.c   thg.c
 
 LOCALSRC = \
-	sdl_gtkdlg.c sdl_cfg.c sdl_prop.c sdl_inifile.c sdl_bar.c \
+	sdl_gtkdlg.c sdl_cfg.c  sdl_inifile.c sdl_bar.c \
                  sdl_cmd.c sdl_sch.c sdl_draw.c sdl_kbd.c sdl_file.c sdl_snd.cpp \
 	sdl_main.c \
                  sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c \
+	gtk_prop.c
 #                 xw_sub.asm 
 
 COMMONOBJ = \
@@ -116,7 +117,7 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 # for Cross Build
 LDFLAGS = "-Wl,-rpath,/usr/lib32,-rpath,/usr/local/lib32,-rpath,/lib32 -L/usr/lib32 -L/usr/local/lib32 -L/lib32"
 #LDFLAGS=""
-LIBS = ${LDFLAGS} -lX11 -lXt -lXext -lm -lc -lstdc++ -lmemwatch
+LIBS = ${LDFLAGS} -lX11 -lXt -lXext -lm -lc -lstdc++ -lm -lmemwatch
 
 
 #CFLAGS = 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DCPU_ASM -O3 -I/usr/X11R6/include -I. `pkg-config --cflags  gtk+-2.0 gthread-2.0`

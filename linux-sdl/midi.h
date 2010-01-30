@@ -1,10 +1,10 @@
 /*
- *	FM-7 EMULATOR "XM7"
+ *      FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2010 Ryu Takegami
  *
- *	[ MIDIアダプタ ]
+ *      [ MIDIアダプタ ]
  */
 
 #ifndef _midi_h_
@@ -12,7 +12,9 @@
 
 #ifdef MIDI
 
-/* ステータスレジスタ */
+/*
+ * ステータスレジスタ 
+ */
 #define	RSS_DSR			0x80
 #define	RSS_SYNDET		0x40
 #define	RSS_FRAMEERR	0x20
@@ -22,7 +24,9 @@
 #define	RSS_RXRDY		0x02
 #define	RSS_TXRDY		0x01
 
-/* モードコマンドレジスタ */
+/*
+ * モードコマンドレジスタ 
+ */
 #define	RSM_STOPBITM	0xc0
 #define	RSM_STOPBIT1	0x40
 #define	RSM_STOPBIT15	0x80
@@ -40,7 +44,9 @@
 #define	RSM_BAUDDIV16	0x02
 #define	RSM_BAUDDIV64	0x03
 
-/* コマンドレジスタ */
+/*
+ * コマンドレジスタ 
+ */
 #define	RSC_EH			0x80
 #define	RSC_IR			0x40
 #define	RSC_RTS			0x20
@@ -52,34 +58,49 @@
 
 
 #ifdef __cplusplus
-extern "C" {
+extern          "C" {
 #endif
-/*
- *	主要エントリ
- */
-BOOL FASTCALL midi_init(void);
-										/* 初期化 */
-void FASTCALL midi_cleanup(void);
-										/* クリーンアップ */
-void FASTCALL midi_reset(void);
-										/* リセット */
-BOOL FASTCALL midi_readb(WORD addr, BYTE *dat);
-										/* メモリ読み出し */
-BOOL FASTCALL midi_writeb(WORD addr, BYTE dat);
-										/* メモリ書き込み */
-BOOL FASTCALL midi_save(int fileh);
-										/* セーブ */
-BOOL FASTCALL midi_load(int fileh, int ver);
-										/* ロード */
+    /*
+     *      主要エントリ
+     */
+    BOOL FASTCALL   midi_init(void);
+    /*
+     * 初期化 
+     */
+    void FASTCALL   midi_cleanup(void);
+    /*
+     * クリーンアップ 
+     */
+    void FASTCALL   midi_reset(void);
+    /*
+     * リセット 
+     */
+    BOOL FASTCALL   midi_readb(WORD addr, BYTE * dat);
+    /*
+     * メモリ読み出し 
+     */
+    BOOL FASTCALL   midi_writeb(WORD addr, BYTE dat);
+    /*
+     * メモリ書き込み 
+     */
+    BOOL FASTCALL   midi_save(int fileh);
+    /*
+     * セーブ 
+     */
+    BOOL FASTCALL   midi_load(int fileh, int ver);
+    /*
+     * ロード 
+     */
 
-/*
- *	主要ワーク
- */
-extern BOOL midi_busy;
-										/* MIDIバッファオーバーフロー */
+    /*
+     *      主要ワーク
+     */
+    extern BOOL     midi_busy;
+    /*
+     * MIDIバッファオーバーフロー 
+     */
 #ifdef __cplusplus
 }
 #endif
-
-#endif	/* MIDI */
-#endif	/* _midi_h_ */
+#endif				/* MIDI */
+#endif				/* _midi_h_ */
