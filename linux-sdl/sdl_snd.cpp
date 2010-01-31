@@ -101,29 +101,26 @@ static BOOL     bMode;		/* FM高品質合成モード */
 static UINT     uStereo;	/* 出力モード */
 static UINT     uSample;	/* サンプルカウンタ */
 static UINT     uBeep;		/* BEEP波形カウンタ */
-static FM::OPN *pOPN[3];			/* OPNデバイス */
-static int
-    nScale[3];			/* OPNプリスケーラ */
-static BYTE
-    uCh3Mode[3];		/* OPN Ch.3モード */
-static BOOL
-    bInitFlag;			/* 初期化フラグ */
-static WORD    *
-    pWavCapture;		/* キャプチャバッファ(64KB) */
-static UINT
-    nWavCapture;		/* キャプチャバッファ実データ 
-				 */
-static DWORD
-    dwWavCapture;		/* キャプチャファイルサイズ */
-static WORD
-    uChannels;			/* 出力チャンネル数 */
-static BOOL
-    bBeepFlag;			/* BEEP出力 */
-static BOOL bPartMute[3][6];		/* パートミュートフラグ */
-static int nBeepLevel;		/* BEEP音出力レベル */
-static int nCMTLevel;		/* CMT音モニタ出力レベル */
+static int      nFMVol;
+static int      nPSGVol;
+static int      nBeepVol;
+static int      nCMTVol;
+static int      nWavVol;
+static UINT     uChanSep;
+static FM::OPN  *pOPN[3];			/* OPNデバイス */
+static int      nScale[3];			/* OPNプリスケーラ */
+static BYTE     uCh3Mode[3];		/* OPN Ch.3モード */
+static BOOL     bInitFlag;			/* 初期化フラグ */
+static WORD     *pWavCapture;		/* キャプチャバッファ(64KB) */
+static UINT     nWavCapture;		/* キャプチャバッファ実データ */
+static DWORD    dwWavCapture;		/* キャプチャファイルサイズ */
+static WORD     uChannels;			/* 出力チャンネル数 */
+static BOOL     bBeepFlag;			/* BEEP出力 */
+static BOOL     bPartMute[3][6];		/* パートミュートフラグ */
+static int      nBeepLevel;		/* BEEP音出力レベル */
+static int      nCMTLevel;		/* CMT音モニタ出力レベル */
 #ifdef FDDSND
-static int nWaveLevel;		/* 各種効果音出力レベル */
+static int      nWaveLevel;		/* 各種効果音出力レベル */
 #endif
 
 static BOOL   bTapeFlag;			/* 現在のテープ出力状態 */
@@ -303,12 +300,18 @@ InitSnd(void)
     bForceStereo = FALSE;
     bTapeMon = TRUE;
     uChSeparation = 9;
+    uChanSep = uChSeparation;
     nFMVolume = 0;
+    nFMVol = nFMVolume;
     nPSGVolume = -2;
+    nPSGVol = nPSGVolume;
     nBeepVolume = -24;
+    nBeepVol = nBeepVolume;
     nCMTVolume = -24;
+    nCMTVol = nCMTVolume;
     nWaveVolume = 0;
-  
+    nWavVol = nWaveVolume;
+
     iTotalVolume = SDL_MIX_MAXVOLUME - 1;
     hWavCapture = -1;
     bWavCapture = FALSE;
@@ -738,6 +741,12 @@ SelectSnd(void)
     uTick = nSoundBuffer;
     bMode = bFMHQmode;
     uStereo = nStereoOut;
+    nFMVol = nFMVolume;
+    nPSGVol = nPSGVolume;
+    nCMTVol = nCMTVolume;
+    nBeepVol = nBeepVolume;
+    nWavVol = nWaveVolume;
+    uChanSep = uChSeparation;
     dwExecLocal = dwExecTotal;
     bNowBank = 0;
     uTapeDelta = 0;
@@ -934,7 +943,10 @@ ApplySnd(void)
      * パラメータ一致チェック 
      */
     if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
-	(bMode == bFMHQmode) && (uStereo == nStereoOut)) {
+        (bMode == bFMHQmode) && (uStereo == nStereoOut) &&
+        (nFMVol == nFMVolume) && (nPSGVol == nPSGVolume) &&
+        (nBeepVol == nBeepVolume) && (nCMTVol == nCMTVolume) &&
+        (nWavVol == nWaveVolume) && (uChanSep == uChSeparation)) {
 	return;
     }
     printf("Apply!\n");

@@ -1254,6 +1254,55 @@ OptPageApply(void)
 }
 
 
+/*-[ オプションページ ]-----------------------------------------------------*/ 
+    
+    /*
+     *  音量ページ ダイアログ初期化 
+     */ 
+static void
+VolumePageInit(void) 
+{
+    
+/*
+ * シート初期化 
+ */ 
+        SheetInit();
+    
+/*
+ * Scale Barに実値を設定する
+ */        
+        gtk_range_set_value(GTK_RANGE(VOLUME_FM), propdat.nFMVolume);
+        gtk_range_set_value(GTK_RANGE(VOLUME_PSG), propdat.nPSGVolume);
+        gtk_range_set_value(GTK_RANGE(VOLUME_BEEP), propdat.nBeepVolume);
+        gtk_range_set_value(GTK_RANGE(VOLUME_TAPE), propdat.nCMTVolume);
+#ifdef FDDSND
+        gtk_range_set_value(GTK_RANGE(VOLUME_WAV), propdat.nWaveVolume);
+#endif
+}
+
+
+/*
+ *  音量ページ 適用 
+ */ 
+static void
+VolumePageApply(void) 
+{
+    
+/*
+ * ステート変更 
+ */ 
+        uPropertyState = 2;
+        propdat.nFMVolume = gtk_range_get_value(GTK_RANGE(VOLUME_FM));
+        propdat.nPSGVolume = gtk_range_get_value(GTK_RANGE(VOLUME_PSG));
+        propdat.nBeepVolume = gtk_range_get_value(GTK_RANGE(VOLUME_BEEP));
+        propdat.nCMTVolume = gtk_range_get_value(GTK_RANGE(VOLUME_TAPE));
+#ifdef FDDSND
+        propdat.nWaveVolume = gtk_range_get_value(GTK_RANGE(VOLUME_WAV));
+#endif
+        propdat.uChSeparation = 9;
+        
+}
+
 /*-[ プロパティシート ]-----------------------------------------------------*/ 
     
     /*
@@ -1299,6 +1348,7 @@ OnConfig(GtkWidget * widget, gpointer data)
         JsRapidPageInit();
         ScrPageInit();
         OptPageInit();
+        VolumePageInit();
 } 
 
 /*
@@ -1316,6 +1366,7 @@ OnConfig_OK(GtkWidget * widget, gpointer data)
         JsRapidPageApply();
         ScrPageApply();
         OptPageApply();
+        VolumePageApply();
     
 /*
  * okなので、データ転送 

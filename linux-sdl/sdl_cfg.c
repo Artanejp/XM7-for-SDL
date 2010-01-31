@@ -270,16 +270,16 @@ LoadCfg(void)
             configdat.nPSGVolume = PSGVOLUME_DEFAULT;
     }       
    configdat.nBeepVolume = LoadCfgInt("BeepVolume", BEEPVOLUME_DEFAULT);
-   if ((configdat.nBeepVolume < -96) || (configdat.nBeepVolume > 0)) {
+   if ((configdat.nBeepVolume < -96) || (configdat.nBeepVolume > 6)) { /* 最大値変更 */
            configdat.nBeepVolume = BEEPVOLUME_DEFAULT;
    }       
    configdat.nCMTVolume = LoadCfgInt("CMTVolume", CMTVOLUME_DEFAULT);
-   if ((configdat.nCMTVolume < -96) || (configdat.nCMTVolume > 0)) {
+   if ((configdat.nCMTVolume < -96) || (configdat.nCMTVolume > 6)) { /* 最大値変更 */
            configdat.nCMTVolume = CMTVOLUME_DEFAULT;
    }       
 #ifdef FDDSND
    configdat.nWaveVolume = LoadCfgInt("WaveVolume", WAVEVOLUME_DEFAULT);
-   if ((configdat.nWaveVolume < -96) || (configdat.nWaveVolume > 0)) {
+   if ((configdat.nWaveVolume < -96) || (configdat.nWaveVolume > 6)) {/* 最大値変更 */
            configdat.nWaveVolume = WAVEVOLUME_DEFAULT;
     }       
     configdat.bFddSound = LoadCfgBool("FDDSound", FALSE);
@@ -289,83 +289,88 @@ LoadCfg(void)
 /*
  * Keyboardセクション 
  */ 
-        SetCfgSection("Keyboard");
-        configdat.bKbdReal = LoadCfgBool("RealTimeKeyScan", FALSE);
-        configdat.bTenCursor = LoadCfgBool("UseArrowFor10Key", FALSE);
-        configdat.bArrow8Dir = LoadCfgBool("Arrow8Dir", TRUE);
-        flag = FALSE;
+    SetCfgSection("Keyboard");
+    configdat.bKbdReal = LoadCfgBool("RealTimeKeyScan", FALSE);
+    configdat.bTenCursor = LoadCfgBool("UseArrowFor10Key", FALSE);
+    configdat.bArrow8Dir = LoadCfgBool("Arrow8Dir", TRUE);
+    flag = FALSE;
     
-	// /* キーマップ読み込み */
-	// for (i=0; i<256; i++) {
-	// sprintf(string, "Key%d", i);
-	// j = i;
-	// configdat.KeyMap[j] = (BYTE)LoadCfgInt(string, 0);
-	// 
-	// if (configdat.KeyMap[j] != 0) {
-	// flag = TRUE;
-	// }
-	// }
-	// /*
-	// キーマップ設定なき時はデフォルトキーマップ。 
-	// 
-	// */
-	// if (!flag) {
-	// GetDefMapKbd(configdat.KeyMap, 0);
-	// }
-	/*
-	 * JoyStickセクション 
-	 */ 
-	SetCfgSection("JoyStick");
+// /* キーマップ読み込み */
+// for (i=0; i<256; i++) {
+// sprintf(string, "Key%d", i);
+// j = i;
+// configdat.KeyMap[j] = (BYTE)LoadCfgInt(string, 0);
+// 
+// if (configdat.KeyMap[j] != 0) {
+// flag = TRUE;
+// }
+// }
+// /*
+// キーマップ設定なき時はデフォルトキーマップ。 
+// 
+// */
+// if (!flag) {
+// GetDefMapKbd(configdat.KeyMap, 0);
+// }
+/*
+ * JoyStickセクション 
+ */ 
+    SetCfgSection("JoyStick");
     for (i = 0; i < 2; i++) {
-	sprintf(string, "Type%d", i);
-	configdat.nJoyType[i] = LoadCfgInt(string, 0);
-	if ((configdat.nJoyType[i] < 0) || (configdat.nJoyType[i] > 4)) {
-	    configdat.nJoyType[i] = 0;
-	}
-	for (j = 0; j < 2; j++) {
-	    sprintf(string, "Rapid%d", i * 10 + j);
-	    configdat.nJoyRapid[i][j] = LoadCfgInt(string, 0);
-	    if ((configdat.nJoyRapid[i][j] < 0)
-		 || (configdat.nJoyRapid[i][j] > 9)) {
-		configdat.nJoyRapid[i][j] = 0;
-	    }
-	}
-	flag = TRUE;
-	for (j = 0; j < 7; j++) {
-	    sprintf(string, "Code%d", i * 10 + j);
-	    configdat.nJoyCode[i][j] = LoadCfgInt(string, -1);
-	    if ((configdat.nJoyCode[i][j] < 0)
-		 || (configdat.nJoyCode[i][j] > 0x75)) {
-		flag = FALSE;
-	    }
-	}
+            sprintf(string, "Type%d", i);
+            configdat.nJoyType[i] = LoadCfgInt(string, 0);
+            if ((configdat.nJoyType[i] < 0) || (configdat.nJoyType[i] > 4)) {
+                    configdat.nJoyType[i] = 0;
+            }       
+            for (j = 0; j < 2; j++) {
+                    sprintf(string, "Rapid%d", i * 10 + j);
+                    configdat.nJoyRapid[i][j] = LoadCfgInt(string, 0);
+                    if ((configdat.nJoyRapid[i][j] < 0)
+                        || (configdat.nJoyRapid[i][j] > 9)) {
+                            configdat.nJoyRapid[i][j] = 0;
+	    }   
+            }
+            flag = TRUE;
+            for (j = 0; j < 7; j++) {
+                    sprintf(string, "Code%d", i * 10 + j);
+                    configdat.nJoyCode[i][j] = LoadCfgInt(string, -1);
+                    if ((configdat.nJoyCode[i][j] < 0)
+                        || (configdat.nJoyCode[i][j] > 0x75)) {
+                            flag = FALSE;
+                    }   
+            }
 	
-	    /*
-	     * レンジエラーなら初期値設定 
-	     */ 
-	    if (!flag) {
-	    for (j = 0; j < 7; j++) {
-		configdat.nJoyCode[i][j] = JoyTable[j];
-	    }
-	}
+/*
+ * レンジエラーなら初期値設定 
+ */ 
+            if (!flag) {
+                    for (j = 0; j < 7; j++) {
+                            configdat.nJoyCode[i][j] = JoyTable[j];
+                    }
+            }
     }
     
-	/*
-	 * Screenセクション 
-	 */ 
-	SetCfgSection("Screen");
+/*
+ * Screenセクション 
+ */ 
+    SetCfgSection("Screen");
     configdat.bFullScan = LoadCfgBool("FullScan", FALSE);
     
-	/*
-	 * 現状、uWIDTH, uHeightは初期値固定 
-	 */ 
-	configdat.uWidth = 640;
-    configdat.uHeight = 400;
+    configdat.uWidth = LoadCfgInt("DrawWidth", 640); 
+    if((configdat.uWidth != 640) && (configdat.uWidth != 1280) 
+       && (configdat.uWidth != 320)) {
+            configdat.uWidth = 640;
+    }
+    configdat.uHeight = LoadCfgInt("DrawHeight", 400);
+    if((configdat.uHeight != 400) && (configdat.uHeight != 200) 
+       && (configdat.uHeight != 800) ){
+                configdat.uHeight = 400;
+    }
     
-	/*
-	 * Optionセクション 
-	 */ 
-	SetCfgSection("Option");
+/*
+ * Optionセクション 
+ */ 
+    SetCfgSection("Option");
     configdat.bOPNEnable = LoadCfgBool("OPNEnable", TRUE);
     configdat.bWHGEnable = LoadCfgBool("WHGEnable", TRUE);
     configdat.bTHGEnable = LoadCfgBool("THGEnable", TRUE);
@@ -379,7 +384,7 @@ LoadCfg(void)
     
 #endif				/*  */
 #ifdef MOUSE
-	configdat.bMouseCapture = LoadCfgBool("MouseEmulation", FALSE);
+    configdat.bMouseCapture = LoadCfgBool("MouseEmulation", FALSE);
     configdat.nMousePort = (BYTE) LoadCfgInt("MousePort", 1);
     configdat.nMidBtnMode =
 	(BYTE) LoadCfgInt("MidBtnMode", MOSCAP_WMESSAGE);
@@ -445,7 +450,8 @@ SaveCfg(void)
 				 */
     for (i = 0; i < 5; i++) {
             SaveCfgString((char *) InitDirStr[i], InitialDir[i]);
-    } SaveCfgInt("Version", configdat.fm7_ver);
+    }
+    SaveCfgInt("Version", configdat.fm7_ver);
     SaveCfgBool("CycleSteal", configdat.cycle_steal);
     SaveCfgInt("MainSpeed", configdat.main_speed);
     SaveCfgInt("MMRSpeed", configdat.mmr_speed);
@@ -461,14 +467,13 @@ SaveCfg(void)
     SaveCfgBool("AutoSpeedAdjust", configdat.bSpeedAdjust);
     
 #ifdef FDDSND
-	SaveCfgBool("FDDWait", configdat.bFddWait);
-    
+    SaveCfgBool("FDDWait", configdat.bFddWait);
 #endif				/*  */
 	
 	/*
 	 * Soundセクション 
 	 */ 
-	SetCfgSection("Sound");
+    SetCfgSection("Sound");
     SaveCfgInt("SampleRate", configdat.nSampleRate);
     SaveCfgInt("SoundBuffer", configdat.nSoundBuffer);
     SaveCfgInt("BeepFreq", configdat.nBeepFreq);
@@ -489,40 +494,41 @@ SaveCfg(void)
 #endif
 
 	
-	/*
-	 * Keyboardセクション 
-	 */ 
-	SetCfgSection("Keyboard");
+/*
+ * Keyboardセクション 
+ */ 
+    SetCfgSection("Keyboard");
     SaveCfgBool("RealTimeKeyScan", configdat.bKbdReal);
     SaveCfgBool("UseArrowFor10Key", configdat.bTenCursor);
     SaveCfgBool("Arrow8Dir", configdat.bArrow8Dir);
     
-	/*
-	 * JoyStickセクション 
-	 */ 
-	SetCfgSection("JoyStick");
+/*
+ * JoyStickセクション 
+ */ 
+    SetCfgSection("JoyStick");
     for (i = 0; i < 2; i++) {
-	sprintf(string, "Type%d", i);
-	SaveCfgInt(string, configdat.nJoyType[i]);
-	for (j = 0; j < 2; j++) {
-	    sprintf(string, "Rapid%d", i * 10 + j);
-	    SaveCfgInt(string, configdat.nJoyRapid[i][j]);
-	}
-	for (j = 0; j < 7; j++) {
-	    sprintf(string, "Code%d", i * 10 + j);
-	    SaveCfgInt(string, configdat.nJoyCode[i][j]);
-	}
+            sprintf(string, "Type%d", i);
+            SaveCfgInt(string, configdat.nJoyType[i]);
+            for (j = 0; j < 2; j++) {
+                    sprintf(string, "Rapid%d", i * 10 + j);
+                    SaveCfgInt(string, configdat.nJoyRapid[i][j]);
+            }
+            for (j = 0; j < 7; j++) {
+                    sprintf(string, "Code%d", i * 10 + j);
+                    SaveCfgInt(string, configdat.nJoyCode[i][j]);
+            }
     }
     
-	/*
-	 * Screenセクション 
-	 */ 
-	SetCfgSection("Screen");
+/*
+ * Screenセクション 
+ */ 
+    SetCfgSection("Screen");
     SaveCfgBool("FullScan", configdat.bFullScan);
-    
-	/*
-	 * Optionセクション 
-	 */ 
+    SaveCfgInt("DrawWidth", configdat.uWidth);
+    SaveCfgInt("DrawHeight", configdat.uHeight);
+/*
+ * Optionセクション 
+ */ 
     SetCfgSection("Option");
     DeleteCfg("SubBusyDelay");	/* V3.1で廃止 */
     SaveCfgBool("OPNEnable", configdat.bOPNEnable);
@@ -554,9 +560,9 @@ void
 ApplyCfg(void) 
 {
     
-	/*
-	 * Generalセクション 
-	 */ 
+/*
+ * Generalセクション 
+ */ 
     fm7_ver = configdat.fm7_ver;
     cycle_steal = configdat.cycle_steal;
     main_speed = configdat.main_speed * 10;
@@ -589,11 +595,22 @@ ApplyCfg(void)
     bForceStereo = configdat.bForceStereo;
     bTapeMon = configdat.bTapeMon;
     tape_monitor = configdat.bTapeMon;
+
     
 #ifdef FDDSND
     fdc_sound = configdat.bFddSound;
     tape_sound = configdat.bFddSound;
+#endif
+    /* 音量設定 */
+    uChSeparation = configdat.uChSeparation;
+    nFMVolume = configdat.nFMVolume;
+    nPSGVolume = configdat.nPSGVolume;
+    nBeepVolume = configdat.nBeepVolume;
+    nCMTVolume = configdat.nCMTVolume;
+#ifdef FDDSND
+    nWaveVolume = configdat.nWaveVolume;
 #endif				/*  */
+
     ApplySnd();
     
 /*

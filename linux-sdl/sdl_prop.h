@@ -93,7 +93,14 @@ extern GtkWidget *OP_DIGITIZEB;
 #if XM7_VER >= 3
 extern GtkWidget *OP_RAMB;
 #endif				/*  */
+extern GtkWidget *VOLUME_FM;
+extern GtkWidget *VOLUME_PSG;
+extern GtkWidget *VOLUME_BEEP;
+extern GtkWidget *VOLUME_TAPE;
+extern GtkWidget *VOLUME_WAV;
+
 extern int      GP_CPUCOMBO_IDX;
+
 
     /*
      *  主要エントリ 
