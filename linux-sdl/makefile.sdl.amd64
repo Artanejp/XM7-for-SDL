@@ -59,7 +59,8 @@ LOCALSRC = \
                  sdl_cmd.c sdl_sch.c sdl_draw.c sdl_kbd.c sdl_file.c sdl_snd.cpp \
 	sdl_main.c \
                  sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c \
-	gtk_prop.c
+	gtk_prop.c \
+                 gtk_cfgdlg.c
 #                 xw_sub.asm 
 
 COMMONOBJ = \
@@ -107,6 +108,7 @@ LOCALOBJ = \
 	sdl_snd.o sdl_main.o \
                  sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o \
                  sdl_draw.o \
+                 gtk_cfgdlg.o
 #	xw_sub.o 
 
 .SUFFIXES: .c .cpp .asm .o
