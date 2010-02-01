@@ -1126,7 +1126,7 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
 
    
     //VOLUME_FM = gtk_hscale_new_with_range(-96.0, +10.0, -3.0);
-    VOLUME_FM = gtk_hscale_new_with_range(-35.0, +10.0, -3.0);      
+    VOLUME_FM = gtk_hscale_new_with_range(-35.0, +10.0, 1.0);      
     gtk_widget_show(VOLUME_FM);
     gtk_container_add(GTK_CONTAINER(frmFMVolume), VOLUME_FM);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_FM), 1);
@@ -1151,7 +1151,7 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_set_border_width(GTK_CONTAINER(frmPSGVolume), 1);
 
     //VOLUME_PSG = gtk_hscale_new_with_range(-96.0, +10.0, -3.0);
-    VOLUME_PSG = gtk_hscale_new_with_range(-35.0, +10.0, -3.0);     
+    VOLUME_PSG = gtk_hscale_new_with_range(-35.0, +10.0, 1.0);     
     gtk_widget_show(VOLUME_PSG);
     gtk_container_add(GTK_CONTAINER(frmPSGVolume), VOLUME_PSG);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_PSG), 1);
@@ -1175,7 +1175,7 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_set_border_width(GTK_CONTAINER(frmBEEPVolume), 1);
 
     //VOLUME_BEEP = gtk_hscale_new_with_range(-96.0, +3.0, -3.0);
-    VOLUME_BEEP = gtk_hscale_new_with_range(-35.0, +3.0, -6.0);
+    VOLUME_BEEP = gtk_hscale_new_with_range(-35.0, +6.0, 1.0);
     gtk_widget_show(VOLUME_BEEP);
     gtk_container_add(GTK_CONTAINER(frmBEEPVolume), VOLUME_BEEP);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_BEEP), 1);
@@ -1199,7 +1199,7 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_set_border_width(GTK_CONTAINER(frmTAPEVolume), 1);
 
     //VOLUME_TAPE = gtk_hscale_new_with_range(-96.0, +3.0, -3.0);
-    VOLUME_TAPE = gtk_hscale_new_with_range(-35.0, +6.0, -3.0);     
+    VOLUME_TAPE = gtk_hscale_new_with_range(-35.0, +6.0, 1.0);     
     gtk_widget_show(VOLUME_TAPE);
     gtk_container_add(GTK_CONTAINER(frmTAPEVolume), VOLUME_TAPE);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_TAPE), 1);
@@ -1224,7 +1224,7 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_set_border_width(GTK_CONTAINER(frmWAVVolume), 1);
 
     //VOLUME_WAV = gtk_hscale_new_with_range(-96.0, +3.0, -3.0);
-    VOLUME_WAV = gtk_hscale_new_with_range(-35.0, +6.0, -3.0);
+    VOLUME_WAV = gtk_hscale_new_with_range(-35.0, +6.0, 1.0);
     gtk_widget_show(VOLUME_WAV);
     gtk_container_add(GTK_CONTAINER(frmWAVVolume), VOLUME_WAV);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_WAV), 1);
