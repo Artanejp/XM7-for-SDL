@@ -10,8 +10,6 @@
  *               20100125 sdl_draw.cを分割
  */
 
-#ifdef _XWIN
-
 #include <SDL/SDL.h>
 #include "xm7.h"
 #include "multipag.h"
@@ -25,107 +23,83 @@
 #include "sdl_drawcommon.h"
 
 /*
- *      グローバル ワーク(のextern設定)
- */
-extern DWORD    rgbTTLGDI[16];	/* デジタルパレット */
-extern DWORD    rgbAnalogGDI[4096];	/* アナログパレット */
-// guchar pBitsGDI[400*640*3]; /* ビットデータ */
-extern BYTE     GDIDrawFlag[4000];	/* 8x8 再描画領域フラグ */
-extern BOOL     bFullScan;	/* フルスキャン(Window) */
-extern BOOL     bDirectDraw;	/* 直接書き込みフラグ */
-extern SDL_Surface *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) 
-					 */
-extern WORD     nDrawTop;	/* 描画範囲上 */
-extern WORD     nDrawBottom;	/* 描画範囲下 */
-extern WORD     nDrawLeft;	/* 描画範囲左 */
-extern WORD     nDrawRight;	/* 描画範囲右 */
-extern BOOL     bPaletFlag;	/* パレット変更フラグ */
-extern BOOL     bClearFlag;	/* クリアフラグ */
-
-
-
-
-
-/*
  *      320x200、アナログモード
  *      パレット設定
  */
 void
 Palet320()
 {
-    int             i,
-                    j;
-    DWORD           color;
-    DWORD           r,
-                    g,
-                    b;
-    int             amask;
+        int     i,
+                j;
+        DWORD   color;
+        DWORD   r,
+                g,
+                b;
+        int     amask;
 
-    /*
-     * アナログマスクを作成 
-     */
-    amask = 0;
-    if (!(multi_page & 0x10)) {
-	amask |= 0x000f;
-    }
-    if (!(multi_page & 0x20)) {
-	amask |= 0x00f0;
-    }
-    if (!(multi_page & 0x40)) {
-	amask |= 0x0f00;
-    }
-
-    for (i = 0; i < 4096; i++) {
-	/*
-	 * 最下位から5bitづつB,G,R 
-	 */
-	color = 0;
-	if (crt_flag) {
-	    j = i & amask;
-	    r = apalet_r[j];
-	    g = apalet_g[j];
-	    b = apalet_b[j];
-	} else {
-	    r = 0;
-	    g = 0;
-	    b = 0;
+/*
+ * アナログマスクを作成 
+ */
+        amask = 0;
+        if (!(multi_page & 0x10)) {
+                amask |= 0x000f;
+        }
+        if (!(multi_page & 0x20)) {
+                amask |= 0x00f0;
+        }
+        if (!(multi_page & 0x40)) {
+                amask |= 0x0f00;
+        }
+        for (i = 0; i < 4096; i++) {
+                /*
+                 * 最下位から5bitづつB,G,R 
+                 */
+                color = 0;
+                if (crt_flag) {
+                        j = i & amask;
+                        r = apalet_r[j];
+                        g = apalet_g[j];
+                        b = apalet_b[j];
+                } else {
+                        r = 0;
+                        g = 0;
+                        b = 0;
 	}
+                /*
+                 * R 
+                 */
+                r <<= 4;
+                if (r > 0) {
+                        r |= 0x0f;
+                }
+                color |= r;
+                color <<= 8;
 
-	/*
-	 * R 
-	 */
-	r <<= 4;
-	if (r > 0) {
-	    r |= 0x0f;
-	}
-	color |= r;
-	color <<= 8;
+                /*
+                 * G 
+                 */
+                g <<= 4;
+                if (g > 0) {
+                        g |= 0x0f;
+                }
+                color |= g;
+                color <<= 8;
 
-	/*
-	 * G 
-	 */
-	g <<= 4;
-	if (g > 0) {
-	    g |= 0x0f;
-	}
-	color |= g;
-	color <<= 8;
-
-	/*
-	 * B 
-	 */
-	b <<= 4;
-	if (b > 0) {
-	    b |= 0x0f;
-	}
-	color |= b;
+                /*
+                 * B 
+                 */
+                b <<= 4;
+                if (b > 0) {
+                        b |= 0x0f;
+                }
+                color |= b;
 
 
-	/*
-	 * セット 
-	 */
-	rgbAnalogGDI[i] = color;
-    }
+                /*
+                 * セット 
+                 */
+                rgbAnalogGDI[i] = color;
+        }
 }
 
 
@@ -148,49 +122,48 @@ Draw320Sub(int top, int bottom)
      * yループ 
      */
     for (y = top; y < bottom; y++) {
-	/*
-	 * xループ 
-	 */
-	for (x = nDrawLeft >> 4; x < nDrawRight >> 4; x++) {
-	    __GETVRAM_12bpp(vram_dptr, x, y, c);
-
-	    switch (nDrawWidth) {
-	    case 1280:
-		addr = (Uint8 *) realDrawArea->pixels +
-		    (y << 2) * realDrawArea->pitch +
-		    (x << 5) * realDrawArea->format->BytesPerPixel;
-		if (bFullScan) {
-		    __SETBYTE_DDRAW_1280_320p(addr,
-					      realDrawArea->
-					      format->BytesPerPixel,
-					      realDrawArea->pitch, c);
+            /*
+             * xループ 
+             */
+            for (x = nDrawLeft >> 4; x < nDrawRight >> 4; x++) {
+                    __GETVRAM_12bpp(vram_dptr, x, y, c);
+                    
+                    switch (nDrawWidth) {
+                    case 1280:
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 2) * realDrawArea->pitch +
+                                    (x << 5) * realDrawArea->format->BytesPerPixel;
+                            if(bFullScan) {
+                                    __SETBYTE_DDRAW_1280_320p(addr,
+                                                   realDrawArea->
+                                                   format->BytesPerPixel,
+                                                   realDrawArea->pitch, c);
 		} else {
-		    __SETBYTE_DDRAW_1280_320i(addr,
-					      realDrawArea->
-					      format->BytesPerPixel,
-					      realDrawArea->pitch, c);
+                                    __SETBYTE_DDRAW_1280_320i(addr,
+                                                              realDrawArea->
+                                                              format->BytesPerPixel,
+                                                              realDrawArea->pitch, c);
 		}
-		break;
-	    case 640:
-	    default:
-		addr = (Uint8 *) realDrawArea->pixels +
-		    (y << 1) * realDrawArea->pitch +
-		    (x << 4) * realDrawArea->format->BytesPerPixel;
-		if (bFullScan) {
-		    __SETBYTE_DDRAW_320p(addr,
-					 realDrawArea->format->
-					 BytesPerPixel,
-					 realDrawArea->pitch, c);
-		} else {
-		    __SETBYTE_DDRAW_320i(addr,
-					 realDrawArea->format->
-					 BytesPerPixel,
-					 realDrawArea->pitch, c);
-		}
-
-		break;
-	    }
-	}
+                            break;
+                    case 640:
+                    default:
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 4) * realDrawArea->format->BytesPerPixel;
+                            if (bFullScan) {
+                                    __SETBYTE_DDRAW_320p(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            } else {
+                                    __SETBYTE_DDRAW_320i(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            }       
+                    break;
+                    }
+            }
     }
     SDL_UnlockSurface(realDrawArea);
 }
@@ -202,6 +175,7 @@ Draw320Sub(int top, int bottom)
  */
 static void
 Draw320WSub(int top, int bottom, int left, int right)
+
 {
     int             x,
                     y;
@@ -360,4 +334,4 @@ Draw320(void)
 
 #endif				/* XM7_VER >=3 */
 
-#endif				/* _XWIN */
+
