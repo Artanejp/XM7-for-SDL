@@ -334,10 +334,7 @@ InitSnd(void)
     for (i = 0; i < XM7_SND_END; i++) {
 	sndDstBuf[i] = NULL;
     }
-//    for (i = 0; i <= SOUND_FDDHEADDOWN ; i++) {
-//	    sndSrcBuf[i] = NULL;
-//    }
-//    applySem = SDL_CreateSemaphore(1);
+    applySem = SDL_CreateSemaphore(0);
     CopySoundBuffer = CopySoundBufferGeneric;
     InitFDDSnd();
     SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -823,7 +820,7 @@ SelectSnd(void)
     pOPN[2]->Reset();
     pOPN[2]->SetReg(0x27, 0);
 
-//    SDL_SemPost(applySem);
+    SDL_SemPost(applySem);
 
     /*
      * 再セレクトに備え、レジスタ設定 
@@ -928,7 +925,7 @@ ApplySnd(void)
     }
     printf("Apply!\n");
  /* 音声プロパティとOPNが衝突しないようにするためのセマフォ初期化 */
-    //SDL_SemWait(applySem);
+    SDL_SemWait(applySem);
     /*
      * 既に準備ができているなら、解放 
      */
@@ -1929,15 +1926,15 @@ opn_notify(BYTE reg, BYTE dat) {
  * 事に対する対策 20100201
  */
 
-//        if(applySem == NULL) {
-//                return;
-//        }
-//        SDL_SemWait(applySem);
+        if(applySem == NULL) {
+                return;
+        }
+        SDL_SemTryWait(applySem);
 /*
  * OPNがなければ、何もしない 
  */
         if (!pOPN[OPN_STD]) {
-//                SDL_SemPost(applySem);
+                SDL_SemPost(applySem);
                 return;
         }
 /*
@@ -1963,7 +1960,7 @@ opn_notify(BYTE reg, BYTE dat) {
  */
         if (reg == 0x27) {
                 if (uCh3Mode[OPN_STD] == dat) {
-//                        SDL_SemPost(applySem);
+                        SDL_SemPost(applySem);
                         return;
                 }
                 uCh3Mode[OPN_STD] = dat;
@@ -1974,7 +1971,7 @@ opn_notify(BYTE reg, BYTE dat) {
  */
         if (reg == 0xff) {
                 if ((opn_reg[OPN_STD][0x27] & 0xc0) != 0x80) {
-//                        SDL_SemPost(applySem);
+                        SDL_SemPost(applySem);
                         return;
                 }
         }
@@ -1987,8 +1984,8 @@ opn_notify(BYTE reg, BYTE dat) {
 /*
  * 出力 
  */
-       pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
-//       SDL_SemPost(applySem);
+        pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
+       SDL_SemPost(applySem);
     }
 }
 /*
@@ -2004,16 +2001,16 @@ whg_notify(BYTE reg, BYTE dat)
  * ApplySnd()中にアクセスがあると落ちることへの対策
  * 20100201
  */
-//        if(applySem == NULL) {
-//                return;
-//        }
-//        SDL_SemWait(applySem);
+        if(applySem == NULL) {
+                return;
+        }
+        SDL_SemTryWait(applySem);
 /*
  * WHGがなければ、何もしない 
  */
 
         if (!pOPN[OPN_WHG]) {
-//                SDL_SemPost(applySem);
+                SDL_SemPost(applySem);
                 return;
         }
 
@@ -2041,7 +2038,7 @@ whg_notify(BYTE reg, BYTE dat)
  */
         if (reg == 0x27) {
                 if (uCh3Mode[OPN_WHG] == dat) {
-//                        SDL_SemPost(applySem);
+                        SDL_SemPost(applySem);
                         return;
                 }
                 uCh3Mode[OPN_WHG] = dat;
@@ -2052,7 +2049,7 @@ whg_notify(BYTE reg, BYTE dat)
  */
         if (reg == 0xff) {
                 if ((opn_reg[OPN_WHG][0x27] & 0xc0) != 0x80) {
-//                        SDL_SemPost(applySem);
+                        SDL_SemPost(applySem);
                         return;
                 }
         }
@@ -2066,7 +2063,7 @@ whg_notify(BYTE reg, BYTE dat)
  * 出力 
  */
         pOPN[OPN_WHG]->SetReg((uint8) reg, (uint8) dat);
-//        SDL_SemPost(applySem);
+        SDL_SemPost(applySem);
     }
 }
 
@@ -2083,16 +2080,16 @@ thg_notify(BYTE reg, BYTE dat)
  * ApplySnd()期間中にアクセスがあると落ちる
  * 事に対する対策 20100201
  */
-//        if(applySem == NULL) {
-//                return;
-//        }
-//        SDL_SemWait(applySem);
+        if(applySem == NULL) {
+                return;
+        }
+        SDL_SemTryWait(applySem);
 
 /*
  * THGがなければ、何もしない 
  */
         if (!pOPN[OPN_THG]) {
-//                SDL_SemPost(applySem);
+                SDL_SemPost(applySem);
                 return;
         }
 
@@ -2119,7 +2116,7 @@ thg_notify(BYTE reg, BYTE dat)
  */
         if (reg == 0x27) {
                 if (uCh3Mode[OPN_THG] == dat) {
-//                        SDL_SemPost(applySem);
+                        SDL_SemPost(applySem);
                         return;
                 }
                 uCh3Mode[OPN_THG] = dat;
@@ -2129,7 +2126,7 @@ thg_notify(BYTE reg, BYTE dat)
  */
         if (reg == 0xff) {
                 if ((opn_reg[OPN_THG][0x27] & 0xc0) != 0x80) {
-//                        SDL_SemPost(applySem);
+                        SDL_SemPost(applySem);
                         return;
                 }
         }
@@ -2143,7 +2140,7 @@ thg_notify(BYTE reg, BYTE dat)
  * 出力 
  */
         pOPN[OPN_THG]->SetReg((uint8) reg, (uint8) dat);
-//        SDL_SemPost(applySem);
+        SDL_SemPost(applySem);
     }
 }
 
