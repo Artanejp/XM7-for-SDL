@@ -1131,6 +1131,9 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_add(GTK_CONTAINER(frmFMVolume), VOLUME_FM);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_FM), 1);
 
+    gtk_signal_connect((gpointer) VOLUME_FM, "value-changed",
+                       GTK_SIGNAL_FUNC(OnGP_FMVolumeChanged), NULL);
+
 
     lblFMVolume = gtk_label_new("FM音源");
     gtk_widget_show(lblFMVolume);
@@ -1153,6 +1156,9 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_add(GTK_CONTAINER(frmPSGVolume), VOLUME_PSG);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_PSG), 1);
 
+    gtk_signal_connect((gpointer) VOLUME_PSG, "value-changed",
+                       GTK_SIGNAL_FUNC(OnGP_PSGVolumeChanged), NULL);
+
     lblPSGVolume = gtk_label_new("PSG ");
     gtk_widget_show(lblPSGVolume);
     gtk_frame_set_label_widget(GTK_FRAME(frmPSGVolume), lblPSGVolume);
@@ -1174,6 +1180,8 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_add(GTK_CONTAINER(frmBEEPVolume), VOLUME_BEEP);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_BEEP), 1);
 
+    gtk_signal_connect((gpointer) VOLUME_BEEP, "value-changed",
+                       GTK_SIGNAL_FUNC(OnGP_BEEPVolumeChanged), NULL);
 
     lblBEEPVolume = gtk_label_new("BEEP");
     gtk_widget_show(lblBEEPVolume);
@@ -1196,6 +1204,9 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_container_add(GTK_CONTAINER(frmTAPEVolume), VOLUME_TAPE);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_TAPE), 1);
 
+    gtk_signal_connect((gpointer) VOLUME_TAPE, "value-changed",
+                       GTK_SIGNAL_FUNC(OnGP_CMTVolumeChanged), NULL);
+
 
     lblTAPEVolume = gtk_label_new("TAPE");
     gtk_widget_show(lblTAPEVolume);
@@ -1217,6 +1228,10 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_widget_show(VOLUME_WAV);
     gtk_container_add(GTK_CONTAINER(frmWAVVolume), VOLUME_WAV);
     gtk_container_set_border_width(GTK_CONTAINER(VOLUME_WAV), 1);
+
+    gtk_signal_connect((gpointer) VOLUME_WAV, "value-changed",
+                       GTK_SIGNAL_FUNC(OnGP_WAVVolumeChanged), NULL);
+    
 
 
     lblWAVVolume = gtk_label_new("FDD他");

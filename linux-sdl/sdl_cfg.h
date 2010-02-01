@@ -120,30 +120,34 @@ extern configdat_t configdat;	/* コンフィグ用データ */
 	 * 動作機種再設定 
 	 */            
 #ifdef USE_GTK        
-        void    OnConfig(GtkWidget * widget, gpointer data);
+        void    OnConfig(GtkWidget *widget, gpointer data);
                    
 /*
  * 設定ダイアログ 
  */            
-        void    OnConfig_OK(GtkWidget * widget, gpointer data);
+        void    OnConfig_OK(GtkWidget *widget, gpointer data);
         
 /*
  * 設定ダイアログ(OKアクション) 
  */            
-        void    OnGP_CPUDEFAULTClicked(GtkWidget * widget,
-                                       gpointer data);
+        void    OnGP_CPUDEFAULTClicked(GtkWidget *widget, gpointer data);
                    
 /*
  * CPU Defaultボタンアクション 
  */            
 	
-        void    OnGP_CPUCOMBOChanged(GtkWidget * widget,
-                                     gpointer data);
+        void    OnGP_CPUCOMBOChanged(GtkWidget *widget, gpointer data);
                    
 /*
  * CPU コンボボックスアクション 
  */            
-     
+
+        void    OnGP_FMVolumeChanged(GtkWidget *widget, gpointer data);
+        void    OnGP_PSGVolumeChanged(GtkWidget *widget, gpointer data);
+        void    OnGP_BEEPVolumeChanged(GtkWidget *widget, gpointer data);
+        void    OnGP_CMTVolumeChanged(GtkWidget *widget, gpointer data);
+        void    OnGP_WAVVolumeChanged(GtkWidget *widget, gpointer data);
+
 #endif /* USE_GTK */	
 	/*
 	 *  主要ワーク 

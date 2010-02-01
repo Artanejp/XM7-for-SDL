@@ -1406,4 +1406,87 @@ OnConfig_OK(GtkWidget * widget, gpointer data)
         UnlockVM();
 }
 
+/*
+ * サウンド：音源の個別音量設定は即時反映される
+ */
+void
+OnGP_FMVolumeChanged(GtkWidget* widget, gpointer data) 
+{
+        UINT    uSp = uChSeparation;
+        int     nFM = nFMVolume;
+        int     nPSG = nPSGVolume;
+        int     nBeep = nBeepVolume;
+        int     nCMT = nCMTVolume;
+        int     nWav = nWaveVolume;
+
+        if(widget == NULL) return;
+        nFM = gtk_range_get_value(GTK_RANGE(widget));
+        SetSoundVolume2(uSp, nFM, nPSG,
+                        nBeep, nCMT, nWav);
+}
+
+void
+OnGP_PSGVolumeChanged(GtkWidget* widget, gpointer data) 
+{
+        UINT    uSp = uChSeparation;
+        int     nFM = nFMVolume;
+        int     nPSG = nPSGVolume;
+        int     nBeep = nBeepVolume;
+        int     nCMT = nCMTVolume;
+        int     nWav = nWaveVolume;
+
+        if(widget == NULL) return;
+        nPSG = gtk_range_get_value(GTK_RANGE(widget));
+        SetSoundVolume2(uSp, nFM, nPSG,
+                        nBeep, nCMT, nWav);
+}
+
+void
+OnGP_BEEPVolumeChanged(GtkWidget* widget, gpointer data) 
+{
+        UINT    uSp = uChSeparation;
+        int     nFM = nFMVolume;
+        int     nPSG = nPSGVolume;
+        int     nBeep = nBeepVolume;
+        int     nCMT = nCMTVolume;
+        int     nWav = nWaveVolume;
+
+        if(widget == NULL) return;
+        nBeep = gtk_range_get_value(GTK_RANGE(widget));
+        SetSoundVolume2(uSp, nFM, nPSG,
+                        nBeep, nCMT, nWav);
+}
+
+void
+OnGP_CMTVolumeChanged(GtkWidget* widget, gpointer data) 
+{
+        UINT    uSp = uChSeparation;
+        int     nFM = nFMVolume;
+        int     nPSG = nPSGVolume;
+        int     nBeep = nBeepVolume;
+        int     nCMT = nCMTVolume;
+        int     nWav = nWaveVolume;
+
+        if(widget == NULL) return;
+        nCMT = gtk_range_get_value(GTK_RANGE(widget));
+        SetSoundVolume2(uSp, nFM, nPSG,
+                        nBeep, nCMT, nWav);
+}
+
+void
+OnGP_WAVVolumeChanged(GtkWidget* widget, gpointer data) 
+{
+        UINT    uSp = uChSeparation;
+        int     nFM = nFMVolume;
+        int     nPSG = nPSGVolume;
+        int     nBeep = nBeepVolume;
+        int     nCMT = nCMTVolume;
+        int     nWav = nWaveVolume;
+
+        if(widget == NULL) return;
+        nWav = gtk_range_get_value(GTK_RANGE(widget));
+        SetSoundVolume2(uSp, nFM, nPSG,
+                        nBeep, nCMT, nWav);
+}
+
 #endif /* _XWIN */

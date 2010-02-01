@@ -13,18 +13,17 @@
 /*
  *	定数定義
  */
-#define OPN_STD				0				/* 標準OPN */
-#define OPN_WHG				1				/* WHG OPN */
-#define OPN_THG				2				/* THG OPN */
+#define OPN_STD 0 /* 標準OPN */
+#define OPN_WHG 1 /* WHG OPN */
+#define OPN_THG 2 /* THG OPN */
 
-#define OPN_INACTIVE		0x00			/* インアクティブコマンド */
-#define OPN_READDAT			0x01			/* リードデータコマンド */
-#define OPN_WRITEDAT		0x02			/* ライトデータコマンド */
-#define OPN_ADDRESS			0x03			/* ラッチアドレスコマンド */
-#define OPN_READSTAT		0x04			/* リードステータスコマンド */
-#define OPN_JOYSTICK		0x09			/* ジョイスティックコマンド */
-
-#define	OPN_CLOCK			12288			/* OPN基準クロック(1.2288MHz) */
+#define OPN_INACTIVE    0x00	/* インアクティブコマンド */
+#define OPN_READDAT     0x01	/* リードデータコマンド */
+#define OPN_WRITEDAT    0x02	/* ライトデータコマンド */
+#define OPN_ADDRESS     0x03	/* ラッチアドレスコマンド */
+#define OPN_READSTAT    0x04	/* リードステータスコマンド */
+#define OPN_JOYSTICK    0x09	/* ジョイスティックコマンド */
+#define OPN_CLOCK       12288	/* OPN基準クロック(1.2288MHz) */
 
 #ifdef __cplusplus
 extern "C" {

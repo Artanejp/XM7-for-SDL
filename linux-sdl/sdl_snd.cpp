@@ -44,25 +44,25 @@
     /*
      *  グローバル ワーク 
      */
-UINT            nSampleRate;	/* サンプリングレート */
-UINT            nSoundBuffer;	/* サウンドバッファサイズ */
-UINT            nStereoOut;	/* 出力モード */
-BOOL            bFMHQmode;	/* FM高品質合成モード */
-BOOL            bForceStereo;	/* 強制ステレオ出力 */
-UINT            nBeepFreq;	/* BEEP周波数 */
-BOOL            bTapeMon;	/* テープ音モニタ */
-int             hWavCapture;	/* WAVキャプチャハンドル */
-BOOL            bWavCapture;	/* WAVキャプチャ開始 */
-UINT            uClipCount;	/* クリッピングカウンタ */
+UINT                    nSampleRate;    /* サンプリングレート */
+UINT                    nSoundBuffer;   /* サウンドバッファサイズ */
+UINT                    nStereoOut;     /* 出力モード */
+BOOL                    bFMHQmode;      /* FM高品質合成モード */
+BOOL                    bForceStereo;   /* 強制ステレオ出力 */
+UINT                    nBeepFreq;      /* BEEP周波数 */
+BOOL                    bTapeMon;       /* テープ音モニタ */
+int                     hWavCapture;    /* WAVキャプチャハンドル */
+BOOL                    bWavCapture;    /* WAVキャプチャ開始 */
+UINT                    uClipCount;     /* クリッピングカウンタ */
 
-int             nFMVolume;                                          /* FM音源ボリューム */
-int             nPSGVolume;                                         /* PSGボリューム */
-int             nBeepVolume;                                        /* BEEP音ボリューム */
-int             nCMTVolume;                                         /* CMT音モニタボリューム */
-int             nWaveVolume;                                        /* 各種効果音ボリューム */
-int             iTotalVolume;	/* 全体ボリューム */
-UINT            uChSeparation;
-UINT            uStereoOut;			/* 出力モード */
+int                     nFMVolume;      /* FM音源ボリューム */
+int                     nPSGVolume;     /* PSGボリューム */
+int                     nBeepVolume;    /* BEEP音ボリューム */
+int                     nCMTVolume;     /* CMT音モニタボリューム */
+int                     nWaveVolume;    /* 各種効果音ボリューム */
+int                     iTotalVolume;   /* 全体ボリューム */
+UINT                    uChSeparation;
+UINT                    uStereoOut;     /* 出力モード */
 
     /*
      *  スタティック ワーク
@@ -71,63 +71,61 @@ UINT            uStereoOut;			/* 出力モード */
     /*
      *   SDL -マルチスレッド化するために… 
      */
-static SDL_sem *musicSem;	/* マルチスレッドで同期するためのセマフォ 
-		 */
-static SDL_Thread *playThread;
-static int      uProcessCount;
-static SDL_TimerID uTid;
-static UINT     localTick;	/* VM実行時間 */
-static DWORD    dwExecLocal;
-static BOOL     bDataReady;
-static BYTE      *lpdsb;		/* DSP用サウンド作成バッファ */
-static DWORD    dwPlayC;	/* DSP用サウンド作成バッファ内の再生位置 */
-static BOOL     bNowBank;
-static DWORD   *lpsbuf;
+static SDL_sem          *musicSem;      /* マルチスレッドで同期するためのセマフォ(出力) */
+static SDL_sem          *applySem;      /* マルチスレッドで同期するためのセマフォ(Apply期間中) */
+
+static SDL_Thread       *playThread;
+static int              uProcessCount;
+static SDL_TimerID      uTid;
+static UINT             localTick;      /* VM実行時間 */
+static DWORD            dwExecLocal;
+static BYTE             *lpdsb;         /* DSP用サウンド作成バッファ */
+static DWORD            dwPlayC;        /* DSP用サウンド作成バッファ内の再生位置 */
+static BOOL             bNowBank;
+static DWORD            *lpsbuf;
 
     /*
      * 音声合成用のバッファ 
      */
-static BYTE    *sndSrcBuf[SOUND_FDDHEADDOWN + 1];	/* バッファは別々にとる 
-									 */
-static int     sndLen[SOUND_FDDHEADDOWN +1];
-static Mix_Chunk *sndDstBuf[XM7_SND_END + 1];	/* バッファは別々にとる 
-						 */
-static BYTE    *opnBuf[3];
-static BYTE    *psgBuf;
-static UINT     uBufSize;	/* サウンドバッファサイズ */
-static UINT     uRate;		/* 合成レート */
-static UINT     uTick;		/* 半バッファサイズの長さ */
-static BOOL     bMode;		/* FM高品質合成モード */
-static UINT     uStereo;	/* 出力モード */
-static UINT     uSample;	/* サンプルカウンタ */
-static UINT     uBeep;		/* BEEP波形カウンタ */
-static int      nFMVol;
-static int      nPSGVol;
-static int      nBeepVol;
-static int      nCMTVol;
-static int      nWavVol;
-static UINT     uChanSep;
-static FM::OPN  *pOPN[3];			/* OPNデバイス */
-static int      nScale[3];			/* OPNプリスケーラ */
-static BYTE     uCh3Mode[3];		/* OPN Ch.3モード */
-static BOOL     bInitFlag;			/* 初期化フラグ */
-static WORD     *pWavCapture;		/* キャプチャバッファ(64KB) */
-static UINT     nWavCapture;		/* キャプチャバッファ実データ */
-static DWORD    dwWavCapture;		/* キャプチャファイルサイズ */
-static WORD     uChannels;			/* 出力チャンネル数 */
-static BOOL     bBeepFlag;			/* BEEP出力 */
-static BOOL     bPartMute[3][6];		/* パートミュートフラグ */
-static int      nBeepLevel;		/* BEEP音出力レベル */
-static int      nCMTLevel;		/* CMT音モニタ出力レベル */
+//static BYTE             *sndSrcBuf[SOUND_FDDHEADDOWN + 1];/* バッファは別々にとる */
+//static int              sndLen[SOUND_FDDHEADDOWN +1];
+static Mix_Chunk        *sndDstBuf[XM7_SND_END + 1];    /* バッファは別々にとる */
+static BYTE             *opnBuf[3];
+static BYTE             *psgBuf;
+static UINT             uBufSize;       /* サウンドバッファサイズ */
+static UINT             uRate;          /* 合成レート */
+static UINT             uTick;          /* 半バッファサイズの長さ */
+static BOOL             bMode;          /* FM高品質合成モード */
+static UINT             uStereo;        /* 出力モード */
+static UINT             uSample;        /* サンプルカウンタ */
+static UINT             uBeep;          /* BEEP波形カウンタ */
+static int              nFMVol;
+static int              nPSGVol;
+static int              nBeepVol;
+static int              nCMTVol;
+static int              nWavVol;
+static UINT             uChanSep;
+static FM::OPN          *pOPN[3];       /* OPNデバイス */
+static int              nScale[3];      /* OPNプリスケーラ */
+static BYTE             uCh3Mode[3];    /* OPN Ch.3モード */
+static BOOL             bInitFlag;      /* 初期化フラグ */
+static WORD             *pWavCapture;   /* キャプチャバッファ(64KB) */
+static UINT             nWavCapture;    /* キャプチャバッファ実データ */
+static DWORD            dwWavCapture;   /* キャプチャファイルサイズ */
+static WORD             uChannels;      /* 出力チャンネル数 */
+static BOOL             bBeepFlag;      /* BEEP出力 */
+static BOOL             bPartMute[3][6];        /* パートミュートフラグ */
+static int              nBeepLevel;     /* BEEP音出力レベル */
+static int              nCMTLevel;      /* CMT音モニタ出力レベル */
 #ifdef FDDSND
-static int      nWaveLevel;		/* 各種効果音出力レベル */
+static int              nWaveLevel;     /* 各種効果音出力レベル */
 #endif
 
-static BOOL   bTapeFlag;			/* 現在のテープ出力状態 */
-static BOOL   bTapeFlag2;			/* 前回のテープ出力状態 */
-static BYTE   uTapeDelta;			/* テープ波形補間カウンタ */
+static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
+static BOOL             bTapeFlag2;     /* 前回のテープ出力状態 */
+static BYTE             uTapeDelta;     /* テープ波形補間カウンタ */
 /* ステレオ出力時の左右バランステーブル */
-static int l_vol[3][4] = {
+static int              l_vol[3][4] = {
 	{	16,	23,	 9,	16	},
 	{	16,	 9,	23,	 9	},
 	{	16,	16,	16,	23	},
@@ -144,33 +142,25 @@ static int r_vol[3][4] = {
      *  スタティック ワーク (WAV再生) 
      */
 static struct _WAVDATA {
-    short          *
-	p;			/* 波形データポインタ */
-    DWORD
-	size;			/* データサイズ(サンプル数) */
+    short          *p;  /* 波形データポインタ */
+    DWORD       size;   /* データサイズ(サンプル数) */
 
-    DWORD
-	freq;			/* サンプリング周波数 */
+    DWORD       freq;   /* サンプリング周波数 */
 } Wav[SOUND_FDDHEADDOWN + 1];
 
 static struct _WAVPLAY {
-    BOOL
-	bPlay;			/* WAV再生フラグ */
-    DWORD
-	dwWaveNo;		/* WAVでーたなんばー */
-    DWORD
-	dwCount1;		/* WAVでーたかうんた(整数部) */
-    DWORD
-	dwCount2;		/* WAVでーたかうんた(小数部) */
-    DWORD
-	dwCount3;		/* WAV再生かうんた */
+    BOOL        bPlay;          /* WAV再生フラグ */
+    DWORD       dwWaveNo;       /* WAVでーたなんばー */
+    DWORD       dwCount1;       /* WAVでーたかうんた(整数部) */
+    DWORD       dwCount2;       /* WAVでーたかうんた(小数部) */
+    DWORD       dwCount3;       /* WAV再生かうんた */
 } WavP[SNDBUF];
-    /*
-     * Wav 演奏フラグ 
-     */
+/*
+ * Wav 演奏フラグ 
+ */
 
-static char    *
-    WavName[] = {		/* WAVファイル名 */
+static char     *WavName[] = {
+ /* WAVファイル名 */
     "RELAY_ON.WAV",
     "RELAY_OFF.WAV",
     "FDDSEEK.WAV",
@@ -179,34 +169,26 @@ static char    *
 #if 0
     "HEADUP.WAV",
     "HEADDOWN.WAV"
-#endif				/* */
+#endif  /* */
 };
 
 
-#endif				/* */
+#endif  /* */
 
 /*
  *  WAVファイル作成用構造体 
  */
 typedef struct {
-    WORD
-	wFormatTag;
-    WORD
-	nChannels;
-    DWORD
-	nSamplesPerSec;
-    DWORD
-	nAvgBytesPerSec;
-    WORD
-	nBlockAlign;
-    WORD
-	wBitsPerSample;
-    WORD
-	cbSize;
+        WORD    wFormatTag;
+        WORD    nChannels;
+        DWORD   nSamplesPerSec;
+        DWORD   nAvgBytesPerSec;
+        WORD    nBlockAlign;
+        WORD    wBitsPerSample;
+        WORD    cbSize;
 } WAVEFORMATEX;
 
-static WORD
-    WAVE_FORMAT_PCM = 0x0001;
+static  WORD    WAVE_FORMAT_PCM = 0x0001;
 
 /*
  *      * アセンブラ関数のためのプロトタイプ宣言→x86依存一度外す 
@@ -216,8 +198,7 @@ extern
     "C" {
 
 #endif
-    void            (*CopySoundBuffer) (DWORD * src, WORD * dst,
-					int count);
+void    (*CopySoundBuffer) (DWORD * src, WORD * dst, int count);
     // extern void CopySndBufMMX(DWORD *src, WORD *dst, int count);
     // extern void CopySndBuf(DWORD *src, WORD *dst, int count);
 #ifdef __cplusplus
@@ -234,35 +215,33 @@ WaveSnd();
 static void
 CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 {
-    int
-	i,
-	j;
-    int32          *
-	p = (int32 *) from;
-    int16          *
-	t = (int16 *) to;
-    int32
-	tmp1;
-    if (p == NULL)
-	return;
-    if (t == NULL)
-	return;
-    i = (size / 4) * 4;
-    for (j = 0; j < i; j += 4) {
-	tmp1 = p[j];
-	t[j] = (int16) (tmp1 & 0x0000ffff);
-	tmp1 = p[j + 1];
-	t[j + 1] = (int16) (tmp1 & 0x0000ffff);
-	tmp1 = p[j + 2];
-	t[j + 2] = (int16) (tmp1 & 0x0000ffff);
-	tmp1 = p[j + 3];
-	t[j + 3] = (int16) (tmp1 & 0x0000ffff);
-    }
-    i = size - i;
-    for (j = 0; j < i; j++) {
-	tmp1 = p[j];
-	t[j] = (int16) (tmp1 & 0x0000ffff);
-    }
+        int         i,j;
+        int32       *p = (int32 *) from;
+        int16       *t = (int16 *) to;
+        int32       tmp1;
+
+        if (p == NULL) {
+                return; 
+        }
+        if (t == NULL) {
+                return;
+        }
+        i = (size / 4) * 4;
+        for (j = 0; j < i; j += 4) {
+                tmp1 = p[j];
+                t[j] = (int16) (tmp1 & 0x0000ffff);
+                tmp1 = p[j + 1];
+                t[j + 1] = (int16) (tmp1 & 0x0000ffff);
+                tmp1 = p[j + 2];
+                t[j + 2] = (int16) (tmp1 & 0x0000ffff);
+                tmp1 = p[j + 3];
+                t[j + 3] = (int16) (tmp1 & 0x0000ffff);
+        }
+        i = size - i;
+        for (j = 0; j < i; j++) {
+                tmp1 = p[j];
+                t[j] = (int16) (tmp1 & 0x0000ffff);
+        }
 }
 
 
@@ -273,10 +252,6 @@ static
     DWORD
 timeGetTime(void)
 {
-    struct timeval
-	t;
-    // gettimeofday(&t, 0);
-    // return (t.tv_sec*1000000 + t.tv_usec)/1000;
     return SDL_GetTicks();
 }
 
@@ -287,11 +262,10 @@ timeGetTime(void)
 void
 InitSnd(void)
 {
-    int
-	i;
-    /*
-     * ワークエリア初期化 
-     */
+    int i;
+/*
+ * ワークエリア初期化 
+ */
     nSampleRate = 44100;
     nSoundBuffer = 100;
     bFMHQmode = FALSE;
@@ -360,9 +334,10 @@ InitSnd(void)
     for (i = 0; i < XM7_SND_END; i++) {
 	sndDstBuf[i] = NULL;
     }
-    for (i = 0; i <= SOUND_FDDHEADDOWN ; i++) {
-	    sndSrcBuf[i] = NULL;
-    }
+//    for (i = 0; i <= SOUND_FDDHEADDOWN ; i++) {
+//	    sndSrcBuf[i] = NULL;
+//    }
+//    applySem = SDL_CreateSemaphore(1);
     CopySoundBuffer = CopySoundBufferGeneric;
     InitFDDSnd();
     SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -424,12 +399,12 @@ CleanSnd(void)
     if (psgBuf != NULL)
 	free(psgBuf);
     psgBuf = NULL;
-    for (i = 0; i <= SOUND_FDDHEADDOWN; i++) {
-	if (sndSrcBuf[i]) {
-	    free(sndSrcBuf[i]);
-	    sndSrcBuf[i] = NULL;
-	}
-    }
+//    for (i = 0; i <= SOUND_FDDHEADDOWN; i++) {
+//	if (sndSrcBuf[i]) {
+//	    free(sndSrcBuf[i]);
+//	    sndSrcBuf[i] = NULL;
+//	}
+//    }
 
     /*
      * サウンド作成バッファを解放 
@@ -848,6 +823,8 @@ SelectSnd(void)
     pOPN[2]->Reset();
     pOPN[2]->SetReg(0x27, 0);
 
+//    SDL_SemPost(applySem);
+
     /*
      * 再セレクトに備え、レジスタ設定 
      */
@@ -950,7 +927,8 @@ ApplySnd(void)
 	return;
     }
     printf("Apply!\n");
-
+ /* 音声プロパティとOPNが衝突しないようにするためのセマフォ初期化 */
+    //SDL_SemWait(applySem);
     /*
      * 既に準備ができているなら、解放 
      */
@@ -962,6 +940,7 @@ ApplySnd(void)
      * 再セレクト 
      */
     SelectSnd();
+    //SDL_SemPost(applySem);
 
 }
 
@@ -1002,12 +981,30 @@ void SetSoundVolume(void)
 void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
                       int nBeep, int nCMT, int nWav)
 {
-	int i;
+        int i;
 
-	/* FM音源/PSGボリューム設定 */
+        uChSeparation = uSp;
+        uChanSep = uChSeparation;
+        nFMVolume = nFM;
+        nFMVol = nFMVolume;
+        nPSGVolume = nPSG;
+        nPSGVol = nPSGVolume;
+        nBeepVolume = nBeep;
+        nBeepVol = nBeepVolume;
+        nCMTVolume = nCMT;
+        nCMTVol = nCMTVolume;
+        nWaveVolume = nWav;
+        nWavVol = nWaveVolume;
+
+        /* 即時Apply出来るようにAssertではなくReturnする */
+        if((pOPN[1] == NULL) || (pOPN[2] == NULL) || (pOPN[3] == NULL)) {
+                        return;
+        }       
+
+        /* FM音源/PSGボリューム設定 */
 	for (i=0; i<3; i++) {
-		ASSERT(pOPN[i]);
-
+		//ASSERT(pOPN[i]);
+                
 		if (pOPN[i]) {
 			pOPN[i]->SetVolumeFM(nFM * 2);
 			pOPN[i]->psg.SetVolume(nPSG * 2);
@@ -1046,7 +1043,6 @@ PlaySnd()
     dwPlayC = 0;
     uProcessCount = 0;
     dwExecLocal = dwExecTotal;
-    bDataReady = FALSE;
     iTotalVolume = SDL_MIX_MAXVOLUME - 1;	/* ここで音量設定する必要があるか? 
 						 */
     memset(lpdsb, 0x00, uBufSize);
@@ -1593,96 +1589,84 @@ WavCapture(void)
 void
 ProcessSnd(BOOL bZero)
 {
-    BOOL
-	bWrite;
-    WORD           *
-	ptr1;
-    DWORD
-	size1;
-    DWORD          *
-	p;
-    DWORD
-	dwOffset;
-    int
-	i,
-	len;
-    int
-	wsize = 0;
-    int
-	wsamples;
-    // if(dwExecLocal >= dwExecTotal) dwExecLocal = dwExecTotal;
+        BOOL    bWrite;
+        WORD    *ptr1;
+        DWORD   size1;
+        DWORD   *p;
+        DWORD   dwOffset;
+        int     i,len;
+        int     wsize = 0;
+        int     wsamples;
 
-    /*
-     * 初期化されていなければ、何もしない 
-     */
-    if ((!lpdsb) || (!musicSem)) {
-	return;
-    }
-    bDataReady = FALSE;
+/*
+ * 初期化されていなければ、何もしない 
+ */
+        if ((!lpdsb) || (!musicSem)) {
+                return;
+        }
 
-    // printf("Wrote: %d %d %d\n", wsize, dwPlayC, SDL_GetTicks());
+        // printf("Wrote: %d %d %d\n", wsize, dwPlayC, SDL_GetTicks());
 
-    /*
-     * 書き込み位置とバンクから、必要性を判断 
-     */
-    bWrite = FALSE;
-    if (bNowBank) {
-	if (dwPlayC >= (uTick / 2)) {
-	    bWrite = TRUE;
-	}
-    } else {
-	if (dwPlayC < (uTick / 2)) {
-	    bWrite = TRUE;
-	}
-    }
-    if (dwPlayC >= uTick) {
-	dwPlayC = 0;
-    }
-    dwPlayC++;
+/*
+ * 書き込み位置とバンクから、必要性を判断 
+ */
+        bWrite = FALSE;
+        if (bNowBank) {
+                if (dwPlayC >= (uTick / 2)) {
+                        bWrite = TRUE;
+                }
+        } else {
+                if (dwPlayC < (uTick / 2)) {
+                        bWrite = TRUE;
+                }
+        }
+        if (dwPlayC >= uTick) {
+                dwPlayC = 0;
+        }
+        dwPlayC++;
 
-    /*
-     * サウンドデータの生成 
-     */
+/*
+ * サウンドデータの生成 
+ */
 
-    /*
-     * 書き込む必要がなければ、リターン 
-     */
-    if (!bWrite) {
+ /*
+  * 書き込む必要がなければ、リターン 
+  */
+        if (!bWrite) {
 
-	/*
-	 * テープ 
-	 */
-	if (tape_motor && bTapeMon) {
-	    bWrite = TRUE;
-	}
+/*
+ * テープ 
+ */
+                if (tape_motor && bTapeMon) {
+                        bWrite = TRUE;
+                }
 
-	/*
-	 * BEEP 
-	 */
-	if (beep_flag && speaker_flag) {
-	    bWrite = TRUE;
-	}
+/*
+ * BEEP 
+ */
+                if (beep_flag && speaker_flag) {
+                        bWrite = TRUE;
+                }
 
-	/*
-	 * どちらかがONなら、バッファ充填 
-	 */
-	if (bWrite) {
-	    AddSnd(FALSE, bZero);
-	    bDataReady = TRUE;
-	}
-	return;
-    }
+/*
+ * どちらかがONなら、バッファ充填 
+ */
+                if (bWrite) {
+                        AddSnd(FALSE, bZero);
+                }
+                return;
+        }
+        
+/*
+ * ここから演奏開始 
+ */
 
-    /*
-     * ここから演奏開始 
-     */
-    AddSnd(TRUE, bZero);
-    bDataReady = TRUE;
+        AddSnd(TRUE, bZero);
 
-    /*
-     * 書き込みバンク(仮想) 
-     */
-    bNowBank = (!bNowBank);
+/*
+ * 書き込みバンク(仮想) 
+ */
+        bNowBank = (!bNowBank);
 }
 
 
@@ -1692,117 +1676,114 @@ ProcessSnd(BOOL bZero)
 int
 GetLevelSnd(int ch)
 {
-    FM::OPN * p;
-    int
-	i;
-    double
-	s;
-    double
-	t;
-    int            *
-	buf;
-    ASSERT((ch >= 0) && (ch < 18));
+        FM::OPN *p;
+        int     i;
+        double  s;
+        double  t;
+        int     *buf;
 
-    /*
-     * OPN,WHGの区別 
-     */
-    if (ch < 6) {
-	p = pOPN[0];
-    }
-    if ((ch >= 6) && (ch < 12)) {
-	p = pOPN[1];
-	ch -= 6;
-	/*
-	 * WHGの場合、実際に使われていなければ0 
-	 */
-	if (!whg_enable || !whg_use) {
-	    return 0;
-	}
-    }
-    if ((ch >= 12) && (ch < 18)) {
-	p = pOPN[2];
-	ch -= 12;
+        ASSERT((ch >= 0) && (ch < 18));
 
-	/*
-	 * THGの場合、実際に使われていなければ0 
-	 */
-	if ((!thg_enable || !thg_use) && (fm7_ver != 1)) {
-	    return 0;
-	}
-    }
+/*
+ * OPN,WHGの区別 
+ */
+        if (ch < 6) {
+                p = pOPN[0];
+        }
+        if ((ch >= 6) && (ch < 12)) {
+                p = pOPN[1];
+                ch -= 6;
+/*
+ * WHGの場合、実際に使われていなければ0 
+ */
+                if (!whg_enable || !whg_use) {
+                        return 0;
+                }
+        }
+        if ((ch >= 12) && (ch < 18)) {
+                p = pOPN[2];
+                ch -= 12;
 
-    /*
-     * 存在チェック 
-     */
-    if (!p) {
-	return 0;
-    }
+/*
+ * THGの場合、実際に使われていなければ0 
+ */
+                if ((!thg_enable || !thg_use) && (fm7_ver != 1)) {
+                        return 0;
+                }
+        }
 
-    /*
-     * FM,PSGの区別 
-     */
-    if (ch < 3) {
-	/*
-	 * FM:512サンプルの2乗和を計算 
-	 */
-	buf = p->rbuf[ch];
-	s = 0;
-	for (i = 0; i < 512; i++) {
-	    t = (double) *buf++;
-	    t *= t;
-	    s += t;
-	}
-	s /= 512;
+/*
+ * 存在チェック 
+ */
+        if (!p) {
+                return 0;
+        }
 
-	/*
-	 * ゼロチェック 
-	 */
-	if (s == 0) {
-	    return 0;
-	}
+/*
+ * FM,PSGの区別 
+ */
+        if (ch < 3) {
+                /*
+                 * FM:512サンプルの2乗和を計算 
+                 */
+                buf = p->rbuf[ch];
+                s = 0;
+                for (i = 0; i < 512; i++) {
+                        t = (double) *buf++;
+                        t *= t;
+                        s += t;
+                }
+                s /= 512;
 
-	/*
-	 * log10を取る 
-	 */
-	s = log10(s);
+                /*
+                 * ゼロチェック 
+                 */
+                if (s == 0) {
+                        return 0;
+                }
 
-	/*
-	 * FM音源補正 
-	 */
-	s *= 40.0;
-    } else {
+                /*
+                 * log10を取る 
+                 */
+                s = log10(s);
 
-	/*
-	 * PSG:512サンプルの2乗和を計算 
-	 */
-	buf = p->psg.rbuf[ch - 3];
-	s = 0;
-	for (i = 0; i < 512; i++) {
-	    t = (double) *buf++;
-	    t *= t;
-	    s += t;
-	}
-	s /= 512;
+                /*
+                 * FM音源補正 
+                 */
+                s *= 40.0;
+        } else {
 
-	/*
-	 * ゼロチェック 
-	 */
-	if (s == 0) {
-	    return 0;
-	}
+                /*
+                 * PSG:512サンプルの2乗和を計算 
+                 */
+                buf = p->psg.rbuf[ch - 3];
+                s = 0;
+                for (i = 0; i < 512; i++) {
+                        t = (double) *buf++;
+                        t*= t;
+                        s += t;
+                }
+                s /= 512;
 
-	/*
-	 * log10を取る 
-	 */
-	s = log10(s);
+                /*
+                 * ゼロチェック 
+                 */
+                if (s == 0) {
+                        return 0;
+                }
 
-	/*
-	 * PSG音源補正 
-	 */
-	s *= 60.0;
-    }
-    return (int) s;
-}
+                /*
+                 * log10を取る 
+                 */
+                s = log10(s);
+
+                /*
+                 * PSG音源補正 
+                 */
+                s *= 60.0;
+        }
+        return (int) s;
+}       
 
 /*
  *  WAVキャプチャ開始 
@@ -1810,90 +1791,87 @@ GetLevelSnd(int ch)
 void
 OpenCaptureSnd(char *fname)
 {
-    WAVEFORMATEX
-	wfex;
-    DWORD
-	dwSize;
-    int
-	fileh;
+        WAVEFORMATEX        wfex;
+        DWORD               dwSize;
+        int                 fileh;
 
-    ASSERT(fname);
-    ASSERT(hWavCapture < 0);
-    ASSERT(!bWavCapture);
+        ASSERT(fname);
+        ASSERT(hWavCapture < 0);
+        ASSERT(!bWavCapture);
 
-    /*
-     * 合成中でなければ、リターン 
-     */
-    if (!pOPN[2]) {
-	return;
-    }
+/*
+ * 合成中でなければ、リターン 
+ */
+        if (!pOPN[OPN_STD] || !pOPN[OPN_WHG] || !pOPN[OPN_THG]) {
+                return;
+        }
 
-    /*
-     * バッファが無ければ、リターン 
-     */
-    if (!pWavCapture) {
-	return;
-    }
+/*
+ * バッファが無ければ、リターン 
+ */
+        if (!pWavCapture) {
+                return;
+        }
 
-    /*
-     * uBufSize / 2が0x8000以下でないとエラー 
-     */
-    if ((uBufSize / 2) > 0x8000) {
-	return;
-    }
+/*
+ * uBufSize / 2が0x8000以下でないとエラー 
+ */
+        if ((uBufSize / 2) > 0x8000) {
+                return;
+        }
 
-    /*
-     * ファイルオープン(書き込みモード) 
-     */
-    fileh = file_open(fname, OPEN_W);
-    if (fileh < 0) {
-	return;
-    }
+/*
+ * ファイルオープン(書き込みモード) 
+ */
+        fileh = file_open(fname, OPEN_W);
+        if (fileh < 0) {
+                return;
+        }
 
-    /*
-     * RIFFヘッダ書き込み 
-     */
-    if (!file_write(fileh, (BYTE *) "RIFFxxxxWAVEfmt ", 16)) {
-	file_close(fileh);
-	return;
-    }
+/*
+ * RIFFヘッダ書き込み 
+ */
+        if (!file_write(fileh, (BYTE *) "RIFFxxxxWAVEfmt ", 16)) {
+                file_close(fileh);
+                return;
+        }
 
-    /*
-     * WAVEFORMATEX書き込み 
-     */
-    dwSize = sizeof(wfex);
-    if (!file_write(fileh, (BYTE *) & dwSize, sizeof(dwSize))) {
-	file_close(fileh);
-	return;
-    }
-    memset(&wfex, 0, sizeof(wfex));
-    wfex.cbSize = sizeof(wfex);
-    wfex.wFormatTag = WAVE_FORMAT_PCM;
-    wfex.nChannels = uChannels;
-    wfex.nSamplesPerSec = uRate;
-    wfex.nBlockAlign = (WORD) (2 * uChannels);
-    wfex.nAvgBytesPerSec = wfex.nSamplesPerSec * wfex.nBlockAlign;
-    wfex.wBitsPerSample = 16;
-    if (!file_write(fileh, (BYTE *) & wfex, sizeof(wfex))) {
-	file_close(fileh);
-	return;
-    }
+/*
+ * WAVEFORMATEX書き込み 
+ */
+        dwSize = sizeof(wfex);
+        if (!file_write(fileh, (BYTE *) & dwSize, sizeof(dwSize))) {
+                file_close(fileh);
+                return;
+        }
+        memset(&wfex, 0, sizeof(wfex));
+        wfex.cbSize = sizeof(wfex);
+        wfex.wFormatTag = WAVE_FORMAT_PCM;
+        wfex.nChannels = uChannels;
+        wfex.nSamplesPerSec = uRate;
+        wfex.nBlockAlign = (WORD) (2 * uChannels);
+        wfex.nAvgBytesPerSec = wfex.nSamplesPerSec * wfex.nBlockAlign;
+        wfex.wBitsPerSample = 16;
+        if (!file_write(fileh, (BYTE *) & wfex, sizeof(wfex))) {
+                file_close(fileh);
+                return;
+        }
 
-    /*
-     * dataサブヘッダ書き込み 
-     */
-    if (!file_write(fileh, (BYTE *) "dataxxxx", 8)) {
-	file_close(fileh);
-	return;
-    }
+/*
+ * dataサブヘッダ書き込み 
+ */
+        if (!file_write(fileh, (BYTE *) "dataxxxx", 8)) {
+                file_close(fileh);
+                return;
+        }
 
-    /*
-     * ok 
-     */
-    nWavCapture = 0;
-    dwWavCapture = 0;
-    bWavCapture = FALSE;
-    hWavCapture = fileh;
+/*
+ * ok 
+ */
+        nWavCapture = 0;
+        dwWavCapture = 0;
+        bWavCapture = FALSE;
+        hWavCapture = fileh;
 }
 
 /*
@@ -1902,40 +1880,40 @@ OpenCaptureSnd(char *fname)
 void
 CloseCaptureSnd(void)
 {
-    DWORD
-	dwLength;
-    ASSERT(hWavCapture >= 0);
+        DWORD   dwLength;
+        ASSERT(hWavCapture >= 0);
 
-    /*
-     * バッファに残った分を書き込み 
-     */
-    file_write(hWavCapture, (BYTE *) pWavCapture, nWavCapture);
-    dwWavCapture += nWavCapture;
-    nWavCapture = 0;
+/*
+ * バッファに残った分を書き込み 
+ */
 
-    /*
-     * ファイルレングスを書き込む 
-     */
-    file_seek(hWavCapture, 4);
-    dwLength = dwWavCapture + sizeof(WAVEFORMATEX) + 20;
-    file_write(hWavCapture, (BYTE *) & dwLength, sizeof(dwLength));
+        file_write(hWavCapture, (BYTE *) pWavCapture, nWavCapture);
+        dwWavCapture += nWavCapture;
+        nWavCapture = 0;
 
-    /*
-     * data部レングスを書き込む 
-     */
-    file_seek(hWavCapture, sizeof(WAVEFORMATEX) + 24);
-    file_write(hWavCapture, (BYTE *) & dwWavCapture, sizeof(dwWavCapture));
+/*
+ * ファイルレングスを書き込む 
+ */
+        file_seek(hWavCapture, 4);
+        dwLength = dwWavCapture + sizeof(WAVEFORMATEX) + 20;
+        file_write(hWavCapture, (BYTE *) & dwLength, sizeof(dwLength));
 
-    /*
-     * ファイルクローズ 
-     */
-    file_close(hWavCapture);
+/*
+ * data部レングスを書き込む 
+ */
+        file_seek(hWavCapture, sizeof(WAVEFORMATEX) + 24);
+        file_write(hWavCapture, (BYTE *) & dwWavCapture, sizeof(dwWavCapture));
 
-    /*
-     * ワークエリアクリア 
-     */
-    hWavCapture = -1;
-    bWavCapture = FALSE;
+/*
+ * ファイルクローズ 
+ */
+        file_close(hWavCapture);
+
+/*
+ * ワークエリアクリア 
+ */
+        hWavCapture = -1;
+        bWavCapture = FALSE;
 }
 
 
@@ -1944,121 +1922,151 @@ CloseCaptureSnd(void)
      */
 extern
     "C" {
-    void
-                    opn_notify(BYTE reg, BYTE dat) {
-	/*
-	 * OPNがなければ、何もしない 
-	 */
-	if (!pOPN[0]) {
-	    return;
-	}
-	/*
-	 * プリスケーラを調整 
-	 */ if (opn_scale[OPN_STD] != nScale[0]) {
-	    nScale[0] = opn_scale[OPN_STD];
-	    switch (opn_scale[OPN_STD]) {
-	    case 2:
-		pOPN[0]->SetReg(0x2f, 0);
-		break;
-	    case 3:
-		pOPN[0]->SetReg(0x2e, 0);
-		break;
-	    case 6:
-		pOPN[0]->SetReg(0x2d, 0);
-		break;
-	    }
-	}
+void
+opn_notify(BYTE reg, BYTE dat) {
+/*
+ * ApplySnd()期間中にアクセスがあると落ちる
+ * 事に対する対策 20100201
+ */
 
-	/*
-	 * Ch3動作モードチェック 
-	 */
-	if (reg == 0x27) {
-	    if (uCh3Mode[0] == dat) {
-		return;
-	    }
-	    uCh3Mode[0] = dat;
-	}
+//        if(applySem == NULL) {
+//                return;
+//        }
+//        SDL_SemWait(applySem);
+/*
+ * OPNがなければ、何もしない 
+ */
+        if (!pOPN[OPN_STD]) {
+//                SDL_SemPost(applySem);
+                return;
+        }
+/*
+ * プリスケーラを調整 
+ */ 
+        if (opn_scale[OPN_STD] != nScale[OPN_STD]) {
+                nScale[OPN_STD] = opn_scale[OPN_STD];
+                switch (opn_scale[OPN_STD]) {
+                case 2:
+                        pOPN[OPN_STD]->SetReg(0x2f, 0);
+                        break;
+                case 3:
+                        pOPN[OPN_STD]->SetReg(0x2e, 0);
+                        break;
+                case 6:
+                        pOPN[OPN_STD]->SetReg(0x2d, 0);
+                        break;
+                }
+        }
 
-	/*
-	 * 0xffレジスタはチェック 
-	 */
-	if (reg == 0xff) {
-	    if ((opn_reg[OPN_STD][0x27] & 0xc0) != 0x80) {
-		return;
-	    }
-	}
+/*
+ * Ch3動作モードチェック 
+ */
+        if (reg == 0x27) {
+                if (uCh3Mode[OPN_STD] == dat) {
+//                        SDL_SemPost(applySem);
+                        return;
+                }
+                uCh3Mode[OPN_STD] = dat;
+        }
 
-	/*
-	 * サウンド合成 
-	 */
+/*
+ * 0xffレジスタはチェック 
+ */
+        if (reg == 0xff) {
+                if ((opn_reg[OPN_STD][0x27] & 0xc0) != 0x80) {
+//                        SDL_SemPost(applySem);
+                        return;
+                }
+        }
+
+ /*
+ * サウンド合成 
+ */
 	AddSnd(FALSE, FALSE);
 
-	/*
-	 * 出力 
-	 */
-	pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
+/*
+ * 出力 
+ */
+       pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
+//       SDL_SemPost(applySem);
     }
 }
 /*
  *  WHG出力 
  */
 extern
-    "C" {
-    void
-                    whg_notify(BYTE reg, BYTE dat) {
+        "C" {
+void
+whg_notify(BYTE reg, BYTE dat)
+{
 
-	/*
-	 * WHGがなければ、何もしない 
-	 */
-	if (!pOPN[OPN_WHG]) {
-	    return;
-	}
+/*
+ * ApplySnd()中にアクセスがあると落ちることへの対策
+ * 20100201
+ */
+//        if(applySem == NULL) {
+//                return;
+//        }
+//        SDL_SemWait(applySem);
+/*
+ * WHGがなければ、何もしない 
+ */
 
-	/*
-	 * プリスケーラを調整 
-	 */ if (opn_scale[OPN_WHG] != nScale[1]) {
-	    nScale[1] = opn_scale[OPN_WHG];
-	    switch (opn_scale[OPN_WHG]) {
-	    case 2:
-		pOPN[OPN_WHG]->SetReg(0x2f, 0);
-		break;
-	    case 3:
-		pOPN[OPN_WHG]->SetReg(0x2e, 0);
-		break;
-	    case 6:
-		pOPN[OPN_WHG]->SetReg(0x2d, 0);
-		break;
-	    }
-	}
+        if (!pOPN[OPN_WHG]) {
+//                SDL_SemPost(applySem);
+                return;
+        }
 
-	/*
-	 * Ch3動作モードチェック 
-	 */
-	if (reg == 0x27) {
-	    if (uCh3Mode[1] == dat) {
-		return;
-	    }
-	    uCh3Mode[1] = dat;
-	}
 
-	/*
-	 * 0xffレジスタはチェック 
-	 */
-	if (reg == 0xff) {
-	    if ((opn_reg[OPN_WHG][0x27] & 0xc0) != 0x80) {
-		return;
-	    }
-	}
+/*
+ * プリスケーラを調整 
+ */ 
+        if (opn_scale[OPN_WHG] != nScale[OPN_WHG]) {
+                nScale[OPN_WHG] = opn_scale[OPN_WHG];
+                switch (opn_scale[OPN_WHG]) {
+                case 2:
+                        pOPN[OPN_WHG]->SetReg(0x2f, 0);
+                        break;
+                case 3:
+                        pOPN[OPN_WHG]->SetReg(0x2e, 0);
+                        break;
+                case 6:
+                        pOPN[OPN_WHG]->SetReg(0x2d, 0);
+                        break;
+                }
+        }
 
-	/*
-	 * サウンド合成 
-	 */
-	AddSnd(FALSE, FALSE);
+/*
+ * Ch3動作モードチェック 
+ */
+        if (reg == 0x27) {
+                if (uCh3Mode[OPN_WHG] == dat) {
+//                        SDL_SemPost(applySem);
+                        return;
+                }
+                uCh3Mode[OPN_WHG] = dat;
+        }
 
-	/*
-	 * 出力 
-	 */
-	pOPN[OPN_WHG]->SetReg((uint8) reg, (uint8) dat);
+/*
+ * 0xffレジスタはチェック 
+ */
+        if (reg == 0xff) {
+                if ((opn_reg[OPN_WHG][0x27] & 0xc0) != 0x80) {
+//                        SDL_SemPost(applySem);
+                        return;
+                }
+        }
+
+/*
+ * サウンド合成 
+ */
+        AddSnd(FALSE, FALSE);
+
+/*
+ * 出力 
+ */
+        pOPN[OPN_WHG]->SetReg((uint8) reg, (uint8) dat);
+//        SDL_SemPost(applySem);
     }
 }
 
@@ -2068,60 +2076,74 @@ extern
  */
 extern
     "C" {
-    void
-                    thg_notify(BYTE reg, BYTE dat) {
+void
+thg_notify(BYTE reg, BYTE dat)
+{
+/*
+ * ApplySnd()期間中にアクセスがあると落ちる
+ * 事に対する対策 20100201
+ */
+//        if(applySem == NULL) {
+//                return;
+//        }
+//        SDL_SemWait(applySem);
 
-	/*
-	 * THGがなければ、何もしない 
-	 */
-	if (!pOPN[2]) {
-	    return;
-	}
+/*
+ * THGがなければ、何もしない 
+ */
+        if (!pOPN[OPN_THG]) {
+//                SDL_SemPost(applySem);
+                return;
+        }
 
-	/*
-	 * プリスケーラを調整 
-	 */ if (opn_scale[OPN_THG] != nScale[2]) {
-	    nScale[2] = opn_scale[OPN_THG];
-	    switch (opn_scale[OPN_THG]) {
-	    case 2:
-		pOPN[OPN_THG]->SetReg(0x2f, 0);
-		break;
-	    case 3:
-		pOPN[OPN_THG]->SetReg(0x2e, 0);
-		break;
-	    case 6:
-		pOPN[OPN_THG]->SetReg(0x2d, 0);
-		break;
-	    }
-	}
+/*
+ * プリスケーラを調整 
+ */ 
+        if (opn_scale[OPN_THG] != nScale[OPN_THG]) {
+                nScale[OPN_THG] = opn_scale[OPN_THG];
+                switch (opn_scale[OPN_THG]) {
+                case 2:
+                        pOPN[OPN_THG]->SetReg(0x2f, 0);
+                        break;
+                case 3:
+                        pOPN[OPN_THG]->SetReg(0x2e, 0);
+                        break;
+                case 6:
+                        pOPN[OPN_THG]->SetReg(0x2d, 0);
+                        break;
+                }
+        }
 
-	/*
-	 * Ch3動作モードチェック 
-	 */
-	if (reg == 0x27) {
-	    if (uCh3Mode[2] == dat) {
-		return;
-	    }
-	    uCh3Mode[2] = dat;
-	}
-	/*
-	 * 0xffレジスタはチェック 
-	 */
-	if (reg == 0xff) {
-	    if ((opn_reg[OPN_THG][0x27] & 0xc0) != 0x80) {
-		return;
-	    }
-	}
+/*
+ * Ch3動作モードチェック 
+ */
+        if (reg == 0x27) {
+                if (uCh3Mode[OPN_THG] == dat) {
+//                        SDL_SemPost(applySem);
+                        return;
+                }
+                uCh3Mode[OPN_THG] = dat;
+        }
+/*
+ * 0xffレジスタはチェック 
+ */
+        if (reg == 0xff) {
+                if ((opn_reg[OPN_THG][0x27] & 0xc0) != 0x80) {
+//                        SDL_SemPost(applySem);
+                        return;
+                }
+        }
 
-	/*
-	 * サウンド合成 
-	 */
-	AddSnd(FALSE, FALSE);
+/*
+ * サウンド合成 
+ */
+        AddSnd(FALSE, FALSE);
 
-	/*
-	 * 出力 
-	 */
-	pOPN[OPN_THG]->SetReg((uint8) reg, (uint8) dat);
+/*
+ * 出力 
+ */
+        pOPN[OPN_THG]->SetReg((uint8) reg, (uint8) dat);
+//        SDL_SemPost(applySem);
     }
 }
 
@@ -2130,30 +2152,31 @@ extern
  */
 extern
     "C" {
-    void
-                    beep_notify(void) {
+void
+beep_notify(void)
+{
 
-	/*
-	 * 出力状態が変化していなければリターン 
-	 */
-	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
-	    return;
-	}
+/*
+ * 出力状態が変化していなければリターン 
+ */
+        if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
+                return;
+        }
 
-	/*
-	 * サウンド合成 
-	 */ 
-                  AddSnd(FALSE, FALSE);
+/*
+ * サウンド合成 
+ */ 
+        AddSnd(FALSE, FALSE);
 
-	/*
-	 * フラグ保持 
-	 */
-	if (beep_flag && speaker_flag) {
-	    bBeepFlag = TRUE;
-	} else {
-	    bBeepFlag = FALSE;
-	}
-    }
+/*
+ * フラグ保持 
+ */
+        if (beep_flag && speaker_flag) {
+                bBeepFlag = TRUE;
+        } else {
+                bBeepFlag = FALSE;
+        }
+}
 }
 
 /*
@@ -2161,27 +2184,28 @@ extern
  */
 extern
     "C" {
-    void
-                    tape_notify(BOOL flag) {
+void
+tape_notify(BOOL flag)
+{
+/*
+ * 出力状態が変化したかチェック 
+ */
+        if (bTapeFlag == flag) {
+                return;
+        }
 
-	/*
-	 * 出力状態が変化したかチェック 
-	 */
-	if (bTapeFlag == flag) {
-	    return;
-	}
+/*
+ * サウンド合成 
+ */ 
+        if (bTapeMon) {
+                AddSnd(FALSE, FALSE);
+        }
 
-	/*
-	 * サウンド合成 
-	 */ if (bTapeMon) {
-	    AddSnd(FALSE, FALSE);
-	}
-
-	/*
-	 * フラグ保持 
-	 */
-	bTapeFlag = flag;
-    }
+/*
+ * フラグ保持 
+ */
+        bTapeFlag = flag;
+}
 }
 
 
@@ -2190,10 +2214,12 @@ extern
  */
 #ifdef FDDSND
 extern    "C" {
-void wav_notify(BYTE no) {
-	int        i;
-	int        j;
-	DWORD      k;
+void 
+wav_notify(BYTE no)
+{
+        int        i;
+        int        j;
+        DWORD      k;
 
 /*
  * サウンド合成 
