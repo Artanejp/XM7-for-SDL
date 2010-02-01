@@ -58,6 +58,7 @@ extern          "C" {
  * 以下、Toolkit依存部分
  */
 #ifdef USE_GTK
+        extern void     ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight);
         extern void     InitGtk(int argc, char *argv[]);
         extern void     InitInstanceGtk(void);
         extern void     OnCreateGtk(GtkWidget *parent);
