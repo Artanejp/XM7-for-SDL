@@ -103,12 +103,12 @@ COMMONOBJ = \
 
 
 LOCALOBJ = \
-	sdl_gtkdlg.o sdl_cfg.o sdl_prop.o sdl_inifile.o sdl_bar.o \
+	sdl_gtkdlg.o sdl_cfg.o sdl_inifile.o sdl_bar.o \
 	sdl_cmd.o sdl_sch.o sdl_kbd.o sdl_file.o \
 	sdl_snd.o sdl_main.o \
                  sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o \
                  sdl_draw.o \
-                 gtk_cfgdlg.o gtk_main.o
+                 gtk_cfgdlg.o gtk_main.o gtk_prop.o
 #	xw_sub.o 
 
 .SUFFIXES: .c .cpp .asm .o
