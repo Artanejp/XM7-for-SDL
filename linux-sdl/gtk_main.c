@@ -66,7 +66,7 @@ CreateDrawGTK(GtkWidget * parent)
 /*
  *  キーボード：GTK->SDL Wrapper 
  */ 
-static gboolean FASTCALL
+static gboolean
 OnKeyPressGTK(GtkWidget * widget, GdkEventKey * event, gpointer data) 
 {
     Uint8 keycode = (Uint8) event->hardware_keycode;
@@ -79,7 +79,7 @@ OnKeyPressGTK(GtkWidget * widget, GdkEventKey * event, gpointer data)
     return TRUE;
 }
 
-static gboolean FASTCALL
+static gboolean
 OnKeyReleaseGTK(GtkWidget * widget, GdkEventKey * event, gpointer data) 
 {
     Uint8 keycode = (Uint8) event->hardware_keycode;
@@ -140,10 +140,10 @@ OnScreenUnPlugged(void)
         }
 }
 
-    /*
-     *  ウインドウデリート 
-     */ 
-static gboolean FASTCALL
+/*
+ *  ウインドウデリート 
+ */ 
+static gboolean
 OnDelete(GtkWidget * widget, GdkEvent * event, gpointer data) 
 {
     
@@ -160,7 +160,7 @@ OnDelete(GtkWidget * widget, GdkEvent * event, gpointer data)
     /*
      *  ウインドウ削除 
      */ 
-static void     FASTCALL
+static void
 OnDestroy(GtkWidget * widget, gpointer data) 
 {
     
@@ -193,7 +193,7 @@ OnDestroy(GtkWidget * widget, gpointer data)
     /*
      *  ドローウインドウへのフォーカスインイベント 
      */ 
-static void     FASTCALL
+static void 
 OnFocusIn(GtkWidget * widget, gpointer data)
 {
     bActivate = TRUE;
@@ -207,7 +207,7 @@ OnFocusIn(GtkWidget * widget, gpointer data)
      * 
      * ドローウインドウへのフォーカスアウトイベント 
      */ 
-static void     FASTCALL
+static void
 OnFocusOut(GtkWidget * widget, gpointer data)
 {
     bActivate = FALSE;
@@ -217,6 +217,86 @@ OnFocusOut(GtkWidget * widget, gpointer data)
     
 #endif				/*  */
 } 
+
+/*
+ * 表示解像度を変更する
+ */
+void 
+ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
+{       
+        char            EnvMainWindow[64];
+        SDL_Surface     *tmpSurface;
+        SDL_Rect srcrect, dstrect;
+	    
+/*
+ * まずは現在のサーフェイスを退避する 
+ */ 
+        tmpSurface =
+                SDL_CreateRGBSurface(SDL_SWSURFACE, oldwidth,
+                                     oldheight, 24, 0, 0, 0, 0);
+        displayArea = SDL_GetVideoSurface();
+        srcrect.x = 0;
+        srcrect.y = 0;
+        srcrect.w = displayArea->w;
+        srcrect.h = displayArea->h;
+        dstrect.x = 0;
+        dstrect.y = 0;
+        dstrect.w = tmpSurface->w;
+        dstrect.h = tmpSurface->h;
+        if (srcrect.w > dstrect.w)
+                srcrect.w = dstrect.w;
+        if (srcrect.h > dstrect.h)
+                srcrect.h = dstrect.h;
+        SDL_BlitSurface(displayArea, &srcrect, tmpSurface, &dstrect);
+    
+/*
+ * 表示部分のリサイズ : GTK依存部分につき変更？
+ */ 
+#ifdef USE_GTK
+        gtk_widget_set_usize(gtkDrawArea, width, height);
+        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
+                gdk_x11_drawable_get_xid(gtkDrawArea->window));
+	    
+#endif				/*  */
+        SDL_putenv(EnvMainWindow);
+        displayArea =
+                SDL_SetVideoMode(width, height, 24,
+                                 SDL_HWSURFACE | SDL_ANYFORMAT |
+                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                 SDL_ASYNCBLIT | 0);
+        printf("RESO CHG: %d x %d -> %d x %d\n", oldwidth,
+               oldheight, width, height);
+	    
+/*
+ * 退避したエリアの復帰（原寸…) 
+ */ 
+        dstrect.x = 0;
+        dstrect.y = 0;
+        dstrect.w = displayArea->w;
+        dstrect.h = displayArea->h;
+        srcrect.x = 0;
+        srcrect.y = 0;
+        srcrect.w = tmpSurface->w;
+        srcrect.h = tmpSurface->h;
+        if (srcrect.w > dstrect.w)
+                srcrect.w = dstrect.w;
+        if (srcrect.h > dstrect.h)
+                srcrect.h = dstrect.h;
+        SDL_BlitSurface(tmpSurface, &srcrect, displayArea, &dstrect);
+        SDL_FreeSurface(tmpSurface);
+                        
+/*
+ * 以下に、全画面強制再描画処理を入れる 
+ */ 
+        if (bDirectDraw) {
+                realDrawArea = SDL_GetVideoSurface();
+        } else {
+                realDrawArea = drawArea;
+        }
+        if (!bFullScan) {
+                RenderSetOddLine();
+        }   
+}
 
 
 /*
