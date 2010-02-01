@@ -25,20 +25,27 @@
     /*
      *  グローバル ワーク 
      */ 
-DWORD rgbTTLGDI[16];	/* デジタルパレット */
-DWORD rgbAnalogGDI[4096];	/* アナログパレット */
+DWORD   rgbTTLGDI[16];	/* デジタルパレット */
+DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 
 // guchar pBitsGDI[400*640*3]; /* ビットデータ */
-BYTE GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
-BOOL bFullScan;		/* フルスキャン(Window) */
-BOOL bDirectDraw;		/* 直接書き込みフラグ */
-SDL_Surface *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) 
-				 */
-extern GtkWidget *gtkDrawArea;
+BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
+BOOL            bFullScan;		/* フルスキャン(Window) */
+BOOL            bDirectDraw;		/* 直接書き込みフラグ */
+SDL_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
+WORD            nDrawTop;			/* 描画範囲上 */
+WORD            nDrawBottom;		/* 描画範囲下 */
+WORD            nDrawLeft;		/* 描画範囲左 */
+WORD            nDrawRight;		/* 描画範囲右 */
+WORD            nDrawWidth;
+WORD            nDrawHeight;
+BOOL            bPaletFlag;		/* パレット変更フラグ */
+BOOL            bClearFlag;
 
-    /*
-     *  スタティック ワーク 
-     */ 
+
+/*
+ *  スタティック ワーク 
+ */ 
 #if XM7_VER >= 3
 static BYTE    bMode;		/* 画面モード */
 
@@ -47,14 +54,6 @@ static BOOL     bAnalog;	/* アナログモードフラグ */
 
 #endif				/*  */
 static BYTE     bNowBPP;	/* 現在のビット深度 */
-WORD nDrawTop;			/* 描画範囲上 */
-WORD nDrawBottom;		/* 描画範囲下 */
-WORD nDrawLeft;		/* 描画範囲左 */
-WORD nDrawRight;		/* 描画範囲右 */
-WORD nDrawWidth;
-WORD nDrawHeight;
-BOOL bPaletFlag;		/* パレット変更フラグ */
-BOOL bClearFlag;
 static BOOL   bOldFullScan;	/* クリアフラグ */
 static WORD    nOldDrawWidth;
 static WORD    nOldDrawHeight;
@@ -97,95 +96,20 @@ SETDOT(WORD x, WORD y, DWORD c)
     SDL_LockSurface(realDrawArea);
     *(DWORD *) addr = c;
     SDL_UnlockSurface(realDrawArea);
-} static void
+} 
 
+static void
 ChangeResolution() 
 {
-    
-/*
- * ビデオモード再設定 
- */ 
-        if ((nDrawWidth != nOldDrawWidth) || (nDrawHeight != nOldDrawHeight)) {
-                {       
-                        char           EnvMainWindow[64];
-                        SDL_Surface * tmpSurface;
-                        SDL_Rect srcrect, dstrect;
-	    
-	/*
-	 * まずは現在のサーフェイスを退避する 
-	 */ 
-                        tmpSurface =
-                                SDL_CreateRGBSurface(SDL_SWSURFACE, nOldDrawWidth,
-                                                     nOldDrawHeight, 24, 0, 0, 0, 0);
-        displayArea = SDL_GetVideoSurface();
-        srcrect.x = 0;
-        srcrect.y = 0;
-        srcrect.w = displayArea->w;
-        srcrect.h = displayArea->h;
-        dstrect.x = 0;
-        dstrect.y = 0;
-        dstrect.w = tmpSurface->w;
-        dstrect.h = tmpSurface->h;
-        if (srcrect.w > dstrect.w)
-                srcrect.w = dstrect.w;
-        if (srcrect.h > dstrect.h)
-                srcrect.h = dstrect.h;
-        SDL_BlitSurface(displayArea, &srcrect, tmpSurface, &dstrect);
-    
-/*
- * 表示部分のリサイズ 
- */ 
-#if 1
-        gtk_widget_set_usize(gtkDrawArea, nDrawWidth, nDrawHeight);
-        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-                gdk_x11_drawable_get_xid(gtkDrawArea->window));
-	    
-#endif				/*  */
-        SDL_putenv(EnvMainWindow);
-        displayArea =
-                SDL_SetVideoMode(nDrawWidth, nDrawHeight, 24,
-			 SDL_HWSURFACE | SDL_ANYFORMAT |
-			 SDL_RESIZABLE | SDL_DOUBLEBUF |
-			 SDL_ASYNCBLIT | 0);
-        printf("RESO CHG: %d x %d -> %d x %d\n", nOldDrawWidth,
-	    nOldDrawHeight, nDrawWidth, nDrawHeight);
-	    
-/*
- * 退避したエリアの復帰（原寸…) 
- */ 
-        dstrect.x = 0;
-        dstrect.y = 0;
-        dstrect.w = displayArea->w;
-        dstrect.h = displayArea->h;
-        srcrect.x = 0;
-        srcrect.y = 0;
-        srcrect.w = tmpSurface->w;
-        srcrect.h = tmpSurface->h;
-        if (srcrect.w > dstrect.w)
-                srcrect.w = dstrect.w;
-        if (srcrect.h > dstrect.h)
-	srcrect.h = dstrect.h;
-        SDL_BlitSurface(tmpSurface, &srcrect, displayArea, &dstrect);
-        SDL_FreeSurface(tmpSurface);
-	    
-/*
- * 以下に、全画面強制再描画処理を入れる 
- */ 
-        if (bDirectDraw) {
-                realDrawArea = SDL_GetVideoSurface();
-        } else {
-                realDrawArea = drawArea;
-        }
-        if (!bFullScan) {
-                RenderSetOddLine();
-        }
-                }
+        if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
+                return;
         }
 
-    nOldDrawHeight = nDrawHeight;
-    nOldDrawWidth = nDrawWidth;
+        ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
+        nOldDrawHeight = nDrawHeight;
+        nOldDrawWidth = nDrawWidth;
 }
-
+    
 
     /*
      *  BITBLT 
@@ -797,39 +721,43 @@ OnDraw(void)
 }
 
 
-    /*
-     *  描画(PAINT) *GTK依存だが、ダミー。 
-     */ 
-    gint OnPaint(GtkWidget * widget, GdkEventExpose * event) 
+/*
+*  描画(PAINT) *GTK依存だが、ダミー。 
+*/ 
+#ifdef USE_GTK
+gint 
+OnPaint(GtkWidget * widget, GdkEventExpose * event) 
+#else
+int
+OnPaint(void)
+#endif
 {
-    SDL_Rect srcrect, dstrect;
-    int            i;
-    displayArea = SDL_GetVideoSurface();
-    for (i = 0; i < (80 * 50); i++) {
-	GDIDrawFlag[i] = 1;
-    }
-    srcrect.x = 0;
-    srcrect.y = 0;
-    srcrect.w = (Uint16) realDrawArea->w;
-    srcrect.h = (Uint16) realDrawArea->h;
-    dstrect.x = 0;
-    dstrect.y = 0;
-    dstrect.w = (Uint16) displayArea->w;
-    dstrect.h = (Uint16) displayArea->h;
+        SDL_Rect srcrect, dstrect;
+        int            i;
+        displayArea = SDL_GetVideoSurface();
+        for (i = 0; i < (80 * 50); i++) {
+                GDIDrawFlag[i] = 1;
+        }
+        srcrect.x = 0;
+        srcrect.y = 0;
+        srcrect.w = (Uint16) realDrawArea->w;
+        srcrect.h = (Uint16) realDrawArea->h;
+        dstrect.x = 0;
+        dstrect.y = 0;
+        dstrect.w = (Uint16) displayArea->w;
+        dstrect.h = (Uint16) displayArea->h;
     
-	/*
-	 * ここまでやっておいてから解像度を変更する 
-	 */ 
-	ChangeResolution();
-    SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
-		       realDrawArea->h);
-    if (!bDirectDraw) {
-	SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
-    }
-    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-    
-	// printf("paint");
-	return FALSE;
+/*
+ * ここまでやっておいてから解像度を変更する 
+ */ 
+        ChangeResolution();
+        SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
+                       realDrawArea->h);
+        if (!bDirectDraw) {
+                SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
+        }
+        SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+        return FALSE;
 }
 
 
@@ -838,7 +766,7 @@ OnDraw(void)
     /*
      *  VRAMセット 
      */ 
-    void
+void
 vram_notify(WORD addr, BYTE dat) 
 {
     WORD x;
