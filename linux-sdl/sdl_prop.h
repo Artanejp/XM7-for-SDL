@@ -98,6 +98,7 @@ extern GtkWidget *VOLUME_PSG;
 extern GtkWidget *VOLUME_BEEP;
 extern GtkWidget *VOLUME_TAPE;
 extern GtkWidget *VOLUME_WAV;
+extern GtkWidget *VOLUME_SEP;
 
 extern int      GP_CPUCOMBO_IDX;
 

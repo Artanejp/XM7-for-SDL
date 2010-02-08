@@ -68,8 +68,13 @@
   <object class="GtkAction" id="action_SPEED_FDD_WAIT"/>
   <object class="GtkAction" id="action_SPEED_FULLSPEED"/>
   <object class="GtkAction" id="action_SPEED_AUTO"/>
-  <object class="GtkAction" id="action_BUTTON_OK"/>
-  <object class="GtkAction" id="action_BUTTON_CANCEL"/>
+  <object class="GtkAction" id="action_BUTTON_OK">
+    <property name="is_important">True</property>
+    <property name="hide_if_empty">False</property>
+  </object>
+  <object class="GtkAction" id="action_BUTTON_CANCEL">
+    <property name="is_important">True</property>
+  </object>
   <object class="GtkWindow" id="window_main">
     <child>
       <object class="GtkVBox" id="vbox1">
@@ -539,10 +544,59 @@
               <object class="GtkHBox" id="hbox17">
                 <property name="visible">True</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkHBox" id="hbox2">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkHBox" id="hbox5">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox15">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox23">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox24">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">4</property>
+                  </packing>
                 </child>
                 <child>
                   <object class="GtkLabel" id="label_Drive1">
@@ -550,7 +604,7 @@
                     <property name="label" translatable="yes">[1:]</property>
                   </object>
                   <packing>
-                    <property name="position">2</property>
+                    <property name="position">5</property>
                   </packing>
                 </child>
                 <child>
@@ -559,7 +613,7 @@
                     <property name="label" translatable="yes">[0:]</property>
                   </object>
                   <packing>
-                    <property name="position">3</property>
+                    <property name="position">6</property>
                   </packing>
                 </child>
                 <child>
@@ -568,7 +622,7 @@
                     <property name="label" translatable="yes">[TAPE]</property>
                   </object>
                   <packing>
-                    <property name="position">4</property>
+                    <property name="position">7</property>
                   </packing>
                 </child>
               </object>
@@ -589,7 +643,81 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkHBox" id="hbox25">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox26">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox27">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox28">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox29">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox30">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">6</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox31">
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">7</property>
+                  </packing>
                 </child>
                 <child>
                   <object class="GtkLabel" id="label_INS">
@@ -597,7 +725,7 @@
                     <property name="label" translatable="yes">INS</property>
                   </object>
                   <packing>
-                    <property name="position">2</property>
+                    <property name="position">8</property>
                   </packing>
                 </child>
                 <child>
@@ -606,7 +734,7 @@
                     <property name="label" translatable="yes">&#x304B;&#x306A;</property>
                   </object>
                   <packing>
-                    <property name="position">3</property>
+                    <property name="position">9</property>
                   </packing>
                 </child>
                 <child>
@@ -615,7 +743,7 @@
                     <property name="label" translatable="yes">CAPS</property>
                   </object>
                   <packing>
-                    <property name="position">4</property>
+                    <property name="position">10</property>
                   </packing>
                 </child>
                 <child>
@@ -634,7 +762,7 @@ audio-volume-low
 audio-volume-medium</property>
                   </object>
                   <packing>
-                    <property name="position">5</property>
+                    <property name="position">11</property>
                   </packing>
                 </child>
               </object>
@@ -651,6 +779,9 @@ audio-volume-medium</property>
     </child>
   </object>
   <object class="GtkWindow" id="window_prop">
+    <property name="resizable">False</property>
+    <property name="window_position">center</property>
+    <property name="destroy_with_parent">True</property>
     <child>
       <object class="GtkVBox" id="vbox2">
         <property name="visible">True</property>
@@ -686,7 +817,7 @@ audio-volume-medium</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="related_action">action_EMU_FM7</property>
-                                    <property name="image">image1</property>
+                                    <property name="image_position">bottom</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                     <signal name="group_changed" handler="OnEmuTypeFM7Selected" object="1"/>
@@ -702,7 +833,6 @@ audio-volume-medium</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="related_action">action_EMU_77AV</property>
-                                    <property name="image">image2</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                     <signal name="group_changed" handler="OnEmuTypeFM7Selected" object="2" after="yes"/>
@@ -774,7 +904,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkRadioButton" id="radiobutton_emumode_slo">
+                                  <object class="GtkRadioButton" id="radiobutton_emumode_slow">
                                     <property name="label" translatable="yes">&#x4F4E;&#x901F;&#x30E2;&#x30FC;&#x30C9;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -824,13 +954,14 @@ audio-volume-medium</property>
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkHBox" id="hbox2">
+                              <object class="GtkHBox" id="hbox_2">
                                 <property name="visible">True</property>
                                 <child>
-                                  <object class="GtkComboBox" id="combobox_SPEED_TYPE">
+                                  <object class="GtkHBox" id="hbox_cpucycle">
                                     <property name="visible">True</property>
-                                    <property name="model">liststore1</property>
-                                    <property name="button_sensitivity">on</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
                                   </object>
                                   <packing>
                                     <property name="position">0</property>
@@ -875,7 +1006,7 @@ audio-volume-medium</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="checkbutton1">
+                              <object class="GtkCheckButton" id="checkbutton_tapeon_full">
                                 <property name="label" translatable="yes">&#x30C6;&#x30FC;&#x30D7;&#x30E2;&#x30FC;&#x30BF;&#x30FC;&#x30AA;&#x30F3;&#x6642;&#x306F;&#x30D5;&#x30EB;&#x30B9;&#x30D4;&#x30FC;&#x30C9;</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -888,7 +1019,7 @@ audio-volume-medium</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="checkbutton2">
+                              <object class="GtkCheckButton" id="checkbutton_tapeon_nowait">
                                 <property name="label" translatable="yes">&#x30C6;&#x30FC;&#x30D7;&#x30E2;&#x30FC;&#x30BF;&#x30FC;&#x30AA;&#x30F3;&#x6642;&#x306F;&#x901F;&#x5EA6;&#x8ABF;&#x6574;&#x7701;&#x7565;&#x306B;&#x3059;&#x308B;</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -901,7 +1032,7 @@ audio-volume-medium</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="checkbutton3">
+                              <object class="GtkCheckButton" id="checkbutton_fdd_wait">
                                 <property name="label" translatable="yes">&#x30D5;&#x30ED;&#x30C3;&#x30D4;&#x30FC;&#x30A2;&#x30AF;&#x30BB;&#x30B9;&#x6642;&#x306B;&#x30A6;&#x30A7;&#x30A4;&#x30C8;&#x3092;&#x5165;&#x308C;&#x308B;</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -917,7 +1048,7 @@ audio-volume-medium</property>
                               <object class="GtkHBox" id="hbox3">
                                 <property name="visible">True</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton4">
+                                  <object class="GtkCheckButton" id="checkbutton_fullspeed">
                                     <property name="label" translatable="yes">&#x5168;&#x529B;&#x99C6;&#x52D5;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -931,7 +1062,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton5">
+                                  <object class="GtkCheckButton" id="checkbutton_autospeed">
                                     <property name="label" translatable="yes">&#x81EA;&#x52D5;&#x901F;&#x5EA6;&#x8ABF;&#x6574;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -991,7 +1122,7 @@ audio-volume-medium</property>
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton4">
+                          <object class="GtkRadioButton" id="radiobutton_96k">
                             <property name="label" translatable="yes">96,000Hz</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1007,7 +1138,7 @@ audio-volume-medium</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton5">
+                          <object class="GtkRadioButton" id="radiobutton_88k">
                             <property name="label" translatable="yes">88,200Hz</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1023,7 +1154,7 @@ audio-volume-medium</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton6">
+                          <object class="GtkRadioButton" id="radiobutton_48k">
                             <property name="label" translatable="yes">48,000Hz</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1039,7 +1170,7 @@ audio-volume-medium</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton7">
+                          <object class="GtkRadioButton" id="radiobutton_44k">
                             <property name="label" translatable="yes">44,100Hz</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1055,7 +1186,7 @@ audio-volume-medium</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton8">
+                          <object class="GtkRadioButton" id="radiobutton_22k">
                             <property name="label" translatable="yes">22,050Hz</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1071,7 +1202,7 @@ audio-volume-medium</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton9">
+                          <object class="GtkRadioButton" id="radiobutton_pcm_none">
                             <property name="label" translatable="yes">&#x5408;&#x6210;&#x3057;&#x306A;&#x3044;</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1087,7 +1218,7 @@ audio-volume-medium</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="checkbutton6">
+                          <object class="GtkCheckButton" id="checkbutton_pcm_hq">
                             <property name="label" translatable="yes">&#x7DDA;&#x5F62;&#x88DC;&#x9593;</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1148,6 +1279,7 @@ audio-volume-medium</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="invisible_char">&#x25CF;</property>
+                                    <property name="adjustment">adjustment_BUFSIZE</property>
                                     <property name="climb_rate">10</property>
                                   </object>
                                   <packing>
@@ -1184,9 +1316,11 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxEntry" id="comboboxentry1">
+                                  <object class="GtkHBox" id="hbox_stereomode">
                                     <property name="visible">True</property>
-                                    <property name="row_span_column">2</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
                                   </object>
                                   <packing>
                                     <property name="position">1</property>
@@ -1198,6 +1332,18 @@ audio-volume-medium</property>
                               </object>
                               <packing>
                                 <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkVBox" id="vbox23">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>
@@ -1244,6 +1390,7 @@ audio-volume-medium</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="invisible_char">&#x25CF;</property>
+                                        <property name="adjustment">adjustment_BeepFreq</property>
                                         <property name="climb_rate">100</property>
                                       </object>
                                       <packing>
@@ -1265,7 +1412,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton7">
+                                  <object class="GtkCheckButton" id="checkbutton_tapemon">
                                     <property name="label" translatable="yes">&#x30C6;&#x30FC;&#x30D7;&#x97F3;&#x30E2;&#x30CB;&#x30BF;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1278,7 +1425,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton8">
+                                  <object class="GtkCheckButton" id="checkbutton_wavmon">
                                     <property name="label" translatable="yes">FDD/&#x30EA;&#x30EC;&#x30FC;&#x97F3;&#x30E2;&#x30CB;&#x30BF;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1359,7 +1506,7 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="checkbutton_PseudoRealtimeKEyscan">
+                  <object class="GtkCheckButton" id="checkbutton_PseudoRealtimeKeyscan">
                     <property name="label" translatable="yes">&#x64EC;&#x4F3C;&#x30EA;&#x30A2;&#x30EB;&#x30BF;&#x30A4;&#x30E0;&#x30AD;&#x30FC;&#x30B9;&#x30AD;&#x30E3;&#x30F3;</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -1454,96 +1601,187 @@ audio-volume-medium</property>
               </packing>
             </child>
             <child>
-              <object class="GtkHBox" id="hbox11">
+              <object class="GtkVBox" id="vbox11">
                 <property name="visible">True</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkFrame" id="frame6">
+                  <object class="GtkHBox" id="hbox11">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkVBox" id="vbox11">
+                      <object class="GtkFrame" id="frame6">
                         <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton10">
-                            <property name="label" translatable="yes">&#x306A;&#x3057;</property>
+                          <object class="GtkVBox" id="vbox12">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js1_unused">
+                                <property name="label" translatable="yes">&#x306A;&#x3057;</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js1_port1">
+                                <property name="label" translatable="yes">PORT1</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js1_port2">
+                                <property name="label" translatable="yes">PORT2</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js1_joykey">
+                                <property name="label" translatable="yes">JOYKEY</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js1_dempa">
+                                <property name="label" translatable="yes">DEMPA</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
                           </object>
-                          <packing>
-                            <property name="position">0</property>
-                          </packing>
                         </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton11">
-                            <property name="label" translatable="yes">PORT1</property>
+                        <child type="label">
+                          <object class="GtkLabel" id="label21">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;JOYSTICK1&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
                           </object>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton12">
-                            <property name="label" translatable="yes">PORT2</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton13">
-                            <property name="label" translatable="yes">JOYKEY</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton14">
-                            <property name="label" translatable="yes">DEMPA</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
                         </child>
                       </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label21">
+                    <child>
+                      <object class="GtkFrame" id="frame7">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;JOYSTICK1&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkVBox" id="vbox24">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js2_unused">
+                                <property name="label" translatable="yes">&#x306A;&#x3057;</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js2_port1">
+                                <property name="label" translatable="yes">PORT1</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js2_port2">
+                                <property name="label" translatable="yes">PORT2</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js2_joykey">
+                                <property name="label" translatable="yes">JOYKEY</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkRadioButton" id="radiobutton_js2_dempa">
+                                <property name="label" translatable="yes">DEMPA</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label22">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;JOYSTICK2&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -1551,113 +1789,11 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame7">
+                  <object class="GtkHButtonBox" id="hbuttonbox1">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="layout_style">end</property>
                     <child>
-                      <object class="GtkVBox" id="vbox12">
-                        <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton15">
-                            <property name="label" translatable="yes">&#x306A;&#x3057;</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton16">
-                            <property name="label" translatable="yes">PORT1</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton17">
-                            <property name="label" translatable="yes">PORT2</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton18">
-                            <property name="label" translatable="yes">JOYKEY</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkRadioButton" id="radiobutton19">
-                            <property name="label" translatable="yes">DEMPA</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="position">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <object class="GtkHBox" id="hbox15">
-                            <property name="visible">True</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="button6">
-                                <property name="label" translatable="yes">JOYKEY&#x8A2D;&#x5B9A;</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="related_action">action_JOYKEY</property>
-                              </object>
-                              <packing>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="position">6</property>
-                          </packing>
-                        </child>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label22">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;JOYSTICK2&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -1692,36 +1828,48 @@ audio-volume-medium</property>
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox13">
+                          <object class="GtkVBox" id="vbox400">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry2">
+                              <object class="GtkHBox" id="hbox_rapid_00">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry3">
+                              <object class="GtkHBox" id="hbox_rapid_01">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">1</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry4">
+                              <object class="GtkHBox" id="hbox_rapid_02">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">2</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry5">
+                              <object class="GtkHBox" id="hbox_rapid_03">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">3</property>
@@ -1753,36 +1901,48 @@ audio-volume-medium</property>
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox14">
+                          <object class="GtkVBox" id="vbox410">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry6">
+                              <object class="GtkHBox" id="hbox_rapid_10">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry7">
+                              <object class="GtkHBox" id="hbox_rapid_11">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">1</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry8">
+                              <object class="GtkHBox" id="hbox_rapid_12">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">2</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxEntry" id="comboboxentry9">
+                              <object class="GtkHBox" id="hbox_rapid_13">
                                 <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="position">3</property>
@@ -1907,7 +2067,7 @@ audio-volume-medium</property>
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="checkbutton12">
+                              <object class="GtkCheckButton" id="checkbutton_fullscan">
                                 <property name="label" translatable="yes">&#x30D5;&#x30EB;&#x30B9;&#x30AD;&#x30E3;&#x30F3;(15KHz)</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -1977,7 +2137,7 @@ audio-volume-medium</property>
                                 <property name="visible">True</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton13">
+                                  <object class="GtkCheckButton" id="checkbutton_stdfm">
                                     <property name="label" translatable="yes">&#x6A19;&#x6E96;FM&#x97F3;&#x6E90;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1989,7 +2149,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton14">
+                                  <object class="GtkCheckButton" id="checkbutton_whg">
                                     <property name="label" translatable="yes">WHG&#x97F3;&#x6E90;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -2001,7 +2161,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton15">
+                                  <object class="GtkCheckButton" id="checkbutton_thg">
                                     <property name="label" translatable="yes">THG&#x97F3;&#x6E90;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -2042,7 +2202,7 @@ audio-volume-medium</property>
                                 <property name="visible">True</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="checkbutton16">
+                                  <object class="GtkCheckButton" id="checkbutton_mouse">
                                     <property name="label" translatable="yes">&#x30DE;&#x30A6;&#x30B9;&#x3092;&#x4F7F;&#x7528;&#x3059;&#x308B;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -2054,7 +2214,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkRadioButton" id="radiobutton23">
+                                  <object class="GtkRadioButton" id="radiobutton_mouse1">
                                     <property name="label" translatable="yes">&#x30DD;&#x30FC;&#x30C8;1</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -2067,7 +2227,7 @@ audio-volume-medium</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkRadioButton" id="radiobutton24">
+                                  <object class="GtkRadioButton" id="radiobutton_mouse2">
                                     <property name="label" translatable="yes">&#x30DD;&#x30FC;&#x30C8;2</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -2113,7 +2273,7 @@ audio-volume-medium</property>
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkCheckButton" id="checkbutton17">
+                          <object class="GtkCheckButton" id="checkbutton_digitize">
                             <property name="label" translatable="yes">&#x4F7F;&#x7528;&#x3059;&#x308B;</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2145,7 +2305,7 @@ audio-volume-medium</property>
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkCheckButton" id="checkbutton18">
+                          <object class="GtkCheckButton" id="checkbutton_ramboard">
                             <property name="label" translatable="yes">&#x4F7F;&#x7528;&#x3059;&#x308B;</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2183,28 +2343,46 @@ audio-volume-medium</property>
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="vbox21">
+              <object class="GtkVBox" id="vbox13">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkFrame" id="frame16">
+                  <object class="GtkVBox" id="vbox14">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkHScale" id="hscale1">
+                      <object class="GtkFrame" id="frame16">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjustment_FM</property>
-                        <property name="lower_stepper_sensitivity">off</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="alignment14">
+                            <property name="visible">True</property>
+                            <property name="left_padding">12</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox_FM">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label31">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;FM&#x97F3;&#x6E90;&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label31">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;FM&#x97F3;&#x6E90;&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -2212,24 +2390,41 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame17">
+                  <object class="GtkHBox" id="hbox14">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkHScale" id="hscale2">
+                      <object class="GtkFrame" id="frame17">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjustment_PSG</property>
-                        <property name="lower_stepper_sensitivity">off</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="alignment15">
+                            <property name="visible">True</property>
+                            <property name="left_padding">12</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox_PSG">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label32">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;PSG&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label32">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;PSG&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -2237,23 +2432,41 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame18">
+                  <object class="GtkHBox" id="hbox18">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkHScale" id="hscale3">
+                      <object class="GtkFrame" id="frame18">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjustment_BEEP</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="alignment16">
+                            <property name="visible">True</property>
+                            <property name="left_padding">12</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox_BEEP">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label33">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;BEEP&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label33">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;BEEP&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -2261,24 +2474,41 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame19">
+                  <object class="GtkHBox" id="hbox19">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkHScale" id="hscale4">
+                      <object class="GtkFrame" id="frame19">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjustment_CMT</property>
-                        <property name="upper_stepper_sensitivity">on</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="alignment17">
+                            <property name="visible">True</property>
+                            <property name="left_padding">12</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox_TAPE">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label34">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;TAPE&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label34">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;&#x30C6;&#x30FC;&#x30D7;&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -2286,23 +2516,41 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame20">
+                  <object class="GtkHBox" id="hbox20">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkHScale" id="hscale5">
+                      <object class="GtkFrame" id="frame20">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjustment_WAV</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="alignment18">
+                            <property name="visible">True</property>
+                            <property name="left_padding">12</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox_WAVE">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label35">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;FDD/&#x30EA;&#x30EC;&#x30FC;&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label35">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;FDD&#x30D8;&#x30C3;&#x30C9;/&#x30EA;&#x30EC;&#x30FC;&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -2310,23 +2558,41 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame21">
+                  <object class="GtkHBox" id="hbox21">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkHScale" id="hscale6">
+                      <object class="GtkFrame" id="frame21">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">adjustment_CHSEP</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="alignment19">
+                            <property name="visible">True</property>
+                            <property name="left_padding">12</property>
+                            <child>
+                              <object class="GtkHBox" id="hbox_SEP">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label36">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;&#x30C1;&#x30E3;&#x30F3;&#x30CD;&#x30EB;&#x30BB;&#x30D1;&#x30EC;&#x30FC;&#x30B7;&#x30E7;&#x30F3;&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label36">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;&#x30C1;&#x30E3;&#x30F3;&#x30CD;&#x30EB;&#x30BB;&#x30D1;&#x30EC;&#x30FC;&#x30B7;&#x30E7;&#x30F3;&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -2334,7 +2600,7 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkHBox" id="hbox14">
+                  <object class="GtkHBox" id="hbox22">
                     <property name="visible">True</property>
                     <child>
                       <placeholder/>
@@ -2349,7 +2615,7 @@ audio-volume-medium</property>
                       <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button5">
+                      <object class="GtkButton" id="button_vol_reset">
                         <property name="label" translatable="yes">&#x30EA;&#x30BB;&#x30C3;&#x30C8;</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -2388,45 +2654,31 @@ audio-volume-medium</property>
           <object class="GtkHBox" id="hbox4">
             <property name="visible">True</property>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <object class="GtkHButtonBox" id="hbuttonbox1">
+              <object class="GtkButton" id="button_CANCEL">
+                <property name="label" translatable="yes">CANCEL</property>
                 <property name="visible">True</property>
-                <child>
-                  <object class="GtkButton" id="button_CANCEL">
-                    <property name="label" translatable="yes">CANCEL</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="related_action">action_BUTTON_CANCEL</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="button_OK">
-                    <property name="label" translatable="yes">OK</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="related_action">action_BUTTON_OK</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_OK">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="related_action">action_BUTTON_OK</property>
               </object>
               <packing>
                 <property name="position">3</property>
@@ -2534,9 +2786,9 @@ audio-volume-medium</property>
   </object>
   <object class="GtkSizeGroup" id="sizegroup_EMU">
     <widgets>
-      <widget name="radiobutton_EMU_77AVEX"/>
-      <widget name="radiobutton_EMU_77AV"/>
       <widget name="radiobutton_EMU_FM7"/>
+      <widget name="radiobutton_EMU_77AV"/>
+      <widget name="radiobutton_EMU_77AVEX"/>
     </widgets>
     <signal name="notify" handler="OnEmuTypeFM7Selected" object="0"/>
   </object>
@@ -2544,4 +2796,85 @@ audio-volume-medium</property>
     <property name="label">&#x7D42;&#x4E86;</property>
     <signal name="activate" handler="OnExit"/>
   </object>
+  <object class="GtkListStore" id="liststore_rapid13">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid12">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid11">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid10">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid03">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid02">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid01">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_rapid00">
+    <columns>
+      <!-- column-name rapid_type -->
+      <column type="gchararray"/>
+      <!-- column-name object -->
+      <column type="GObject"/>
+    </columns>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_BeepFreq">
+    <property name="value">1200</property>
+    <property name="lower">100</property>
+    <property name="upper">9999</property>
+    <property name="step_increment">100</property>
+    <property name="page_increment">10</property>
+    <property name="page_size">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_BUFSIZE">
+    <property name="value">100</property>
+    <property name="lower">40</property>
+    <property name="upper">1000</property>
+    <property name="step_increment">10</property>
+    <property name="page_increment">100</property>
+    <property name="page_size">10</property>
+  </object>
+  <object class="GtkSizeGroup" id="sizegroup1"/>
 </interface>

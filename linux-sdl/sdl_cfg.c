@@ -285,6 +285,12 @@ LoadCfg(void)
     configdat.bFddSound = LoadCfgBool("FDDSound", FALSE);
 #endif
 
+   configdat.uChSeparation = LoadCfgInt("ChannelSeparation", CHSEPARATION_DEFAULT);
+   if ((configdat.uChSeparation <= 0 ) || (configdat.uChSeparation > 15)) {/* 最大値変更 */
+           configdat.uChSeparation = CHSEPARATION_DEFAULT;
+    }       
+
+
 	
 /*
  * Keyboardセクション 
@@ -483,7 +489,7 @@ SaveCfg(void)
     
 #ifdef FDDSND
     SaveCfgBool("FDDSound", configdat.bFddSound);
-#endif				/*  */
+#endif			/**/
     SaveCfgInt("ChannelSeparation", configdat.uChSeparation);
     SaveCfgInt("FMVolume", configdat.nFMVolume);
     SaveCfgInt("PSGVolume", configdat.nPSGVolume);
@@ -610,6 +616,7 @@ ApplyCfg(void)
 #ifdef FDDSND
     nWaveVolume = configdat.nWaveVolume;
 #endif				/*  */
+    uChSeparation = configdat.uChSeparation;
 
     ApplySnd();
     

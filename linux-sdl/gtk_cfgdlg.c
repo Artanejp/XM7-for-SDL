@@ -63,7 +63,7 @@ GeneralPageInit(void)
 	/*
 	 * 動作機種 
 	 */ 
-	switch (propdat.fm7_ver) {
+    switch (propdat.fm7_ver) {
     case 1:
 	CheckDlgButton(GP_FM7, BST_CHECKED);
 	break;
@@ -93,54 +93,47 @@ GeneralPageInit(void)
 	/*
 	 * CPU速度 
 	 */ 
-	SetSpin(GP_CPUTEXT, propdat.main_speed);
-    GP_CPUCOMBO_IDX = 0;
-    SelectOptionMenu(GP_CPUCOMBO, GP_CPUCOMBO_IDX);
+        SetSpin(GP_CPUTEXT, propdat.main_speed);
+        GP_CPUCOMBO_IDX = 0;
+        SelectOptionMenu(GP_CPUCOMBO, GP_CPUCOMBO_IDX);
     
-	/*
-	 * テープモータフラグ 
-	 */ 
-	if (propdat.bTapeFull) {
-	CheckDlgButton(GP_TAPESPEED, BST_CHECKED);
-    }
+/*
+ * テープモータフラグ 
+ */ 
+        if (propdat.bTapeFull) {
+                CheckDlgButton(GP_TAPESPEED, BST_CHECKED);
+        }
+        else {
+                CheckDlgButton(GP_TAPESPEED, BST_UNCHECKED);
+        }
     
-    else {
-	CheckDlgButton(GP_TAPESPEED, BST_UNCHECKED);
-    }
+/*
+ * テープモータモードフラグ 
+ */ 
+        if (propdat.bTapeMode) {
+                CheckDlgButton(GP_TAPESPEEDMODE, BST_CHECKED);
+        }   else {
+                CheckDlgButton(GP_TAPESPEEDMODE, BST_UNCHECKED);
+        }
+        SetEnable(GP_TAPESPEEDMODE, propdat.bTapeFull);
     
-	/*
-	 * テープモータモードフラグ 
-	 */ 
-	if (propdat.bTapeMode) {
-	CheckDlgButton(GP_TAPESPEEDMODE, BST_CHECKED);
-    }
+/*
+ * 全力駆動フラグ 
+ */ 
+        if (propdat.bCPUFull) {
+                CheckDlgButton(GP_FULLSPEED, BST_CHECKED);
+        } else {
+                CheckDlgButton(GP_FULLSPEED, BST_UNCHECKED);
+        }
     
-    else {
-	CheckDlgButton(GP_TAPESPEEDMODE, BST_UNCHECKED);
-    }
-    SetEnable(GP_TAPESPEEDMODE, propdat.bTapeFull);
-    
-	/*
-	 * 全力駆動フラグ 
-	 */ 
-	if (propdat.bCPUFull) {
-	CheckDlgButton(GP_FULLSPEED, BST_CHECKED);
-    }
-    
-    else {
-	CheckDlgButton(GP_FULLSPEED, BST_UNCHECKED);
-    }
-    
-	/*
-	 * 自動速度調整フラグ 
-	 */ 
-	if (propdat.bSpeedAdjust) {
-	CheckDlgButton(GP_AUTOSPEEDADJUST, BST_CHECKED);
-    }
-    
-    else {
-	CheckDlgButton(GP_AUTOSPEEDADJUST, BST_UNCHECKED);
-    }
+/*
+ * 自動速度調整フラグ 
+ */ 
+       if (propdat.bSpeedAdjust) {
+               CheckDlgButton(GP_AUTOSPEEDADJUST, BST_CHECKED);
+       } else {
+            CheckDlgButton(GP_AUTOSPEEDADJUST, BST_UNCHECKED);
+       }
     
 	/*
 	 * FDDウェイトフラグ 
@@ -167,7 +160,7 @@ OnGP_CPUDEFAULTClicked(GtkWidget * widget, gpointer data)
 {
     
 #if XM7_VER >= 3
-	propdat.main_speed = MAINCYCLES;
+    propdat.main_speed = MAINCYCLES;
     propdat.mmr_speed = MAINCYCLES_MMR;
     propdat.fmmr_speed = MAINCYCLES_FMMR;
     propdat.sub_speed = SUBCYCLES;
@@ -189,7 +182,7 @@ OnGP_CPUDEFAULTClicked(GtkWidget * widget, gpointer data)
     }
     
 #else				/*  */
-	propdat.main_speed = MAINCYCLES;
+    propdat.main_speed = MAINCYCLES;
     propdat.mmr_speed = MAINCYCLES_MMR;
     propdat.sub_speed = SUBCYCLES;
     switch (GetIdxOptionMenu(GP_CPUCOMBO)) {
@@ -442,83 +435,89 @@ SoundPageInit(void)
 	/*
 	 * シート初期化 
 	 */ 
-	SheetInit();
+    SheetInit();
     
-	/*
-	 * サンプリングレート 
-	 */ 
-	switch (propdat.nSampleRate) {
+    /*
+     * サンプリングレート 
+     */ 
+   CheckDlgButton(SP_96K, BST_UNCHECKED);
+   CheckDlgButton(SP_88K, BST_UNCHECKED);
+   CheckDlgButton(SP_48K, BST_UNCHECKED);
+   CheckDlgButton(SP_44K, BST_UNCHECKED);
+   CheckDlgButton(SP_22K, BST_UNCHECKED);
+   CheckDlgButton(SP_NONE, BST_UNCHECKED);
+
+
+   switch (propdat.nSampleRate) {
     case 96000:
-	CheckDlgButton(SP_96K, BST_CHECKED);
-	break;
+            CheckDlgButton(SP_96K, BST_CHECKED);
+            break;
     case 88200:
-	CheckDlgButton(SP_88K, BST_CHECKED);
-	break;
+            CheckDlgButton(SP_88K, BST_CHECKED);
+            break;
     case 48000:
-	CheckDlgButton(SP_48K, BST_CHECKED);
-	break;
+            CheckDlgButton(SP_48K, BST_CHECKED);
+            break;
     case 44100:
-	CheckDlgButton(SP_44K, BST_CHECKED);
-	break;
+            CheckDlgButton(SP_44K, BST_CHECKED);
+            break;
     case 22050:
-	CheckDlgButton(SP_22K, BST_CHECKED);
-	break;
+            CheckDlgButton(SP_22K, BST_CHECKED);
+            break;
     case 0:
-	CheckDlgButton(SP_NONE, BST_CHECKED);
-	break;
+            CheckDlgButton(SP_NONE, BST_CHECKED);
+            break;
     default:
-	ASSERT(FALSE);
-	break;
-    }
+            ASSERT(FALSE);
+            break;
+   }
     
-	/*
-	 * サウンドバッファ 
-	 */ 
-	SetSpin(SP_BUFSPIN, propdat.nSoundBuffer);
+   /*
+    * サウンドバッファ 
+    */ 
+   SetSpin(SP_BUFSPIN, propdat.nSoundBuffer);
     
-	/*
-	 * BEEP周波数 
-	 */ 
-	SetSpin(SP_BEEPSPIN, propdat.nBeepFreq);
+   /*
+    * BEEP周波数 
+    */ 
+   SetSpin(SP_BEEPSPIN, propdat.nBeepFreq);
     
-	/*
-	 * FM高品質合成モード 
-	 */ 
-	if (propdat.bFMHQmode) {
+   /*
+    * FM高品質合成モード 
+    */ 
+   if (propdat.bFMHQmode) {
 	CheckDlgButton(SP_HQMODE, BST_CHECKED);
-    }
+   }
+   
+   else {
+           CheckDlgButton(SP_HQMODE, BST_UNCHECKED);
+   }   
     
+   /*
+    * 出力モード 
+    */ 
+   SelectOptionMenu(SP_STEREO, propdat.nStereoOut);
+    
+   /*
+    * テープ音モニタ 
+    */ 
+   if (propdat.bTapeMon) {
+           CheckDlgButton(SP_TAPEMON, BST_CHECKED);
+    }
     else {
-	CheckDlgButton(SP_HQMODE, BST_UNCHECKED);
+            CheckDlgButton(SP_TAPEMON, BST_UNCHECKED);
     }
     
-	/*
-	 * 出力モード 
-	 */ 
-	SelectOptionMenu(SP_STEREO, propdat.nStereoOut);
-    
-	/*
-	 * テープ音モニタ 
-	 */ 
-	if (propdat.bTapeMon) {
-	CheckDlgButton(SP_TAPEMON, BST_CHECKED);
-    }
-    
-    else {
-	CheckDlgButton(SP_TAPEMON, BST_UNCHECKED);
-    }
-    
-	/*
-	 * FDDシーク音 
-	 */ 
+   /*
+    * FDDシーク音 
+    */ 
 #ifdef FDDSND
-	if (propdat.bFddSound) {
-	CheckDlgButton(SP_FDDSOUND, BST_CHECKED);
+   if (propdat.bFddSound) {
+           CheckDlgButton(SP_FDDSOUND, BST_CHECKED);
     }
-    
-    else {
-	CheckDlgButton(SP_FDDSOUND, BST_UNCHECKED);
-    }
+   else {
+           CheckDlgButton(SP_FDDSOUND, BST_UNCHECKED);
+   }
     
 #endif				/*  */
 }
@@ -540,29 +539,29 @@ SoundPageApply(void)
 	/*
 	 * サンプリングレート 
 	 */ 
-	if (IsDlgButtonChecked(SP_96K) == BST_CHECKED) {
-	propdat.nSampleRate = 96000;
+    if (IsDlgButtonChecked(SP_96K) == BST_CHECKED) {
+            propdat.nSampleRate = 96000;
     }
     if (IsDlgButtonChecked(SP_88K) == BST_CHECKED) {
-	propdat.nSampleRate = 88200;
+            propdat.nSampleRate = 88200;
     }
     if (IsDlgButtonChecked(SP_48K) == BST_CHECKED) {
-	propdat.nSampleRate = 48000;
-    }
+            propdat.nSampleRate = 48000;
+    }   
     if (IsDlgButtonChecked(SP_44K) == BST_CHECKED) {
-	propdat.nSampleRate = 44100;
+            propdat.nSampleRate = 44100;
     }
     if (IsDlgButtonChecked(SP_22K) == BST_CHECKED) {
-	propdat.nSampleRate = 22050;
+            propdat.nSampleRate = 22050;
     }
     if (IsDlgButtonChecked(SP_NONE) == BST_CHECKED) {
-	propdat.nSampleRate = 0;
+            propdat.nSampleRate = 0;
     }
     
 	/*
 	 * サウンドバッファ 
 	 */ 
-	uPos = GetSpin(SP_BUFSPIN);
+    uPos = GetSpin(SP_BUFSPIN);
     propdat.nSoundBuffer = uPos;	/* Bug */
     
 	/*
@@ -601,12 +600,11 @@ SoundPageApply(void)
 	 * FDDシーク音 
 	 */ 
 #ifdef FDDSND
-	if (IsDlgButtonChecked(SP_FDDSOUND) == BST_CHECKED) {
-	propdat.bFddSound = TRUE;
-    }
-    
+    if (IsDlgButtonChecked(SP_FDDSOUND) == BST_CHECKED) {
+            propdat.bFddSound = TRUE;
+    }    
     else {
-	propdat.bFddSound = FALSE;
+            propdat.bFddSound = FALSE;
     }
     
 #endif				/*  */
@@ -1267,10 +1265,11 @@ VolumePageInit(void)
  * シート初期化 
  */ 
         SheetInit();
-    
+
 /*
  * Scale Barに実値を設定する
- */        
+ */
+        
         gtk_range_set_value(GTK_RANGE(VOLUME_FM), propdat.nFMVolume);
         gtk_range_set_value(GTK_RANGE(VOLUME_PSG), propdat.nPSGVolume);
         gtk_range_set_value(GTK_RANGE(VOLUME_BEEP), propdat.nBeepVolume);
@@ -1278,6 +1277,7 @@ VolumePageInit(void)
 #ifdef FDDSND
         gtk_range_set_value(GTK_RANGE(VOLUME_WAV), propdat.nWaveVolume);
 #endif
+//        gtk_range_set_value(GTK_RANGE(VOLUME_SEP), propdat.uChSeparation);
 }
 
 
@@ -1299,6 +1299,7 @@ VolumePageApply(void)
 #ifdef FDDSND
         propdat.nWaveVolume = gtk_range_get_value(GTK_RANGE(VOLUME_WAV));
 #endif
+//        propdat.uChSeparation = gtk_range_get_value(GTK_RANGE(VOLUME_SEP));
         propdat.uChSeparation = 9;
         
 }
@@ -1312,11 +1313,11 @@ static void
 SheetInit(void) 
 {
     
-	/*
-	 * 初期化フラグをチェック、シート初期化済みに設定 
-	 */ 
-	if (uPropertyState > 0) {
-	return;
+/*
+ * 初期化フラグをチェック、シート初期化済みに設定 
+ */ 
+        if (uPropertyState > 0) {
+                return;
     }
     uPropertyState = 1;
 }
@@ -1405,6 +1406,26 @@ OnConfig_OK(GtkWidget * widget, gpointer data)
                                               (GError **) NULL);
         UnlockVM();
 }
+
+/*
+ * サウンド：音源の個別音量設定は即時反映される
+ */
+void
+OnGP_ChSepVolumeChanged(GtkWidget* widget, gpointer data) 
+{
+        UINT    uSp = uChSeparation;
+        int     nFM = nFMVolume;
+        int     nPSG = nPSGVolume;
+        int     nBeep = nBeepVolume;
+        int     nCMT = nCMTVolume;
+        int     nWav = nWaveVolume;
+
+        if(widget == NULL) return;
+        uSp = (UINT)gtk_range_get_value(GTK_RANGE(widget));
+        SetSoundVolume2(uSp, nFM, nPSG,
+                        nBeep, nCMT, nWav);
+}
+
 
 /*
  * サウンド：音源の個別音量設定は即時反映される

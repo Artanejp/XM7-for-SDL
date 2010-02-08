@@ -1894,7 +1894,7 @@ CreateToolMenu(GtkBuilder *gbuilder)
 //    gtk_menu_append(GTK_MENU(tool_menu), sub_item);
     gtk_signal_connect(GTK_OBJECT(sub_item), "activate",
                        GTK_SIGNAL_FUNC(OnConfig), NULL);
-//    gtk_widget_show(sub_item);
+    gtk_widget_show(sub_item);
 	/*********************************************************/ 
 #ifdef MOUSE
 /*

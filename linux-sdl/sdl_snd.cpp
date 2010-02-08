@@ -937,7 +937,7 @@ ApplySnd(void)
      * 再セレクト 
      */
     SelectSnd();
-    //SDL_SemPost(applySem);
+    SDL_SemPost(applySem);
 
 }
 
@@ -1436,7 +1436,7 @@ AddSnd(BOOL bFill, BOOL bZero)
 	}
     }
     if (musicSem)
-	SDL_SemWait(musicSem);
+	SDL_SemTryWait(musicSem);
 
     /*
      * バッファを求める 

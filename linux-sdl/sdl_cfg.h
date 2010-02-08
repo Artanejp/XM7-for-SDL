@@ -141,7 +141,7 @@ extern configdat_t configdat;	/* コンフィグ用データ */
 /*
  * CPU コンボボックスアクション 
  */            
-
+        void    OnGP_ChSepVolumeChanged(GtkWidget *widget, gpointer data);
         void    OnGP_FMVolumeChanged(GtkWidget *widget, gpointer data);
         void    OnGP_PSGVolumeChanged(GtkWidget *widget, gpointer data);
         void    OnGP_BEEPVolumeChanged(GtkWidget *widget, gpointer data);
