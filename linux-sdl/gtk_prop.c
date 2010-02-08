@@ -10,6 +10,7 @@
 #include "sdl.h"
 #include "sdl_cfg.h"
 #include "sdl_prop.h"
+#include "gtk_propkeyboard.h"
     
     /*
      *  グローバル ワーク 
@@ -105,6 +106,7 @@ GtkWidget       *VOLUME_WAV;
 
 			/*  */
 int             GP_CPUCOMBO_IDX;
+
 
 /*-[ サポート関数 ]-----------------------------------------------------*/ 
     
@@ -262,6 +264,7 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     GtkWidget   *vbox10;
     GtkWidget   *lblKeyboardmap;
     GtkWidget   *lblKeyboard;
+    GtkWidget   *btnKeySet;
 /*
  * Page 3,4
  */
@@ -724,6 +727,12 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
     gtk_widget_set_sensitive(KP_ARROW8DIR, FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(KP_ARROW8DIR), TRUE);
 
+    btnKeySet= gtk_button_new_with_mnemonic("KeyCode");
+    gtk_widget_show(btnKeySet);
+    gtk_box_pack_start(GTK_BOX(vbox10), btnKeySet, FALSE, FALSE, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(btnKeySet), 4);
+
+
     KP_KBDREAL =
             gtk_check_button_new_with_mnemonic("擬似リアルタイムキースキャン");
     gtk_widget_show(KP_KBDREAL);
@@ -738,6 +747,8 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
                                gtk_notebook_get_nth_page(GTK_NOTEBOOK(propertySheet), 2),
                                lblKeyboard);
     gtk_label_set_justify(GTK_LABEL(lblKeyboard), GTK_JUSTIFY_LEFT);
+
+
 /*
  * Page 3
  */
@@ -1280,6 +1291,9 @@ OnKP_USEARROWFOR10Clicked(GtkWidget * widget, gpointer data)
 			 GTK_SIGNAL_FUNC(OnKP_USEARROWFOR10Clicked), NULL);
     gtk_signal_connect((gpointer) btnOk, "clicked",
 			 GTK_SIGNAL_FUNC(OnConfig_OK), NULL);
+
+    gtk_signal_connect((gpointer) btnKeySet, "clicked",
+			 GTK_SIGNAL_FUNC(StartGetKeycodeForProp), NULL);
 
     g_signal_connect(winProperty, "destroy",
 		       GTK_SIGNAL_FUNC(gtk_widget_destroy), NULL);

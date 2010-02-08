@@ -14,10 +14,8 @@ extern "C" {
 
         extern BOOL     SnoopedOnKeyPressedCallback(SDL_Event *event);
         //extern void     SnoopKeyEvent(BOOL flag);
-        extern void     StartGetKeycodeForProp(Uint16 keysym, BYTE code);
-
-
-
+        //extern void     StartGetKeycodeForProp(Uint16 keysym, BYTE code);
+        extern void     StartGetKeycodeForProp(GtkWidget *widget, gpointer data);
 
 #ifdef __cplusplus
 }

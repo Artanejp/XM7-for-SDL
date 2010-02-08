@@ -1,17 +1,17 @@
 /*
- *  FM-7 EMULATOR "XM7"  Copyright (C) 1999-2003
- * ＰＩ．(ytanaka@ipc-tokai.or.jp) Copyright (C) 2001-2003 Ryu
- * Takegami Copyright (C) 2004 GIMONS  [ XWIN
- * キーボード・ジョイスティック・マウス ] 
+ *  FM-7 EMULATOR "XM7"  Copyright (C) 1999-2003
+ * ＰＩ．(ytanaka@ipc-tokai.or.jp) Copyright (C) 2001-2003 Ryu
+ * Takegami Copyright (C) 2004 GIMONS  [ XWIN
+ * キーボード・ジョイスティック・マウス ] 
  */  
     
 #ifdef _XWIN
     
-#ifndef _xw_kbd_h_
-#define _xw_kbd_h_
+#ifndef _sdl_kbd_h_
+#define _sdl_kbd_h_
     
     /*
-     *  定数、型定義 
+     *  定数、型定義 
      */ 
 #define KNT_KANJI		0
 #define KNT_KANA		1
@@ -30,22 +30,16 @@
 #ifdef __cplusplus
 extern          "C" {
     
-#endif				/*  */
-    
-	/*
-	 *  主要エントリ 
-	 */ 
-    BOOL OnKeyPress(SDL_Event * event);
-    gboolean OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
-			    gpointer data);
-    
-	/*
-	 * キープレスアクション 
-	 */ 
-    BOOL OnKeyRelease(SDL_Event * event);
-    gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
-			      gpointer data);
-    
+#endif				/*  */
+        BOOL OnKeyPress(SDL_Event * event);
+        BOOL OnKeyRelease(SDL_Event * event);       
+#ifdef USE_GTK
+        gboolean OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
+                               gpointer data);
+        gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
+                                 gpointer data);
+#endif
+        extern BOOL kbd_snooped;
 	/*
 	 * キーリリースアクション 
 	 */ 
@@ -53,56 +47,26 @@ extern          "C" {
 	/*
 	 * JS動かした 
 	 */ 
-    extern BOOL     OnMoveJoy(SDL_Event * event);
-                   extern BOOL OnPressJoy(SDL_Event * event);
-                   extern BOOL OnReleaseJoy(SDL_Event * event);
+                   extern BOOL     OnMoveJoy(SDL_Event * event);
+                   extern BOOL OnPressJoy(SDL_Event * event);
+                   extern BOOL OnReleaseJoy(SDL_Event * event);
                    
 #ifdef MOUSE
-     
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,
-			       gpointer user_data);
+	gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,
+			       gpointer user_data);
                    
 	/*
 	 * キープレスアクション 
 	 */            
-     
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	gboolean OnButtonRelease(GtkWidget * widget,
-				 GdkEventButton * event,
-				 gpointer user_data);
+				 GdkEventButton * event,
+				 gpointer user_data);
                    
 	/*
 	 * キーリリースアクション 
 	 */            
-#endif				/*  */
-                   void FASTCALL InitKbd(void);
+#endif				/*  */
+                   void FASTCALL InitKbd(void);
                    
 	/*
 	 * 初期化 
@@ -127,12 +91,12 @@ extern          "C" {
 	/*
 	 * ジョイスティックポーリング 
 	 */            
-    void FASTCALL   GetDefMapKbd(BYTE * pMap, int mode);
+    void        GetDefMapKbd(BYTE * pMap, int mode);
                    
 	/*
 	 * デフォルトマップ取得 
 	 */            
-    void FASTCALL   SetMapKbd(BYTE * pMap);
+    void        SetMapKbd(BYTE *pMap);
                    
 	/*
 	 * マップ設定 
@@ -143,26 +107,26 @@ extern          "C" {
 	 * ポーリング＆キー情報取得 
 	 */            
 #ifdef MOUSE
-    void FASTCALL   PollMos(void);
+        void FASTCALL   PollMos(void);
                    
 	/*
 	 * マウスポーリング 
 	 */            
-    void FASTCALL   SetMouseCapture(BOOL en);
+        void FASTCALL   SetMouseCapture(BOOL en);
                    
 	/*
 	 * マウスキャプチャ設定 
 	 */            
-#endif				/*  */
+#endif				/*  */
                    
-	/*
-	 *  主要ワーク 
-	 */            
-	struct local_sdlkeymap {
-	Uint16 keysym;
-	BYTE code;
-    };
-                  extern BYTE kbd_map[256];
+/*
+ *  主要ワーク 
+ */            
+        struct local_sdlkeymap {
+                Uint16 keysym;
+                BYTE code;
+        };
+                  extern BYTE kbd_map[256];
                    
 	/*
 	 * キーボード マップ 
@@ -223,10 +187,10 @@ extern          "C" {
 	/*
 	 * 中央ボタン状態取得モード 
 	 */            
-#endif				/*  */
+#endif				/*  */
 #ifdef __cplusplus
 }              
-#endif				/*  */
+#endif				/*  */
                
 #endif	/* _xw_kbd_h_ */
 #endif	/* _XWIN */

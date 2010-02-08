@@ -36,6 +36,7 @@ static BYTE local_target_code; /* 変更対象のキーコード */
 #ifdef USE_GTK
 static GtkWidget *getwindow;
 static GtkWidget *keyMapWindow;
+static GtkWidget *vbox1;
 #endif /* USE_GTK */
 
 static BOOL 
@@ -64,8 +65,11 @@ BOOL
 SnoopedOnKeyPressedCallback(SDL_Event *event)
 {
         Uint16 code = (Uint16)event->key.keysym.sym;
+        char stmp[64];
 
         printf("Snoop Key: %03x\n",code);
+        sprintf(stmp, "%04x", code);
+        gtk_label_set_text(GTK_LABEL(vbox1), stmp);
         SetKeyCode(code, local_target_code); 
 }
 
@@ -117,12 +121,14 @@ KbdSetOnClicked(GtkWidget *widget, gpointer data)
  */
 
 void 
-StartGetKeycodeForProp(Uint16 keysym, BYTE code)
+//StartGetKeycodeForProp(Uint16 keysym, BYTE code)
+StartGetKeycodeForProp(GtkWidget *widget, gpointer data)
 {
         
         int i;
         BYTE stmp[64];
-        GtkWidget *vbox1;
+        BYTE code = 0x30;
+
         
         for(i = 0; i<256 ; i++) {
                 if(kbd_table[i].keysym == 0xffff) {
@@ -145,7 +151,9 @@ StartGetKeycodeForProp(Uint16 keysym, BYTE code)
         gtk_window_set_position(GTK_WINDOW(getwindow), GTK_WIN_POS_CENTER);
         gtk_window_set_modal(GTK_WINDOW(getwindow), TRUE);
 
-        vbox1 = gtk_vbox_new(FALSE, 0);
+        sprintf(stmp, "%04x", code);
+        vbox1 = gtk_label_new(stmp);
+        //vbox1 = gtk_vbox_new(FALSE, 0);
         gtk_widget_show(vbox1);
         gtk_container_add(GTK_CONTAINER(getwindow), vbox1);
         local_target_code = code;
