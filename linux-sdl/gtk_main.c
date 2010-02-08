@@ -11,6 +11,7 @@
     
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+//#include <glade/glade.h>
 #include <sys/param.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
@@ -30,7 +31,7 @@
 
 GtkWidget       *wndMain;		/* メインウィンドウ */
 GtkWidget       *gtkDrawArea;
-
+GtkBuilder      *gbuilderMain;
 /*
  * ドロー領域の生成 GTKパート
  */
@@ -43,16 +44,12 @@ CreateDrawGTK(GtkWidget * parent)
     /*
      * ドローウィンドウの土台を生成 
      */ 
-    hbox = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(parent), hbox, TRUE, TRUE, 0);
+    hbox = GTK_BOX(gtk_builder_get_object(gbuilderMain, "hbox_drawing "));
     gtk_widget_show(hbox);
     
     /*
      * スクリーン描画領域の生成 
      */ 
-	// gtkDrawArea = gtk_drawing_area_new();
-	// gtk_widget_set_events(gtkDrawArea,
-	// GDK_BUTTON_PRESS_MASK|GDK_BUTTON_RELEASE_MASK);
     gtkDrawArea = gtk_socket_new();
     gtk_widget_set_usize(gtkDrawArea, 640, 400);
     gtk_container_add(GTK_CONTAINER(parent), gtkDrawArea);
@@ -112,8 +109,6 @@ OnScreenPlugged(void)
                 sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                         gdk_x11_drawable_get_xid(gtkDrawArea->window));
         
-                // sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-                // gdk_x11_drawable_get_xid(wndMain->window));
                 SDL_putenv(EnvMainWindow);
                 SDL_InitSubSystem(SDL_INIT_VIDEO);
                 CreateDrawSDL();
@@ -128,8 +123,6 @@ OnScreenUnPlugged(void)
 /*
   * SDL-VIDEO終了 
   */ 
-// sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-        // gdk_x11_drawable_get_xid(wndMain->window));
         if (displayArea) {
                 SDL_FreeSurface(displayArea);
                 displayArea = NULL;
@@ -150,43 +143,43 @@ OnDelete(GtkWidget * widget, GdkEvent * event, gpointer data)
 /*
  * フラグアップ 
  */ 
-	LockVM();
-    bCloseReq = TRUE;
-    UnlockVM();
-    return FALSE;
+        LockVM();
+        bCloseReq = TRUE;
+        UnlockVM();
+        return FALSE;
 }
 
 
     /*
      *  ウインドウ削除 
      */ 
-static void
+void
 OnDestroy(GtkWidget * widget, gpointer data) 
 {
     
-	/*
-	 * サウンド停止 
-	 */ 
-	StopSnd();
+        /*
+         * サウンド停止 
+         */ 
+       StopSnd();
     
-	/*
-	 * コンポーネント クリーンアップ 
-	 */ 
+       /*
+        * コンポーネント クリーンアップ 
+        */ 
 #ifdef FDDSND
-	CleanFDDSnd();
+        CleanFDDSnd();
     
 #endif				/*  */
-	CleanSch();
-    CleanKbd();
-    CleanSnd();
-    CleanDraw();
-    SaveCfg();
+        CleanSch();
+        CleanKbd();
+        CleanSnd();
+        CleanDraw();
+        SaveCfg();
     
-	/*
-	 * 仮想マシン クリーンアップ 
-	 */ 
-	system_cleanup();
-    gtk_main_quit();
+        /*
+         * 仮想マシン クリーンアップ 
+         */ 
+        system_cleanup();
+        gtk_main_quit();
 } 
 /*-[ アプリケーション ]-----------------------------------------------------*/ 
     
@@ -314,17 +307,21 @@ InitInstanceGtk(void)
 /*
  * ウィンドウ生成 
  */ 
-    wndMain = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    //wndMain = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+    //gtk_container_border_width(GTK_CONTAINER(wndMain), 0);
+    //gtk_window_set_resizable(GTK_WINDOW(wndMain), FALSE);
+    //gtk_window_set_position(GTK_WINDOW(wndMain), GTK_WIN_POS_CENTER);
+    gbuilderMain =  gtk_builder_new();
+    gtk_builder_add_from_file(gbuilderMain, "./gtk_prop.ui", NULL);
+    wndMain = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "window_main"));
     gtk_window_set_title(GTK_WINDOW(wndMain), "XM7");
-    gtk_container_border_width(GTK_CONTAINER(wndMain), 0);
-    gtk_window_set_resizable(GTK_WINDOW(wndMain), FALSE);
-    gtk_window_set_position(GTK_WINDOW(wndMain), GTK_WIN_POS_CENTER);
+    
     
 /*
  * 土台の土台となる垂直ボックス 
  */ 
-    vbox = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(wndMain), vbox);
+    vbox = GTK_BOX(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
     gtk_widget_show(vbox);
     gtk_signal_connect(GTK_OBJECT(wndMain), "delete-event",
 		 GTK_SIGNAL_FUNC(OnDelete), NULL);
@@ -345,6 +342,8 @@ InitInstanceGtk(void)
     
 // g_idle_add_full(G_PRIORITY_HIGH, &GtkEventHandler, NULL,
 // NULL);
+    
+    gtk_builder_connect_signals(gbuilderMain, NULL);
     gtk_widget_show(wndMain);
     
 /*
@@ -358,8 +357,6 @@ InitInstanceGtk(void)
     sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
             gdk_x11_drawable_get_xid(gtkDrawArea->window));
     
-    // sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-    // gdk_x11_drawable_get_xid(wndMain->window));
     SDL_putenv(EnvMainWindow);
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     

@@ -123,7 +123,7 @@ LIBS = ${LDFLAGS} -lX11 -lXt -lXext -lm -lc -lstdc++ -lm -lmemwatch
 
 
 #CFLAGS = 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DCPU_ASM -O3 -I/usr/X11R6/include -I. `pkg-config --cflags  gtk+-2.0 gthread-2.0`
-CFLAGS =        -g -O0 
+CFLAGS =        -g -O0 -export-dynamic
 #CFLAGS =        -O3
 CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG 
 CFLAGS +=        -DCPU_ASM -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)/usr/local/include -I$(IA32BOOTSTRAPED)/usr/X11R6/include -I. \
@@ -134,7 +134,8 @@ CFLAGS +=        -DCPU_ASM -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)
 		-I$(IA32BOOTSTRAPED)/usr/include/freetype2 -I$(IA32BOOTSTRAPED)/usr/include/directfb \
                 -I$(IA32BOOTSTRAPED)/usr/include/libpng12 -I$(IA32BOOTSTRAPED)/usr/include/glib-2.0 \
                 -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include \
-		-pthread -I/usr/include/glib-2.0 -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include
+                -I$(IA32BOOTSTRAPED)/usr/include/libglade-2.0/  \
+	-pthread -I/usr/include/glib-2.0 -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
@@ -143,7 +144,7 @@ LIBS +=  \
         -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lgio-2.0 -lcairo \
         -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 \
         -lgmodule-2.0 -lrt \
-        -lglib-2.0
+        -lglib-2.0 -lgmodule-2.0
 
 LIBS +=     -lgthread-2.0 \
             -lrt -lglib-2.0

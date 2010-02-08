@@ -122,7 +122,7 @@ OnCreate(void *parent)
 #ifdef USE_GTK    
     CreateMenu(parent);
     CreateDrawGTK(parent);
-    CreateStatus(parent);
+//    CreateStatus(parent);
 
 #endif
 /*

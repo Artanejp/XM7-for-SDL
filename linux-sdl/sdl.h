@@ -77,6 +77,7 @@ extern          "C" {
 #ifdef USE_GTK
         extern GtkWidget        *wndMain;	     /* メインウィンドウ  */
         extern GtkWidget        *gtkDrawArea;   
+        extern GtkBuilder       *gbuilderMain;   
 #endif
         extern SDL_Surface      *drawArea;	     /* スクリーン描画エリア */
         extern SDL_Surface      *displayArea;           /* スクリーン表示エリア */ 
