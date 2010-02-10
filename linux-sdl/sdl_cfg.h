@@ -121,6 +121,9 @@ extern configdat_t configdat;	/* コンフィグ用データ */
 	 */            
 #ifdef USE_GTK        
         void    OnConfig(GtkWidget *widget, gpointer data);
+        void    OnCancelPressed(GtkWidget * widget, gpointer data);
+
+
                    
 /*
  * 設定ダイアログ 

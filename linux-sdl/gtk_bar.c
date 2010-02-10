@@ -71,7 +71,13 @@ static GdkColor colNORM;
 void            FASTCALL
 CreateStatus(GtkWidget * parent) 
 {
-    GtkWidget * hbox3, *hbox4, *hbox5;
+        GtkWidget *hbox_Status;
+        GtkWidget *hbox_Files;
+        GtkWidget *hbox4, *hbox5 , *hbox6;
+//        hbox_Files = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_Sts_Files"));
+//        hbox_Files = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_Sts_Status"));
+        //hbox3 = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_Sts_Files"));
+
     colNORM = gtk_widget_get_style(parent)->bg[GTK_STATE_NORMAL];
     gdk_color_parse("black", &colBLACK);
     gdk_color_parse("white", &colWHITE);
@@ -79,18 +85,16 @@ CreateStatus(GtkWidget * parent)
     gdk_color_parse("red3", &colDRED);
     gdk_color_parse("blue3", &colDBLUE);
     
-	/*
-	 * ステータスバーの土台となる水平ボックス 
-	 */ 
-	hbox3 = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(parent), hbox3, TRUE, TRUE, 0);
-    gtk_widget_show(hbox3);
-    hbox4 = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(hbox3), hbox4);
+    /*
+     * ステータスバーの土台となる水平ボックス 
+     */ 
+#if 0
+    hbox4 =  GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_Sts_Status"));
+    hbox5 = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_Sts_Key"));
+    hbox6 = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_Sts_Files"));
     gtk_widget_show(hbox4);
-    hbox5 = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(hbox3), hbox5);
     gtk_widget_show(hbox5);
+    gtk_widget_show(hbox6);
     frmflp[0] = gtk_frame_new(NULL);
     frmflp[1] = gtk_frame_new(NULL);
     frmtape = gtk_frame_new(NULL);
@@ -103,15 +107,17 @@ CreateStatus(GtkWidget * parent)
     gtk_frame_set_shadow_type(GTK_FRAME(frmcaps), GTK_SHADOW_IN);
     gtk_frame_set_shadow_type(GTK_FRAME(frmkana), GTK_SHADOW_IN);
     gtk_frame_set_shadow_type(GTK_FRAME(frmins), GTK_SHADOW_IN);
+#endif
     evtflp[0] = gtk_event_box_new();
     evtflp[1] = gtk_event_box_new();
     evttape = gtk_event_box_new();
-    evtcaps = gtk_event_box_new();
-    evtkana = gtk_event_box_new();
-    evtins = gtk_event_box_new();
+    evtcaps = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "eventbox_CAPS"));
+    evtkana = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "eventbox_KANA"));
+    evtins = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "eventbox_INS"));
     gtk_widget_modify_bg(evtcaps, GTK_STATE_NORMAL, &colBLACK);
     gtk_widget_modify_bg(evtkana, GTK_STATE_NORMAL, &colBLACK);
     gtk_widget_modify_bg(evtins, GTK_STATE_NORMAL, &colBLACK);
+
     lblstat = gtk_label_new("READY");
     lblflp[1] = gtk_label_new("");
     lblflp[0] = gtk_label_new("");
@@ -119,43 +125,33 @@ CreateStatus(GtkWidget * parent)
     lblcaps = gtk_label_new("CAPS");
     lblkana = gtk_label_new("かな");
     lblins = gtk_label_new("INS");
-    gtk_widget_set_size_request(lbltape, 64, 10);
-    gtk_widget_set_size_request(lblflp[0], 128, 10);
-    gtk_widget_set_size_request(lblflp[1], 128, 10);
+//    gtk_widget_set_size_request(lbltape, 64, 10);
+//    gtk_widget_set_size_request(lblflp[0], 128, 10);
+//    gtk_widget_set_size_request(lblflp[1], 128, 10);
     gtk_widget_modify_fg(lblcaps, GTK_STATE_NORMAL, &colWHITE);
     gtk_widget_modify_fg(lblkana, GTK_STATE_NORMAL, &colWHITE);
     gtk_widget_modify_fg(lblins, GTK_STATE_NORMAL, &colWHITE);
-    gtk_container_add(GTK_CONTAINER(frmflp[0]), evtflp[0]);
-    gtk_container_add(GTK_CONTAINER(frmflp[1]), evtflp[1]);
-    gtk_container_add(GTK_CONTAINER(frmtape), evttape);
-    gtk_container_add(GTK_CONTAINER(frmcaps), evtcaps);
-    gtk_container_add(GTK_CONTAINER(frmkana), evtkana);
-    gtk_container_add(GTK_CONTAINER(frmins), evtins);
+    //gtk_container_add(GTK_CONTAINER(frmflp[0]), evtflp[0]);
+    //gtk_container_add(GTK_CONTAINER(frmflp[1]), evtflp[1]);
+    //gtk_container_add(GTK_CONTAINER(frmtape), evttape);
+    //gtk_container_add(GTK_CONTAINER(frmcaps), evtcaps);
+    // gtk_container_add(GTK_CONTAINER(frmkana), evtkana);
+    //gtk_container_add(GTK_CONTAINER(frmins), evtins);
     gtk_container_add(GTK_CONTAINER(evtflp[0]), lblflp[0]);
     gtk_container_add(GTK_CONTAINER(evtflp[1]), lblflp[1]);
     gtk_container_add(GTK_CONTAINER(evttape), lbltape);
     gtk_container_add(GTK_CONTAINER(evtcaps), lblcaps);
     gtk_container_add(GTK_CONTAINER(evtkana), lblkana);
     gtk_container_add(GTK_CONTAINER(evtins), lblins);
+#if 0
     gtk_box_pack_start(GTK_BOX(hbox4), lblstat, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(hbox5), frmins, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(hbox5), frmkana, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(hbox5), frmcaps, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmtape, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmflp[0], FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmflp[1], FALSE, FALSE, 0);
-    gtk_widget_show(frmflp[0]);
-    gtk_widget_show(frmflp[1]);
-    gtk_widget_show(frmtape);
-    gtk_widget_show(frmcaps);
-    gtk_widget_show(frmkana);
-    gtk_widget_show(frmins);
-    gtk_widget_show(evtflp[0]);
-    gtk_widget_show(evtflp[1]);
-    gtk_widget_show(evttape);
-    gtk_widget_show(evtcaps);
-    gtk_widget_show(evtkana);
-    gtk_widget_show(evtins);
+    gtk_box_pack_end(GTK_BOX(hbox6), frmtape, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(hbox6), frmflp[0], FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(hbox6), frmflp[1], FALSE, FALSE, 0);
+#endif
     gtk_widget_show(lblstat);
     gtk_widget_show(lblflp[0]);
     gtk_widget_show(lblflp[1]);
@@ -163,6 +159,28 @@ CreateStatus(GtkWidget * parent)
     gtk_widget_show(lblcaps);
     gtk_widget_show(lblkana);
     gtk_widget_show(lblins);
+
+//    gtk_container_add(GTK_CONTAINER(hbox4), lblstat);
+//    gtk_container_add(GTK_CONTAINER(hbox5), frmins);
+//    gtk_container_add(GTK_CONTAINER(hbox5), frmkana);
+//    gtk_container_add(GTK_CONTAINER(hbox5), frmcaps);
+//    gtk_container_add(GTK_CONTAINER(hbox6), frmtape);
+//    gtk_container_add(GTK_CONTAINER(hbox6), frmflp[0]);
+//    gtk_container_add(GTK_CONTAINER(hbox6), frmflp[1]);
+
+//    gtk_widget_show(frmflp[0]);
+//    gtk_widget_show(frmflp[1]);
+//    gtk_widget_show(frmtape);
+//    gtk_widget_show(frmcaps);
+//    gtk_widget_show(frmkana);
+//    gtk_widget_show(frmins);
+    gtk_widget_show(evtflp[0]);
+    gtk_widget_show(evtflp[1]);
+    gtk_widget_show(evttape);
+    gtk_widget_show(evtcaps);
+    gtk_widget_show(evtkana);
+    gtk_widget_show(evtins);
+
 } 
     /*
      *  キャプション描画 
@@ -177,28 +195,28 @@ DrawMainCaption(void)
 	/*
 	 * 動作状況に応じて、コピー 
 	 */ 
-	if (run_flag) {
-	strcpy(string, "XM7[実行]");
+    if (run_flag) {
+            strcpy(string, "XM7[実行]");
     }
     
     else {
-	strcpy(string, "XM7[停止]");
+            strcpy(string, "XM7[停止]");
     }
     strcat(string, " ");
     
-	/*
-	 * CPU速度比率 
-	 */ 
-	if (bAutoSpeedAdjust) {
-	sprintf(tmp, "(%3d%%) ", speed_ratio / 100);
-	strcat(string, tmp);
+    /*
+     * CPU速度比率 
+     */ 
+    if (bAutoSpeedAdjust) {
+            sprintf(tmp, "(%3d%%) ", speed_ratio / 100);
+            strcat(string, tmp);
     }
     
-	/*
-	 * フロッピーディスクドライブ 0 
-	 */ 
-	if (fdc_ready[0] != FDC_TYPE_NOTREADY) {
-	
+    /*
+     * フロッピーディスクドライブ 0 
+     */ 
+    if (fdc_ready[0] != FDC_TYPE_NOTREADY) {
+            
 	    /*
 	     * ファイルネーム＋拡張子のみ取り出す 
 	     */ 
@@ -264,36 +282,34 @@ DrawMainCaption(void)
 }
 
 
-    /*
-     *  CAPキー描画 
-     */ 
+/*
+ *  CAPキー描画 
+ */ 
 static void     FASTCALL
 DrawCAP(void) 
 {
     int            num;
     
-	/*
-	 * 番号決定 
-	 */ 
-	if (caps_flag) {
-	num = 1;
+    /*
+     * 番号決定 
+     */ 
+    if (caps_flag) {
+            num = 1;
+    } else {
+            num = 0;
     }
     
-    else {
-	num = 0;
+    /*
+     * 同じなら何もしない 
+     */ 
+    if (nCAP == num) {
+            return;
     }
     
-	/*
-	 * 同じなら何もしない 
-	 */ 
-	if (nCAP == num) {
-	return;
-    }
-    
-	/*
-	 * 描画、ワーク更新 
-	 */ 
-	nCAP = num;
+    /*
+     * 描画、ワーク更新 
+     */ 
+    nCAP = num;
     gdk_threads_enter();
     if (nCAP) {
 	gtk_widget_modify_bg(evtcaps, GTK_STATE_NORMAL, &colRED);

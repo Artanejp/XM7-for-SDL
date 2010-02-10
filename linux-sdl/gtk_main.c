@@ -44,15 +44,12 @@ CreateDrawGTK(GtkWidget * parent)
     /*
      * ドローウィンドウの土台を生成 
      */ 
-//    hbox = GTK_BOX(gtk_builder_get_object(gbuilderMain, "hbox_drawing "));
-  // gtk_widget_set_usize(hbox, 640, 400);
-  //  gtk_widget_show(hbox);
     
     /*
      * スクリーン描画領域の生成 
      */ 
     gtkDrawArea = gtk_socket_new();
-    gtk_widget_set_usize(gtkDrawArea, 640, 400);
+    gtk_widget_set_usize(gtkDrawArea, 640, 400 + 40);
     gtk_container_add(GTK_CONTAINER(parent), gtkDrawArea);
     
     /*
@@ -247,15 +244,23 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
  * 表示部分のリサイズ : GTK依存部分につき変更？
  */ 
 #ifdef USE_GTK
-   
-        gtk_widget_set_usize(gtkDrawArea, width, height);
+        switch(height) {
+        case 200:
+                gtk_widget_set_usize(gtkDrawArea, width, height + 40);
+                break;
+        default:
+        case 400:
+        case 800:
+                gtk_widget_set_usize(gtkDrawArea, width, height + 40);
+        break;
+        }
         sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                 gdk_x11_drawable_get_xid(gtkDrawArea->window));
 	    
 #endif				/*  */
         SDL_putenv(EnvMainWindow);
         displayArea =
-                SDL_SetVideoMode(width, height, 24,
+                SDL_SetVideoMode(width, height + 80, 24,
                                  SDL_HWSURFACE | SDL_ANYFORMAT |
                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
                                  SDL_ASYNCBLIT | 0);
@@ -324,7 +329,7 @@ InitInstanceGtk(void)
 /*
  * 土台の土台となる垂直ボックス 
  */ 
-    vbox = GTK_BOX(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
+    vbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
     gtk_widget_show(vbox);
     gtk_signal_connect(GTK_OBJECT(wndMain), "delete-event",
 		 GTK_SIGNAL_FUNC(OnDelete), NULL);

@@ -19,10 +19,17 @@
 #include "sdl.h"
 #include "sdl_bar.h"
 #include "sdl_sch.h"
+#include "sdl_draw.h"
+
+#define COL_BLACK 0x00000000
+#define COL_RED   0x00ff0000
+#define COL_BLUE  0x0000ff00
+#define COL_NORM  0xffffffff
+
     
-    /*
-     *  スタティック ワーク 
-     */ 
+/*
+ *  スタティック ワーク 
+ */ 
 static char     szCaption[128];	/* キャプション */
 static int     nCAP;		/* CAPキー */
 static int     nKANA;		/* かなキー */
@@ -31,153 +38,95 @@ static int     nDrive[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
 static int     nTape;		/* テープ */
 
-    /*
-     * Status Bar Widhet 
-     */ 
-static GtkWidget *hbox3;
-static GtkWidget *hbox4;
-static GtkWidget *hbox5;
-static GtkWidget *frmflp[2];
-static GtkWidget *frmtape;
-static GtkWidget *frmcaps;
-static GtkWidget *frmkana;
-static GtkWidget *frmins;
-static GtkWidget *evtflp[2];
-static GtkWidget *evttape;
-static GtkWidget *evtcaps;
-static GtkWidget *evtkana;
-static GtkWidget *evtins;
-static GtkWidget *lblstat;
-static GtkWidget *lblflp[2];
-static GtkWidget *lbltape;
-static GtkWidget *lblcaps;
-static GtkWidget *lblkana;
-static GtkWidget *lblins;
-
-    /*
-     * Colors 
-     */ 
-static GdkColor colBLACK;	// = {0, 0, 0, 0};
-static GdkColor colWHITE;	// = {1, 0xffff, 0xffff, 0xffff};
-static GdkColor colRED;		// = {2, 0xffff, 0, 0};
-static GdkColor colDRED;	// = {3, 0xbf00, 0, 0};
-static GdkColor colDBLUE;	// = {4, 0, 0, 0xbf00};
-static GdkColor colNORM;
 
 /*-[ ステータスバー ]-------------------------------------------------------*/ 
     /*
      *  ステータスバーの生成 
      */ 
-void            FASTCALL
-CreateStatus(GtkWidget * parent) 
+void
+CreateStatus(void) 
 {
-    GtkWidget * hbox3, *hbox4, *hbox5;
-    colNORM = gtk_widget_get_style(parent)->bg[GTK_STATE_NORMAL];
-    gdk_color_parse("black", &colBLACK);
-    gdk_color_parse("white", &colWHITE);
-    gdk_color_parse("red", &colRED);
-    gdk_color_parse("red3", &colDRED);
-    gdk_color_parse("blue3", &colDBLUE);
-    
-	/*
-	 * ステータスバーの土台となる水平ボックス 
-	 */ 
-	hbox3 = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(parent), hbox3, TRUE, TRUE, 0);
-    gtk_widget_show(hbox3);
-    hbox4 = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(hbox3), hbox4);
-    gtk_widget_show(hbox4);
-    hbox5 = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(hbox3), hbox5);
-    gtk_widget_show(hbox5);
-    frmflp[0] = gtk_frame_new(NULL);
-    frmflp[1] = gtk_frame_new(NULL);
-    frmtape = gtk_frame_new(NULL);
-    frmcaps = gtk_frame_new(NULL);
-    frmkana = gtk_frame_new(NULL);
-    frmins = gtk_frame_new(NULL);
-    gtk_frame_set_shadow_type(GTK_FRAME(frmflp[0]), GTK_SHADOW_IN);
-    gtk_frame_set_shadow_type(GTK_FRAME(frmflp[1]), GTK_SHADOW_IN);
-    gtk_frame_set_shadow_type(GTK_FRAME(frmtape), GTK_SHADOW_IN);
-    gtk_frame_set_shadow_type(GTK_FRAME(frmcaps), GTK_SHADOW_IN);
-    gtk_frame_set_shadow_type(GTK_FRAME(frmkana), GTK_SHADOW_IN);
-    gtk_frame_set_shadow_type(GTK_FRAME(frmins), GTK_SHADOW_IN);
-    evtflp[0] = gtk_event_box_new();
-    evtflp[1] = gtk_event_box_new();
-    evttape = gtk_event_box_new();
-    evtcaps = gtk_event_box_new();
-    evtkana = gtk_event_box_new();
-    evtins = gtk_event_box_new();
-    gtk_widget_modify_bg(evtcaps, GTK_STATE_NORMAL, &colBLACK);
-    gtk_widget_modify_bg(evtkana, GTK_STATE_NORMAL, &colBLACK);
-    gtk_widget_modify_bg(evtins, GTK_STATE_NORMAL, &colBLACK);
-    lblstat = gtk_label_new("READY");
-    lblflp[1] = gtk_label_new("");
-    lblflp[0] = gtk_label_new("");
-    lbltape = gtk_label_new("");
-    lblcaps = gtk_label_new("CAPS");
-    lblkana = gtk_label_new("かな");
-    lblins = gtk_label_new("INS");
-    gtk_widget_set_size_request(lbltape, 64, 10);
-    gtk_widget_set_size_request(lblflp[0], 128, 10);
-    gtk_widget_set_size_request(lblflp[1], 128, 10);
-    gtk_widget_modify_fg(lblcaps, GTK_STATE_NORMAL, &colWHITE);
-    gtk_widget_modify_fg(lblkana, GTK_STATE_NORMAL, &colWHITE);
-    gtk_widget_modify_fg(lblins, GTK_STATE_NORMAL, &colWHITE);
-    gtk_container_add(GTK_CONTAINER(frmflp[0]), evtflp[0]);
-    gtk_container_add(GTK_CONTAINER(frmflp[1]), evtflp[1]);
-    gtk_container_add(GTK_CONTAINER(frmtape), evttape);
-    gtk_container_add(GTK_CONTAINER(frmcaps), evtcaps);
-    gtk_container_add(GTK_CONTAINER(frmkana), evtkana);
-    gtk_container_add(GTK_CONTAINER(frmins), evtins);
-    gtk_container_add(GTK_CONTAINER(evtflp[0]), lblflp[0]);
-    gtk_container_add(GTK_CONTAINER(evtflp[1]), lblflp[1]);
-    gtk_container_add(GTK_CONTAINER(evttape), lbltape);
-    gtk_container_add(GTK_CONTAINER(evtcaps), lblcaps);
-    gtk_container_add(GTK_CONTAINER(evtkana), lblkana);
-    gtk_container_add(GTK_CONTAINER(evtins), lblins);
-    gtk_box_pack_start(GTK_BOX(hbox4), lblstat, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmins, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmkana, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmcaps, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmtape, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmflp[0], FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(hbox5), frmflp[1], FALSE, FALSE, 0);
-    gtk_widget_show(frmflp[0]);
-    gtk_widget_show(frmflp[1]);
-    gtk_widget_show(frmtape);
-    gtk_widget_show(frmcaps);
-    gtk_widget_show(frmkana);
-    gtk_widget_show(frmins);
-    gtk_widget_show(evtflp[0]);
-    gtk_widget_show(evtflp[1]);
-    gtk_widget_show(evttape);
-    gtk_widget_show(evtcaps);
-    gtk_widget_show(evtkana);
-    gtk_widget_show(evtins);
-    gtk_widget_show(lblstat);
-    gtk_widget_show(lblflp[0]);
-    gtk_widget_show(lblflp[1]);
-    gtk_widget_show(lbltape);
-    gtk_widget_show(lblcaps);
-    gtk_widget_show(lblkana);
-    gtk_widget_show(lblins);
+        SDL_Surface *p;
+        SDL_Rect rec;
+        p = SDL_GetVideoSurface();
+        SDL_LockSurface(p);
+        /*
+         * RECT INS
+         */
+        rec.x = nDrawWidth - (60 * 3);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+        SDL_FillRect(p, &rec, COL_BLACK);
+
+        /*
+         * RECT CAPS
+         */
+        rec.x = nDrawWidth - (60 * 2);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+        SDL_FillRect(p, &rec, COL_BLACK);
+
+        /*
+         * RECT KANA
+         */
+        rec.x = nDrawWidth - (60 * 1);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+        SDL_FillRect(p, &rec, COL_BLACK);
+
+
+        /*
+         * RECT Drive1
+         */
+        rec.x = nDrawWidth - (100 * 3);
+        rec.y = nDrawHeight + 20;
+        rec.w = 100;
+        rec.h = 20;
+        SDL_FillRect(p, &rec, COL_NORM);
+
+        /*
+         * RECT Drive0
+         */
+        rec.x = nDrawWidth - (100 * 2);
+        rec.y = nDrawHeight + 20;
+        rec.w = 100;
+        rec.h = 20;
+        SDL_FillRect(p, &rec, COL_NORM);
+
+        /*
+         * RECT Tape
+         */
+        rec.x = nDrawWidth - (100 * 1);
+        rec.y = nDrawHeight + 20;
+        rec.w = 100;
+        rec.h = 20;
+        SDL_FillRect(p, &rec, COL_NORM);
+
+
+        /*
+         * Draw
+         */
+        SDL_UpdateRect(p, 0, 0, p->w, p->h);
+        SDL_UnlockSurface(p);
+
 } 
     /*
      *  キャプション描画 
      */ 
-static void     FASTCALL
+static void
 DrawMainCaption(void) 
 {
     char           string[256];
     char           tmp[128];
     char          *p;
     
-	/*
-	 * 動作状況に応じて、コピー 
-	 */ 
-	if (run_flag) {
+    /*
+     * 動作状況に応じて、コピー 
+     */ 
+    if (run_flag) {
 	strcpy(string, "XM7[実行]");
     }
     
@@ -186,20 +135,20 @@ DrawMainCaption(void)
     }
     strcat(string, " ");
     
-	/*
-	 * CPU速度比率 
-	 */ 
-	if (bAutoSpeedAdjust) {
-	sprintf(tmp, "(%3d%%) ", speed_ratio / 100);
-	strcat(string, tmp);
+    /*
+     * CPU速度比率 
+     */ 
+    if (bAutoSpeedAdjust) {
+            sprintf(tmp, "(%3d%%) ", speed_ratio / 100);
+            strcat(string, tmp);
     }
     
-	/*
-	 * フロッピーディスクドライブ 0 
-	 */ 
-	if (fdc_ready[0] != FDC_TYPE_NOTREADY) {
-	
-	    /*
+    /*
+     * フロッピーディスクドライブ 0 
+     */ 
+    if (fdc_ready[0] != FDC_TYPE_NOTREADY) {
+            
+            /*
 	     * ファイルネーム＋拡張子のみ取り出す 
 	     */ 
 	    p = strrchr(fdc_fname[0], '/');
@@ -255,96 +204,115 @@ DrawMainCaption(void)
 	 * 比較描画 
 	 */ 
 	string[127] = '\0';
-    if (memcmp(szCaption, string, strlen(string) + 1) != 0) {
-	strcpy(szCaption, string);
-	gdk_threads_enter();
-	gtk_window_set_title(GTK_WINDOW(wndMain), szCaption);
-	gdk_threads_leave();
-    }
+//    if (memcmp(szCaption, string, strlen(string) + 1) != 0) {
+//	strcpy(szCaption, string);
+//	gdk_threads_enter();
+//	gtk_window_set_title(GTK_WINDOW(wndMain), szCaption);
+//	gdk_threads_leave();
+//    }
 }
 
 
     /*
      *  CAPキー描画 
      */ 
-static void     FASTCALL
+static void
 DrawCAP(void) 
 {
-    int            num;
+        int            num;
+        SDL_Surface *p;
+        SDL_Rect rec;
+
+
     
-	/*
-	 * 番号決定 
-	 */ 
-	if (caps_flag) {
-	num = 1;
-    }
+        /*
+         * 番号決定 
+         */ 
+        if (caps_flag) {
+                num = 1;
+        } else {
+                num = 0;
+        }    
+       /*
+        * 同じなら何もしない 
+        */ 
+        if (nCAP == num) {
+                return;
+        }
     
-    else {
-	num = 0;
-    }
-    
-	/*
-	 * 同じなら何もしない 
-	 */ 
-	if (nCAP == num) {
-	return;
-    }
-    
-	/*
-	 * 描画、ワーク更新 
-	 */ 
-	nCAP = num;
-    gdk_threads_enter();
-    if (nCAP) {
-	gtk_widget_modify_bg(evtcaps, GTK_STATE_NORMAL, &colRED);
-    }
-    
-    else {
-	gtk_widget_modify_bg(evtcaps, GTK_STATE_NORMAL, &colBLACK);
-    }
-    gdk_threads_leave();
+/*
+ * 描画、ワーク更新 
+ */ 
+        nCAP = num;
+        rec.x = nDrawWidth - (60 * 2);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+
+
+//        gdk_threads_enter();
+        p = SDL_GetVideoSurface();
+        SDL_LockSurface(p);
+
+        if (nCAP) {
+                SDL_FillRect(p, &rec, COL_RED);
+        } else {
+                SDL_FillRect(p, &rec, COL_BLACK);
+        }
+        SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
+        SDL_UnlockSurface(p);
+//        gdk_threads_leave();
 }
 
 
     /*
      *  かなキー描画 
      */ 
-static void     FASTCALL
+static void
 DrawKANA(void) 
 {
-    int            num;
+        int            num;
+        SDL_Surface *p;
+        SDL_Rect rec;
+        p = SDL_GetVideoSurface();
     
-	/*
-	 * 番号決定 
-	 */ 
-	if (kana_flag) {
-	num = 1;
-    }
+        /*
+         * 番号決定 
+         */ 
+        if (kana_flag) {
+                num = 1;
+        } else {
+                num = 0;
+        }
     
-    else {
-	num = 0;
-    }
+/*
+ * 同じなら何もしない 
+ */ 
+        if (nKANA == num) {
+                return;
+        }
     
-	/*
-	 * 同じなら何もしない 
-	 */ 
-	if (nKANA == num) {
-	return;
-    }
-    
-	/*
-	 * 描画、ワーク更新 
-	 */ 
-	nKANA = num;
-    gdk_threads_enter();
-    if (nKANA) {
-	gtk_widget_modify_bg(evtkana, GTK_STATE_NORMAL, &colRED);
-    }
-    
-    else {
-	gtk_widget_modify_bg(evtkana, GTK_STATE_NORMAL, &colBLACK);
-    }
-    gdk_threads_leave();
+/*
+ * 描画、ワーク更新 
+ */ 
+        nKANA = num;
+        rec.x = nDrawWidth - (60 * 1);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+
+//        gdk_threads_enter();
+        p = SDL_GetVideoSurface();
+        SDL_LockSurface(p);
+        if (nKANA) {
+                SDL_FillRect(p, &rec, COL_RED);
+        } else {
+                SDL_FillRect(p, &rec, COL_BLACK);
+        }
+
+        SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
+        SDL_UnlockSurface(p);
+//        gdk_threads_leave();
 }
 
 
@@ -354,74 +322,86 @@ DrawKANA(void)
 static void     FASTCALL
 DrawINS(void) 
 {
-    int            num;
+        int            num;
+        SDL_Surface *p;
+        SDL_Rect rec;
+        p = SDL_GetVideoSurface();
+
+        /*
+         * 番号決定 
+         */ 
+        if (ins_flag) {
+                num = 1;
+        }  else {
+                num = 0;
+        }
     
-	/*
-	 * 番号決定 
-	 */ 
-	if (ins_flag) {
-	num = 1;
-    }
+/*
+ * 同じなら何もしない 
+ */ 
+        if (nINS == num) {
+                return;
+        }
     
-    else {
-	num = 0;
-    }
-    
-	/*
-	 * 同じなら何もしない 
-	 */ 
-	if (nINS == num) {
-	return;
-    }
-    
-	/*
-	 * 描画、ワーク更新 
-	 */ 
-	nINS = num;
-    gdk_threads_enter();
-    if (nINS) {
-	gtk_widget_modify_bg(evtins, GTK_STATE_NORMAL, &colRED);
-    }
-    
-    else {
-	gtk_widget_modify_bg(evtins, GTK_STATE_NORMAL, &colBLACK);
-    }
-    gdk_threads_leave();
+/*
+ * 描画、ワーク更新 
+ */ 
+        nINS = num;
+//        gdk_threads_enter();
+        rec.x = nDrawWidth - (60 * 3);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+
+//        gdk_threads_enter();
+        p = SDL_GetVideoSurface();
+        SDL_LockSurface(p);
+        if (nINS) {
+                SDL_FillRect(p, &rec, COL_RED);
+        } else {
+                SDL_FillRect(p, &rec, COL_BLACK);
+        }
+        SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
+
+        SDL_UnlockSurface(p);
+//        gdk_threads_leave();
 }
 
 
     /*
      *  ドライブ描画 
      */ 
-static void     FASTCALL
+static void 
 DrawDrive(int drive) 
 {
     int            num;
     char          *name;
     char           string[128];
     gchar * utf8;
+    SDL_Rect rec;
+    SDL_Surface *p;
+
     ASSERT((drive >= 0) && (drive <= 1));
-    
-	/*
-	 * 番号セット 
-	 */ 
-	if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
-	num = 255;
+  
+
+    /*
+     * 番号セット 
+     */ 
+    if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
+            num = 255;
+    }  else {
+            num = fdc_access[drive];
+            if (num == FDC_ACCESS_SEEK) {
+                    num = FDC_ACCESS_READY;
+            }
     }
     
-    else {
-	num = fdc_access[drive];
-	if (num == FDC_ACCESS_SEEK) {
-	    num = FDC_ACCESS_READY;
-	}
-    }
-    
-	/*
-	 * 名前取得 
-	 */ 
-	name = "";
+    /*
+     * 名前取得 
+     */ 
+    name = "";
     if (fdc_ready[drive] == FDC_TYPE_D77) {
-	name = fdc_name[drive][fdc_media[drive]];
+            name = fdc_name[drive][fdc_media[drive]];
     }
     if (fdc_ready[drive] == FDC_TYPE_2D) {
 	name = "2D DISK";
@@ -430,22 +410,22 @@ DrawDrive(int drive)
 	name = "VFD DISK";
     }
     
-	/*
-	 * 番号比較 
-	 */ 
-	if (nDrive[drive] == num) {
-	if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
-	    return;
-	}
-	if (strcmp(szDrive[drive], name) == 0) {
-	    return;
-	}
+    /*
+     * 番号比較 
+     */ 
+    if (nDrive[drive] == num) {
+            if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
+                    return;
+            }
+            if (strcmp(szDrive[drive], name) == 0) {
+                    return;
+            }
     }
     
-	/*
-	 * 描画 
-	 */ 
-	nDrive[drive] = num;
+    /*
+     * 描画 
+     */ 
+    nDrive[drive] = num;
     strcpy(szDrive[drive], name);
     if (nDrive[drive] == 255) {
 	strcpy(string, "");
@@ -454,63 +434,81 @@ DrawDrive(int drive)
     else {
 	strcpy(string, szDrive[drive]);
     }
-    gdk_threads_enter();
-    utf8 =
-	g_convert(string, strlen(string), "UTF-8", "CP932", NULL, NULL,
-		  NULL);
-    gtk_label_set_text(GTK_LABEL(lblflp[drive]), utf8);
-    g_free(utf8);
+//    gdk_threads_enter();
+    p = SDL_GetVideoSurface();  
+    SDL_LockSurface(p);
+    //  gtk_label_set_text(GTK_LABEL(lblflp[drive]), utf8);
+//    g_free(utf8);
+    rec.x = nDrawWidth - (100 * (2+drive));
+    rec.y = nDrawHeight + 20;
+    rec.w = 100;
+    rec.h = 20;
+
+
     if (nDrive[drive] == FDC_ACCESS_READ) {
-	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colWHITE);
-	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colDRED);
+            /*
+             * READ
+             */
+            SDL_FillRect(p, &rec, COL_RED);
+//	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colWHITE);
+//	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colDRED);
     } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colWHITE);
-	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colDBLUE);
+            SDL_FillRect(p, &rec, COL_BLUE);
+//	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colWHITE);
+//	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colDBLUE);
     } else {
-	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colBLACK);
-	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colNORM);
+            SDL_FillRect(p, &rec, COL_NORM);
+//	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colBLACK);
+//	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colNORM);
     }
-    gdk_threads_leave();
+//    utf8 =
+//	g_convert(string, strlen(string), "UTF-8", "CP932", NULL, NULL,
+//		  NULL);
+    SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
+    SDL_UnlockSurface(p);
+//    gdk_threads_leave();
 }
 
 
     /*
      *  テープ描画 
      */ 
-static void     FASTCALL
+static void
 DrawTape(void) 
 {
     int            num;
     char           string[128];
+    SDL_Surface *p;
+    SDL_Rect rec;
     
-	/*
-	 * ナンバー計算 
-	 */ 
-	num = 30000;
+    /*
+     * ナンバー計算 
+     */ 
+    num = 30000;
     if (tape_fileh != -1) {
-	num = (int) ((tape_offset >> 8) % 10000);
-	if (tape_motor) {
-	    if (tape_rec) {
-		num += 20000;
+            num = (int) ((tape_offset >> 8) % 10000);
+            if (tape_motor) {
+                    if (tape_rec) {
+                            num += 20000;
 	    }
-	    
-	    else {
-		num += 10000;
-	    }
-	}
+                    
+                    else {
+                            num += 10000;
+                    }
+            }
     }
     
-	/*
-	 * 番号比較 
-	 */ 
-	if (nTape == num) {
-	return;
+    /*
+     * 番号比較 
+     */ 
+    if (nTape == num) {
+            return;
     }
     
-	/*
-	 * 描画 
-	 */ 
-	nTape = num;
+    /*
+     * 描画 
+     */ 
+    nTape = num;
     if (nTape >= 30000) {
 	string[0] = '\0';
     }
@@ -518,60 +516,66 @@ DrawTape(void)
     else {
 	sprintf(string, "%04d", nTape % 10000);
     }
-    gdk_threads_enter();
-    gtk_label_set_text(GTK_LABEL(lbltape), string);
+//    gdk_threads_enter();
+    rec.x = nDrawWidth - (100 * 1);
+    rec.y = nDrawHeight + 20;
+    rec.w = 100;
+    rec.h = 20;
+    p = SDL_GetVideoSurface();
+//    gtk_label_set_text(GTK_LABEL(lbltape), string);
     if ((nTape >= 10000) && (nTape < 30000)) {
-	if (nTape >= 20000) {
-	    gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colDBLUE);
-	}
-	
-	else {
-	    gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colDRED);
-	}
+            if (nTape >= 20000) {
+                    SDL_FillRect(p, &rec, COL_BLUE);
+                    //gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colDBLUE);
+            }   else {
+                    SDL_FillRect(p, &rec, COL_RED);
+                    //gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colDRED);
+            }
     } else {
-	gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colNORM);
+            SDL_FillRect(p, &rec, COL_NORM);
+            //gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colNORM);
     }
-    gdk_threads_leave();
+//    gdk_threads_leave();
 }
 
-
-    /*
-     *  描画 
-     */ 
-void            FASTCALL
+/*
+ *  描画 
+ */ 
+void  
 DrawStatus(void) 
 {
-    DrawMainCaption();
-    DrawCAP();
-    DrawKANA();
-    DrawINS();
-    DrawDrive(0);
-    DrawDrive(1);
-    DrawTape();
+        DrawMainCaption();
+        DrawCAP();
+        DrawKANA();
+        DrawINS();
+        DrawDrive(0);
+        DrawDrive(1);
+        DrawTape();
 } 
-    /*
-     *  再描画 
-     */ 
-void            FASTCALL
+
+/*
+ *  再描画 
+ */ 
+void
 PaintStatus(void) 
 {
     
-	/*
-	 * 記憶ワークをすべてクリアする 
-	 */ 
-	szCaption[0] = '\0';
-    nCAP = -1;
-    nKANA = -1;
-    nINS = -1;
-    nDrive[0] = -1;
-    nDrive[1] = -1;
-    szDrive[0][0] = '\0';
-    szDrive[1][0] = '\0';
-    nTape = -1;
+/*
+ * 記憶ワークをすべてクリアする 
+ */ 
+        szCaption[0] = '\0';
+        nCAP = -1;
+        nKANA = -1;
+        nINS = -1;
+        nDrive[0] = -1;
+        nDrive[1] = -1;
+        szDrive[0][0] = '\0';
+        szDrive[1][0] = '\0';
+        nTape = -1;
     
-	/*
-	 * 描画 
-	 */ 
-	DrawStatus();
+        /*
+         * 描画 
+         */ 
+        DrawStatus();
 } 
 #endif	/* _XWIN */

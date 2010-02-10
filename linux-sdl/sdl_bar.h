@@ -18,17 +18,19 @@ extern          "C" {
 	/*
 	 *  主要エントリ 
 	 */ 
-        void CreateStatus(GtkWidget * vbox);
+
+//        void CreateStatus(GtkWidget * vbox);
+        extern void CreateStatus(void);
                    
 	/*
 	 * ステータスバーの生成 
 	 */            
-                   void FASTCALL DrawStatus(void);
+        extern void DrawStatus(void);
                    
 	/*
 	 * 描画 
 	 */            
-    void FASTCALL   PaintStatus(void);
+        extern void  PaintStatus(void);
                    
 	/*
 	 * 再描画 

@@ -90,7 +90,7 @@ void
 CreateDrawSDL(void) 
 {
     SDL_Surface * ret;
-    ret =       SDL_SetVideoMode(640, 400, 24,
+    ret =       SDL_SetVideoMode(640, 480, 24,
 	 SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE |
 	 SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
     if (ret == NULL) {
@@ -122,7 +122,8 @@ OnCreate(void *parent)
 #ifdef USE_GTK    
     CreateMenu(parent);
     CreateDrawGTK(parent);
-//    CreateStatus(parent);
+#else
+    CreateStatus();
 
 #endif
 /*

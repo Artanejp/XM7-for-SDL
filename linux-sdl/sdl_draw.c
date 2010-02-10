@@ -220,9 +220,9 @@ InitDraw(void)
     nDrawBottom = 400;
     nDrawLeft = 0;
     nDrawRight = 640;
-    nOldDrawHeight = 400;
+    nOldDrawHeight = 480;
     nOldDrawWidth = 640;
-    nDrawHeight = 400;
+    nDrawHeight = 480;
     nDrawWidth = 640;
     bOldFullScan = TRUE;
     bPaletFlag = FALSE;

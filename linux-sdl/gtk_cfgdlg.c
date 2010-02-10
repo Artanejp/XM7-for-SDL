@@ -531,14 +531,14 @@ SoundPageApply(void)
 {
     UINT uPos;
     
-	/*
-	 * ステート変更 
-	 */ 
-	uPropertyState = 2;
+    /*
+     * ステート変更 
+     */ 
+    uPropertyState = 2;
     
-	/*
-	 * サンプリングレート 
-	 */ 
+    /*
+     * サンプリングレート 
+     */ 
     if (IsDlgButtonChecked(SP_96K) == BST_CHECKED) {
             propdat.nSampleRate = 96000;
     }
@@ -1277,7 +1277,7 @@ VolumePageInit(void)
 #ifdef FDDSND
         gtk_range_set_value(GTK_RANGE(VOLUME_WAV), propdat.nWaveVolume);
 #endif
-//        gtk_range_set_value(GTK_RANGE(VOLUME_SEP), propdat.uChSeparation);
+        gtk_range_set_value(GTK_RANGE(VOLUME_SEP), propdat.uChSeparation);
 }
 
 
@@ -1292,15 +1292,15 @@ VolumePageApply(void)
  * ステート変更 
  */ 
         uPropertyState = 2;
-        propdat.nFMVolume = gtk_range_get_value(GTK_RANGE(VOLUME_FM));
-        propdat.nPSGVolume = gtk_range_get_value(GTK_RANGE(VOLUME_PSG));
-        propdat.nBeepVolume = gtk_range_get_value(GTK_RANGE(VOLUME_BEEP));
-        propdat.nCMTVolume = gtk_range_get_value(GTK_RANGE(VOLUME_TAPE));
+        propdat.nFMVolume = (int)gtk_range_get_value(GTK_RANGE(VOLUME_FM));
+        propdat.nPSGVolume = (int)gtk_range_get_value(GTK_RANGE(VOLUME_PSG));
+        propdat.nBeepVolume = (int)gtk_range_get_value(GTK_RANGE(VOLUME_BEEP));
+        propdat.nCMTVolume = (int)gtk_range_get_value(GTK_RANGE(VOLUME_TAPE));
 #ifdef FDDSND
-        propdat.nWaveVolume = gtk_range_get_value(GTK_RANGE(VOLUME_WAV));
+        propdat.nWaveVolume = (int)gtk_range_get_value(GTK_RANGE(VOLUME_WAV));
 #endif
-//        propdat.uChSeparation = gtk_range_get_value(GTK_RANGE(VOLUME_SEP));
-        propdat.uChSeparation = 9;
+        propdat.uChSeparation = (UINT)gtk_range_get_value(GTK_RANGE(VOLUME_SEP));
+//        propdat.uChSeparation = 9;
         
 }
 
@@ -1329,7 +1329,7 @@ SheetInit(void)
 void
 OnConfig(GtkWidget * widget, gpointer data) 
 {
-    
+        int i,j;
 /*
  * データ転送 
  */ 
@@ -1340,6 +1340,39 @@ OnConfig(GtkWidget * widget, gpointer data)
  */ 
         uPropertyState = 0;
         uPropertyHelp = 0;
+        /*
+         * WidgetをKILLしていく
+         */
+        gtk_widget_destroy(GP_CPUCOMBO);
+        gtk_widget_destroy(GP_MAINCPU);
+        gtk_widget_destroy(GP_MAINMMR);
+#if XM7_VER >= 3
+        gtk_widget_destroy(GP_FASTMMR);
+#endif
+        gtk_widget_destroy(GP_SUBCPU);
+      
+        gtk_widget_destroy(SP_STEREO);
+        gtk_widget_destroy(SP_MONO);
+        gtk_widget_destroy(SP_STEREOQ);
+        gtk_widget_destroy(SP_STEREOQ_REV);
+        gtk_widget_destroy(SP_STEREOQ_THG);
+
+        for (j = 0; j < 2 ; j++) {
+                for(i = 0; i < 2 ; i++) {
+                        gtk_widget_destroy(JOY_RAPID[j][i]);
+                        gtk_widget_destroy(JOY_RAPID1[j][i]);
+                        gtk_widget_destroy(JOY_RAPID2[j][i]);
+                        gtk_widget_destroy(JOY_RAPID3[j][i]);
+                        gtk_widget_destroy(JOY_RAPID4[j][i]);
+                        gtk_widget_destroy(JOY_RAPID5[j][i]);
+                        gtk_widget_destroy(JOY_RAPID6[j][i]);
+                        gtk_widget_destroy(JOY_RAPID8[j][i]);
+                        gtk_widget_destroy(JOY_RAPID12[j][i]);
+                        gtk_widget_destroy(JOY_RAPID25[j][i]);
+                }
+        }
+
+
         winProperty = OpenPropertyPage();
         gtk_widget_show(winProperty);
         GeneralPageInit();
@@ -1351,6 +1384,20 @@ OnConfig(GtkWidget * widget, gpointer data)
         OptPageInit();
         VolumePageInit();
 } 
+
+/*
+ * キャンセルボタン…arg0 に当該Widget, arg1に主ウインドウが来る
+ */
+void
+OnCancelPressed(GtkWidget * widget, gpointer data)
+{
+        int i,j;
+        /*
+         * この関数はarg2のWidgetをhideする
+         */ 
+        gtk_widget_hide_on_delete((GtkWidget *) data);
+
+}
 
 /*
  *  設定(C) 
@@ -1368,6 +1415,7 @@ OnConfig_OK(GtkWidget * widget, gpointer data)
         ScrPageApply();
         OptPageApply();
         VolumePageApply();
+        
     
 /*
  * okなので、データ転送 
@@ -1420,7 +1468,7 @@ OnGP_ChSepVolumeChanged(GtkWidget* widget, gpointer data)
         int     nCMT = nCMTVolume;
         int     nWav = nWaveVolume;
 
-        if(widget == NULL) return;
+
         uSp = (UINT)gtk_range_get_value(GTK_RANGE(widget));
         SetSoundVolume2(uSp, nFM, nPSG,
                         nBeep, nCMT, nWav);
@@ -1440,7 +1488,7 @@ OnGP_FMVolumeChanged(GtkWidget* widget, gpointer data)
         int     nCMT = nCMTVolume;
         int     nWav = nWaveVolume;
 
-        if(widget == NULL) return;
+
         nFM = gtk_range_get_value(GTK_RANGE(widget));
         SetSoundVolume2(uSp, nFM, nPSG,
                         nBeep, nCMT, nWav);
@@ -1456,7 +1504,7 @@ OnGP_PSGVolumeChanged(GtkWidget* widget, gpointer data)
         int     nCMT = nCMTVolume;
         int     nWav = nWaveVolume;
 
-        if(widget == NULL) return;
+
         nPSG = gtk_range_get_value(GTK_RANGE(widget));
         SetSoundVolume2(uSp, nFM, nPSG,
                         nBeep, nCMT, nWav);
@@ -1472,7 +1520,7 @@ OnGP_BEEPVolumeChanged(GtkWidget* widget, gpointer data)
         int     nCMT = nCMTVolume;
         int     nWav = nWaveVolume;
 
-        if(widget == NULL) return;
+
         nBeep = gtk_range_get_value(GTK_RANGE(widget));
         SetSoundVolume2(uSp, nFM, nPSG,
                         nBeep, nCMT, nWav);
@@ -1488,7 +1536,7 @@ OnGP_CMTVolumeChanged(GtkWidget* widget, gpointer data)
         int     nCMT = nCMTVolume;
         int     nWav = nWaveVolume;
 
-        if(widget == NULL) return;
+
         nCMT = gtk_range_get_value(GTK_RANGE(widget));
         SetSoundVolume2(uSp, nFM, nPSG,
                         nBeep, nCMT, nWav);
@@ -1504,7 +1552,7 @@ OnGP_WAVVolumeChanged(GtkWidget* widget, gpointer data)
         int     nCMT = nCMTVolume;
         int     nWav = nWaveVolume;
 
-        if(widget == NULL) return;
+
         nWav = gtk_range_get_value(GTK_RANGE(widget));
         SetSoundVolume2(uSp, nFM, nPSG,
                         nBeep, nCMT, nWav);

@@ -55,12 +55,12 @@ COMMONSRC = \
 #	kanji.c      mouse.c      schedule.c   thg.c
 
 LOCALSRC = \
-	sdl_gtkdlg.c sdl_cfg.c  sdl_inifile.c sdl_bar.c \
+	sdl_gtkdlg.c sdl_cfg.c  sdl_inifile.c \
                  sdl_cmd.c sdl_sch.c sdl_draw.c sdl_kbd.c sdl_file.c sdl_snd.cpp \
 	sdl_main.c \
                  sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c \
 	gtk_prop.c gtk_propkeyboard.c \
-                 gtk_cfgdlg.c gtk_main.c
+                 gtk_cfgdlg.c gtk_main.c sdl_bar.c
 #                 xw_sub.asm 
 
 COMMONOBJ = \
@@ -103,12 +103,12 @@ COMMONOBJ = \
 
 
 LOCALOBJ = \
-	sdl_gtkdlg.o sdl_cfg.o sdl_inifile.o sdl_bar.o \
+	sdl_gtkdlg.o sdl_cfg.o sdl_inifile.o  \
 	sdl_cmd.o sdl_sch.o sdl_kbd.o sdl_file.o \
 	sdl_snd.o sdl_main.o \
                  sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o \
                  sdl_draw.o \
-                 gtk_cfgdlg.o gtk_main.o gtk_prop.o gtk_propkeyboard.o
+                 gtk_cfgdlg.o gtk_main.o gtk_prop.o gtk_propkeyboard.o sdl_bar.o
 #	xw_sub.o 
 
 .SUFFIXES: .c .cpp .asm .o

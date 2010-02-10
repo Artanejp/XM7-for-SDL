@@ -285,6 +285,7 @@ OnExit(GtkWidget * widget, gpointer data)
     LockVM();
     bCloseReq = TRUE;
     UnlockVM();
+    //gtk_widget_destroy(GTK_WIDGET(data));
     gtk_widget_destroy(GTK_WIDGET(data));
 } 
 /*

@@ -1979,12 +1979,14 @@ opn_notify(BYTE reg, BYTE dat) {
  /*
  * サウンド合成 
  */
-	AddSnd(FALSE, FALSE);
+        AddSnd(FALSE, FALSE);
 
 /*
  * 出力 
  */
-        pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
+        if(pOPN[OPN_STD]) {
+                pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
+        }
        SDL_SemPost(applySem);
     }
 }
@@ -2062,7 +2064,9 @@ whg_notify(BYTE reg, BYTE dat)
 /*
  * 出力 
  */
-        pOPN[OPN_WHG]->SetReg((uint8) reg, (uint8) dat);
+        if(pOPN[OPN_WHG]) {
+                pOPN[OPN_WHG]->SetReg((uint8) reg, (uint8) dat);
+        }
         SDL_SemPost(applySem);
     }
 }
@@ -2139,7 +2143,9 @@ thg_notify(BYTE reg, BYTE dat)
 /*
  * 出力 
  */
-        pOPN[OPN_THG]->SetReg((uint8) reg, (uint8) dat);
+        if(pOPN[OPN_THG]) {
+                pOPN[OPN_THG]->SetReg((uint8) reg, (uint8) dat);
+        }
         SDL_SemPost(applySem);
     }
 }

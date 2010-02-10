@@ -174,7 +174,7 @@ SetEnable(GtkWidget * widget, BOOL b)
     /*
      *  チェック状態の取得 
      */ 
-BOOL FASTCALL IsDlgButtonChecked(GtkWidget * widget)
+BOOL IsDlgButtonChecked(GtkWidget * widget)
 {
         return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
@@ -260,7 +260,7 @@ GtkWidget
 
 //    winProperty = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     window = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "window_prop"));
-//    gtk_window_set_title(GTK_WINDOW(winProperty), "XM7の動作設定");
+    gtk_window_set_title(GTK_WINDOW(window), "XM7の動作設定");
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 //    gtk_widget_show(GTK_WIDGET(winProperty));
@@ -304,17 +304,18 @@ GtkWidget
 	gtk_radio_button_get_group(GTK_RADIO_BUTTON(GP_LOWSPEED));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(GP_HIGHSPEED), TRUE);
 
-   // GP_CPUCOMBO = 
-   //         GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "combobox_SPEED_TYPE"));
     hbox2 = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_cpucycle"));
     GP_CPUCOMBO = gtk_option_menu_new();
+//    GP_CPUCOMBO =
+//            GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "combobox_cputype"));
     gtk_widget_show(GP_CPUCOMBO);
     gtk_box_pack_start(GTK_BOX(hbox2), GP_CPUCOMBO, FALSE, FALSE, 0);
-   
+#if 1   
     menu2 = gtk_menu_new();
     GP_MAINCPU = gtk_menu_item_new_with_mnemonic("メインCPU");
     gtk_widget_show(GP_MAINCPU);
     gtk_container_add(GTK_CONTAINER(menu2), GP_MAINCPU);
+    
     GP_MAINMMR = gtk_menu_item_new_with_mnemonic("MMR使用時");
     gtk_widget_show(GP_MAINMMR);
     gtk_container_add(GTK_CONTAINER(menu2), GP_MAINMMR);
@@ -329,7 +330,8 @@ GtkWidget
     gtk_widget_show(GP_SUBCPU);
     gtk_container_add(GTK_CONTAINER(menu2), GP_SUBCPU);
     gtk_option_menu_set_menu(GTK_OPTION_MENU(GP_CPUCOMBO), menu2);
-   
+    gtk_widget_show(GP_CPUCOMBO);    
+#endif
 
     GP_CPUTEXT =
             GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "spinbutton_CYCLES"));
@@ -429,9 +431,9 @@ GtkWidget
     SP_TAPEMON = 
             GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "checkbutton_tapemon"));
 
-#ifdef FDDSOUND
+#ifdef FDDSND
     SP_FDDSOUND = 
-            GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "checkbutton_wavmon"));
+            GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "checkbutton_wav"));
 #endif
 /*
  * Page 2
@@ -611,56 +613,33 @@ GtkWidget
  * Page 7
  */
 
-    w = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_FM"));
-    VOLUME_FM = gtk_hscale_new_with_range(-31.0, +10.0, 1.0);     
-    gtk_widget_show(VOLUME_FM);
-    gtk_container_add(GTK_CONTAINER(w), VOLUME_FM);
-    gtk_container_set_border_width(GTK_CONTAINER(VOLUME_FM), 1);
-    gtk_signal_connect((gpointer) VOLUME_FM, "value-changed",
+    VOLUME_FM = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hscale_FM"));
+    g_signal_connect(VOLUME_FM, "value-changed",
                        GTK_SIGNAL_FUNC(OnGP_FMVolumeChanged), NULL);
 
-
-    w = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_PSG"));
-    VOLUME_PSG = gtk_hscale_new_with_range(-31.0, +10.0, 1.0);     
-    gtk_widget_show(VOLUME_PSG);
-    gtk_container_add(GTK_CONTAINER(w), VOLUME_PSG);
-    gtk_container_set_border_width(GTK_CONTAINER(VOLUME_PSG), 1);
-    gtk_signal_connect((gpointer) VOLUME_PSG, "value-changed",
+    VOLUME_PSG = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hscale_PSG"));
+    g_signal_connect(VOLUME_PSG, "value-changed",
                        GTK_SIGNAL_FUNC(OnGP_PSGVolumeChanged), NULL);
 
-    w = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_BEEP"));
-    VOLUME_BEEP = gtk_hscale_new_with_range(-35.0, +6.0, 1.0);     
-    gtk_widget_show(VOLUME_BEEP);
-    gtk_container_add(GTK_CONTAINER(w), VOLUME_BEEP);
-    gtk_container_set_border_width(GTK_CONTAINER(VOLUME_BEEP), 1);
-    gtk_signal_connect((gpointer) VOLUME_BEEP, "value-changed",
+    VOLUME_BEEP = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hscale_BEEP"));
+    g_signal_connect(VOLUME_BEEP, "value-changed",
                        GTK_SIGNAL_FUNC(OnGP_BEEPVolumeChanged), NULL);
 
-    w = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_TAPE"));
-    VOLUME_TAPE = gtk_hscale_new_with_range(-35.0, +6.0, 1.0);     
-    gtk_widget_show(VOLUME_TAPE);
-    gtk_container_add(GTK_CONTAINER(w), VOLUME_TAPE);
-    gtk_container_set_border_width(GTK_CONTAINER(VOLUME_TAPE), 1);
-    gtk_signal_connect((gpointer) VOLUME_TAPE, "value-changed",
+    VOLUME_TAPE = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hscale_TAPE"));
+    g_signal_connect(VOLUME_TAPE, "value-changed",
                        GTK_SIGNAL_FUNC(OnGP_CMTVolumeChanged), NULL);
 
-#ifdef FDDSND
-    w = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_WAV"));
-    VOLUME_WAV = gtk_hscale_new_with_range(-35.0, +6.0, 1.0);     
-    gtk_widget_show(VOLUME_WAV);
-    gtk_container_add(GTK_CONTAINER(w), VOLUME_WAV);
-    gtk_container_set_border_width(GTK_CONTAINER(VOLUME_WAV), 1);
-    gtk_signal_connect((gpointer) VOLUME_WAV, "value-changed",
-                       GTK_SIGNAL_FUNC(OnGP_WAVVolumeChanged), NULL);
-#endif
-    w = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_SEP"));
-    VOLUME_SEP = gtk_hscale_new_with_range(0.0, +16.0, 1.0);     
-    gtk_widget_show(VOLUME_SEP);
-    gtk_container_add(GTK_CONTAINER(w), VOLUME_SEP);
-    gtk_container_set_border_width(GTK_CONTAINER(VOLUME_SEP), 1);
-    gtk_signal_connect((gpointer) VOLUME_SEP, "value-changed",
+
+    VOLUME_SEP = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hscale_SEP"));
+    g_signal_connect(VOLUME_SEP, "value-changed",
                        GTK_SIGNAL_FUNC(OnGP_ChSepVolumeChanged), NULL);
 
+#ifdef FDDSND
+    VOLUME_WAV = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hscale_WAV"));
+    g_signal_connect(VOLUME_WAV, "value-changed",
+                       GTK_SIGNAL_FUNC(OnGP_WAVVolumeChanged), NULL);
+
+#endif
 
 /*
  *    スペーシング用ダミー
@@ -673,30 +652,32 @@ GtkWidget
     btnOk = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "button_OK"));   
 
     gtk_signal_connect((gpointer) GP_CPUDEFAULT, "clicked",
-			  GTK_SIGNAL_FUNC(OnGP_CPUDEFAULTClicked), NULL);
+                       GTK_SIGNAL_FUNC(OnGP_CPUDEFAULTClicked), NULL);
     gtk_signal_connect((gpointer) GP_CPUCOMBO, "changed",
-			 GTK_SIGNAL_FUNC(OnGP_CPUCOMBOChanged), NULL);
+                       GTK_SIGNAL_FUNC(OnGP_CPUCOMBOChanged), NULL);
     gtk_signal_connect((gpointer) GP_TAPESPEED, "clicked",
-			 GTK_SIGNAL_FUNC(OnGP_TAPESPEEDClicked), NULL);
+                       GTK_SIGNAL_FUNC(OnGP_TAPESPEEDClicked), NULL);
     gtk_signal_connect((gpointer) KP_USEARROWFOR10, "clicked",
-			 GTK_SIGNAL_FUNC(OnKP_USEARROWFOR10Clicked), NULL);
+                       GTK_SIGNAL_FUNC(OnKP_USEARROWFOR10Clicked), NULL);
     gtk_signal_connect((gpointer) btnOk, "clicked",
-			 GTK_SIGNAL_FUNC(OnConfig_OK), NULL);
+                       GTK_SIGNAL_FUNC(OnConfig_OK), NULL);
 
 //    gtk_signal_connect((gpointer) btnKeySet, "clicked",
 //			 GTK_SIGNAL_FUNC(StartGetKeycodeForProp), NULL);
 
     g_signal_connect(window, "destroy",
-                     GTK_SIGNAL_FUNC(gtk_widget_destroy), 
-                     NULL);
+                     GTK_SIGNAL_FUNC(OnCancelPressed),
+                     (gpointer)window);
+
     g_signal_connect(btnCancel, "clicked",
-                     GTK_SIGNAL_FUNC(gtk_widget_destroy),
+                     GTK_SIGNAL_FUNC(OnCancelPressed),
                      (gpointer)window);
+
     g_signal_connect(btnOk, "clicked",
-                     GTK_SIGNAL_FUNC(gtk_widget_destroy),
+                     GTK_SIGNAL_FUNC(OnCancelPressed),
                      (gpointer)window);
+
     return window;
+
 }
-
-
 #endif	/* _XWIN */
