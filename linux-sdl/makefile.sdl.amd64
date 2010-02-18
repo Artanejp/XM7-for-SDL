@@ -150,7 +150,7 @@ LIBS +=     -lgthread-2.0 \
             -lrt -lglib-2.0
 
 LIBS +=  \
-        -lSDL-1.2 -lSDL_mixer
+        -lSDL-1.2 -lSDL_mixer -lSDL_ttf
 
 ######
 # OpenGLはまだBuggyです。20100124

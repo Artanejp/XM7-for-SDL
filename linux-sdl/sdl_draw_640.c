@@ -410,12 +410,12 @@ Draw640(void)
      * パレット設定 
      */
     if (bPaletFlag) {
-	Palet640();
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
-	SetDrawFlag(TRUE);
+            Palet640();
+            nDrawTop = 0;
+            nDrawBottom = 400;
+            nDrawLeft = 0;
+            nDrawRight = 640;
+            SetDrawFlag(TRUE);
     }
 
     /*

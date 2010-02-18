@@ -1,13 +1,18 @@
 /*
- *  FM-7 EMULATOR "XM7"  Copyright (C) 1999-2003
- * ＰＩ．(ytanaka@ipc-tokai.or.jp) Copyright (C) 2001-2003 Ryu
- * Takegami Copyright (C) 2004 GIMONS Copyright (C) 2010 K.Ohta  [
- * XWIN 表示 ] 
+ *  FM-7 EMULATOR "XM7"
+ *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp)
+ *  Copyright (C) 2001-2003 Ryu Takegami
+ *  Copyright (C) 2004 GIMONS 
+ *  Copyright (C) 2010 K.Ohta
+ *  [SDL 表示 ] 
  */  
     
 #ifdef _XWIN
-    
+
+#ifdef USE_GTK    
 #include <gtk/gtk.h>
+#endif
+
 #include <SDL/SDL.h>
 #include "xm7.h"
 #include "multipag.h"
@@ -18,9 +23,6 @@
 #include "device.h"
 #include "sdl.h"
 #include "sdl_draw.h"
-#if defined(USE_OPENGL)
-#include <SDL/SDL_opengl.h>
-#endif	/* USE_OPENGL */
     
     /*
      *  グローバル ワーク 
@@ -114,44 +116,44 @@ ChangeResolution()
     /*
      *  BITBLT 
      */ 
-BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
+BOOL 
+BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
             int nSrcLeft, int nSrcTop) 
 {
-    SDL_Rect srcrect, dstrect;
-    srcrect.x = nSrcLeft;
-    srcrect.y = nSrcTop;
-    srcrect.w = (Uint16) nWidth;
-    srcrect.h = (Uint16) nHeight;
-    dstrect.x = nDestLeft;
-    dstrect.y = nDestTop;
-    dstrect.w = (Uint16) nWidth;
-    dstrect.h = (Uint16) nHeight;
+        SDL_Rect srcrect, dstrect;
+        srcrect.x = nSrcLeft;
+        srcrect.y = nSrcTop;
+        srcrect.w = (Uint16) nWidth;
+        srcrect.h = (Uint16) nHeight;
+        dstrect.x = nDestLeft;
+        dstrect.y = nDestTop;
+        dstrect.w = (Uint16) nWidth;
+        dstrect.h = (Uint16) nHeight;
+/*
+ * SurfaceLock 
+ */ 
+/*
+ * データ転送 
+ */ 
+        displayArea = SDL_GetVideoSurface();
     
-	/*
-	 * SurfaceLock 
-	 */ 
-	/*
-	 * データ転送 
-	 */ 
-	displayArea = SDL_GetVideoSurface();
-    
-	/*
-	 * 擬似インタレース設定をここでやる 
-	 */ 
-	if (bOldFullScan != bFullScan) {
-	if (!bFullScan) {
-	    RenderSetOddLine();
-	}
-    }
-    bOldFullScan = bFullScan;
-    if (!bDirectDraw) {
-	SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
-			realDrawArea->h);
-    }
-    if (!bDirectDraw) {
-	SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
-    }
-    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+/*
+ * 擬似インタレース設定をここでやる 
+ */ 
+        if (bOldFullScan != bFullScan) {
+                if (!bFullScan) {
+                        RenderSetOddLine();
+                }
+        }
+        bOldFullScan = bFullScan;
+        if (!bDirectDraw) {
+                SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
+                               realDrawArea->h);
+        }
+        if (!bDirectDraw) {
+                SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
+        }
+        SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
 }
 
 
@@ -160,139 +162,102 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 #define XM7_DRAW_HEIGHT 400
 #define XM7_DRAW_MAX_BPP 24 /* 32bitもやるか？遅いが */
     
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN /* BIGENDIAN */
-#if XM7_DRAW_MAX_BPP == 32
-#define XM7_DRAW_RMASK 0xff000000 /* R */
-#define XM7_DRAW_GMASK 0x00ff0000 /* G */
-#define XM7_DRAW_BMASK 0x0000ff00 /* B */
-#define XM7_DRAW_AMASK 0x000000ff /* ALPHA */
-#elif XM7_DRAW_MAX_BPP == 24 /* 24bit */
-#define XM7_DRAW_RMASK 0x00ff0000
-#define XM7_DRAW_GMASK 0x0000ff00
-#define XM7_DRAW_BMASK 0x000000ff
-#define XM7_DRAW_AMASK 0x00000000
-#else				/*  */
-#define XM7_DRAW_RMASK 0x0000f000
-#define XM7_DRAW_GMASK 0x00000f00
-#define XM7_DRAW_BMASK 0x000000f0
-#define XM7_DRAW_AMASK 0x0000000f
-#endif				/*  */
-#else	/* SDL_BYTEORDER */
-#if XM7_DRAW_MAX_BPP ==32
-#define XM7_DRAW_RMASK 0x000000ff
-#define XM7_DRAW_GMASK 0x0000ff00
-#define XM7_DRAW_BMASK 0x00ff0000
-#define XM7_DRAW_AMASK 0xff000000
-#elif XM7_DRAW_MAX_BPP == 24 /* 24bit */
-#define XM7_DRAW_RMASK 0x00000000
-#define XM7_DRAW_GMASK 0x00000000
-#define XM7_DRAW_BMASK 0x00000000
-#define XM7_DRAW_AMASK 0x00000000
-#else	/* not 32bit */
-#define XM7_DRAW_RMASK 0x0000000f
-#define XM7_DRAW_GMASK 0x000000f0
-#define XM7_DRAW_BMASK 0x00000f00
-#define XM7_DRAW_AMASK 0x0000f000
-#endif				/*  */
-#endif				/*  */
     
-    /*
-     *  初期化 
-     */ 
-    void
+/*
+ *  初期化 
+ */ 
+void
 InitDraw(void) 
 {
-    
-	/*
-	 * ワークエリア初期化 
-	 */ 
+/*
+ * ワークエリア初期化 
+ */ 
 #if XM7_VER >= 3
-	bMode = SCR_200LINE;
-    
+        bMode = SCR_200LINE;
 #else				/*  */
-	bAnalog = FALSE;
+        bAnalog = FALSE;
     
 #endif				/*  */
-	bNowBPP = 24;
-    memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
-    memset(rgbAnalogGDI, 0, sizeof(rgbAnalogGDI));
-    nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    nOldDrawHeight = 480;
-    nOldDrawWidth = 640;
-    nDrawHeight = 480;
-    nDrawWidth = 640;
-    bOldFullScan = TRUE;
-    bPaletFlag = FALSE;
-    SetDrawFlag(FALSE);
+        bNowBPP = 24;
+        memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
+        memset(rgbAnalogGDI, 0, sizeof(rgbAnalogGDI));
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        nOldDrawHeight = 480;
+        nOldDrawWidth = 640;
+        nDrawHeight = 480;
+        nDrawWidth = 640;
+        bOldFullScan = TRUE;
+        bPaletFlag = FALSE;
+        SetDrawFlag(FALSE);
     
 #if XM7_VER >= 3
-	bWindowOpen = FALSE;
-    nWindowDx1 = 640;
-    nWindowDy1 = 400;
-    nWindowDx2 = 0;
-    nWindowDy2 = 0;
-    
+        bWindowOpen = FALSE;
+        nWindowDx1 = 640;
+        nWindowDy1 = 400;
+        nWindowDx2 = 0;
+        nWindowDy2 = 0;
 #endif				/*  */
-	bDirectDraw = TRUE;
+        bDirectDraw = TRUE;
     
-	/*
-	 * 直接書き込み 
-	 */ 
-	realDrawArea = SDL_GetVideoSurface();
+/*
+ * 直接書き込み 
+ */ 
+        realDrawArea = SDL_GetVideoSurface();
 }
 
 
-    /*
-     *  クリーンアップ 
-     */ 
-    void
+/*
+ *  クリーンアップ 
+ */ 
+void
 CleanDraw(void) 
 {
 } 
-    /*
-     *  全ての再描画フラグを設定 
-     */ 
-    void
+
+/*
+ *  全ての再描画フラグを設定 
+ */ 
+void
 SetDrawFlag(BOOL flag) 
 {
     memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
 }
 
 
-    /*
-     *  640x200、デジタルモード セレクト 
-     */ 
-static          BOOL
+/*
+ *  640x200、デジタルモード セレクト 
+ */ 
+static  BOOL
 Select640(void) 
 {
     
-	/*
-	 * 全領域無効 
-	 */ 
-	nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    bPaletFlag = TRUE;
-    SetDrawFlag(TRUE);
+/*
+ * 全領域無効 
+ */ 
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        bPaletFlag = TRUE;
+        SetDrawFlag(TRUE);
     
 #if XM7_VER >= 3
-	/*
-	 * デジタル/200ラインモード 
-	 */ 
-	bMode = SCR_200LINE;
+/*
+ * デジタル/200ラインモード 
+ */ 
+        bMode = SCR_200LINE;
     
 #else				/*  */
-	/*
-	 * デジタルモード 
-	 */ 
-	bAnalog = FALSE;
+/*
+ * デジタルモード 
+ */ 
+        bAnalog = FALSE;
     
 #endif				/*  */
-	return TRUE;
+        return TRUE;
 }
 
 
@@ -304,21 +269,21 @@ static          BOOL
 Select400l(void) 
 {
     
-	/*
-	 * 全領域無効 
-	 */ 
-	nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    bPaletFlag = TRUE;
-    SetDrawFlag(TRUE);
+/*
+ * 全領域無効 
+ */ 
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        bPaletFlag = TRUE;
+        SetDrawFlag(TRUE);
     
 /*
  * デジタル/400ラインモード 
  */ 
-    bMode = SCR_400LINE;
-    return TRUE;
+        bMode = SCR_400LINE;
+        return TRUE;
 }
 
 
@@ -330,31 +295,29 @@ Select400l(void)
 static          BOOL
 Select320(void) 
 {
-    
-	/*
-	 * 全領域無効 
-	 */ 
-	nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    bPaletFlag = TRUE;
-    SetDrawFlag(TRUE);
-    
+/*
+ * 全領域無効 
+ */ 
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        bPaletFlag = TRUE;
+        SetDrawFlag(TRUE);
 #if XM7_VER >= 3
-	/*
-	 * アナログ/200ラインモード 
-	 */ 
-	bMode = SCR_4096;
+/*
+ * アナログ/200ラインモード 
+ */ 
+        bMode = SCR_4096;
     
 #else				/*  */
-	/*
-	 * アナログモード 
-	 */ 
-	bAnalog = TRUE;
+/*
+ * アナログモード 
+ */ 
+        bAnalog = TRUE;
     
 #endif				/*  */
-	return TRUE;
+        return TRUE;
 }
 
 
@@ -366,21 +329,21 @@ static          BOOL
 Select256k() 
 {
     
-	/*
-	 * 全領域無効 
-	 */ 
-	nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    bPaletFlag = TRUE;
-    SetDrawFlag(TRUE);
+/*
+ * 全領域無効 
+ */ 
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        bPaletFlag = TRUE;
+        SetDrawFlag(TRUE);
     
-	/*
-	 * アナログ(26万色)/200ラインモード 
-	 */ 
-	bMode = SCR_262144;
-    return TRUE;
+/*
+ * アナログ(26万色)/200ラインモード 
+ */ 
+        bMode = SCR_262144;
+        return TRUE;
 }
 
 
@@ -389,121 +352,116 @@ Select256k()
     /*
      *  セレクトチェック 
      */ 
-static          BOOL
+static BOOL
 SelectCheck(void) 
 {
     
 #if XM7_VER >= 3
-	/*
-	 * 限りない手抜き(ォ 
-	 */ 
-	if (bMode == screen_mode) {
-	return TRUE;
-    }
-    
-    else {
-	return FALSE;
-    }
-    
+       /*
+        * 限りない手抜き(ォ 
+        */ 
+        if (bMode == screen_mode) {
+                return TRUE;
+        } else {
+                return FALSE;
+        }
 #else				/*  */
-	/*
-	 * 320x200 
-	 */ 
-	if (mode320) {
-	if (bAnalog) {
-	    return TRUE;
-	}
-	
-	else {
-	    return FALSE;
-	}
-    }
+        /*
+         * 320x200 
+         */ 
+        if (mode320) {
+                if (bAnalog) {
+                        return TRUE;
+                } else {
+                        return FALSE;
+                }
+        }
     
-	/*
-	 * 640x200 
-	 */ 
-	if (!bAnalog) {
-	return TRUE;
-    }
-    
-    else {
-	return FALSE;
-    }
-    
-#endif				/*  */
+/*
+ * 640x200 
+ */ 
+        if (!bAnalog) {
+                return TRUE;
+        } else {
+                return FALSE;
+        }
+#endif /*  */
 }
 
 
-    /*
-     *  セレクト 
-     */ 
-    BOOL SelectDraw(void) 
+/*
+ *  セレクト 
+ */ 
+BOOL
+SelectDraw(void) 
 {
     SDL_Rect rect;
     
-	/*
-	 * 一致しているかチェック 
-	 */ 
-	if (SelectCheck()) {
-	return TRUE;
+/*
+ * 一致しているかチェック 
+ */ 
+    if (SelectCheck()) {
+            return TRUE;
     }
     displayArea = SDL_GetVideoSurface();
-    rect.h = displayArea->h;
-    rect.w = displayArea->w;
+    rect.h = nDrawWidth;
+    rect.w = nDrawHeight;
     rect.x = 0;
     rect.y = 0;
     
-	/*
-	 * すべてクリア 
-	 */ 
-	SDL_LockSurface(displayArea);
+    /*
+     * すべてクリア 
+     */ 
+    SDL_LockSurface(displayArea);
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-	SDL_FillRect(displayArea, &rect, 0x000000ff);
+    SDL_FillRect(displayArea, &rect, 0x000000ff);
     
 #else				/*  */
-	SDL_FillRect(displayArea, &rect, 0xff000000);
+    SDL_FillRect(displayArea, &rect, 0xff000000);
     
 #endif				/*  */
-	SDL_UnlockSurface(displayArea);
-    rect.h = realDrawArea->h;
-    rect.w = realDrawArea->w;
-    rect.x = 0;
-    rect.y = 0;
+    SDL_UnlockSurface(displayArea);
     
-	/*
-	 * すべてクリア 
-	 */ 
-	SDL_LockSurface(realDrawArea);
+    /*
+     * すべてクリア 
+     */ 
+    if(realDrawArea != displayArea) {
+            SDL_LockSurface(realDrawArea);
+            rect.h = realDrawArea->h;
+            rect.w = realDrawArea->w;
+            rect.x = 0;
+            rect.y = 0;
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-	SDL_FillRect(realDrawArea, &rect, 0x000000ff);
+            SDL_FillRect(realDrawArea, &rect, 0x000000ff);
     
 #else				/*  */
-	SDL_FillRect(realDrawArea, &rect, 0xff000000);
+            SDL_FillRect(realDrawArea, &rect, 0xff000000);
     
 #endif				/*  */
-	SDL_UnlockSurface(realDrawArea);
-    bOldFullScan = bFullScan;
-    
-	/*
-	 * セレクト 
-	 */ 
-#if XM7_VER >= 3
-	switch (screen_mode) {
-    case SCR_400LINE:
-	return Select400l();
-    case SCR_262144:
-	return Select256k();
-    case SCR_4096:
-	return Select320();
-    default:
-	return Select640();
+            SDL_UnlockSurface(realDrawArea);
     }
-    
+    bOldFullScan = bFullScan;
+       
+    /*
+     * セレクト 
+     */ 
+#if XM7_VER >= 3
+    switch (screen_mode) {
+    case SCR_400LINE:
+            return Select400l();
+    case SCR_262144:
+            return Select256k();
+    case SCR_4096:
+            return Select320();
+    default:
+            return Select640();
+    }
+   
 #else				/*  */
-	if (mode320) {
-	return Select320();
+    if (mode320) {
+            return Select320();
     }
     return Select640();
     
@@ -516,7 +474,7 @@ SelectCheck(void)
     /*
      *  オールクリア 
      */ 
-    void
+void
 AllClear(void) 
 {
     SDL_Rect rect;
@@ -525,52 +483,50 @@ AllClear(void)
 	GDIDrawFlag[i] = 0;
     }
     displayArea = SDL_GetVideoSurface();
-    rect.h = displayArea->h;
-    rect.w = displayArea->w;
+    rect.h = nDrawHeight;
+    rect.w = nDrawWidth;
     rect.x = 0;
     rect.y = 0;
     
-	/*
-	 * すべてクリア 
-	 */ 
-	SDL_LockSurface(displayArea);
+    /*
+     * すべてクリア 
+     */ 
+    SDL_LockSurface(displayArea);
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-	SDL_FillRect(displayArea, &rect, 0x00000000);
+    SDL_FillRect(displayArea, &rect, 0x00000000);
     
 #else				/*  */
-	SDL_FillRect(displayArea, &rect, 0x00000000);
+    SDL_FillRect(displayArea, &rect, 0x00000000);
     
 #endif				/*  */
-	SDL_UnlockSurface(displayArea);
+    SDL_UnlockSurface(displayArea);
     if (bDirectDraw) {
 	realDrawArea = SDL_GetVideoSurface();
     } else {
-	realDrawArea = drawArea;
-    }
-    rect.h = realDrawArea->h;
-    rect.w = realDrawArea->w;
-    rect.x = 0;
-    rect.y = 0;
-    
-	/*
-	 * すべてクリア 
-	 */ 
-	SDL_LockSurface(realDrawArea);
+            realDrawArea = drawArea;    
+            rect.h = realDrawArea->h;
+            rect.w = realDrawArea->w;
+            rect.x = 0;
+            rect.y = 0;
+            /*
+             * すべてクリア 
+             */ 
+            SDL_LockSurface(realDrawArea);
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-	SDL_FillRect(realDrawArea, &rect, 0x00000000);
+            SDL_FillRect(realDrawArea, &rect, 0x00000000);
     
 #else				/*  */
-	SDL_FillRect(realDrawArea, &rect, 0x00000000);
+            SDL_FillRect(realDrawArea, &rect, 0x00000000);
     
 #endif				/*  */
-	SDL_UnlockSurface(realDrawArea);
-    
-	/*
-	 * 全領域をレンダリング対象とする 
-	 */ 
-	nDrawTop = 0;
+            SDL_UnlockSurface(realDrawArea);
+    }
+    /*
+     * 全領域をレンダリング対象とする 
+     */ 
+    nDrawTop = 0;
     nDrawBottom = 400;
     nDrawLeft = 0;
     nDrawRight = 640;
@@ -579,10 +535,10 @@ AllClear(void)
 }
 
 
-    /*
-     *  フルスキャン 
-     */ 
-    void
+/*
+ *  フルスキャン 
+ */ 
+void
 RenderFullScan(void) 
 {
     BYTE * p;
@@ -612,55 +568,53 @@ RenderFullScan(void)
 }
 
 
-    /*
-     *  奇数ライン設定 
-     */ 
-    void
+/*
+ *  奇数ライン設定 
+ */ 
+void
 RenderSetOddLine(void) 
 {
     BYTE * p;
     WORD u;
     Uint32 pitch;
 
-
-
     SDL_LockSurface(realDrawArea);
     switch (nDrawWidth) {
     case 1280:
-	p = realDrawArea->pixels +
-	    ((nDrawTop + 1) << 1) * realDrawArea->pitch;
-	pitch = realDrawArea->pitch;
-	for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
+            p = realDrawArea->pixels +
+                    ((nDrawTop + 1) << 1) * realDrawArea->pitch;
+            pitch = realDrawArea->pitch;
+            for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
 	    
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-		memset(p, 0x00, nDrawWidth >> 3);
-	    p += pitch;
-	    memset(p, 0x00, nDrawWidth >> 3);
-	    p += pitch * 3;
+                    memset(p, 0x00, nDrawWidth >> 3);
+                    p += pitch;
+                    memset(p, 0x00, nDrawWidth >> 3);
+                    p += pitch * 3;
 	    
-#else				/*  */
-		memset(p, 0x00, nDrawWidth >> 3);
-	    p += pitch;
-	    memset(p, 0x00, nDrawWidth >> 3);
-	    p += pitch * 3;
+#else /*  */
+                    memset(p, 0x00, nDrawWidth >> 3);
+                    p += pitch;
+                    memset(p, 0x00, nDrawWidth >> 3);
+                    p += pitch * 3;
 	    
-#endif				/*  */
-	}
-	break;
+#endif /*  */
+            }
+            break;
     case 640:
     default:
-	p = realDrawArea->pixels + (nDrawTop + 1) * realDrawArea->pitch;
-	pitch = realDrawArea->pitch;
-	for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
-	    
+            p = realDrawArea->pixels + (nDrawTop + 1) * realDrawArea->pitch;
+            pitch = realDrawArea->pitch;
+            for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
+ 
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-		memset(p, 0x00, nDrawWidth >> 3);
+                    memset(p, 0x00, nDrawWidth >> 3);
 	    
 #else				/*  */
-		memset(p, 0x00, nDrawWidth >> 3);
+                    memset(p, 0x00, nDrawWidth >> 3);
 	    
 #endif				/*  */
-		p += pitch * 2;
+                    p += pitch * 2;
 	}
 	break;
     }
@@ -676,47 +630,45 @@ RenderSetOddLine(void)
 OnDraw(void) 
 {
     
-	/*
-	 * ここまでやっておいてから解像度を変更する 
-	 */ 
-	ChangeResolution();
+       /*
+        * ここまでやっておいてから解像度を変更する 
+        */ 
+        ChangeResolution();
     
-	/*
-	 * 640-320 自動切り替え 
-	 */ 
+/*
+ * 640-320 自動切り替え 
+ */ 
 	SelectDraw();
     
 #if XM7_VER >= 3
-	/*
-	 * いずれかを使って描画 
-	 */ 
-	switch (bMode) {
-    case SCR_400LINE:
-	Draw400l();
-	break;
-    case SCR_262144:
-	Draw256k();
-	break;
-    case SCR_4096:
-	Draw320();
-	break;
-    case SCR_200LINE:
-	Draw640();
-	break;
-    }
-    
+       /*
+        * いずれかを使って描画 
+        */ 
+        switch (bMode) {
+        case SCR_400LINE:
+                Draw400l();
+                break;
+        case SCR_262144:
+                Draw256k();
+                break;
+        case SCR_4096:
+                Draw320();
+                break;
+        case SCR_200LINE:
+                Draw640();
+                break;
+        }
+
 #else				/*  */
-	/*
-	 * どちらかを使って描画 
-	 */ 
-	if (bAnalog) {
-	Draw320();
-    }
-    
-    else {
-	Draw640();
-    }
-    
+/*
+ * どちらかを使って描画 
+ */ 
+       if (bAnalog) {
+               Draw320();
+       }
+       else {
+               Draw640();
+       }
 #endif				/*  */
 }
 
@@ -870,229 +822,217 @@ vram_notify(WORD addr, BYTE dat)
 }
 
 
-    /*
-     *  TTLパレットセット 
-     */ 
-    void
+/*
+ *  TTLパレットセット 
+ */ 
+void
 ttlpalet_notify(void) 
 {
     
-	/*
-	 * 不要なレンダリングを抑制するため、領域設定は描画時に行う 
-	 */ 
-	bPaletFlag = TRUE;
-} 
-    /*
-     *  アナログパレットセット 
-     */ 
-    void
+       /*
+        * 不要なレンダリングを抑制するため、領域設定は描画時に行う 
+        */ 
+        bPaletFlag = TRUE;
+}
+ 
+/*
+ *  アナログパレットセット 
+ */ 
+void
 apalet_notify(void) 
 {
-    bPaletFlag = TRUE;
-    nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    SetDrawFlag(TRUE);
+        bPaletFlag = TRUE;
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        SetDrawFlag(TRUE);
 } 
-    /*
-     *  再描画要求 
-     */ 
-    void
+
+/*
+ *  再描画要求 
+ */ 
+void
 display_notify(void) 
 {
     
 /*
  * 再描画 
  */ 
-    nDrawTop = 0;
-    nDrawBottom = 400;
-    nDrawLeft = 0;
-    nDrawRight = 640;
-    bPaletFlag = TRUE;
-    bClearFlag = TRUE;
-    SetDrawFlag(TRUE);
-} 
-    /*
-     *  ディジタイズ要求通知 
-     */ 
-    void
+        nDrawTop = 0;
+        nDrawBottom = 400;
+        nDrawLeft = 0;
+        nDrawRight = 640;
+        bPaletFlag = TRUE;
+        bClearFlag = TRUE;
+        SetDrawFlag(TRUE);
+}
+ 
+/*
+ *  ディジタイズ要求通知 
+ */ 
+void
 digitize_notify(void) 
 {
 } 
 #if XM7_VER >= 3
-    /*
-     *  ハードウェアウィンドウ通知 
-     */ 
-    void
+/*
+ *  ハードウェアウィンドウ通知 
+ */ 
+void
 window_notify(void) 
 {
-    WORD tmpLeft, tmpRight;
-    WORD tmpTop, tmpBottom;
-    WORD tmpDx1, tmpDx2;
-    WORD tmpDy1, tmpDy2;
-    BYTE * p;
-    int            i;
+        WORD tmpLeft, tmpRight;
+        WORD tmpTop, tmpBottom;
+        WORD tmpDx1, tmpDx2;
+        WORD tmpDy1, tmpDy2;
+        BYTE * p;
+        int     i;
     
-	/*
-	 * 26万色モード時は何もしない 
-	 */ 
-	if (bMode == SCR_262144) {
-	return;
-    }
+        /*
+         * 26万色モード時は何もしない 
+         */ 
+        if (bMode == SCR_262144) {
+                return;
+        }
     
-	/*
-	 * 前もってクリッピングする 
-	 */ 
-	window_clip(bMode);
+/*
+ * 前もってクリッピングする 
+ */ 
+        window_clip(bMode);
     
-	/*
-	 * ウィンドウサイズを補正 
-	 */ 
-	tmpDx1 = window_dx1;
-    tmpDy1 = window_dy1;
-    tmpDx2 = window_dx2;
-    tmpDy2 = window_dy2;
-    if (bMode != SCR_400LINE) {
-	tmpDy1 <<= 1;
-	tmpDy2 <<= 1;
-    }
-    if (bMode == SCR_4096) {
-	tmpDx1 <<= 1;
-	tmpDx2 <<= 1;
-    }
-    if (bWindowOpen != window_open) {
-	if (window_open) {
+       /*
+        * ウィンドウサイズを補正 
+        */ 
+        tmpDx1 = window_dx1;
+        tmpDy1 = window_dy1;
+        tmpDx2 = window_dx2;
+        tmpDy2 = window_dy2;
+        if (bMode != SCR_400LINE) {
+                tmpDy1 <<= 1;
+                tmpDy2 <<= 1;
+        }
+        if (bMode == SCR_4096) {
+                tmpDx1 <<= 1;
+                tmpDx2 <<= 1;
+        }
+        if (bWindowOpen != window_open) {
+                if (window_open) {
 	    
-		/*
-		 * ウィンドウを開いた場合 
-		 */ 
-		tmpLeft = tmpDx1;
-	    tmpRight = tmpDx2;
-	    tmpTop = tmpDy1;
-	    tmpBottom = tmpDy2;
-	}
-	
-	else {
+                        /*
+                         * ウィンドウを開いた場合 
+                         */ 
+                        tmpLeft = tmpDx1;
+                        tmpRight = tmpDx2;
+                        tmpTop = tmpDy1;
+                        tmpBottom = tmpDy2;
+	} else {
 	    
-		/*
-		 * ウィンドウを閉じた場合 
-		 */ 
-		tmpLeft = nWindowDx1;
-	    tmpRight = nWindowDx2;
-	    tmpTop = nWindowDy1;
-	    tmpBottom = nWindowDy2;
+                        /*
+                         * ウィンドウを閉じた場合 
+                         */ 
+                        tmpLeft = nWindowDx1;
+                        tmpRight = nWindowDx2;
+                        tmpTop = nWindowDy1;
+                        tmpBottom = nWindowDy2;
 	}
-    }
-    
-    else {
-	if (window_open) {
+        } else {
+                if (window_open) {
 	    
-		/*
-		 * 更新領域サイズを現在のものに設定 
-		 */ 
-		tmpTop = nDrawTop;
-	    tmpBottom = nDrawBottom;
-	    tmpLeft = nDrawLeft;
-	    tmpRight = nDrawRight;
+                        /*
+                         * 更新領域サイズを現在のものに設定 
+                         */ 
+                        tmpTop = nDrawTop;
+                        tmpBottom = nDrawBottom;
+                        tmpLeft = nDrawLeft;
+                        tmpRight = nDrawRight;
 	    
-		/*
-		 * 座標変更チェック 
-		 */ 
-		if (!((nWindowDx1 == tmpDx1) && 
-		      (nWindowDy1 == tmpDy1) && 
-		      (nWindowDx2 == tmpDx2) && (nWindowDy2 == tmpDy2))) {
+                        /*
+                         * 座標変更チェック 
+                         */ 
+                        if (!((nWindowDx1 == tmpDx1) && 
+                              (nWindowDy1 == tmpDy1) && 
+                              (nWindowDx2 == tmpDx2) && (nWindowDy2 == tmpDy2))) {
 		
-		    /*
-		     * 左上X 
-		     */ 
-		    if (nWindowDx1 < tmpDx1) {
-		    tmpLeft = nWindowDx1;
-		}
+                                /*
+                                 * 左上X 
+                                 */ 
+                                if (nWindowDx1 < tmpDx1) {
+                                        tmpLeft = nWindowDx1;
+                                } else {
+                                        tmpLeft = tmpDx1;
+                                }
 		
-		else {
-		    tmpLeft = tmpDx1;
-		}
+                                /*
+                                 * 右下X 
+                                 */ 
+                                if (nWindowDx2 > tmpDx2) {
+                                        tmpRight = nWindowDx2;
+                                } else {
+                                        tmpRight = tmpDx2;
+                                }
 		
-		    /*
-		     * 右下X 
-		     */ 
-		    if (nWindowDx2 > tmpDx2) {
-		    tmpRight = nWindowDx2;
-		}
+                                /*
+                                 * 左上Y 
+                                 */ 
+                                if (nWindowDy1 < tmpDy1) {
+                                        tmpTop = nWindowDy1;
+                                } else {
+                                        tmpTop = tmpDy1;
+                                }
 		
-		else {
-		    tmpRight = tmpDx2;
-		}
-		
-		    /*
-		     * 左上Y 
-		     */ 
-		    if (nWindowDy1 < tmpDy1) {
-		    tmpTop = nWindowDy1;
-		}
-		
-		else {
-		    tmpTop = tmpDy1;
-		}
-		
-		    /*
-		     * 右下Y 
-		     */ 
-		    if (nWindowDy2 > tmpDy2) {
-		    tmpBottom = nWindowDy2;
-		}
-		
-		else {
-		    tmpBottom = tmpDy2;
-		}
-	    }
-	}
-	
-	else {
-	    
-		/*
-		 * ウィンドウが開いていないので何もしない 
-		 */ 
-		return;
-	}
-    }
+                                /*
+                                 * 右下Y 
+                                 */ 
+                                if (nWindowDy2 > tmpDy2) {
+                                        tmpBottom = nWindowDy2;
+                                } else {
+                                        tmpBottom = tmpDy2;
+                                }
+                        }
+                } else {
+                        /*
+                         * ウィンドウが開いていないので何もしない 
+                         */ 
+                        return;
+                }
+        }
     
-	/*
-	 * 処理前の再描画領域と比較して広ければ領域を更新 
-	 */ 
-	if (tmpLeft < nDrawLeft) {
-	nDrawLeft = tmpLeft;
-    }
-    if (tmpRight > nDrawRight) {
-	nDrawRight = tmpRight;
-    }
-    if (tmpTop < nDrawTop) {
-	nDrawTop = tmpTop;
-    }
-    if (tmpBottom > nDrawBottom) {
-	nDrawBottom = tmpBottom;
-    }
+        /*
+         * 処理前の再描画領域と比較して広ければ領域を更新 
+         */ 
+        if (tmpLeft < nDrawLeft) {
+                nDrawLeft = tmpLeft;
+        }
+        if (tmpRight > nDrawRight) {
+                nDrawRight = tmpRight;
+        }
+        if (tmpTop < nDrawTop) {
+                nDrawTop = tmpTop;
+        }
+        if (tmpBottom > nDrawBottom) {
+                nDrawBottom = tmpBottom;
+        }
     
-	/*
-	 * 再描画フラグを更新 
-	 */ 
-	if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
-	p = &GDIDrawFlag[(nDrawTop >> 3) * 80 + (nDrawLeft >> 3)];
-	for (i = (nDrawTop >> 3); i < ((nDrawBottom + 7) >> 3); i++) {
-	    memset(p, 1, (nDrawRight - nDrawLeft) >> 3);
-	    p += 80;
-	}
-    }
+        /*
+         * 再描画フラグを更新 
+         */ 
+        if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
+                p = &GDIDrawFlag[(nDrawTop >> 3) * 80 + (nDrawLeft >> 3)];
+                for (i = (nDrawTop >> 3); i < ((nDrawBottom + 7) >> 3); i++) {
+                        memset(p, 1, (nDrawRight - nDrawLeft) >> 3);
+                        p += 80;
+                }
+        }
     
-	/*
-	 * ウィンドウオープン状態を保存 
-	 */ 
-	bWindowOpen = window_open;
-    nWindowDx1 = tmpDx1;
-    nWindowDy1 = tmpDy1;
-    nWindowDx2 = tmpDx2;
-    nWindowDy2 = tmpDy2;
+        /*
+         * ウィンドウオープン状態を保存 
+         */ 
+        bWindowOpen = window_open;
+        nWindowDx1 = tmpDx1;
+        nWindowDy1 = tmpDy1;
+        nWindowDx2 = tmpDx2;
+        nWindowDy2 = tmpDy2;
 }
 
 
@@ -1100,13 +1040,13 @@ window_notify(void)
 void
 OnFullScreen(void) 
 {
-    displayArea = SDL_GetVideoSurface();
-    SDL_WM_ToggleFullScreen(displayArea);
+        displayArea = SDL_GetVideoSurface();
+        SDL_WM_ToggleFullScreen(displayArea);
 }
 void
 OnWindowedScreen(void) 
 {
-    displayArea = SDL_GetVideoSurface();
-    SDL_WM_ToggleFullScreen(displayArea);
+        displayArea = SDL_GetVideoSurface();
+        SDL_WM_ToggleFullScreen(displayArea);
 } 
 #endif	/* _XWIN */

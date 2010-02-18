@@ -20,12 +20,17 @@
 #include "sdl_bar.h"
 #include "sdl_sch.h"
 #include "sdl_draw.h"
+#include "SDL/SDL_ttf.h"
 
 #define COL_BLACK 0x00000000
 #define COL_RED   0x00ff0000
 #define COL_BLUE  0x0000ff00
 #define COL_NORM  0xffffffff
-
+/* フォントとしてIPAゴシックを使う */
+#define FUNC_FONT "ipagui.ttf" 
+#define STAT_FONT "ipagui.ttf" 
+#define FUNC_PT 16
+#define STAT_PT 16
     
 /*
  *  スタティック ワーク 
@@ -37,6 +42,20 @@ static int     nINS;		/* INSキー */
 static int     nDrive[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
 static int     nTape;		/* テープ */
+static SDL_Surface      *pInsOn; /* INSキープリレンダリング(ON) */
+static SDL_Surface      *pInsOff; /* INSキープリレンダリング(OFF) */
+static SDL_Surface      *pKanaOn; /* カナキープリレンダリング(ON) */
+static SDL_Surface      *pKanaOff; /* カナキープリレンダリング(OFF) */
+static SDL_Surface      *pCapsOn; /* Capsキープリレンダリング(ON) */
+static SDL_Surface      *pCapsOff; /* Capsキープリレンダリング(OFF) */
+static SDL_Surface      *pFDRead[2]; /* Drive0 Read */
+static SDL_Surface      *pFDWrite[2]; /* Drive0 Write */
+static SDL_Surface      *pFDNorm[2]; /* Drive0 Normal */
+static SDL_Surface      *pCMTRead; /* Tape Read */
+static SDL_Surface      *pCMTWrite; /* Tape Write */
+static SDL_Surface      *pCMTNorm; /* Tape Normal */
+
+static SDL_Surface      *pStatusBar; /* ステータス表示バー */
 
 
 /*-[ ステータスバー ]-------------------------------------------------------*/ 
@@ -48,71 +67,227 @@ CreateStatus(void)
 {
         SDL_Surface *p;
         SDL_Rect rec;
-        p = SDL_GetVideoSurface();
-        SDL_LockSurface(p);
+        SDL_Rect drec;
+        TTF_Font *f;
+        SDL_Color r, b, n;
+        Uint32 rmask, gmask, bmask, amask;
         /*
          * RECT INS
          */
-        rec.x = nDrawWidth - (60 * 3);
-        rec.y = nDrawHeight + 0;
+        r.r = 0xff;
+        r.g = 0x00;
+        r.b = 0x00;
+
+        b.r = 0x00;
+        b.g = 0x00;
+        b.b = 0xff;
+
+        n.r = 0xff;
+        n.g = 0xff;
+        n.b = 0xff;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+//        amask = 0x000000ff;
+        amask = 0x00000000;
+#else
+//        rmask = 0xff000000;
+//        gmask = 0x00ff0000;
+//        bmask = 0x0000ff00;
+//        amask = 0x000000ff;
+        amask = 0x00000000;
+        rmask = 0;
+        gmask = 0;
+        bmask = 0;
+#endif
+
+
+        TTF_Init();
+        rec.x = 0;
+        rec.y = 0;
         rec.w = 50;
         rec.h = 20;
-        SDL_FillRect(p, &rec, COL_BLACK);
+        f = TTF_OpenFont(STAT_FONT, STAT_PT);
+
+        rec.x = 0;
+        rec.y = 0;
+        rec.h = 20;
+        rec.w = 50;
+        pInsOff = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pInsOn = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
+                                       32, rmask, gmask, bmask, amask);
+
+        SDL_FillRect(pInsOn, &rec, COL_RED);
+        SDL_FillRect(pInsOff, &rec, COL_BLACK);
+
+        p = TTF_RenderUTF8_Blended(f, "INS",r );
+        drec.x = 10;
+        drec.y = 4;
+        drec.h = p->h;
+        drec.w = p->w;
+
+        rec.x = 0;
+        rec.y = 0;
+        rec.h = p->h;
+        rec.w = p->w;
+        SDL_BlitSurface(p, &rec, pInsOff, &drec);
+
+        p = TTF_RenderUTF8_Blended(f, "INS", b);
+        drec.x = 10;
+        drec.y = 4;
+        drec.h = p->h;
+        drec.w = p->w;
+        rec.x = 0;
+        rec.y = 0;
+        rec.h = p->h;
+        rec.w = p->w;
+        SDL_BlitSurface(p, &rec, pInsOn, &drec);
+
 
         /*
          * RECT CAPS
          */
-        rec.x = nDrawWidth - (60 * 2);
-        rec.y = nDrawHeight + 0;
+        rec.x = 0;
+        rec.y = 0;
         rec.w = 50;
         rec.h = 20;
-        SDL_FillRect(p, &rec, COL_BLACK);
+        pCapsOff = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pCapsOn = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
+                                       32, rmask, gmask, bmask, amask);
+
+        SDL_FillRect(pCapsOn, &rec, COL_RED);
+        SDL_FillRect(pCapsOff, &rec, COL_BLACK);
 
         /*
          * RECT KANA
          */
-        rec.x = nDrawWidth - (60 * 1);
-        rec.y = nDrawHeight + 0;
+        rec.x = 0;
+        rec.y = 0;
         rec.w = 50;
         rec.h = 20;
-        SDL_FillRect(p, &rec, COL_BLACK);
+        pKanaOff = SDL_CreateRGBSurface(SDL_ANYFORMAT | SDL_SWSURFACE, 50, 20,
+                                       24, rmask, gmask, bmask, amask);
+        pKanaOn = SDL_CreateRGBSurface(SDL_ANYFORMAT | SDL_SWSURFACE, 50, 20,
+                                       24, rmask, gmask, bmask, amask);
 
+        SDL_FillRect(pKanaOn, &rec, COL_RED);
+        SDL_FillRect(pKanaOff, &rec, COL_BLACK);
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = 50;
+        rec.h = 20;
+
+        drec.x = nDrawWidth - (60 * 1);
+        drec.y = nDrawHeight + 0;
+        drec.w = 50;
+        drec.h = 20;
+
+        SDL_BlitSurface(pKanaOn, NULL, p, &drec);
+        SDL_UpdateRects(p, 1, &drec);
+        TTF_CloseFont(f);
+        f = NULL;
 
         /*
          * RECT Drive1
          */
-        rec.x = nDrawWidth - (100 * 3);
-        rec.y = nDrawHeight + 20;
-        rec.w = 100;
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = 160;
         rec.h = 20;
-        SDL_FillRect(p, &rec, COL_NORM);
+        pFDRead[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pFDRead[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pFDWrite[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pFDWrite[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pFDNorm[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pFDNorm[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
 
+        SDL_FillRect(pFDRead[1], &rec, COL_RED);
+        SDL_FillRect(pFDWrite[1], &rec, COL_BLUE);
+        SDL_FillRect(pFDNorm[1], &rec, COL_NORM);
         /*
          * RECT Drive0
          */
-        rec.x = nDrawWidth - (100 * 2);
-        rec.y = nDrawHeight + 20;
-        rec.w = 100;
-        rec.h = 20;
-        SDL_FillRect(p, &rec, COL_NORM);
+        SDL_FillRect(pFDRead[0], &rec, COL_RED);
+        SDL_FillRect(pFDWrite[0], &rec, COL_BLUE);
+        SDL_FillRect(pFDNorm[0], &rec, COL_NORM);
 
         /*
          * RECT Tape
          */
-        rec.x = nDrawWidth - (100 * 1);
-        rec.y = nDrawHeight + 20;
-        rec.w = 100;
-        rec.h = 20;
-        SDL_FillRect(p, &rec, COL_NORM);
+        pCMTRead = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pCMTWrite = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+        pCMTNorm = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                       32, rmask, gmask, bmask, amask);
+
+
+        SDL_FillRect(pCMTRead, &rec, COL_RED);
+        SDL_FillRect(pCMTWrite, &rec, COL_BLUE);
+        SDL_FillRect(pCMTNorm, &rec, COL_NORM);
+
 
 
         /*
          * Draw
          */
+        p = SDL_GetVideoSurface();
+
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = 50;
+        rec.h = 20;
+
+        drec.x = nDrawWidth - (60 * 2);
+        drec.y = nDrawHeight + 0;
+        drec.w = 50;
+        drec.h = 20;
+        SDL_BlitSurface(pCapsOff, &rec, p, &drec); 
+
+        rec.x = nDrawWidth - (60 * 3);
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+        SDL_BlitSurface(pInsOff, &rec, p, &drec); 
+
+        rec.x = nDrawWidth - 60 ;
+        rec.y = nDrawHeight + 0;
+        rec.w = 50;
+        rec.h = 20;
+        SDL_BlitSurface(pKanaOff, &rec, p, &drec); 
         SDL_UpdateRect(p, 0, 0, p->w, p->h);
-        SDL_UnlockSurface(p);
+
 
 } 
+
+void
+DestroyDraw(void)
+{
+        SDL_FreeSurface(pInsOn);
+        SDL_FreeSurface(pInsOff);
+        SDL_FreeSurface(pCapsOn);
+        SDL_FreeSurface(pCapsOff);
+        SDL_FreeSurface(pKanaOn);
+        SDL_FreeSurface(pKanaOff);
+        SDL_FreeSurface(pFDRead[0]);
+        SDL_FreeSurface(pFDWrite[0]);
+        SDL_FreeSurface(pFDNorm[0]);
+        SDL_FreeSurface(pFDRead[1]);
+        SDL_FreeSurface(pFDWrite[1]);
+        SDL_FreeSurface(pFDNorm[1]);
+        SDL_FreeSurface(pCMTRead);
+        SDL_FreeSurface(pCMTWrite);
+        SDL_FreeSurface(pCMTNorm);
+}
     /*
      *  キャプション描画 
      */ 
@@ -204,12 +379,6 @@ DrawMainCaption(void)
 	 * 比較描画 
 	 */ 
 	string[127] = '\0';
-//    if (memcmp(szCaption, string, strlen(string) + 1) != 0) {
-//	strcpy(szCaption, string);
-//	gdk_threads_enter();
-//	gtk_window_set_title(GTK_WINDOW(wndMain), szCaption);
-//	gdk_threads_leave();
-//    }
 }
 
 
@@ -221,7 +390,7 @@ DrawCAP(void)
 {
         int            num;
         SDL_Surface *p;
-        SDL_Rect rec;
+        SDL_Rect rec,drec;
 
 
     
@@ -244,23 +413,25 @@ DrawCAP(void)
  * 描画、ワーク更新 
  */ 
         nCAP = num;
-        rec.x = nDrawWidth - (60 * 2);
-        rec.y = nDrawHeight + 0;
+        rec.x = 0;
+        rec.y = 0;
         rec.w = 50;
         rec.h = 20;
+
+        drec.x = nDrawWidth - (60 * 2);
+        drec.y = nDrawHeight + 0;
+        drec.w = 50;
+        drec.h = 20;
 
 
 //        gdk_threads_enter();
         p = SDL_GetVideoSurface();
-        SDL_LockSurface(p);
-
         if (nCAP) {
-                SDL_FillRect(p, &rec, COL_RED);
+                SDL_BlitSurface(pCapsOn, &rec, p, &drec);                 
         } else {
-                SDL_FillRect(p, &rec, COL_BLACK);
+                SDL_BlitSurface(pCapsOff, &rec, p, &drec); 
         }
-        SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
-        SDL_UnlockSurface(p);
+        SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
 //        gdk_threads_leave();
 }
 
@@ -273,7 +444,7 @@ DrawKANA(void)
 {
         int            num;
         SDL_Surface *p;
-        SDL_Rect rec;
+        SDL_Rect rec, drec;
         p = SDL_GetVideoSurface();
     
         /*
@@ -296,22 +467,25 @@ DrawKANA(void)
  * 描画、ワーク更新 
  */ 
         nKANA = num;
-        rec.x = nDrawWidth - (60 * 1);
-        rec.y = nDrawHeight + 0;
+
+        rec.x = 0;
+        rec.y = 0;
         rec.w = 50;
         rec.h = 20;
 
+        drec.x = nDrawWidth - (60 * 1);
+        drec.y = nDrawHeight + 0;
+        drec.w = 50;
+        drec.h = 20;
+
 //        gdk_threads_enter();
         p = SDL_GetVideoSurface();
-        SDL_LockSurface(p);
         if (nKANA) {
-                SDL_FillRect(p, &rec, COL_RED);
+                SDL_BlitSurface(pKanaOn, &rec, p, &drec);                 
         } else {
-                SDL_FillRect(p, &rec, COL_BLACK);
+                SDL_BlitSurface(pKanaOff, &rec, p, &drec); 
         }
-
-        SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
-        SDL_UnlockSurface(p);
+        SDL_UpdateRects(p, 1, &drec);
 //        gdk_threads_leave();
 }
 
@@ -324,7 +498,7 @@ DrawINS(void)
 {
         int            num;
         SDL_Surface *p;
-        SDL_Rect rec;
+        SDL_Rect rec, drec;
         p = SDL_GetVideoSurface();
 
         /*
@@ -348,22 +522,25 @@ DrawINS(void)
  */ 
         nINS = num;
 //        gdk_threads_enter();
-        rec.x = nDrawWidth - (60 * 3);
-        rec.y = nDrawHeight + 0;
+        rec.x = 0;
+        rec.y = 0;
         rec.w = 50;
         rec.h = 20;
 
+        drec.x = nDrawWidth - (60 * 3);
+        drec.y = nDrawHeight + 0;
+        drec.w = 50;
+        drec.h = 20;
+
 //        gdk_threads_enter();
         p = SDL_GetVideoSurface();
-        SDL_LockSurface(p);
         if (nINS) {
-                SDL_FillRect(p, &rec, COL_RED);
+                SDL_BlitSurface(pInsOn, &rec, p, &drec);
         } else {
-                SDL_FillRect(p, &rec, COL_BLACK);
+                SDL_BlitSurface(pInsOff, &rec, p, &drec);
         }
-        SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
+        SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
 
-        SDL_UnlockSurface(p);
 //        gdk_threads_leave();
 }
 
@@ -378,7 +555,7 @@ DrawDrive(int drive)
     char          *name;
     char           string[128];
     gchar * utf8;
-    SDL_Rect rec;
+    SDL_Rect rec,drec;
     SDL_Surface *p;
 
     ASSERT((drive >= 0) && (drive <= 1));
@@ -439,32 +616,33 @@ DrawDrive(int drive)
     SDL_LockSurface(p);
     //  gtk_label_set_text(GTK_LABEL(lblflp[drive]), utf8);
 //    g_free(utf8);
-    rec.x = nDrawWidth - (100 * (2+drive));
-    rec.y = nDrawHeight + 20;
-    rec.w = 100;
+    rec.x = 0;
+    rec.y = 0;
+    rec.w = 160;
     rec.h = 20;
+
+    drec.x = nDrawWidth - (160 * (2+drive));
+    drec.y = nDrawHeight + 20;
+    drec.w = 160;
+    drec.h = 20;
 
 
     if (nDrive[drive] == FDC_ACCESS_READ) {
             /*
              * READ
              */
-            SDL_FillRect(p, &rec, COL_RED);
-//	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colWHITE);
-//	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colDRED);
+            SDL_BlitSurface(pFDRead[drive], &rec, p, &drec);
     } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-            SDL_FillRect(p, &rec, COL_BLUE);
-//	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colWHITE);
-//	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colDBLUE);
+            SDL_BlitSurface(pFDWrite[drive], &rec, p, &drec);
     } else {
-            SDL_FillRect(p, &rec, COL_NORM);
+            SDL_BlitSurface(pFDNorm[drive], &rec, p, &drec);
 //	gtk_widget_modify_fg(lblflp[drive], GTK_STATE_NORMAL, &colBLACK);
 //	gtk_widget_modify_bg(evtflp[drive], GTK_STATE_NORMAL, &colNORM);
     }
 //    utf8 =
 //	g_convert(string, strlen(string), "UTF-8", "CP932", NULL, NULL,
 //		  NULL);
-    SDL_UpdateRect(p, rec.x, rec.y, rec.w, rec.h);
+    SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
     SDL_UnlockSurface(p);
 //    gdk_threads_leave();
 }
@@ -479,7 +657,7 @@ DrawTape(void)
     int            num;
     char           string[128];
     SDL_Surface *p;
-    SDL_Rect rec;
+    SDL_Rect rec,drec;
     
     /*
      * ナンバー計算 
@@ -516,26 +694,30 @@ DrawTape(void)
     else {
 	sprintf(string, "%04d", nTape % 10000);
     }
-//    gdk_threads_enter();
-    rec.x = nDrawWidth - (100 * 1);
-    rec.y = nDrawHeight + 20;
-    rec.w = 100;
+
+    drec.x = nDrawWidth - (160 * 1);
+    drec.y = nDrawHeight + 20;
+    drec.w = 160;
+    drec.h = 20;
+
+    rec.x = 0;
+    rec.y = 0;
+    rec.w = 160;
     rec.h = 20;
+
     p = SDL_GetVideoSurface();
-//    gtk_label_set_text(GTK_LABEL(lbltape), string);
+    SDL_LockSurface(p);
     if ((nTape >= 10000) && (nTape < 30000)) {
             if (nTape >= 20000) {
-                    SDL_FillRect(p, &rec, COL_BLUE);
-                    //gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colDBLUE);
+                    SDL_BlitSurface(pCMTWrite, &rec, p, &drec);
             }   else {
-                    SDL_FillRect(p, &rec, COL_RED);
-                    //gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colDRED);
+                    SDL_BlitSurface(pCMTRead, &rec, p, &drec);
             }
     } else {
-            SDL_FillRect(p, &rec, COL_NORM);
-            //gtk_widget_modify_bg(evttape, GTK_STATE_NORMAL, &colNORM);
+                    SDL_BlitSurface(pCMTNorm, &rec, p, &drec);
     }
-//    gdk_threads_leave();
+    SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
+    SDL_UnlockSurface(p);
 }
 
 /*
