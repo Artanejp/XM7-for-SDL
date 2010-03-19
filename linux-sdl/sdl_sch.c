@@ -218,10 +218,10 @@ DrawSch(void)
     OnDraw();
     DrawStatus();
     
-	/*
-	 * カウンタアップ 
-	 */ 
-	dwDrawTotal++;
+    /*
+     * カウンタアップ 
+     */ 
+    dwDrawTotal++;
 } 
     /*
      *  実行リセット

@@ -122,6 +122,8 @@ OnCreate(void *parent)
 #ifdef USE_GTK    
     CreateMenu(parent);
     CreateDrawGTK(parent);
+    CreateStatus();
+
 #else
     CreateStatus();
 
@@ -145,6 +147,8 @@ OnCreate(void *parent)
         InitSnd();
         InitKbd();
         InitSch();
+
+ 
     
 //#ifdef FDDSND
 // InitFDDSnd();
@@ -179,6 +183,7 @@ OnCreate(void *parent)
         if (!SelectSch()) {
                 flag = FALSE;
         }
+        PaintStatus();
     
 /*
  * エラーコードをセットさせ、スタート 

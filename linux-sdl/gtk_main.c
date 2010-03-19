@@ -49,7 +49,7 @@ CreateDrawGTK(GtkWidget * parent)
      * スクリーン描画領域の生成 
      */ 
     gtkDrawArea = gtk_socket_new();
-    gtk_widget_set_usize(gtkDrawArea, 640, 400 + 40);
+    gtk_widget_set_usize(gtkDrawArea, 640, 400 + 80);
     gtk_container_add(GTK_CONTAINER(parent), gtkDrawArea);
     
     /*
@@ -216,12 +216,14 @@ void
 ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 {       
         char            EnvMainWindow[64];
+        int             tmpHeight, tmpWidth;
         SDL_Surface     *tmpSurface;
-        SDL_Rect srcrect, dstrect;
+        SDL_Rect        srcrect, dstrect;
 	    
 /*
  * まずは現在のサーフェイスを退避する 
  */ 
+
         tmpSurface =
                 SDL_CreateRGBSurface(SDL_SWSURFACE, oldwidth,
                                      oldheight, 24, 0, 0, 0, 0);
@@ -245,28 +247,33 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
  */ 
 #ifdef USE_GTK
         switch(height) {
-        case 200:
-                gtk_widget_set_usize(gtkDrawArea, width, height + 40);
+        case 240:
+                tmpHeight = height + 40;
                 break;
         default:
         case 400:
         case 800:
-                gtk_widget_set_usize(gtkDrawArea, width, height + 40);
-        break;
+                tmpHeight = height + 80;
+                break;
         }
-        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-                gdk_x11_drawable_get_xid(gtkDrawArea->window));
+        gtk_widget_set_usize(gtkDrawArea, width, tmpHeight);
+        if((gtkDrawArea != NULL) && (gtkDrawArea->window != NULL)) {
+                        sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
+                                gdk_x11_drawable_get_xid(gtkDrawArea->window));
+                        printf("RESO CHG: %d x %d -> %d x %d\n", oldwidth,
+                               oldheight, width, height);
 	    
 #endif				/*  */
-        SDL_putenv(EnvMainWindow);
-        displayArea =
-                SDL_SetVideoMode(width, height + 80, 24,
-                                 SDL_HWSURFACE | SDL_ANYFORMAT |
-                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                 SDL_ASYNCBLIT | 0);
-        printf("RESO CHG: %d x %d -> %d x %d\n", oldwidth,
-               oldheight, width, height);
-	    
+                        SDL_putenv(EnvMainWindow);
+                        displayArea =
+                                SDL_SetVideoMode(width, tmpHeight, 24,
+                                                 SDL_HWSURFACE | SDL_ANYFORMAT |
+                                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                                 SDL_ASYNCBLIT | 0);
+                } else {
+                        displayArea = SDL_GetVideoSurface();
+                }
+                	    
 /*
  * 退避したエリアの復帰（原寸…) 
  */ 

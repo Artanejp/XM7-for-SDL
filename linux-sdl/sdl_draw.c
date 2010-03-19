@@ -149,11 +149,10 @@ BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
         if (!bDirectDraw) {
                 SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
                                realDrawArea->h);
-        }
-        if (!bDirectDraw) {
                 SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
         }
-        SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+//        SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+        SDL_Flip(displayArea);
 }
 
 
@@ -564,7 +563,12 @@ RenderFullScan(void)
 	q += pitch * 2;
     }
     SDL_UnlockSurface(realDrawArea);
-    SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
+    if(!bDirectDraw) {
+            SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
+    } else {
+            displayArea = SDL_GetVideoSurface();
+            SDL_Flip(displayArea);
+    }
 }
 
 
@@ -574,7 +578,7 @@ RenderFullScan(void)
 void
 RenderSetOddLine(void) 
 {
-    BYTE * p;
+    BYTE *p;
     WORD u;
     Uint32 pitch;
 
@@ -619,7 +623,12 @@ RenderSetOddLine(void)
 	break;
     }
     SDL_UnlockSurface(realDrawArea);
-    SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
+    if(!bDirectDraw) {
+            SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
+    } else {
+            displayArea = SDL_GetVideoSurface();
+            SDL_Flip(displayArea);
+    }
 }
 
 
@@ -638,7 +647,7 @@ OnDraw(void)
 /*
  * 640-320 自動切り替え 
  */ 
-	SelectDraw();
+        SelectDraw();
     
 #if XM7_VER >= 3
        /*
