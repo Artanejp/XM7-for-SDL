@@ -54,14 +54,14 @@ BOOL bFullScreen = FALSE;
      *  プロトタイプ宣言 
      */ 
 static void    *ThreadSch(void *);	/* スレッド関数 */
-static DWORD FASTCALL timeGetTime(void);	/* timeGetTime互換関数 
+static DWORD timeGetTime(void);	/* timeGetTime互換関数 
 						 */
-static void FASTCALL Sleep(DWORD t);	/* Sleep互換関数 */
+static void  Sleep(DWORD t);	/* Sleep互換関数 */
 
     /*
      *  初期化 
      */ 
-void            FASTCALL
+void      
 InitSch(void) 
 {
     
@@ -93,14 +93,14 @@ InitSch(void)
     /*
      *  クリーンアップ 
      */ 
-void            FASTCALL
+void 
 CleanSch(void) 
 {
 } 
     /*
      *  セレクト 
      */ 
-    BOOL FASTCALL SelectSch(void) 
+BOOL SelectSch(void) 
 {
     GError * error = NULL;
     
@@ -118,7 +118,7 @@ CleanSch(void)
     /*
      *  VSYNC通知 
      */ 
-void            FASTCALL
+void
 vsync_notify(void) 
 {
     bDrawVsync = TRUE;
@@ -127,7 +127,7 @@ vsync_notify(void)
     /*
      *  1ms実行 
      */ 
-void            FASTCALL
+void
 ExecSch(void) 
 {
     DWORD dwCount;
@@ -212,7 +212,7 @@ ExecSch(void)
     /*
      *  描画 
      */ 
-static void     FASTCALL
+static void 
 DrawSch(void) 
 {
     OnDraw();
@@ -227,7 +227,7 @@ DrawSch(void)
      *  実行リセット
      * ※VMのロックは行っていないので注意 
      */ 
-void            FASTCALL
+void
 ResetSch(void) 
 {
     nFrameSkip = 0;
@@ -236,7 +236,7 @@ ResetSch(void)
     /*
      *  速度調整リセット 
      */ 
-void            FASTCALL
+void
 ResetSpeedAdjuster(void) 
 {
     nSpeedCheck = 0;
@@ -331,16 +331,16 @@ ThreadSch(void *param)
 		/*
 		 * 時間が余っているが、描画できるか 
 		 */ 
-		if (bDrawVsync) {
-		DrawSch();
-		nFrameSkip = 0;
-		bDrawVsync = FALSE;
-	    }
+                if (bDrawVsync) {
+                        DrawSch();
+                        nFrameSkip = 0;
+                        bDrawVsync = FALSE;
+                }
 	    
 		/*
 		 * 再度、時間を取得(49日でのループを考慮) 
 		 */ 
-		dwNowTime = timeGetTime();
+                dwNowTime = timeGetTime();
 	    dwTempTime = dwNowTime;
 	    if (dwTempTime < dwExecTime) {
 		dwExecTime = 0;
@@ -354,7 +354,7 @@ ThreadSch(void *param)
 		 * 時間に余裕があるので、テープ高速モード判定 
 		 */ 
 		if ((!tape_motor || !bTapeFullSpeed) || !bTapeModeType) {
-		dwSleepCount++;
+                dwSleepCount++;
 		if (bFullSpeed
 		     || (tape_motor && bTapeFullSpeed && !bTapeModeType)) {
 		    
@@ -536,7 +536,7 @@ ThreadSch(void *param)
     /*
      *  timeGetTime互換関数 
      */ 
-static DWORD    FASTCALL
+static DWORD
 timeGetTime(void)
 {
     
@@ -550,7 +550,7 @@ timeGetTime(void)
     /*
      *  Sleep互換関数 
      */ 
-static void     FASTCALL
+static void
 Sleep(DWORD t)
 {
     usleep(t * 1000);

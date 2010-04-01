@@ -1435,23 +1435,33 @@ OnConfig_OK(GtkWidget * widget, gpointer data)
         if (ver != fm7_ver) {
                 system_reset();
         }
+#ifdef RSSDIR
+        strcpy(icon_path, RSSDIR);
+#else
         strcpy(icon_path, ModuleDir);
+#endif
         switch (fm7_ver) {
         case 1:
-                strcat(icon_path, "resource/tamori.ico");
+                strcat(icon_path, "tamori.ico");
                 break;
         case 2:
-                strcat(icon_path, "resource/app_av.ico");
+                strcat(icon_path, "app_av.ico");
                 break;
         case 3:
-                strcat(icon_path, "resource/app_ex.ico");
+                strcat(icon_path, "app_ex.ico");
                 break;
         default:
                 icon_path[0] = '\0';
         }
+#ifdef RSSDIR
+        if (icon_path[0] != '\0' && strcmp(icon_path, RSSDIR) != 0)
+                gtk_window_set_icon_from_file(GTK_WINDOW(wndMain), icon_path,
+                                              (GError **) NULL);
+#else
         if (icon_path[0] != '\0' && strcmp(icon_path, ModuleDir) != 0)
                 gtk_window_set_icon_from_file(GTK_WINDOW(wndMain), icon_path,
                                               (GError **) NULL);
+#endif
         UnlockVM();
 }
 

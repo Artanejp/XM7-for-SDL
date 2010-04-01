@@ -8,6 +8,11 @@ XM7_VER		= 3
 OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
 #OPTION		= -DMOUSE -DMR2 -DMEMWATCH 
 OPTION		+= -DUSE_GTK
+INSTALL          = install -c 
+PREFIX           = /usr/local
+SHAREDIR         = $(PREFIX)/share/xm7/
+UIFONT           = /usr/share/fonts/truetype/ipafont/ipagui.ttf
+
 
 COMMONSRC = \
         aluline.c \
@@ -125,8 +130,11 @@ LIBS = ${LDFLAGS} -lX11 -lXt -lXext -lm -lc -lstdc++ -lm -lmemwatch
 #CFLAGS = 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DCPU_ASM -O3 -I/usr/X11R6/include -I. `pkg-config --cflags  gtk+-2.0 gthread-2.0`
 CFLAGS =        -g -O0 -export-dynamic
 #CFLAGS =        -O3
-CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG 
-CFLAGS +=        -DCPU_ASM -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)/usr/local/include -I$(IA32BOOTSTRAPED)/usr/X11R6/include -I. \
+CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
+CFLAGS +=        -DCPU_ASM
+CFLAGS += \
+       -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)/usr/local/include -I$(IA32BOOTSTRAPED)/usr/X11R6/include -I. \
 	-D_REENTRANT -pthread -I$(IA32BOOTSTRAPED)/usr/include/gtk-2.0 \
                 -I$(IA32BOOTSTRAPED)/usr/lib/gtk-2.0/include \
                 -I$(IA32BOOTSTRAPED)/usr/include/atk-1.0 -I$(IA32BOOTSTRAPED)/usr/include/cairo \
@@ -178,3 +186,11 @@ xm7.sdl: ${OBJS}
 
 clean:
 	rm -f xm7 *.o *~
+
+install: all
+	$(INSTALL)  -d $(SHAREDIR)
+	$(INSTALL) ./xm7 $(PREFIX)/bin
+	$(INSTALL) -m 0644 *.ui $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
+#	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)

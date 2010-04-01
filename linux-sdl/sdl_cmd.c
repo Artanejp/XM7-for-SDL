@@ -946,7 +946,7 @@ OnTapeOpen(GtkWidget * widget, gpointer data)
 	 */ 
 	FileSelectDialog dlg = OpenFileSelectDialog(InitialDir[1]);
     if (dlg.bResult != DLG_OK) {
-	return;
+            return;
     }
     
 	/*
@@ -1038,7 +1038,7 @@ OnRec(GtkWidget * widget, gpointer data)
      *  「テープ」メニューを作成 
      */ 
 void
-CreateTapeMenu(GtkWidget * menu_bar, GtkAccelGroup * accel_group)
+CreateTapeMenu(GtkBuilder *gbuilder)
 {
     
 	/*
@@ -1051,44 +1051,34 @@ CreateTapeMenu(GtkWidget * menu_bar, GtkAccelGroup * accel_group)
 	/*
 	 * 「開く」ボタンを作成 
 	 */ 
-	mitape_open = gtk_menu_item_new_with_label("開く");
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_open);
+	//mitape_open = gtk_menu_item_new_with_label("開く");
+    //gtk_menu_append(GTK_MENU(tape_menu), mitape_open);
+    mitape_open = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tape_Open"));
     gtk_signal_connect(GTK_OBJECT(mitape_open), "activate",
-			GTK_SIGNAL_FUNC(OnTapeOpen), NULL);
+			GTK_SIGNAL_FUNC(OnTapeOpen), 
+                       NULL);
     
-	// gtk_widget_show (mitape_open);
+    gtk_widget_show (mitape_open);
 	
 	/*********************************************************/ 
 	
 	/*
 	 * 「取り外す」ボタンを作成 
 	 */ 
-	mitape_eject = gtk_menu_item_new_with_label("取り外す");
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_eject);
+    mitape_eject = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tape_eject"));
     gtk_signal_connect(GTK_OBJECT(mitape_eject), "activate",
-			GTK_SIGNAL_FUNC(OnTapeEject), NULL);
-    
-	// gtk_widget_show (mitape_eject);
-	
-	/*********************************************************/ 
-	
-	/*
-	 * セパレータを作成 
-	 */ 
-	mitape_sep[0] = gtk_menu_item_new();
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_sep[0]);
-    
-	// gtk_widget_show (mitape_sep[0]);
+			GTK_SIGNAL_FUNC(OnTapeEject), 
+                       NULL);
+    gtk_widget_show(mitape_eject);
 	
 	/*********************************************************/ 
 	
 	/*
 	 * 「巻き戻し」ボタンを作成 
 	 */ 
-	mitape_rew = gtk_menu_item_new_with_label("巻き戻し");
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_rew);
+	mitape_rew = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tape_rewind"));
     gtk_signal_connect(GTK_OBJECT(mitape_rew), "activate",
-			GTK_SIGNAL_FUNC(OnRew), NULL);
+                       GTK_SIGNAL_FUNC(OnRew), NULL);
     gtk_widget_show(mitape_rew);
     
 	/*********************************************************/ 
@@ -1096,56 +1086,29 @@ CreateTapeMenu(GtkWidget * menu_bar, GtkAccelGroup * accel_group)
 	/*
 	 * 「早送り」ボタンを作成 
 	 */ 
-	mitape_ff = gtk_menu_item_new_with_label("早送り");
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_ff);
+	mitape_ff = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tape_FastForward"));
     gtk_signal_connect(GTK_OBJECT(mitape_ff), "activate",
 			GTK_SIGNAL_FUNC(OnFF), NULL);
     
-	// gtk_widget_show (mitape_ff);
+    gtk_widget_show (mitape_ff);
 	
 	/*********************************************************/ 
 	
-	/*
-	 * セパレータを作成 
-	 */ 
-	mitape_sep[1] = gtk_menu_item_new();
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_sep[1]);
-    
-	// gtk_widget_show (mitape_sep[1]);
-	
-	/*********************************************************/ 
 	
 	/*
 	 * 「録音」ボタンを作成 
 	 */ 
-	mitape_rec = gtk_check_menu_item_new_with_label("録音");
-    gtk_menu_append(GTK_MENU(tape_menu), mitape_rec);
+	mitape_rec = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tape_record"));
     gtk_signal_connect(GTK_OBJECT(mitape_rec), "activate",
 			GTK_SIGNAL_FUNC(OnRec), NULL);
     
-	// gtk_widget_show (mitape_rec);
+	gtk_widget_show (mitape_rec);
 	
 	/*********************************************************/ 
-	
-	/*
-	 * テープメニューをのせるメニューアイテムの作成 
-	 */ 
-	tape_item = gtk_menu_item_new_with_label("テープ");
-    gtk_widget_show(tape_item);
-    
-	/*
-	 * テープメニューアイテムにドライブメニューをのせる 
-	 */ 
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(tape_item), tape_menu);
-    
-	/*
-	 * メニュバーにテープメニューアイテムをのせる 
-	 */ 
-	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), tape_item);
-    gtk_signal_connect(GTK_OBJECT(tape_item), "activate",
-			 GTK_SIGNAL_FUNC(OnTapePopup), NULL);
-    
-	/*********************************************************/ 
+    tape_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tape"));
+    gtk_signal_connect (GTK_OBJECT(tape_menu), "activate",
+                        GTK_SIGNAL_FUNC (OnTapePopup), NULL);
+
 	return;
 }
 
@@ -1178,20 +1141,33 @@ OnVersion(GtkWidget * widget, gpointer data)
     hbox = gtk_hbox_new(FALSE, 0);
     gtk_widget_show(hbox);
     gtk_box_pack_start(GTK_BOX(dialog_vbox), hbox, FALSE, FALSE, 0);
+#ifdef RSSDIR
+    strcpy(icon_path, RSSDIR);
+#else
     strcpy(icon_path, ModuleDir);
+#endif
     switch (fm7_ver) {
     case 1:
-	strcat(icon_path, "resource/tamori.ico");
+	strcat(icon_path, "tamori.ico");
 	break;
     case 2:
-	strcat(icon_path, "resource/app_av.ico");
+	strcat(icon_path, "app_av.ico");
 	break;
     case 3:
-	strcat(icon_path, "resource/app_ex.ico");
+	strcat(icon_path, "app_ex.ico");
 	break;
     default:
 	icon_path[0] = '\0';
     }
+#ifdef RSSDIR
+    if (icon_path[0] != '\0' && strcmp(icon_path, RSSDIR) != 0) {
+	image = gtk_image_new_from_file(icon_path);
+    } else {
+	image =
+	    gtk_image_new_from_stock("gtk-dialog-info",
+				     GTK_ICON_SIZE_DIALOG);
+    }
+#else
     if (icon_path[0] != '\0' && strcmp(icon_path, ModuleDir) != 0) {
 	image = gtk_image_new_from_file(icon_path);
     } else {
@@ -1199,6 +1175,7 @@ OnVersion(GtkWidget * widget, gpointer data)
 	    gtk_image_new_from_stock("gtk-dialog-info",
 				     GTK_ICON_SIZE_DIALOG);
     }
+#endif
     gtk_widget_show(image);
     gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
     textviewProduct = gtk_text_view_new();
@@ -2051,7 +2028,7 @@ CreateMenu(GtkWidget * parent)
 /*
  * 「テープ」メニューを作成する関数を呼び出す 
  */ 
-//	CreateTapeMenu(menu_bar, accel_group);
+    CreateTapeMenu(gbuilderMain);
     
 /*
  * 「デバッグ」メニューを作成する関数を呼び出す 

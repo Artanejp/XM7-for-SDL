@@ -290,6 +290,10 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         if (srcrect.h > dstrect.h)
                 srcrect.h = dstrect.h;
         SDL_BlitSurface(tmpSurface, &srcrect, displayArea, &dstrect);
+/*
+ * ステータス表示
+ */
+        
         SDL_FreeSurface(tmpSurface);
                         
 /*
@@ -300,6 +304,10 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         } else {
                 realDrawArea = drawArea;
         }
+        /*
+         * ステータスラインの強制再描画
+         */
+        DrawStatusForce();
         if (!bFullScan) {
                 RenderSetOddLine();
         }   
@@ -317,6 +325,7 @@ InitInstanceGtk(void)
     char        EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
     char        icon_path[MAXPATHLEN];
     SDL_SysWMinfo sdlinfo;
+    char        tmpStr[1024];
     
 /*
  * ウィンドウ生成 
@@ -324,7 +333,14 @@ InitInstanceGtk(void)
     //wndMain = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gbuilderMain =  gtk_builder_new();
+#ifdef UIDIR
+    strcpy(tmpStr, UIDIR);
+    strcat(tmpStr, "gtk_prop.ui");
+    printf("ui.config = %s\n",tmpStr);
+    gtk_builder_add_from_file(gbuilderMain, tmpStr, NULL);
+#else
     gtk_builder_add_from_file(gbuilderMain, "./gtk_prop.ui", NULL);
+#endif
     wndMain = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "window_main"));
     gtk_window_set_title(GTK_WINDOW(wndMain), "XM7");
    
@@ -376,7 +392,11 @@ InitInstanceGtk(void)
     SDL_InitSubSystem(SDL_INIT_VIDEO);
     
     CreateDrawSDL();
+#ifdef RSSDIR
+    strcpy(icon_path, RSSDIR);
+#else
     strcpy(icon_path, ModuleDir);
+#endif
     SetIconGtk(fm7_ver);        
 
 
@@ -390,24 +410,34 @@ void
 SetIconGtk(int ver)
 {
     char        icon_path[MAXPATHLEN];
+#ifdef RSSDIR
+    strcpy(icon_path, RSSDIR);
+#else
     strcpy(icon_path, ModuleDir);
+#endif
     
     switch (fm7_ver) {
     case 1:
-	strcat(icon_path, "resource/tamori.ico");
+	strcat(icon_path, "tamori.ico");
 	break;
     case 2:
-	strcat(icon_path, "resource/app_av.ico");
+	strcat(icon_path, "app_av.ico");
 	break;
     case 3:
-	strcat(icon_path, "resource/app_ex.ico");
+	strcat(icon_path, "app_ex.ico");
 	break;
     default:
 	icon_path[0] = '\0';
     }
+#ifdef RSSDIR
+    if (icon_path[0] != '\0' && strcmp(icon_path, RSSDIR) != 0)
+	gtk_window_set_icon_from_file(GTK_WINDOW(wndMain), icon_path,
+                                      (GError **) NULL);
+#else
     if (icon_path[0] != '\0' && strcmp(icon_path, ModuleDir) != 0)
 	gtk_window_set_icon_from_file(GTK_WINDOW(wndMain), icon_path,
                                       (GError **) NULL);
+#endif
 }
 
 /*

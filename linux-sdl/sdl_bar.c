@@ -23,32 +23,42 @@
 #include "SDL/SDL_ttf.h"
 #include <iconv.h>
 
-#define COL_BLACK 0xff000000
-#define COL_RED   0xff0000ff
-#define COL_BLUE  0xffff0000
-#define COL_GREEN  0xff00ff00
-#define COL_NORM  0xffffffff
-//#define COL_BLACK 0xffffffff
-//#define COL_RED   0xffffffff
-//#define COL_BLUE  0xffffffff
-//#define COL_NORM  0xffffffff
+#define COL_BLACK       0xff000000
+#define COL_BLACKMASK   0xff010101
+#define COL_RED         0xff0000ff
+#define COL_BLUE        0xffff0000
+#define COL_GREEN       0xff00ff00
+#define COL_NORM        0xffffffff
 
-/* フォントとしてIPAゴシックを使う */
+
+
+/* デフォルトフォントが設定されてないときはフォントとしてIPAゴシックを使う */
+#ifndef FUNC_FONT
 #define FUNC_FONT "./ipagui.ttf" 
+#endif
+
+#ifndef STAT_FONT
 #define STAT_FONT "./ipagui.ttf" 
+#endif
+
 #define FUNC_PT 16
 #define STAT_PT 16
     
 /*
  *  スタティック ワーク 
  */ 
-static char     szCaption[128];	/* キャプション */
+static char     szCaption[132];	/* キャプション */
+static char     szOldCaption[132];	/* キャプション */
 static int     nCAP;		/* CAPキー */
 static int     nKANA;		/* かなキー */
 static int     nINS;		/* INSキー */
 static int     nDrive[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
-static int     nTape;		/* テープ */
+static char    szOldDrive[2][16+1];       /* フロッピードライブ(過去) */
+
+static int     nTape;           /* テープ */
+static int     nOldTape;        /* テープ(過去) */
+static int     nInitialDrawFlag; /* 強制再表示フラグ */
 static SDL_Surface      *pInsOn; /* INSキープリレンダリング(ON) */
 static SDL_Surface      *pInsOff; /* INSキープリレンダリング(OFF) */
 static SDL_Surface      *pKanaOn; /* カナキープリレンダリング(ON) */
@@ -61,14 +71,16 @@ static SDL_Surface      *pFDNorm[2]; /* Drive0 Normal */
 static SDL_Surface      *pCMTRead; /* Tape Read */
 static SDL_Surface      *pCMTWrite; /* Tape Write */
 static SDL_Surface      *pCMTNorm; /* Tape Normal */
-
+static SDL_Surface      *pCaption; /* Caption */
 static SDL_Surface      *pStatusBar; /* ステータス表示バー */
+static TTF_Font         *pStatusFont;
+static TTF_Font         *pVFDFont;
 
 
 /*-[ ステータスバー ]-------------------------------------------------------*/ 
-    /*
-     *  ステータスバーの生成 
-     */ 
+/*
+ *  ステータスバーの生成 
+ */ 
 void
 CreateStatus(void) 
 {
@@ -79,6 +91,7 @@ CreateStatus(void)
         TTF_Font *f;
         SDL_Color r, b, n , black;
         Uint32 rmask, gmask, bmask, amask;
+        int i;
 
         /*
          * RECT INS
@@ -102,13 +115,8 @@ CreateStatus(void)
         rmask = 0xff000000;
         gmask = 0x00ff0000;
         bmask = 0x0000ff00;
-//        amask = 0x000000ff;
         amask = 0x000000ff;
 #else
-//        amask = 0;
-//        gmask = 0;
-//        rmask = 0;
-//        bmask = 0;
         amask = 0xff000000;
         rmask = 0x000000ff;
         gmask = 0x0000ff00;
@@ -117,15 +125,19 @@ CreateStatus(void)
 
 
         TTF_Init();
+        pVFDFont = TTF_OpenFont(STAT_FONT, STAT_PT);
+        f = pVFDFont;
+
         rec.x = 0;
         rec.y = 0;
         rec.w = 50;
         rec.h = 20;
-        f = TTF_OpenFont(STAT_FONT, STAT_PT);
 
+        drec.x = 8;
+        drec.y = 2;
+        drec.w = 50 - 8;
+        drec.h = 20 - 2;
 
-//        tmp  = TTF_RenderUTF8_Shaded(f, "INS", black , r);
-//        printf("pInsOff: %dbpp\n",pInsOff->format->BitsPerPixel);
         pInsOn = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
 
@@ -143,6 +155,15 @@ CreateStatus(void)
         /*
          * RECT CAPS
          */
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = 50;
+        rec.h = 20;
+
+        drec.x = 2;
+        drec.y = 2;
+        drec.w = 50 - 2;
+        drec.h = 20 - 2;
 
         pCapsOn = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
@@ -150,36 +171,44 @@ CreateStatus(void)
                                        32, rmask, gmask, bmask, amask);
         SDL_FillRect(pCapsOn, &rec, COL_RED);
         tmp  = TTF_RenderUTF8_Blended(f, "CAPS", n);
-        SDL_BlitSurface(tmp,NULL,pCapsOn,NULL);
+        SDL_BlitSurface(tmp, &rec, pCapsOn, &drec);
         SDL_FreeSurface(tmp);
 
 
         SDL_FillRect(pCapsOff, &rec, COL_BLACK);
         tmp  = TTF_RenderUTF8_Blended(f, "CAPS" , r);
-        SDL_BlitSurface(tmp,NULL,pCapsOff,NULL);
+        SDL_BlitSurface(tmp, &rec, pCapsOff, &drec);
         SDL_FreeSurface(tmp);
 
 
         /*
          * RECT KANA
          */
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = 50;
+        rec.h = 20;
+
+        drec.x = 12;
+        drec.y = 2;
+        drec.w = 50 - 12;
+        drec.h = 20 - 2;
+
         pKanaOn = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
         pKanaOff = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
         SDL_FillRect(pKanaOn, &rec, COL_RED);
         tmp  = TTF_RenderUTF8_Blended(f, "かな", n);
-        SDL_BlitSurface(tmp,NULL,pKanaOn,NULL);
+        SDL_BlitSurface(tmp, &rec, pKanaOn, &drec);
         SDL_FreeSurface(tmp);
 
         SDL_FillRect(pKanaOff, &rec, COL_BLACK);
         tmp  = TTF_RenderUTF8_Blended(f, "かな", r);
-        SDL_BlitSurface(tmp,NULL,pKanaOff,NULL);
+        SDL_BlitSurface(tmp, &rec, pKanaOff, &drec);
         SDL_FreeSurface(tmp);
 
 
-        TTF_CloseFont(f);
-        f = NULL;
 
         /*
          * RECT Drive1
@@ -188,28 +217,17 @@ CreateStatus(void)
         rec.y = 0;
         rec.w = 160;
         rec.h = 20;
-        pFDRead[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
-                                       32, rmask, gmask, bmask, amask);
-        pFDRead[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
-                                       32, rmask, gmask, bmask, amask);
-        pFDWrite[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
-                                       32, rmask, gmask, bmask, amask);
-        pFDWrite[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
-                                       32, rmask, gmask, bmask, amask);
-        pFDNorm[0] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
-                                       32, rmask, gmask, bmask, amask);
-        pFDNorm[1] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
-                                       32, rmask, gmask, bmask, amask);
-
-        SDL_FillRect(pFDRead[1], &rec, COL_RED);
-        SDL_FillRect(pFDWrite[1], &rec, COL_BLUE);
-        SDL_FillRect(pFDNorm[1], &rec, COL_NORM);
-        /*
-         * RECT Drive0
-         */
-        SDL_FillRect(pFDRead[0], &rec, COL_RED);
-        SDL_FillRect(pFDWrite[0], &rec, COL_BLUE);
-        SDL_FillRect(pFDNorm[0], &rec, COL_NORM);
+        for(i = 0 ; i < 2 ; i++) {
+                pFDRead[i] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                                  32, rmask, gmask, bmask, amask);
+                pFDWrite[i] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                                   32, rmask, gmask, bmask, amask);
+                pFDNorm[i] = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
+                                                  32, rmask, gmask, bmask, amask);
+                SDL_FillRect(pFDRead[i], &rec, COL_RED);
+                SDL_FillRect(pFDWrite[i], &rec, COL_BLUE);
+                SDL_FillRect(pFDNorm[i], &rec, COL_NORM);
+        }
 
         /*
          * RECT Tape
@@ -221,11 +239,18 @@ CreateStatus(void)
         pCMTNorm = SDL_CreateRGBSurface(SDL_SWSURFACE, 160, 20,
                                        32, rmask, gmask, bmask, amask);
 
-
         SDL_FillRect(pCMTRead, &rec, COL_RED);
         SDL_FillRect(pCMTWrite, &rec, COL_BLUE);
         SDL_FillRect(pCMTNorm, &rec, COL_NORM);
 
+        pCaption = SDL_CreateRGBSurface(SDL_SWSURFACE, 300, 20,
+                                       32, rmask, gmask, bmask, amask);
+        rec.x = 0;
+        rec.y = 0;
+        rec.h = 300;
+        rec.w = 20;
+        SDL_FillRect(pCaption, &rec, COL_BLACKMASK);
+ 
         /*
          * Draw
          */
@@ -242,21 +267,65 @@ CreateStatus(void)
 void
 DestroyDraw(void)
 {
-        SDL_FreeSurface(pInsOn);
-        SDL_FreeSurface(pInsOff);
-        SDL_FreeSurface(pCapsOn);
-        SDL_FreeSurface(pCapsOff);
-        SDL_FreeSurface(pKanaOn);
-        SDL_FreeSurface(pKanaOff);
-        SDL_FreeSurface(pFDRead[0]);
-        SDL_FreeSurface(pFDWrite[0]);
-        SDL_FreeSurface(pFDNorm[0]);
-        SDL_FreeSurface(pFDRead[1]);
-        SDL_FreeSurface(pFDWrite[1]);
-        SDL_FreeSurface(pFDNorm[1]);
-        SDL_FreeSurface(pCMTRead);
-        SDL_FreeSurface(pCMTWrite);
-        SDL_FreeSurface(pCMTNorm);
+        int i;
+        if(pInsOn !=NULL ) {
+                SDL_FreeSurface(pInsOn);
+                pInsOn = NULL;
+        }
+        if(pInsOff != NULL) {
+                SDL_FreeSurface(pInsOff);
+                pInsOff = NULL;
+        }
+        if(pCapsOn !=NULL ) {
+                SDL_FreeSurface(pCapsOn);
+                pCapsOn = NULL;
+        }
+        if(pCapsOff != NULL) {
+                SDL_FreeSurface(pCapsOff);
+                pCapsOff = NULL;
+        }
+        if(pKanaOn !=NULL ) {
+                SDL_FreeSurface(pKanaOn);
+                pKanaOn = NULL;
+        }
+        if(pKanaOff != NULL) {
+                SDL_FreeSurface(pKanaOff);
+                pKanaOff = NULL;
+        }
+        for(i = 0 ; i < 2 ; i++ ) {
+                if(pFDRead[i] != NULL) {
+                        SDL_FreeSurface(pFDRead[i]);
+                        pFDRead[i] = NULL;
+                }
+                if(pFDWrite[i] != NULL) {
+                        SDL_FreeSurface(pFDWrite[i]);
+                        pFDWrite[i] = NULL;
+                }
+                if(pFDNorm[i] != NULL) {
+                        SDL_FreeSurface(pFDNorm[i]);
+                        pFDNorm[i] = NULL;
+                }
+        }
+        if(pCMTRead !=NULL ) {
+                SDL_FreeSurface(pCMTRead);
+                pCMTRead = NULL;
+        }
+        if(pCMTWrite !=NULL ) {
+                SDL_FreeSurface(pCMTWrite);
+                pCMTWrite = NULL;
+        }
+        if(pCMTNorm !=NULL ) {
+                SDL_FreeSurface(pCMTNorm);
+                pCMTNorm = NULL;
+        }
+        if(pVFDFont != NULL) {
+                TTF_CloseFont(pVFDFont);
+                pVFDFont = NULL;
+        }
+        if(pStatusFont != NULL) {
+                TTF_CloseFont(pStatusFont);
+                pStatusFont = NULL;
+        }
 }
     /*
      *  キャプション描画 
@@ -264,17 +333,21 @@ DestroyDraw(void)
 static void
 DrawMainCaption(void) 
 {
-    char           string[256];
+    char           string[1024];
     char           tmp[128];
     char          *p;
+    SDL_Surface   *pS, *tmpSurface;
+    SDL_Color     n;
+    SDL_Rect      rec,drec;
+    TTF_Font      *f;
+    
     
     /*
      * 動作状況に応じて、コピー 
      */ 
     if (run_flag) {
 	strcpy(string, "XM7[実行]");
-    }
-    
+    }    
     else {
 	strcpy(string, "XM7[停止]");
     }
@@ -348,7 +421,40 @@ DrawMainCaption(void)
 	/*
 	 * 比較描画 
 	 */ 
-	string[127] = '\0';
+
+    strncpy(szCaption, string, 128);
+    if((strncmp(szOldCaption, szCaption, 128) != 0) || (nInitialDrawFlag == TRUE)) {
+                    rec.x = 0;
+                    rec.y = 0;
+                    rec.w = 300;
+                    rec.h = 20;
+                    
+                    drec.x = nDrawWidth - (300 + 8); /* 320モードの時は変える */
+                    drec.y = nDrawHeight + 40;
+                    drec.w = 300;
+                    drec.h = 20;
+                    
+
+                    strncpy(szOldCaption, szCaption, 128);
+                    f = pVFDFont; /* メモリに余裕があるならば pStatusFontにする */
+                    if(f == NULL) return;
+                    n.r = 255;
+                    n.g = 255;
+                    n.b = 255;
+                    if(pCaption == NULL) return;
+                    SDL_FillRect(pCaption, &rec, COL_BLACKMASK);
+                    tmpSurface = TTF_RenderUTF8_Blended(f, szCaption, n);
+                    SDL_BlitSurface(tmpSurface, NULL, pCaption, &rec);
+                    SDL_FreeSurface(tmpSurface);
+                    pS = SDL_GetVideoSurface();
+                    if(pS == NULL) return;
+                    SDL_BlitSurface(pCaption, NULL, pS, &drec);
+                    SDL_UpdateRect(pS, drec.x, drec.y, drec.w, drec.h);
+                    SDL_Flip(pS);
+
+    }    
+            
+
 }
 
 
@@ -375,7 +481,7 @@ DrawCAP(void)
        /*
         * 同じなら何もしない 
         */ 
-        if (nCAP == num) {
+        if ((nCAP == num) && (nInitialDrawFlag != TRUE)) {
                 return;
         }
     
@@ -428,7 +534,7 @@ DrawKANA(void)
 /*
  * 同じなら何もしない 
  */ 
-        if (nKANA == num) {
+        if ((nKANA == num) && (nInitialDrawFlag != TRUE)){
                 return;
         }
     
@@ -462,7 +568,7 @@ DrawKANA(void)
     /*
      *  INSキー描画 
      */ 
-static void     FASTCALL
+static void
 DrawINS(void) 
 {
         int            num;
@@ -480,7 +586,7 @@ DrawINS(void)
 /*
  * 同じなら何もしない 
  */ 
-        if (nINS == num) {
+        if ((nINS == num) && (nInitialDrawFlag != TRUE)){
                 return;
         }
     
@@ -517,8 +623,9 @@ DrawDrive(int drive)
 {
     int            num;
     char          *name;
-    char          string[128];
+    char          string[64];
     char          utf8[256];
+    char          *pIn, *pOut;
     iconv_t       hd;
     size_t        in, out;
 
@@ -528,6 +635,10 @@ DrawDrive(int drive)
     TTF_Font *f;
 
     ASSERT((drive >= 0) && (drive <= 1));
+    rec.x = 0;
+    rec.y = 0;
+    rec.w = 160;
+    rec.h = 20;
   
 
     /*
@@ -546,6 +657,7 @@ DrawDrive(int drive)
      * 名前取得 
      */ 
     name = "";
+    utf8[0] = '\0';
     if (fdc_ready[drive] == FDC_TYPE_D77) {
             name = fdc_name[drive][fdc_media[drive]];
     }
@@ -559,8 +671,15 @@ DrawDrive(int drive)
     /*
      * 番号比較 
      */ 
-    if (nDrive[drive] == num) {
+    if ((nDrive[drive] == num) && (nInitialDrawFlag != TRUE)) {
             if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
+                    if(strlen(szDrive[drive]) > 0) {
+                            SDL_FillRect(pFDRead[drive], &rec, COL_RED);
+                            SDL_FillRect(pFDWrite[drive], &rec, COL_BLUE);                            
+                            SDL_FillRect(pFDNorm[drive], &rec, COL_NORM);
+                    }
+                    szDrive[drive][0] = '\0';
+                    szOldDrive[drive][0] = '\0';
                     return;
             }
             if (strcmp(szDrive[drive], name) == 0) {
@@ -572,66 +691,70 @@ DrawDrive(int drive)
      * 描画 
      */ 
     nDrive[drive] = num;
-    strcpy(szDrive[drive], name);
+    strncpy(szDrive[drive], name, 16);
     if (nDrive[drive] == 255) {
-	strcpy(string, "");
+            strcpy(string, "");
+    } else {
+            strcpy(string, szDrive[drive]);
     }
-    
-    else {
-	strcpy(string, szDrive[drive]);
+
+    if(strcmp(szDrive[drive], szOldDrive[drive]) != 0) {
+            /* 
+             * 過去のファイルネームと違うのでフォントレンダリングする
+             */
+
+            n.r = 255;
+            n.g = 255;
+            n.b = 255;
+
+            black.r = 0;
+            black.g = 0;
+            black.b = 0;
+            drec.x = rec.x + 8;
+            drec.y = rec.y + 2;
+            drec.w  = rec.w - 8;
+            drec.h  = rec.h - 2;
+
+            pIn = string;
+            pOut = utf8;
+            in = strlen(pIn);
+            out = 256;
+            hd = iconv_open("utf8", "cp932");
+            if(hd >= 0) {
+                    while(in>0) {
+                            iconv(hd, &pIn, &in, &pOut, &out);
+                    }   
+                    iconv_close(hd);
+            }
+
+            f = pVFDFont;
+            SDL_FillRect(pFDRead[drive], &rec, COL_RED);
+            tmp = TTF_RenderUTF8_Blended(f, utf8, n );
+            SDL_BlitSurface(tmp, &rec, pFDRead[drive], &drec);
+            SDL_FreeSurface(tmp);
+
+            SDL_FillRect(pFDWrite[drive], &rec, COL_BLUE);
+            tmp = TTF_RenderUTF8_Blended(f, utf8, n );
+            SDL_BlitSurface(tmp, &rec, pFDWrite[drive], &drec);
+            SDL_FreeSurface(tmp);
+
+            SDL_FillRect(pFDNorm[drive], &rec, COL_NORM);
+            tmp = TTF_RenderUTF8_Blended(f, utf8, black );
+            SDL_BlitSurface(tmp, &rec, pFDNorm[drive], &drec);
+            SDL_FreeSurface(tmp);
+            
+            strncpy(szOldDrive[drive], szDrive[drive], 16);
+//            strcpy(szOldDrive[drive], string);
     }
+
+
 
     p = SDL_GetVideoSurface();  
-//    hd = iconv_open("utf8", "cp932");
-//    if(hd < 0) return;
-//    in = strlen(string);
-//    out = 256;
-//    memset(utf8, 0x00, 255);
-//    iconv(hd, &string, &in, &utf8, &out);
-//    iconv_close(hd);
-    //  gtk_label_set_text(GTK_LABEL(lblflp[drive]), utf8);
-//    g_free(utf8);
-//    utf8 =
-//	g_convert(string, strlen(string), "UTF-8", "CP932", NULL, NULL,
-//		  NULL);
-
-//    if(p == NULL) return;
-    rec.x = 0;
-    rec.y = 0;
-    rec.w = 160;
-    rec.h = 20;
     drec.x = nDrawWidth - (160 * (drive + 2));
     drec.y = nDrawHeight + 20;
     drec.w = 160;
     drec.h = 20;
 
-#if 0
-    f = TTF_OpenFont(STAT_FONT, STAT_PT);
-    SDL_FillRect(pFDRead[drive], &rec, COL_RED);
-    SDL_FillRect(pFDWrite[drive], &rec, COL_BLUE);
-
-    tmp  = TTF_RenderUTF8_Blended(f, utf8, n);
-    if(tmp->w < rec.w) rec.w = tmp->w;
-    if(tmp->h < rec.h) rec.h = tmp->h;
-    SDL_BlitSurface(tmp,&rec,pFDRead[drive],NULL);
-
-
-    SDL_BlitSurface(tmp,&rec,pFDWrite[drive],NULL);
-    SDL_FreeSurface(tmp);
-    rec.x = 0;
-    rec.y = 0;
-    rec.w = 160;
-    rec.h = 20;
-
-    SDL_FillRect(pFDNorm[drive], &rec, COL_NORM);
-    tmp  = TTF_RenderUTF8_Blended(f, utf8, black);
-    if(tmp->w < rec.w) rec.w = tmp->w;
-    if(tmp->h < rec.h) rec.h = tmp->h;
-    SDL_BlitSurface(tmp,&rec,pFDNorm[drive],NULL);
-    SDL_FreeSurface(tmp);
-
-    TTF_CloseFont(f);
-#endif
 
     if (nDrive[drive] == FDC_ACCESS_READ) {
             /*
@@ -654,11 +777,18 @@ DrawDrive(int drive)
 static void
 DrawTape(void) 
 {
-    int            num;
-    char           string[128];
-    SDL_Surface *p;
-    SDL_Rect rec,drec;
-    
+    int             num;
+    char            string[128];
+    SDL_Surface     *p, *tmp;
+    SDL_Rect        rec,drec;
+    SDL_Color r, b, n , black;
+    TTF_Font *f;
+
+    rec.x = 0;
+    rec.y = 0;
+    rec.w = 160;
+    rec.h = 20;
+
     /*
      * ナンバー計算 
      */ 
@@ -679,7 +809,7 @@ DrawTape(void)
     /*
      * 番号比較 
      */ 
-    if (nTape == num) {
+    if ((nTape == num) && (nInitialDrawFlag != TRUE)){
             return;
     }
     
@@ -688,11 +818,47 @@ DrawTape(void)
      */ 
     nTape = num;
     if (nTape >= 30000) {
-	string[0] = '\0';
+            string[0] = '\0';
+            //strcpy(string, "OVER");
     }
-    
     else {
 	sprintf(string, "%04d", nTape % 10000);
+    }
+    if(nOldTape != nTape) {
+            /*
+             * カウンタ番号レンダリング(仮)
+             */
+            drec.x = rec.x + 32;
+            drec.y = rec.y + 2;
+            drec.w = rec.w - 32;
+            drec.h = rec.h - 2;
+
+            n.r = 255;
+            n.g = 255;
+            n.b = 255;
+
+            black.r = 0;
+            black.g = 0;
+            black.b = 0;
+
+
+            f = pVFDFont;
+
+            SDL_FillRect(pCMTRead, &rec, COL_RED);
+            tmp = TTF_RenderUTF8_Blended(f, string, n );
+            SDL_BlitSurface(tmp, &rec, pCMTRead, &drec);
+            SDL_FreeSurface(tmp);
+
+            SDL_FillRect(pCMTWrite, &rec, COL_BLUE);
+            tmp = TTF_RenderUTF8_Blended(f, string, n );
+            SDL_BlitSurface(tmp, &rec, pCMTWrite, &drec);
+            SDL_FreeSurface(tmp);
+
+            SDL_FillRect(pCMTNorm, &rec, COL_NORM);
+            tmp = TTF_RenderUTF8_Blended(f, string, black );
+            SDL_BlitSurface(tmp, &rec, pCMTNorm, &drec);
+            SDL_FreeSurface(tmp);
+            nOldTape = nTape;
     }
 
     drec.x = nDrawWidth - (160 * 1);
@@ -700,10 +866,6 @@ DrawTape(void)
     drec.w = 160;
     drec.h = 20;
 
-    rec.x = 0;
-    rec.y = 0;
-    rec.w = 160;
-    rec.h = 20;
 
     p = SDL_GetVideoSurface();
     if(p == NULL) return;
@@ -720,6 +882,7 @@ DrawTape(void)
     SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
 }
 
+
 /*
  *  描画 
  */ 
@@ -733,9 +896,19 @@ DrawStatus(void)
         DrawDrive(0);
         DrawDrive(1);
         DrawTape();
+        nInitialDrawFlag = FALSE;
 } 
 
         
+/*
+ *  強制描画 
+ */ 
+void  
+DrawStatusForce(void) 
+{
+        nInitialDrawFlag = TRUE;
+        DrawStatus();
+} 
 
 
 /*
@@ -748,7 +921,9 @@ PaintStatus(void)
 /*
  * 記憶ワークをすべてクリアする 
  */ 
+        nInitialDrawFlag = TRUE;
         szCaption[0] = '\0';
+        szOldCaption[0] = '\0';
         nCAP = -1;
         nKANA = -1;
         nINS = -1;
@@ -756,7 +931,10 @@ PaintStatus(void)
         nDrive[1] = -1;
         szDrive[0][0] = '\0';
         szDrive[1][0] = '\0';
+        szOldDrive[0][0] = '\0';
+        szOldDrive[1][0] = '\0';
         nTape = -1;
+        nOldTape = 0;
     
         /*
          * 描画 

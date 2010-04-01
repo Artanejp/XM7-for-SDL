@@ -229,15 +229,21 @@ main(int argc, char *argv[])
 /*
  * 実行モジュールのディレクトリを取得 
  */ 
+
+
         char    *p;
-        if (realpath(argv[0], ModuleDir) == NULL) {
-                perror("Can't get module real path.");
-                exit(1);
+        p = getenv("HOME");
+        if(p == NULL) {
+                perror("Werning : Can't get HOME directory...Making ./.xm7/ .");
+                strcpy(ModuleDir, "./.xm7/");
         } else {
-                p = strrchr(ModuleDir, '/');
-                p[1] = '\0';
+                strcpy(ModuleDir, p);
+                strcat(ModuleDir, "/.xm7/");
         }
-    
+        if(opendir(ModuleDir) == NULL) {
+                mkdir(ModuleDir, 0777);
+        }
+
 /*
  * 各種フラグを取得・設定 
  */ 
