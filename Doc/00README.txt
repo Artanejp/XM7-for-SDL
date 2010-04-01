@@ -1,13 +1,13 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux
-*  Version 0.1r30 (αレベル)
+*  Version 0.1r42 (αレベル)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2010.02.02 Artane.
+* 2010.04.02 Artane.
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
@@ -54,14 +54,21 @@ libmemwatchはメモリリークをチェックする為の物なので…
 
 4.つかいかた
 a.xm7の実行型式があるディレクトリィに、以下の物を入れます。
+
+a. usr.local/bin に移動して、
+$sudo install ./xm7 /usr/local/bin
+
+b. usr.local/share/xm7 に移動して、
+$sudo install -m 0777 -d /usr/local/share/xm7/
+$sudo install -m 0644 ./* /usr/local/share/xm7/
+
+c. 以下のものを~/.xm7 に入れます。
 ・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM
 ・FDDシークの為のWAV
 
-b.
-$ cd [インストールしたディレクトリィ]
-$ ./xm7
+d. xm7を起動します（カレントディレクトリになくてもよいです。てか、カレントディレクトリから削除した方がいいかも)
 
-c.
+e.
  手持ちのFD・テープをD77・T77形式に変換した物を動かして見てください。
 
 *** 動くことを願っています(ぉぃ ***
@@ -83,3 +90,10 @@ hogeはユーザ名など。
 
 b.memwatchなどのビルドでクロスビルドが必要になるかもしれません。
 　詳しくはmakefile.sdl.amd64を読んで見てください(無責任…)
+
+c.WAVファイル、ROMファイルを~/.xm7/にコピーしたのに動かないときは、
+　これらファイルの大文字小文字を見直してください。
+
+d.r42から、UI定義をGTKBUILDERベースにしました。
+　/usr/local/share/xm7/gtk_prop.ui などがないと
+　動きませんΣ（￣□￣；）！！
