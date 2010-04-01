@@ -466,13 +466,16 @@ LoadWav(char *fname, struct _WAVDATA *wav)
 	datSize;
     int
                     fileh;
+   char prefix[MAXPATHLEN];
     ASSERT(fname);
     ASSERT(wav);
 
     /*
      * ファイルオープン 
      */
-    fileh = file_open(fname, OPEN_R);
+    strcpy(prefix, ModuleDir);
+    strcat(prefix, fname);
+    fileh = file_open(prefix, OPEN_R);
     if (fileh < 0) {
 	return FALSE;
     }

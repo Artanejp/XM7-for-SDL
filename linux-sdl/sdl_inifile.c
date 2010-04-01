@@ -9,12 +9,14 @@
 #include<stdlib.h>
 #include<string.h>
 #include "xm7.h"
+#include "sdl.h"
 #include "sdl_inifile.h"
+
     
     /*
      *  INIファイル名 
      */ 
-static char     ini[256];
+static char     ini[MAXPATHLEN];
 
     /*
      *  ＩＮＩファイル中の設定項目 
@@ -33,7 +35,8 @@ static int      max_entries = 0;
     void
 INI_init(char *inifile)
 {
-    strcpy(ini, inifile);
+   strcpy(ini, ModuleDir);
+   strcat(ini, inifile);
     max_entries = 0;
     current_pos = 0;
 } 
