@@ -13,6 +13,8 @@
 #include<gdk/gdkkeysyms.h>
 #include<memory.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_syswm.h>
+
 #include "xm7.h"
 #include "mainetc.h"
 #include "keyboard.h"
@@ -95,8 +97,11 @@ static int     nDAreaW;	/* ドローイングエリアの幅 */
 static int     nDAreaH;	/* ドローイングエリアの高さ */
 static BOOL    rgbButtons[3];	/* マウスボタン押下状態 */
 static GdkCursor *nullcursor;	/* 透明カーソル */
+//static SDL_Cursor *nullcursor;	/* 透明カーソル */
+
 
 #endif				/*  */
+static BOOL  bCursorGrabbed;    /* カーソルGrabされてるか */
     
     /*
      *  DirectInputコード→FM-7 物理コード
@@ -170,14 +175,10 @@ static struct local_sdlkeymap kbd_106_table2[] = { SDLK_ESCAPE, 0x5c,	/* BREAK(E
 	SDLK_UNDERSCORE, 0x34, /* _ */ 
 	SDLK_RSHIFT, 0x54, /* 右SHIFT */ 
 	SDLK_LALT, 0x55, /* CAP(左ALT) */ 
-	// 0x83, 0x56, /* GRAPH(無変換) */
 	SDLK_LSUPER, 0x56, /* WIN(無変換) for 109 */ 
-	// 0x81, 0x57, /* 左SPACE(変換) */
 	SDLK_RSUPER, 0x57, /* 左SPACE(変換) for 109 */ 
 	SDLK_RALT, 0x58, /* 中SPACE(カタカナ) */ 
-	// 101, 0x58, /* 中SPACE(カタカナ) */
 	SDLK_SPACE, 0x35, /* 右SPACE(SPACE) */ 
-	// 0x6d, 0x5a, /* かな(右Ctrl) */
 	SDLK_RCTRL, 0x5a, /* かな(右Ctrl) for 109 */ 
 	SDLK_INSERT, 0x48, /* INS(Insert) */ 
 	SDLK_DELETE, 0x4b, /* DEL(Delete) */ 
@@ -466,15 +467,12 @@ InitKbd(void)
 	/*
 	 *  透明カーソルイメージ 
 	 */ 
-	GdkPixmap * source, *mask;
-    GdkColor fg = {
-    0, 0, 0, 0};
-    GdkColor bg = {
-    0, 0, 0, 0};
-    gchar nullcursor_img[] = {
-    0x00};
-    gchar nullcursor_mask[] = {
-    0x00};
+//    Uint8 nullcursor_img[] = {0x00};
+//    Uint8 nullcursor_mask[] = {0x00};
+    gchar nullcursor_img[] = {0x00};
+    gchar nullcursor_mask[] = {0x00};
+    GdkBitmap *mask, *source;
+    GdkColor fg, bg;
     
 #endif				/*  */
 	/*
@@ -488,11 +486,13 @@ InitKbd(void)
     memset(kbd_map, 0, sizeof(kbd_map));
     keytime = 0;
     
+    
 	/*
 	 * ワークエリア初期化(キーボード NT/PC-9801対策) 
 	 */ 
     bDummyRead = TRUE;
     dmyreadtime = 0;
+
     
 	/*
 	 * ワークエリア初期化(内部キーバッファ/疑似リアルタイムキースキャン) 
@@ -536,6 +536,7 @@ InitKbd(void)
     memset(joyrapid, 0, sizeof(joyrapid));
     joyplugged[0] = TRUE;
     joyplugged[1] = TRUE;
+    bCursorGrabbed = FALSE;
     
 #ifdef MOUSE
 	/*
@@ -559,14 +560,15 @@ InitKbd(void)
     nullcursor = gdk_cursor_new_from_pixmap(source, mask, &fg, &bg, 0, 0);
     gdk_pixmap_unref(source);
     gdk_pixmap_unref(mask);
-    
+    //nullcursor = SDL_CreateCursor(nullcursor_img, nullcursor_mask, 8, 8, 0, 0);
+    //nullcursor = NULL;
 #endif				/*  */
 	// printf("KBDInit\n");
 	
 	/*
 	 * テンキーエミュレーション 
 	 */ 
-	bTenCursor = FALSE;
+    	bTenCursor = FALSE;
 }
 
 
@@ -580,7 +582,8 @@ CleanKbd(void)
     /*
      *  セレクト 
      */ 
-    BOOL FASTCALL SelectKbd(void) 
+BOOL 
+SelectKbd(void) 
 {
     return TRUE;
 }
@@ -589,7 +592,7 @@ CleanKbd(void)
     /*
      *  キーボード 内部キーバッファ登録 
      */ 
-static void     FASTCALL
+static void
 PushKeyCode(BYTE code) 
 {
     int            i;
@@ -787,7 +790,7 @@ Cur2Ten_Break(BYTE code)
     /*
      *  キーボード ポーリング 
      */ 
-void            FASTCALL
+void
 PollKbd(void) 
 {
     BYTE buf[256];
@@ -1053,7 +1056,8 @@ PollKbd(void)
      *  キーボード ポーリング＆キー情報取得
      * ※VMのロックは行っていないので注意 
      */ 
-    BOOL FASTCALL GetKbd(BYTE * pBuf) 
+BOOL
+GetKbd(BYTE * pBuf) 
 {
     int            i;
     ASSERT(pBuf);
@@ -1485,7 +1489,7 @@ PollJoySub(int index, BYTE dat)
     /*
      *  ジョイスティック ポーリング(キーボード) 
      */ 
-static void     FASTCALL
+static void
 PollJoyKbd(int index, BYTE dat) 
 {
     BYTE bit;
@@ -1717,8 +1721,9 @@ PollMos(void)
 	if (bCapture && mos_capture) {
 	gdk_threads_enter();
 	
+        
 	    // gtk_widget_get_pointer(drawArea, &x, &y);
-	    lX = x - nMousePX;
+        lX = x - nMousePX;
 	lY = y - nMousePY;
 	nMousePX = x;
 	nMousePY = y;
@@ -1735,6 +1740,7 @@ PollMos(void)
 		// nDAreaW/2,
 		// nDAreaH/2
 		// );
+
 		// nMousePX = nDAreaW/2;
 		// nMousePY = nDAreaH/2;
 	}
@@ -1792,14 +1798,15 @@ PollMos(void)
     /*
      *  マウス キャプチャ状態設定 
      */ 
-void            FASTCALL
+void
 SetMouseCapture(BOOL en) 
 {
     int            x,
                     y;
     GdkModifierType state;
     GdkCursor * cursor;
-    
+//    SDL_Cursor * cursor;
+    SDL_SysWMinfo sdlinfo;
 	/*
 	 * キャプチャ停止中/VM停止中/非アクティブ時は強制的に無効 
 	 */ 
@@ -1859,26 +1866,22 @@ SetMouseCapture(BOOL en)
 	    // x,
 	    // y
 	    // );
-	    
-	    // gdk_pointer_grab(
-	    // wndMain->window,
-	    // TRUE,
-	    // GDK_POINTER_MOTION_MASK,
-	    // drawArea->window,
-	    // cursor,
-	    // GDK_CURRENT_TIME
-	    // );
-	    nMousePX = x;
-	nMousePY = y;
-    }
-    
+            SDL_WM_GrabInput(SDL_GRAB_ON);
+    //if(SDL_GetWMInfo(&sdlinfo)) {
+    //        XGrabPointer(sdlinfo.info.x11.display, sdlinfo.info.x11.window, true,  0, GrabModeSync,  GrabModeSync,  sdlinfo.info.x11.window, None, CurrentTime); 
+    //}
+
+    }    
     else {
 	
 	    /*
 	     * クリップ解除 
 	     */ 
-	    gdk_pointer_ungrab(GDK_CURRENT_TIME);
-	
+            //gdk_pointer_ungrab(GDK_CURRENT_TIME);
+            //        if(SDL_GetWMInfo(&sdlinfo)) {
+            //        XUngrabPointer(sdlinfo.info.x11.display, CurrentTime);
+            //}
+            SDL_WM_GrabInput(SDL_GRAB_OFF);
 	    /*
 	     * カーソル位置を復元 
 	     */ 
@@ -1893,6 +1896,7 @@ SetMouseCapture(BOOL en)
 	    // nMouseSX,
 	    // nMouseSY
 	    // );
+
     }
     
 	/*
@@ -1911,7 +1915,7 @@ SetMouseCapture(BOOL en)
     /*
      *  マウス 移動データリクエスト 
      */ 
-void            FASTCALL
+void
 mospos_request(BYTE * move_x, BYTE * move_y) 
 {
     if (bCapture) {
@@ -1957,7 +1961,8 @@ mospos_request(BYTE * move_x, BYTE * move_y)
     /*
      *  マウス ボタンデータリクエスト 
      */ 
-    BYTE FASTCALL mosbtn_request(void) 
+BYTE 
+mosbtn_request(void) 
 {
     
 	/*
@@ -2075,6 +2080,19 @@ BOOL OnKeyRelease(SDL_Event * event)
 	mos_capture = (!mos_capture);
 	SetMouseCapture(bActivate);
     }
+#else
+	/*
+	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え 
+	 */ 
+	if (code == SDLK_F11) {
+            //mos_capture = (!mos_capture);
+            if(SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_ON) {
+                    SDL_WM_GrabInput(SDL_GRAB_OFF);
+            } else {
+                    SDL_WM_GrabInput(SDL_GRAB_ON);
+            }
+    }
+
     
 #endif				/*  */
 	

@@ -30,7 +30,8 @@
 #define	LEVEL		"L30"
 // #define BETAVER
 #endif
-#define	DATE		"2010/01/23"
+#define          LOCALVER         "SDL 0.1α40"
+#define	DATE		"2010/04/29"
 
 /*
  *      定数、型定義

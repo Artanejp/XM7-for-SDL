@@ -354,21 +354,21 @@ InitInstanceGtk(void)
  */ 
     vbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
     gtk_widget_show(vbox);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "delete-event",
+    g_signal_connect(GTK_OBJECT(wndMain), "delete-event",
 		 GTK_SIGNAL_FUNC(OnDelete), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "destroy",
+    g_signal_connect(GTK_OBJECT(wndMain), "destroy",
 		 GTK_SIGNAL_FUNC(OnDestroy), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "focus-in-event",
+    g_signal_connect(GTK_OBJECT(wndMain), "focus-in-event",
 		 GTK_SIGNAL_FUNC(OnFocusIn), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "focus-out-event",
+    g_signal_connect(GTK_OBJECT(wndMain), "focus-out-event",
 		 GTK_SIGNAL_FUNC(OnFocusOut), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "key-press-event",
+    g_signal_connect(GTK_OBJECT(wndMain), "key-press-event",
 		 GTK_SIGNAL_FUNC(OnKeyPressGtk), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "key-release-event",
+    g_signal_connect(GTK_OBJECT(wndMain), "key-release-event",
 		 GTK_SIGNAL_FUNC(OnKeyReleaseGtk), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "plug-added",
+    g_signal_connect(GTK_OBJECT(wndMain), "plug-added",
 		 GTK_SIGNAL_FUNC(OnScreenPlugged), NULL);
-    gtk_signal_connect(GTK_OBJECT(wndMain), "plug-removed",
+    g_signal_connect(GTK_OBJECT(wndMain), "plug-removed",
 		GTK_SIGNAL_FUNC(OnScreenUnPlugged), NULL);
     
 // g_idle_add_full(G_PRIORITY_HIGH, &GtkEventHandler, NULL,

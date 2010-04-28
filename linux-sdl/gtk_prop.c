@@ -256,6 +256,7 @@ GtkWidget
  */
     GtkWidget *btnCancel;
     GtkWidget *btnOk;
+    GtkWidget *btnCallKeyMap;
     GtkWidget *window;
 
 //    winProperty = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -263,6 +264,8 @@ GtkWidget
     gtk_window_set_title(GTK_WINDOW(window), "XM7の動作設定");
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_window_set_modal(GTK_WINDOW(window), TRUE);
+    gtk_window_set_deletable(GTK_WINDOW(window), FALSE);
+
 //    gtk_widget_show(GTK_WIDGET(winProperty));
 
 
@@ -446,6 +449,9 @@ GtkWidget
 
     KP_KBDREAL =
             GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "checkbutton_PseudoRealtimeKeyScan"));
+    btnCallKeyMap =
+            GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "button_CallKeyMap"));   
+
 
 /*
  * Page 3
@@ -651,16 +657,21 @@ GtkWidget
     btnCancel = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "button_CANCEL"));
     btnOk = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "button_OK"));   
 
-    gtk_signal_connect((gpointer) GP_CPUDEFAULT, "clicked",
+    g_signal_connect((gpointer) GP_CPUDEFAULT, "clicked",
                        GTK_SIGNAL_FUNC(OnGP_CPUDEFAULTClicked), NULL);
-    gtk_signal_connect((gpointer) GP_CPUCOMBO, "changed",
+    g_signal_connect((gpointer) GP_CPUCOMBO, "changed",
                        GTK_SIGNAL_FUNC(OnGP_CPUCOMBOChanged), NULL);
-    gtk_signal_connect((gpointer) GP_TAPESPEED, "clicked",
+    g_signal_connect((gpointer) GP_TAPESPEED, "clicked",
                        GTK_SIGNAL_FUNC(OnGP_TAPESPEEDClicked), NULL);
-    gtk_signal_connect((gpointer) KP_USEARROWFOR10, "clicked",
+    g_signal_connect((gpointer) KP_USEARROWFOR10, "clicked",
                        GTK_SIGNAL_FUNC(OnKP_USEARROWFOR10Clicked), NULL);
-    gtk_signal_connect((gpointer) btnOk, "clicked",
+    g_signal_connect((gpointer) btnOk, "clicked",
                        GTK_SIGNAL_FUNC(OnConfig_OK), NULL);
+
+    g_signal_connect((gpointer) btnCallKeyMap, "clicked",
+                       GTK_SIGNAL_FUNC(OnClick_KeyMap), NULL);
+
+
 
 //    gtk_signal_connect((gpointer) btnKeySet, "clicked",
 //			 GTK_SIGNAL_FUNC(StartGetKeycodeForProp), NULL);

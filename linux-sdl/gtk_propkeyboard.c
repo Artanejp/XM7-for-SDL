@@ -31,12 +31,15 @@
 
 // extern BYTE kbd_map[256];
 
+GtkWidget *ksetProperty;
+
 static struct local_sdlkeymap local_kbd_map[256];
 static BYTE local_target_code; /* 変更対象のキーコード */
 #ifdef USE_GTK
 static GtkWidget *getwindow;
 static GtkWidget *keyMapWindow;
 static GtkWidget *vbox1;
+static GtkWidget *vbox11;
 #endif /* USE_GTK */
 
 static BOOL 
@@ -172,6 +175,88 @@ StartGetKeycodeForProp(GtkWidget *widget, gpointer data)
 #endif
 
         return;
+}
+
+static GtkWidget *ShowKeyMap(void);
+
+void
+OnClick_KeyMap(GtkWidget *widget, gpointer data)
+{
+        ksetProperty = ShowKeyMap();
+        gtk_widget_show(ksetProperty);
+}
+
+static GtkWidget
+*ShowKeyMap(void)
+{
+        int i;
+        GtkWidget   *keyWindow;
+        GtkWidget   *btnOk, *btnCancel;
+        GtkBuilder  *key; 
+        GObject     *keymap;
+
+        for(i = 0; i<256 ; i++) {
+                if(kbd_table[i].keysym == 0xffff) {
+                        break;
+                }
+                local_kbd_map[i].keysym = kbd_table[i].keysym;
+                local_kbd_map[i].code = kbd_table[i].code;
+        }
+//        key = gtk_builder_new();
+        keymap = gtk_builder_get_object(gbuilderMain, "dialog_keycode");
+        
+        keyWindow = GTK_WIDGET(keymap);
+        //g_object_set_data(G_OBJECT(keyWindow),  "window_keymap", (gpointer) keymap);
+        //keyWindow = GTK_WIDGET(keymap);
+        gtk_window_set_title(GTK_WINDOW(keyWindow), "KEYMAP");
+        gtk_window_set_position(GTK_WINDOW(keyWindow), GTK_WIN_POS_CENTER);
+        gtk_window_set_modal(GTK_WINDOW(keyWindow), TRUE);
+        gtk_window_set_deletable(GTK_WINDOW(keyWindow), FALSE);
+
+        btnOk = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "button_Key_OK"));
+        btnCancel = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "button_Key_Cancel"));
+
+/*
+ * OK or キャンセル...共通ボタン
+ */
+
+        g_signal_connect(btnOk, "clicked",
+                         GTK_SIGNAL_FUNC(OnCancelPressed),
+                         (gpointer)keyWindow);
+
+        g_signal_connect(btnCancel, "clicked",
+                         GTK_SIGNAL_FUNC(OnCancelPressed),
+                         (gpointer)keyWindow);
+
+        g_signal_connect(keyWindow, "destroy",
+                         GTK_SIGNAL_FUNC(OnCancelPressed),
+                         (gpointer)keyWindow);
+
+        g_signal_connect(keyWindow, "remove",
+                         GTK_SIGNAL_FUNC(OnCancelPressed),
+                         (gpointer)keyWindow);
+
+        g_signal_connect(keyWindow, "delete_event",
+                         GTK_SIGNAL_FUNC(OnCancelPressed),
+                         (gpointer)keyWindow);
+
+//
+//        g_signal_connect(keyWindow, "close",
+//                         GTK_SIGNAL_FUNC(OnCancelPressed),
+//                         (gpointer)keyWindow);
+
+        //g_signal_connect(btnCancel, "clicked",
+        //                 GTK_SIGNAL_FUNC(OnCancelPressed),
+        //                 (gpointer)keyWindow);
+
+        //       g_signal_connect(btnOk, "clicked",
+        //                 GTK_SIGNAL_FUNC(OnCancelPressed),
+        //                 (gpointer)keyWindow);
+
+//        gtk_widget_show(keyWindow);
+        return keyWindow;
+
+
 }
 
 void ListKeyMap(struct local_sdlkeymap *pMap)
