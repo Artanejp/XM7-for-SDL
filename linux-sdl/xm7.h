@@ -11,7 +11,10 @@
 #define _xm7_h_
 
 #include <stdio.h>
+
+#ifdef MEMWATCH
 #include <memwatch.h>
+#endif
 
 /*
  *      バージョン
