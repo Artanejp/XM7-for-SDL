@@ -107,7 +107,8 @@ static BOOL  bCursorGrabbed;    /* カーソルGrabされてるか */
      *  DirectInputコード→FM-7 物理コード
      * コード対照表(106キーボード用) 
      */ 
-static struct local_sdlkeymap kbd_106_table2[] = { SDLK_ESCAPE, 0x5c,	/* BREAK(ESC) 
+static struct local_sdlkeymap kbd_106_table2[] = { 
+        SDLK_ESCAPE, 0x5c,	/* BREAK(ESC) 
 									 */ 
 	SDLK_F1, 0x5d, /* PF1 */ 
 	SDLK_F2, 0x5e, /* PF2 */ 
@@ -179,7 +180,7 @@ static struct local_sdlkeymap kbd_106_table2[] = { SDLK_ESCAPE, 0x5c,	/* BREAK(E
 	SDLK_RSUPER, 0x57, /* 左SPACE(変換) for 109 */ 
 	SDLK_RALT, 0x58, /* 中SPACE(カタカナ) */ 
 	SDLK_SPACE, 0x35, /* 右SPACE(SPACE) */ 
-	SDLK_RCTRL, 0x5a, /* かな(右Ctrl) for 109 */ 
+        SDLK_RCTRL, 0x5a, /* かな(右Ctrl) for 109 */ 
 	SDLK_INSERT, 0x48, /* INS(Insert) */ 
 	SDLK_DELETE, 0x4b, /* DEL(Delete) */ 
 	SDLK_UP, 0x4d, /* ↑ */ 
@@ -283,8 +284,8 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x78, 0x58, /* 中SPACE(カタカナ) */ 
 	101, 0x58, /* 中SPACE(カタカナ) */ 
 	0x41, 0x35, /* 右SPACE(SPACE) */ 
-	// 0x6d, 0x5a, /* かな(右Ctrl) */
-	105, 0x5a, /* かな(右Ctrl) for 109 */ 
+	 0x6d, 0x5a, /* かな(右Ctrl) */
+//	105, 0x5a, /* かな(右Ctrl) for 109 */ 
 	0x6a, 0x48, /* INS(Insert) */ 
 	0x6b, 0x4b, /* DEL(Delete) */ 
 	0x62, 0x4d, /* ↑ */ 
@@ -1984,7 +1985,7 @@ OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
 		    gpointer data) 
 {
     int            i;
-
+//       printf("Key: %04x\n", event->hardware_keycode);
     for (i = 0; sizeof(kbd_106_table) / 2; i++) {
 	if (kbd_106_table[i * 2] == event->hardware_keycode) {
 	    if (kibuf[kbd_106_table[i * 2 + 1]] != 0x80) {
@@ -2003,6 +2004,7 @@ OnKeyPress(SDL_Event *event)
     SDLMod modifier = event->key.keysym.mod;
     SDLKey code = event->key.keysym.sym;
     Uint8 scan = event->key.keysym.scancode;
+
     if(kbd_snooped) {
             return SnoopedOnKeyPressedCallback(event);
     }
@@ -2063,6 +2065,7 @@ BOOL OnKeyRelease(SDL_Event * event)
     SDLMod modifier = event->key.keysym.mod;
     SDLKey code = event->key.keysym.sym;
     Uint8 scan = event->key.keysym.scancode;
+
     for (i = 0; i < 255; i++) {
 	if (kbd_table[i].keysym == 0xffff)
 	    break;
