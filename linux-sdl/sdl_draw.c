@@ -43,6 +43,7 @@ WORD            nDrawWidth;
 WORD            nDrawHeight;
 BOOL            bPaletFlag;		/* パレット変更フラグ */
 BOOL            bClearFlag;
+int             nOldVideoMode;
 
 
 /*
@@ -73,7 +74,15 @@ static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
     GLuint src_texture = 0;
 
 #endif				/*  */
-    
+
+/*
+ * マルチスレッド向け定義
+ */
+static SDL_Thread *DrawThread;
+static SDL_cond    *DrawCond;
+static SDL_sem   *DrawSem;
+static BOOL       SelectDraw2(void);
+
     /*
      *  プロトタイプ宣言 
      */ 
@@ -85,6 +94,67 @@ extern void    Draw400l(void);
 extern void    Draw256k(void);
 void           SetDrawFlag(BOOL flag);
 void           RenderSetOddLine(void);
+
+
+static int 
+DrawTask(void *arg)
+{
+        printf("DBG: Launch Draw Thread\n");
+        do {
+                if(DrawSem == NULL) {
+                        SDL_Delay(1); /* 20fps */
+                        continue;
+                }
+
+                SDL_SemWait(DrawSem);
+
+                displayArea = SDL_GetVideoSurface();
+                if(displayArea == NULL) {
+                        continue;
+                }
+                SelectDraw2();
+                DrawStatus();    
+#if XM7_VER >= 3
+                /*
+                 *    いずれかを使って描画 
+                 */ 
+                
+                switch (bMode) {
+                case SCR_400LINE:
+                        Draw400l();
+                        break;
+                case SCR_262144:
+                        Draw256k();
+                        break;
+                case SCR_4096:
+                        Draw320();
+                        break;
+                case SCR_200LINE:
+                        Draw640();
+                        break;
+                }
+
+#else				/*  */
+/*
+ * どちらかを使って描画 
+ */ 
+                if (bAnalog) {
+                        Draw320();
+                }
+                else {
+                        Draw640();
+                }    
+#endif				/*  */
+                while(DrawSem == NULL) {
+//                        SDL_Delay(1); /* 20fps */
+                        continue;
+                }
+//                SDL_SemPost(DrawSem);
+//                SDL_Delay(1); /* 20fps */
+
+        }while(1);
+        return 0;
+}    
 
     /*
      *  SETDOT（そのまま） 
@@ -103,13 +173,41 @@ SETDOT(WORD x, WORD y, DWORD c)
 static void
 ChangeResolution() 
 {
+        SDL_Surface *p = SDL_GetVideoSurface();
         if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
                 return;
         }
+    if(DrawThread != NULL) {
+            SDL_KillThread(DrawThread);
+            DrawThread = NULL;
+    }
+    if(DrawSem != NULL) {
+            SDL_DestroySemaphore(DrawSem);
+            DrawSem = NULL;
+    }
 
+
+
+#if XM7_VER >= 3
+        nOldVideoMode = screen_mode;
+#else
+        nOldVideoMode = mode320;
+#endif
+        /*
+         * KILL Thread
+         */
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
+    if(DrawSem == NULL) {
+            DrawSem = SDL_CreateSemaphore(1);
+            SDL_SemPost(DrawSem);
+    }
+
+    if(DrawThread == NULL) {
+            DrawThread = SDL_CreateThread(DrawTask, NULL);
+    }
+
 }
     
 
@@ -188,10 +286,17 @@ InitDraw(void)
         nOldDrawWidth = 640;
         nDrawHeight = 480;
         nDrawWidth = 640;
+        nOldVideoMode = 
         bOldFullScan = TRUE;
         bPaletFlag = FALSE;
+#if XM7_VER >= 3
+        nOldVideoMode = SCR_200LINE;
+#else
+        nOldVideoMode = FALSE;
+#endif
         SetDrawFlag(FALSE);
-    
+
+
 #if XM7_VER >= 3
         bWindowOpen = FALSE;
         nWindowDx1 = 640;
@@ -200,7 +305,8 @@ InitDraw(void)
         nWindowDy2 = 0;
 #endif				/*  */
         bDirectDraw = TRUE;
-    
+        DrawThread = NULL;
+        DrawSem = NULL;
 /*
  * 直接書き込み 
  */ 
@@ -214,6 +320,15 @@ InitDraw(void)
 void
 CleanDraw(void) 
 {
+        if(DrawThread != NULL) {
+                SDL_KillThread(DrawThread);
+                DrawThread = NULL;
+        }
+        if(DrawSem != NULL) {
+                SDL_DestroySemaphore(DrawSem);
+                DrawSem = NULL;
+        }
+
 } 
 
 /*
@@ -256,6 +371,7 @@ Select640(void)
         bAnalog = FALSE;
     
 #endif				/*  */
+
         return TRUE;
 }
 
@@ -387,12 +503,11 @@ SelectCheck(void)
 #endif /*  */
 }
 
-
 /*
- *  セレクト 
+ *  セレクト(内部向き) 
  */ 
-BOOL
-SelectDraw(void) 
+static BOOL
+SelectDraw2(void) 
 {
     SDL_Rect rect;
     
@@ -412,6 +527,7 @@ SelectDraw(void)
      * すべてクリア 
      */ 
     SDL_LockSurface(displayArea);
+
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
     SDL_FillRect(displayArea, &rect, 0x000000ff);
@@ -442,7 +558,6 @@ SelectDraw(void)
             SDL_UnlockSurface(realDrawArea);
     }
     bOldFullScan = bFullScan;
-       
     /*
      * セレクト 
      */ 
@@ -465,6 +580,103 @@ SelectDraw(void)
     return Select640();
     
 #endif				/*  */
+}
+
+
+/*
+ *  セレクト 
+ */ 
+BOOL
+SelectDraw(void) 
+{
+    SDL_Rect rect;
+    BOOL ret;
+/*
+ * 一致しているかチェック 
+ */ 
+    if (SelectCheck()) {
+            return TRUE;
+    }
+    displayArea = SDL_GetVideoSurface();
+    rect.h = nDrawWidth;
+    rect.w = nDrawHeight;
+    rect.x = 0;
+    rect.y = 0;
+    
+    /*
+     * すべてクリア 
+     */ 
+    SDL_LockSurface(displayArea);
+
+    
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
+    SDL_FillRect(displayArea, &rect, 0x000000ff);
+    
+#else				/*  */
+    SDL_FillRect(displayArea, &rect, 0xff000000);
+    
+#endif				/*  */
+    SDL_UnlockSurface(displayArea);
+    
+    /*
+     * すべてクリア 
+     */ 
+    if(realDrawArea != displayArea) {
+            SDL_LockSurface(realDrawArea);
+            rect.h = realDrawArea->h;
+            rect.w = realDrawArea->w;
+            rect.x = 0;
+            rect.y = 0;
+    
+#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
+            SDL_FillRect(realDrawArea, &rect, 0x000000ff);
+    
+#else				/*  */
+            SDL_FillRect(realDrawArea, &rect, 0xff000000);
+    
+#endif				/*  */
+            SDL_UnlockSurface(realDrawArea);
+    }
+    bOldFullScan = bFullScan;
+    if(DrawThread != NULL) {
+            SDL_KillThread(DrawThread);
+            DrawThread = NULL;
+    }
+    if(DrawSem != NULL) {
+            SDL_DestroySemaphore(DrawSem);
+            DrawSem = NULL;
+    }
+    /*
+     * セレクト 
+     */ 
+#if XM7_VER >= 3
+    switch (screen_mode) {
+    case SCR_400LINE:
+            ret =  Select400l();
+    case SCR_262144:
+            ret = Select256k();
+    case SCR_4096:
+            ret = Select320();
+    default:
+            ret = Select640();
+    }
+   
+#else				/*  */
+    if (mode320) {
+            ret = Select320();
+    }
+    ret =  Select640();
+    
+#endif				/*  */
+    if(DrawSem == NULL) {
+            DrawSem = SDL_CreateSemaphore(1);
+            SDL_SemPost(DrawSem);
+    }
+
+    if(DrawThread == NULL) {
+            DrawThread = SDL_CreateThread(DrawTask, NULL);
+    }
+    return ret;
 }
 
 
@@ -632,13 +844,13 @@ RenderSetOddLine(void)
 }
 
 
-    /*
-     *  描画(通常) 
-     */ 
-    void
+/*
+ *  描画(通常) 
+ */ 
+void
 OnDraw(void) 
 {
-    
+//        DrawStatus();    
        /*
         * ここまでやっておいてから解像度を変更する 
         */ 
@@ -647,8 +859,9 @@ OnDraw(void)
 /*
  * 640-320 自動切り替え 
  */ 
-        SelectDraw();
-    
+//        SelectDraw2();
+        SDL_SemPost(DrawSem);
+#if 0
 #if XM7_VER >= 3
        /*
         * いずれかを使って描画 
@@ -679,6 +892,7 @@ OnDraw(void)
                Draw640();
        }
 #endif				/*  */
+#endif
 }
 
 
@@ -695,6 +909,8 @@ OnPaint(void)
 {
         SDL_Rect srcrect, dstrect;
         int            i;
+
+
         displayArea = SDL_GetVideoSurface();
         for (i = 0; i < (80 * 50); i++) {
                 GDIDrawFlag[i] = 1;
@@ -711,7 +927,9 @@ OnPaint(void)
 /*
  * ここまでやっておいてから解像度を変更する 
  */ 
+        
         ChangeResolution();
+        
         SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
                        realDrawArea->h);
         if (!bDirectDraw) {

@@ -20,6 +20,7 @@
 #include "mouse.h"
 #include "tapelp.h"
 #include "keyboard.h"
+#include "display.h"
 #include "sdl.h"
 #include "sdl_bar.h"
 #include "sdl_draw.h"
@@ -219,7 +220,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         int             tmpHeight, tmpWidth;
         SDL_Surface     *tmpSurface;
         SDL_Rect        srcrect, dstrect;
-	    
+        SDL_VideoInfo   *vinfo;
 /*
  * まずは現在のサーフェイスを退避する 
  */ 
@@ -265,11 +266,58 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 	    
 #endif				/*  */
                         SDL_putenv(EnvMainWindow);
+#if XM7_VER >= 3
+                        switch(screen_mode) {
+                        case SCR_400LINE:
+                        case SCR_200LINE:
+//                        displayArea =
+//                                SDL_SetVideoMode(width, tmpHeight, 8,
+//                                                 SDL_HWSURFACE | SDL_ANYFORMAT |
+//                                                 SDL_DOUBLEBUF |
+//                                                 SDL_ASYNCBLIT |  0);
+                        displayArea =
+                                SDL_SetVideoMode(width, tmpHeight, 16,
+                                                 SDL_HWSURFACE | SDL_ANYFORMAT |
+                                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE);
+
+                        break;
+                        case SCR_4096:
+                        displayArea =
+                                SDL_SetVideoMode(width, tmpHeight, 16,
+                                                 SDL_HWSURFACE | SDL_ANYFORMAT | 
+                                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
+                        break;
+                        case SCR_262144:
+                        default:
+                        displayArea =
+                                SDL_SetVideoMode(width, tmpHeight, 24,
+                                                 SDL_HWSURFACE | SDL_ANYFORMAT | 
+                                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
+                        break;
+                        }
+#else
+                        if(mode320) {
                         displayArea =
                                 SDL_SetVideoMode(width, tmpHeight, 24,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT |
                                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                                 SDL_ASYNCBLIT | 0);
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
+                        } else {
+                                SDL_SetVideoMode(width, tmpHeight, 16,
+                                                 SDL_HWSURFACE | SDL_ANYFORMAT |
+                                                 SDL_RESIZABLE | SDL_DOUBLEBUF |
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
+                        }
+#endif                        
+                        /*
+                         * Debuhg Code
+                         */
+                        vinfo = SDL_GetVideoInfo();
+                        printf("DBG:SCREEN: Changed to BPP %d HW %d HW CC %d\n", displayArea->format->BitsPerPixel, vinfo->hw_available, vinfo->blit_hw_CC);
+
                 } else {
                         displayArea = SDL_GetVideoSurface();
                 }

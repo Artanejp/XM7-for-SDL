@@ -43,6 +43,11 @@
 
 #define FUNC_PT 16
 #define STAT_PT 16
+
+/*
+ * Global変数
+ */
+char StatusFont[MAXPATHLEN];
     
 /*
  *  スタティック ワーク 
@@ -75,7 +80,7 @@ static SDL_Surface      *pCaption; /* Caption */
 static SDL_Surface      *pStatusBar; /* ステータス表示バー */
 static TTF_Font         *pStatusFont;
 static TTF_Font         *pVFDFont;
-
+extern SDL_mutex        *DrawMutex;
 
 /*-[ ステータスバー ]-------------------------------------------------------*/ 
 /*
@@ -125,7 +130,10 @@ CreateStatus(void)
 
 
         TTF_Init();
-        pVFDFont = TTF_OpenFont(STAT_FONT, STAT_PT);
+        pVFDFont = TTF_OpenFont(StatusFont, STAT_PT);
+        if(!pVFDFont) {
+                printf("ERROR: Font %s not found. Set to Fail.K\n", StatusFont);
+        }
         f = pVFDFont;
 
         rec.x = 0;
@@ -144,14 +152,18 @@ CreateStatus(void)
         pInsOff = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
         SDL_FillRect(pInsOn, &rec, COL_RED);
-        tmp = TTF_RenderUTF8_Blended(f, "INS", n );
-        SDL_BlitSurface(tmp,NULL,pInsOn,NULL);
-        SDL_FreeSurface(tmp);
 
+        if(f != NULL) {
+                tmp = TTF_RenderUTF8_Blended(f, "INS", n );
+                SDL_BlitSurface(tmp,NULL,pInsOn,NULL);
+                SDL_FreeSurface(tmp);
+        }
         SDL_FillRect(pInsOff, &rec, COL_BLACK);
-        tmp = TTF_RenderUTF8_Blended(f, "INS", r );
-        SDL_BlitSurface(tmp,NULL,pInsOff,NULL);
-        SDL_FreeSurface(tmp);
+        if( f != NULL) {
+                tmp = TTF_RenderUTF8_Blended(f, "INS", r );
+                SDL_BlitSurface(tmp,NULL,pInsOff,NULL);
+                SDL_FreeSurface(tmp);
+        }
         /*
          * RECT CAPS
          */
@@ -170,16 +182,18 @@ CreateStatus(void)
         pCapsOff = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
         SDL_FillRect(pCapsOn, &rec, COL_RED);
-        tmp  = TTF_RenderUTF8_Blended(f, "CAPS", n);
-        SDL_BlitSurface(tmp, &rec, pCapsOn, &drec);
-        SDL_FreeSurface(tmp);
-
+        if(f != NULL) {
+                tmp  = TTF_RenderUTF8_Blended(f, "CAPS", n);
+                SDL_BlitSurface(tmp, &rec, pCapsOn, &drec);
+                SDL_FreeSurface(tmp);
+        } 
 
         SDL_FillRect(pCapsOff, &rec, COL_BLACK);
-        tmp  = TTF_RenderUTF8_Blended(f, "CAPS" , r);
-        SDL_BlitSurface(tmp, &rec, pCapsOff, &drec);
-        SDL_FreeSurface(tmp);
-
+        if(f != NULL) {
+                tmp  = TTF_RenderUTF8_Blended(f, "CAPS" , r);
+                SDL_BlitSurface(tmp, &rec, pCapsOff, &drec);
+                SDL_FreeSurface(tmp);
+        }
 
         /*
          * RECT KANA
@@ -199,15 +213,18 @@ CreateStatus(void)
         pKanaOff = SDL_CreateRGBSurface(SDL_SWSURFACE, 50, 20,
                                        32, rmask, gmask, bmask, amask);
         SDL_FillRect(pKanaOn, &rec, COL_RED);
-        tmp  = TTF_RenderUTF8_Blended(f, "かな", n);
-        SDL_BlitSurface(tmp, &rec, pKanaOn, &drec);
-        SDL_FreeSurface(tmp);
+        if(f != NULL) {
+                tmp  = TTF_RenderUTF8_Blended(f, "かな", n);
+                SDL_BlitSurface(tmp, &rec, pKanaOn, &drec);
+                SDL_FreeSurface(tmp);
+        }
 
         SDL_FillRect(pKanaOff, &rec, COL_BLACK);
-        tmp  = TTF_RenderUTF8_Blended(f, "かな", r);
-        SDL_BlitSurface(tmp, &rec, pKanaOff, &drec);
-        SDL_FreeSurface(tmp);
-
+        if( f != NULL) {
+                tmp  = TTF_RenderUTF8_Blended(f, "かな", r);
+                SDL_BlitSurface(tmp, &rec, pKanaOff, &drec);
+                SDL_FreeSurface(tmp);
+        }
 
 
         /*
@@ -437,21 +454,21 @@ DrawMainCaption(void)
 
                     strncpy(szOldCaption, szCaption, 128);
                     f = pVFDFont; /* メモリに余裕があるならば pStatusFontにする */
-                    if(f == NULL) return;
                     n.r = 255;
                     n.g = 255;
                     n.b = 255;
                     if(pCaption == NULL) return;
                     SDL_FillRect(pCaption, &rec, COL_BLACKMASK);
-                    tmpSurface = TTF_RenderUTF8_Blended(f, szCaption, n);
-                    SDL_BlitSurface(tmpSurface, NULL, pCaption, &rec);
-                    SDL_FreeSurface(tmpSurface);
+                    if(f != NULL) {
+                            tmpSurface = TTF_RenderUTF8_Blended(f, szCaption, n);
+                            SDL_BlitSurface(tmpSurface, NULL, pCaption, &rec);
+                            SDL_FreeSurface(tmpSurface);
+                    }
                     pS = SDL_GetVideoSurface();
                     if(pS == NULL) return;
                     SDL_BlitSurface(pCaption, NULL, pS, &drec);
                     SDL_UpdateRect(pS, drec.x, drec.y, drec.w, drec.h);
                     SDL_Flip(pS);
-
     }    
             
 
@@ -498,7 +515,7 @@ DrawCAP(void)
         drec.y = nDrawHeight + 0;
         drec.w = 50;
         drec.h = 20;
-
+        
         p = SDL_GetVideoSurface();
         if(p == NULL) return;
 
@@ -553,7 +570,6 @@ DrawKANA(void)
         drec.y = nDrawHeight + 0;
         drec.w = 50;
         drec.h = 20;
-        p = SDL_GetVideoSurface();
         if(p == NULL) return;
         if (nKANA) {
                 SDL_BlitSurface(pKanaOn, &rec, p, &drec);                 
@@ -561,7 +577,6 @@ DrawKANA(void)
                 SDL_BlitSurface(pKanaOff, &rec, p, &drec); 
         }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
-
 }
 
 
@@ -603,7 +618,6 @@ DrawINS(void)
         drec.y = nDrawHeight + 0;
         drec.w = 50;
         drec.h = 20;
-        p = SDL_GetVideoSurface();
         if(p == NULL) return;
         if (nINS) {
                 SDL_BlitSurface(pInsOn, &rec, p, &drec);
@@ -612,6 +626,7 @@ DrawINS(void)
         }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
         SDL_Flip(p);
+
 }
 
 
@@ -690,7 +705,8 @@ DrawDrive(int drive)
     /*
      * 描画 
      */ 
-    nDrive[drive] = num;
+    nDrive[drive] = num;    
+    memset(szDrive[drive], 0, 16);
     strncpy(szDrive[drive], name, 16);
     if (nDrive[drive] == 255) {
             strcpy(string, "");
@@ -729,22 +745,26 @@ DrawDrive(int drive)
 
             f = pVFDFont;
             SDL_FillRect(pFDRead[drive], &rec, COL_RED);
-            tmp = TTF_RenderUTF8_Blended(f, utf8, n );
-            SDL_BlitSurface(tmp, &rec, pFDRead[drive], &drec);
-            SDL_FreeSurface(tmp);
-
+            if(f != NULL) {
+                    tmp = TTF_RenderUTF8_Blended(f, utf8, n );
+                    SDL_BlitSurface(tmp, &rec, pFDRead[drive], &drec);
+                    SDL_FreeSurface(tmp);
+            }
             SDL_FillRect(pFDWrite[drive], &rec, COL_BLUE);
-            tmp = TTF_RenderUTF8_Blended(f, utf8, n );
-            SDL_BlitSurface(tmp, &rec, pFDWrite[drive], &drec);
-            SDL_FreeSurface(tmp);
+            if(f != NULL) {
+                    tmp = TTF_RenderUTF8_Blended(f, utf8, n );
+                    SDL_BlitSurface(tmp, &rec, pFDWrite[drive], &drec);
+                    SDL_FreeSurface(tmp);
+            }
 
             SDL_FillRect(pFDNorm[drive], &rec, COL_NORM);
-            tmp = TTF_RenderUTF8_Blended(f, utf8, black );
-            SDL_BlitSurface(tmp, &rec, pFDNorm[drive], &drec);
-            SDL_FreeSurface(tmp);
-            
+            if(f != NULL) {
+                    tmp = TTF_RenderUTF8_Blended(f, utf8, black );
+                    SDL_BlitSurface(tmp, &rec, pFDNorm[drive], &drec);
+                    SDL_FreeSurface(tmp);
+            }
+            memset(szOldDrive[drive], 0, 16);
             strncpy(szOldDrive[drive], szDrive[drive], 16);
-//            strcpy(szOldDrive[drive], string);
     }
 
 
@@ -845,19 +865,24 @@ DrawTape(void)
             f = pVFDFont;
 
             SDL_FillRect(pCMTRead, &rec, COL_RED);
-            tmp = TTF_RenderUTF8_Blended(f, string, n );
-            SDL_BlitSurface(tmp, &rec, pCMTRead, &drec);
-            SDL_FreeSurface(tmp);
-
+            if(f != NULL) {
+                    tmp = TTF_RenderUTF8_Blended(f, string, n );
+                    SDL_BlitSurface(tmp, &rec, pCMTRead, &drec);
+                    SDL_FreeSurface(tmp);
+            }
             SDL_FillRect(pCMTWrite, &rec, COL_BLUE);
-            tmp = TTF_RenderUTF8_Blended(f, string, n );
-            SDL_BlitSurface(tmp, &rec, pCMTWrite, &drec);
-            SDL_FreeSurface(tmp);
+            if(f != NULL) {
+                    tmp = TTF_RenderUTF8_Blended(f, string, n );
+                    SDL_BlitSurface(tmp, &rec, pCMTWrite, &drec);
+                    SDL_FreeSurface(tmp);
+            }
 
             SDL_FillRect(pCMTNorm, &rec, COL_NORM);
-            tmp = TTF_RenderUTF8_Blended(f, string, black );
-            SDL_BlitSurface(tmp, &rec, pCMTNorm, &drec);
-            SDL_FreeSurface(tmp);
+            if(f != NULL) {
+                    tmp = TTF_RenderUTF8_Blended(f, string, black );
+                    SDL_BlitSurface(tmp, &rec, pCMTNorm, &drec);
+                    SDL_FreeSurface(tmp);
+            }
             nOldTape = nTape;
     }
 
@@ -880,6 +905,7 @@ DrawTape(void)
                     SDL_BlitSurface(pCMTNorm, &rec, p, &drec);
     }
     SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
+
 }
 
 
@@ -889,6 +915,7 @@ DrawTape(void)
 void  
 DrawStatus(void) 
 {
+
         DrawMainCaption();
         DrawCAP();
         DrawKANA();
@@ -897,6 +924,7 @@ DrawStatus(void)
         DrawDrive(1);
         DrawTape();
         nInitialDrawFlag = FALSE;
+
 } 
 
         

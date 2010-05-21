@@ -216,7 +216,7 @@ static void
 DrawSch(void) 
 {
     OnDraw();
-    DrawStatus();
+    //DrawStatus();
     
     /*
      * カウンタアップ 

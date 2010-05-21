@@ -82,6 +82,23 @@ __SETDOT_DDRAW_640i(Uint8 * addr, DWORD c)
 
 }
 
+/*
+ * 640x200ドット画面の描画(非FullScan)
+ * 直接SDLの画面を叩くときに使う
+ * 8bpp
+ */
+static inline void
+__SETDOT_DDRAW_640i_8(Uint8 * addr, DWORD c)
+{
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[0] = c & 0xff;		/* B */
+#else
+    addr[0] = c & 0xff;		/* B */
+#endif
+
+}
+
 
 
 /*
@@ -120,8 +137,6 @@ __SETDOT_640p(Uint8 * addr, int pitch, DWORD c)
 static inline void
 __SETDOT_DDRAW_640p(Uint8 * addr, int pitch, DWORD c)
 {
-
-
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     addr[2] = c & 0xff;		/* B */
     addr[1] = (c >> 8) & 0xff;	/* R */
@@ -145,6 +160,47 @@ __SETDOT_DDRAW_640p(Uint8 * addr, int pitch, DWORD c)
 }
 
 /*
+ * 640x200モード、プログレッシブ点打ち。(DIRECT DRAW)
+ * ビット配列は[BRG]である 16/15bpp
+ */
+static inline void
+__SETDOT_DDRAW_640p_15(Uint8 * addr, int pitch, DWORD c)
+{
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[1] = c & 0xff;		/* B */
+    addr[0] = (c >> 8) & 0xff;	/* R */
+    addr += pitch;
+    addr[1] = c & 0xff;		/* B */
+    addr[0] = (c >> 8) & 0xff;	/* R */
+#else
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += pitch;
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+#endif
+}
+
+/*
+ * 640x200モード、プログレッシブ点打ち。(DIRECT DRAW)
+ * ビット配列は[BRG]である
+ */
+static inline void
+__SETDOT_DDRAW_640p_8(Uint8 * addr, int pitch, DWORD c)
+{
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[0] = c  & 0xff;	/* G */
+    addr += pitch;
+    addr[0] = c  & 0xff;	/* G */
+#else
+    addr[0] = c & 0xff;		/* B */
+    addr += pitch;
+    addr[0] = c & 0xff;		/* B */
+#endif
+}
+
+
+/*
  * 640x200モード、横二倍拡大プログレッシブ点打ち。(DIRECT DRAW)
  * ビット配列は[BRG]である
  */
@@ -155,7 +211,15 @@ __SETDOT_DDRAW_640p_DBL(Uint8 * addr, int bpp, int pitch, DWORD c)
     addr[2] = c & 0xff;		/* B */
     addr[1] = (c >> 8) & 0xff;	/* R */
     addr[0] = (c >> 16) & 0xff;	/* G */
-    addr += pitch;
+    addr += bpp;
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += (pitch - bpp);
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr +=  bpp;
     addr[2] = c & 0xff;		/* B */
     addr[1] = (c >> 8) & 0xff;	/* R */
     addr[0] = (c >> 16) & 0xff;	/* G */
@@ -177,18 +241,66 @@ __SETDOT_DDRAW_640p_DBL(Uint8 * addr, int bpp, int pitch, DWORD c)
     addr[1] = (c >> 8) & 0xff;	/* R */
     addr[2] = (c >> 16) & 0xff;	/* G */
 #endif
+}
 
+
+/*
+ * 640x200モード、横二倍拡大プログレッシブ点打ち。(DIRECT DRAW)
+ * ビット配列は[BRG]である
+ * 8bpp
+ */
+static inline void
+__SETDOT_DDRAW_640p_DBL_8(Uint8 * addr, int bpp, int pitch, DWORD c)
+{
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[0] = c & 0xff;		/* B */
+    addr += bpp;
+    addr[0] = c & 0xff;	/* G */
+    addr += (pitch - bpp);
+    addr[0] = c & 0xff;	/* G */
+    addr += bpp;
+    addr[0] = c & 0xff;	/* G */
+#else
+    addr[0] = c & 0xff;		/* B */
+    addr += bpp;
+    addr[0] = c & 0xff;		/* B */
+    addr += (pitch - bpp);
+    addr[0] = c & 0xff;		/* B */
+    addr += bpp;
+    addr[0] = c & 0xff;		/* B */
+#endif
 }
 
 /*
  * 640x200ドット画面のバイト単位描画(FullScan)
- * 直接SDLの画面を叩くときに使う
+ * 直接SDLの画面を叩くときに使う 8bpp
  */
+
+static inline void
+__SETBYTE_DDRAW_640p_8(Uint8 * addr, int bpp, int pitch, DWORD * c)
+{
+     __SETDOT_DDRAW_640p_8(addr, pitch, c[7]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[6]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[5]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[4]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[3]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[2]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[1]);
+    addr += bpp;
+    __SETDOT_DDRAW_640p_8(addr, pitch, c[0]);
+    // addr += bpp;
+}
 
 static inline void
 __SETBYTE_DDRAW_640p(Uint8 * addr, int bpp, int pitch, DWORD * c)
 {
-  __SETDOT_DDRAW_640p(addr, pitch, c[7]);
+     __SETDOT_DDRAW_640p(addr, pitch, c[7]);
     addr += bpp;
     __SETDOT_DDRAW_640p(addr, pitch, c[6]);
     addr += bpp;
@@ -205,6 +317,9 @@ __SETBYTE_DDRAW_640p(Uint8 * addr, int bpp, int pitch, DWORD * c)
     __SETDOT_DDRAW_640p(addr, pitch, c[0]);
     // addr += bpp;
 }
+
+
+
 
 /*
  * 640x200ドット画面のバイト単位描画(非FullScan)
@@ -229,7 +344,26 @@ __SETBYTE_DDRAW_640i(Uint8 * addr, int bpp, int pitch, DWORD * c)
     __SETDOT_DDRAW_640i(addr, c[1]);
     addr += bpp;
     __SETDOT_DDRAW_640i(addr, c[0]);
-    // addr += bpp;
+}
+
+static inline void
+__SETBYTE_DDRAW_640i_8(Uint8 * addr, int bpp, int pitch, DWORD * c)
+{
+    __SETDOT_DDRAW_640i_8(addr, c[7]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[6]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[5]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[4]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[3]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[2]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[1]);
+    addr += bpp;
+    __SETDOT_DDRAW_640i_8(addr, c[0]);
 }
 
 /*
@@ -277,6 +411,51 @@ __SETBYTE_DDRAW_1280_640p(Uint8 * addr, int bpp, int pitch, DWORD * c)
 }
 
 /*
+ * 640x200ドット画面のバイト単位描画(倍角FullScan)
+ * 直接SDLの画面を叩くときに使う
+ * 8bpp
+ */
+
+static inline void
+__SETBYTE_DDRAW_1280_640p_8(Uint8 * addr, int bpp, int pitch, DWORD * c)
+{
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[7]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[7]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[6]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[6]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[5]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[5]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[4]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[4]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[3]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[3]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[2]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[2]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[1]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[1]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[0]);
+    __SETDOT_DDRAW_640p_DBL_8(addr + pitch * 2, bpp, pitch, c[0]);
+    // addr += bpp * 2;
+
+
+}
+
+/*
  * 640x200ドット画面のバイト単位描画(倍角、非FullScan)
  * 直接SDLの画面を叩くときに使う
  */
@@ -310,69 +489,33 @@ __SETBYTE_DDRAW_1280_640i(Uint8 * addr, int bpp, int pitch, DWORD * c)
 
 }
 
-/*
- * 640x400モード、一バイト一ライン一気に書き込む(8色)
- */
-static inline void
- __SETBYTE_1LINE_DDRAW_640_640(Uint8 *addr,int bpp, int pitch, DWORD *c)
-{
-        Uint8 *a = addr;
-        __SETDOT_DDRAW_640i(addr, c[7]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[6]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[5]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[4]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[3]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[2]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[1]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[0]);
-        //a += bpp;
-}
 
-/*
- * 1280x800モード、一バイト一ライン一気に書き込む(8色)
- */
-static inline void __SETBYTE_1LINE_DDRAW_640_1280(Uint8 *addr,int bpp, int pitch, DWORD *c)
+static inline void
+__SETBYTE_DDRAW_1280_640i_8(Uint8 * addr, int bpp, int pitch, DWORD * c)
 {
-        Uint8 *a = addr;
-        __SETDOT_DDRAW_640i(addr, c[7]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[7]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[6]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[6]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[5]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[5]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[4]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[4]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[3]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[3]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[2]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[2]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[1]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[1]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[0]);
-        a += bpp;
-        __SETDOT_DDRAW_640i(addr, c[0]);
-        //a += bpp;
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[7]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[6]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[5]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[4]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[3]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[2]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[1]);
+    addr += bpp * 2;
+
+    __SETDOT_DDRAW_640p_DBL_8(addr, bpp, pitch, c[0]);
+    addr += bpp * 2;
 }
 
 /*
@@ -416,12 +559,13 @@ __SETDOT_DDRAW_320i(Uint8 * addr, int bpp, int pitch, DWORD c)
     DWORD          *addr32;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    addr32 = (DWORD *) addr;
-    *addr32 = (c >> 8) | 0xff000000;
-
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
     addr += bpp;
-    addr32 = (DWORD *) addr;
-    *addr32 = (c >> 8) | 0xff000000;
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
 #else
     addr[0] = c & 0xff;		/* B */
     addr[1] = (c >> 8) & 0xff;	/* R */
@@ -432,6 +576,31 @@ __SETDOT_DDRAW_320i(Uint8 * addr, int bpp, int pitch, DWORD c)
     addr[2] = (c >> 16) & 0xff;	/* G */
 #endif
 }
+/*
+ * 320x200,非フルスキャン、原寸 
+ * (DDRAW) 16bpp
+ */
+static inline void
+__SETDOT_DDRAW_320i_16(Uint8 * addr, int bpp, int pitch, DWORD c)
+{
+    DWORD          *addr32;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 0) & 0xff;	/* R */
+    addr[0] = (c >> 8) & 0xff;	/* G */
+    addr += bpp;
+    addr[1] = (c >> 0) & 0xff;	/* R */
+    addr[0] = (c >> 8) & 0xff;	/* G */
+#else
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+#endif
+}
+
 /*
  * 320x200,フルスキャン、原寸 
  * 
@@ -491,18 +660,24 @@ __SETDOT_DDRAW_320p(Uint8 * addr, int bpp, int pitch, DWORD c)
     DWORD          *addr32;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    addr32 = (DWORD *) addr;
-    *addr32 = (c >> 8) | 0xff000000;
-
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
     addr += bpp;
-    addr32 = (DWORD *) addr;
-    *addr32 = (c >> 8) | 0xff000000;
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
     addr += pitch;
-    addr32 = (DWORD *) addr;
-    *addr32 = (c >> 8) | 0xff000000;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
     addr -= bpp;
-    addr32 = (DWORD *) addr;
-    *addr32 = (c >> 8) | 0xff000000;
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+
+
 #else
     addr[0] = c & 0xff;		/* B */
     addr[1] = (c >> 8) & 0xff;	/* R */
@@ -520,6 +695,145 @@ __SETDOT_DDRAW_320p(Uint8 * addr, int bpp, int pitch, DWORD c)
     addr[0] = c & 0xff;		/* B */
     addr[1] = (c >> 8) & 0xff;	/* R */
     addr[2] = (c >> 16) & 0xff;	/* G */
+#endif
+}
+
+/*
+ * 320x200,非フルスキャン、原寸 
+ * (DDRAW) 16/15bpp
+ */
+static inline void
+__SETDOT_DDRAW_320p_16(Uint8 * addr, int bpp, int pitch, DWORD c)
+{
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = c  & 0xff;	/* G */
+    addr += bpp;
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = c  & 0xff;	/* G */
+    addr += pitch;
+
+    addr[1] = (c >> 8)& 0xff;		/* B */
+    addr[0] = c  & 0xff;	/* R */
+    addr -= bpp;
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = c  & 0xff;	/* G */
+
+
+#else
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += pitch;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr -= bpp;
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+#endif
+}
+
+
+/*
+ * 320x200,フルスキャン、倍角
+ * (DDRAW)
+ * 16/15bpp
+ */
+
+static inline void
+__SETDOT_DDRAW_320p_DUP_16(Uint8 * addr, int bpp, int pitch, DWORD c)
+{
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    /*
+     * 上段
+     */
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += bpp;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += bpp;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += bpp;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += (pitch - bpp * 3);
+
+    /*
+     * 下段
+     */
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += bpp;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += bpp;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    addr += bpp;
+
+    addr[2] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff;	/* G */
+    // addr += (pitch - bpp * 3);
+#else
+    /*
+     * 上段
+     */
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += (pitch - bpp * 3);
+
+    /*
+     * 下段
+     */
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr += bpp;
+
+    addr[0] = c & 0xff;		/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    // addr += (pitch - bpp * 3);
+
+
 #endif
 }
 
@@ -657,6 +971,33 @@ __SETBYTE_DDRAW_320i(Uint8 * addr, int bpp, int pitch, DWORD *c)
 }
 
 /*
+ * 320x200,非フルスキャン、倍角
+ * (DDRAW)
+ * 16bpp
+ */
+
+static inline void
+__SETBYTE_DDRAW_320i_16(Uint8 * addr, int bpp, int pitch, DWORD *c)
+{
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[0]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[1]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[2]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[3]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[4]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[5]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[6]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320i_16(addr, bpp, pitch, c[7]);
+        // addr += bpp * 2;
+}
+
+/*
  * 一バイト単位で描画
  * 320x200,非フルスキャン、原寸
  * (DDRAW)
@@ -680,6 +1021,34 @@ __SETBYTE_DDRAW_320p(Uint8 * addr, int bpp, int pitch, DWORD *c)
         __SETDOT_DDRAW_320p(addr, bpp, pitch, c[6]);
         addr += bpp * 2;
         __SETDOT_DDRAW_320p(addr, bpp, pitch, c[7]);
+        // addr += bpp * 2;
+}
+
+/*
+ * 一バイト単位で描画
+ * 320x200,非フルスキャン、原寸
+ * (DDRAW)
+ * 16bpp
+ */
+
+static inline void
+__SETBYTE_DDRAW_320p_16(Uint8 * addr, int bpp, int pitch, DWORD *c)
+{
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[0]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[1]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[2]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[3]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[4]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[5]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[6]);
+        addr += bpp * 2;
+        __SETDOT_DDRAW_320p_16(addr, bpp, pitch, c[7]);
         // addr += bpp * 2;
 }
 
@@ -716,6 +1085,42 @@ __SETBYTE_DDRAW_1280_320i(Uint8 * addr, int bpp, int pitch, DWORD * c)
         __SETDOT_DDRAW_320p_DUP(addr, bpp, pitch, c[7]);
         // addr += bpp * 4;
 }
+
+/*
+ * 一バイト単位で描画
+ * 320x200,非フルスキャン、倍角
+ * (DDRAW)
+ * 16bpp
+ */
+
+static inline void
+__SETBYTE_DDRAW_1280_320i_16(Uint8 * addr, int bpp, int pitch, DWORD * c)
+{
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[0]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[1]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[2]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[3]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[4]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[5]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[6]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[7]);
+        // addr += bpp * 4;
+}
+
 /*
  * 一バイト単位で描画
  * 320x200,フルスキャン、倍角
@@ -759,6 +1164,51 @@ __SETBYTE_DDRAW_1280_320p(Uint8 * addr, int bpp, int pitch, DWORD *c)
 
 }
 
+
+/*
+ * 一バイト単位で描画
+ * 320x200,フルスキャン、倍角
+ * (DDRAW)
+ * 16bpp
+ */
+
+static inline void
+__SETBYTE_DDRAW_1280_320p_16(Uint8 * addr, int bpp, int pitch, DWORD *c)
+{
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[0]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[0]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[1]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[1]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[2]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[2]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[3]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[3]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[4]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[4]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[5]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[5]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[6]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[6]);
+        addr += bpp * 4;
+
+        __SETDOT_DDRAW_320p_DUP_16(addr, bpp, pitch, c[7]);
+        __SETDOT_DDRAW_320p_DUP_16(addr + pitch, bpp, pitch, c[7]);
+        // addr += bpp * 4;
+
+}
+
 /*
  * 8色モード,200ラインのVRAMデータを取り込んでピクセルデータに変換する
  */
@@ -792,6 +1242,42 @@ __GETVRAM_3bpp(BYTE * vram, int x, int y, DWORD * c)
         c[5] =   rgbTTLGDI[((cb & 0x20) >> 5) + ((cr & 0x20) >> 4) + ((cg & 0x20) >> 3)];
         c[6] =   rgbTTLGDI[((cb & 0x40) >> 6) + ((cr & 0x40) >> 5) + ((cg & 0x40) >> 4)];
         c[7] =   rgbTTLGDI[((cb & 0x80) >> 7) + ((cr & 0x80) >> 6) + ((cg & 0x80) >> 5)];
+}
+
+/*
+ * 8色モード,200ラインのVRAMデータを取り込んでピクセルデータに変換する
+ * ハードウェアパレット対応
+ */
+static inline void
+__GETVRAM_3bpp_HW(BYTE * vram, int x, int y, DWORD * c)
+{
+        BYTE    cb,
+                cr,
+                cg;
+        int     offset;
+
+/*
+ * オフセット設定 
+     */
+        offset = 80 * y + x;
+#if XM7_VER >= 3
+        cb = vram[offset + 0x00000];
+        cr = vram[offset + 0x08000];
+        cg = vram[offset + 0x10000];
+#else
+        cb = vram[offset + 0x00000];
+        cr = vram[offset + 0x04000];
+        cg = vram[offset + 0x08000];
+#endif				/* XM7_VER */
+
+        c[0] =   (cb & 0x01) + ((cr & 0x01) << 1) + ((cg & 0x01) << 2);
+        c[1] =   ((cb & 0x02) >> 1) + (cr & 0x02) + ((cg & 0x02) << 1);
+        c[2] =   ((cb & 0x04) >> 2) + ((cr & 0x04) >> 1) + (cg & 0x04);
+        c[3] =   ((cb & 0x08) >> 3) + ((cr & 0x08) >> 2) +((cg & 0x08) >> 1);
+        c[4] =   ((cb & 0x10) >> 4) + ((cr & 0x10) >> 3) + ((cg & 0x10) >> 2);
+        c[5] =   ((cb & 0x20) >> 5) + ((cr & 0x20) >> 4) + ((cg & 0x20) >> 3);
+        c[6] =   ((cb & 0x40) >> 6) + ((cr & 0x40) >> 5) + ((cg & 0x40) >> 4);
+        c[7] =   ((cb & 0x80) >> 7) + ((cr & 0x80) >> 6) + ((cg & 0x80) >> 5);
 }
 
 /*

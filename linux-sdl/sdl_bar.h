@@ -14,14 +14,16 @@
 extern          "C" {
     
 #endif				/*  */
-    
+
+        /*
+         * Global変数
+         */
+        extern char StatusFont[MAXPATHLEN];
 	/*
 	 *  主要エントリ 
 	 */ 
-
-//        void CreateStatus(GtkWidget * vbox);
         extern void CreateStatus(void);
-                   
+               
 	/*
 	 * ステータスバーの生成 
 	 */            

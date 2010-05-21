@@ -496,7 +496,7 @@ SoundPageInit(void)
    /*
     * 出力モード 
     */ 
-   SelectOptionMenu(SP_STEREO, propdat.nStereoOut);
+   SelectOptionMenu(SP_STEREO, propdat.nStereoOut % 4);
     
    /*
     * テープ音モニタ 
@@ -583,7 +583,7 @@ SoundPageApply(void)
 	/*
 	 * 出力モード 
 	 */ 
-	propdat.nStereoOut = GetIdxOptionMenu(SP_STEREO);
+	propdat.nStereoOut = GetIdxOptionMenu(SP_STEREO) % 4;
     
 	/*
 	 * テープ音モニタ 

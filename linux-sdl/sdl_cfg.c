@@ -9,9 +9,7 @@
     
 #ifdef _XWIN
 
-//#ifdef USE_GTK
-//#include <gtk/gtk.h>
-//#endif
+
 #include "xm7.h"
 #include "device.h"
 #include "fdc.h"
@@ -31,6 +29,7 @@
 #include "sdl_snd.h"
 #include "sdl_kbd.h"
 #include "sdl_draw.h"
+#include "sdl_bar.h"
     
 /*
  *  設定データ定義 →sdl_cfg.h に。
@@ -144,6 +143,7 @@ LoadCfg(void)
     char           string[128];
     char           dir[MAXPATHLEN];
     char           InitDir[MAXPATHLEN];
+    char           status[MAXPATHLEN];
     BOOL flag;
     static const int JoyTable[] =
 	{ 0x70, 0x71, 0x72, 0x73, 0, 0x74, 0x75 
@@ -258,6 +258,7 @@ LoadCfg(void)
     if ((configdat.nStereoOut < 0) || (configdat.nStereoOut > 3)) {
 	configdat.nStereoOut = 0;
     }
+
     configdat.bTapeMon = LoadCfgBool("TapeMon", FALSE);
     configdat.bForceStereo = LoadCfgInt("ForceStereoOutput", FALSE);
     
@@ -396,6 +397,15 @@ LoadCfg(void)
 	(BYTE) LoadCfgInt("MidBtnMode", MOSCAP_WMESSAGE);
     
 #endif				/*  */
+
+    /*
+     * UI
+     */
+	SetCfgSection("UI");
+	if (!LoadCfgString("StatusFont", StatusFont, MAXPATHLEN)) {
+	    strcpy(StatusFont, STAT_FONT);
+	} 
+
 }
 
 
@@ -554,7 +564,13 @@ SaveCfg(void)
 	 * SaveCfgInt("MidBtnMode", configdat.nMidBtnMode); 
 	 */ 
 #endif				/*  */
-	SaveCfgFile();
+    /*
+     * UI (XM7/SDL Only)
+     */
+    SetCfgSection("UI");
+    SaveCfgString("StatusFont", StatusFont);
+    
+    SaveCfgFile();
 }
 
 
@@ -597,7 +613,7 @@ ApplyCfg(void)
     nSoundBuffer = configdat.nSoundBuffer;
     nBeepFreq = configdat.nBeepFreq;
     bFMHQmode = configdat.bFMHQmode;
-    nStereoOut = configdat.nStereoOut;
+    nStereoOut = configdat.nStereoOut % 4;
     bForceStereo = configdat.bForceStereo;
     bTapeMon = configdat.bTapeMon;
     tape_monitor = configdat.bTapeMon;
@@ -645,9 +661,9 @@ ApplyCfg(void)
 /*
  * Optionセクション 
  */ 
-//opn_enable = configdat.bOPNEnable;
-//whg_enable = configdat.bWHGEnable;
-//thg_enable = configdat.bTHGEnable;
+    opn_enable = configdat.bOPNEnable;
+    whg_enable = configdat.bWHGEnable;
+    thg_enable = configdat.bTHGEnable;
     digitize_enable = configdat.bDigitizeEnable;
     
 #if XM7_VER >= 3

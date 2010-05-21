@@ -65,35 +65,62 @@ Palet320()
                         g = 0;
                         b = 0;
 	}
-                /*
-                 * R 
-                 */
-                r <<= 4;
-                if (r > 0) {
+                switch(realDrawArea->format->BitsPerPixel) {
+                case 24:
+                case 32:
+                        /*
+                         * R 
+                         */
+                        r <<= 4;
+                        if (r > 0) {
                         r |= 0x0f;
-                }
-                color |= r;
-                color <<= 8;
+                        }
+                        color |= r;
+                        color <<= 8;
 
-                /*
-                 * G 
-                 */
-                g <<= 4;
-                if (g > 0) {
-                        g |= 0x0f;
-                }
-                color |= g;
-                color <<= 8;
+                        /*
+                         * G 
+                         */
+                        g <<= 4;
+                        if (g > 0) {
+                                g |= 0x0f;
+                        }
+                        color |= g;
+                        color <<= 8;
 
-                /*
-                 * B 
-                 */
-                b <<= 4;
-                if (b > 0) {
-                        b |= 0x0f;
-                }
-                color |= b;
+                        /*
+                         * B 
+                         */
+                        b <<= 4;
+                        if (b > 0) {
+                                b |= 0x0f;
+                        }
+                        color |= b;
+                        break;
+                case 16:
+                case 15:
+                default:
+                        /*
+                         * R 
+                         */
+                        r &= 0x0f;
+                        color |= r;
+                        color <<= 4;
 
+                        /*
+                         * G 
+                         */
+                        g &= 0x0f;
+                        color |= g;
+                        color <<= 4;
+
+                        /*
+                         * B 
+                         */
+                        b &= 0x0f;
+                        color |= b;
+                        break;
+                }
 
                 /*
                  * セット 
@@ -133,23 +160,46 @@ Draw320Sub(int top, int bottom)
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 2) * realDrawArea->pitch +
                                     (x << 5) * realDrawArea->format->BytesPerPixel;
-                            if(bFullScan) {
+                            switch(realDrawArea->format->BitsPerPixel) {
+                            case 32:
+                            case 24:
+                                    if(bFullScan) {
                                     __SETBYTE_DDRAW_1280_320p(addr,
                                                    realDrawArea->
                                                    format->BytesPerPixel,
                                                    realDrawArea->pitch, c);
-		} else {
+                                    } else {
                                     __SETBYTE_DDRAW_1280_320i(addr,
                                                               realDrawArea->
                                                               format->BytesPerPixel,
                                                               realDrawArea->pitch, c);
-		}
+                                    }
+                                    break;
+                            case 16:
+                            case 15:
+                            default:
+                                    if(bFullScan) {
+                                    __SETBYTE_DDRAW_1280_320p_16(addr,
+                                                   realDrawArea->
+                                                   format->BytesPerPixel,
+                                                   realDrawArea->pitch, c);
+                                    } else {
+                                    __SETBYTE_DDRAW_1280_320i_16(addr,
+                                                              realDrawArea->
+                                                              format->BytesPerPixel,
+                                                              realDrawArea->pitch, c);
+                                    }
+                                    break;
+                            }
                             break;
                     case 640:
                     default:
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 4) * realDrawArea->format->BytesPerPixel;
+                            switch(realDrawArea->format->BitsPerPixel) {
+                            case 24:
+                            case 32:
                             if (bFullScan) {
                                     __SETBYTE_DDRAW_320p(addr,
                                                          realDrawArea->format->
@@ -161,6 +211,23 @@ Draw320Sub(int top, int bottom)
                                                          BytesPerPixel,
                                                          realDrawArea->pitch, c);
                             }       
+                            break;
+                            case 16:
+                            case 15:
+                            default:
+                            if (bFullScan) {
+                                    __SETBYTE_DDRAW_320p_16(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            } else {
+                                    __SETBYTE_DDRAW_320i_16(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            }       
+                            break;
+                            }
                     break;
                     }
             }

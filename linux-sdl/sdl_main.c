@@ -90,9 +90,9 @@ void
 CreateDrawSDL(void) 
 {
     SDL_Surface * ret;
-    ret =       SDL_SetVideoMode(640, 480, 24,
+    ret = SDL_SetVideoMode(640, 480, 16,
 	 SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE |
-	 SDL_DOUBLEBUF | SDL_ASYNCBLIT | 0);
+	 SDL_DOUBLEBUF | SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
     if (ret == NULL) {
 	perror("SDL can't get display area.");	/* 最終的にはWidget独立でPopup出す */
 	SDL_FreeSurface(drawArea);
@@ -122,10 +122,10 @@ OnCreate(void *parent)
 #ifdef USE_GTK    
     CreateMenu(parent);
     CreateDrawGTK(parent);
-    CreateStatus();
+//    CreateStatus();
 
 #else
-    CreateStatus();
+//    CreateStatus();
 
 #endif
 /*
@@ -147,7 +147,7 @@ OnCreate(void *parent)
         InitSnd();
         InitKbd();
         InitSch();
-
+        CreateStatus();
  
     
 //#ifdef FDDSND
