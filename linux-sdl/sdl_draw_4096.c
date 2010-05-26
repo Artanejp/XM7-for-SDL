@@ -149,10 +149,14 @@ Draw320Sub(int top, int bottom)
      * yループ 
      */
     for (y = top; y < bottom; y++) {
+            if(y >= realDrawArea->h) break;            
+
             /*
              * xループ 
              */
-            for (x = nDrawLeft >> 4; x < nDrawRight >> 4; x++) {
+            for (x = 0 >> 4; x < 640 >> 4; x++) {
+                    if(x << 4  >= realDrawArea->w) break;            
+
                     __GETVRAM_12bpp(vram_dptr, x, y, c);
                     
                     switch (nDrawWidth) {
@@ -235,94 +239,32 @@ Draw320Sub(int top, int bottom)
     SDL_UnlockSurface(realDrawArea);
 }
 
-#if XM7_VER >= 3
 /*
- *      320x200、アナログモード
- *      ウィンドウ内描画用サブ
- */
-static void
-Draw320WSub(int top, int bottom, int left, int right)
-
-{
-    int             x,
-                    y;
-    DWORD           c[8];
-    BYTE            bit;
-    BYTE            b[4],
-                    r[4],
-                    g[4];
-    Uint8          *addr;
-
-    SDL_LockSurface(realDrawArea);
-    /*
-     * yループ 
-     */
-    for (y = top; y < bottom; y++) {
-
-	/*
-	 * xループ 
-	 */
-	for (x = left; x < right; x++) {
-	    __GETVRAM_12bpp(vram_bdptr, x, y, c);
-	    switch (nDrawWidth) {
-	    case 1280:
-		addr = (Uint8 *) realDrawArea->pixels +
-		    (y << 2) * realDrawArea->pitch +
-		    (x << 5) * realDrawArea->format->BytesPerPixel;
-		if (bFullScan) {
-		    __SETBYTE_DDRAW_1280_320p(addr,
-					      realDrawArea->
-					      format->BytesPerPixel,
-					      realDrawArea->pitch, c);
-		} else {
-		    __SETBYTE_DDRAW_1280_320i(addr,
-					      realDrawArea->
-					      format->BytesPerPixel,
-					      realDrawArea->pitch, c);
-		}
-		break;
-	    case 640:
-	    default:
-		addr = (Uint8 *) realDrawArea->pixels +
-		    (y << 1) * realDrawArea->pitch +
-		    (x << 4) * realDrawArea->format->BytesPerPixel;
-		if (bFullScan) {
-		    __SETBYTE_DDRAW_320p(addr,
-					 realDrawArea->format->
-					 BytesPerPixel,
-					 realDrawArea->pitch, c);
-		} else {
-		    __SETBYTE_DDRAW_320i(addr,
-					 realDrawArea->format->
-					 BytesPerPixel,
-					 realDrawArea->pitch, c);
-		}
-		break;
-	    }
-	}
-    }
-    SDL_UnlockSurface(realDrawArea);
-}
-
-/*
- *      320x200、アナログモード
- *      描画
+ * 320x200, アナログモード
+ * タイマイベント描画
  */
 void
-Draw320(void)
+Draw320All(void)
 {
 #if XM7_VER >= 3
     WORD            wdtop,
                     wdbtm;
 #endif
-
+    realDrawArea = SDL_GetVideoSurface();
+    if(realDrawArea == NULL) return;
     /*
      * パレット設定 
      */
-    if (bPaletFlag) {
-	Palet320();
-    }
-
+    /*
+     *描画モードを変えたら強制的にPalet320すること。
+     */
+    Palet320();
+    nDrawTop = 0;
+    nDrawBottom = 400;
+    nDrawLeft = 0;
+    nDrawRight = 640;
+    SetDrawFlag(TRUE);
+    
     /*
      * クリア処理 
      */
@@ -333,72 +275,35 @@ Draw320(void)
     /*
      * レンダリング 
      */
-    if (nDrawTop >= nDrawBottom) {
-	return;
+    switch(nDrawWidth) {
+    case 1280:
+            Draw320Sub(0,400>>1);
+            break;
+    case 640:
+    default:
+            Draw320Sub(0,400>>1);
+            break;
     }
-#if XM7_VER >= 3
-    /*
-     * ウィンドウオープン時 
-     */
-    if (window_open) {
-	/*
-	 * ウィンドウ外 上側の描画 
-	 */
-	if ((nDrawTop >> 1) < window_dy1) {
-	    Draw320Sub(nDrawTop >> 1, window_dy1);
-	}
-
-	/*
-	 * ウィンドウ内の描画 
-	 */
-	if ((nDrawTop >> 1) > window_dy1) {
-	    wdtop = (WORD) (nDrawTop >> 1);
-	} else {
-	    wdtop = window_dy1;
-	}
-
-	if ((nDrawBottom >> 1) < window_dy2) {
-	    wdbtm = (WORD) (nDrawBottom >> 1);
-	} else {
-	    wdbtm = window_dy2;
-	}
-
-	if (wdbtm > wdtop) {
-	    Draw320WSub(wdtop, wdbtm, window_dx1, window_dx2);
-	}
-
-	/*
-	 * ウィンドウ外 下側の描画 
-	 */
-	if ((nDrawBottom >> 1) > window_dy2) {
-	    Draw320Sub(window_dy2, nDrawBottom >> 1);
-	}
+	if(!bFullScan){
+            RenderSetOddLine();
     } else {
-	Draw320Sub(nDrawTop >> 1, nDrawBottom >> 1);
+            RenderFullScan();
     }
-#else
-    Draw320Sub(nDrawTop >> 1, nDrawBottom >> 1);
-#endif
 
-    // if (!bFullScan) {
-    // RenderSetOddLine();
-    // }
 
-    BitBlt(nDrawLeft, nDrawTop,
-	   (nDrawRight - nDrawLeft), (nDrawBottom - nDrawTop),
-	   nDrawLeft, nDrawTop);
+    //BitBlt(nDrawLeft, nDrawTop,
+//	   (nDrawRight - nDrawLeft), (nDrawBottom - nDrawTop),
+//	   nDrawLeft, nDrawTop);
 
-    /*
-     * 次回に備え、ワークリセット 
-     */
     nDrawTop = 400;
     nDrawBottom = 0;
-    nDrawLeft = 640;
-    nDrawRight = 0;
+    nDrawLeft = 0;
+    nDrawRight = 640;
     bPaletFlag = FALSE;
     SetDrawFlag(FALSE);
 }
 
-#endif				/* XM7_VER >=3 */
+
+
 
 

@@ -46,10 +46,12 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
     switch(realDrawArea->format->BitsPerPixel) {
     case 24:
             for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
-                    for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+                    for (x = 0; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;            
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 3) * realDrawArea->format->BytesPerPixel;
@@ -61,10 +63,12 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 32:
             for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;  
                     /*
                      * xループ     
                      */
-                    for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+                    for (x = 0 ; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 3) * realDrawArea->format->BytesPerPixel;
@@ -76,10 +80,12 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 16:
             for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
-                    for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+                    for (x = 0 ; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 3) * realDrawArea->format->BytesPerPixel;
@@ -91,10 +97,12 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 15:
             for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
-                    for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+                    for (x =  0 >> 3; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 3) * realDrawArea->format->BytesPerPixel;
@@ -106,14 +114,16 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 8:
             for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
-                    for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+                    for (x = 0 >> 3; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 3) * realDrawArea->format->BytesPerPixel;
-                            __GETVRAM_3bpp_HW(vram_dptr, x, y, c);
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
                             __SETBYTE_DDRAW_640p_8(addr, realDrawArea->format->BytesPerPixel,
                                                  realDrawArea->pitch, c);
                     }
@@ -121,10 +131,12 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     default:
             for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
-                    for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+                    for (x = 0 >> 3; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
                             addr = (Uint8 *) realDrawArea->pixels +
                                     (y << 1) * realDrawArea->pitch +
                                     (x << 3) * realDrawArea->format->BytesPerPixel;
@@ -149,42 +161,109 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
     Uint8          *addr;
 
     DWORD           c[8];
-
-    /*
-     * yループ 
-     */
-    for (y = top; y < bottom; y++) {
-	/*
-	 * xループ 
-	 */
-	for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
-             addr = (Uint8 *) realDrawArea->pixels +
-		(y << 1) * realDrawArea->pitch +
-		(x << 3) * realDrawArea->format->BytesPerPixel;
-            switch(realDrawArea->format->BitsPerPixel) {
-            case 32:
-            case 24:
-                    __GETVRAM_3bpp(vram_dptr, x, y, c);
-     
-                    __SETBYTE_DDRAW_640i(addr, realDrawArea->format->BytesPerPixel,
-                                         realDrawArea->pitch, c);
-                    break;
-            case 8:
-                    __GETVRAM_3bpp_HW(vram_dptr, x, y, c);
-     
-                    __SETBYTE_DDRAW_640i_8(addr, realDrawArea->format->BytesPerPixel,
-                                         realDrawArea->pitch, c);
-                    break;
-            default:
-                    __GETVRAM_3bpp_HW(vram_dptr, x, y, c);
-     
-                    __SETBYTE_DDRAW_640i_8(addr, realDrawArea->format->BytesPerPixel,
-                                         realDrawArea->pitch, c);
-                    break;
-
+    switch(realDrawArea->format->BitsPerPixel) {
+    case 24:
+            for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
+                    /*
+                     * xループ     
+                     */
+                    for (x = 0; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;            
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 3) * realDrawArea->format->BytesPerPixel;
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
+                            __SETBYTE_DDRAW_640i(addr, realDrawArea->format->BytesPerPixel,
+                                                 realDrawArea->pitch, c);
+                    }
             }
-	}
-
+            break;
+    case 32:
+            for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;  
+                    /*
+                     * xループ     
+                     */
+                    for (x = 0 ; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 3) * realDrawArea->format->BytesPerPixel;
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
+                            __SETBYTE_DDRAW_640i(addr, realDrawArea->format->BytesPerPixel,
+                                                 realDrawArea->pitch, c);
+                    }
+            }
+            break;
+    case 16:
+            for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
+                    /*
+                     * xループ     
+                     */
+                    for (x = 0 ; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 3) * realDrawArea->format->BytesPerPixel;
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
+                            __SETBYTE_DDRAW_640i(addr, realDrawArea->format->BytesPerPixel,
+                                                 realDrawArea->pitch, c);
+                    }
+            }
+            break;
+    case 15:
+            for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
+                    /*
+                     * xループ     
+                     */
+                    for (x =  0 >> 3; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 3) * realDrawArea->format->BytesPerPixel;
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
+                            __SETBYTE_DDRAW_640i(addr, realDrawArea->format->BytesPerPixel,
+                                                 realDrawArea->pitch, c);
+                    }
+            }
+            break;
+    case 8:
+            for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
+                    /*
+                     * xループ     
+                     */
+                    for (x = 0 >> 3; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 3) * realDrawArea->format->BytesPerPixel;
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
+                            __SETBYTE_DDRAW_640i_8(addr, realDrawArea->format->BytesPerPixel,
+                                                 realDrawArea->pitch, c);
+                    }
+            }
+            break;
+    default:
+            for (y = top; y < bottom; y++) {
+                    if( y >= realDrawArea->h) return;
+                    /*
+                     * xループ     
+                     */
+                    for (x = 0 >> 3; x < 640 >> 3; x++) {
+                            if(x << 3  >= realDrawArea->w) break;
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 3) * realDrawArea->format->BytesPerPixel;
+                            __GETVRAM_3bpp(vram_dptr, x, y, c);
+                            __SETBYTE_DDRAW_640i(addr, realDrawArea->format->BytesPerPixel,
+                                                 realDrawArea->pitch, c);
+                    }
+            }
+            break;
     }
 }
 
@@ -204,10 +283,12 @@ Draw640Sub2_DDRAW1280p(int top, int bottom)
      * yループ 
      */
     for (y = top; y < bottom; y++) {
+            if( y >= realDrawArea->h) return;
 	/*
 	 * xループ 
 	 */
-	for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+	for (x = 0 >> 3; x < 640 >> 3; x++) {
+            if(x << 3  >= realDrawArea->w) break;
 	    addr = (Uint8 *) realDrawArea->pixels +
 		(y << 2) * realDrawArea->pitch +
 		(x << 4) * realDrawArea->format->BytesPerPixel;
@@ -244,10 +325,12 @@ Draw640Sub2_DDRAW1280i(int top, int bottom)
      * yループ 
      */
     for (y = top; y < bottom; y++) {
+            if( y >= realDrawArea->h) return;
 	/*
 	 * xループ 
 	 */
-	for (x = nDrawLeft >> 3; x < nDrawRight >> 3; x++) {
+	for (x = 0 >> 3; x < 640 >> 3; x++) {
+            if(x << 3  >= realDrawArea->w) break;
 	    addr = (Uint8 *) realDrawArea->pixels +
 		(y << 2) * realDrawArea->pitch +
 		(x << 4) * realDrawArea->format->BytesPerPixel;
@@ -284,6 +367,7 @@ Draw640Sub(int top, int bottom)
     DWORD           c[8];
 
     SDL_LockSurface(realDrawArea);
+
     switch (nDrawWidth) {
     case 1280:
 	if (bFullScan) {
@@ -305,163 +389,7 @@ Draw640Sub(int top, int bottom)
 }
 
 
-static void
-Draw640WSub2_DDRAW640p(int top, int bottom, int left, int right)
-{
-    Uint8          *pos,
-                   *posbase;
-    int             x,
-                    y;
-    int             pitch,
-                    bpp;
-    DWORD           c[8];
 
-
-    pitch = realDrawArea->pitch;
-    bpp = realDrawArea->format->BytesPerPixel;
-    posbase =
-	(Uint8 *) realDrawArea->pixels + top * pitch * 2 + left * bpp;
-
-    for (y = top; y < bottom; y++) {
-	pos = posbase;
-	/*
-	 * xループ 
-	 */
-	for (x = left; x < right; x++) {
-	    __GETVRAM_3bpp(vram_bdptr, x, y, c);
-	    __SETBYTE_DDRAW_640p(pos, bpp, pitch, c);
-	    pos += bpp * 8;
-	}
-	posbase += (pitch * 2);
-    }
-}
-
-static void
-Draw640WSub2_DDRAW640i(int top, int bottom, int left, int right)
-{
-    Uint8          *pos,
-                   *posbase;
-    int             x,
-                    y;
-    int             pitch,
-                    bpp;
-    DWORD           c[8];
-
-    pitch = realDrawArea->pitch;
-    bpp = realDrawArea->format->BytesPerPixel;
-    posbase =
-	(Uint8 *) realDrawArea->pixels + top * pitch * 2 + left * bpp;
-
-    for (y = top; y < bottom; y++) {
-	pos = posbase;
-	/*
-	 * xループ 
-	 */
-	for (x = left; x < right; x++) {
-	    __GETVRAM_3bpp(vram_bdptr, x, y, c);
-	    __SETBYTE_DDRAW_640i(pos, bpp, pitch, c);
-	    pos += bpp * 8;
-	}
-	posbase += pitch * 2;
-    }
-}
-
-static void
-Draw640WSub2_DDRAW1280p(int top, int bottom, int left, int right)
-{
-    Uint8          *pos,
-                   *posbase;
-    int             x,
-                    y;
-    int             pitch,
-                    bpp;
-    DWORD           c[8];
-
-
-    pitch = realDrawArea->pitch;
-    bpp = realDrawArea->format->BytesPerPixel;
-    posbase =
-	(Uint8 *) realDrawArea->pixels + top * pitch * 4 + left * bpp * 2;
-
-    for (y = top; y < bottom; y++) {
-	pos = posbase;
-	/*
-	 * xループ 
-	 */
-	for (x = left; x < right; x++) {
-	    __GETVRAM_3bpp(vram_bdptr, x, y, c);
-	    __SETBYTE_DDRAW_1280_640p(pos, bpp, pitch, c);
-	    pos += bpp * 16;
-	}
-	posbase += pitch * 4;
-    }
-}
-
-static void
-Draw640WSub2_DDRAW1280i(int top, int bottom, int left, int right)
-{
-    Uint8          *pos,
-                   *posbase;
-    int             x,
-                    y;
-    int             pitch,
-                    bpp;
-    DWORD           c[8];
-
-
-    pitch = realDrawArea->pitch;
-    bpp = realDrawArea->format->BytesPerPixel;
-    posbase =
-	(Uint8 *) realDrawArea->pixels + top * pitch * 4 + left * bpp * 2;
-
-    for (y = top; y < bottom; y++) {
-	pos = posbase;
-	/*
-	 * xループ 
-	 */
-	for (x = left; x < right; x++) {
-	    __GETVRAM_3bpp(vram_bdptr, x, y, c);
-	    __SETBYTE_DDRAW_1280_640i(pos, bpp, pitch, c);
-	    pos += bpp * 16;
-	}
-	posbase += pitch * 4;
-    }
-}
-
-#if XM7_VER >= 3
-
-
-
-/*
- *      640x200、デジタルモード
- *      ウィンドウ内描画サブ
- */
-static void
-Draw640WSub(int top, int bottom, int left, int right)
-{
-
-
-    SDL_LockSurface(realDrawArea);
-
-    switch (nDrawWidth) {
-    case 1280:
-	if (bFullScan) {
-	    Draw640WSub2_DDRAW1280p(top, bottom, left, right);
-	} else {
-	    Draw640WSub2_DDRAW1280i(top, bottom, left, right);
-	}
-	break;
-    default:
-	if (bFullScan) {
-	    Draw640WSub2_DDRAW640p(top, bottom, left, right);
-	} else {
-	    Draw640WSub2_DDRAW640i(top, bottom, left, right);
-	}
-	break;
-    }
-    SDL_UnlockSurface(realDrawArea);
-}
-#endif
 /*
  *      640x200/400、デジタルモード
  *      パレット設定
@@ -582,30 +510,33 @@ Palet640(void)
  *      640x200、デジタルモード
  *      描画
  */
+
+/*
+ *      640x200、デジタルモード
+ *      描画
+ */
 void
-Draw640(void)
+Draw640All(void)
 {
 #if XM7_VER >= 3
     WORD            wdtop,
                     wdbtm;
 #endif
     realDrawArea = SDL_GetVideoSurface();
+    if(realDrawArea == NULL) return;
     /*
      * パレット設定 
      */
-    if (bPaletFlag) {
-            /*
-             *描画モードを変えたら強制的にPalet640すること。
-             */
-            Palet640();
-
-            nDrawTop = 0;
-            nDrawBottom = 400;
-            nDrawLeft = 0;
-            nDrawRight = 640;
-            SetDrawFlag(TRUE);
-    }
-
+    /*
+     *描画モードを変えたら強制的にPalet640すること。
+     */
+    Palet640();
+    nDrawTop = 0;
+    nDrawBottom = 400;
+    nDrawLeft = 0;
+    nDrawRight = 640;
+//    SetDrawFlag(TRUE);
+    
     /*
      * クリア処理 
      */
@@ -616,65 +547,29 @@ Draw640(void)
     /*
      * レンダリング 
      */
-    if ((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-#if XM7_VER >= 3
-	/*
-	 * ウィンドウオープン時 
-	 */
-	if (window_open) {
-	    /*
-	     * ウィンドウ外 上側の描画 
-	     */
-	    if ((nDrawTop >> 1) < window_dy1) {
-		Draw640Sub(nDrawTop >> 1, window_dy1);
-	    }
-
-	    /*
-	     * ウィンドウ内の描画 
-	     */
-	    if ((nDrawTop >> 1) > window_dy1) {
-		wdtop = (WORD) (nDrawTop >> 1);
-	    } else {
-		wdtop = window_dy1;
-	    }
-
-	    if ((nDrawBottom >> 1) < window_dy2) {
-		wdbtm = (WORD) (nDrawBottom >> 1);
-	    } else {
-		wdbtm = window_dy2;
-	    }
-
-	    if (wdbtm > wdtop) {
-		Draw640WSub(wdtop, wdbtm, window_dx1, window_dx2);
-	    }
-
-	    /*
-	     * ウィンドウ外 下側の描画 
-	     */
-	    if ((nDrawBottom >> 1) > window_dy2) {
-		Draw640Sub(window_dy2, nDrawBottom >> 1);
-	    }
-	} else {
-	    Draw640Sub(nDrawTop >> 1, nDrawBottom >> 1);
-	}
-#else
-	Draw640Sub(nDrawTop >> 1, nDrawBottom >> 1);
-#endif
-	// if(!bFullScan){
-	// RenderSetOddLine();
-	// }
+    switch(nDrawWidth) {
+    case 1280:
+            Draw640Sub(0,400>>1);
+            break;
+    case 640:
+    default:
+            Draw640Sub(0,200>>1);
+            break;
+    }
+	if(!bFullScan){
+            RenderSetOddLine();
+    } else {
+            RenderFullScan();
     }
 
-    BitBlt(nDrawLeft, nDrawTop,
-	   (nDrawRight - nDrawLeft), (nDrawBottom - nDrawTop),
-	   nDrawLeft, nDrawTop);
 
-    nDrawTop = 400;
-    nDrawBottom = 0;
-    nDrawLeft = 640;
-    nDrawRight = 0;
+
+    nDrawTop = 0;
+    nDrawBottom = 400;
+    nDrawLeft = 0;
+    nDrawRight = 640;
     bPaletFlag = FALSE;
-    SetDrawFlag(FALSE);
+//    SetDrawFlag(FALSE);
 }
 
 

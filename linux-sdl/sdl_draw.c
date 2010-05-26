@@ -78,15 +78,17 @@ static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
 /*
  * マルチスレッド向け定義
  */
-static SDL_Thread *DrawThread;
-static SDL_cond    *DrawCond;
+static SDL_TimerID DrawTID;
 static SDL_sem   *DrawSem;
 static BOOL       SelectDraw2(void);
+static void       ChangeResolution();
+
+
+
 
     /*
      *  プロトタイプ宣言 
      */ 
-extern void     Draw640(void);
 extern void    Draw320(void);
 extern void    Palet320();
 extern void    Palet640(void);
@@ -94,72 +96,89 @@ extern void    Draw400l(void);
 extern void    Draw256k(void);
 void           SetDrawFlag(BOOL flag);
 void           RenderSetOddLine(void);
+void           RenderFullScan(void);
 
 
-static int 
-DrawTask(void *arg)
+/*
+ * 描画タスク: 一定msごとに書き込み
+ */
+extern void Draw640All(void);
+extern void Draw320All(void);
+
+static int
+DrawTaskMain(void *arg)
 {
-        printf("DBG: Launch Draw Thread\n");
-        do {
-                if(DrawSem == NULL) {
-                        SDL_Delay(1); /* 20fps */
-                        continue;
-                }
+        SDL_Surface *p;
 
-                SDL_SemWait(DrawSem);
 
-                displayArea = SDL_GetVideoSurface();
-                if(displayArea == NULL) {
-                        continue;
-                }
-                SelectDraw2();
-                DrawStatus();    
+        p = SDL_GetVideoSurface();
+        if(p == NULL) return;
+        
+        displayArea = p;
+        realDrawArea = p;
+        ChangeResolution(); 
+        SelectDraw2();
+        DrawStatus();    
 #if XM7_VER >= 3
-                /*
-                 *    いずれかを使って描画 
-                 */ 
+        /*
+         *    いずれかを使って描画 
+         */ 
                 
-                switch (bMode) {
-                case SCR_400LINE:
-                        Draw400l();
-                        break;
-                case SCR_262144:
-                        Draw256k();
-                        break;
-                case SCR_4096:
-                        Draw320();
-                        break;
-                case SCR_200LINE:
-                        Draw640();
-                        break;
-                }
+        switch (bMode) {
+        case SCR_400LINE:
+                Draw400l();
+                break;
+        case SCR_262144:
+                Draw256k();
+                break;
+        case SCR_4096:
+                Draw320All();
+                break;
+        case SCR_200LINE:
+                Draw640All();
+                break;
+        }
 
 #else				/*  */
 /*
  * どちらかを使って描画 
  */ 
-                if (bAnalog) {
-                        Draw320();
-                }
-                else {
-                        Draw640();
-                }    
+        if (bAnalog) {
+                Draw320All();
+        }
+        else {
+                Draw640All();
+        }    
 #endif				/*  */
-                while(DrawSem == NULL) {
-//                        SDL_Delay(1); /* 20fps */
-                        continue;
-                }
-//                SDL_SemPost(DrawSem);
-//                SDL_Delay(1); /* 20fps */
-
-        }while(1);
+//        SDL_UnlockSurface(p);
         return 0;
-}    
+}
+
+static SDL_NewTimerCallback
+DrawTaskInt(Uint32 interval, void *arg)
+{
+        SDL_Surface *p;
+//        if(SDL_SemWaitTimeout(DrawSem, 3) !=0) { /* 3msだけ待つ */
+//                return (interval);
+//        }
+
+        DrawTaskMain(NULL);
+        if(DrawSem != NULL) {
+                SDL_SemPost(DrawSem);
+        }
+        return interval;
+}
+
+/*
+ * 描画タスク: 差分書き込み
+ */
+
+
 
     /*
      *  SETDOT（そのまま） 
      */ 
-    static void
+static void
 SETDOT(WORD x, WORD y, DWORD c) 
 {
     Uint8 * addr =
@@ -173,19 +192,10 @@ SETDOT(WORD x, WORD y, DWORD c)
 static void
 ChangeResolution() 
 {
-        SDL_Surface *p = SDL_GetVideoSurface();
+        SDL_Surface *p;
         if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
                 return;
         }
-    if(DrawThread != NULL) {
-            SDL_KillThread(DrawThread);
-            DrawThread = NULL;
-    }
-    if(DrawSem != NULL) {
-            SDL_DestroySemaphore(DrawSem);
-            DrawSem = NULL;
-    }
-
 
 
 #if XM7_VER >= 3
@@ -196,18 +206,16 @@ ChangeResolution()
         /*
          * KILL Thread
          */
+        displayArea = SDL_GetVideoSurface();
+        realDrawArea = SDL_GetVideoSurface();
+
+
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
+        displayArea = SDL_GetVideoSurface();
+        realDrawArea = SDL_GetVideoSurface();
+
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
-    if(DrawSem == NULL) {
-            DrawSem = SDL_CreateSemaphore(1);
-            SDL_SemPost(DrawSem);
-    }
-
-    if(DrawThread == NULL) {
-            DrawThread = SDL_CreateThread(DrawTask, NULL);
-    }
-
 }
     
 
@@ -241,16 +249,23 @@ BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
         if (bOldFullScan != bFullScan) {
                 if (!bFullScan) {
                         RenderSetOddLine();
+                } else {
+                        RenderFullScan();
                 }
+        } else {
+                SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+                SDL_Flip(displayArea);
         }
+
         bOldFullScan = bFullScan;
-        if (!bDirectDraw) {
-                SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
-                               realDrawArea->h);
-                SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
-        }
-//        SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-        SDL_Flip(displayArea);
+//        if (!bDirectDraw) {
+//                SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
+//                               realDrawArea->h);
+//                SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
+//        } else {
+//                SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+//                SDL_Flip(displayArea);
+//        }
 }
 
 
@@ -305,10 +320,12 @@ InitDraw(void)
         nWindowDy2 = 0;
 #endif				/*  */
         bDirectDraw = TRUE;
-        DrawThread = NULL;
         DrawSem = NULL;
+        DrawTID = NULL;
+
+
 /*
- * 直接書き込み 
+ * 直接書き込み→間接書き込み
  */ 
         realDrawArea = SDL_GetVideoSurface();
 }
@@ -320,10 +337,11 @@ InitDraw(void)
 void
 CleanDraw(void) 
 {
-        if(DrawThread != NULL) {
-                SDL_KillThread(DrawThread);
-                DrawThread = NULL;
+        if(DrawTID != NULL) {
+                SDL_RemoveTimer(DrawTID);
+                DrawTID = NULL;
         }
+
         if(DrawSem != NULL) {
                 SDL_DestroySemaphore(DrawSem);
                 DrawSem = NULL;
@@ -518,6 +536,7 @@ SelectDraw2(void)
             return TRUE;
     }
     displayArea = SDL_GetVideoSurface();
+    if(displayArea == NULL) return;
     rect.h = nDrawWidth;
     rect.w = nDrawHeight;
     rect.x = 0;
@@ -591,12 +610,6 @@ SelectDraw(void)
 {
     SDL_Rect rect;
     BOOL ret;
-/*
- * 一致しているかチェック 
- */ 
-    if (SelectCheck()) {
-            return TRUE;
-    }
     displayArea = SDL_GetVideoSurface();
     rect.h = nDrawWidth;
     rect.w = nDrawHeight;
@@ -606,46 +619,49 @@ SelectDraw(void)
     /*
      * すべてクリア 
      */ 
-    SDL_LockSurface(displayArea);
+    if(displayArea != NULL) {
+            SDL_LockSurface(displayArea);
 
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-    SDL_FillRect(displayArea, &rect, 0x000000ff);
+            SDL_FillRect(displayArea, &rect, 0x000000ff);
     
 #else				/*  */
-    SDL_FillRect(displayArea, &rect, 0xff000000);
+            SDL_FillRect(displayArea, &rect, 0xff000000);
     
 #endif				/*  */
-    SDL_UnlockSurface(displayArea);
+            SDL_UnlockSurface(displayArea);
     
     /*
      * すべてクリア 
      */ 
-    if(realDrawArea != displayArea) {
-            SDL_LockSurface(realDrawArea);
-            rect.h = realDrawArea->h;
-            rect.w = realDrawArea->w;
-            rect.x = 0;
-            rect.y = 0;
+            if((realDrawArea != displayArea) && (realDrawArea != NULL)) {
+                    SDL_LockSurface(realDrawArea);
+                    rect.h = realDrawArea->h;
+                    rect.w = realDrawArea->w;
+                    rect.x = 0;
+                    rect.y = 0;
     
 #if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-            SDL_FillRect(realDrawArea, &rect, 0x000000ff);
+                    SDL_FillRect(realDrawArea, &rect, 0x000000ff);
     
 #else				/*  */
-            SDL_FillRect(realDrawArea, &rect, 0xff000000);
+                    SDL_FillRect(realDrawArea, &rect, 0xff000000);
     
 #endif				/*  */
-            SDL_UnlockSurface(realDrawArea);
-    }
+                    SDL_UnlockSurface(realDrawArea);
+            }
+
     bOldFullScan = bFullScan;
-    if(DrawThread != NULL) {
-            SDL_KillThread(DrawThread);
-            DrawThread = NULL;
+    if(DrawTID != NULL) {
+            SDL_RemoveTimer(DrawTID);
+            DrawTID = NULL;
     }
     if(DrawSem != NULL) {
             SDL_DestroySemaphore(DrawSem);
             DrawSem = NULL;
     }
+
     /*
      * セレクト 
      */ 
@@ -660,22 +676,28 @@ SelectDraw(void)
     default:
             ret = Select640();
     }
-   
+    } else {
+            ret = TRUE;
+    }
 #else				/*  */
     if (mode320) {
             ret = Select320();
-    }
+    } else {
     ret =  Select640();
-    
+    } 
+    } else {
+        ret = TRUE; 
+    }
 #endif				/*  */
     if(DrawSem == NULL) {
             DrawSem = SDL_CreateSemaphore(1);
             SDL_SemPost(DrawSem);
     }
-
-    if(DrawThread == NULL) {
-            DrawThread = SDL_CreateThread(DrawTask, NULL);
+    if(DrawTID == NULL) {
+            DrawTID = SDL_AddTimer(50, DrawTaskInt, NULL);
     }
+
+
     return ret;
 }
 
@@ -755,32 +777,31 @@ RenderFullScan(void)
     BYTE * p;
     BYTE * q;
     WORD u;
+    SDL_Surface *s = SDL_GetVideoSurface();
     Uint32 pitch;
 
-    SDL_LockSurface(realDrawArea);
+    SDL_LockSurface(s);
     
 /*
  * ポインタ初期化 
  */ 
-    p = (BYTE *) realDrawArea->pixels + nDrawTop * realDrawArea->pitch;
-    pitch = realDrawArea->pitch;
+    p = (BYTE *) s->pixels;
+    pitch = s->pitch;
     q = p + pitch;
     
 	/*
 	 * ループ 
 	 */ 
-	for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
+	for (u = 0; u < nDrawBottom; u += (WORD) 2) {
 	memcpy(q, p, pitch);
 	p += pitch * 2;
 	q += pitch * 2;
     }
-    SDL_UnlockSurface(realDrawArea);
-    if(!bDirectDraw) {
-            SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
-    } else {
-            displayArea = SDL_GetVideoSurface();
-            SDL_Flip(displayArea);
-    }
+    SDL_UnlockSurface(s);
+    displayArea = SDL_GetVideoSurface();
+    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+    SDL_Flip(displayArea);
+
 }
 
 
@@ -792,55 +813,42 @@ RenderSetOddLine(void)
 {
     BYTE *p;
     WORD u;
+    SDL_Surface *s = SDL_GetVideoSurface();
+    SDL_Rect r;
     Uint32 pitch;
 
-    SDL_LockSurface(realDrawArea);
+    if(s == NULL) return;
+    SDL_LockSurface(s);
     switch (nDrawWidth) {
     case 1280:
-            p = realDrawArea->pixels +
-                    ((nDrawTop + 1) << 1) * realDrawArea->pitch;
-            pitch = realDrawArea->pitch;
-            for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
+            r.x = 0;
+            r.w = s->w;
+
+            for (u = 2 ; u < nDrawBottom; u += (WORD) 4) {
+                    r.y = u;
+                    r.h = 2;
+                    SDL_FillRect(s, &r, 0x000000);
 	    
-#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-                    memset(p, 0x00, nDrawWidth >> 3);
-                    p += pitch;
-                    memset(p, 0x00, nDrawWidth >> 3);
-                    p += pitch * 3;
-	    
-#else /*  */
-                    memset(p, 0x00, nDrawWidth >> 3);
-                    p += pitch;
-                    memset(p, 0x00, nDrawWidth >> 3);
-                    p += pitch * 3;
-	    
-#endif /*  */
             }
             break;
     case 640:
     default:
-            p = realDrawArea->pixels + (nDrawTop + 1) * realDrawArea->pitch;
-            pitch = realDrawArea->pitch;
-            for (u = nDrawTop; u < nDrawBottom; u += (WORD) 2) {
- 
-#if SDL_BYTEORDER == SDL_LITTLE_ENDIAN
-                    memset(p, 0x00, nDrawWidth >> 3);
-	    
-#else				/*  */
-                    memset(p, 0x00, nDrawWidth >> 3);
-	    
-#endif				/*  */
-                    p += pitch * 2;
+            p = s->pixels;
+            pitch = s->pitch;
+            r.x = 0;
+            r.w = s->w;
+
+            for (u = 1; u < nDrawBottom; u += (WORD) 2) {
+                    r.y = u;
+                    r.h = 1;
+                    SDL_FillRect(s, &r, 0x000000);
 	}
 	break;
     }
-    SDL_UnlockSurface(realDrawArea);
-    if(!bDirectDraw) {
-            SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w, realDrawArea->h);
-    } else {
-            displayArea = SDL_GetVideoSurface();
-            SDL_Flip(displayArea);
-    }
+    SDL_UnlockSurface(s);
+    displayArea = SDL_GetVideoSurface();
+    SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+    SDL_Flip(displayArea);
 }
 
 
@@ -854,45 +862,15 @@ OnDraw(void)
        /*
         * ここまでやっておいてから解像度を変更する 
         */ 
-        ChangeResolution();
-    
-/*
- * 640-320 自動切り替え 
- */ 
-//        SelectDraw2();
-        SDL_SemPost(DrawSem);
-#if 0
-#if XM7_VER >= 3
-       /*
-        * いずれかを使って描画 
-        */ 
-        switch (bMode) {
-        case SCR_400LINE:
-                Draw400l();
-                break;
-        case SCR_262144:
-                Draw256k();
-                break;
-        case SCR_4096:
-                Draw320();
-                break;
-        case SCR_200LINE:
-                Draw640();
-                break;
-        }
-
-#else				/*  */
-/*
- * どちらかを使って描画 
- */ 
-       if (bAnalog) {
-               Draw320();
-       }
-       else {
-               Draw640();
-       }
-#endif				/*  */
-#endif
+    if(DrawSem == NULL) {
+            DrawSem = SDL_CreateSemaphore(1);
+    }
+    if(DrawTID == NULL) {
+//            SDL_SemWait(DrawSem);
+            ChangeResolution(); 
+            DrawTID = SDL_AddTimer(50, DrawTaskInt, NULL);
+    }
+    SDL_SemPost(DrawSem);
 }
 
 
@@ -907,36 +885,6 @@ int
 OnPaint(void)
 #endif
 {
-        SDL_Rect srcrect, dstrect;
-        int            i;
-
-
-        displayArea = SDL_GetVideoSurface();
-        for (i = 0; i < (80 * 50); i++) {
-                GDIDrawFlag[i] = 1;
-        }
-        srcrect.x = 0;
-        srcrect.y = 0;
-        srcrect.w = (Uint16) realDrawArea->w;
-        srcrect.h = (Uint16) realDrawArea->h;
-        dstrect.x = 0;
-        dstrect.y = 0;
-        dstrect.w = (Uint16) displayArea->w;
-        dstrect.h = (Uint16) displayArea->h;
-    
-/*
- * ここまでやっておいてから解像度を変更する 
- */ 
-        
-        ChangeResolution();
-        
-        SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
-                       realDrawArea->h);
-        if (!bDirectDraw) {
-                SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
-        }
-        SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-        return FALSE;
 }
 
 
@@ -950,7 +898,7 @@ vram_notify(WORD addr, BYTE dat)
 {
     WORD x;
     WORD y;
-    
+
 	/*
 	 * y座標算出 
 	 */ 
@@ -1046,6 +994,7 @@ vram_notify(WORD addr, BYTE dat)
 	    nDrawRight = (WORD) (x + 8);
 	}
     }
+
 }
 
 
@@ -1247,7 +1196,7 @@ window_notify(void)
         if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
                 p = &GDIDrawFlag[(nDrawTop >> 3) * 80 + (nDrawLeft >> 3)];
                 for (i = (nDrawTop >> 3); i < ((nDrawBottom + 7) >> 3); i++) {
-                        memset(p, 1, (nDrawRight - nDrawLeft) >> 3);
+                        memset(p, 1, (640 - 0) >> 3);
                         p += 80;
                 }
         }

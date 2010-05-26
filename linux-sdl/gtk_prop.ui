@@ -535,33 +535,25 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <child>
-              <placeholder/>
+              <object class="GtkStatusbar" id="statusbar1">
+                <property name="height_request">30</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="app_paintable">True</property>
+                <property name="spacing">2</property>
+                <property name="has_resize_grip">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
               <object class="GtkHBox" id="hbox16">
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkHBox" id="hbox_Sts_Status">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkStatusbar" id="statusbar1">
-                        <property name="width_request">150</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="app_paintable">True</property>
-                        <property name="spacing">2</property>
-                        <property name="has_resize_grip">False</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="position">0</property>
-                  </packing>
+                  <placeholder/>
                 </child>
                 <child>
                   <object class="GtkHButtonBox" id="hbuttonbox6">
@@ -690,8 +682,6 @@
                     <child>
                       <object class="GtkVolumeButton" id="volume_Total">
                         <property name="label" translatable="yes">&#x97F3;&#x91CF;</property>
-                        <property name="width_request">60</property>
-                        <property name="height_request">20</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -710,7 +700,7 @@ audio-volume-medium</property>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="pack_type">end</property>
-                        <property name="position">2</property>
+                        <property name="position">7</property>
                       </packing>
                     </child>
                   </object>
@@ -3012,9 +3002,9 @@ audio-volume-medium</property>
   </object>
   <object class="GtkSizeGroup" id="sizegroup_EMU">
     <widgets>
-      <widget name="radiobutton_EMU_FM7"/>
-      <widget name="radiobutton_EMU_77AV"/>
       <widget name="radiobutton_EMU_77AVEX"/>
+      <widget name="radiobutton_EMU_77AV"/>
+      <widget name="radiobutton_EMU_FM7"/>
     </widgets>
     <signal name="notify" handler="OnEmuTypeFM7Selected" object="0"/>
   </object>

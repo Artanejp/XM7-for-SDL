@@ -49,13 +49,17 @@ CreateDrawGTK(GtkWidget * parent)
     /*
      * スクリーン描画領域の生成 
      */ 
+    hbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
     gtkDrawArea = gtk_socket_new();
-    gtk_widget_set_usize(gtkDrawArea, 640, 400 + 80);
-    gtk_container_add(GTK_CONTAINER(parent), gtkDrawArea);
+    gtk_widget_set_size_request(hbox, 640, 520);
+    gtk_widget_set_size_request(gtkDrawArea, 1280, 880);
+
+    gtk_container_add(GTK_CONTAINER(hbox), gtkDrawArea);
     
     /*
      * すべて表示 
      */ 
+    gtk_widget_show(hbox);
     gtk_widget_show(gtkDrawArea);
 } 
 
@@ -218,9 +222,11 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 {       
         char            EnvMainWindow[64];
         int             tmpHeight, tmpWidth;
+        GtkWidget        *hbox;
         SDL_Surface     *tmpSurface;
         SDL_Rect        srcrect, dstrect;
         SDL_VideoInfo   *vinfo;
+        SDL_SysWMinfo        sdlinfo;
 /*
  * まずは現在のサーフェイスを退避する 
  */ 
@@ -242,7 +248,12 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         if (srcrect.h > dstrect.h)
                 srcrect.h = dstrect.h;
         SDL_BlitSurface(displayArea, &srcrect, tmpSurface, &dstrect);
-    
+        /*
+         * 1度サーフェースを削除する(クラッシュ対策)
+         */
+        SDL_FreeSurface(displayArea);
+        displayArea = NULL;
+
 /*
  * 表示部分のリサイズ : GTK依存部分につき変更？
  */ 
@@ -254,10 +265,15 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         default:
         case 400:
         case 800:
-                tmpHeight = height + 80;
+                tmpHeight = height + 40;
                 break;
         }
-        gtk_widget_set_usize(gtkDrawArea, width, tmpHeight);
+        hbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
+        gtk_widget_set_size_request(hbox, width, tmpHeight);
+        SDL_Delay(100);
+//        gtk_widget_set_size_request(gtkDrawArea, width, tmpHeight);
+
+
         if((gtkDrawArea != NULL) && (gtkDrawArea->window != NULL)) {
                         sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                                 gdk_x11_drawable_get_xid(gtkDrawArea->window));
@@ -270,11 +286,6 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
                         switch(screen_mode) {
                         case SCR_400LINE:
                         case SCR_200LINE:
-//                        displayArea =
-//                                SDL_SetVideoMode(width, tmpHeight, 8,
-//                                                 SDL_HWSURFACE | SDL_ANYFORMAT |
-//                                                 SDL_DOUBLEBUF |
-//                                                 SDL_ASYNCBLIT |  0);
                         displayArea =
                                 SDL_SetVideoMode(width, tmpHeight, 16,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT |
@@ -300,13 +311,14 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
                         }
 #else
                         if(mode320) {
-                        displayArea =
-                                SDL_SetVideoMode(width, tmpHeight, 24,
+                                displayArea =
+                                        SDL_SetVideoMode(width, tmpHeight, 24,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT |
                                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
                                                  SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
                         } else {
-                                SDL_SetVideoMode(width, tmpHeight, 16,
+                                displayArea = 
+                                        SDL_SetVideoMode(width, tmpHeight, 16,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT |
                                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
                                                  SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
@@ -315,8 +327,8 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
                         /*
                          * Debuhg Code
                          */
-                        vinfo = SDL_GetVideoInfo();
-                        printf("DBG:SCREEN: Changed to BPP %d HW %d HW CC %d\n", displayArea->format->BitsPerPixel, vinfo->hw_available, vinfo->blit_hw_CC);
+//                        vinfo = SDL_GetVideoInfo();
+//                        printf("DBG:SCREEN: Changed to BPP %d HW %d HW CC %d\n", displayArea->format->BitsPerPixel, vinfo->hw_available, vinfo->blit_hw_CC);
 
                 } else {
                         displayArea = SDL_GetVideoSurface();
@@ -343,22 +355,23 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
  */
         
         SDL_FreeSurface(tmpSurface);
-                        
+
 /*
  * 以下に、全画面強制再描画処理を入れる 
  */ 
-        if (bDirectDraw) {
-                realDrawArea = SDL_GetVideoSurface();
-        } else {
-                realDrawArea = drawArea;
-        }
+//        SDL_GetWMInfo(&sdlinfo);
+//        gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
+
+        realDrawArea = SDL_GetVideoSurface();
         /*
          * ステータスラインの強制再描画
          */
         DrawStatusForce();
         if (!bFullScan) {
                 RenderSetOddLine();
-        }   
+        } else {
+                RenderFullScan();
+        }
 }
 
 
@@ -378,7 +391,6 @@ InitInstanceGtk(void)
 /*
  * ウィンドウ生成 
  */ 
-    //wndMain = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gbuilderMain =  gtk_builder_new();
 #ifdef UIDIR
@@ -430,6 +442,7 @@ InitInstanceGtk(void)
  */ 
     OnCreate(vbox);
     SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
+    
     SDL_GetWMInfo(&sdlinfo);
     gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
     

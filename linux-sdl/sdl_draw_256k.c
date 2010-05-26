@@ -208,12 +208,13 @@ Draw256k(void)
     // SDL_UnlockSurface(displayArea);
     SDL_UnlockSurface(realDrawArea);
     if (!bFullScan) {
-	RenderSetOddLine();
+            RenderSetOddLine();
+    } else {
+            RenderFullScan();
     }
-
-    BitBlt(nDrawLeft, nDrawTop,
-	   (nDrawRight - nDrawLeft), (nDrawBottom - nDrawTop),
-	   nDrawLeft, nDrawTop);
+//    BitBlt(nDrawLeft, nDrawTop,
+//	   (nDrawRight - nDrawLeft), (nDrawBottom - nDrawTop),
+//	   nDrawLeft, nDrawTop);
 
     /*
      * 次回に備え、ワークリセット 

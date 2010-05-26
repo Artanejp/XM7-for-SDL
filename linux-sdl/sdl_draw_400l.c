@@ -47,8 +47,8 @@ extern BOOL     bClearFlag;	/* クリアフラグ */
  */
 extern BOOL     BitBlt(int nDestLeft, int nDestTop, int nWidth,
 		       int nHeight, int nSrcLeft, int nSrcTop);
-extern void     RenderFullScan(void);
-extern void     RenderSetOddLine(void);
+//extern void     RenderFullScan(void);
+//extern void     RenderSetOddLine(void);
 extern void     SetDrawFlag(BOOL flag);
 extern void     AllClear(void);
 /*

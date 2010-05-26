@@ -468,7 +468,7 @@ DrawMainCaption(void)
                     if(pS == NULL) return;
                     SDL_BlitSurface(pCaption, NULL, pS, &drec);
                     SDL_UpdateRect(pS, drec.x, drec.y, drec.w, drec.h);
-                    SDL_Flip(pS);
+                    //SDL_Flip(pS);
     }    
             
 
@@ -525,7 +525,7 @@ DrawCAP(void)
                 SDL_BlitSurface(pCapsOff, NULL, p, &drec); 
         }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
-        SDL_Flip(p);
+        //SDL_Flip(p);
 }
 
 
@@ -625,7 +625,7 @@ DrawINS(void)
                 SDL_BlitSurface(pInsOff, &rec, p, &drec);
         }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
-        SDL_Flip(p);
+        //SDL_Flip(p);
 
 }
 
