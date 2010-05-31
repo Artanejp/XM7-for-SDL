@@ -68,7 +68,7 @@ static GdkColor colNORM;
     /*
      *  ステータスバーの生成 
      */ 
-void            FASTCALL
+void
 CreateStatus(GtkWidget * parent) 
 {
         GtkWidget *hbox_Status;

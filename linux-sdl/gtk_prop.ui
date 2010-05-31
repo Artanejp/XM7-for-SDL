@@ -1971,6 +1971,7 @@ audio-volume-medium</property>
                           <object class="GtkVBox" id="vbox16">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
+                            <property name="homogeneous">True</property>
                             <child>
                               <object class="GtkRadioButton" id="radiobutton20">
                                 <property name="label" translatable="yes">320x200</property>
@@ -2028,47 +2029,103 @@ audio-volume-medium</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame11">
+                  <object class="GtkHBox" id="hbox2">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="homogeneous">True</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment9">
+                      <object class="GtkVBox" id="vbox25">
                         <property name="visible">True</property>
-                        <property name="left_padding">12</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkVBox" id="vbox17">
+                          <object class="GtkFrame" id="frame_FPS">
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
+                            <property name="label_xalign">0</property>
+                            <property name="shadow_type">none</property>
                             <child>
-                              <object class="GtkCheckButton" id="checkbutton_fullscan">
-                                <property name="label" translatable="yes">&#x30D5;&#x30EB;&#x30B9;&#x30AD;&#x30E3;&#x30F3;(15KHz)</property>
+                              <object class="GtkAlignment" id="alignment4">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="related_action">action_bFULLSCAN</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="left_padding">12</property>
+                                <child>
+                                  <object class="GtkHBox" id="hbox23">
+                                    <property name="visible">True</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="spinbutton_FPS">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="invisible_char">&#x25CF;</property>
+                                        <property name="climb_rate">1</property>
+                                        <property name="digits">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                </child>
                               </object>
-                              <packing>
-                                <property name="position">0</property>
-                              </packing>
                             </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
+                            <child type="label">
+                              <object class="GtkLabel" id="label_FPS">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">&lt;b&gt;FPS&lt;/b&gt;</property>
+                                <property name="use_markup">True</property>
+                              </object>
                             </child>
                           </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="checkbutton_fullscan">
+                            <property name="label" translatable="yes">&#x30D5;&#x30EB;&#x30B9;&#x30AD;&#x30E3;&#x30F3;(15KHz)</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="related_action">action_bFULLSCAN</property>
+                            <property name="draw_indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label26">
+                    <child>
+                      <object class="GtkVBox" id="vbox26">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;&#x305D;&#x306E;&#x4ED6;&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -3002,9 +3059,9 @@ audio-volume-medium</property>
   </object>
   <object class="GtkSizeGroup" id="sizegroup_EMU">
     <widgets>
-      <widget name="radiobutton_EMU_77AVEX"/>
-      <widget name="radiobutton_EMU_77AV"/>
       <widget name="radiobutton_EMU_FM7"/>
+      <widget name="radiobutton_EMU_77AV"/>
+      <widget name="radiobutton_EMU_77AVEX"/>
     </widgets>
     <signal name="notify" handler="OnEmuTypeFM7Selected" object="0"/>
   </object>
