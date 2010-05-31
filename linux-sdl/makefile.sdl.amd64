@@ -142,7 +142,7 @@ LDFLAGS +=  -L$(IA32BOOTSTRAPED)/usr/lib32/caca \
 LIBS =  -lX11 -lXt -lXext
 #LIBS += -lmemwatch
 
-CFLAGS =        -O0 -export-dynamic
+CFLAGS =        -g -O0 -export-dynamic
 #CFLAGS =        -g -O0
 #CFLAGS =        -O3
 CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
@@ -182,12 +182,6 @@ LIBS += -lmemwatch
 #LIBS += /usr/lib32/libc.a /usr/lib32/libm.a
 
 	
-######
-# OpenGLはまだBuggyです。20100124
-
-#LIBS += \
-#     -lGL
-
 
 all:	xm7.sdl
 
