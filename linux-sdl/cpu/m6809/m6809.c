@@ -70,7 +70,7 @@
 
 *****************************************************************************/
 
-#include "debugger.h"
+//#include "debugger.h"
 #include "m6809.h"
 
 /* Enable big switch statement for the main opcodes */
@@ -82,6 +82,8 @@
 
 #define LOG(x)	do { if (VERBOSE) logerror x; } while (0)
 
+
+   
 /* 6809 Registers */
 typedef struct _m68_state_t m68_state_t;
 struct _m68_state_t
