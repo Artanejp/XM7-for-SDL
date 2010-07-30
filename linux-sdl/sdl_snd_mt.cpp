@@ -512,8 +512,8 @@ LoadWav(char *fname, struct _WAVDATA *wav)
     int
                     fileh;
    char prefix[MAXPATHLEN];
-    ASSERT(fname);
-    ASSERT(wav);
+//    ASSERT(fname);
+//    ASSERT(wav);
 
     /*
      * ファイルオープン 
@@ -1958,7 +1958,7 @@ WavCapture(void)
     if (hWavCapture < 0) {
 	return;
     }
-    ASSERT(pWavCapture);
+//    ASSERT(pWavCapture);
 
     /*
      * ポインタ、サイズを仮決め(nSizeはWORD変換後のBYTE値) 
@@ -2254,7 +2254,7 @@ OpenCaptureSnd(char *fname)
         DWORD               dwSize;
         int                 fileh;
 
-        ASSERT(fname);
+//        ASSERT(fname);
         ASSERT(hWavCapture < 0);
         ASSERT(!bWavCapture);
 

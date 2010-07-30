@@ -124,6 +124,7 @@ typedef struct {
     WORD            total;
                     BYTE(FASTCALL * readmem) (WORD);
     void            (FASTCALL * writemem) (WORD, BYTE);
+    WORD            ea;
 } cpu6809_t;
 #ifdef _WIN32
 #pragma pack(pop)

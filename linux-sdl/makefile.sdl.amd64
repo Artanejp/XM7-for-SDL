@@ -50,7 +50,8 @@ COMMONSRC = \
 	fmgen.cpp \
 	juliet.cpp \
 	vm_sub.c \
-	cpu_x86.asm 
+	m6809.c
+#	cpu_x86.asm 
 
 #	xw_sub.asm
 
@@ -103,9 +104,10 @@ COMMONOBJ = \
 	psg.o \
 	fmgen.o \
 	juliet.o \
-	cpu_x86.o \
 	vm_sub.o \
-
+	m6809.o
+	
+#	cpu_x86.o \
 #	xw_sub.o
 
 
@@ -126,26 +128,27 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 # for Cross Build
 #LDFLAGS = "-Wl,-rpath,/usr/lib32,-rpath,/usr/local/lib32,-rpath,/lib32 -L/usr/lib32 -L/usr/local/lib32 -L/lib32"
-LDFLAGS = \
-         -Wl,-rpath,$(IA32BOOTSTRAPED)/usr/lib32,-rpath,$(IA32BOOTSTRAPED)/usr/local/lib32,-rpath,$(IA32BOOTSTRAPED)/lib32 \
-         -L$(IA32BOOTSTRAPED)/usr/lib32 \
-	 -L$(IA32BOOTSTRAPED)/usr/local/lib32 \
-	 -L$(IA32BOOTSTRAPED)/lib32 
+#LDFLAGS = \
+#         -Wl,-rpath,$(IA32BOOTSTRAPED)/usr/lib32,-rpath,$(IA32BOOTSTRAPED)/usr/local/lib32,-rpath,$(IA32BOOTSTRAPED)/lib32 \
+#         -L$(IA32BOOTSTRAPED)/usr/lib32 \
+#	 -L$(IA32BOOTSTRAPED)/usr/local/lib32 \
+#	 -L$(IA32BOOTSTRAPED)/lib32 
 	 
-LDFLAGS +=  -L$(IA32BOOTSTRAPED)/usr/lib32/caca \
-           -L$(IA32BOOTSTRAPED)/usr/lib32/gio \
-	    -L$(IA32BOOTSTRAPED)/usr/lib32/esd \
+#LDFLAGS +=  -L$(IA32BOOTSTRAPED)/usr/lib32/caca \
+#           -L$(IA32BOOTSTRAPED)/usr/lib32/gio \
+#	    -L$(IA32BOOTSTRAPED)/usr/lib32/esd \
 
 
 
-#LDFLAGS=""
+LDFLAGS = 
 LIBS =  -lX11 -lXt -lXext
 #LIBS += -lmemwatch
 
 CFLAGS =        -g -O0 -export-dynamic
 #CFLAGS =        -g -O0
 #CFLAGS =        -O3
-CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+#CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+CFLAGS += 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
 CFLAGS +=        -DCPU_ASM
 CFLAGS += \
@@ -175,7 +178,7 @@ LIBS +=  \
         -lSDL -lSDL_mixer -lSDL_ttf
 
 LIBS +=  \
-        -lartsc -lesd -lcaca -laa -lgpm 
+        -lartsc -lesd -lcaca -laa 
 LIBS +=	-lpulsecommon-0.9.21 -lpulse-simple
 LIBS +=	-lpthread
 LIBS += -lmemwatch
@@ -187,7 +190,8 @@ all:	xm7.sdl
 
 xm7.sdl: ${OBJS}
 #	ld  ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
-	gcc -m32 ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+#	gcc -m32 ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+	g++ ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
 #	/emul/ia32-bootstrap/usr/lib32/debug/usr/lib/crt1.o ${OBJS} ${LIBS}
 
 #xm7:	${OBJS}

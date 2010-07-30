@@ -335,7 +335,7 @@ GetDefMapKbd(local_sdlkeymap * pMap, int mode)
     int            type;
     Uint16 num;
     Uint8 code;
-    ASSERT(pMap);
+//    ASSERT(pMap);
     ASSERT((mode >= 0) && (mode <= 3));
     
 	/*
@@ -431,7 +431,7 @@ GetDefMapKbd(local_sdlkeymap * pMap, int mode)
 void
 SetMapKbd(local_sdlkeymap *pMap) 
 {
-    ASSERT(pMap);
+//    ASSERT(pMap);
     int            i;
     
 	/*
@@ -1061,7 +1061,7 @@ BOOL
 GetKbd(BYTE * pBuf) 
 {
     int            i;
-    ASSERT(pBuf);
+//    ASSERT(pBuf);
     
 	/*
 	 * メモリクリア 

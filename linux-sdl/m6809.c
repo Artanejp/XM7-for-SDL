@@ -12,9 +12,9 @@
         6809 Microcomputer Programming & Interfacing with Experiments"
             by Andrew C. Staugaard, Jr.; Howard W. Sams & Co., Inc.
 
-    System dependencies:    UINT16 must be 16 bit unsigned int
-                            UINT8 must be 8 bit unsigned int
-                            UINT32 must be more than 16 bits
+    System dependencies:    WORD must be 16 bit unsigned int
+                            BYTE must be 8 bit unsigned int
+                            DWORD must be more than 16 bits
                             arrays up to 65536 bytes must be supported
                             machine must be twos complement
 
@@ -69,9 +69,12 @@
     m6809_slapstick check moved into the opcode functions.
 
 *****************************************************************************/
+//#define CPU_DEBUG
 
 //#include "debugger.h"
-#include "m6809.h"
+//#include "m6809.h"
+#include "xm7.h"
+#define INLINE inline
 
 /* Enable big switch statement for the main opcodes */
 #ifndef BIG_SWITCH
@@ -80,52 +83,16 @@
 
 #define VERBOSE 0
 
-#define LOG(x)	do { if (VERBOSE) logerror x; } while (0)
+//#define LOG(x)	do { if (VERBOSE) logerror x; } while (0)
 
-
-   
 /* 6809 Registers */
-typedef struct _m68_state_t m68_state_t;
-struct _m68_state_t
-{
-	PAIR	pc; 		/* Program counter */
-	PAIR	ppc;		/* Previous program counter */
-	PAIR	d;		/* Accumulator a and b */
-	PAIR	dp; 		/* Direct Page register (page in MSB) */
-	PAIR	u, s;		/* Stack pointers */
-	PAIR	x, y;		/* Index registers */
-	UINT8	cc;
-	UINT8	ireg;		/* First opcode */
-	UINT8	irq_state[2];
 
-	int 	extra_cycles; /* cycles used up by interrupts */
-	cpu_irq_callback irq_callback;
-	const device_config *device;
-	const m6809_config *config;
-	int		icount;
-	PAIR	ea;			/* effective address */
+//static void check_irq_lines( cpu6809_t *m68_state );
+static void IIError(cpu6809_t *m68_state);
+static void cpu_execline(cpu6809_t *m68_state);
+static void cpu_exec(cpu6809_t *m68_state);
 
-	/* Memory spaces */
-    const address_space *program;
-
-	UINT8	int_state;	/* SYNC and CWAI flags */
-	UINT8	nmi_state;
-};
-
-INLINE m68_state_t *get_safe_token(const device_config *device)
-{
-	assert(device != NULL);
-	assert(device->token != NULL);
-	assert(device->type == CPU);
-	assert(cpu_get_type(device) == CPU_M6809 ||
-		   cpu_get_type(device) == CPU_M6809E);
-	return (m68_state_t *)device->token;
-}
-
-static void check_irq_lines( m68_state_t *m68_state );
-static void IIError(m68_state_t *m68_state);
-
-INLINE void fetch_effective_address( m68_state_t *m68_state );
+INLINE void fetch_effective_address( cpu6809_t *m68_state );
 
 /* flag bits in the cc register */
 #define CC_C	0x01        /* Carry */
@@ -137,7 +104,7 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 #define CC_IF   0x40        /* Inhibit FIRQ */
 #define CC_E    0x80        /* entire state pushed */
 
-#define pPPC    m68_state->ppc
+
 #define pPC 	m68_state->pc
 #define pU		m68_state->u
 #define pS		m68_state->s
@@ -145,26 +112,25 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 #define pY		m68_state->y
 #define pD		m68_state->d
 
-#define	PPC		m68_state->ppc.w.l
-#define PC  	m68_state->pc.w.l
-#define PCD 	m68_state->pc.d
-#define U		m68_state->u.w.l
-#define UD		m68_state->u.d
-#define S		m68_state->s.w.l
-#define SD		m68_state->s.d
-#define X		m68_state->x.w.l
-#define XD		m68_state->x.d
-#define Y		m68_state->y.w.l
-#define YD		m68_state->y.d
-#define D   	m68_state->d.w.l
-#define A   	m68_state->d.b.h
-#define B		m68_state->d.b.l
-#define DP		m68_state->dp.b.h
-#define DPD 	m68_state->dp.d
+#define PC  	m68_state->pc
+#define PCD 	m68_state->pc
+#define U		m68_state->u
+#define UD		m68_state->u
+#define S		m68_state->s
+#define SD		m68_state->s
+#define X		m68_state->x
+#define XD		m68_state->x
+#define Y		m68_state->y
+#define YD		m68_state->y
+#define D   	m68_state->acc.d
+#define A   	m68_state->acc.h.a
+#define B		m68_state->acc.h.b
+#define DP		m68_state->dp
+#define DPD 	m68_state->dp
 #define CC  	m68_state->cc
 
-#define EA	m68_state->ea.w.l
-#define EAD m68_state->ea.d
+#define EA	m68_state->ea
+#define EAD m68_state->ea
 #define EAP m68_state->ea
 
 #define M6809_CWAI		8	/* set when CWAI is waiting for an interrupt */
@@ -172,41 +138,76 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 #define M6809_LDS		32	/* set when LDS occured at least once */
 
 
+
+/*
+ * */
+
+ inline BYTE READB(cpu6809_t *t, WORD addr)
+{
+   
+       return t->readmem(addr);
+}
+
+
+  inline WORD READW(cpu6809_t *t, WORD addr)
+{
+   
+       return (WORD)(t->readmem(addr)<<8 + t->readmem(addr+1));
+}
+
+
+  inline void WRITEB(cpu6809_t *t, WORD addr, BYTE data)
+{
+   
+      t->writemem(addr, data);
+}
+
+  
+  inline void WRITEW(cpu6809_t *t, WORD addr, WORD data)
+{
+   
+      t->writemem(addr,(BYTE)(data >>8));
+      t->writemem(addr+1,(BYTE)(data & 0xff));
+}
+
+
+
+
 /****************************************************************************/
 /* Read a byte from given memory location                                   */
 /****************************************************************************/
-#define RM(Addr) ((unsigned)memory_read_byte_8be(m68_state->program, Addr))
+#define RM(Addr) READB(m68_state, Addr)
 
 /****************************************************************************/
 /* Write a byte to given memory location                                    */
 /****************************************************************************/
-#define WM(Addr,Value) (memory_write_byte_8be(m68_state->program, Addr,Value))
+#define WM(Addr,Value) WRITEB(m68_state,Addr,Value)
 
 /****************************************************************************/
 /* Z80_RDOP() is identical to Z80_RDMEM() except it is used for reading     */
 /* opcodes. In case of system with memory mapped I/O, this function can be  */
 /* used to greatly speed up emulation                                       */
 /****************************************************************************/
-#define ROP(Addr) ((unsigned)memory_decrypted_read_byte(m68_state->program, Addr))
+#define ROP(Addr) READB(m68_state, Addr)
 
 /****************************************************************************/
 /* Z80_RDOP_ARG() is identical to Z80_RDOP() except it is used for reading  */
 /* opcode arguments. This difference can be used to support systems that    */
 /* use different encoding mechanisms for opcodes and opcode arguments       */
 /****************************************************************************/
-#define ROP_ARG(Addr) ((unsigned)memory_raw_read_byte(m68_state->program, Addr))
+#define ROP_ARG(Addr) READB(m68_state, Addr)
 
 /* macros to access memory */
 #define IMMBYTE(b)	b = ROP_ARG(PCD); PC++
-#define IMMWORD(w)	w.d = (ROP_ARG(PCD)<<8) | ROP_ARG((PCD+1)&0xffff); PC+=2
+#define IMMWORD(w)	w = ((WORD)ROP_ARG(PC)<<8) | (WORD)ROP_ARG((PC+1)&0xffff); PC+=2
 
 #define PUSHBYTE(b) --S; WM(SD,b)
-#define PUSHWORD(w) --S; WM(SD,w.b.l); --S; WM(SD,w.b.h)
+#define PUSHWORD(w) --S; WM(SD,(w&0xff)); --S; WM(SD,(w>>8))
 #define PULLBYTE(b) b = RM(SD); S++
 #define PULLWORD(w) w = RM(SD)<<8; S++; w |= RM(SD); S++
 
 #define PSHUBYTE(b) --U; WM(UD,b);
-#define PSHUWORD(w) --U; WM(UD,w.b.l); --U; WM(UD,w.b.h)
+#define PSHUWORD(w) --U; WM(UD,(w&0xff)); --U; WM(UD,(w>>8))
 #define PULUBYTE(b) b = RM(UD); U++
 #define PULUWORD(w) w = RM(UD)<<8; U++; w |= RM(UD); U++
 
@@ -221,8 +222,8 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 
 /* macros for CC -- CC bits affected should be reset before calling */
 #define SET_Z(a)		if(!a)SEZ
-#define SET_Z8(a)		SET_Z((UINT8)a)
-#define SET_Z16(a)		SET_Z((UINT16)a)
+#define SET_Z8(a)		SET_Z((BYTE)a)
+#define SET_Z16(a)		SET_Z((WORD)a)
 #define SET_N8(a)		CC|=((a&0x80)>>4)
 #define SET_N16(a)		CC|=((a&0x8000)>>12)
 #define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
@@ -243,13 +244,13 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 #define NXORV			((CC&CC_N)^((CC&CC_V)<<2))
 
 /* for treating an unsigned byte as a signed word */
-#define SIGNED(b) ((UINT16)(b&0x80?b|0xff00:b))
+#define SIGNED(b) ((WORD)(b&0x80?b|0xff00:b))
 
 /* macros for addressing modes (postbytes have their own code) */
-#define DIRECT	EAD = DPD; IMMBYTE(m68_state->ea.b.l)
-#define IMM8	EAD = PCD; PC++
-#define IMM16	EAD = PCD; PC+=2
-#define EXTENDED IMMWORD(EAP)
+#define DIRECT	{BYTE tmpt; EAD = (WORD)DP; IMMBYTE(tmpt); EAD = (EAD<<8) + tmpt; } 
+#define IMM8	EAD = PC; PC+=1
+#define IMM16	EAD = PC; PC+=2
+#define EXTENDED IMMWORD(EA)
 
 /* macros to set status flags */
 #if defined(SEC)
@@ -267,14 +268,14 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 #define CLH CC&=~CC_H
 
 /* macros for convenience */
-#define DIRBYTE(b) {DIRECT;b=RM(EAD);}
-#define DIRWORD(w) {DIRECT;w.d=RM16(m68_state, EAD);}
-#define EXTBYTE(b) {EXTENDED;b=RM(EAD);}
-#define EXTWORD(w) {EXTENDED;w.d=RM16(m68_state, EAD);}
+#define DIRBYTE(b) {DIRECT;b=RM(EA);}
+#define DIRWORD(w) {DIRECT;w=RM16(m68_state, EA);}
+#define EXTBYTE(b) {EXTENDED;b=RM(EA);}
+#define EXTWORD(w) {EXTENDED;w=RM16(m68_state, EA);}
 
 /* macros for branch instructions */
 #define BRANCH(f) { 					\
-	UINT8 t;							\
+	BYTE t;							\
 	IMMBYTE(t); 						\
 	if( f ) 							\
 	{									\
@@ -283,247 +284,245 @@ INLINE void fetch_effective_address( m68_state_t *m68_state );
 }
 
 #define LBRANCH(f) {                    \
-	PAIR t; 							\
+	WORD t; 							\
 	IMMWORD(t); 						\
 	if( f ) 							\
 	{									\
-		m68_state->icount -= 1;				\
-		PC += t.w.l;					\
+		m68_state->cycle += 1;				\
+		PC += t;					\
 	}									\
 }
 
 /* macros for setting/getting registers in TFR/EXG instructions */
 
-INLINE UINT32 RM16(m68_state_t *m68_state, UINT32 Addr )
+INLINE WORD RM16(cpu6809_t *m68_state, WORD Addr )
 {
-	UINT32 result = RM(Addr) << 8;
-	return result | RM((Addr+1)&0xffff);
+	WORD result = RM(Addr) << 8;
+        result |= RM((Addr+1)&0xffff);
+        return result;
 }
 
-INLINE void WM16( m68_state_t *m68_state, UINT32 Addr, PAIR *p )
+INLINE void WM16(cpu6809_t *m68_state, WORD Addr, WORD data )
 {
-	WM( Addr, p->b.h );
-	WM( (Addr+1)&0xffff, p->b.l );
+   WM(Addr, (data & 0xff00)>>8 );
+   WM((Addr+1)&0xffff, (data & 0xff) );
 }
 
-static void UpdateState(m68_state_t *m68_state)
+static void UpdateState(cpu6809_t *m68_state)
 {
 	/* compatibility with 6309 */
 }
 
-static void check_irq_lines(m68_state_t *m68_state)
-{
-	if( m68_state->irq_state[M6809_IRQ_LINE] != CLEAR_LINE ||
-		m68_state->irq_state[M6809_FIRQ_LINE] != CLEAR_LINE )
-		m68_state->int_state &= ~M6809_SYNC; /* clear SYNC flag */
-	if( m68_state->irq_state[M6809_FIRQ_LINE]!=CLEAR_LINE && !(CC & CC_IF) )
-	{
-		/* fast IRQ */
-		/* HJB 990225: state already saved by CWAI? */
-		if( m68_state->int_state & M6809_CWAI )
-		{
-			m68_state->int_state &= ~M6809_CWAI;  /* clear CWAI */
-			m68_state->extra_cycles += 7;		 /* subtract +7 cycles */
-        }
-		else
-		{
-			CC &= ~CC_E;				/* save 'short' state */
-			PUSHWORD(pPC);
-			PUSHBYTE(CC);
-			m68_state->extra_cycles += 10;	/* subtract +10 cycles */
-		}
-		CC |= CC_IF | CC_II;			/* inhibit FIRQ and IRQ */
-		PCD=RM16(m68_state, 0xfff6);
-		(void)(*m68_state->irq_callback)(m68_state->device, M6809_FIRQ_LINE);
-	}
-	else
-	if( m68_state->irq_state[M6809_IRQ_LINE]!=CLEAR_LINE && !(CC & CC_II) )
-	{
-		/* standard IRQ */
-		/* HJB 990225: state already saved by CWAI? */
-		if( m68_state->int_state & M6809_CWAI )
-		{
-			m68_state->int_state &= ~M6809_CWAI;  /* clear CWAI flag */
-			m68_state->extra_cycles += 7;		 /* subtract +7 cycles */
-		}
-		else
-		{
-			CC |= CC_E; 				/* save entire state */
-			PUSHWORD(pPC);
-			PUSHWORD(pU);
-			PUSHWORD(pY);
-			PUSHWORD(pX);
-			PUSHBYTE(DP);
-			PUSHBYTE(B);
-			PUSHBYTE(A);
-			PUSHBYTE(CC);
-			m68_state->extra_cycles += 19;	 /* subtract +19 cycles */
-		}
-		CC |= CC_II;					/* inhibit IRQ */
-		PCD=RM16(m68_state, 0xfff8);
-		(void)(*m68_state->irq_callback)(m68_state->device, M6809_IRQ_LINE);
-	}
-}
-
 
 
 /****************************************************************************/
 /* Reset registers to their initial values                                  */
 /****************************************************************************/
-static CPU_INIT( m6809 )
+static void cpu_reset(cpu6809_t *m68_state)
 {
-	/* default configuration */
-	static const m6809_config default_config =
-	{
-		0
-	};
+//	cpu6809_t *m68_state = get_safe_token(device);
 
-	const m6809_config *configdata = device->static_config ? (const m6809_config *)device->static_config : &default_config;
-	m68_state_t *m68_state = get_safe_token(device);
+	m68_state->intr = 0;
+        D = 0;
+        X = 0;
+        Y = 0;
+        U = 0;
+        S = 0;
+	DP = 0;			/* Reset direct page register */
 
-	m68_state->config = configdata;
-	m68_state->irq_callback = irqcallback;
-	m68_state->device = device;
+	CC = CC_II | CC_IF;        /* IRQ + FIRQ disabled */
 
-	m68_state->program = memory_find_address_space(device, ADDRESS_SPACE_PROGRAM);
+        m68_state->cycle = 0;
+        m68_state->total = 0;
+        m68_state->ea = 0;   
+        m68_state->intr = 0x0000;  
+	m68_state->pc = RM16(m68_state, 0xfffe);
+ #ifdef CPU_DEBUG
+   printf("DEBUG: Reset %04x %02x\n",m68_state->pc ,READB(m68_state, m68_state->pc));
+#endif
 
-	/* setup regtable */
-
-	state_save_register_device_item(device, 0, PC);
-	state_save_register_device_item(device, 0, PPC);
-	state_save_register_device_item(device, 0, D);
-	state_save_register_device_item(device, 0, DP);
-	state_save_register_device_item(device, 0, U);
-	state_save_register_device_item(device, 0, S);
-	state_save_register_device_item(device, 0, X);
-	state_save_register_device_item(device, 0, Y);
-	state_save_register_device_item(device, 0, CC);
-	state_save_register_device_item_array(device, 0, m68_state->irq_state);
-	state_save_register_device_item(device, 0, m68_state->int_state);
-	state_save_register_device_item(device, 0, m68_state->nmi_state);
-
-}
-
-/****************************************************************************/
-/* Reset registers to their initial values                                  */
-/****************************************************************************/
-static CPU_RESET( m6809 )
-{
-	m68_state_t *m68_state = get_safe_token(device);
-
-	m68_state->int_state = 0;
-	m68_state->nmi_state = CLEAR_LINE;
-	m68_state->irq_state[0] = CLEAR_LINE;
-	m68_state->irq_state[1] = CLEAR_LINE;
-
-	DPD = 0;			/* Reset direct page register */
-
-	CC |= CC_II;        /* IRQ disabled */
-	CC |= CC_IF;        /* FIRQ disabled */
-
-	PCD = RM16(m68_state, 0xfffe);
 	UpdateState(m68_state);
 }
 
-static CPU_EXIT( m6809 )
-{
-	/* nothing to do ? */
-}
 
-/****************************************************************************
- * Set IRQ line state
- ****************************************************************************/
-static void set_irq_line(m68_state_t *m68_state, int irqline, int state)
-{
-	if (irqline == INPUT_LINE_NMI)
-	{
-		if (m68_state->nmi_state == state) return;
-		m68_state->nmi_state = state;
-		LOG(("M6809 '%s' set_irq_line (NMI) %d\n", m68_state->device->tag, state));
-		if( state == CLEAR_LINE ) return;
 
-		/* if the stack was not yet initialized */
-	    if( !(m68_state->int_state & M6809_LDS) ) return;
-
-	    m68_state->int_state &= ~M6809_SYNC;
-		/* HJB 990225: state already saved by CWAI? */
-		if( m68_state->int_state & M6809_CWAI )
-		{
-			m68_state->int_state &= ~M6809_CWAI;
-			m68_state->extra_cycles += 7;	/* subtract +7 cycles next time */
-	    }
-		else
-		{
-			CC |= CC_E; 				/* save entire state */
-			PUSHWORD(pPC);
-			PUSHWORD(pU);
-			PUSHWORD(pY);
-			PUSHWORD(pX);
-			PUSHBYTE(DP);
-			PUSHBYTE(B);
-			PUSHBYTE(A);
-			PUSHBYTE(CC);
-			m68_state->extra_cycles += 19;	/* subtract +19 cycles next time */
-		}
-		CC |= CC_IF | CC_II;			/* inhibit FIRQ and IRQ */
-		PCD = RM16(m68_state, 0xfffc);
-	}
-	else if (irqline < 2)
-	{
-	    LOG(("M6809 '%s' set_irq_line %d, %d\n", m68_state->device->tag, irqline, state));
-		m68_state->irq_state[irqline] = state;
-		if (state == CLEAR_LINE) return;
-		check_irq_lines(m68_state);
-	}
-}
 
 /****************************************************************************
  * includes the actual opcode implementations
  ****************************************************************************/
-#include "6809tbl.c"
+#include "m6809tbl.c"
 
-#include "6809ops.c"
+#include "m6809ops.c"
 
-/* execute instructions on this CPU until icount expires */
-static CPU_EXECUTE( m6809 )	/* NS 970908 */
+static void cpu_nmi(cpu6809_t *m68_state)
 {
-	m68_state_t *m68_state = get_safe_token(device);
+   m68_state->intr |= 0x0100; /* CWAI */
+   CC |= CC_E;
+   PUSHWORD(pPC);
+   PUSHWORD(pU);
+   PUSHWORD(pY);
+   PUSHWORD(pX);
+   PUSHBYTE(DP);
+   PUSHBYTE(B);
+   PUSHBYTE(A);
+   PUSHBYTE(CC);
+   CC |= CC_II;
+   PC = RM16(m68_state, 0xfffc);
+   m68_state->intr &= 0xfffe;
+}
 
-    m68_state->icount = cycles - m68_state->extra_cycles;
-	m68_state->extra_cycles = 0;
 
-	check_irq_lines(m68_state);
 
-	if (m68_state->int_state & (M6809_CWAI | M6809_SYNC))
-	{
-		debugger_instruction_hook(device, PCD);
-		m68_state->icount = 0;
+static void cpu_firq(cpu6809_t *m68_state)
+{
+   
+   if( m68_state->intr &= 0x0080) {
+      /* CWAI */
+      CC |= 0x80;
+      m68_state->intr |= 0x0100; /* CWAI */
+      PUSHWORD(pPC);
+      PUSHWORD(pU);
+      PUSHWORD(pY);
+      PUSHWORD(pX);
+      PUSHBYTE(DP);
+      PUSHBYTE(B);
+      PUSHBYTE(A);
+      PUSHBYTE(CC);
+      CC |= 0x50;
+      PC = RM16(m68_state, 0xfff6);
+   } else {
+      /* NORMAL */
+      CC &= 0x7f;
+      m68_state->intr |= 0x0100; /* CWAI */
+      PUSHWORD(pPC);
+      PUSHBYTE(CC);
+      CC |= 0x50;
+      PC = RM16(m68_state, 0xfff6);
+//      m68state->intr &= 0xfffd;
+   }
+}
+
+static void cpu_irq(cpu6809_t *m68_state)
+{
+   m68_state->intr |= 0x0100; /* CWAI */
+   CC |= CC_E;
+   PUSHWORD(pPC);
+   PUSHWORD(pU);
+   PUSHWORD(pY);
+   PUSHWORD(pX);
+   PUSHBYTE(DP);
+   PUSHBYTE(B);
+   PUSHBYTE(A);
+   PUSHBYTE(CC);
+   CC |= CC_II;
+   PC = RM16(m68_state, 0xfff8);
+ //  m68state->intr &= 0xfffb;
+}
+
+
+
+static void cpu_exec(cpu6809_t *m68_state)
+{
+   WORD intr = m68_state->intr;
+   WORD cycle = 0;
+   BYTE cc = CC;
+   /*
+    * Check HALT State
+    */
+   if(intr & 0x8000) {
+        READB(m68_state, PC);
+	m68_state->cycle = 2;
+        PC++;
+        return;
+  }
+   /*
+    * Check Interrupt
+    */
+check_nmi:
+   if((intr & 0x0007) != 0) {
+      if((intr & INTR_NMI) == 0) goto check_firq;
+	m68_state->intr |= INTR_SYNC_OUT;
+        if(intr & INTR_SLOAD) {
+	   cpu_nmi(m68_state);
+	   cpu_execline(m68_state);
+	   cycle = 19;
+	   goto int_cycle;
+	} else {
+	  goto check_firq;
 	}
-	else
-	{
-		do
-		{
-			pPPC = pPC;
+   } else { 
+	goto check_ok;
+     }
+   
+	
+   
+check_firq:
+   if((intr & 0x0002) != 0) 
+     {
+	m68_state->intr |= 0x40;
+	if(cc & 0x40) goto check_irq;
+	cpu_firq(m68_state);
+	cpu_execline(m68_state);
+	cycle = 10;
+	goto int_cycle;
+     }
 
-			debugger_instruction_hook(device, PCD);
+check_irq:
+   if((intr & INTR_IRQ) != 0) 
+     {
+	m68_state->intr |= 0x40;
+	if((cc & INTR_SLOAD) != 0) goto check_ok;
+	cpu_irq(m68_state);
+	cpu_execline(m68_state);
+	cycle = 19;
+	cc |= CC_II;
+	goto int_cycle;
+     }
+   /*
+    * NO INTERRUPT
+    */
+check_ok:
+   cpu_execline(m68_state);
+   return;
+   
+int_cycle:
+   if((m68_state->intr & 0x0080) == 0) 
+     {
+	m68_state->cycle += cycle;
+     }
+    return;
+}
 
-			m68_state->ireg = ROP(PCD);
-			PC++;
-#if BIG_SWITCH
-            switch( m68_state->ireg )
+
+static void cpu_execline(cpu6809_t *m68_state)	
+{
+//	cpu6809_t *m68_state ;
+        BYTE ireg;
+        BYTE c;
+
+//			debugger_instruction_hook(device, PCD);
+
+//	    ireg = READB(m68_state, PC);
+            ireg = ROP(PC);
+	    PC++;
+            c = cycles1[ireg];
+            m68_state->cycle = cycles1[ireg];
+//#if BIG_SWITCH
+#if 1
+            switch( ireg )
 			{
 			case 0x00: neg_di(m68_state);    break;
 			case 0x01: neg_di(m68_state);    break;	/* undocumented */
-			case 0x02: IIError(m68_state);   break;
+			case 0x02: ngc_di(m68_state);   break; /* undocumented */
 			case 0x03: com_di(m68_state);    break;
 			case 0x04: lsr_di(m68_state);    break;
-			case 0x05: IIError(m68_state);   break;
+			case 0x05: lsr_di(m68_state);   break; /* Undefined */
 			case 0x06: ror_di(m68_state);    break;
 			case 0x07: asr_di(m68_state);    break;
 			case 0x08: asl_di(m68_state);    break;
 			case 0x09: rol_di(m68_state);    break;
 			case 0x0a: dec_di(m68_state);    break;
-			case 0x0b: IIError(m68_state);   break;
+			case 0x0b: dcc_di(m68_state);   break; /* undocumented */
 			case 0x0c: inc_di(m68_state);    break;
 			case 0x0d: tst_di(m68_state);    break;
 			case 0x0e: jmp_di(m68_state);    break;
@@ -532,14 +531,14 @@ static CPU_EXECUTE( m6809 )	/* NS 970908 */
 			case 0x11: pref11(m68_state);					 break;
 			case 0x12: nop(m68_state);	    break;
 			case 0x13: sync(m68_state);	    break;
-			case 0x14: IIError(m68_state);   break;
-			case 0x15: IIError(m68_state);   break;
+			case 0x14: trap(m68_state);   break;
+			case 0x15: trap(m68_state);   break;
 			case 0x16: lbra(m68_state);	    break;
 			case 0x17: lbsr(m68_state);	    break;
-			case 0x18: IIError(m68_state);   break;
+			case 0x18: aslcc_in(m68_state);   break; /* undocumented */
 			case 0x19: daa(m68_state);	    break;
 			case 0x1a: orcc(m68_state);	    break;
-			case 0x1b: IIError(m68_state);   break;
+			case 0x1b: nop(m68_state);   break; /* undocumented */
 			case 0x1c: andcc(m68_state);     break;
 			case 0x1d: sex(m68_state);	    break;
 			case 0x1e: exg(m68_state);	    break;
@@ -568,74 +567,74 @@ static CPU_EXECUTE( m6809 )	/* NS 970908 */
 			case 0x35: puls(m68_state);	    break;
 			case 0x36: pshu(m68_state);	    break;
 			case 0x37: pulu(m68_state);	    break;
-			case 0x38: IIError(m68_state);   break;
+			case 0x38: andcc(m68_state);   break; /* undocumented */
 			case 0x39: rts(m68_state);	    break;
 			case 0x3a: abx(m68_state);	    break;
 			case 0x3b: rti(m68_state);	    break;
 			case 0x3c: cwai(m68_state);	    break;
 			case 0x3d: mul(m68_state);	    break;
-			case 0x3e: IIError(m68_state);   break;
+			case 0x3e: rst(m68_state);   break; /* undocumented */
 			case 0x3f: swi(m68_state);	    break;
 			case 0x40: nega(m68_state);	    break;
-			case 0x41: IIError(m68_state);   break;
-			case 0x42: IIError(m68_state);   break;
+			case 0x41: nega(m68_state);   break; /* undocumented */
+			case 0x42: ngca(m68_state);   break; /* undocumented */
 			case 0x43: coma(m68_state);	    break;
 			case 0x44: lsra(m68_state);	    break;
-			case 0x45: IIError(m68_state);   break;
+			case 0x45: lsra(m68_state);   break; /* undocumented */
 			case 0x46: rora(m68_state);	    break;
 			case 0x47: asra(m68_state);	    break;
 			case 0x48: asla(m68_state);	    break;
 			case 0x49: rola(m68_state);	    break;
 			case 0x4a: deca(m68_state);	    break;
-			case 0x4b: IIError(m68_state);   break;
+			case 0x4b: dcca(m68_state);   break; /* undocumented */
 			case 0x4c: inca(m68_state);	    break;
 			case 0x4d: tsta(m68_state);	    break;
-			case 0x4e: IIError(m68_state);   break;
+			case 0x4e: clca(m68_state);   break; /* undocumented */
 			case 0x4f: clra(m68_state);	    break;
 			case 0x50: negb(m68_state);	    break;
-			case 0x51: IIError(m68_state);   break;
-			case 0x52: IIError(m68_state);   break;
+			case 0x51: negb(m68_state);   break; /* undocumented */
+			case 0x52: ngcb(m68_state);   break; /* undocumented */
 			case 0x53: comb(m68_state);	    break;
 			case 0x54: lsrb(m68_state);	    break;
-			case 0x55: IIError(m68_state);   break;
+			case 0x55: lsrb(m68_state);   break; /* undocumented */
 			case 0x56: rorb(m68_state);	    break;
 			case 0x57: asrb(m68_state);	    break;
 			case 0x58: aslb(m68_state);	    break;
 			case 0x59: rolb(m68_state);	    break;
 			case 0x5a: decb(m68_state);	    break;
-			case 0x5b: IIError(m68_state);   break;
+			case 0x5b: dccb(m68_state);   break; /* undocumented */
 			case 0x5c: incb(m68_state);	    break;
 			case 0x5d: tstb(m68_state);	    break;
-			case 0x5e: IIError(m68_state);   break;
+			case 0x5e: clcb(m68_state);   break; /* undocumented */
 			case 0x5f: clrb(m68_state);	    break;
 			case 0x60: neg_ix(m68_state);    break;
-			case 0x61: IIError(m68_state);   break;
-			case 0x62: IIError(m68_state);   break;
+			case 0x61: neg_ix(m68_state);   break;/* undocumented */
+			case 0x62: ngc_ix(m68_state);   break;/* undocumented */
 			case 0x63: com_ix(m68_state);    break;
 			case 0x64: lsr_ix(m68_state);    break;
-			case 0x65: IIError(m68_state);   break;
+			case 0x65: lsr_ix(m68_state);   break;/* undocumented */
 			case 0x66: ror_ix(m68_state);    break;
 			case 0x67: asr_ix(m68_state);    break;
 			case 0x68: asl_ix(m68_state);    break;
 			case 0x69: rol_ix(m68_state);    break;
 			case 0x6a: dec_ix(m68_state);    break;
-			case 0x6b: IIError(m68_state);   break;
+			case 0x6b: dcc_ix(m68_state);   break;/* undocumented */
 			case 0x6c: inc_ix(m68_state);    break;
 			case 0x6d: tst_ix(m68_state);    break;
 			case 0x6e: jmp_ix(m68_state);    break;
 			case 0x6f: clr_ix(m68_state);    break;
 			case 0x70: neg_ex(m68_state);    break;
-			case 0x71: IIError(m68_state);   break;
-			case 0x72: IIError(m68_state);   break;
+			case 0x71: neg_ex(m68_state);   break;/* undocumented */
+			case 0x72: ngc_ex(m68_state);   break;/* undocumented */
 			case 0x73: com_ex(m68_state);    break;
 			case 0x74: lsr_ex(m68_state);    break;
-			case 0x75: IIError(m68_state);   break;
+			case 0x75: lsr_ex(m68_state);   break;/* undocumented */
 			case 0x76: ror_ex(m68_state);    break;
 			case 0x77: asr_ex(m68_state);    break;
 			case 0x78: asl_ex(m68_state);    break;
 			case 0x79: rol_ex(m68_state);    break;
 			case 0x7a: dec_ex(m68_state);    break;
-			case 0x7b: IIError(m68_state);   break;
+			case 0x7b: dcc_ex(m68_state);   break;/* undocumented */
 			case 0x7c: inc_ex(m68_state);    break;
 			case 0x7d: tst_ex(m68_state);    break;
 			case 0x7e: jmp_ex(m68_state);    break;
@@ -647,7 +646,7 @@ static CPU_EXECUTE( m6809 )	/* NS 970908 */
 			case 0x84: anda_im(m68_state);   break;
 			case 0x85: bita_im(m68_state);   break;
 			case 0x86: lda_im(m68_state);    break;
-			case 0x87: sta_im(m68_state);    break;
+			case 0x87: flag8_im(m68_state); break;/* undocumented *///sta_im(m68_state);    break;
 			case 0x88: eora_im(m68_state);   break;
 			case 0x89: adca_im(m68_state);   break;
 			case 0x8a: ora_im(m68_state);    break;
@@ -655,7 +654,7 @@ static CPU_EXECUTE( m6809 )	/* NS 970908 */
 			case 0x8c: cmpx_im(m68_state);   break;
 			case 0x8d: bsr(m68_state);	    break;
 			case 0x8e: ldx_im(m68_state);    break;
-			case 0x8f: stx_im(m68_state);    break;
+		        case 0x8f: flag16_im(m68_state); break; /* undocumented */ //stx_im(m68_state);    break;
 			case 0x90: suba_di(m68_state);   break;
 			case 0x91: cmpa_di(m68_state);   break;
 			case 0x92: sbca_di(m68_state);   break;
@@ -711,15 +710,15 @@ static CPU_EXECUTE( m6809 )	/* NS 970908 */
 			case 0xc4: andb_im(m68_state);   break;
 			case 0xc5: bitb_im(m68_state);   break;
 			case 0xc6: ldb_im(m68_state);    break;
-			case 0xc7: stb_im(m68_state);    break;
+			case 0xc7: flag8_im(m68_state); break; /* undocumented *///stb_im(m68_state);    break;
 			case 0xc8: eorb_im(m68_state);   break;
 			case 0xc9: adcb_im(m68_state);   break;
 			case 0xca: orb_im(m68_state);    break;
 			case 0xcb: addb_im(m68_state);   break;
 			case 0xcc: ldd_im(m68_state);    break;
-			case 0xcd: std_im(m68_state);    break;
+			case 0xcd: trap(m68_state); break; /* undocumented */ //std_im(m68_state);    break;
 			case 0xce: ldu_im(m68_state);    break;
-			case 0xcf: stu_im(m68_state);    break;
+			case 0xcf: flag16_im(m68_state); break; /* undocumented */ //stu_im(m68_state);    break;
 			case 0xd0: subb_di(m68_state);   break;
 			case 0xd1: cmpb_di(m68_state);   break;
 			case 0xd2: sbcb_di(m68_state);   break;
@@ -770,22 +769,15 @@ static CPU_EXECUTE( m6809 )	/* NS 970908 */
 			case 0xff: stu_ex(m68_state);    break;
 			}
 #else
-            		(*m6809_main[m68_state->ireg])(m68_state);
+            		(*m6809_main[ireg])(m68_state);
 #endif    /* BIG_SWITCH */
-        		m68_state->icount -= cycles1[m68_state->ireg];
 
-		} while( m68_state->icount > 0 );
-
-        m68_state->icount -= m68_state->extra_cycles;
-		m68_state->extra_cycles = 0;
-    }
-
-    return cycles - m68_state->icount;   /* NS 970908 */
+//    return cycles ;   /* NS 970908 */
 }
 
-INLINE void fetch_effective_address( m68_state_t *m68_state )
+INLINE void fetch_effective_address( cpu6809_t *m68_state )
 {
-	UINT8 postbyte = ROP_ARG(PCD);
+	BYTE postbyte = ROP_ARG(PCD);
 	PC++;
 
 	switch(postbyte)
@@ -941,8 +933,7 @@ INLINE void fetch_effective_address( m68_state_t *m68_state )
 	case 0x8c: IMMBYTE(EA); 	EA=PC+SIGNED(EA);					   break;
 	case 0x8d: IMMWORD(EAP);	EA+=PC; 							   break;
 	case 0x8e: EA=0;												   break; /*   ILLEGAL*/
-	case 0x8f: IMMWORD(EAP);										   break;
-
+	case 0x8f: IMMWORD(EAP);							   break;
 	case 0x90: EA=X;	X++;						EAD=RM16(m68_state, EAD);	   break; /* Indirect ,R+ not in my specs */
 	case 0x91: EA=X;	X+=2;						EAD=RM16(m68_state, EAD);	   break;
 	case 0x92: X--; 	EA=X;						EAD=RM16(m68_state, EAD);	   break;
@@ -1062,148 +1053,77 @@ INLINE void fetch_effective_address( m68_state_t *m68_state )
 	case 0xfe: EA=0;												   break; /*ILLEGAL*/
 	case 0xff: IMMWORD(EAP);						EAD=RM16(m68_state, EAD);	   break;
 	}
-	m68_state->icount -= index_cycle_em[postbyte];
+   m68_state->cycle += index_cycle_em[postbyte];
 }
 
 
-/**************************************************************************
- * Generic set_info
- **************************************************************************/
+/*
+ * XM7 Interfaces
+ */
+extern cpu6809_t maincpu;
+extern cpu6809_t subcpu;
+#if 0
+extern cpu6809_t jsubcpu;
+#endif
 
-static CPU_SET_INFO( m6809 )
+static void debugreg(cpu6809_t *p)
 {
-	m68_state_t *m68_state = get_safe_token(device);
-
-	switch (state)
-	{
-		/* --- the following bits of info are set as 64-bit signed integers --- */
-		case CPUINFO_INT_INPUT_STATE + M6809_IRQ_LINE:	set_irq_line(m68_state, M6809_IRQ_LINE, info->i);	break;
-		case CPUINFO_INT_INPUT_STATE + M6809_FIRQ_LINE:	set_irq_line(m68_state, M6809_FIRQ_LINE, info->i); break;
-		case CPUINFO_INT_INPUT_STATE + INPUT_LINE_NMI:	set_irq_line(m68_state, INPUT_LINE_NMI, info->i);	break;
-
-		case CPUINFO_INT_PC:
-		case CPUINFO_INT_REGISTER + M6809_PC:			PC = info->i;							break;
-		case CPUINFO_INT_SP:
-		case CPUINFO_INT_REGISTER + M6809_S:			S = info->i;							break;
-		case CPUINFO_INT_REGISTER + M6809_CC:			CC = info->i; check_irq_lines(m68_state);			break;
-		case CPUINFO_INT_REGISTER + M6809_U:			U = info->i;							break;
-		case CPUINFO_INT_REGISTER + M6809_A:			A = info->i;							break;
-		case CPUINFO_INT_REGISTER + M6809_B:			B = info->i;							break;
-		case CPUINFO_INT_REGISTER + M6809_X:			X = info->i;							break;
-		case CPUINFO_INT_REGISTER + M6809_Y:			Y = info->i;							break;
-		case CPUINFO_INT_REGISTER + M6809_DP:			DP = info->i;							break;
-	}
+   printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x ",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea);
+   printf("AB=%04x X=%04x Y=%04x U=%04x S=%04x DP=%04x CC=%04x INT=%04x",p->acc.d, p->x, p->y, p->u, p->s, p->dp, p->cc, p->intr);
+   printf("\n");
 }
 
-
-
-/**************************************************************************
- * Generic get_info
- **************************************************************************/
-
-CPU_GET_INFO( m6809 )
+void main_exec(void)
 {
-	m68_state_t *m68_state = (device != NULL && device->token != NULL) ? get_safe_token(device) : NULL;
-
-	switch (state)
-	{
-		/* --- the following bits of info are returned as 64-bit signed integers --- */
-		case CPUINFO_INT_CONTEXT_SIZE:					info->i = sizeof(m68_state_t);				break;
-		case CPUINFO_INT_INPUT_LINES:					info->i = 2;							break;
-		case CPUINFO_INT_DEFAULT_IRQ_VECTOR:			info->i = 0;							break;
-		case DEVINFO_INT_ENDIANNESS:					info->i = ENDIANNESS_BIG;					break;
-		case CPUINFO_INT_CLOCK_MULTIPLIER:				info->i = 1;							break;
-		case CPUINFO_INT_CLOCK_DIVIDER:					info->i = 1;							break;
-		case CPUINFO_INT_MIN_INSTRUCTION_BYTES:			info->i = 1;							break;
-		case CPUINFO_INT_MAX_INSTRUCTION_BYTES:			info->i = 5;							break;
-		case CPUINFO_INT_MIN_CYCLES:					info->i = 2;							break;
-		case CPUINFO_INT_MAX_CYCLES:					info->i = 19;							break;
-
-		case CPUINFO_INT_DATABUS_WIDTH_PROGRAM:	info->i = 8;					break;
-		case CPUINFO_INT_ADDRBUS_WIDTH_PROGRAM: info->i = 16;					break;
-		case CPUINFO_INT_ADDRBUS_SHIFT_PROGRAM: info->i = 0;					break;
-		case CPUINFO_INT_DATABUS_WIDTH_DATA:	info->i = 0;					break;
-		case CPUINFO_INT_ADDRBUS_WIDTH_DATA:	info->i = 0;					break;
-		case CPUINFO_INT_ADDRBUS_SHIFT_DATA:	info->i = 0;					break;
-		case CPUINFO_INT_DATABUS_WIDTH_IO:		info->i = 0;					break;
-		case CPUINFO_INT_ADDRBUS_WIDTH_IO:		info->i = 0;					break;
-		case CPUINFO_INT_ADDRBUS_SHIFT_IO:		info->i = 0;					break;
-
-		case CPUINFO_INT_INPUT_STATE + M6809_IRQ_LINE:	info->i = m68_state->irq_state[M6809_IRQ_LINE]; break;
-		case CPUINFO_INT_INPUT_STATE + M6809_FIRQ_LINE:	info->i = m68_state->irq_state[M6809_FIRQ_LINE]; break;
-		case CPUINFO_INT_INPUT_STATE + INPUT_LINE_NMI:	info->i = m68_state->nmi_state;				break;
-
-		case CPUINFO_INT_PREVIOUSPC:					info->i = PPC;							break;
-
-		case CPUINFO_INT_PC:
-		case CPUINFO_INT_REGISTER + M6809_PC:			info->i = PC;							break;
-		case CPUINFO_INT_SP:
-		case CPUINFO_INT_REGISTER + M6809_S:			info->i = S;							break;
-		case CPUINFO_INT_REGISTER + M6809_CC:			info->i = CC;							break;
-		case CPUINFO_INT_REGISTER + M6809_U:			info->i = U;							break;
-		case CPUINFO_INT_REGISTER + M6809_A:			info->i = A;							break;
-		case CPUINFO_INT_REGISTER + M6809_B:			info->i = B;							break;
-		case CPUINFO_INT_REGISTER + M6809_X:			info->i = X;							break;
-		case CPUINFO_INT_REGISTER + M6809_Y:			info->i = Y;							break;
-		case CPUINFO_INT_REGISTER + M6809_DP:			info->i = DP;							break;
-
-		/* --- the following bits of info are returned as pointers to data or functions --- */
-		case CPUINFO_FCT_SET_INFO:						info->setinfo = CPU_SET_INFO_NAME(m6809);			break;
-		case CPUINFO_FCT_INIT:							info->init = CPU_INIT_NAME(m6809);				break;
-		case CPUINFO_FCT_RESET:							info->reset = CPU_RESET_NAME(m6809);				break;
-		case CPUINFO_FCT_EXIT:							info->exit = CPU_EXIT_NAME(m6809);				break;
-		case CPUINFO_FCT_EXECUTE:						info->execute = CPU_EXECUTE_NAME(m6809);			break;
-		case CPUINFO_FCT_BURN:							info->burn = NULL;						break;
-		case CPUINFO_FCT_DISASSEMBLE:					info->disassemble = CPU_DISASSEMBLE_NAME(m6809);			break;
-		case CPUINFO_PTR_INSTRUCTION_COUNTER:			info->icount = &m68_state->icount;			break;
-
-		/* --- the following bits of info are returned as NULL-terminated strings --- */
-		case DEVINFO_STR_NAME:							strcpy(info->s, "M6809");				break;
-		case DEVINFO_STR_FAMILY:					strcpy(info->s, "Motorola 6809");		break;
-		case DEVINFO_STR_VERSION:					strcpy(info->s, "1.11");				break;
-		case DEVINFO_STR_SOURCE_FILE:						strcpy(info->s, __FILE__);				break;
-		case DEVINFO_STR_CREDITS:					strcpy(info->s, "Copyright John Butler"); break;
-
-		case CPUINFO_STR_FLAGS:
-			sprintf(info->s, "%c%c%c%c%c%c%c%c",
-				m68_state->cc & 0x80 ? 'E':'.',
-				m68_state->cc & 0x40 ? 'F':'.',
-                m68_state->cc & 0x20 ? 'H':'.',
-                m68_state->cc & 0x10 ? 'I':'.',
-                m68_state->cc & 0x08 ? 'N':'.',
-                m68_state->cc & 0x04 ? 'Z':'.',
-                m68_state->cc & 0x02 ? 'V':'.',
-                m68_state->cc & 0x01 ? 'C':'.');
-            break;
-
-		case CPUINFO_STR_REGISTER + M6809_PC:			sprintf(info->s, "PC:%04X", m68_state->pc.w.l); break;
-		case CPUINFO_STR_REGISTER + M6809_S:			sprintf(info->s, "S:%04X", m68_state->s.w.l); break;
-		case CPUINFO_STR_REGISTER + M6809_CC:			sprintf(info->s, "CC:%02X", m68_state->cc); break;
-		case CPUINFO_STR_REGISTER + M6809_U:			sprintf(info->s, "U:%04X", m68_state->u.w.l); break;
-		case CPUINFO_STR_REGISTER + M6809_A:			sprintf(info->s, "A:%02X", m68_state->d.b.h); break;
-		case CPUINFO_STR_REGISTER + M6809_B:			sprintf(info->s, "B:%02X", m68_state->d.b.l); break;
-		case CPUINFO_STR_REGISTER + M6809_X:			sprintf(info->s, "X:%04X", m68_state->x.w.l); break;
-		case CPUINFO_STR_REGISTER + M6809_Y:			sprintf(info->s, "Y:%04X", m68_state->y.w.l); break;
-		case CPUINFO_STR_REGISTER + M6809_DP:			sprintf(info->s, "DP:%02X", m68_state->dp.b.h); break;
-	}
+#ifdef CPU_DEBUG
+//   debugreg(&maincpu);
+#endif
+   cpu_exec(&maincpu);
+   maincpu.total += maincpu.cycle;
 }
 
-
-/**************************************************************************
- * CPU-specific set_info
- **************************************************************************/
-
-CPU_GET_INFO( m6809e )
+void main_line(void)
 {
-	switch (state)
-	{
-		/* --- the following bits of info are returned as 64-bit signed integers --- */
-		case CPUINFO_INT_CLOCK_MULTIPLIER:				info->i = 1;							break;
-		case CPUINFO_INT_CLOCK_DIVIDER:					info->i = 4;							break;
-
-		/* --- the following bits of info are returned as NULL-terminated strings --- */
-		case DEVINFO_STR_NAME:							strcpy(info->s, "M6809E");				break;
-
-		default:										CPU_GET_INFO_CALL(m6809);				break;
-	}
+   cpu_execline(&maincpu);
 }
+
+void main_reset(void)
+{
+   cpu_reset(&maincpu);
+}
+
+void sub_exec(void)
+{
+#ifdef CPU_DEBUG
+   debugreg(&subcpu);
+#endif
+   cpu_exec(&subcpu);
+   subcpu.total += subcpu.cycle;
+}
+
+void sub_line(void)
+{
+   cpu_execline(&subcpu);
+}
+
+void sub_reset(void)
+{
+   cpu_reset(&subcpu);
+}
+#if 0
+void jsub_line(void)
+{
+   cpu_execline(&jsubcpu);
+}
+
+void jsub_exec(void)
+{
+   cpu_exec(&jsubcpu);
+   jsubcpu.total += jsubcpu.cycle;
+}
+
+void jsub_reset(void)
+{
+   cpu_reset(&jsubcpu);
+}
+#endif
