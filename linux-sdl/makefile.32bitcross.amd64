@@ -1,0 +1,221 @@
+###
+###	FM-7 EMULATOR "XM7"
+###
+###	Copyright (C) 2004 GIMONS
+###	Copyright (C) 2010 K.Ohta
+###	[ Makefile GTK For SDL]
+XM7_VER		= 3
+OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
+#OPTION		= -DMOUSE -DMR2 -DFDDSND
+#OPTION		= -DMOUSE -DMR2
+OPTION		+= -DUSE_GTK
+INSTALL          = install -c 
+PREFIX           = /usr/local
+SHAREDIR         = $(PREFIX)/share/xm7/
+#UIFONT           = /usr/share/fonts/truetype/ipafont/ipagui.ttf
+UIFONT           = /usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf
+#IA32BOOTSTRAPED  = /emul/ia32-bootstrap
+
+
+COMMONSRC = \
+        aluline.c \
+        apalet.c \
+        disasm.c \
+        display.c \
+	dmac.c \
+	fdc.c \
+	jcard.c \
+	jsubsys.c \
+	kanji.c \
+	keyboard.c \
+	maincpu.c \
+	mainetc.c \
+	mainmem.c \
+	midi.c \
+	mmr.c \
+	mouse.c \
+	multipag.c \
+	opn.c \
+	rtc.c \
+	schedule.c \
+	subcpu.c \
+	subctrl.c \
+	submem.c \
+	system.c \
+	tapelp.c \
+	tools.c \
+	ttlpalet.c \
+	opna.cpp \
+	psg.cpp \
+	fmgen.cpp \
+	juliet.cpp \
+	vm_sub.c \
+	cpu_x86.asm 
+	m6809.c
+#	cpu_x86.asm 
+
+#	xw_sub.asm
+
+#	aluline.c    fdc.c        keyboard.c   multipag.c  subcpu.c \
+#	tools.c      apalet.c     fmgen.cpp    maincpu.c   opn.c \
+#	subctrl.c    ttlpalet.c   cpu_x86.asm  fmtimer.cpp  mainetc.c \
+#	opna.cpp     submem.c     vm_sub.asm   disasm.c    jcard.c \
+#	mainmem.c    psg.cpp      system.c     whg.c       display.c \
+#	mmr.c        rtc.c        tapelp.c    dmac.c \
+#	kanji.c      mouse.c      schedule.c   thg.c
+
+LOCALSRC = \
+	sdl_gtkdlg.c sdl_cfg.c  sdl_inifile.c \
+                 sdl_cmd.c sdl_sch.c sdl_draw.c sdl_kbd.c sdl_file.c sdl_snd_mt.cpp \
+	sdl_main.c \
+                 sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c \
+	gtk_prop.c gtk_propkeyboard.c \
+        gtk_cfgdlg.c gtk_main.c gtk_toolbox.c sdl_bar.c
+#                 xw_sub.asm 
+
+COMMONOBJ = \
+        aluline.o \
+        apalet.o \
+        disasm.o \
+        display.o \
+        dmac.o \
+	fdc.o \
+	jcard.o \
+	jsubsys.o \
+	kanji.o \
+	keyboard.o \
+	maincpu.o \
+	mainetc.o \
+	mainmem.o \
+	midi.o \
+	mmr.o \
+	mouse.o \
+	multipag.o \
+	opn.o \
+	rtc.o \
+	schedule.o \
+	subcpu.o \
+	subctrl.o \
+	submem.o \
+	system.o \
+	tapelp.o \
+	tools.o \
+	ttlpalet.o \
+	opna.o \
+	psg.o \
+	fmgen.o \
+	juliet.o \
+	vm_sub.o \
+	cpu_x86.o 
+
+	m6809.o
+#	cpu_x86.o \
+#	xw_sub.o
+
+
+
+LOCALOBJ = \
+	sdl_gtkdlg.o sdl_cfg.o sdl_inifile.o  \
+	sdl_cmd.o sdl_sch.o sdl_kbd.o sdl_file.o \
+	sdl_snd_mt.o sdl_main.o \
+                 sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o \
+                 sdl_draw.o \
+                 gtk_cfgdlg.o gtk_main.o gtk_prop.o gtk_propkeyboard.o gtk_toolbox.o sdl_bar.o
+#	xw_sub.o 
+
+.SUFFIXES: .c .cpp .asm .o
+
+SRCS =	${COMMONSRC} ${LOCALSRC}
+OBJS =	${COMMONOBJ} ${LOCALOBJ}
+
+# for Cross Build
+LDFLAGS = "-Wl,-rpath,/usr/lib32,-rpath,/usr/local/lib32,-rpath,/lib32 -L/usr/lib32 -L/usr/local/lib32 -L/lib32"
+LDFLAGS = \
+         -Wl,-rpath,$(IA32BOOTSTRAPED)/usr/lib32,-rpath,$(IA32BOOTSTRAPED)/usr/local/lib32,-rpath,$(IA32BOOTSTRAPED)/lib32 \
+         -L$(IA32BOOTSTRAPED)/usr/lib32 \
+	 -L$(IA32BOOTSTRAPED)/usr/local/lib32 \
+	 -L$(IA32BOOTSTRAPED)/lib32 
+ 
+LDFLAGS +=  -L$(IA32BOOTSTRAPED)/usr/lib32/caca \
+           -L$(IA32BOOTSTRAPED)/usr/lib32/gio \
+	    -L$(IA32BOOTSTRAPED)/usr/lib32/esd \
+
+
+
+LDFLAGS = 
+LIBS =  -lX11 -lXt -lXext
+#LIBS += -lmemwatch
+
+CFLAGS =        -g -O0 -export-dynamic
+#CFLAGS =        -g -O0
+#CFLAGS =        -O3
+CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"CFLAGS += 	-m32 -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+#CFLAGS += 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
+CFLAGS +=        -DCPU_ASM
+CFLAGS += \
+       -I$(IA32BOOTSTRAPED)/usr/include -I$(IA32BOOTSTRAPED)/usr/local/include -I$(IA32BOOTSTRAPED)/usr/X11R6/include -I. \
+	-D_REENTRANT -pthread -I$(IA32BOOTSTRAPED)/usr/include/gtk-2.0 \
+                -I$(IA32BOOTSTRAPED)/usr/lib/gtk-2.0/include \
+                -I$(IA32BOOTSTRAPED)/usr/include/atk-1.0 -I$(IA32BOOTSTRAPED)/usr/include/cairo \
+                -I$(IA32BOOTSTRAPED)/usr/include/pango-1.0 -I$(IA32BOOTSTRAPED)/usr/include/pixman-1 \
+		-I$(IA32BOOTSTRAPED)/usr/include/freetype2 -I$(IA32BOOTSTRAPED)/usr/include/directfb \
+                -I$(IA32BOOTSTRAPED)/usr/include/libpng12 -I$(IA32BOOTSTRAPED)/usr/include/glib-2.0 \
+                -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include \
+                -I$(IA32BOOTSTRAPED)/usr/include/libglade-2.0/  \
+	-pthread -I/usr/include/glib-2.0 -I$(IA32BOOTSTRAPED)/usr/lib/glib-2.0/include
+
+ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
+
+LIBS +=  -lgio-2.0  -lgthread-2.0 -lglib-2.0 
+LIBS +=  \
+        -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 \
+        -lpangoft2-1.0 -lgdk_pixbuf-2.0  -lpangocairo-1.0  -lcairo \
+        -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 \
+        -lgmodule-2.0 -lpcre -lpcreposix -lrt -ldl
+
+
+
+LIBS +=  \
+        -lSDL -lSDL_mixer -lSDL_ttf
+
+LIBS +=  \
+        -lartsc -lesd -lcaca -laa 
+LIBS +=	-lpulsecommon-0.9.21 -lpulse-simple
+LIBS +=	-lpthread
+LIBS += -lmemwatch
+#LIBS += /usr/lib32/libc.a /usr/lib32/libm.a
+
+
+
+all:	xm7.sdl
+
+xm7.sdl: ${OBJS}
+#	ld  ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+	gcc -m32 ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+#	g++ ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+#	/emul/ia32-bootstrap/usr/lib32/debug/usr/lib/crt1.o ${OBJS} ${LIBS}
+
+#xm7:	${OBJS}
+#	gcc -m32 -static -o xm7 ${OBJS} ${LIBS}
+
+
+.c.o:
+	gcc ${CFLAGS} -o $@ -c $<
+
+.cpp.o:
+	g++ ${CFLAGS} -o $@ -c $<
+
+.asm.o:
+	nasm ${ASFLAGS} $<
+
+clean:
+	rm -f xm7 *.o *~
+
+install: all
+	$(INSTALL)  -d $(SHAREDIR)
+	$(INSTALL) ./xm7 $(PREFIX)/bin
+	$(INSTALL) -m 0644 *.ui $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
+#	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)
