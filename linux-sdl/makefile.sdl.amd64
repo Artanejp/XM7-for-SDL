@@ -5,9 +5,9 @@
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
-OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
-#OPTION		= -DMOUSE -DMR2 -DFDDSND
-#OPTION		= -DMOUSE -DMR2 -DMEMWATCH 
+#OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
+OPTION		= -DMOUSE -DMR2 -DFDDSND
+#OPTION		= -DMOUSE -DMR2
 OPTION		+= -DUSE_GTK
 INSTALL          = install -c 
 PREFIX           = /usr/local
@@ -106,7 +106,7 @@ COMMONOBJ = \
 	juliet.o \
 	vm_sub.o \
 	m6809.o
-	
+
 #	cpu_x86.o \
 #	xw_sub.o
 
@@ -133,7 +133,7 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 #         -L$(IA32BOOTSTRAPED)/usr/lib32 \
 #	 -L$(IA32BOOTSTRAPED)/usr/local/lib32 \
 #	 -L$(IA32BOOTSTRAPED)/lib32 
-	 
+ 
 #LDFLAGS +=  -L$(IA32BOOTSTRAPED)/usr/lib32/caca \
 #           -L$(IA32BOOTSTRAPED)/usr/lib32/gio \
 #	    -L$(IA32BOOTSTRAPED)/usr/lib32/esd \
@@ -181,10 +181,10 @@ LIBS +=  \
         -lartsc -lesd -lcaca -laa 
 LIBS +=	-lpulsecommon-0.9.21 -lpulse-simple
 LIBS +=	-lpthread
-LIBS += -lmemwatch
+#LIBS += -lmemwatch
 #LIBS += /usr/lib32/libc.a /usr/lib32/libm.a
 
-	
+
 
 all:	xm7.sdl
 

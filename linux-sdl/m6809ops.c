@@ -18,12 +18,13 @@ HNZVC
 OP_HANDLER( illegal )
 {
 	//logerror("M6809: illegal opcode at %04x\n",PC);
+        printf("M6809: illegal opcode at %04x %02 %02 %02 %02\n",PC,RM(PC),RM(PC+1),RM(PC+2),RM(PC+3));
         //PC+=1;
 }
 
 static void IIError(cpu6809_t *m68_state)
 {
-	//illegal(m68_state);		// Vector to Trap handler
+	illegal(m68_state);		// Vector to Trap handler
 }
 
 /* $00 NEG direct ?**** */
@@ -53,7 +54,7 @@ OP_HANDLER( com_di )
 /* $02 NGC Direct (Undefined) */
 OP_HANDLER(ngc_di)
 {
-     if((CC & 0x01) == 0) {
+     if((CC & CC_C) == 0) {
 	neg_di(m68_state);
      } else {
        com_di(m68_state);
@@ -70,7 +71,7 @@ OP_HANDLER( lsr_di )
 	CLR_NZC;
 	CC |= (t & CC_C);
 	t >>= 1;
-	SET_Z8(t);
+	SET_Z(t);
 	WM(EAD,t);
 }
 
@@ -450,169 +451,169 @@ OP_HANDLER( lbrn )
 /* $22 BHI relative ----- */
 OP_HANDLER( bhi )
 {
-	BRANCH( !(CC & (CC_Z|CC_C)) );
+	BRANCH(m68_state,  !(CC & (CC_Z|CC_C)) );
 }
 
 /* $1022 LBHI relative ----- */
 OP_HANDLER( lbhi )
 {
-	LBRANCH( !(CC & (CC_Z|CC_C)) );
+	LBRANCH(m68_state,  !(CC & (CC_Z|CC_C)) );
 }
 
 /* $23 BLS relative ----- */
 OP_HANDLER( bls )
 {
-	BRANCH( (CC & (CC_Z|CC_C)) );
+	BRANCH(m68_state,  (CC & (CC_Z|CC_C)) );
 }
 
 /* $1023 LBLS relative ----- */
 OP_HANDLER( lbls )
 {
-	LBRANCH( (CC&(CC_Z|CC_C)) );
+	LBRANCH(m68_state,  (CC&(CC_Z|CC_C)) );
 }
 
 /* $24 BCC relative ----- */
 OP_HANDLER( bcc )
 {
-	BRANCH( !(CC&CC_C) );
+	BRANCH(m68_state,  !(CC&CC_C) );
 }
 
 /* $1024 LBCC relative ----- */
 OP_HANDLER( lbcc )
 {
-	LBRANCH( !(CC&CC_C) );
+	LBRANCH(m68_state,  !(CC&CC_C) );
 }
 
 /* $25 BCS relative ----- */
 OP_HANDLER( bcs )
 {
-	BRANCH( (CC&CC_C) );
+	BRANCH(m68_state,  (CC&CC_C) );
 }
 
 /* $1025 LBCS relative ----- */
 OP_HANDLER( lbcs )
 {
-	LBRANCH( (CC&CC_C) );
+	LBRANCH(m68_state,  (CC&CC_C) );
 }
 
 /* $26 BNE relative ----- */
 OP_HANDLER( bne )
 {
-	BRANCH( !(CC&CC_Z) );
+	BRANCH(m68_state,  !(CC&CC_Z) );
 }
 
 /* $1026 LBNE relative ----- */
 OP_HANDLER( lbne )
 {
-	LBRANCH( !(CC&CC_Z) );
+	LBRANCH(m68_state,  !(CC&CC_Z) );
 }
 
 /* $27 BEQ relative ----- */
 OP_HANDLER( beq )
 {
-	BRANCH( (CC&CC_Z) );
+	BRANCH(m68_state,  (CC&CC_Z) );
 }
 
 /* $1027 LBEQ relative ----- */
 OP_HANDLER( lbeq )
 {
-	LBRANCH( (CC&CC_Z) );
+	LBRANCH(m68_state,  (CC&CC_Z) );
 }
 
 /* $28 BVC relative ----- */
 OP_HANDLER( bvc )
 {
-	BRANCH( !(CC&CC_V) );
+	BRANCH(m68_state,  !(CC&CC_V) );
 }
 
 /* $1028 LBVC relative ----- */
 OP_HANDLER( lbvc )
 {
-	LBRANCH( !(CC&CC_V) );
+	LBRANCH(m68_state,  !(CC&CC_V) );
 }
 
 /* $29 BVS relative ----- */
 OP_HANDLER( bvs )
 {
-	BRANCH( (CC&CC_V) );
+	BRANCH(m68_state,  (CC&CC_V) );
 }
 
 /* $1029 LBVS relative ----- */
 OP_HANDLER( lbvs )
 {
-	LBRANCH( (CC&CC_V) );
+	LBRANCH(m68_state,  (CC&CC_V) );
 }
 
 /* $2A BPL relative ----- */
 OP_HANDLER( bpl )
 {
-	BRANCH( !(CC&CC_N) );
+	BRANCH(m68_state,  !(CC&CC_N) );
 }
 
 /* $102A LBPL relative ----- */
 OP_HANDLER( lbpl )
 {
-	LBRANCH( !(CC&CC_N) );
+	LBRANCH(m68_state,  !(CC&CC_N) );
 }
 
 /* $2B BMI relative ----- */
 OP_HANDLER( bmi )
 {
-	BRANCH( (CC&CC_N) );
+	BRANCH(m68_state,  (CC&CC_N) );
 }
 
 /* $102B LBMI relative ----- */
 OP_HANDLER( lbmi )
 {
-	LBRANCH( (CC&CC_N) );
+	LBRANCH(m68_state,  (CC&CC_N) );
 }
 
 /* $2C BGE relative ----- */
 OP_HANDLER( bge )
 {
-	BRANCH( !NXORV );
+	BRANCH(m68_state,  !NXORV );
 }
 
 /* $102C LBGE relative ----- */
 OP_HANDLER( lbge )
 {
-	LBRANCH( !NXORV );
+	LBRANCH(m68_state,  !NXORV );
 }
 
 /* $2D BLT relative ----- */
 OP_HANDLER( blt )
 {
-	BRANCH( NXORV );
+	BRANCH(m68_state,  NXORV );
 }
 
 /* $102D LBLT relative ----- */
 OP_HANDLER( lblt )
 {
-	LBRANCH( NXORV );
+	LBRANCH(m68_state,  NXORV );
 }
 
 /* $2E BGT relative ----- */
 OP_HANDLER( bgt )
 {
-	BRANCH( !(NXORV || (CC&CC_Z)) );
+	BRANCH(m68_state,  !(NXORV || (CC&CC_Z)) );
 }
 
 /* $102E LBGT relative ----- */
 OP_HANDLER( lbgt )
 {
-	LBRANCH( !(NXORV || (CC&CC_Z)) );
+	LBRANCH(m68_state,  !(NXORV || (CC&CC_Z)) );
 }
 
 /* $2F BLE relative ----- */
 OP_HANDLER( ble )
 {
-	BRANCH( (NXORV || (CC&CC_Z)) );
+	BRANCH(m68_state,  (NXORV || (CC&CC_Z)) );
 }
 
 /* $102F LBLE relative ----- */
 OP_HANDLER( lble )
 {
-	LBRANCH( (NXORV || (CC&CC_Z)) );
+	LBRANCH(m68_state,  (NXORV || (CC&CC_Z)) );
 }
 
 /* $30 LEAX indexed --*-- */
@@ -621,7 +622,7 @@ OP_HANDLER( leax )
 	fetch_effective_address(m68_state);
 	X = EA;
 	CLR_Z;
-	SET_Z(X);
+	SET_Z16(X);
 }
 
 /* $31 LEAY indexed --*-- */
@@ -630,7 +631,7 @@ OP_HANDLER( leay )
 	fetch_effective_address(m68_state);
 	Y = EA;
 	CLR_Z;
-	SET_Z(Y);
+	SET_Z16(Y);
 }
 
 /* $32 LEAS indexed ----- */
@@ -799,7 +800,7 @@ OP_HANDLER( mul )
 {
 	WORD t;
 	t = A * B;
-	CLR_ZC; SET_Z16(t); if(t&0x80) SEC;
+	CLR_ZC; SET_Z(t); if(t&0x80) SEC;
 	D = t;
 }
 
@@ -894,7 +895,7 @@ OP_HANDLER( lsra )
 	CLR_NZC;
 	CC |= (A & CC_C);
 	A >>= 1;
-	SET_Z8(A);
+	SET_Z(A);
 }
 
 /* $45 LSRA */
@@ -1032,7 +1033,7 @@ OP_HANDLER( lsrb )
 	CLR_NZC;
 	CC |= (B & CC_C);
 	B >>= 1;
-	SET_Z8(B);
+	SET_Z(B);
 }
 
 /* $55 LSRB */
@@ -1177,7 +1178,7 @@ OP_HANDLER( lsr_ix )
 	t=RM(EAD);
 	CLR_NZC;
 	CC |= (t & CC_C);
-	t>>=1; SET_Z8(t);
+	t>>=1; SET_Z(t);
 	WM(EAD,t);
 }
 
@@ -1333,7 +1334,7 @@ OP_HANDLER( lsr_ex )
 {
 	BYTE t;
 	EXTBYTE(t); CLR_NZC; CC |= (t & CC_C);
-	t>>=1; SET_Z8(t);
+	t>>=1; SET_Z(t);
 	WM(EAD,t);
 }
 

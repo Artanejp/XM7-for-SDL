@@ -335,8 +335,8 @@ schedule_chkevent(DWORD microsec)
 	    continue;
 	}
 
-	ASSERT(event[i].current > 0);
-	ASSERT(event[i].reload > 0);
+//	ASSERT(event[i].current > 0);
+//	ASSERT(event[i].reload > 0);
 
 	if (event[i].current < exectime) {
 	    exectime = event[i].current;

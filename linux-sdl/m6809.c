@@ -76,6 +76,7 @@
 #include "xm7.h"
 #define INLINE inline
 
+#define BIG_SWITCH 0
 /* Enable big switch statement for the main opcodes */
 #ifndef BIG_SWITCH
 #define BIG_SWITCH  1
@@ -222,8 +223,8 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 
 /* macros for CC -- CC bits affected should be reset before calling */
 #define SET_Z(a)		if(!a)SEZ
-#define SET_Z8(a)		SET_Z((BYTE)a)
-#define SET_Z16(a)		SET_Z((WORD)a)
+#define SET_Z8(a)		if((BYTE)a == 0) SEZ
+#define SET_Z16(a)		if((WORD)a == 0) SEZ
 #define SET_N8(a)		CC|=((a&0x80)>>4)
 #define SET_N16(a)		CC|=((a&0x8000)>>12)
 #define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
@@ -236,8 +237,8 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 #define SET_FLAGS8D(a)		{CC|=flags8d[(a)&0xff];}
 
 /* combos */
-#define SET_NZ8(a)			{SET_N8(a);SET_Z(a);}
-#define SET_NZ16(a)			{SET_N16(a);SET_Z(a);}
+#define SET_NZ8(a)			{SET_N8(a);SET_Z8(a);}
+#define SET_NZ16(a)			{SET_N16(a);SET_Z16(a);}
 #define SET_FLAGS8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
 #define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
@@ -274,25 +275,31 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 #define EXTWORD(w) {EXTENDED;w=RM16(m68_state, EA);}
 
 /* macros for branch instructions */
-#define BRANCH(f) { 					\
-	BYTE t;							\
-	IMMBYTE(t); 						\
-	if( f ) 							\
-	{									\
-		PC += SIGNED(t);				\
-	}									\
+inline void
+BRANCH(cpu6809_t *m68_state, int f) 
+{			
+	BYTE t;	
+        IMMBYTE(t);
+#ifdef CPU_DEBUG
+        printf("BRANCH: %04x %02x %02x %02x %02x  ->to %04x\n", PC ,READB(m68_state, PC),READB(m68_state, PC+1),READB(m68_state, PC+2),READB(m68_state, PC+3),(WORD)(PC + SIGNED(t)));
+#endif
+	if( f )
+	{
+		PC += SIGNED(t);
+	}
 }
 
-#define LBRANCH(f) {                    \
-	WORD t; 							\
-	IMMWORD(t); 						\
-	if( f ) 							\
-	{									\
-		m68_state->cycle += 1;				\
-		PC += t;					\
-	}									\
+inline void
+ LBRANCH(cpu6809_t *m68_state,int f)
+ {
+	WORD t;
+	IMMWORD(t);
+	if( f ) 
+	{
+		m68_state->cycle += 1;
+		PC += t;
+	}
 }
-
 /* macros for setting/getting registers in TFR/EXG instructions */
 
 INLINE WORD RM16(cpu6809_t *m68_state, WORD Addr )
@@ -366,7 +373,7 @@ static void cpu_nmi(cpu6809_t *m68_state)
    PUSHBYTE(B);
    PUSHBYTE(A);
    PUSHBYTE(CC);
-   CC |= CC_II;
+   CC |= 0x50;
    PC = RM16(m68_state, 0xfffc);
    m68_state->intr &= 0xfffe;
 }
@@ -393,7 +400,6 @@ static void cpu_firq(cpu6809_t *m68_state)
    } else {
       /* NORMAL */
       CC &= 0x7f;
-      m68_state->intr |= 0x0100; /* CWAI */
       PUSHWORD(pPC);
       PUSHBYTE(CC);
       CC |= 0x50;
@@ -416,7 +422,7 @@ static void cpu_irq(cpu6809_t *m68_state)
    PUSHBYTE(CC);
    CC |= CC_II;
    PC = RM16(m68_state, 0xfff8);
- //  m68state->intr &= 0xfffb;
+//   m68_state->intr &= 0xfffb;
 }
 
 
@@ -471,7 +477,7 @@ check_irq:
    if((intr & INTR_IRQ) != 0) 
      {
 	m68_state->intr |= 0x40;
-	if((cc & INTR_SLOAD) != 0) goto check_ok;
+	if((cc & INTR_SLOAD) == 0) goto check_ok;
 	cpu_irq(m68_state);
 	cpu_execline(m68_state);
 	cycle = 19;
@@ -496,19 +502,16 @@ int_cycle:
 
 static void cpu_execline(cpu6809_t *m68_state)	
 {
-//	cpu6809_t *m68_state ;
         BYTE ireg;
         BYTE c;
 
 //			debugger_instruction_hook(device, PCD);
 
-//	    ireg = READB(m68_state, PC);
             ireg = ROP(PC);
 	    PC++;
-            c = cycles1[ireg];
             m68_state->cycle = cycles1[ireg];
-//#if BIG_SWITCH
-#if 1
+#if BIG_SWITCH
+
             switch( ireg )
 			{
 			case 0x00: neg_di(m68_state);    break;
@@ -798,7 +801,6 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0x0d: EA=X+13; 											   break;
 	case 0x0e: EA=X+14; 											   break;
 	case 0x0f: EA=X+15; 											   break;
-
 	case 0x10: EA=X-16; 											   break;
 	case 0x11: EA=X-15; 											   break;
 	case 0x12: EA=X-14; 											   break;
@@ -1068,16 +1070,16 @@ extern cpu6809_t jsubcpu;
 
 static void debugreg(cpu6809_t *p)
 {
-   printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x ",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea);
+        printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x CYCLE=%03d",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea,p->cycle);
    printf("AB=%04x X=%04x Y=%04x U=%04x S=%04x DP=%04x CC=%04x INT=%04x",p->acc.d, p->x, p->y, p->u, p->s, p->dp, p->cc, p->intr);
    printf("\n");
 }
 
 void main_exec(void)
 {
-#ifdef CPU_DEBUG
+//#ifdef CPU_DEBUG
 //   debugreg(&maincpu);
-#endif
+//#endif
    cpu_exec(&maincpu);
    maincpu.total += maincpu.cycle;
 }
@@ -1094,9 +1096,9 @@ void main_reset(void)
 
 void sub_exec(void)
 {
-#ifdef CPU_DEBUG
-   debugreg(&subcpu);
-#endif
+//#ifdef CPU_DEBUG
+//   debugreg(&subcpu);
+//#endif
    cpu_exec(&subcpu);
    subcpu.total += subcpu.cycle;
 }

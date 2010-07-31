@@ -7,8 +7,12 @@
  *      [ フロッピーディスク コントローラ(MB8877A) ]
  */
 
+//#define FDC_DEBUG 1
+
+
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include "xm7.h"
 #include "device.h"
 #include "fdc.h"
@@ -80,7 +84,7 @@ static BYTE     fdc_indexcnt;	/* INDEXホール カウンタ */
 static BOOL     fdc_boot;	/* ブートフラグ */
 #ifdef FDDSND
 static BOOL     fdc_wait;	/* ウェイトモード実行フラグ */
-static int      fdc_seek_track;	/* waitmode用シークカウンタ */
+static int32_t      fdc_seek_track;	/* waitmode用シークカウンタ */
 #endif
 
 
@@ -88,23 +92,23 @@ static int      fdc_seek_track;	/* waitmode用シークカウンタ */
  *      ステップレートテーブル
  */
 #ifdef FDDSND
-static const int fdc_steprate[4] = { 6000, 12000, 20000, 30000 };
+static const WORD fdc_steprate[4] = { 6000, 12000, 20000, 30000 };
 #endif
 
 
 /*
  *      プロトタイプ宣言
  */
-static void FASTCALL fdc_readbuf(int drive);	/* １トラック分読み込み 
+static void fdc_readbuf(int32_t drive);	/* １トラック分読み込み 
 						 */
-static BOOL FASTCALL fdc_lost_event(void);	/* LOST DATAイベント */
+static BOOL fdc_lost_event(void);	/* LOST DATAイベント */
 
 
 /*
  *      FDC
  *      初期化
  */
-BOOL            FASTCALL
+BOOL            
 fdc_init(void)
 {
     int             i;
@@ -140,7 +144,7 @@ fdc_init(void)
  *      FDC
  *      クリーンアップ
  */
-void            FASTCALL
+void            
 fdc_cleanup(void)
 {
     int             i;
@@ -157,7 +161,7 @@ fdc_cleanup(void)
  *      FDC
  *      リセット
  */
-void            FASTCALL
+void            
 fdc_reset(void)
 {
 #if XM7_VER >= 3
@@ -247,8 +251,8 @@ static WORD     crc_table[256] = {
 /*
  *      16bit CRCを計算し、セット
  */
-static void     FASTCALL
-calc_crc(BYTE * addr, int size)
+static void     
+calc_crc(BYTE * addr, int16_t size)
 {
     WORD            crc;
 
@@ -277,7 +281,7 @@ calc_crc(BYTE * addr, int size)
 /*
  *      乱数を計算
  */
-static BYTE     FASTCALL
+static BYTE     
 calc_rand(void)
 {
     static WORD     rand_s = 0x7f28;
@@ -300,7 +304,7 @@ calc_rand(void)
 /*
  *      Read Trackデータ作成
  */
-static void     FASTCALL
+static void     
 fdc_make_track(void)
 {
     int             i;
@@ -664,7 +668,7 @@ fdc_make_track(void)
  *      IDフィールドをバッファに作る
  *      カウンタ、データポインタを設定
  */
-static void     FASTCALL
+static void     
 fdc_makeaddr(int index)
 {
     int             i;
@@ -784,7 +788,7 @@ fdc_makeaddr(int index)
 /*
  *      インデックスカウンタを次のセクタへ移す
  */
-static int      FASTCALL
+static int       
 fdc_next_index(void)
 {
     int             max_track;
@@ -858,7 +862,7 @@ fdc_next_index(void)
 /*
  *      IDマークを探す
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_idmark(WORD * p)
 {
     WORD            offset;
@@ -896,7 +900,7 @@ fdc_idmark(WORD * p)
 /*
  *      データマークを探す
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_datamark(WORD * p, BOOL * deleted_mark)
 {
     WORD            offset;
@@ -948,7 +952,7 @@ fdc_datamark(WORD * p, BOOL * deleted_mark)
 /*
  *      トラック書き込み終了
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_writetrk(void)
 {
     int             total;
@@ -1150,7 +1154,7 @@ fdc_writetrk(void)
 /*
  *      セクタ書き込み終了
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_writesec(void)
 {
     DWORD           offset;
@@ -1194,7 +1198,7 @@ fdc_writesec(void)
  *      トラック、セクタ、サイドと一致するセクタを検索
  *      カウンタ、データポインタを設定
  */
-static BYTE     FASTCALL
+static BYTE      
 fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 {
     int             secs;
@@ -1434,7 +1438,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 /*
  *      トラック読み込み
  */
-static void     FASTCALL
+static void      
 fdc_readbuf(int drive)
 {
     DWORD           offset;
@@ -1692,7 +1696,7 @@ fdc_readbuf(int drive)
 /*
  *      D77ファイル ヘッダ読み込み
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_readhead(int drive, int index)
 {
     int             i;
@@ -1791,7 +1795,7 @@ fdc_readhead(int drive, int index)
 /*
  *      VFDファイル ヘッダ読み込み
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_readhead_vfd(int drive)
 {
     int             handle;
@@ -1825,7 +1829,7 @@ fdc_readhead_vfd(int drive)
 /*
  *      現在のメディアのライトプロテクトを切り替える
  */
-BOOL            FASTCALL
+BOOL             
 fdc_setwritep(int drive, BOOL writep)
 {
     BYTE            header[0x2b0];
@@ -1895,7 +1899,7 @@ fdc_setwritep(int drive, BOOL writep)
 /*
  *      メディア番号を設定
  */
-BOOL            FASTCALL
+BOOL             
 fdc_setmedia(int drive, int index)
 {
     /*
@@ -1979,7 +1983,7 @@ fdc_setmedia(int drive, int index)
 /*
  *      D77ファイル解析、メディア数および名称取得
  */
-static int      FASTCALL
+static int       
 fdc_chkd77(int drive)
 {
     int             i;
@@ -2071,7 +2075,7 @@ fdc_chkd77(int drive)
 /*
  *      VFDファイルチェック
  */
-static int      FASTCALL
+static int       
 fdc_chkvfd(int drive)
 {
     int             i;
@@ -2121,7 +2125,7 @@ fdc_chkvfd(int drive)
 /*
  *      ディスクファイルを設定
  */
-int             FASTCALL
+int              
 fdc_setdisk(int drive, char *fname)
 {
     BOOL            writep;
@@ -2263,8 +2267,8 @@ fdc_setdisk(int drive, char *fname)
      */
     fdc_teject[drive] = FALSE;
     fdc_medias[drive] = (BYTE) count;
-    return count;
-}
+    return count;}
+
 
 /*-[ FDCコマンド ウェイトモード処理 ]---------------------------------------*/
 
@@ -2272,7 +2276,7 @@ fdc_setdisk(int drive, char *fname)
  *      FDC DataRequestイベント (WAIT)
  */
 #ifdef FDDSND
-static BOOL     FASTCALL
+static BOOL      
 fdc_drq_event(void)
 {
     /*
@@ -2291,7 +2295,7 @@ fdc_drq_event(void)
 /*
  *      FDC シークイベント (WAIT)
  */
-static BOOL     FASTCALL
+static BOOL      
 fdd_seek_event(void)
 {
     /*
@@ -2330,7 +2334,7 @@ fdd_seek_event(void)
 /*
  *      FDC シークイベント設定 (SOUND ON)
  */
-static void     FASTCALL
+static void      
 fdc_setseekevent(BYTE track)
 {
     /*
@@ -2358,7 +2362,7 @@ fdc_setseekevent(BYTE track)
 /*
  *      FDC ステータス作成
  */
-static void     FASTCALL
+static void      
 fdc_make_stat(void)
 {
     /*
@@ -2431,7 +2435,7 @@ fdc_make_stat(void)
  *      TYPE I
  *      RESTORE
  */
-static void     FASTCALL
+static void      
 fdc_restore(void)
 {
 #ifdef FDDSND
@@ -2514,7 +2518,7 @@ fdc_restore(void)
  *      TYPE I
  *      SEEK
  */
-static void     FASTCALL
+static void      
 fdc_seek(void)
 {
     BYTE            target;
@@ -2543,7 +2547,7 @@ fdc_seek(void)
      */
     if (fdc_command & 0x04) {
 	if (fdc_trkreg != fdc_track[fdc_drvreg]) {
-	    fdc_status |= FDC_ST_SEEKERR;
+            fdc_status |= FDC_ST_SEEKERR;
 	    /*
 	     * 自動修復(らぷてっく対策) 
 	     */
@@ -2641,7 +2645,7 @@ fdc_seek(void)
  *      TYPE I
  *      STEP IN
  */
-static void     FASTCALL
+static void      
 fdc_step_in(void)
 {
 #ifdef FDDSND
@@ -2675,7 +2679,7 @@ fdc_step_in(void)
      */
     if (fdc_command & 0x04) {
 	if (fdc_trkreg != fdc_track[fdc_drvreg]) {
-	    fdc_status |= FDC_ST_SEEKERR;
+            fdc_status |= FDC_ST_SEEKERR;
 	}
     }
 
@@ -2748,7 +2752,7 @@ fdc_step_in(void)
  *      TYPE I
  *      STEP OUT
  */
-static void     FASTCALL
+static void      
 fdc_step_out(void)
 {
 #ifdef FDDSND
@@ -2841,7 +2845,7 @@ fdc_step_out(void)
  *      TYPE I
  *      STEP
  */
-static void     FASTCALL
+static void      
 fdc_step(void)
 {
     if (fdc_seekvct) {
@@ -2855,7 +2859,7 @@ fdc_step(void)
  *      TYPE II, III
  *      READ/WRITE サブ
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_rw_sub(void)
 {
     fdc_status = 0;
@@ -2894,7 +2898,7 @@ fdc_rw_sub(void)
  *      TYPE II
  *      READ DATA
  */
-static void     FASTCALL
+static void      
 fdc_read_data(void)
 {
     BYTE            stat;
@@ -2960,6 +2964,10 @@ fdc_read_data(void)
      * 先にステータスを設定する 
      */
     fdc_status = stat;
+#ifdef FDC_DEBUG
+        printf("FDC: READSEC: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
+        printf("FDC:            TRACK %02d SEC %03d STATUS %03d(%02x) - \n",fdc_trkreg,fdc_secreg,fdc_status,fdc_status);
+#endif
 
     /*
      * RECORD NOT FOUND ? 
@@ -3023,7 +3031,7 @@ fdc_read_data(void)
  *      TYPE II
  *      WRITE DATA
  */
-static void     FASTCALL
+static void      
 fdc_write_data(void)
 {
     BYTE            stat;
@@ -3068,6 +3076,10 @@ fdc_write_data(void)
      * 先にステータスを設定する 
      */
     fdc_status = stat;
+#ifdef FDC_DEBUG
+        printf("FDC: WRITE: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
+        printf("FDC:        TRACK %02d SEC %03d STATUS %03d(%02x) - \n",fdc_trkreg,fdc_secreg,fdc_status,fdc_status);
+#endif
 
     /*
      * RECORD NOT FOUND ? 
@@ -3124,7 +3136,7 @@ fdc_write_data(void)
  *      TYPE III
  *      READ ADDRESS
  */
-static void     FASTCALL
+static void      
 fdc_read_addr(void)
 {
     int             idx;
@@ -3211,7 +3223,7 @@ fdc_read_addr(void)
  *      TYPE III
  *      READ TRACK
  */
-static void     FASTCALL
+static void      
 fdc_read_track(void)
 {
     /*
@@ -3273,7 +3285,7 @@ fdc_read_track(void)
  *      TYPE III
  *      WRITE TRACK
  */
-static void     FASTCALL
+static void      
 fdc_write_track(void)
 {
     fdc_status = 0;
@@ -3348,9 +3360,10 @@ fdc_write_track(void)
  *      TYPE IV
  *      FORCE INTERRUPT
  */
-static void     FASTCALL
+static void      
 fdc_force_intr(void)
 {
+
     /*
      * WRITE TRACK終了処理 
      */
@@ -3399,6 +3412,10 @@ fdc_force_intr(void)
      * ここでアクセスREADYに 
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
+#ifdef FDC_DEBUG
+        printf("FDC: FORCE-INT: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
+        printf("FDC:            TRACK %02d SEC %03d STATUS %03d(%02x) - \n",fdc_trkreg,fdc_secreg,fdc_status,fdc_status);
+#endif
 
     /*
      * いずれかが立っていれば、IRQ発生(実装としては不十分) 
@@ -3415,7 +3432,7 @@ fdc_force_intr(void)
  *      マルチセクタ
  *      イベント
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_multi_event(void)
 {
     if (fdc_drqirq & 0x10) {
@@ -3425,6 +3442,11 @@ fdc_multi_event(void)
 	 */
 	fdc_secreg++;
 	schedule_setevent(EVENT_FDC_M, 30, fdc_multi_event);
+#ifdef FDC_DEBUG
+        printf("FDC: MULTISEC: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
+        printf("FDC:            TRACK %02d SEC %03d STATUS %03d(%02x) - \n",fdc_trkreg,fdc_secreg,fdc_status,fdc_status);
+#endif
+
 	return TRUE;
     }
 
@@ -3446,6 +3468,11 @@ fdc_multi_event(void)
     /*
      * イベント削除して終了 
      */
+#ifdef FDC_DEBUG
+        printf("FDC: MULTISEC: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
+        printf("FDC:            TRACK %02d SEC %03d STATUS %03d(%02x) - \n",fdc_trkreg,fdc_secreg,fdc_status,fdc_status);
+#endif
+
     schedule_delevent(EVENT_FDC_M);
     return TRUE;
 }
@@ -3454,7 +3481,7 @@ fdc_multi_event(void)
  *      ロストデータ
  *      イベント
  */
-static BOOL     FASTCALL
+static BOOL      
 fdc_lost_event(void)
 {
     if (fdc_dataptr && (fdc_drqirq & 0x80)) {
@@ -3477,6 +3504,11 @@ fdc_lost_event(void)
     /*
      * イベント削除して終了 
      */
+#ifdef FDC_DEBUG
+        printf("FDC: LOSTDATA: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
+        printf("FDC:            TRACK %02d SEC %03d STATUS %03d(%02x) - \n",fdc_trkreg,fdc_secreg,fdc_status,fdc_status);
+#endif
+
     schedule_delevent(EVENT_FDC_L);
     return TRUE;
 }
@@ -3485,7 +3517,7 @@ fdc_lost_event(void)
 /*
  *      コマンド処理
  */
-static void     FASTCALL
+static void      
 fdc_process_cmd(void)
 {
     BYTE            high;
@@ -3592,7 +3624,7 @@ fdc_process_cmd(void)
  *      FDC
  *      １バイト読み出し
  */
-BOOL            FASTCALL
+BOOL             
 fdc_readb(WORD addr, BYTE * dat)
 {
 #if XM7_VER >= 3
@@ -3642,6 +3674,9 @@ fdc_readb(WORD addr, BYTE * dat)
 	    /*
 	     * 一度だけBUSYを見せる 
 	     */
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: CMDREG($FD18): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+#endif
 	    return TRUE;
 	}
 	/*
@@ -3657,14 +3692,20 @@ fdc_readb(WORD addr, BYTE * dat)
 	 */
     case 0xfd19:
 	*dat = fdc_trkreg;
-	return TRUE;
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: TRKREG($FD19): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+#endif
+         return TRUE;
 
 	/*
 	 * セクタレジスタ 
 	 */
     case 0xfd1a:
 	*dat = fdc_secreg;
-	return TRUE;
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: SECREG($FD1a): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+#endif
+         return TRUE;
 
 	/*
 	 * データレジスタ 
@@ -3736,6 +3777,9 @@ fdc_readb(WORD addr, BYTE * dat)
 	 */
     case 0xfd1c:
 	*dat = (BYTE) (fdc_sidereg | 0xfe);
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: HEADREG($FD1c): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -3755,6 +3799,9 @@ fdc_readb(WORD addr, BYTE * dat)
 	    *dat = (BYTE) (0x3c | fdc_drvreg);
 	}
 #endif
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: DRVREG($FD1D): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -3764,6 +3811,9 @@ fdc_readb(WORD addr, BYTE * dat)
 #if XM7_VER >= 3
 	if (fm7_ver < 3) {
 	    *dat = 0xff;
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: MODEREG($FD1E): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+#endif
 	    return TRUE;
 	}
 
@@ -3781,6 +3831,9 @@ fdc_readb(WORD addr, BYTE * dat)
 	}
 #else
 	*dat = 0xFF;
+#endif
+#ifdef FDC_DEBUG
+    printf("FDC: REGREAD: MODEREG($FD1E): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
 #endif
 	return TRUE;
 
@@ -3834,12 +3887,13 @@ fdc_readb(WORD addr, BYTE * dat)
  *      FDC
  *      １バイト書き込み
  */
-BOOL            FASTCALL
+BOOL             
 fdc_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER >= 3
     BOOL            tmp;
 #endif
+
 
     switch (addr) {
 	/*
@@ -3848,6 +3902,9 @@ fdc_writeb(WORD addr, BYTE dat)
     case 0xfd18:
 	fdc_command = dat;
 	fdc_process_cmd();
+#ifdef FDC_DEBUG
+    printf("FDC: REGWRITE: CMDREG($FD18): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -3865,6 +3922,9 @@ fdc_writeb(WORD addr, BYTE dat)
 	    ((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
 	    fdc_process_cmd();
 	}
+#ifdef FDC_DEBUG
+    printf("FDC: REGWRITE: TRKREG($FD19): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -3882,6 +3942,9 @@ fdc_writeb(WORD addr, BYTE dat)
 	    ((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
 	    fdc_process_cmd();
 	}
+#ifdef FDC_DEBUG
+    printf("FDC: REGWRITE: SECREG($FD1A): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -3961,6 +4024,9 @@ fdc_writeb(WORD addr, BYTE dat)
 	    fdc_sidereg = (BYTE) (dat & 0x01);
 	    fdc_readbuf(fdc_drvreg);
 	}
+#ifdef FDC_DEBUG
+    printf("FDC: REGWRITE: HEADREG($FD1c): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -3989,6 +4055,9 @@ fdc_writeb(WORD addr, BYTE dat)
 	if (fdc_drvreg >= FDC_DRIVES) {
 	    fdc_motor = 0;
 	}
+#ifdef FDC_DEBUG
+    printf("FDC: REGWRITE: DRIVEREG($FD1D): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+#endif
 	return TRUE;
 
 	/*
@@ -4038,6 +4107,10 @@ fdc_writeb(WORD addr, BYTE dat)
 	    fdc_readbuf(fdc_drvreg);
 	}
 #endif
+#ifdef FDC_DEBUG
+    printf("FDC: REGWRITE: MODEREG($FD1e): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+#endif
+
 	return TRUE;
     }
 
@@ -4048,7 +4121,7 @@ fdc_writeb(WORD addr, BYTE dat)
  *      FDC
  *      セーブ
  */
-BOOL            FASTCALL
+BOOL             
 fdc_save(int fileh)
 {
     int             i;
@@ -4213,7 +4286,7 @@ fdc_save(int fileh)
  *      FDC
  *      ロード
  */
-BOOL            FASTCALL
+BOOL             
 fdc_load(int fileh, int ver)
 {
     int             i;

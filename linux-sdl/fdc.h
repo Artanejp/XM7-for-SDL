@@ -53,43 +53,43 @@ extern          "C" {
     /*
      *      主要エントリ
      */
-    BOOL FASTCALL   fdc_init(void);
+    BOOL    fdc_init(void);
     /*
      * 初期化 
      */
-    void FASTCALL   fdc_cleanup(void);
+    void    fdc_cleanup(void);
     /*
      * クリーンアップ 
      */
-    void FASTCALL   fdc_reset(void);
+    void    fdc_reset(void);
     /*
      * リセット 
      */
-    BOOL FASTCALL   fdc_readb(WORD addr, BYTE * dat);
+    BOOL    fdc_readb(WORD addr, BYTE * dat);
     /*
      * メモリ読み出し 
      */
-    BOOL FASTCALL   fdc_writeb(WORD addr, BYTE dat);
+    BOOL    fdc_writeb(WORD addr, BYTE dat);
     /*
      * メモリ書き込み 
      */
-    BOOL FASTCALL   fdc_save(int fileh);
+    BOOL    fdc_save(int fileh);
     /*
      * セーブ 
      */
-    BOOL FASTCALL   fdc_load(int fileh, int ver);
+    BOOL    fdc_load(int fileh, int ver);
     /*
      * ロード 
      */
-    int FASTCALL    fdc_setdisk(int drive, char *fname);
+    int     fdc_setdisk(int drive, char *fname);
     /*
      * ディスクセット 
      */
-    BOOL FASTCALL   fdc_setmedia(int drive, int index);
+    BOOL    fdc_setmedia(int drive, int index);
     /*
      * ディスクファイル内メディア指定 
      */
-    BOOL FASTCALL   fdc_setwritep(int drive, BOOL writep);
+    BOOL    fdc_setwritep(int drive, BOOL writep);
     /*
      * ライトプロテクト指定 
      */

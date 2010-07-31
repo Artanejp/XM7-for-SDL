@@ -30,6 +30,7 @@ INLINE void andb_ix(cpu6809_t *m68_state);
 INLINE void andcc(cpu6809_t *m68_state);
 INLINE void asla(cpu6809_t *m68_state);
 INLINE void aslb(cpu6809_t *m68_state);
+INLINE void aslcc_in(cpu6809_t *m68_state);
 INLINE void asl_di(cpu6809_t *m68_state);
 INLINE void asl_ex(cpu6809_t *m68_state);
 INLINE void asl_ix(cpu6809_t *m68_state);
@@ -63,6 +64,8 @@ INLINE void brn(cpu6809_t *m68_state);
 INLINE void bsr(cpu6809_t *m68_state);
 INLINE void bvc(cpu6809_t *m68_state);
 INLINE void bvs(cpu6809_t *m68_state);
+INLINE void clca(cpu6809_t *m68_state);
+INLINE void clcb(cpu6809_t *m68_state);
 INLINE void clra(cpu6809_t *m68_state);
 INLINE void clrb(cpu6809_t *m68_state);
 INLINE void clr_di(cpu6809_t *m68_state);
@@ -104,6 +107,10 @@ INLINE void com_ix(cpu6809_t *m68_state);
 INLINE void cwai(cpu6809_t *m68_state);
 INLINE void daa(cpu6809_t *m68_state);
 INLINE void dcc_di(cpu6809_t *m68_state);
+INLINE void dcc_ex(cpu6809_t *m68_state);
+INLINE void dcc_ix(cpu6809_t *m68_state);
+INLINE void dcca(cpu6809_t *m68_state);
+INLINE void dccb(cpu6809_t *m68_state);
 INLINE void deca(cpu6809_t *m68_state);
 INLINE void decb(cpu6809_t *m68_state);
 INLINE void dec_di(cpu6809_t *m68_state);
@@ -118,6 +125,8 @@ INLINE void eorb_ex(cpu6809_t *m68_state);
 INLINE void eorb_im(cpu6809_t *m68_state);
 INLINE void eorb_ix(cpu6809_t *m68_state);
 INLINE void exg(cpu6809_t *m68_state);
+INLINE void flag8_im(cpu6809_t *m68_state);
+INLINE void flag16_im(cpu6809_t *m68_state);
 INLINE void illegal(cpu6809_t *m68_state);
 INLINE void inca(cpu6809_t *m68_state);
 INLINE void incb(cpu6809_t *m68_state);
@@ -188,9 +197,13 @@ INLINE void mul(cpu6809_t *m68_state);
 INLINE void nega(cpu6809_t *m68_state);
 INLINE void negb(cpu6809_t *m68_state);
 INLINE void neg_di(cpu6809_t *m68_state);
-INLINE void ngc_di(cpu6809_t *m68_state);
 INLINE void neg_ex(cpu6809_t *m68_state);
 INLINE void neg_ix(cpu6809_t *m68_state);
+INLINE void ngc_di(cpu6809_t *m68_state);
+INLINE void ngc_ex(cpu6809_t *m68_state);
+INLINE void ngc_ix(cpu6809_t *m68_state);
+INLINE void ngca(cpu6809_t *m68_state);
+INLINE void ngcb(cpu6809_t *m68_state);
 INLINE void nop(cpu6809_t *m68_state);
 INLINE void ora_di(cpu6809_t *m68_state);
 INLINE void ora_ex(cpu6809_t *m68_state);
@@ -218,6 +231,7 @@ INLINE void ror_di(cpu6809_t *m68_state);
 INLINE void ror_ex(cpu6809_t *m68_state);
 INLINE void ror_ix(cpu6809_t *m68_state);
 INLINE void rti(cpu6809_t *m68_state);
+INLINE void rst(cpu6809_t *m68_state);
 INLINE void rts(cpu6809_t *m68_state);
 INLINE void sbca_di(cpu6809_t *m68_state);
 INLINE void sbca_ex(cpu6809_t *m68_state);
@@ -274,6 +288,7 @@ INLINE void swi(cpu6809_t *m68_state);
 INLINE void sync(cpu6809_t *m68_state);
 INLINE void tfr(cpu6809_t *m68_state);
 INLINE void tsta(cpu6809_t *m68_state);
+INLINE void trap(cpu6809_t *m68_state);
 INLINE void tstb(cpu6809_t *m68_state);
 INLINE void tst_di(cpu6809_t *m68_state);
 INLINE void tst_ex(cpu6809_t *m68_state);
@@ -341,22 +356,23 @@ static const BYTE index_cycle_em[256] = {        /* Index Loopup cycle counts */
 };
 
 /* timings for 1-byte opcodes */
+/* 20100731 Fix to XM7 */
 static const BYTE cycles1[] =
 {
 	/*   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
-  /*0*/  6, 6, 2, 6, 6, 2, 6, 6, 6, 6, 6, 2, 6, 6, 3, 6,
-  /*1*/  0, 0, 2, 4, 2, 2, 5, 9, 2, 2, 3, 2, 3, 2, 8, 6,
+  /*0*/  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3, 6,
+  /*1*/  0, 0, 2, 2, 0, 0, 5, 9, 3, 2, 3, 2, 3, 2, 8, 6,
   /*2*/  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-  /*3*/  4, 4, 4, 4, 5, 5, 5, 5, 2, 5, 3, 6,20,11, 2,19,
+  /*3*/  4, 4, 4, 4, 5, 5, 5, 5, 4, 5, 3, 6,20,11, 1,19,
   /*4*/  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-  /*5*/  2, 0, 0, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-  /*6*/  6, 2, 2, 6, 6, 2, 6, 6, 6, 6, 6, 2, 6, 6, 3, 6,
-  /*7*/  7, 2, 2, 7, 7, 2, 7, 7, 7, 7, 7, 2, 7, 7, 4, 7,
-  /*8*/  2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7, 3, 2,
+  /*5*/  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  /*6*/  6, 6, 6, 6, 6, 2, 6, 6, 6, 6, 6, 6, 6, 6, 3, 6,
+  /*7*/  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 7,
+  /*8*/  2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7, 3, 3,
   /*9*/  4, 4, 4, 6, 4, 4, 4, 4, 4, 4, 4, 4, 6, 7, 5, 5,
   /*A*/  4, 4, 4, 6, 4, 4, 4, 4, 4, 4, 4, 4, 6, 7, 5, 5,
   /*B*/  5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 7, 8, 6, 6,
-  /*C*/  2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 3,
+  /*C*/  2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 3, 0, 3, 3,
   /*D*/  4, 4, 4, 6, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5,
   /*E*/  4, 4, 4, 6, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5,
   /*F*/  5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6
@@ -367,32 +383,32 @@ static void (*const m6809_main[0x100])(cpu6809_t *) = {
 /*          0xX0,   0xX1,     0xX2,    0xX3,    0xX4,    0xX5,    0xX6,    0xX7,
             0xX8,   0xX9,     0xXA,    0xXB,    0xXC,    0xXD,    0xXE,    0xXF   */
 
-/* 0x0X */  neg_di, neg_di, illegal,com_di, lsr_di, illegal,ror_di, asr_di,
-            asl_di, rol_di, dec_di, illegal,inc_di, tst_di, jmp_di, clr_di,
+/* 0x0X */  neg_di, neg_di, ngc_di,com_di, lsr_di, lsr_di,ror_di, asr_di,
+            asl_di, rol_di, dec_di, dcc_di,inc_di, tst_di, jmp_di, clr_di,
 
-/* 0x1X */  pref10, pref11, nop,	sync,	illegal,illegal,lbra,	lbsr,
-            illegal,daa,	orcc,	illegal,andcc,	sex,	exg,	tfr,
+/* 0x1X */  pref10, pref11, nop,	sync,	trap,trap,lbra,	lbsr,
+            aslcc_in,daa,	orcc,	nop, andcc,	sex,	exg,	tfr,
 
 /* 0x2X */  bra,	brn,	bhi,	bls,	bcc,	bcs,	bne,	beq,
 	    bvc,	bvs,	bpl,	bmi,	bge,	blt,	bgt,	ble,
 
 /* 0x3X */  leax,	leay,	leas,	leau,	pshs,	puls,	pshu,	pulu,
-            illegal,rts,	abx,	rti,	cwai,	mul,	illegal,swi,
+            andcc, rts,	abx,	rti,	cwai,	mul,	rst, swi,
 
-/* 0x4X */  nega,	illegal,illegal,coma,	lsra,	illegal,rora,	asra,
-	    asla,	rola,	deca,	illegal,inca,	tsta,	illegal,clra,
+/* 0x4X */  nega,	nega, ngca, coma,	lsra,	lsra, rora,	asra,
+	    asla,	rola,	deca,	dcca, inca,	tsta,	clca, clra,
 
-/* 0x5X */  negb,	illegal,illegal,comb,	lsrb,	illegal,rorb,	asrb,
-	    aslb,	rolb,	decb,	illegal,incb,	tstb,	illegal,clrb,
+/* 0x5X */  negb,	negb, ngcb, comb,	lsrb,	lsrb, rorb,	asrb,
+	    aslb,	rolb,	decb,	dccb, incb,	tstb,	clcb, clrb,
 
-/* 0x6X */  neg_ix, illegal,illegal,com_ix, lsr_ix, illegal,ror_ix, asr_ix,
-	    asl_ix, rol_ix, dec_ix, illegal,inc_ix, tst_ix, jmp_ix, clr_ix,
+/* 0x6X */  neg_ix, neg_ix, ngc_ix, com_ix, lsr_ix, lsr_ix, ror_ix, asr_ix,
+	    asl_ix, rol_ix, dec_ix, dcc_ix, inc_ix, tst_ix, jmp_ix, clr_ix,
 
-/* 0x7X */  neg_ex, illegal,illegal,com_ex, lsr_ex, illegal,ror_ex, asr_ex,
-	    asl_ex, rol_ex, dec_ex, illegal,inc_ex, tst_ex, jmp_ex, clr_ex,
+/* 0x7X */  neg_ex, neg_ex, ngc_ex, com_ex, lsr_ex, lsr_ex, ror_ex, asr_ex,
+	    asl_ex, rol_ex, dec_ex, dcc_ex, inc_ex, tst_ex, jmp_ex, clr_ex,
 
-/* 0x8X */  suba_im,cmpa_im,sbca_im,subd_im,anda_im,bita_im,lda_im, sta_im,
-	    eora_im,adca_im,ora_im, adda_im,cmpx_im,bsr,	ldx_im, stx_im,
+/* 0x8X */  suba_im,cmpa_im,sbca_im,subd_im,anda_im,bita_im,lda_im, flag8_im,
+	    eora_im,adca_im,ora_im, adda_im,cmpx_im,bsr,	ldx_im, flag16_im,
 
 /* 0x9X */  suba_di,cmpa_di,sbca_di,subd_di,anda_di,bita_di,lda_di, sta_di,
 	    eora_di,adca_di,ora_di, adda_di,cmpx_di,jsr_di, ldx_di, stx_di,
@@ -403,8 +419,8 @@ static void (*const m6809_main[0x100])(cpu6809_t *) = {
 /* 0xBX */  suba_ex,cmpa_ex,sbca_ex,subd_ex,anda_ex,bita_ex,lda_ex, sta_ex,
 	    eora_ex,adca_ex,ora_ex, adda_ex,cmpx_ex,jsr_ex, ldx_ex, stx_ex,
 
-/* 0xCX */  subb_im,cmpb_im,sbcb_im,addd_im,andb_im,bitb_im,ldb_im, stb_im,
-	    eorb_im,adcb_im,orb_im, addb_im,ldd_im, std_im, ldu_im, stu_im,
+/* 0xCX */  subb_im,cmpb_im,sbcb_im,addd_im,andb_im,bitb_im,ldb_im, flag8_im,
+	    eorb_im,adcb_im,orb_im, addb_im,ldd_im, trap, ldu_im, flag16_im,
 
 /* 0xDX */  subb_di,cmpb_di,sbcb_di,addd_di,andb_di,bitb_di,ldb_di, stb_di,
 	    eorb_di,adcb_di,orb_di, addb_di,ldd_di, std_di, ldu_di, stu_di,

@@ -66,11 +66,11 @@
 /*
  * 最適化 
  */
-#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && (defined(_M_IX86))))
-#define FASTCALL		__fastcall
-#else
+//#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && (defined(_M_IX86))))
+//#define FASTCALL		__fastcall
+//#else
 #define FASTCALL
-#endif
+//#endif
 
 /*
  * 基本型定義 
