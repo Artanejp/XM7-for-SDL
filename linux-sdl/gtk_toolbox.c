@@ -58,6 +58,10 @@ static GtkWidget *mitape_ff;
 static GtkWidget *mitape_rec;
 static GtkWidget *debug_menu;
 static GtkWidget *debug_item;
+static GtkWidget *debug_stop;
+static GtkWidget *debug_restart;
+static GtkWidget *debug_disasm_main;
+static GtkWidget *debug_disasm_sub;
 static GtkWidget *miExec;
 static GtkWidget *miBreak;
 static GtkWidget *tool_menu;
@@ -1020,72 +1024,105 @@ void
 OnDebugPopup(GtkWidget * widget, gpointer data) 
 {
     if (run_flag) {
-	gtk_widget_set_sensitive(miExec, FALSE);
-	gtk_widget_set_sensitive(miBreak, TRUE);
+	gtk_widget_set_sensitive(debug_restart, FALSE);
+	gtk_widget_set_sensitive(debug_stop, TRUE);
     } else {
-	gtk_widget_set_sensitive(miExec, TRUE);
-	gtk_widget_set_sensitive(miBreak, FALSE);
+	gtk_widget_set_sensitive(debug_restart, TRUE);
+	gtk_widget_set_sensitive(debug_stop, FALSE);
     }
 }
+
+/*
+ * 逆アセンブル
+ */
+void
+OnMainDisAsmPopup(GtkWidget * widget, gpointer data)
+{
+	if(disasm_main_flag)
+	{
+		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
+		disasm_main_flag = FALSE;
+	} else {
+		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
+		disasm_main_flag = TRUE;
+	}
+}
+
+void
+OnSubDisAsmPopup(GtkWidget * widget, gpointer data)
+{
+	if(disasm_sub_flag)
+	{
+		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
+		disasm_sub_flag = FALSE;
+	} else {
+		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
+		disasm_sub_flag = TRUE;
+	}
+}
+
 
 
 /*
  *  「デバッグ」メニューを作成 
  */ 
 void
-CreateDebugMenu (GtkWidget * menu_bar, GtkAccelGroup * accel_group)
+CreateDebugMenu (GtkBuilder *gbuilder)
 {
     
+    GtkWidget *w, *sub_item;
+    GSList *ModeGroup = NULL;
+    GtkWidget *debug_menu, *file_item;
+    debug_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu5"));
+
+
 	/*
 	 * デバッグメニューの作成 
 	 */ 
-	debug_menu = gtk_menu_new();
+    /*
+     * 停止
+     */
+    debug_stop = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Debug_STOP"));
+    gtk_signal_connect(GTK_OBJECT(debug_stop), "activate",
+			GTK_SIGNAL_FUNC(OnBreak),
+                       NULL);
     
+    gtk_widget_show (debug_stop);
+/*
+ * 再開
+ */
+    debug_restart = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Debug_Restart"));
+    gtk_signal_connect(GTK_OBJECT(debug_restart), "activate",
+			GTK_SIGNAL_FUNC(OnExec),
+                       NULL);
+    
+    gtk_widget_show (debug_restart);
+	/*********************************************************/
+    /* 「逆アセンブル」ボタンを作成 */
+    sub_item = gtk_radio_menu_item_new_with_label (ModeGroup, "逆アセンブル - メイン");
+
+    gtk_menu_append (GTK_MENU(debug_menu), sub_item);
+    gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
+            GTK_SIGNAL_FUNC (OnMainDisAsmPopup), wndMain);
+    gtk_widget_show (sub_item);
+//    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sub_item), TRUE);
+
+	/*********************************************************/
+    /* 「逆アセンブル」ボタンを作成 */
+    sub_item = gtk_radio_menu_item_new_with_label (ModeGroup, "逆アセンブル - サブ");
+
+    gtk_menu_append (GTK_MENU(debug_menu), sub_item);
+    gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
+            GTK_SIGNAL_FUNC (OnSubDisAsmPopup), wndMain);
+    gtk_widget_show (sub_item);
+//    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sub_item), TRUE);
+
 	/*********************************************************/ 
-	
-	/*
-	 * 「実行」ボタンを作成 
-	 */ 
-	miExec = gtk_menu_item_new_with_label("実行");
-    gtk_menu_append(GTK_MENU(debug_menu), miExec);
-    gtk_signal_connect(GTK_OBJECT(miExec), "activate",
-			GTK_SIGNAL_FUNC(OnExec), NULL);
-    gtk_widget_set_sensitive(miExec, FALSE);
-    gtk_widget_show(miExec);
+    gtk_signal_connect (GTK_OBJECT(debug_menu), "activate",
+                        GTK_SIGNAL_FUNC (OnDebugPopup), NULL);
+
+
     
-	/*********************************************************/ 
-	
-	/*
-	 * 「停止」ボタンを作成 
-	 */ 
-	miBreak = gtk_menu_item_new_with_label("停止");
-    gtk_menu_append(GTK_MENU(debug_menu), miBreak);
-    gtk_signal_connect(GTK_OBJECT(miBreak), "activate",
-			GTK_SIGNAL_FUNC(OnBreak), NULL);
-    gtk_widget_set_sensitive(miBreak, TRUE);
-    gtk_widget_show(miBreak);
-    
-	/*********************************************************/ 
-	
-	/*
-	 * デバッグメニューをのせるメニューアイテムの作成 
-	 */ 
-	debug_item = gtk_menu_item_new_with_label("デバッグ");
-    gtk_widget_show(debug_item);
-    
-	/*
-	 * テープメニューアイテムにドライブメニューをのせる 
-	 */ 
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(debug_item), debug_menu);
-    
-	/*
-	 * メニュバーにヘルプメニューアイテムをのせる 
-	 */ 
-	gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), debug_item);
-    gtk_signal_connect(GTK_OBJECT(debug_item), "activate",
-			 GTK_SIGNAL_FUNC(OnDebugPopup), NULL);
-    
-	/*********************************************************/ 
 	return;
 }
 
@@ -1560,7 +1597,7 @@ CreateMenu(GtkWidget * parent)
 /*
  * 「デバッグ」メニューを作成する関数を呼び出す 
  */ 
-//	CreateDebugMenu(menu_bar, accel_group);
+	CreateDebugMenu(gbuilderMain);
     
 /*
  * 「ツール」メニューを作成する関数を呼び出す 

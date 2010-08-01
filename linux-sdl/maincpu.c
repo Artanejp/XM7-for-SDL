@@ -18,6 +18,9 @@
  *      グローバル ワーク
  */
 cpu6809_t       maincpu;
+BOOL	     disasm_main_flag;
+int		     disasm_main_count;
+char	 disasm_main_buf[DISASM_BUF_SIZE];
 
 /*
  *      プロトタイプ宣言
@@ -35,7 +38,10 @@ maincpu_init(void)
 {
     maincpu.readmem = mainmem_readb;
     maincpu.writemem = mainmem_writeb;
-
+    disasm_main_flag = FALSE;
+    disasm_main_count = 0;
+//	disasm_main_buf = malloc(DISASM_BUF_SIZE);
+//	memset(disasm_main_buf, 0x00, DISASM_BUF_SIZE - 1);
     return TRUE;
 }
 

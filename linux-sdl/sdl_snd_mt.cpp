@@ -104,7 +104,6 @@ static DWORD            *thgDBuf[2];
      */
 
 static Mix_Chunk        *sndDstBuf[XM7_SND_END + 1][2];    /* バッファは別々にとる */
-static BYTE             *opnBuf[3];
 static UINT             uBufSize;       /* サウンドバッファサイズ */
 static UINT             uRate;          /* 合成レート */
 static UINT             uTick;          /* 半バッファサイズの長さ */
@@ -254,18 +253,19 @@ CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         i = (size / 4) * 4;
         for (j = 0; j < i; j += 4) {
                 tmp1 = p[j];
-                t[j] = (int16) (tmp1 & 0x0000ffff);
+                t[j] = (int16) tmp1 ;
                 tmp1 = p[j + 1];
-                t[j + 1] = (int16) (tmp1 & 0x0000ffff);
+                t[j + 1] = (int16) tmp1;
                 tmp1 = p[j + 2];
-                t[j + 2] = (int16) (tmp1 & 0x0000ffff);
+                t[j + 2] = (int16) tmp1 ;
                 tmp1 = p[j + 3];
-                t[j + 3] = (int16) (tmp1 & 0x0000ffff);
+                t[j + 3] = (int16) tmp1;
         }
-        i = size - i;
+       i = size - i;
+        i = size;
         for (j = 0; j < i; j++) {
                 tmp1 = p[j];
-                t[j] = (int16) (tmp1 & 0x0000ffff);
+                t[j] = (int16)tmp1;
         }
 }
 
@@ -360,9 +360,9 @@ InitSnd(void)
 
 #ifdef FDDSND
 
-    for (i = 0; i <= SOUND_FDDHEADDOWN; i++) {
+//    for (i = 0; i <= SOUND_FDDHEADDOWN; i++) {
 
-    }
+//    }
 
 #endif				/* */
 
@@ -405,20 +405,19 @@ CleanSnd(void)
      */
     for (i = 0; i < 3; i++) {
 	if (pOPN[i]) {
-	    delete
-		pOPN[i];
+	    delete	pOPN[i];
 	    pOPN[i] = NULL;
-	}
+		}
     }
-
     /*
      * サウンド作成バッファを解放 
      */
     for(i = 0 ; i < 2 ; i++ ) {
-            if(opnWBuf[i]) {
+            if(opnWBuf[i] != NULL) {
                     free(opnWBuf[i]);
                     opnWBuf[i] = NULL;
             }
+
             if(whgBuf[i]) {
                     free(whgBuf[i]);
                     whgBuf[i] = NULL;
@@ -781,11 +780,11 @@ SelectSnd(void)
                     return FALSE;
             }
             memset(whgBuf[i], 0, uBufSize / 2);
-//            thgBuf[i] = (WORD *)malloc(uBufSize / 2);
-//            if(thgBuf[i] == NULL) {
-//                  return FALSE;
-//            }
-//            memset(thgBuf[i], 0, uBufSize / 2);
+            thgBuf[i] = (WORD *)malloc(uBufSize / 2);
+            if(thgBuf[i] == NULL) {
+                  return FALSE;
+            }
+            memset(thgBuf[i], 0, uBufSize / 2);
 
             opnDBuf[i] = (DWORD *)malloc(uBufSize);
             if(opnDBuf[i] == NULL) {
@@ -1093,6 +1092,7 @@ StopSnd()
         do {
                 SDL_Delay(1);
         } while(Mix_Playing(-1));
+//        Mix_CloseAudio();
 
 
 }
@@ -1108,8 +1108,6 @@ BeepSnd(int32 * sbuf, int samples)
                     i;
     int32          *
 	buf = (int32 *) sbuf;
-    Mix_Chunk
-	chunk;
 
     /*
      * BEEP音出力チェック 
@@ -1126,7 +1124,8 @@ BeepSnd(int32 * sbuf, int samples)
 	/*
 	 * 矩形波を作成 
 	 */
-	sf = (int) (uBeep * nBeepFreq * 2);
+//	sf = (int) (uBeep * nBeepFreq * 2);
+    	sf = (int) (uBeep * nBeepFreq *2);
 	sf /= (int) uRate;
 
 	/*
@@ -1671,7 +1670,7 @@ MixingOPN(DWORD *q, int samples, BOOL bZero)
 static int
 MixingWHG(DWORD *q, int samples, BOOL bZero)
 {
-        memset(q, 0, sizeof(DWORD) * samples * uChannels);
+//        memset(q, 0, sizeof(DWORD) * samples * uChannels);
         if(!whg_use) return 0;
         if (!bZero) {
                 if (uChannels == 1) {
@@ -1709,7 +1708,7 @@ MixingWHG(DWORD *q, int samples, BOOL bZero)
 static int
 MixingTHG(DWORD *q, int samples, BOOL bZero)
 {
-        memset(q, 0, sizeof(DWORD) * samples * uChannels);
+//        memset(q, 0, sizeof(DWORD) * samples * uChannels);
         if(!thg_use) return 0;
         if (!bZero) {
                 if (uChannels == 1) {
@@ -1837,11 +1836,11 @@ AddSnd(BOOL bFill, BOOL bZero)
     /*
      * ミキシング 
      */
-//    MixingSound(&lpsbuf[wbank][uSample * uChannels], samples, bZero);
+  //  MixingSound(&opnDBuf[wbank][uSample * uChannels], samples, bZero);
 
     MixingOPN(&opnDBuf[wbank][uSample * uChannels], samples, bZero);
-    MixingWHG(&whgDBuf[wbank][uSample * uChannels], samples, bZero);
-//    MixingTHG(&thgDBuf[wbank][uSample * uChannels], samples, bZero);
+    MixingWHG(&opnDBuf[wbank][uSample * uChannels], samples, bZero);
+    MixingTHG(&opnDBuf[wbank][uSample * uChannels], samples, bZero);
     MixingTAPE(&tapeBuf[wbank][uSample * uChannels], samples, bZero);
     MixingBEEP(&beepBuf[wbank][uSample * uChannels], samples, bZero);
     MixingWAV(&wavBuf[wbank][uSample * uChannels], samples, bZero);
@@ -1859,19 +1858,23 @@ AddSnd(BOOL bFill, BOOL bZero)
                     i = (int) (uSample * uChannels);
                     if (uSample > 0) {
                             CopySoundBufferGeneric(q, p, i);
-	    }
-                    p = (WORD *) whgBuf[wbank];
-                    q = (DWORD *) whgBuf[wbank];
+                    }
+/*
+ * 速度の問題があるので、OPN/PSGバッファは一つにする
+ */
+                                        p = (WORD *) whgBuf[wbank];
+                    q = (DWORD *) whgDBuf[wbank];
                     i = (int) (uSample * uChannels);
                     if (uSample > 0) {
                             CopySoundBufferGeneric(q, p, i);
-	    }
-//                    p = (WORD *) thgBuf[wbank];
-//                    q = (DWORD *) thgDBuf[wbank];
-//                    i = (int) (uSample * uChannels);
-//                    if (uSample > 0) {
-//                            CopySoundBufferGeneric(q, p, i);
-//	    }
+                    }
+                    p = (WORD *) thgBuf[wbank];
+                    q = (DWORD *) thgDBuf[wbank];
+                    i = (int) (uSample * uChannels);
+                   if (uSample > 0) {
+                           CopySoundBufferGeneric(q, p, i);
+                   }
+                    if(uSample > 0){
                     sndDstBuf[0][wbank]->allocated = 1;
                     sndDstBuf[0][wbank]->abuf = (Uint8 *) opnWBuf[wbank];
                     sndDstBuf[0][wbank]->alen =
@@ -1881,21 +1884,22 @@ AddSnd(BOOL bFill, BOOL bZero)
 
                     if(whg_use) {
                             sndDstBuf[1][wbank]->allocated = 1;
-                            sndDstBuf[1][wbank]->abuf = (Uint8 *) whgBuf[wbank];
+                            sndDstBuf[1][wbank]->abuf = (Uint8 *) whgDBuf[wbank];
                             sndDstBuf[1][wbank]->alen =
                                     (Uint32) (uSample * uChannels * 2);
                             sndDstBuf[1][wbank]->volume = iTotalVolume;
                             Mix_PlayChannel(2 + wbank , sndDstBuf[1][wbank], 0);
                     }
-//                    if(thg_use) {
-//                           sndDstBuf[2][wbank]->allocated = 1;
-//                            sndDstBuf[2][wbank]->abuf = (Uint8 *) thgBuf[wbank];
-//                            sndDstBuf[2][wbank]->alen =
-//                                    (Uint32) (uSample * uChannels * 2);
-//                            sndDstBuf[2][wbank]->volume = iTotalVolume;
-//                            Mix_PlayChannel(4 + wbank , sndDstBuf[2][wbank], 0);
-//                    }
-                    sndDstBuf[3][wbank]->allocated = 1;
+                    if(thg_use) {
+                           sndDstBuf[2][wbank]->allocated = 1;
+                            sndDstBuf[2][wbank]->abuf = (Uint8 *) thgDBuf[wbank];
+                            sndDstBuf[2][wbank]->alen =
+                                    (Uint32) (uSample * uChannels * 2);
+                            sndDstBuf[2][wbank]->volume = iTotalVolume;
+                            Mix_PlayChannel(4 + wbank , sndDstBuf[2][wbank], 0);
+                    }
+
+                                        sndDstBuf[3][wbank]->allocated = 1;
                     sndDstBuf[3][wbank]->abuf = (Uint8 *) beepBuf[wbank];
                     sndDstBuf[3][wbank]->alen =
                                     (Uint32) (uSample * uChannels * 2);
@@ -1907,15 +1911,15 @@ AddSnd(BOOL bFill, BOOL bZero)
                     sndDstBuf[4][wbank]->alen =
                                     (Uint32) (uSample * uChannels * 2);
                     sndDstBuf[4][wbank]->volume = iTotalVolume;
-                            Mix_PlayChannel(8 + wbank , sndDstBuf[4][wbank], 0);
+                          Mix_PlayChannel(8 + wbank , sndDstBuf[4][wbank], 0);
 
                     sndDstBuf[5][wbank]->allocated = 1;
                     sndDstBuf[5][wbank]->abuf = (Uint8 *) wavBuf[wbank];
                     sndDstBuf[5][wbank]->alen =
-                                    (Uint32) (uSample * uChannels * 2);
+                                  (Uint32) (uSample * uChannels * 2);
                     sndDstBuf[5][wbank]->volume = iTotalVolume;
                             Mix_PlayChannel(10 + wbank , sndDstBuf[5][wbank], 0);
-                    
+                    }
 
 
 	}

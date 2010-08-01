@@ -74,9 +74,10 @@
 //#include "debugger.h"
 //#include "m6809.h"
 #include "xm7.h"
-#define INLINE inline volatile
+//#define INLINE inline volatile
+#define INLINE inline
 
-#define BIG_SWITCH 1
+#define BIG_SWITCH 0
 /* Enable big switch statement for the main opcodes */
 #ifndef BIG_SWITCH
 #define BIG_SWITCH  1
@@ -93,8 +94,7 @@ static void IIError(cpu6809_t *m68_state);
 static void cpu_execline(cpu6809_t *m68_state);
 static void cpu_exec(cpu6809_t *m68_state);
 
-//INLINE void fetch_effective_address( cpu6809_t *m68_state );
-static volatile void fetch_effective_address( cpu6809_t *m68_state );
+INLINE void fetch_effective_address( cpu6809_t *m68_state );
 
 /* flag bits in the cc register */
 #define CC_C	0x01        /* Carry */
@@ -135,9 +135,6 @@ static volatile void fetch_effective_address( cpu6809_t *m68_state );
 #define EAD m68_state->ea
 #define EAP m68_state->ea
 
-#define M6809_CWAI		8	/* set when CWAI is waiting for an interrupt */
-#define M6809_SYNC		16	/* set when SYNC is waiting for an interrupt */
-#define M6809_LDS		32	/* set when LDS occured at least once */
 
 
 
@@ -154,7 +151,7 @@ INLINE BYTE READB(cpu6809_t *t, WORD addr)
 INLINE WORD READW(cpu6809_t *t, WORD addr)
 {
    
-       return (WORD)(t->readmem(addr)<<8 + t->readmem(addr+1));
+       return (WORD)((t->readmem(addr)<<8) + t->readmem(addr+1));
 }
 
 
@@ -240,10 +237,17 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 /* combos */
 #define SET_NZ8(a)			{SET_N8(a);SET_Z8(a);}
 #define SET_NZ16(a)			{SET_N16(a);SET_Z16(a);}
-#define SET_FLAGS8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
-#define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
+//#define SET_FLAGS8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
+//#define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
-#define NXORV			((CC&CC_N)^((CC&CC_V)<<2))
+#define SET_HNZVC8(a,b,r)	{SET_H(a,b,r);SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
+#define SET_HNZVC16(a,b,r)	{SET_H(a,b,r);SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
+
+#define SET_NZVC8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
+#define SET_NZVC16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
+
+
+#define NXORV			((CC&CC_N)^((CC&CC_V)<<2) !=0)
 
 /* for treating an unsigned byte as a signed word */
 #define SIGNED(b) ((WORD)(b&0x80?b|0xff00:b))
@@ -372,9 +376,10 @@ static void cpu_reset(cpu6809_t *m68_state)
 
 #include "m6809ops.h"
 
-static volatile void cpu_nmi(cpu6809_t *m68_state)
+static void cpu_nmi(cpu6809_t *m68_state)
 {
-   m68_state->intr |= 0x0100; /* CWAI */
+   //printf("NMI occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfffc),S);
+	m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
    CC |= CC_E;
    PUSHWORD(pPC);
    PUSHWORD(pU);
@@ -386,18 +391,18 @@ static volatile void cpu_nmi(cpu6809_t *m68_state)
    PUSHBYTE(CC);
    CC |= 0x50;
    PC = RM16(m68_state, 0xfffc);
-   m68_state->intr &= 0xfffe;
+   m68_state->intr &= 0xfffe; /* NMIクリア */
 }
 
 
 
-static volatile void cpu_firq(cpu6809_t *m68_state)
+static void cpu_firq(cpu6809_t *m68_state)
 {
-   
-   if( m68_state->intr &= 0x0080) {
+//	printf("Firq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff6),S);
+   if( m68_state->intr & INTR_CWAI_IN) {
       /* CWAI */
-      CC |= 0x80;
-      m68_state->intr |= 0x0100; /* CWAI */
+      CC |= CC_E;
+      m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
       PUSHWORD(pPC);
       PUSHWORD(pU);
       PUSHWORD(pY);
@@ -410,7 +415,7 @@ static volatile void cpu_firq(cpu6809_t *m68_state)
       PC = RM16(m68_state, 0xfff6);
    } else {
       /* NORMAL */
-      CC &= 0x7f;
+      CC &= ~CC_E;
       PUSHWORD(pPC);
       PUSHBYTE(CC);
       CC |= 0x50;
@@ -419,9 +424,10 @@ static volatile void cpu_firq(cpu6809_t *m68_state)
    }
 }
 
-static volatile void cpu_irq(cpu6809_t *m68_state)
+static void cpu_irq(cpu6809_t *m68_state)
 {
-   m68_state->intr |= 0x0100; /* CWAI */
+ //  printf("Irq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff8),S);
+   m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
    CC |= CC_E;
    PUSHWORD(pPC);
    PUSHWORD(pU);
@@ -438,7 +444,7 @@ static volatile void cpu_irq(cpu6809_t *m68_state)
 
 
 
-static volatile void cpu_exec(cpu6809_t *m68_state)
+static void cpu_exec(cpu6809_t *m68_state)
 {
    WORD intr = m68_state->intr;
    WORD cycle = 0;
@@ -459,7 +465,7 @@ check_nmi:
    if((intr & 0x0007) != 0) {
 	   if((intr & INTR_NMI) == 0) goto check_firq;
 	   m68_state->intr |= INTR_SYNC_OUT;
-	   if(intr & INTR_SLOAD) {
+	   if((intr & INTR_SLOAD) != 0) {
 		   cpu_nmi(m68_state);
 		   cpu_execline(m68_state);
 		   cycle = 19;
@@ -474,10 +480,10 @@ check_nmi:
 	
    
 check_firq:
-   if((intr & 0x0002) != 0) 
+   if((intr & INTR_FIRQ) != 0)
      {
-	m68_state->intr |= 0x40;
-	if(cc & 0x40) goto check_irq;
+	m68_state->intr |= INTR_SYNC_OUT;
+	if((cc & CC_IF) != 0) goto check_irq;
 	cpu_firq(m68_state);
 	cpu_execline(m68_state);
 	cycle = 10;
@@ -485,10 +491,10 @@ check_firq:
      }
 
 check_irq:
-   if((intr & INTR_IRQ) != 0) 
+   if((intr & INTR_IRQ) != 0)
      {
-	m68_state->intr |= 0x40;
-	if((cc & 0x10) == 0) goto check_ok;
+	m68_state->intr |= INTR_SYNC_OUT;
+	if((cc & CC_II) != 0) goto check_ok;
 	cpu_irq(m68_state);
 	cpu_execline(m68_state);
 	cycle = 19;
@@ -503,7 +509,7 @@ check_ok:
    return;
    
 int_cycle:
-   if((m68_state->intr & 0x0080) == 0) 
+   if((m68_state->intr & INTR_CWAI_IN) == 0)
      {
 	m68_state->cycle += cycle;
      }
@@ -511,7 +517,7 @@ int_cycle:
 }
 
 
-static volatile void cpu_execline(cpu6809_t *m68_state)
+static void cpu_execline(cpu6809_t *m68_state)
 {
         BYTE ireg;
         BYTE c;
@@ -519,6 +525,7 @@ static volatile void cpu_execline(cpu6809_t *m68_state)
 //			debugger_instruction_hook(device, PCD);
 
             ireg = ROP(PC);
+            fetch_op = ireg;
 	        PC++;
             m68_state->cycle = cycles1[ireg];
 #if BIG_SWITCH
@@ -789,13 +796,10 @@ static volatile void cpu_execline(cpu6809_t *m68_state)
 //    return cycles ;   /* NS 970908 */
 }
 
-static  void fetch_effective_address( cpu6809_t *m68_state )
+INLINE void fetch_effective_address( cpu6809_t *m68_state )
 {
 	BYTE postbyte;
 	IMMBYTE(postbyte);
-#if 1
-    if((PC <= 0xff51)&&(PC >= 0xff40)) printf("Trap! %04x POSTBYTE=%02x\n",PC-2,postbyte);
-#endif
 	switch(postbyte)
 	{
 	case 0x00: EA=X;												   break;
@@ -1072,29 +1076,33 @@ static  void fetch_effective_address( cpu6809_t *m68_state )
 }
 
 
-/*
- * XM7 Interfaces
- */
-extern cpu6809_t maincpu;
-extern cpu6809_t subcpu;
-#if 0
-extern cpu6809_t jsubcpu;
-#endif
+
+extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
 
 static void debugreg(cpu6809_t *p)
 {
-	if((maincpu.pc <0xff40)||(maincpu.pc>0xff53)) return;
-   printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x CYCLE=%03d",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea,p->cycle);
+//	if((maincpu.pc <0xff40)||(maincpu.pc>0xff53)) return;
+   printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x CYCLE=%03d ",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea,p->cycle);
    printf("AB=%04x X=%04x Y=%04x U=%04x S=%04x DP=%04x CC=%04x INT=%04x",p->acc.d, p->x, p->y, p->u, p->s, p->dp, p->cc, p->intr);
    printf("\n");
 }
 
 void main_exec(void)
 {
-//#ifdef CPU_DEBUG
-   debugreg(&maincpu);
-//#endif
+	WORD nPC = maincpu.pc;
+	cpu6809_t *p=&maincpu;
+	if(disasm_main_flag) {
+		char disasmline[1024];
+		memset(disasmline, 0x00, 1023);
+		disline(MAINCPU, maincpu.pc, disasmline);
+		printf("MAIN:DIS:%s ",disasmline);
+	} else {
+		disasm_main_count = 0;
+	}
    cpu_exec(&maincpu);
+	if(disasm_main_flag) {
+		printf("AB=%04x X=%04x Y=%04x U=%04x S=%04x DP=%04x CC=%04x INT=%04x \n",p->acc.d, p->x, p->y, p->u, p->s, p->dp, p->cc, p->intr);
+	}
    maincpu.total += maincpu.cycle;
 }
 
@@ -1110,11 +1118,20 @@ void main_reset(void)
 
 void sub_exec(void)
 {
-//#ifdef CPU_DEBUG
-//   debugreg(&subcpu);
-//#endif
+	cpu6809_t *p=&subcpu;
+	if(disasm_sub_flag) {
+		char disasmline[1024];
+		memset(disasmline, 0x00, 1023);
+		disline(SUBCPU, subcpu.pc, disasmline);
+		printf("SUB:DISASM:%s ",disasmline);
+	}
+
    cpu_exec(&subcpu);
+	if(disasm_sub_flag) {
+		printf("AB=%04x X=%04x Y=%04x U=%04x S=%04x DP=%04x CC=%04x INT=%04x \n",p->acc.d, p->x, p->y, p->u, p->s, p->dp, p->cc, p->intr);
+	}
    subcpu.total += subcpu.cycle;
+
 }
 
 void sub_line(void)

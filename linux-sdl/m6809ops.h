@@ -18,7 +18,7 @@ HNZVC
 OP_HANDLER( illegal )
 {
 	//logerror("M6809: illegal opcode at %04x\n",PC);
-        printf("M6809: illegal opcode at %04x %02 %02 %02 %02\n",PC,RM(PC),RM(PC+1),RM(PC+2),RM(PC+3));
+        printf("M6809: illegal opcode at %04x %02x %02x %02x %02x \n",PC-1,RM(PC-1),RM(PC),RM(PC+1),RM(PC+2));
         //PC+=1;
 }
 
@@ -34,7 +34,7 @@ OP_HANDLER( neg_di )
 	DIRBYTE(t);
 	r = -t;
 	CLR_NZVC;
-	SET_FLAGS8(0,t,r);
+	SET_NZVC8(0,t,r);
 	WM(EAD,r);
 }
 
@@ -109,7 +109,7 @@ OP_HANDLER( asl_di )
 	DIRBYTE(t);
 	r = t << 1;
 	CLR_NZVC;
-	SET_FLAGS8(t,t,r);
+	SET_NZVC8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -120,7 +120,7 @@ OP_HANDLER( rol_di )
 	DIRBYTE(t);
 	r = (CC & CC_C) | (t << 1);
 	CLR_NZVC;
-	SET_FLAGS8(t,t,r);
+	SET_NZVC8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -203,21 +203,22 @@ OP_HANDLER( nop )
 OP_HANDLER( sync )
 {
    cpu6809_t *t = m68_state;
-     if((m68_state->intr & 0x0020) == 0)
+     if((m68_state->intr & INTR_SYNC_IN) == 0)
      {
 	
 	// SYNC命令初めて
-	m68_state->intr |= 0x0020;
+	m68_state->intr |= INTR_SYNC_IN;
 	m68_state->intr &= 0xffbf;
 	PC -= 1; // 次のサイクルも同じ命令
+	return;
      } else {
 	// SYNC実行中
-	if((m68_state->intr & 0x0040) != 0) {
-	   // 割込が来たのでSYNC抜ける
-	   m68_state->intr &= 0xff9f;
-	   return;
-	}
-	PC -= 1;  // 割込こないと次のサイクルも同じ命令
+    	 if((m68_state->intr & INTR_SYNC_OUT) != 0) {
+    		 // 割込が来たのでSYNC抜ける
+    		 m68_state->intr &= 0xff9f;
+    		 return;
+    	 }
+    	 PC -= 1;  // 割込こないと次のサイクルも同じ命令
      }
 }
    
@@ -228,6 +229,7 @@ OP_HANDLER( trap )
 {
    
        m68_state->intr |= 0x8000; // HALTフラグ
+       printf("INSN: TRAP @%04x %02x %02x\n",RM(PC-1), RM(PC),PC-1);
 }
 
 /* $15 trap */
@@ -238,9 +240,6 @@ OP_HANDLER( lbra )
 	IMMWORD(EAD);
 	PC += EAD;
 
-//	if ( EA == 0xfffd )  /* EHC 980508 speed up busy loop */
-//		if ( m68_state->icount > 0)
-//			m68_state->icount = 0;
 }
 
 /* $17 LBSR relative ----- */
@@ -288,7 +287,7 @@ OP_HANDLER( orcc )
 	BYTE t;
 	IMMBYTE(t);
 	CC |= t;
-//	check_irq_lines(m68_state);	/* HJB 990116 */
+
 }
 
 /* $1B ILLEGAL */
@@ -756,46 +755,26 @@ OP_HANDLER( rti )
 OP_HANDLER( cwai )
 {
 	BYTE t;
-   
-   if(m68_state->intr & 0x0080) 
-     {
-	if(m68_state->intr & 0x0100) 
-	  {
-	     m68_state->intr &= 0xfe7f;
-	     PC += 1;
-	     return;
-	  } else 
-	  {
-	     /*
-	      * CWAI CYCLE
-	      */
-	     PC -= 1;
-	     return;
-	  }
-     }
-   
-	
-	IMMBYTE(t);
-	CC &= t;
-	/*
-     * CWAI stacks the entire machine state on the hardware stack,
-     * then waits for an interrupt; when the interrupt is taken
-     * later, the state is *not* saved again after CWAI.
-     */
-	CC |= CC_E; 		/* HJB 990225: save entire state */
-//	PUSHWORD(pPC);
-//	PUSHWORD(pU);
-//	PUSHWORD(pY);
-//	PUSHWORD(pX);
-//	PUSHBYTE(DP);
-//	PUSHBYTE(B);
-//	PUSHBYTE(A);
-//	PUSHBYTE(CC);
-	m68_state->intr |= 0x0080;	 
-   	m68_state->intr &= 0xfeff;	
-        PC -= 2;
-   return;
-}
+    if(m68_state->intr & INTR_CWAI_IN){
+	/* CWAI実行中 */
+       if(m68_state->intr & INTR_CWAI_OUT) {
+    	   /* 割込がかかって、RTIの後 */
+    	   m68_state->intr &= 0xfe7f; /* CWAIフラグクリア */
+    	   PC += 1;
+    	   return;
+       } else {
+    	   PC -= 1;
+    	   return;
+       }
+    }
+	/* 今回初めてCWAI実行 */
+first:
+     IMMBYTE(t);
+     CC = CC & t;
+     m68_state->intr = (m68_state->intr | INTR_CWAI_IN) & 0xfeff;
+     PC -= 2;
+     return;
+ }
 
 /* $3D MUL inherent --*-@ */
 OP_HANDLER( mul )
@@ -865,7 +844,7 @@ OP_HANDLER( nega )
 	WORD r;
 	r = -A;
 	CLR_NZVC;
-	SET_FLAGS8(0,A,r);
+	SET_NZVC8(0,A,r);
 	A = r;
 }
 
@@ -929,7 +908,7 @@ OP_HANDLER( asla )
 	WORD r;
 	r = A << 1;
 	CLR_NZVC;
-	SET_FLAGS8(A,A,r);
+	SET_NZVC8(A,A,r);
 	A = r;
 }
 
@@ -939,7 +918,8 @@ OP_HANDLER( rola )
 	WORD t,r;
 	t = A;
 	r = (CC & CC_C) | (t<<1);
-	CLR_NZVC; SET_FLAGS8(t,t,r);
+	CLR_NZVC;
+	SET_NZVC8(t,t,r);
 	A = r;
 }
 
@@ -1002,7 +982,7 @@ OP_HANDLER( negb )
 	WORD r;
 	r = -B;
 	CLR_NZVC;
-	SET_FLAGS8(0,B,r);
+	SET_NZVC8(0,B,r);
 	B = r;
 }
 
@@ -1067,7 +1047,7 @@ OP_HANDLER( aslb )
 	WORD r;
 	r = B << 1;
 	CLR_NZVC;
-	SET_FLAGS8(B,B,r);
+	SET_NZVC8(B,B,r);
 	B = r;
 }
 
@@ -1079,15 +1059,17 @@ OP_HANDLER( rolb )
 	r = CC & CC_C;
 	r |= t << 1;
 	CLR_NZVC;
-	SET_FLAGS8(t,t,r);
+	SET_NZVC8(t,t,r);
 	B = r;
 }
 
 /* $5A DECB inherent -***- */
 OP_HANDLER( decb )
 {
-	--B;
+	BYTE t;
+	t = B;
 	CLR_NZV;
+	B-=1;
 	SET_FLAGS8D(B);
 }
 
@@ -1144,7 +1126,7 @@ OP_HANDLER( neg_ix )
 	t = RM(EAD);
 	r=-t;
 	CLR_NZVC;
-	SET_FLAGS8(0,t,r);
+	SET_NZVC8(0,t,r);
 	WM(EAD,r);
 }
 
@@ -1220,7 +1202,7 @@ OP_HANDLER( asl_ix )
 	t=RM(EAD);
 	r = t << 1;
 	CLR_NZVC;
-	SET_FLAGS8(t,t,r);
+	SET_NZVC8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1233,7 +1215,7 @@ OP_HANDLER( rol_ix )
 	r = CC & CC_C;
 	r |= t << 1;
 	CLR_NZVC;
-	SET_FLAGS8(t,t,r);
+	SET_NZVC8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1243,7 +1225,8 @@ OP_HANDLER( dec_ix )
 	BYTE t;
 	fetch_effective_address(m68_state);
 	t = RM(EAD) - 1;
-	CLR_NZV; SET_FLAGS8D(t);
+	CLR_NZV;
+	SET_FLAGS8D(t);
 	WM(EAD,t);
 }
 
@@ -1304,7 +1287,8 @@ OP_HANDLER( neg_ex )
 {
 	WORD r,t;
 	EXTBYTE(t); r=-t;
-	CLR_NZVC; SET_FLAGS8(0,t,r);
+	CLR_NZVC;
+	SET_NZVC8(0,t,r);
 	WM(EAD,r);
 }
 
@@ -1367,7 +1351,7 @@ OP_HANDLER( asl_ex )
 {
 	WORD t,r;
 	EXTBYTE(t); r=t<<1;
-	CLR_NZVC; SET_FLAGS8(t,t,r);
+	CLR_NZVC; SET_NZVC8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1376,7 +1360,7 @@ OP_HANDLER( rol_ex )
 {
 	WORD t,r;
 	EXTBYTE(t); r = (CC & CC_C) | (t << 1);
-	CLR_NZVC; SET_FLAGS8(t,t,r);
+	CLR_NZVC; SET_NZVC8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1444,8 +1428,8 @@ OP_HANDLER( suba_im )
 	WORD t,r;
 	IMMBYTE(t);
 	r = A - t;
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -1456,7 +1440,7 @@ OP_HANDLER( cmpa_im )
 	IMMBYTE(t);
 	r = A - t;
 	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	SET_NZVC8(A,t,r);
 }
 
 /* $82 SBCA immediate ?**** */
@@ -1465,8 +1449,8 @@ OP_HANDLER( sbca_im )
 	WORD	  t,r;
 	IMMBYTE(t);
 	r = A - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -1479,7 +1463,7 @@ OP_HANDLER( subd_im )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -1492,7 +1476,7 @@ OP_HANDLER( cmpd_im )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $1183 CMPU immediate -**** */
@@ -1504,7 +1488,7 @@ OP_HANDLER( cmpu_im )
 	d = U;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $84 ANDA immediate -**0- */
@@ -1573,8 +1557,7 @@ OP_HANDLER( adca_im )
 	IMMBYTE(t);
 	r = A + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
-	SET_H(A,t,r);
+	SET_HNZVC8(A,t,r);
 	A = r;
 }
 
@@ -1595,8 +1578,7 @@ OP_HANDLER( adda_im )
 	IMMBYTE(t);
 	r = A + t;
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
-	SET_H(A,t,r);
+	SET_HNZVC8(A,t,r);
 	A = r;
 }
 
@@ -1609,7 +1591,7 @@ OP_HANDLER( cmpx_im )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $108C CMPY immediate -**** */
@@ -1621,7 +1603,7 @@ OP_HANDLER( cmpy_im )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $118C CMPS immediate -**** */
@@ -1633,7 +1615,7 @@ OP_HANDLER( cmps_im )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $8D BSR ----- */
@@ -1698,8 +1680,8 @@ OP_HANDLER( suba_di )
 	WORD	  t,r;
 	DIRBYTE(t);
 	r = A - t;
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -1710,7 +1692,7 @@ OP_HANDLER( cmpa_di )
 	DIRBYTE(t);
 	r = A - t;
 	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	SET_NZVC8(A,t,r);
 }
 
 /* $92 SBCA direct ?**** */
@@ -1719,8 +1701,8 @@ OP_HANDLER( sbca_di )
 	WORD	  t,r;
 	DIRBYTE(t);
 	r = A - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -1733,7 +1715,7 @@ OP_HANDLER( subd_di )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -1746,7 +1728,7 @@ OP_HANDLER( cmpd_di )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $1193 CMPU direct -**** */
@@ -1758,7 +1740,7 @@ OP_HANDLER( cmpu_di )
 	d = U;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(U,b,r);
+	SET_NZVC16(U,b,r);
 }
 
 /* $94 ANDA direct -**0- */
@@ -1815,8 +1797,7 @@ OP_HANDLER( adca_di )
 	DIRBYTE(t);
 	r = A + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
-	SET_H(A,t,r);
+	SET_HNZVC8(A,t,r);
 	A = r;
 }
 
@@ -1837,8 +1818,7 @@ OP_HANDLER( adda_di )
 	DIRBYTE(t);
 	r = A + t;
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
-	SET_H(A,t,r);
+	SET_HNZVC8(A,t,r);
 	A = r;
 }
 
@@ -1851,7 +1831,7 @@ OP_HANDLER( cmpx_di )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $109C CMPY direct -**** */
@@ -1863,7 +1843,7 @@ OP_HANDLER( cmpy_di )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $119C CMPS direct -**** */
@@ -1875,7 +1855,7 @@ OP_HANDLER( cmps_di )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $9D JSR direct ----- */
@@ -1883,9 +1863,6 @@ OP_HANDLER( jsr_di )
 {
 	DIRECT;
 	PUSHWORD(pPC);
-#ifdef CPU_DEBUG
-        printf("DEBUG: JSR(Direct) DP=%02x EA=%02x\n",DP,EAD);
-#endif
 	PCD = EAD;
 }
 
@@ -1930,8 +1907,8 @@ OP_HANDLER( suba_ix )
 	fetch_effective_address(m68_state);
 	t = RM(EAD);
 	r = A - t;
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -1943,7 +1920,7 @@ OP_HANDLER( cmpa_ix )
 	t = RM(EAD);
 	r = A - t;
 	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	SET_NZVC8(A,t,r);
 }
 
 /* $a2 SBCA indexed ?**** */
@@ -1953,8 +1930,8 @@ OP_HANDLER( sbca_ix )
 	fetch_effective_address(m68_state);
 	t = RM(EAD);
 	r = A - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -1968,7 +1945,7 @@ OP_HANDLER( subd_ix )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -1982,7 +1959,7 @@ OP_HANDLER( cmpd_ix )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $11a3 CMPU indexed -**** */
@@ -1994,7 +1971,7 @@ OP_HANDLER( cmpu_ix )
 	b=RM16(m68_state, EAD);
 	r = U - b;
 	CLR_NZVC;
-	SET_FLAGS16(U,b,r);
+	SET_NZVC16(U,b,r);
 }
 
 /* $a4 ANDA indexed -**0- */
@@ -2051,7 +2028,7 @@ OP_HANDLER( adca_ix )
 	t = RM(EAD);
 	r = A + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
+	SET_NZVC8(A,t,r);
 	SET_H(A,t,r);
 	A = r;
 }
@@ -2073,7 +2050,7 @@ OP_HANDLER( adda_ix )
 	t = RM(EAD);
 	r = A + t;
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
+	SET_NZVC8(A,t,r);
 	SET_H(A,t,r);
 	A = r;
 }
@@ -2088,7 +2065,7 @@ OP_HANDLER( cmpx_ix )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $10aC CMPY indexed -**** */
@@ -2101,7 +2078,7 @@ OP_HANDLER( cmpy_ix )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $11aC CMPS indexed -**** */
@@ -2114,7 +2091,7 @@ OP_HANDLER( cmps_ix )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $aD JSR indexed ----- */
@@ -2167,8 +2144,8 @@ OP_HANDLER( suba_ex )
 	WORD	  t,r;
 	EXTBYTE(t);
 	r = A - t;
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -2179,7 +2156,7 @@ OP_HANDLER( cmpa_ex )
 	EXTBYTE(t);
 	r = A - t;
 	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	SET_NZVC8(A,t,r);
 }
 
 /* $b2 SBCA extended ?**** */
@@ -2188,8 +2165,8 @@ OP_HANDLER( sbca_ex )
 	WORD	  t,r;
 	EXTBYTE(t);
 	r = A - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(A,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(A,t,r);
 	A = r;
 }
 
@@ -2202,7 +2179,7 @@ OP_HANDLER( subd_ex )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -2215,7 +2192,7 @@ OP_HANDLER( cmpd_ex )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $11b3 CMPU extended -**** */
@@ -2227,7 +2204,7 @@ OP_HANDLER( cmpu_ex )
 	d = U;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $b4 ANDA extended -**0- */
@@ -2283,8 +2260,7 @@ OP_HANDLER( adca_ex )
 	EXTBYTE(t);
 	r = A + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
-	SET_H(A,t,r);
+	SET_HNZVC8(A,t,r);
 	A = r;
 }
 
@@ -2305,8 +2281,7 @@ OP_HANDLER( adda_ex )
 	EXTBYTE(t);
 	r = A + t;
 	CLR_HNZVC;
-	SET_FLAGS8(A,t,r);
-	SET_H(A,t,r);
+	SET_HNZVC8(A,t,r);
 	A = r;
 }
 
@@ -2319,7 +2294,7 @@ OP_HANDLER( cmpx_ex )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $10bC CMPY extended -**** */
@@ -2331,7 +2306,7 @@ OP_HANDLER( cmpy_ex )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $11bC CMPS extended -**** */
@@ -2343,7 +2318,7 @@ OP_HANDLER( cmps_ex )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 }
 
 /* $bD JSR extended ----- */
@@ -2394,8 +2369,8 @@ OP_HANDLER( subb_im )
 	WORD	  t,r;
 	IMMBYTE(t);
 	r = B - t;
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2405,7 +2380,7 @@ OP_HANDLER( cmpb_im )
 	WORD	  t,r;
 	IMMBYTE(t);
 	r = B - t;
-	CLR_NZVC; SET_FLAGS8(B,t,r);
+	CLR_NZVC; SET_NZVC8(B,t,r);
 }
 
 /* $c2 SBCB immediate ?**** */
@@ -2414,8 +2389,8 @@ OP_HANDLER( sbcb_im )
 	WORD	  t,r;
 	IMMBYTE(t);
 	r = B - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2428,7 +2403,7 @@ OP_HANDLER( addd_im )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -2487,8 +2462,7 @@ OP_HANDLER( adcb_im )
 	IMMBYTE(t);
 	r = B + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -2509,8 +2483,7 @@ OP_HANDLER( addb_im )
 	IMMBYTE(t);
 	r = B + t;
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -2575,8 +2548,8 @@ OP_HANDLER( subb_di )
 	WORD	  t,r;
 	DIRBYTE(t);
 	r = B - t;
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2587,7 +2560,7 @@ OP_HANDLER( cmpb_di )
 	DIRBYTE(t);
 	r = B - t;
 	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	SET_NZVC8(B,t,r);
 }
 
 /* $d2 SBCB direct ?**** */
@@ -2596,8 +2569,8 @@ OP_HANDLER( sbcb_di )
 	WORD	  t,r;
 	DIRBYTE(t);
 	r = B - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2610,7 +2583,7 @@ OP_HANDLER( addd_di )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -2668,8 +2641,7 @@ OP_HANDLER( adcb_di )
 	DIRBYTE(t);
 	r = B + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -2690,8 +2662,7 @@ OP_HANDLER( addb_di )
 	DIRBYTE(t);
 	r = B + t;
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -2755,8 +2726,8 @@ OP_HANDLER( subb_ix )
 	fetch_effective_address(m68_state);
 	t = RM(EAD);
 	r = B - t;
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2768,7 +2739,7 @@ OP_HANDLER( cmpb_ix )
 	t = RM(EAD);
 	r = B - t;
 	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	SET_NZVC8(B,t,r);
 }
 
 /* $e2 SBCB indexed ?**** */
@@ -2778,8 +2749,8 @@ OP_HANDLER( sbcb_ix )
 	fetch_effective_address(m68_state);
 	t = RM(EAD);
 	r = B - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2793,7 +2764,7 @@ OP_HANDLER( addd_ix )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -2851,8 +2822,7 @@ OP_HANDLER( adcb_ix )
 	t = RM(EAD);
 	r = B + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -2873,8 +2843,7 @@ OP_HANDLER( addb_ix )
 	t = RM(EAD);
 	r = B + t;
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -2939,8 +2908,8 @@ OP_HANDLER( subb_ex )
 	WORD	  t,r;
 	EXTBYTE(t);
 	r = B - t;
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2951,7 +2920,7 @@ OP_HANDLER( cmpb_ex )
 	EXTBYTE(t);
 	r = B - t;
 	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	SET_NZVC8(B,t,r);
 }
 
 /* $f2 SBCB extended ?**** */
@@ -2960,8 +2929,8 @@ OP_HANDLER( sbcb_ex )
 	WORD	  t,r;
 	EXTBYTE(t);
 	r = B - t - (CC & CC_C);
-	CLR_NZVC;
-	SET_FLAGS8(B,t,r);
+	CLR_HNZVC;
+	SET_NZVC8(B,t,r);
 	B = r;
 }
 
@@ -2974,7 +2943,7 @@ OP_HANDLER( addd_ex )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_FLAGS16(d,b,r);
+	SET_NZVC16(d,b,r);
 	D = r;
 }
 
@@ -3032,8 +3001,7 @@ OP_HANDLER( adcb_ex )
 	EXTBYTE(t);
 	r = B + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -3054,8 +3022,7 @@ OP_HANDLER( addb_ex )
 	EXTBYTE(t);
 	r = B + t;
 	CLR_HNZVC;
-	SET_FLAGS8(B,t,r);
-	SET_H(B,t,r);
+	SET_HNZVC8(B,t,r);
 	B = r;
 }
 
@@ -3119,55 +3086,55 @@ OP_HANDLER( pref10 )
 	PC++;
 	switch( ireg2 )
 	{
-		case 0x21: lbrn(m68_state);		m68_state->cycle+=5;	break;
-		case 0x22: lbhi(m68_state);		m68_state->cycle+=5;	break;
-		case 0x23: lbls(m68_state);		m68_state->cycle+=5;	break;
-		case 0x24: lbcc(m68_state);		m68_state->cycle+=5;	break;
-		case 0x25: lbcs(m68_state);		m68_state->cycle+=5;	break;
-		case 0x26: lbne(m68_state);		m68_state->cycle+=5;	break;
-		case 0x27: lbeq(m68_state);		m68_state->cycle+=5;	break;
-		case 0x28: lbvc(m68_state);		m68_state->cycle+=5;	break;
-		case 0x29: lbvs(m68_state);		m68_state->cycle+=5;	break;
-		case 0x2a: lbpl(m68_state);		m68_state->cycle+=5;	break;
-		case 0x2b: lbmi(m68_state);		m68_state->cycle+=5;	break;
-		case 0x2c: lbge(m68_state);		m68_state->cycle+=5;	break;
-		case 0x2d: lblt(m68_state);		m68_state->cycle+=5;	break;
-		case 0x2e: lbgt(m68_state);		m68_state->cycle+=5;	break;
-		case 0x2f: lble(m68_state);		m68_state->cycle+=5;	break;
+		case 0x21: lbrn(m68_state);		m68_state->cycle=5;	break;
+		case 0x22: lbhi(m68_state);		m68_state->cycle=5;	break;
+		case 0x23: lbls(m68_state);		m68_state->cycle=5;	break;
+		case 0x24: lbcc(m68_state);		m68_state->cycle=5;	break;
+		case 0x25: lbcs(m68_state);		m68_state->cycle=5;	break;
+		case 0x26: lbne(m68_state);		m68_state->cycle=5;	break;
+		case 0x27: lbeq(m68_state);		m68_state->cycle=5;	break;
+		case 0x28: lbvc(m68_state);		m68_state->cycle=5;	break;
+		case 0x29: lbvs(m68_state);		m68_state->cycle=5;	break;
+		case 0x2a: lbpl(m68_state);		m68_state->cycle=5;	break;
+		case 0x2b: lbmi(m68_state);		m68_state->cycle=5;	break;
+		case 0x2c: lbge(m68_state);		m68_state->cycle=5;	break;
+		case 0x2d: lblt(m68_state);		m68_state->cycle=5;	break;
+		case 0x2e: lbgt(m68_state);		m68_state->cycle=5;	break;
+		case 0x2f: lble(m68_state);		m68_state->cycle=5;	break;
 
-		case 0x3f: swi2(m68_state);		m68_state->cycle+=20;	break;
+		case 0x3f: swi2(m68_state);		m68_state->cycle=19;	break;
 
-		case 0x83: cmpd_im(m68_state);	m68_state->cycle+=5;	break;
-		case 0x8c: cmpy_im(m68_state);	m68_state->cycle+=5;	break;
-		case 0x8e: ldy_im(m68_state);	m68_state->cycle+=4;	break;
-		case 0x8f: sty_im(m68_state);	m68_state->cycle+=4;	break;
+		case 0x83: cmpd_im(m68_state);	m68_state->cycle=5;	break;
+		case 0x8c: cmpy_im(m68_state);	m68_state->cycle=5;	break;
+		case 0x8e: ldy_im(m68_state);	m68_state->cycle=4;	break;
+		case 0x8f: sty_im(m68_state);	m68_state->cycle=4;	break;
 
-		case 0x93: cmpd_di(m68_state);	m68_state->cycle+=7;	break;
-		case 0x9c: cmpy_di(m68_state);	m68_state->cycle+=7;	break;
-		case 0x9e: ldy_di(m68_state);	m68_state->cycle+=6;	break;
-		case 0x9f: sty_di(m68_state);	m68_state->cycle+=6;	break;
+		case 0x93: cmpd_di(m68_state);	m68_state->cycle=7;	break;
+		case 0x9c: cmpy_di(m68_state);	m68_state->cycle=7;	break;
+		case 0x9e: ldy_di(m68_state);	m68_state->cycle=6;	break;
+		case 0x9f: sty_di(m68_state);	m68_state->cycle=6;	break;
 
-		case 0xa3: cmpd_ix(m68_state);	m68_state->cycle+=7;	break;
-		case 0xac: cmpy_ix(m68_state);	m68_state->cycle+=7;	break;
-		case 0xae: ldy_ix(m68_state);	m68_state->cycle+=6;	break;
-		case 0xaf: sty_ix(m68_state);	m68_state->cycle+=6;	break;
+		case 0xa3: cmpd_ix(m68_state);	m68_state->cycle=7;	break;
+		case 0xac: cmpy_ix(m68_state);	m68_state->cycle=7;	break;
+		case 0xae: ldy_ix(m68_state);	m68_state->cycle=6;	break;
+		case 0xaf: sty_ix(m68_state);	m68_state->cycle=6;	break;
 
-		case 0xb3: cmpd_ex(m68_state);	m68_state->cycle+=8;	break;
-		case 0xbc: cmpy_ex(m68_state);	m68_state->cycle+=8;	break;
-		case 0xbe: ldy_ex(m68_state);	m68_state->cycle+=7;	break;
-		case 0xbf: sty_ex(m68_state);	m68_state->cycle+=7;	break;
+		case 0xb3: cmpd_ex(m68_state);	m68_state->cycle=8;	break;
+		case 0xbc: cmpy_ex(m68_state);	m68_state->cycle=8;	break;
+		case 0xbe: ldy_ex(m68_state);	m68_state->cycle=7;	break;
+		case 0xbf: sty_ex(m68_state);	m68_state->cycle=7;	break;
 
-		case 0xce: lds_im(m68_state);	m68_state->cycle+=4;	break;
-		case 0xcf: sts_im(m68_state);	m68_state->cycle+=4;	break;
+		case 0xce: lds_im(m68_state);	m68_state->cycle=4;	break;
+		case 0xcf: sts_im(m68_state);	m68_state->cycle=4;	break;
 
-		case 0xde: lds_di(m68_state);	m68_state->cycle+=6;	break;
-		case 0xdf: sts_di(m68_state);	m68_state->cycle+=6;	break;
+		case 0xde: lds_di(m68_state);	m68_state->cycle=6;	break;
+		case 0xdf: sts_di(m68_state);	m68_state->cycle=6;	break;
 
-		case 0xee: lds_ix(m68_state);	m68_state->cycle+=6;	break;
-		case 0xef: sts_ix(m68_state);	m68_state->cycle+=6;	break;
+		case 0xee: lds_ix(m68_state);	m68_state->cycle=6;	break;
+		case 0xef: sts_ix(m68_state);	m68_state->cycle=6;	break;
 
-		case 0xfe: lds_ex(m68_state);	m68_state->cycle+=7;	break;
-		case 0xff: sts_ex(m68_state);	m68_state->cycle+=7;	break;
+		case 0xfe: lds_ex(m68_state);	m68_state->cycle=7;	break;
+		case 0xff: sts_ex(m68_state);	m68_state->cycle=7;	break;
 
 		default:   IIError(m68_state);						break;
 	}
@@ -3180,19 +3147,19 @@ OP_HANDLER( pref11 )
 	PC++;
 	switch( ireg2 )
 	{
-		case 0x3f: swi3(m68_state);		m68_state->cycle+=20;	break;
+		case 0x3f: swi3(m68_state);		m68_state->cycle=19;	break;
 
-		case 0x83: cmpu_im(m68_state);	m68_state->cycle+=5;	break;
-		case 0x8c: cmps_im(m68_state);	m68_state->cycle+=5;	break;
+		case 0x83: cmpu_im(m68_state);	m68_state->cycle=5;	break;
+		case 0x8c: cmps_im(m68_state);	m68_state->cycle=5;	break;
 
-		case 0x93: cmpu_di(m68_state);	m68_state->cycle+=7;	break;
-		case 0x9c: cmps_di(m68_state);	m68_state->cycle+=7;	break;
+		case 0x93: cmpu_di(m68_state);	m68_state->cycle=7;	break;
+		case 0x9c: cmps_di(m68_state);	m68_state->cycle=7;	break;
 
-		case 0xa3: cmpu_ix(m68_state);	m68_state->cycle+=7;	break;
-		case 0xac: cmps_ix(m68_state);	m68_state->cycle+=7;	break;
+		case 0xa3: cmpu_ix(m68_state);	m68_state->cycle=7;	break;
+		case 0xac: cmps_ix(m68_state);	m68_state->cycle=7;	break;
 
-		case 0xb3: cmpu_ex(m68_state);	m68_state->cycle+=8;	break;
-		case 0xbc: cmps_ex(m68_state);	m68_state->cycle+=8;	break;
+		case 0xb3: cmpu_ex(m68_state);	m68_state->cycle=8;	break;
+		case 0xbc: cmps_ex(m68_state);	m68_state->cycle=8;	break;
 
 		default:   IIError(m68_state);						break;
 	}

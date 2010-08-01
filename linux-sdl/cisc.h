@@ -69,6 +69,8 @@ Limit(int v, int max, int min)
     return v > max ? max : (v < min ? min : v);
 }
 
+#define FASTCALL
+
 #if !defined(FASTCALL)
 #if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && defined(_M_IX86)))
 #define FASTCALL		__fastcall

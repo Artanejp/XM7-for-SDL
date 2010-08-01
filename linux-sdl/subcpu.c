@@ -17,6 +17,9 @@
  *      グローバル ワーク
  */
 cpu6809_t       subcpu;
+BOOL	     disasm_sub_flag;
+int	     disasm_sub_count;
+char disasm_sub_buf[DISASM_BUF_SIZE];
 
 /*
  *      プロトタイプ宣言
@@ -35,7 +38,9 @@ subcpu_init(void)
 {
     subcpu.readmem = submem_readb;
     subcpu.writemem = submem_writeb;
-
+    disasm_sub_flag = FALSE;
+    disasm_sub_count = 0;
+	//memset(disasm_sub_buf, 0, DISASM_BUF_SIZE);
     return TRUE;
 }
 

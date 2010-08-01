@@ -548,7 +548,7 @@ mainmem_iowait(void)
  *      メインCPUメモリ
  *      １バイト取得
  */
-BYTE            FASTCALL
+volatile BYTE            FASTCALL
 mainmem_readb(WORD addr)
 {
     BYTE            dat;
@@ -733,7 +733,8 @@ mainmem_readb(WORD addr)
  *      メインCPUメモリ
  *      １バイト取得(I/Oなし)
  */
-BYTE            FASTCALL
+//BYTE            FASTCALL
+volatile BYTE
 mainmem_readbnio(WORD addr)
 {
     BYTE            dat;
