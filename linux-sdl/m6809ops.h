@@ -499,7 +499,8 @@ OP_HANDLER( lbcs )
 /* $26 BNE relative ----- */
 OP_HANDLER( bne )
 {
-	BRANCH(m68_state,  !(CC&CC_Z) );
+	int cond=!(CC&CC_Z);
+	BRANCH(m68_state, cond  );
 }
 
 /* $1026 LBNE relative ----- */
@@ -632,6 +633,7 @@ OP_HANDLER( leay )
 	Y = EA;
 	CLR_Z;
 	SET_Z16(Y);
+
 }
 
 /* $32 LEAS indexed ----- */

@@ -7,7 +7,6 @@
  *      [ インテリジェントマウス ]
  */
 
-#ifdef MOUSE
 
 #include <assert.h>
 #include <string.h>
@@ -16,6 +15,7 @@
 #include "mainetc.h"
 #include "event.h"
 #include "mouse.h"
+#ifdef MOUSE
 
 /*
  *      グローバル ワーク

@@ -4,7 +4,7 @@
  * Takegami Copyright (C) 2004 GIMONS  [ XWIN ファイルI/O ] 
  */  
     
-#ifdef _XWIN
+
     
 #include <assert.h>
 #include <fcntl.h>
@@ -225,6 +225,3 @@ file_close(int handle)
     }
     return TRUE;
 }
-
-
-#endif	/* _XWIN */

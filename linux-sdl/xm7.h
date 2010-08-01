@@ -11,6 +11,7 @@
 #define _xm7_h_
 
 #include <stdio.h>
+#include "build_config.h"
 
 #ifdef MEMWATCH
 #include <memwatch.h>

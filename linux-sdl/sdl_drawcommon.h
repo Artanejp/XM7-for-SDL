@@ -11,7 +11,7 @@
  *               20100130 sdl_draw_*.cからインラインマクロなど分離
  */
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "xm7.h"
 #include "sdl_draw.h"
 #include "sdl.h"

@@ -206,6 +206,7 @@ mainmem_init(void)
     /*
      * 高速起動モード(旧ブート) 
      */
+#if 1
     for (i = 0; i < 2; i++) {
 	p = &init_rom[0x1800 + i * 0x200];
 	if (p[0x14f] == 0x26) {
@@ -215,7 +216,7 @@ mainmem_init(void)
 	    p[0x153] = 0x21;
 	}
     }
-
+#endif
     /*
      * 高速起動・ドライブ対応変更抑制(EX/SX) 
      */

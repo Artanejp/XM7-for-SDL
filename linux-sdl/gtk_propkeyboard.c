@@ -7,7 +7,7 @@
  * [ XWIN/SDLキーボード設定プログラム - GTK+パート] 
  */  
     
-#ifdef USE_GTK
+
     
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -16,6 +16,8 @@
 #include <SDL/SDL_syswm.h>
     
 #include "xm7.h"
+#ifdef USE_GTK
+
 #include "mouse.h"
 #include "tapelp.h"
 #include "keyboard.h"

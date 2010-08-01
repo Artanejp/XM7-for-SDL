@@ -74,9 +74,9 @@
 //#include "debugger.h"
 //#include "m6809.h"
 #include "xm7.h"
-#define INLINE inline
+#define INLINE inline volatile
 
-#define BIG_SWITCH 0
+#define BIG_SWITCH 1
 /* Enable big switch statement for the main opcodes */
 #ifndef BIG_SWITCH
 #define BIG_SWITCH  1
@@ -93,7 +93,8 @@ static void IIError(cpu6809_t *m68_state);
 static void cpu_execline(cpu6809_t *m68_state);
 static void cpu_exec(cpu6809_t *m68_state);
 
-INLINE void fetch_effective_address( cpu6809_t *m68_state );
+//INLINE void fetch_effective_address( cpu6809_t *m68_state );
+static volatile void fetch_effective_address( cpu6809_t *m68_state );
 
 /* flag bits in the cc register */
 #define CC_C	0x01        /* Carry */
@@ -143,28 +144,28 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 /*
  * */
 
- inline BYTE READB(cpu6809_t *t, WORD addr)
+INLINE BYTE READB(cpu6809_t *t, WORD addr)
 {
    
        return t->readmem(addr);
 }
 
 
-  inline WORD READW(cpu6809_t *t, WORD addr)
+INLINE WORD READW(cpu6809_t *t, WORD addr)
 {
    
        return (WORD)(t->readmem(addr)<<8 + t->readmem(addr+1));
 }
 
 
-  inline void WRITEB(cpu6809_t *t, WORD addr, BYTE data)
+INLINE void WRITEB(cpu6809_t *t, WORD addr, BYTE data)
 {
    
       t->writemem(addr, data);
 }
 
   
-  inline void WRITEW(cpu6809_t *t, WORD addr, WORD data)
+INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 {
    
       t->writemem(addr,(BYTE)(data >>8));
@@ -223,8 +224,8 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 
 /* macros for CC -- CC bits affected should be reset before calling */
 #define SET_Z(a)		if(!a)SEZ
-#define SET_Z8(a)		if((BYTE)a == 0) SEZ
-#define SET_Z16(a)		if((WORD)a == 0) SEZ
+#define SET_Z8(a)		if(a == 0) SEZ
+#define SET_Z16(a)		if(a == 0) SEZ
 #define SET_N8(a)		CC|=((a&0x80)>>4)
 #define SET_N16(a)		CC|=((a&0x8000)>>12)
 #define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
@@ -275,21 +276,31 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 #define EXTWORD(w) {EXTENDED;w=RM16(m68_state, EA);}
 
 /* macros for branch instructions */
-inline void
+INLINE void
 BRANCH(cpu6809_t *m68_state, int f) 
-{			
+{
 	BYTE t;	
         IMMBYTE(t);
-#ifdef CPU_DEBUG
-        printf("BRANCH: %04x %02x %02x %02x %02x  ->to %04x\n", PC ,READB(m68_state, PC),READB(m68_state, PC+1),READB(m68_state, PC+2),READB(m68_state, PC+3),(WORD)(PC + SIGNED(t)));
-#endif
 	if( f )
 	{
-		PC += SIGNED(t);
+#if 1
+		if((PC>=0xff3c)&&(PC<=0xff52))
+        printf("BRANCH: %04x %02x %02x %02x %02x  ->to %04x  Cond = %d \n", PC-2 ,READB(m68_state, PC-2),READB(m68_state, PC-1),READB(m68_state, PC),READB(m68_state, PC+1),(WORD)(PC + SIGNED(t)),f);
+#endif
+		if(t >= 0x80) {
+			PC = PC - (0x0100-t);
+		} else {
+			PC = PC + t;
+		}
+	} else {
+#if 1
+		if((PC>=0xff3c)&&(PC<=0xff52))
+        printf("NO BRANCH: %04x %02x %02x %02x %02x  ->to %04x  Cond = %d \n", PC-2 ,READB(m68_state, PC-2),READB(m68_state, PC-1),READB(m68_state, PC),READB(m68_state, PC+1),(WORD)(PC),f);
+#endif
 	}
 }
 
-inline void
+INLINE void
  LBRANCH(cpu6809_t *m68_state,int f)
  {
 	WORD t;
@@ -357,11 +368,11 @@ static void cpu_reset(cpu6809_t *m68_state)
 /****************************************************************************
  * includes the actual opcode implementations
  ****************************************************************************/
-#include "m6809tbl.c"
+#include "m6809tbl.h"
 
-#include "m6809ops.c"
+#include "m6809ops.h"
 
-static void cpu_nmi(cpu6809_t *m68_state)
+static volatile void cpu_nmi(cpu6809_t *m68_state)
 {
    m68_state->intr |= 0x0100; /* CWAI */
    CC |= CC_E;
@@ -380,7 +391,7 @@ static void cpu_nmi(cpu6809_t *m68_state)
 
 
 
-static void cpu_firq(cpu6809_t *m68_state)
+static volatile void cpu_firq(cpu6809_t *m68_state)
 {
    
    if( m68_state->intr &= 0x0080) {
@@ -408,7 +419,7 @@ static void cpu_firq(cpu6809_t *m68_state)
    }
 }
 
-static void cpu_irq(cpu6809_t *m68_state)
+static volatile void cpu_irq(cpu6809_t *m68_state)
 {
    m68_state->intr |= 0x0100; /* CWAI */
    CC |= CC_E;
@@ -427,7 +438,7 @@ static void cpu_irq(cpu6809_t *m68_state)
 
 
 
-static void cpu_exec(cpu6809_t *m68_state)
+static volatile void cpu_exec(cpu6809_t *m68_state)
 {
    WORD intr = m68_state->intr;
    WORD cycle = 0;
@@ -437,7 +448,7 @@ static void cpu_exec(cpu6809_t *m68_state)
     */
    if(intr & 0x8000) {
         READB(m68_state, PC);
-	m68_state->cycle = 2;
+	    m68_state->cycle = 2;
         PC++;
         return;
   }
@@ -446,19 +457,19 @@ static void cpu_exec(cpu6809_t *m68_state)
     */
 check_nmi:
    if((intr & 0x0007) != 0) {
-      if((intr & INTR_NMI) == 0) goto check_firq;
-	m68_state->intr |= INTR_SYNC_OUT;
-        if(intr & INTR_SLOAD) {
-	   cpu_nmi(m68_state);
-	   cpu_execline(m68_state);
-	   cycle = 19;
-	   goto int_cycle;
+	   if((intr & INTR_NMI) == 0) goto check_firq;
+	   m68_state->intr |= INTR_SYNC_OUT;
+	   if(intr & INTR_SLOAD) {
+		   cpu_nmi(m68_state);
+		   cpu_execline(m68_state);
+		   cycle = 19;
+		   goto int_cycle;
+	   } else {
+		   goto check_firq;
+	   }
 	} else {
-	  goto check_firq;
+		goto check_ok;
 	}
-   } else { 
-	goto check_ok;
-     }
    
 	
    
@@ -477,7 +488,7 @@ check_irq:
    if((intr & INTR_IRQ) != 0) 
      {
 	m68_state->intr |= 0x40;
-	if((cc & INTR_SLOAD) == 0) goto check_ok;
+	if((cc & 0x10) == 0) goto check_ok;
 	cpu_irq(m68_state);
 	cpu_execline(m68_state);
 	cycle = 19;
@@ -500,7 +511,7 @@ int_cycle:
 }
 
 
-static void cpu_execline(cpu6809_t *m68_state)	
+static volatile void cpu_execline(cpu6809_t *m68_state)
 {
         BYTE ireg;
         BYTE c;
@@ -508,7 +519,7 @@ static void cpu_execline(cpu6809_t *m68_state)
 //			debugger_instruction_hook(device, PCD);
 
             ireg = ROP(PC);
-	    PC++;
+	        PC++;
             m68_state->cycle = cycles1[ireg];
 #if BIG_SWITCH
 
@@ -778,11 +789,13 @@ static void cpu_execline(cpu6809_t *m68_state)
 //    return cycles ;   /* NS 970908 */
 }
 
-INLINE void fetch_effective_address( cpu6809_t *m68_state )
+static  void fetch_effective_address( cpu6809_t *m68_state )
 {
-	BYTE postbyte = ROP_ARG(PCD);
-	PC++;
-
+	BYTE postbyte;
+	IMMBYTE(postbyte);
+#if 1
+    if((PC <= 0xff51)&&(PC >= 0xff40)) printf("Trap! %04x POSTBYTE=%02x\n",PC-2,postbyte);
+#endif
 	switch(postbyte)
 	{
 	case 0x00: EA=X;												   break;
@@ -1070,7 +1083,8 @@ extern cpu6809_t jsubcpu;
 
 static void debugreg(cpu6809_t *p)
 {
-        printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x CYCLE=%03d",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea,p->cycle);
+	if((maincpu.pc <0xff40)||(maincpu.pc>0xff53)) return;
+   printf("DEBUG: %04x %02x %02x %02x %02x EA=%04x CYCLE=%03d",p->pc ,READB(p, p->pc),READB(p, p->pc+1),READB(p, p->pc+2),READB(p, p->pc+3),p->ea,p->cycle);
    printf("AB=%04x X=%04x Y=%04x U=%04x S=%04x DP=%04x CC=%04x INT=%04x",p->acc.d, p->x, p->y, p->u, p->s, p->dp, p->cc, p->intr);
    printf("\n");
 }
@@ -1078,7 +1092,7 @@ static void debugreg(cpu6809_t *p)
 void main_exec(void)
 {
 //#ifdef CPU_DEBUG
-//   debugreg(&maincpu);
+   debugreg(&maincpu);
 //#endif
    cpu_exec(&maincpu);
    maincpu.total += maincpu.cycle;

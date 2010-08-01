@@ -7,7 +7,6 @@
  * [ XWIN/SDLメインプログラム ] 
  */  
     
-#ifdef _XWIN
     
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -27,6 +26,7 @@
 #include "sdl_snd.h"
 #include "sdl_cfg.h"
 #include "sdl_inifile.h"
+#ifdef _XWIN
     
 /*
  *  グローバル ワーク 

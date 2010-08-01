@@ -7,11 +7,11 @@
  * [ XWIN/SDLメインプログラム - GTK+パート] 
  */  
     
-#ifdef USE_GTK
+
     
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-//#include <glade/glade.h>
+
 #include <sys/param.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
@@ -30,6 +30,7 @@
 #include "sdl_cfg.h"
 #include "sdl_inifile.h"
 
+#ifdef USE_GTK
 GtkWidget       *wndMain;		/* メインウィンドウ */
 GtkWidget       *gtkDrawArea;
 GtkBuilder      *gbuilderMain;
@@ -225,7 +226,6 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         GtkWidget        *hbox;
         SDL_Surface     *tmpSurface;
         SDL_Rect        srcrect, dstrect;
-        SDL_VideoInfo   *vinfo;
         SDL_SysWMinfo        sdlinfo;
 /*
  * まずは現在のサーフェイスを退避する 
@@ -436,7 +436,6 @@ InitInstanceGtk(void)
     
 //    gtk_builder_connect_signals(gbuilderMain, NULL);
     gtk_widget_show(wndMain);
-    
 /*
  * イベント 
  */ 

@@ -8,11 +8,13 @@
  * 
  */  
     
+
+#include "xm7.h"
+
 #ifdef _XWIN
 #ifdef USE_GTK
 #include <gtk/gtk.h>
 #endif
-#include "xm7.h"
 #include "device.h"
 #include "fdc.h"
 #include "tapelp.h"
