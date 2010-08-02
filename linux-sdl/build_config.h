@@ -13,7 +13,7 @@
 /*
  * Target
  */
-#define _XWIN
+//#define _XWIN
 
 /*
  *
@@ -49,7 +49,7 @@
 #define XM7_VER 3
 #endif
 
-#define CPU_ASM
+#undef CPU_ASM
 #define MOUSE
 #define MR2
 #define FDDSND
@@ -58,5 +58,5 @@
 /*
  * デバッグ関連
  */
-#undef MEMWATCH
+#define MEMWATCH
 #undef NODEBUG

@@ -229,7 +229,8 @@ OP_HANDLER( trap )
 {
    
        m68_state->intr |= 0x8000; // HALTフラグ
-       printf("INSN: TRAP @%04x %02x %02x\n",RM(PC-1), RM(PC),PC-1);
+       // Debug: トラップ要因
+       printf("INSN: TRAP @%04x %02x %02x\n",PC-1, RM(PC-1), RM(PC));
 }
 
 /* $15 trap */

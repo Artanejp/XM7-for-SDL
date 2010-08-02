@@ -287,20 +287,11 @@ BRANCH(cpu6809_t *m68_state, int f)
         IMMBYTE(t);
 	if( f )
 	{
-#if 1
-		if((PC>=0xff3c)&&(PC<=0xff52))
-        printf("BRANCH: %04x %02x %02x %02x %02x  ->to %04x  Cond = %d \n", PC-2 ,READB(m68_state, PC-2),READB(m68_state, PC-1),READB(m68_state, PC),READB(m68_state, PC+1),(WORD)(PC + SIGNED(t)),f);
-#endif
 		if(t >= 0x80) {
 			PC = PC - (0x0100-t);
 		} else {
 			PC = PC + t;
 		}
-	} else {
-#if 1
-		if((PC>=0xff3c)&&(PC<=0xff52))
-        printf("NO BRANCH: %04x %02x %02x %02x %02x  ->to %04x  Cond = %d \n", PC-2 ,READB(m68_state, PC-2),READB(m68_state, PC-1),READB(m68_state, PC),READB(m68_state, PC+1),(WORD)(PC),f);
-#endif
 	}
 }
 
@@ -359,7 +350,7 @@ static void cpu_reset(cpu6809_t *m68_state)
         m68_state->ea = 0;   
         m68_state->intr = 0x0000;  
 	m68_state->pc = RM16(m68_state, 0xfffe);
- #ifdef CPU_DEBUG
+#ifdef CPU_DEBUG
    printf("DEBUG: Reset %04x %02x\n",m68_state->pc ,READB(m68_state, m68_state->pc));
 #endif
 

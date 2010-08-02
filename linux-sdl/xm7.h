@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include "build_config.h"
+#include <SDL.h>
 
 #ifdef MEMWATCH
 #include <memwatch.h>
@@ -76,10 +77,18 @@
 /*
  * 基本型定義 
  */
+#if 0
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef unsigned long DWORD;
 typedef int     BOOL;
+#else
+/* 64bit */
+typedef Uint8 BYTE;
+typedef Uint16 WORD;
+typedef Uint32 DWORD;
+typedef int     BOOL;
+#endif
 
 /*
  * CPUレジスタ定義 
