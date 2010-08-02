@@ -16,14 +16,39 @@ Sorry, under construction and Japanese only,Yet...<BR>
 <BR>
 <BR>
 <B>現在のリリースは、
-*  Version 0.1r42 (αレベル) Apr.02,2010<BR>
+*  Version 0.1r67 (αレベル ＼(^o^)／) Aug 02,2010<BR>
 です。</B><BR>
-・ダウンロード：<BR>
-<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r42.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
 <BR>
-
+・ダウンロード：<BR>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-lsdl-linux-amd64.0.1r67.7z">ソースコード+GNU/Linux amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
+<BR>
+<H2>変更点:</H2>
+- 描画処理を別スレッドにした（現状はFPS固定,この副作用で400lや26万色モードの再現が停止、なるべく早く直します)<BR>
+- 音声出力を大幅にSDL_mixer依存にした<BR>
+- スクリーン内表示にSDL_ttfを使用（追々OSDに移行するかもしないかも)<BR>
+- Eclipseでのビルドに移行開始<BR>
+- 全部Cソースコード化<BR>
+- M6809コアを <A
+HREF="http://rbelmont.mameworld.info/?page_id=163">SDLMESS 0.136</A>ベースのCコードにした（ソースツリーにアセンブラコードも残してあります）<BR>
+- ~/.xm7 に設定ファイルやROMファイルを置くようにした<BR>
+etc...<BR>
+<BR>
+<BR>
+<H2>インストール:</H2>
+- JIS0208 encoding のIPA Gothicが必要です(/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf 決め打ちです)<BR>
+- usr.local.bin/xm7 と usr.local.bin/xm7_debug  を/usr/local/bin などにinstall<BR>
+- usr.local.share.xm7 以下のファイルを/usr/local/share/xm7 にコピー<BR>
+<BR>
+<HR>
 <H2>旧版:</H2>
 <BR>
+<H5>0.1r57 ??,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl_0.1r57.7z">ソースコード+GNU/Linux ia32/amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
+<H5>0.1r45 Apr.29,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r45.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+<H5>0.1r42 Apr.02,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r42.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
 <H5>0.1r30 Feb.02,2010</H5>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r30.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
 <BR>
@@ -35,97 +60,32 @@ Sorry, under construction and Japanese only,Yet...<BR>
 このソフトウェアは無保証です。その上、初期リリースなのでうごかなかったり何かをこわしたりするかも知れません。<BR>
 <BR>
 <HR>
+<H2>リンク：</H2>
+- たけがみ りう氏によるXM-7の本家 <A HREF="http://retropc.net/ryu/xm7/">http://retropc.net/ryu/xm7/</A><BR>
+- XM-7の大元を作られたPI.氏のページ <A HREF="http://ytanaka.vicp.net/fm7/xm7.html">http://ytanaka.vicp.net/fm7/xm7.html</A><BR>
+- XM7/SDL のベースになってるLinux版(GTK版)を造られたGIMONS氏のページ <A HREF="http://www.geocities.jp/kugimoto0715/">http://www.geocities.jp/kugimoto0715/</A><BR>
+- Apollo氏によるXM7お手伝いページ(互換ROMもこちらから) <A HREF="http://retropc.net/apollo/">http://retropc.net/apollo/</A><BR>
 <BR>
+<HR>
 以下、READMEより：
 <blockquote>
 ****<BR>
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux<BR>
-*  Version 0.1r15 (αレベル)<BR>
+*  Version 0.1r67 (αレベル ＼(^o^)／)<BR>
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka＠ipc-tokai.or.jp)<BR> 
 *  Copyright (C) 2001-2003 Ryu Takegami<BR>
 *  Copyright (C) 2004 GIMONS<BR>
 *  Copyright (C) 2010 K.Ohta <BR>
 *<BR>
-* 2010.01.31 Artane.<BR>
+* Since 2010.01.31 Artane.<BR>
 * HP:<BR>
 * <A HREF="http://sky.geocities.jp/artanejp/">http://sky.geocities.jp/artanejp/</A><BR>
 * 仮設SVN:<BR>
 * <A HREF="http://xm7-sdl.unfuddle.com/">http://xm7-sdl.unfuddle.com/</A><BR>
+(以下略 ^^;)</br>
 <BR>
-<H3>1.はじめに</H1><BR>
- 非常に古いマイコンであるFM-7のエミュレータに、XM-7(*0)と言う物があります。<BR>
- このエミュレータ自体はWin32上で動くものですが、基本的にLinuxしか使っていない私にはあれこれもどかしい物がありました。<BR>
- そういう事もあって、SDLへの移植をこの一年ちょっと目論んでいたのですが、GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに弄り始めたのでした。<BR>
-(*0) <A HREF="http://retropc.net/ryu/xm7/">http://retropc.net/ryu/xm7/</A><BR>
-(*1) <A HREF="http://www.geocities.jp/kugimoto0715/">http://www.geocities.jp/kugimoto0715/</A><BR>
-
-<H3>2.SDL版の特徴</H1><BR>
-・XM7 V3.4L30ベースです(但し、描画まわりやダイアログが出来ていない所もある)<BR>
-・SDLのダイレクト描画機能を使っている上に多少細工してあるのでそこそこ高速です。<BR>
-・SDL版オリジナル機能として、1280x800ドット描画機能を追加してあります。(*2)<BR>
+Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
 <BR>
-(*2) U*ix/SDL向けPC-88エミュレータである<A HREF="http://www.117.ne.jp/~show/pc8801/pc88emu.html">Quasi88</A>に同等の機能があったので…<BR>
-
-<H3>3.ビルド</H1><BR>
- 以下の物が、必要です。<BR>
-・GTK2/GLIB2<BR>
-・SDL1.2以上<BR>
-・U*ix系OSの場合にはX Window Systemと開発環境、FontConfigなどなど。<BR>
-・GCC 4<BR>
-・SDL_mixer ( <A HREF="http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer">http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer</A>
-)<BR>
-・NASM<BR>
-・GNU MAKE<BR>
-以下は、デバッグ用に使っています。(バイナリにもリンクしてある)<BR>
-・libmemwatch (<A HREF="http://www.linkdata.se/sourcecode/memwatch">http://www.linkdata.se/sourcecode/memwatch</A>
-)<BR>
-
-現状では6809エミュレーションをXM7添付のアセンブラコアでやっているので、ia32でしかビルドできません。（最終的にはSDLMAMEのCコアに移行する予定）<BR>
-amd64環境の方はクロスビルドする必要がありますが、そのままmake出来ちゃいます。多分。<BR>
-<BR>
-libmemwatchはメモリリークをチェックする為の物なので…<BR>
-<BR>
-<H3>4.つかいかた</H3><BR>
-a.
-Doc/00Readme.txtに従って、インストール、セットアップしてください。<BR>
-以下の物が必要です。<BR>
-・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM<BR>
-・FDDシークの為のWAV<BR>
-<BR>
-b.<BR>
-$ xm7<BR>
-
-c.<BR>
- 手持ちのFD・テープをD77・T77形式に変換した物を動かして見てください。<BR>
-<BR>
-*** 動くことを願っています(ぉぃ ***<BR>
-<BR>
-<H3>5.TIPS</H3><BR>
-<BR>
-a.GNU/Linuxの場合、サウンドドライバとしてALSAを使っていると音飛びなどが目立つと思います。<BR>
-　これは、カーネルのタスクスケジューラの優先度の問題なので、/etc/security/limits.confを変えてやるとほぼ解消出来ます（重い処理の時
-には厳しいですが。)<BR>
-(例)<BR>
----<BR>
-hoge      -        rtprio          99<BR>
-hoge      -        nice            -2<BR>
----<BR>
-hogeはユーザ名など。<BR>
-詳しくは、man limits.conf してみてください。<BR>
-
-b.memwatchなどのビルドでクロスビルドが必要になるかもしれません。<BR>
-　詳しくはmakefile.sdl.amd64を読んで見てください(無責任…)<BR>
-
-c.動かないときはROM,WAVファイルの名前や大文字小文字を確かめ直しましょう<BR>
-</blockquote>
-<HR>
-<P ALIGN="right">Apr. 02,2010 Artane. (whatisthis.sowhat AT gmail.com )</P>
-<!--LINE2-->
-<p>
-<!--LINE3-->
-<p>
-<!--LINE4-->
-<p>
 </body>
 </html>
 
