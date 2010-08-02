@@ -58,5 +58,5 @@
 /*
  * デバッグ関連
  */
-#define MEMWATCH
-#undef NODEBUG
+//#define MEMWATCH
+//#undef NODEBUG

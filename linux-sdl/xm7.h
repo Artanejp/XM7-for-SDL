@@ -35,8 +35,8 @@
 #define	LEVEL		"L30"
 // #define BETAVER
 #endif
-#define          LOCALVER         "SDL 0.1α45"
-#define	DATE		"2010/04/29"
+#define          LOCALVER         "SDL 0.1α67 ＼(^o^)／版"
+#define	DATE		"2010/08/02"
 
 /*
  *      定数、型定義
@@ -66,7 +66,7 @@
 #endif
 
 /*
- * 最適化 
+ * 最適化 ->FASTCALLは64bitだとバグることがあるのですっぱり削除
  */
 //#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && (defined(_M_IX86))))
 //#define FASTCALL		__fastcall
@@ -75,7 +75,7 @@
 //#endif
 
 /*
- * 基本型定義 
+ * 基本型定義 -> SDL定義にする(コンパイラ依存の吸収 20100802 α66)
  */
 #if 0
 typedef unsigned char BYTE;
@@ -103,7 +103,7 @@ typedef struct {
 	struct {
 #ifdef _WIN32
 	    BYTE            b;
-	    BYTE            a;
+            BYTE            a;
 #endif
 #ifdef __MSDOS__
 	    BYTE            b;
