@@ -1,13 +1,13 @@
 ****
-* FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux
-*  Version 0.1r42 (αレベル)
+* FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
+*  Version 0.1r67 (αレベル ＼(^o^)／)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2010.04.02 Artane.
+* 2010.08.02 Artane.
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
@@ -29,42 +29,59 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 ・SDLのダイレクト描画機能を使っている上に多少細工してあるのでそこそこ
 　高速です。
 ・SDL版オリジナル機能として、1280x800ドット描画機能を追加してあります。(*2)
+・とうとう、AMD64ベースでのビルドが可能になりました＼(^o^)／
+　まだまだバグ取らないといけないですが(；´Д｀)
+・CPUコアをアセンブラベースから、sdlmess0136 (*3) にあるCコードベース
+　のものに変更。とはいえ、内部構造がかなり違うので元々のアセンブラコード
+　からCに移植した部分もかなりあるし、APIが全く違うのでかなり手を入れて
+　います。
+　messのライセンスについてはDoc/mess/license.txtに入れておきました
 
 (*2) PC-88エミュレータであるQuasi88に同等の機能があったので…
+(*3) SDLMESS http://rbelmont.mameworld.info/?page_id=163
 
 3.ビルド
  以下の物が、必要です。
 ・GTK2/GLIB2
+・GDK-PIXBUF 2.0
 ・SDL1.2以上
 ・U*ix系OSの場合にはX Window Systemと開発環境、FontConfigなどなど。
 ・GCC 4
+・SDL_ttf
 ・SDL_mixer ( http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer )
-・NASM
+・IPA UIゴシック
 ・GNU MAKE
+・PKGCONFIG
+などなど。
+
 以下は、デバッグ用に使っています。
 ・libmemwatch (http://www.linkdata.se/sourcecode/memwatch )
+・eclipse (統合開発環境/  http://www.eclipse.org/ )
 
+-- 以下、過去の話 --
 現状では6809エミュレーションをXM7添付のアセンブラコアで
 やっているので、ia32でしかビルドできません。（最終的にはCコア
 に移行する予定）
 amd64環境の方はクロスビルドする必要がありますが、そのままmake出来
 ちゃいます。多分。
+-- ここまで --
 
 libmemwatchはメモリリークをチェックする為の物なので…
 
 4.つかいかた
 a.xm7の実行型式があるディレクトリィに、以下の物を入れます。
 
-a. usr.local/bin に移動して、
-$sudo install ./xm7 /usr/local/bin
+a. usr.local.bin に移動して、
+$sudo install ./xm7_debug ./xm7_ /usr/local/bin
 
-b. usr.local/share/xm7 に移動して、
+b. usr.local.share.xm7 に移動して、
 $sudo install -m 0777 -d /usr/local/share/xm7/
 $sudo install -m 0644 ./* /usr/local/share/xm7/
 
 c. 以下のものを~/.xm7 に入れます。
 ・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM
 ・FDDシークの為のWAV
+
 
 d. xm7を起動します（カレントディレクトリになくてもよいです。てか、カレントディレクトリから削除した方がいいかも)
 
@@ -88,8 +105,6 @@ hoge      -        nice            -2
 hogeはユーザ名など。
 詳しくは、man limits.conf してみてください。
 
-b.memwatchなどのビルドでクロスビルドが必要になるかもしれません。
-　詳しくはmakefile.sdl.amd64を読んで見てください(無責任…)
 
 c.WAVファイル、ROMファイルを~/.xm7/にコピーしたのに動かないときは、
 　これらファイルの大文字小文字を見直してください。
@@ -97,3 +112,6 @@ c.WAVファイル、ROMファイルを~/.xm7/にコピーしたのに動かな�
 d.r42から、UI定義をGTKBUILDERベースにしました。
 　/usr/local/share/xm7/gtk_prop.ui などがないと
 　動きませんΣ（￣□￣；）！！
+e.現状では、フォントを決め打ちしています。
+  (/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf )
+  かえる必要があるときは MakefileのUIFONT = の行を弄ってください（Todo)
