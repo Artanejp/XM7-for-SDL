@@ -34,7 +34,7 @@ OP_HANDLER( neg_di )
 	DIRBYTE(t);
 	r = -t;
 	CLR_NZVC;
-	SET_NZVC8(0,t,r);
+	SET_FLAGS8(0,t,r);
 	WM(EAD,r);
 }
 
@@ -71,7 +71,7 @@ OP_HANDLER( lsr_di )
 	CLR_NZC;
 	CC |= (t & CC_C);
 	t >>= 1;
-	SET_Z(t);
+	SET_Z8(t);
 	WM(EAD,t);
 }
 
@@ -109,7 +109,7 @@ OP_HANDLER( asl_di )
 	DIRBYTE(t);
 	r = t << 1;
 	CLR_NZVC;
-	SET_NZVC8(t,t,r);
+	SET_FLAGS8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -120,7 +120,7 @@ OP_HANDLER( rol_di )
 	DIRBYTE(t);
 	r = (CC & CC_C) | (t << 1);
 	CLR_NZVC;
-	SET_NZVC8(t,t,r);
+	SET_FLAGS8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -141,7 +141,7 @@ OP_HANDLER( dcc_di )
 	BYTE t,s;
 	DIRBYTE(t);
 	--t;
-	CLR_NZV;
+	CLR_NZVC;
 	SET_FLAGS8D(t);
         s = CC;
         s >>= 2;
@@ -202,7 +202,7 @@ OP_HANDLER( nop )
 /* $13 SYNC inherent ----- */
 OP_HANDLER( sync )
 {
-   cpu6809_t *t = m68_state;
+   //cpu6809_t *t = m68_state;
      if((m68_state->intr & INTR_SYNC_IN) == 0)
      {
 	
@@ -315,7 +315,7 @@ OP_HANDLER( sex )
 	SET_NZ16(t);
 }
 
-/* $1E EXG inherent ----- */
+/* $1E EXG inherent ----- */ // 20100825
 OP_HANDLER( exg )
 {
 	WORD t1,t2;
@@ -325,7 +325,7 @@ OP_HANDLER( exg )
 	if( (tb^(tb>>4)) & 0x08 )	/* HJB 990225: mixed 8/16 bit case? */
 	{
 		/* transfer $ff to both registers */
-		t1 = t2 = 0xff;
+		t1 = t2 = 0xffff;
 	}
 	else
 	{
@@ -336,11 +336,11 @@ OP_HANDLER( exg )
 			case  3: t1 = U;  break;
 			case  4: t1 = S;  break;
 			case  5: t1 = PC; break;
-			case  8: t1 = A;  break;
-			case  9: t1 = B;  break;
-			case 10: t1 = CC; break;
-			case 11: t1 = DP; break;
-			default: t1 = 0xff;
+			case  8: t1 = A | 0xff00;  break;
+			case  9: t1 = B | 0xff00;  break;
+			case 10: t1 = CC | 0xff00; break;
+			case 11: t1 = DP | 0xff00; break;
+			default: t1 = 0xffff;
 		}
 		switch(tb&15) {
 			case  0: t2 = D;  break;
@@ -349,11 +349,11 @@ OP_HANDLER( exg )
 			case  3: t2 = U;  break;
 			case  4: t2 = S;  break;
 			case  5: t2 = PC; break;
-			case  8: t2 = A;  break;
-			case  9: t2 = B;  break;
-			case 10: t2 = CC; break;
-			case 11: t2 = DP; break;
-			default: t2 = 0xff;
+			case  8: t2 = A | 0xff00;  break;
+			case  9: t2 = B | 0xff00;  break;
+			case 10: t2 = CC | 0xff00; break;
+			case 11: t2 = DP | 0xff00; break;
+			default: t2 = 0xffff;
         }
 	}
 	switch(tb>>4) {
@@ -392,7 +392,7 @@ OP_HANDLER( tfr )
 	if( (tb^(tb>>4)) & 0x08 )	/* HJB 990225: mixed 8/16 bit case? */
 	{
 		/* transfer $ff to register */
-		t = 0xff;
+		t = 0xffff;
         }
 	else
 	{
@@ -403,11 +403,11 @@ OP_HANDLER( tfr )
 			case  3: t = U;  break;
 			case  4: t = S;  break;
 			case  5: t = PC; break;
-			case  8: t = A;  break;
-			case  9: t = B;  break;
-			case 10: t = CC; break;
-			case 11: t = DP; break;
-			default: t = 0xff;
+			case  8: t = A | 0xff00;  break;
+			case  9: t = B | 0xff00;  break;
+			case 10: t = CC | 0xff00; break;
+			case 11: t = DP | 0xff00; break;
+			default: t = 0xffff;
         }
 	}
 	switch(tb&15) {
@@ -623,7 +623,7 @@ OP_HANDLER( leax )
 	fetch_effective_address(m68_state);
 	X = EA;
 	CLR_Z;
-	SET_Z16(X);
+	SET_Z(X);
 }
 
 /* $31 LEAY indexed --*-- */
@@ -632,7 +632,7 @@ OP_HANDLER( leay )
 	fetch_effective_address(m68_state);
 	Y = EA;
 	CLR_Z;
-	SET_Z16(Y);
+	SET_Z(Y);
 
 }
 
@@ -655,8 +655,9 @@ OP_HANDLER( leau )
 /* $34 PSHS inherent ----- */
 OP_HANDLER( pshs )
 {
-	BYTE t;
+	BYTE t,dmy;
 	IMMBYTE(t);
+	dmy = RM(S); // Add 20100825
 	if( t&0x80 ) { PUSHWORD(pPC); m68_state->cycle += 2; }
 	if( t&0x40 ) { PUSHWORD(pU);  m68_state->cycle += 2; }
 	if( t&0x20 ) { PUSHWORD(pY);  m68_state->cycle += 2; }
@@ -670,7 +671,7 @@ OP_HANDLER( pshs )
 /* 35 PULS inherent ----- */
 OP_HANDLER( puls )
 {
-	BYTE t;
+	BYTE t, dmy;
 	IMMBYTE(t);
 	if( t&0x01 ) { PULLBYTE(CC); m68_state->cycle += 1; }
 	if( t&0x02 ) { PULLBYTE(A);  m68_state->cycle += 1; }
@@ -680,6 +681,7 @@ OP_HANDLER( puls )
 	if( t&0x20 ) { PULLWORD(YD); m68_state->cycle += 2; }
 	if( t&0x40 ) { PULLWORD(UD); m68_state->cycle += 2; }
 	if( t&0x80 ) { PULLWORD(PCD); m68_state->cycle += 2; }
+	dmy = RM(S); // Add 20100825
 
 	/* HJB 990225: moved check after all PULLs */
 //	if( t&0x01 ) { check_irq_lines(m68_state); }
@@ -688,8 +690,9 @@ OP_HANDLER( puls )
 /* $36 PSHU inherent ----- */
 OP_HANDLER( pshu )
 {
-	BYTE t;
+	BYTE t, dmy;
 	IMMBYTE(t);
+	dmy = RM(U); // Add 20100825
 	if( t&0x80 ) { PSHUWORD(pPC); m68_state->cycle += 2; }
 	if( t&0x40 ) { PSHUWORD(pS);  m68_state->cycle += 2; }
 	if( t&0x20 ) { PSHUWORD(pY);  m68_state->cycle += 2; }
@@ -703,7 +706,7 @@ OP_HANDLER( pshu )
 /* 37 PULU inherent ----- */
 OP_HANDLER( pulu )
 {
-	BYTE t;
+	BYTE t, dmy;
 	IMMBYTE(t);
 	if( t&0x01 ) { PULUBYTE(CC); m68_state->cycle += 1; }
 	if( t&0x02 ) { PULUBYTE(A);  m68_state->cycle += 1; }
@@ -713,6 +716,7 @@ OP_HANDLER( pulu )
 	if( t&0x20 ) { PULUWORD(YD); m68_state->cycle += 2; }
 	if( t&0x40 ) { PULUWORD(SD); m68_state->cycle += 2; }
 	if( t&0x80 ) { PULUWORD(PCD); m68_state->cycle += 2; }
+	dmy = RM(U); // Add 20100825
 
 	/* HJB 990225: moved check after all PULLs */
 	//if( t&0x01 ) { check_irq_lines(m68_state); }
@@ -729,7 +733,8 @@ OP_HANDLER( rts )
 /* $3A ABX inherent ----- */
 OP_HANDLER( abx )
 {
-	X += B;
+	WORD b = B & 0x00ff;
+	X = X + b;
 }
 
 /* $3B RTI inherent ##### */
@@ -782,8 +787,10 @@ OP_HANDLER( mul )
 {
 	WORD t;
 	t = A * B;
-	CLR_ZC; SET_Z(t); if(t&0x80) SEC;
-	D = t;
+	CLR_ZC; SET_Z16(t); if(t&0x80) SEC;
+	//D = t;
+	A = (t & 0xff00) >>8 ;
+	B = (t & 0x00ff);
 }
 
 /* $3E RST */
@@ -845,7 +852,7 @@ OP_HANDLER( nega )
 	WORD r;
 	r = -A;
 	CLR_NZVC;
-	SET_NZVC8(0,A,r);
+	SET_FLAGS8(0,A,r);
 	A = r;
 }
 
@@ -877,7 +884,7 @@ OP_HANDLER( lsra )
 	CLR_NZC;
 	CC |= (A & CC_C);
 	A >>= 1;
-	SET_Z(A);
+	SET_Z8(A);
 }
 
 /* $45 LSRA */
@@ -909,7 +916,7 @@ OP_HANDLER( asla )
 	WORD r;
 	r = A << 1;
 	CLR_NZVC;
-	SET_NZVC8(A,A,r);
+	SET_FLAGS8(A,A,r);
 	A = r;
 }
 
@@ -920,7 +927,7 @@ OP_HANDLER( rola )
 	t = A;
 	r = (CC & CC_C) | (t<<1);
 	CLR_NZVC;
-	SET_NZVC8(t,t,r);
+	SET_FLAGS8(t,t,r);
 	A = r;
 }
 
@@ -936,9 +943,10 @@ OP_HANDLER( deca )
 /* $4B DCCA */
 OP_HANDLER( dcca )
 {
-	BYTE t,s;
+	BYTE s;
+	BYTE t = A;
 	--A;
-	CLR_NZV;
+	CLR_NZVC;
 	SET_FLAGS8D(A);
         s = CC;
         s >>= 2;
@@ -967,7 +975,7 @@ OP_HANDLER( clca )
 {
    A = 0;
    CLR_NZV;
-   SET_Z(A);
+   SET_Z8(A);
 }
 
 /* $4F CLRA inherent -0100 */
@@ -983,7 +991,7 @@ OP_HANDLER( negb )
 	WORD r;
 	r = -B;
 	CLR_NZVC;
-	SET_NZVC8(0,B,r);
+	SET_FLAGS8(0,B,r);
 	B = r;
 }
 
@@ -1016,7 +1024,7 @@ OP_HANDLER( lsrb )
 	CLR_NZC;
 	CC |= (B & CC_C);
 	B >>= 1;
-	SET_Z(B);
+	SET_Z8(B);
 }
 
 /* $55 LSRB */
@@ -1048,7 +1056,7 @@ OP_HANDLER( aslb )
 	WORD r;
 	r = B << 1;
 	CLR_NZVC;
-	SET_NZVC8(B,B,r);
+	SET_FLAGS8(B,B,r);
 	B = r;
 }
 
@@ -1060,7 +1068,7 @@ OP_HANDLER( rolb )
 	r = CC & CC_C;
 	r |= t << 1;
 	CLR_NZVC;
-	SET_NZVC8(t,t,r);
+	SET_FLAGS8(t,t,r);
 	B = r;
 }
 
@@ -1080,7 +1088,7 @@ OP_HANDLER( dccb )
 {
 	BYTE t,s;
 	--B;
-	CLR_NZV;
+	CLR_NZVC;
 	SET_FLAGS8D(B);
         s = CC;
         s >>= 2;
@@ -1109,7 +1117,7 @@ OP_HANDLER( clcb )
 {
    B = 0;
    CLR_NZV;
-   SET_Z(B);
+   SET_Z8(B);
 }
 
 /* $5F CLRB inherent -0100 */
@@ -1127,7 +1135,7 @@ OP_HANDLER( neg_ix )
 	t = RM(EAD);
 	r=-t;
 	CLR_NZVC;
-	SET_NZVC8(0,t,r);
+	SET_FLAGS8(0,t,r);
 	WM(EAD,r);
 }
 
@@ -1163,7 +1171,7 @@ OP_HANDLER( lsr_ix )
 	t=RM(EAD);
 	CLR_NZC;
 	CC |= (t & CC_C);
-	t>>=1; SET_Z(t);
+	t>>=1; SET_Z8(t);
 	WM(EAD,t);
 }
 
@@ -1203,7 +1211,7 @@ OP_HANDLER( asl_ix )
 	t=RM(EAD);
 	r = t << 1;
 	CLR_NZVC;
-	SET_NZVC8(t,t,r);
+	SET_FLAGS8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1216,7 +1224,7 @@ OP_HANDLER( rol_ix )
 	r = CC & CC_C;
 	r |= t << 1;
 	CLR_NZVC;
-	SET_NZVC8(t,t,r);
+	SET_FLAGS8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1237,7 +1245,7 @@ OP_HANDLER( dcc_ix )
 	BYTE t,s;
    	fetch_effective_address(m68_state);
 	t = RM(EAD) - 1;
-	CLR_NZV;
+	CLR_NZVC;
 	SET_FLAGS8D(t);
         s = CC;
         s >>= 2;
@@ -1289,7 +1297,7 @@ OP_HANDLER( neg_ex )
 	WORD r,t;
 	EXTBYTE(t); r=-t;
 	CLR_NZVC;
-	SET_NZVC8(0,t,r);
+	SET_FLAGS8(0,t,r);
 	WM(EAD,r);
 }
 
@@ -1321,7 +1329,7 @@ OP_HANDLER( lsr_ex )
 {
 	BYTE t;
 	EXTBYTE(t); CLR_NZC; CC |= (t & CC_C);
-	t>>=1; SET_Z(t);
+	t>>=1; SET_Z8(t);
 	WM(EAD,t);
 }
 
@@ -1352,7 +1360,7 @@ OP_HANDLER( asl_ex )
 {
 	WORD t,r;
 	EXTBYTE(t); r=t<<1;
-	CLR_NZVC; SET_NZVC8(t,t,r);
+	CLR_NZVC; SET_FLAGS8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1361,7 +1369,7 @@ OP_HANDLER( rol_ex )
 {
 	WORD t,r;
 	EXTBYTE(t); r = (CC & CC_C) | (t << 1);
-	CLR_NZVC; SET_NZVC8(t,t,r);
+	CLR_NZVC; SET_FLAGS8(t,t,r);
 	WM(EAD,r);
 }
 
@@ -1381,7 +1389,7 @@ OP_HANDLER( dcc_ex )
 	BYTE t,s;
         EXTBYTE(t);
         --t;
-	CLR_NZV;
+	CLR_NZVC;
 	SET_FLAGS8D(t);
         s = CC;
         s >>= 2;
@@ -1426,32 +1434,35 @@ OP_HANDLER( clr_ex )
 /* $80 SUBA immediate ?**** */
 OP_HANDLER( suba_im )
 {
-	WORD t,r;
+	WORD r;
+	BYTE t;
 	IMMBYTE(t);
 	r = A - t;
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
 /* $81 CMPA immediate ?**** */
 OP_HANDLER( cmpa_im )
 {
-	WORD	  t,r;
+	WORD	  r;
+	BYTE      t;
 	IMMBYTE(t);
 	r = A - t;
 	CLR_NZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 }
 
 /* $82 SBCA immediate ?**** */
 OP_HANDLER( sbca_im )
 {
-	WORD	  t,r;
+	WORD	  r;
+	BYTE	  t;
 	IMMBYTE(t);
 	r = A - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -1464,7 +1475,7 @@ OP_HANDLER( subd_im )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -1477,7 +1488,7 @@ OP_HANDLER( cmpd_im )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $1183 CMPU immediate -**** */
@@ -1489,7 +1500,7 @@ OP_HANDLER( cmpu_im )
 	d = U;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $84 ANDA immediate -**0- */
@@ -1535,7 +1546,8 @@ OP_HANDLER( sta_im )
  */
 OP_HANDLER( flag8_im )
 {
-   IMM8;
+	BYTE t;
+   IMMBYTE(t);
    CLR_NZV;
    CC |= 0x08;
 }
@@ -1592,7 +1604,7 @@ OP_HANDLER( cmpx_im )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $108C CMPY immediate -**** */
@@ -1604,7 +1616,7 @@ OP_HANDLER( cmpy_im )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $118C CMPS immediate -**** */
@@ -1616,7 +1628,7 @@ OP_HANDLER( cmps_im )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $8D BSR ----- */
@@ -1682,7 +1694,7 @@ OP_HANDLER( suba_di )
 	DIRBYTE(t);
 	r = A - t;
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -1693,7 +1705,7 @@ OP_HANDLER( cmpa_di )
 	DIRBYTE(t);
 	r = A - t;
 	CLR_NZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 }
 
 /* $92 SBCA direct ?**** */
@@ -1703,7 +1715,7 @@ OP_HANDLER( sbca_di )
 	DIRBYTE(t);
 	r = A - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -1716,7 +1728,7 @@ OP_HANDLER( subd_di )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -1729,7 +1741,7 @@ OP_HANDLER( cmpd_di )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $1193 CMPU direct -**** */
@@ -1741,7 +1753,7 @@ OP_HANDLER( cmpu_di )
 	d = U;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(U,b,r);
+	SET_FLAGS16(U,b,r);
 }
 
 /* $94 ANDA direct -**0- */
@@ -1832,7 +1844,7 @@ OP_HANDLER( cmpx_di )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $109C CMPY direct -**** */
@@ -1844,7 +1856,7 @@ OP_HANDLER( cmpy_di )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $119C CMPS direct -**** */
@@ -1856,7 +1868,7 @@ OP_HANDLER( cmps_di )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $9D JSR direct ----- */
@@ -1909,7 +1921,7 @@ OP_HANDLER( suba_ix )
 	t = RM(EAD);
 	r = A - t;
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -1921,7 +1933,7 @@ OP_HANDLER( cmpa_ix )
 	t = RM(EAD);
 	r = A - t;
 	CLR_NZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 }
 
 /* $a2 SBCA indexed ?**** */
@@ -1932,7 +1944,7 @@ OP_HANDLER( sbca_ix )
 	t = RM(EAD);
 	r = A - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -1946,7 +1958,7 @@ OP_HANDLER( subd_ix )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -1960,7 +1972,7 @@ OP_HANDLER( cmpd_ix )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $11a3 CMPU indexed -**** */
@@ -1972,7 +1984,7 @@ OP_HANDLER( cmpu_ix )
 	b=RM16(m68_state, EAD);
 	r = U - b;
 	CLR_NZVC;
-	SET_NZVC16(U,b,r);
+	SET_FLAGS16(U,b,r);
 }
 
 /* $a4 ANDA indexed -**0- */
@@ -2029,7 +2041,7 @@ OP_HANDLER( adca_ix )
 	t = RM(EAD);
 	r = A + t + (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	SET_H(A,t,r);
 	A = r;
 }
@@ -2051,7 +2063,7 @@ OP_HANDLER( adda_ix )
 	t = RM(EAD);
 	r = A + t;
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	SET_H(A,t,r);
 	A = r;
 }
@@ -2066,7 +2078,7 @@ OP_HANDLER( cmpx_ix )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $10aC CMPY indexed -**** */
@@ -2079,7 +2091,7 @@ OP_HANDLER( cmpy_ix )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $11aC CMPS indexed -**** */
@@ -2092,7 +2104,7 @@ OP_HANDLER( cmps_ix )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $aD JSR indexed ----- */
@@ -2146,7 +2158,7 @@ OP_HANDLER( suba_ex )
 	EXTBYTE(t);
 	r = A - t;
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -2157,7 +2169,7 @@ OP_HANDLER( cmpa_ex )
 	EXTBYTE(t);
 	r = A - t;
 	CLR_NZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 }
 
 /* $b2 SBCA extended ?**** */
@@ -2167,7 +2179,7 @@ OP_HANDLER( sbca_ex )
 	EXTBYTE(t);
 	r = A - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(A,t,r);
+	SET_FLAGS8(A,t,r);
 	A = r;
 }
 
@@ -2180,7 +2192,7 @@ OP_HANDLER( subd_ex )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -2193,7 +2205,7 @@ OP_HANDLER( cmpd_ex )
 	d = D;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $11b3 CMPU extended -**** */
@@ -2205,7 +2217,7 @@ OP_HANDLER( cmpu_ex )
 	d = U;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $b4 ANDA extended -**0- */
@@ -2295,7 +2307,7 @@ OP_HANDLER( cmpx_ex )
 	d = X;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $10bC CMPY extended -**** */
@@ -2307,7 +2319,7 @@ OP_HANDLER( cmpy_ex )
 	d = Y;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $11bC CMPS extended -**** */
@@ -2319,7 +2331,7 @@ OP_HANDLER( cmps_ex )
 	d = S;
 	r = d - b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 }
 
 /* $bD JSR extended ----- */
@@ -2371,7 +2383,7 @@ OP_HANDLER( subb_im )
 	IMMBYTE(t);
 	r = B - t;
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2381,7 +2393,7 @@ OP_HANDLER( cmpb_im )
 	WORD	  t,r;
 	IMMBYTE(t);
 	r = B - t;
-	CLR_NZVC; SET_NZVC8(B,t,r);
+	CLR_NZVC; SET_FLAGS8(B,t,r);
 }
 
 /* $c2 SBCB immediate ?**** */
@@ -2391,7 +2403,7 @@ OP_HANDLER( sbcb_im )
 	IMMBYTE(t);
 	r = B - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2404,7 +2416,7 @@ OP_HANDLER( addd_im )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -2550,7 +2562,7 @@ OP_HANDLER( subb_di )
 	DIRBYTE(t);
 	r = B - t;
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2561,7 +2573,7 @@ OP_HANDLER( cmpb_di )
 	DIRBYTE(t);
 	r = B - t;
 	CLR_NZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 }
 
 /* $d2 SBCB direct ?**** */
@@ -2571,7 +2583,7 @@ OP_HANDLER( sbcb_di )
 	DIRBYTE(t);
 	r = B - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2584,7 +2596,7 @@ OP_HANDLER( addd_di )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -2728,7 +2740,7 @@ OP_HANDLER( subb_ix )
 	t = RM(EAD);
 	r = B - t;
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2740,7 +2752,7 @@ OP_HANDLER( cmpb_ix )
 	t = RM(EAD);
 	r = B - t;
 	CLR_NZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 }
 
 /* $e2 SBCB indexed ?**** */
@@ -2751,7 +2763,7 @@ OP_HANDLER( sbcb_ix )
 	t = RM(EAD);
 	r = B - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2765,7 +2777,7 @@ OP_HANDLER( addd_ix )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -2910,7 +2922,7 @@ OP_HANDLER( subb_ex )
 	EXTBYTE(t);
 	r = B - t;
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2921,7 +2933,7 @@ OP_HANDLER( cmpb_ex )
 	EXTBYTE(t);
 	r = B - t;
 	CLR_NZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 }
 
 /* $f2 SBCB extended ?**** */
@@ -2931,7 +2943,7 @@ OP_HANDLER( sbcb_ex )
 	EXTBYTE(t);
 	r = B - t - (CC & CC_C);
 	CLR_HNZVC;
-	SET_NZVC8(B,t,r);
+	SET_FLAGS8(B,t,r);
 	B = r;
 }
 
@@ -2944,7 +2956,7 @@ OP_HANDLER( addd_ex )
 	d = D;
 	r = d + b;
 	CLR_NZVC;
-	SET_NZVC16(d,b,r);
+	SET_FLAGS16(d,b,r);
 	D = r;
 }
 
@@ -3103,12 +3115,13 @@ OP_HANDLER( pref10 )
 		case 0x2e: lbgt(m68_state);		m68_state->cycle=5;	break;
 		case 0x2f: lble(m68_state);		m68_state->cycle=5;	break;
 
-		case 0x3f: swi2(m68_state);		m68_state->cycle=19;	break;
+		case 0x3f: swi2(m68_state);		m68_state->cycle=20;	break;
 
 		case 0x83: cmpd_im(m68_state);	m68_state->cycle=5;	break;
 		case 0x8c: cmpy_im(m68_state);	m68_state->cycle=5;	break;
+		case 0x8d: lbsr(m68_state); m68_state->cycle=9; break;
 		case 0x8e: ldy_im(m68_state);	m68_state->cycle=4;	break;
-		case 0x8f: sty_im(m68_state);	m68_state->cycle=4;	break;
+		//case 0x8f: sty_im(m68_state);	m68_state->cycle=4;	break;
 
 		case 0x93: cmpd_di(m68_state);	m68_state->cycle=7;	break;
 		case 0x9c: cmpy_di(m68_state);	m68_state->cycle=7;	break;
@@ -3126,7 +3139,7 @@ OP_HANDLER( pref10 )
 		case 0xbf: sty_ex(m68_state);	m68_state->cycle=7;	break;
 
 		case 0xce: lds_im(m68_state);	m68_state->cycle=4;	break;
-		case 0xcf: sts_im(m68_state);	m68_state->cycle=4;	break;
+		//case 0xcf: sts_im(m68_state);	m68_state->cycle=4;	break;
 
 		case 0xde: lds_di(m68_state);	m68_state->cycle=6;	break;
 		case 0xdf: sts_di(m68_state);	m68_state->cycle=6;	break;
@@ -3148,7 +3161,7 @@ OP_HANDLER( pref11 )
 	PC++;
 	switch( ireg2 )
 	{
-		case 0x3f: swi3(m68_state);		m68_state->cycle=19;	break;
+		case 0x3f: swi3(m68_state);		m68_state->cycle=20;	break;
 
 		case 0x83: cmpu_im(m68_state);	m68_state->cycle=5;	break;
 		case 0x8c: cmps_im(m68_state);	m68_state->cycle=5;	break;

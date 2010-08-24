@@ -74,10 +74,9 @@
 //#include "debugger.h"
 //#include "m6809.h"
 #include "xm7.h"
-//#define INLINE inline volatile
 #define INLINE inline
 
-#define BIG_SWITCH 0
+#define BIG_SWITCH 1
 /* Enable big switch statement for the main opcodes */
 #ifndef BIG_SWITCH
 #define BIG_SWITCH  1
@@ -143,7 +142,6 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state );
 
 INLINE BYTE READB(cpu6809_t *t, WORD addr)
 {
-   
        return t->readmem(addr);
 }
 
@@ -151,7 +149,7 @@ INLINE BYTE READB(cpu6809_t *t, WORD addr)
 INLINE WORD READW(cpu6809_t *t, WORD addr)
 {
    
-       return (WORD)((t->readmem(addr)<<8) + t->readmem(addr+1));
+       return (WORD)((t->readmem(addr)<<8) + t->readmem((addr+1)&0xffff));
 }
 
 
@@ -166,7 +164,7 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 {
    
       t->writemem(addr,(BYTE)(data >>8));
-      t->writemem(addr+1,(BYTE)(data & 0xff));
+      t->writemem((addr+1)&0xffff,(BYTE)(data & 0xff));
 }
 
 
@@ -198,7 +196,7 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 
 /* macros to access memory */
 #define IMMBYTE(b)	b = ROP_ARG(PCD); PC++
-#define IMMWORD(w)	w = ((WORD)ROP_ARG(PC)<<8) | (WORD)ROP_ARG((PC+1)&0xffff); PC+=2
+#define IMMWORD(w)	w = (ROP_ARG(PCD)<<8) + ROP_ARG((PC+1)&0xffff); PC+=2
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define PUSHBYTE(b) --S; WM(SD,b)
 #define PUSHWORD(w) --S; WM(SD,(w&0xff)); --S; WM(SD,(w>>8))
@@ -232,8 +230,8 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 
 /* macros for CC -- CC bits affected should be reset before calling */
 #define SET_Z(a)		if(!a)SEZ
-#define SET_Z8(a)		if(a == 0) SEZ
-#define SET_Z16(a)		if(a == 0) SEZ
+#define SET_Z8(a)		SET_Z((BYTE)a)
+#define SET_Z16(a)		SET_Z((WORD)a)
 #define SET_N8(a)		CC|=((a&0x80)>>4)
 #define SET_N16(a)		CC|=((a&0x8000)>>12)
 #define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
@@ -248,8 +246,8 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 /* combos */
 #define SET_NZ8(a)			{SET_N8(a);SET_Z8(a);}
 #define SET_NZ16(a)			{SET_N16(a);SET_Z16(a);}
-//#define SET_FLAGS8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
-//#define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
+#define SET_FLAGS8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
+#define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
 #define SET_HNZVC8(a,b,r)	{SET_H(a,b,r);SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
 #define SET_HNZVC16(a,b,r)	{SET_H(a,b,r);SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
@@ -258,13 +256,13 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 #define SET_NZVC16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
 
-#define NXORV			((CC&CC_N)^((CC&CC_V)<<2) !=0)
+#define NXORV			(((CC&CC_N)^((CC&CC_V)<<2)) !=0)
 
 /* for treating an unsigned byte as a signed word */
 #define SIGNED(b) ((WORD)(b&0x80?b|0xff00:b))
 
 /* macros for addressing modes (postbytes have their own code) */
-#define DIRECT	{BYTE tmpt; EAD = (WORD)DP; IMMBYTE(tmpt); EAD = (EAD<<8) + tmpt; } 
+#define DIRECT	{BYTE tmpt; EAD = DP<<8; IMMBYTE(tmpt); EAD = EAD + tmpt; }
 #define IMM8	EAD = PC; PC+=1
 #define IMM16	EAD = PC; PC+=2
 #define EXTENDED IMMWORD(EA)
@@ -314,7 +312,7 @@ INLINE void
 	if( f ) 
 	{
 		m68_state->cycle += 1;
-		PC += t;
+		PC = (PC + t) & 0xffff;
 	}
 }
 /* macros for setting/getting registers in TFR/EXG instructions */
@@ -946,15 +944,15 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0x84: EA=X;												   break;
 	case 0x85: EA=X+SIGNED(B);										   break;
 	case 0x86: EA=X+SIGNED(A);										   break;
-	case 0x87: EA=0;												   break; /*   ILLEGAL*/
+	case 0x87: EA=X+SIGNED(A);												   break; /*   ILLEGAL*/
 	case 0x88: IMMBYTE(EA); 	EA=X+SIGNED(EA);					   break; /* this is a hack to make Vectrex work. It should be m68_state->icount-=1. Dunno where the cycle was lost :( */
 	case 0x89: IMMWORD(EAP);	EA+=X;								   break;
-	case 0x8a: EA=0;												   break; /*   IIError*/
+	case 0x8a: EA=PC; EA++ ; EA |= 0x00ff;							   break; /*   IIError*/
 	case 0x8b: EA=X+D;												   break;
 	case 0x8c: IMMBYTE(EA); 	EA=PC+SIGNED(EA);					   break;
 	case 0x8d: IMMWORD(EAP);	EA+=PC; 							   break;
-	case 0x8e: EA=0;												   break; /*   ILLEGAL*/
-	case 0x8f: IMMWORD(EAP);							   break;
+	case 0x8e: EA=0xffff;											   break; /*   ILLEGAL*/
+	case 0x8f: IMMWORD(EAP);										   break;
 	case 0x90: EA=X;	X++;						EAD=RM16(m68_state, EAD);	   break; /* Indirect ,R+ not in my specs */
 	case 0x91: EA=X;	X+=2;						EAD=RM16(m68_state, EAD);	   break;
 	case 0x92: X--; 	EA=X;						EAD=RM16(m68_state, EAD);	   break;
@@ -962,14 +960,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0x94: EA=X;								EAD=RM16(m68_state, EAD);	   break;
 	case 0x95: EA=X+SIGNED(B);						EAD=RM16(m68_state, EAD);	   break;
 	case 0x96: EA=X+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break;
-	case 0x97: EA=0;												   break; /*   ILLEGAL*/
+	case 0x97: EA=X+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break; /*   ILLEGAL*/
 	case 0x98: IMMBYTE(EA); 	EA=X+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0x99: IMMWORD(EAP);	EA+=X;				EAD=RM16(m68_state, EAD);	   break;
-	case 0x9a: EA=0;												   break; /*   ILLEGAL*/
+	case 0x9a: EA=PC; EA++ ; EA |= 0x00ff; EAD=RM16(m68_state,EAD);				   break; /*   ILLEGAL*/
 	case 0x9b: EA=X+D;								EAD=RM16(m68_state, EAD);	   break;
 	case 0x9c: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0x9d: IMMWORD(EAP);	EA+=PC; 			EAD=RM16(m68_state, EAD);	   break;
-	case 0x9e: EA=0;												   break; /*   ILLEGAL*/
+	case 0x9e: EA=0xffff;	    EAD=RM16(m68_state, EAD);						   break; /*   ILLEGAL*/
 	case 0x9f: IMMWORD(EAP);						EAD=RM16(m68_state, EAD);	   break;
 
 	case 0xa0: EA=Y;	Y++;										   break;
@@ -979,14 +977,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0xa4: EA=Y;												   break;
 	case 0xa5: EA=Y+SIGNED(B);										   break;
 	case 0xa6: EA=Y+SIGNED(A);										   break;
-	case 0xa7: EA=0;												   break; /*   ILLEGAL*/
+	case 0xa7: EA=Y+SIGNED(A);												   break; /*   ILLEGAL*/
 	case 0xa8: IMMBYTE(EA); 	EA=Y+SIGNED(EA);					   break;
 	case 0xa9: IMMWORD(EAP);	EA+=Y;								   break;
-	case 0xaa: EA=0;												   break; /*   ILLEGAL*/
+	case 0xaa: EA=PC; EA++ ; EA |= 0x00ff;							   break; /*   ILLEGAL*/
 	case 0xab: EA=Y+D;												   break;
 	case 0xac: IMMBYTE(EA); 	EA=PC+SIGNED(EA);					   break;
 	case 0xad: IMMWORD(EAP);	EA+=PC; 							   break;
-	case 0xae: EA=0;												   break; /*   ILLEGAL*/
+	case 0xae: EA=0xffff;												   break; /*   ILLEGAL*/
 	case 0xaf: IMMWORD(EAP);										   break;
 
 	case 0xb0: EA=Y;	Y++;						EAD=RM16(m68_state, EAD);	   break;
@@ -996,14 +994,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0xb4: EA=Y;								EAD=RM16(m68_state, EAD);	   break;
 	case 0xb5: EA=Y+SIGNED(B);						EAD=RM16(m68_state, EAD);	   break;
 	case 0xb6: EA=Y+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break;
-	case 0xb7: EA=0;												   break; /*   ILLEGAL*/
+	case 0xb7: EA=Y+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break; /*   ILLEGAL*/
 	case 0xb8: IMMBYTE(EA); 	EA=Y+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0xb9: IMMWORD(EAP);	EA+=Y;				EAD=RM16(m68_state, EAD);	   break;
-	case 0xba: EA=0;												   break; /*   ILLEGAL*/
+	case 0xba: EA=PC; EA++ ; EA |= 0x00ff;			EAD=RM16(m68_state, EAD);												   break; /*   ILLEGAL*/
 	case 0xbb: EA=Y+D;								EAD=RM16(m68_state, EAD);	   break;
 	case 0xbc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0xbd: IMMWORD(EAP);	EA+=PC; 			EAD=RM16(m68_state, EAD);	   break;
-	case 0xbe: EA=0;												   break; /*   ILLEGAL*/
+	case 0xbe: EA=0xffff;							EAD=RM16(m68_state, EAD);	   break; /*   ILLEGAL*/
 	case 0xbf: IMMWORD(EAP);						EAD=RM16(m68_state, EAD);	   break;
 
 	case 0xc0: EA=U;			U++;								   break;
@@ -1013,14 +1011,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0xc4: EA=U;												   break;
 	case 0xc5: EA=U+SIGNED(B);										   break;
 	case 0xc6: EA=U+SIGNED(A);										   break;
-	case 0xc7: EA=0;												   break; /*ILLEGAL*/
+	case 0xc7: EA=U+SIGNED(A);										   break; /*ILLEGAL*/
 	case 0xc8: IMMBYTE(EA); 	EA=U+SIGNED(EA);					   break;
 	case 0xc9: IMMWORD(EAP);	EA+=U;								   break;
-	case 0xca: EA=0;												   break; /*ILLEGAL*/
+	case 0xca: EA=PC; EA++ ; EA |= 0x00ff;							   break; /*ILLEGAL*/
 	case 0xcb: EA=U+D;												   break;
 	case 0xcc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);					   break;
 	case 0xcd: IMMWORD(EAP);	EA+=PC; 							   break;
-	case 0xce: EA=0;												   break; /*ILLEGAL*/
+	case 0xce: EA=0xffff;											   break; /*ILLEGAL*/
 	case 0xcf: IMMWORD(EAP);										   break;
 
 	case 0xd0: EA=U;	U++;						EAD=RM16(m68_state, EAD);	   break;
@@ -1030,14 +1028,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0xd4: EA=U;								EAD=RM16(m68_state, EAD);	   break;
 	case 0xd5: EA=U+SIGNED(B);						EAD=RM16(m68_state, EAD);	   break;
 	case 0xd6: EA=U+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break;
-	case 0xd7: EA=0;												   break; /*ILLEGAL*/
+	case 0xd7: EA=U+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break; /*ILLEGAL*/
 	case 0xd8: IMMBYTE(EA); 	EA=U+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0xd9: IMMWORD(EAP);	EA+=U;				EAD=RM16(m68_state, EAD);	   break;
-	case 0xda: EA=0;												   break; /*ILLEGAL*/
+	case 0xda: EA=PC; EA++ ; EA |= 0x00ff;			EAD=RM16(m68_state, EAD);	   break; /*ILLEGAL*/
 	case 0xdb: EA=U+D;								EAD=RM16(m68_state, EAD);	   break;
 	case 0xdc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0xdd: IMMWORD(EAP);	EA+=PC; 			EAD=RM16(m68_state, EAD);	   break;
-	case 0xde: EA=0;												   break; /*ILLEGAL*/
+	case 0xde: EA=0xffff;							EAD=RM16(m68_state, EAD);	   break; /*ILLEGAL*/
 	case 0xdf: IMMWORD(EAP);						EAD=RM16(m68_state, EAD);	   break;
 
 	case 0xe0: EA=S;	S++;										   break;
@@ -1047,14 +1045,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0xe4: EA=S;												   break;
 	case 0xe5: EA=S+SIGNED(B);										   break;
 	case 0xe6: EA=S+SIGNED(A);										   break;
-	case 0xe7: EA=0;												   break; /*ILLEGAL*/
+	case 0xe7: EA=S+SIGNED(A);										   break; /*ILLEGAL*/
 	case 0xe8: IMMBYTE(EA); 	EA=S+SIGNED(EA);					   break;
 	case 0xe9: IMMWORD(EAP);	EA+=S;								   break;
-	case 0xea: EA=0;												   break; /*ILLEGAL*/
+	case 0xea: EA=PC; EA++ ; EA |= 0x00ff;							   break; /*ILLEGAL*/
 	case 0xeb: EA=S+D;												   break;
 	case 0xec: IMMBYTE(EA); 	EA=PC+SIGNED(EA);					   break;
 	case 0xed: IMMWORD(EAP);	EA+=PC; 							   break;
-	case 0xee: EA=0;												   break;  /*ILLEGAL*/
+	case 0xee: EA=0xffff;											   break;  /*ILLEGAL*/
 	case 0xef: IMMWORD(EAP);										   break;
 
 	case 0xf0: EA=S;	S++;						EAD=RM16(m68_state, EAD);	   break;
@@ -1064,14 +1062,14 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0xf4: EA=S;								EAD=RM16(m68_state, EAD);	   break;
 	case 0xf5: EA=S+SIGNED(B);						EAD=RM16(m68_state, EAD);	   break;
 	case 0xf6: EA=S+SIGNED(A);						EAD=RM16(m68_state, EAD);	   break;
-	case 0xf7: EA=0;												   break; /*ILLEGAL*/
+	case 0xf7: EA=S+SIGNED(A);						EAD=RM16(m68_state, EAD); 		break; /*ILLEGAL*/
 	case 0xf8: IMMBYTE(EA); 	EA=S+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0xf9: IMMWORD(EAP);	EA+=S;				EAD=RM16(m68_state, EAD);	   break;
-	case 0xfa: EA=0;												   break; /*ILLEGAL*/
+	case 0xfa: EA=PC; EA++ ; EA |= 0x00ff;			EAD=RM16(m68_state, EAD);	   break; /*ILLEGAL*/
 	case 0xfb: EA=S+D;								EAD=RM16(m68_state, EAD);	   break;
 	case 0xfc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(m68_state, EAD);	   break;
 	case 0xfd: IMMWORD(EAP);	EA+=PC; 			EAD=RM16(m68_state, EAD);	   break;
-	case 0xfe: EA=0;												   break; /*ILLEGAL*/
+	case 0xfe: EA=0xffff;							EAD=RM16(m68_state, EAD);	   break; /*ILLEGAL*/
 	case 0xff: IMMWORD(EAP);						EAD=RM16(m68_state, EAD);	   break;
 	}
    m68_state->cycle += index_cycle_em[postbyte];

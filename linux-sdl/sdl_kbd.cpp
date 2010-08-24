@@ -1998,7 +1998,7 @@ OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
 		    gpointer data) 
 {
     int            i;
-       printf("Key - GTK: %04x\n", event->hardware_keycode);
+      // printf("Key - GTK: %04x\n", event->hardware_keycode);
     for (i = 0; sizeof(kbd_106_table) / 2; i++) {
 	if (kbd_106_table[i * 2] == event->hardware_keycode) {
 	    if (kibuf[kbd_106_table[i * 2 + 1]] != 0x80) {
