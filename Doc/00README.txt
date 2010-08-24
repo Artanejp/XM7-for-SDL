@@ -1,6 +1,6 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
-*  Version 0.1r67 (αレベル ＼(^o^)／)
+*  Version 0.1r74 (αレベル)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
@@ -114,4 +114,4 @@ d.r42から、UI定義をGTKBUILDERベースにしました。
 　動きませんΣ（￣□￣；）！！
 e.現状では、フォントを決め打ちしています。
   (/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf )
-  かえる必要があるときは MakefileのUIFONT = の行を弄ってください（Todo)
+  かえる必要があるときは MakefileのUIFONT = の行、もしくはXM7.INIを弄ってください（Todo)
