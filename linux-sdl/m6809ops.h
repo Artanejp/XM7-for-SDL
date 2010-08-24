@@ -257,7 +257,7 @@ OP_HANDLER( aslcc_in )
 {
    
      BYTE cc = CC;
-   if((cc & 0x40) != 0x00) 
+   if((cc & 0x04) != 0x00) //20100824 Fix
    {
 	         cc |= 0x01;
    }

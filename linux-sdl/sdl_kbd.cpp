@@ -234,7 +234,8 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x13, 0x0b, /* 0 */ 
 	0x14, 0x0c, /* - */ 
 	0x15, 0x0d, /* ^ */ 
-	0x85, 0x0e, /* \ */ 
+//	0x85, 0x0e, /* \ */
+	132, 0x0e, /* \ */
 	0x16, 0x0f, /* BS */ 
 	0x17, 0x10, /* TAB */ 
 	0x18, 0x11, /* Q */ 
@@ -274,7 +275,8 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x3b, 0x31, /* , */ 
 	0x3c, 0x32, /* . */ 
 	0x3d, 0x33, /* / */ 
-	0x7b, 0x34, /* _ */ 
+//	0x7b, 0x34, /* _ */
+	97, 0x34, /* _ */
 	0x3e, 0x54, /* 右SHIFT */ 
 	0x40, 0x55, /* CAP(左ALT) */ 
 	// 0x83, 0x56, /* GRAPH(無変換) */
@@ -284,18 +286,29 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x78, 0x58, /* 中SPACE(カタカナ) */ 
 	101, 0x58, /* 中SPACE(カタカナ) */ 
 	0x41, 0x35, /* 右SPACE(SPACE) */ 
-	 0x6d, 0x5a, /* かな(右Ctrl) */
-//	105, 0x5a, /* かな(右Ctrl) for 109 */ 
-	0x6a, 0x48, /* INS(Insert) */ 
-	0x6b, 0x4b, /* DEL(Delete) */ 
-	0x62, 0x4d, /* ↑ */ 
-	0x64, 0x4f, /* ← */ 
-	0x68, 0x50, /* ↓ */ 
-	0x66, 0x51, /* → */ 
-	0x61, 0x49, /* EL(Home) */ 
-	0x63, 0x4a, /* CLS(Page Up) */ 
-	0x67, 0x4c, /* DUP(End) */ 
-	0x69, 0x4e, /* HOME(Page Down) */ 
+//	 0x6d, 0x5a, /* かな(右Ctrl) */
+	105, 0x5a, /* かな(右Ctrl) for 109 */
+//	0x6a, 0x48, /* INS(Insert) */
+//	0x6b, 0x4b, /* DEL(Delete) */
+//	0x62, 0x4d, /* ↑ */
+//	0x64, 0x4f, /* ← */
+///	0x68, 0x50, /* ↓ */
+//	0x66, 0x51, /* → */
+	118, 0x48, /* INS(Insert) */
+	119, 0x4b, /* DEL(Delete) */
+	111, 0x4d, /* ↑ */
+	113, 0x4f, /* ← */
+	116, 0x50, /* ↓ */
+	114, 0x51, /* → */
+	110, 0x49, /* EL(Home) */
+	112, 0x4a, /* CLS(Page Up) */
+	115, 0x4c, /* DUP(End) */
+	117, 0x4e, /* HOME(Page Down) */
+
+//	0x61, 0x49, /* EL(Home) */
+//	0x63, 0x4a, /* CLS(Page Up) */
+//	0x67, 0x4c, /* DUP(End) */
+//	0x69, 0x4e, /* HOME(Page Down) */
 	0x3f, 0x36, /* Tenkey * */ 
 	0x70, 0x37, /* Tenkey / */ 
 	0x56, 0x38, /* Tenkey + */ 
@@ -1985,7 +1998,7 @@ OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
 		    gpointer data) 
 {
     int            i;
-//       printf("Key: %04x\n", event->hardware_keycode);
+       printf("Key - GTK: %04x\n", event->hardware_keycode);
     for (i = 0; sizeof(kbd_106_table) / 2; i++) {
 	if (kbd_106_table[i * 2] == event->hardware_keycode) {
 	    if (kibuf[kbd_106_table[i * 2 + 1]] != 0x80) {
@@ -2008,9 +2021,9 @@ OnKeyPress(SDL_Event *event)
     if(kbd_snooped) {
             return SnoopedOnKeyPressedCallback(event);
     }
-
+    printf("Key SDL:%04x\n",code);
     for (i = 0; i < 255; i++) {
-	if (kbd_table[i].keysym == 0xffff)
+	if (kbd_table[i].code == 0xffff)
 	    break;
 	if (code == kbd_table[i].keysym) {
 	    if (kibuf[kbd_table[i].code] != 0x80) {
@@ -2079,7 +2092,7 @@ BOOL OnKeyRelease(SDL_Event * event)
 	/*
 	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え 
 	 */ 
-	if (code == SDLK_F11) {
+	if (scan == SDLK_F11) {
 	mos_capture = (!mos_capture);
 	SetMouseCapture(bActivate);
     }
@@ -2087,7 +2100,7 @@ BOOL OnKeyRelease(SDL_Event * event)
 	/*
 	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え 
 	 */ 
-	if (code == SDLK_F11) {
+	if (scan == SDLK_F11) {
             //mos_capture = (!mos_capture);
             if(SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_ON) {
                     SDL_WM_GrabInput(SDL_GRAB_OFF);
@@ -2102,7 +2115,7 @@ BOOL OnKeyRelease(SDL_Event * event)
 	/*
 	 * F12押下の場合はVMリセット 
 	 */ 
-	if (code == SDLK_F12) {
+	if (scan == SDLK_F12) {
 	LockVM();
 	system_reset();
 	UnlockVM();

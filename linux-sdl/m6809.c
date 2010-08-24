@@ -199,7 +199,17 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 /* macros to access memory */
 #define IMMBYTE(b)	b = ROP_ARG(PCD); PC++
 #define IMMWORD(w)	w = ((WORD)ROP_ARG(PC)<<8) | (WORD)ROP_ARG((PC+1)&0xffff); PC+=2
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define PUSHBYTE(b) --S; WM(SD,b)
+#define PUSHWORD(w) --S; WM(SD,(w&0xff)); --S; WM(SD,(w>>8))
+#define PULLBYTE(b) b = RM(SD); S++
+#define PULLWORD(w) w = RM(SD)<<8; S++; w |= RM(SD); S++
 
+#define PSHUBYTE(b) --U; WM(UD,b);
+#define PSHUWORD(w) --U; WM(UD,(w&0xff)); --U; WM(UD,(w>>8))
+#define PULUBYTE(b) b = RM(UD); U++
+#define PULUWORD(w) w = RM(UD)<<8; U++; w |= RM(UD); U++
+#else
 #define PUSHBYTE(b) --S; WM(SD,b)
 #define PUSHWORD(w) --S; WM(SD,(w&0xff)); --S; WM(SD,(w>>8))
 #define PULLBYTE(b) b = RM(SD); S++
@@ -210,6 +220,7 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 #define PULUBYTE(b) b = RM(UD); U++
 #define PULUWORD(w) w = RM(UD)<<8; U++; w |= RM(UD); U++
 
+#endif
 #define CLR_HNZVC   CC&=~(CC_H|CC_N|CC_Z|CC_V|CC_C)
 #define CLR_NZV 	CC&=~(CC_N|CC_Z|CC_V)
 #define CLR_NZ		CC&=~(CC_N|CC_Z)

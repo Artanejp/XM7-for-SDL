@@ -11,6 +11,7 @@
     
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include <sys/param.h>
 #include <SDL/SDL.h>
@@ -67,28 +68,60 @@ CreateDrawGTK(GtkWidget * parent)
 /*
  *  キーボード：GTK->SDL Wrapper 
  */ 
-static gboolean
-OnKeyPressGTK(GtkWidget * widget, GdkEventKey * event, gpointer data) 
+static Uint16
+ConvertKcodeGtk2SDL(guint kcode)
 {
-    Uint8 keycode = (Uint8) event->hardware_keycode;
+	Uint16 k = 0;
+	if((kcode >=GDK_BackSpace) && (kcode <= GDK_Escape)){
+		k = kcode - 0xff00;
+	} else if((kcode >= GDK_at) && (kcode <= GDK_asciitilde)){
+		k = gdk_keyval_to_lower(kcode);
+	} else if((kcode >= GDK_exclam ) && (kcode <= GDK_apostrophe)) {
+		k = kcode - GDK_exclam + SDLK_0; // "!" - "'"
+	} else if((kcode >= GDK_parenleft)&&(kcode <= GDK_parenright)) {
+		k = kcode - GDK_parenleft + SDLK_8;
+	}
+}
+
+static gboolean
+OnKeyPressGTK_S(GtkWidget * widget, GdkEventKey * event, gpointer data)
+{
+    guint keycode =  event->keyval;
+    Uint32 k = gdk_keyval_to_unicode(keycode);
+    SDLKey sym;
+    SDLMod mod;
+    printf("KEY Push %s\n",gdk_keyval_name(keycode));
     SDL_Event sdlevent;
+
+//    sym = ConvertKcodeGtk2SDL(keycode);
+    sym = event->hardware_keycode;
     sdlevent.type = SDL_KEYDOWN;
     sdlevent.key.type = SDL_KEYDOWN;
     sdlevent.key.state = SDL_PRESSED;
-    sdlevent.key.keysym.scancode = keycode;
+    sdlevent.key.keysym.mod = mod;
+    sdlevent.key.keysym.sym = sym;
+    sdlevent.key.keysym.unicode = k;
     SDL_PushEvent(&sdlevent);
     return TRUE;
 }
 
 static gboolean
-OnKeyReleaseGTK(GtkWidget * widget, GdkEventKey * event, gpointer data) 
+OnKeyReleaseGTK_S(GtkWidget * widget, GdkEventKey * event, gpointer data)
 {
-    Uint8 keycode = (Uint8) event->hardware_keycode;
+    guint keycode =  event->keyval;
+    Uint32 k = gdk_keyval_to_unicode(keycode);
     SDL_Event sdlevent;
-    sdlevent.type = SDL_KEYUP;
+    SDLKey sym;
+    SDLMod mod;
+
+//    sym = ConvertKcodeGtk2SDL(keycode);
+    sym = event->hardware_keycode;
+     sdlevent.type = SDL_KEYUP;
     sdlevent.key.type = SDL_KEYUP;
     sdlevent.key.state = SDL_RELEASED;
-    sdlevent.key.keysym.scancode = keycode;
+    sdlevent.key.keysym.mod = mod;
+    sdlevent.key.keysym.sym = sym;
+    sdlevent.key.keysym.unicode = k;
     SDL_PushEvent(&sdlevent);
     return TRUE;
 }

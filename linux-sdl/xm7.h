@@ -93,33 +93,18 @@ typedef int     BOOL;
 /*
  * CPUレジスタ定義 
  */
-#ifdef _WIN32
 #pragma pack(push, 1)
-#endif
 typedef struct {
     BYTE            cc;
     BYTE            dp;
     union {
 	struct {
-#ifdef _WIN32
-	    BYTE            b;
-            BYTE            a;
-#endif
-#ifdef __MSDOS__
-	    BYTE            b;
-	    BYTE            a;
-#endif
-#ifdef FMT
-	    BYTE            b;
-	    BYTE            a;
-#endif
-#ifdef HUMAN68K
-	    BYTE            a;
-	    BYTE            b;
-#endif
-#ifdef _XWIN
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	    BYTE b __attribute__ ((aligned(1)));
 	    BYTE a __attribute__ ((aligned(1)));
+#else
+	    BYTE a __attribute__ ((aligned(1)));
+	    BYTE b __attribute__ ((aligned(1)));
 #endif
 	} h;
 	WORD            d;
@@ -136,9 +121,7 @@ typedef struct {
     void            (FASTCALL * writemem) (WORD, BYTE);
     WORD            ea;
 } cpu6809_t;
-#ifdef _WIN32
 #pragma pack(pop)
-#endif
 
 /*
  * 割り込み定義 
