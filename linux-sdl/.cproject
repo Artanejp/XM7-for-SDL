@@ -73,6 +73,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.1848448621" name="gtk_kbd.c" rcbsApplicability="disable" resourcePath="gtk_kbd.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191.825149791">
+						<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191.825149791" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191">
+							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.390043237" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
