@@ -482,7 +482,6 @@ void
 CreateDiskMenu_0 (GtkBuilder* gbuilder)
 {
     int            i;
-    gchar label[6];
     GSList * MediaGroup = NULL;
     
     /*
@@ -591,7 +590,6 @@ void
 CreateDiskMenu_1 (GtkBuilder* gbuilder)
 {
     int            i;
-    gchar label[6];
     GSList * MediaGroup = NULL;
     
     /*
@@ -1070,7 +1068,7 @@ void
 CreateDebugMenu (GtkBuilder *gbuilder)
 {
     
-    GtkWidget *w, *sub_item;
+    GtkWidget *sub_item;
     GSList *ModeGroup = NULL;
     GtkWidget *debug_menu, *file_item;
     debug_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu5"));
@@ -1133,7 +1131,6 @@ static void
 OnNewDisk(GtkWidget * widget, gpointer data) 
 {
     char          *p;
-    int            ret;
     BOOL err;
     DiskImageDialog ddlg;
     FileSelectDialog fdlg;
@@ -1232,7 +1229,6 @@ OnVFD2D77(GtkWidget * widget, gpointer data)
     DiskTitleDialog tdlg;
     char           src[MAXPATHLEN];
     char           dst[MAXPATHLEN];
-    int            ret;
     
 	/*
 	 * ファイル選択 
@@ -1290,7 +1286,6 @@ On2D2D77(GtkWidget * widget, gpointer data)
     DiskTitleDialog tdlg;
     char           src[MAXPATHLEN];
     char           dst[MAXPATHLEN];
-    int            ret;
     
 	/*
 	 * ファイル選択 
@@ -1573,8 +1568,7 @@ CreateToolMenu(GtkBuilder *gbuilder)
 void
 CreateMenu(GtkWidget * parent) 
 {
-    GtkWidget * hbox1, *menu_bar;
-    GtkAccelGroup * accel_group;
+    GtkWidget *menu_bar;
     memset(InitialDir, 0x00, 5 * MAXPATHLEN);
     menu_bar = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "menubar1"));
 /*

@@ -136,7 +136,7 @@ OnKeyReleaseGTK_S(GtkWidget * widget, GdkEventKey * event, gpointer data)
 static void
 OnScreenPlugged(void) 
 { 
-        SDL_SysWMinfo sdlinfo;
+//        SDL_SysWMinfo sdlinfo;
         char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
     
 /*
@@ -155,7 +155,7 @@ OnScreenPlugged(void)
 static void
 OnScreenUnPlugged(void) 
 {
-        SDL_SysWMinfo sdlinfo;
+//        SDL_SysWMinfo sdlinfo;
   
 /*
   * SDL-VIDEO終了 
@@ -259,7 +259,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         GtkWidget        *hbox;
         SDL_Surface     *tmpSurface;
         SDL_Rect        srcrect, dstrect;
-        SDL_SysWMinfo        sdlinfo;
+//        SDL_SysWMinfo        sdlinfo;
 /*
  * まずは現在のサーフェイスを退避する 
  */ 

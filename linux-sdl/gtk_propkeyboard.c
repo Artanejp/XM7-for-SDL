@@ -41,7 +41,7 @@ static BYTE local_target_code; /* 変更対象のキーコード */
 static GtkWidget *getwindow;
 static GtkWidget *keyMapWindow;
 static GtkWidget *vbox1;
-static GtkWidget *vbox11;
+//static GtkWidget *vbox11;
 #endif /* USE_GTK */
 
 static BOOL 
@@ -76,6 +76,7 @@ SnoopedOnKeyPressedCallback(SDL_Event *event)
         sprintf(stmp, "%04x", code);
         gtk_label_set_text(GTK_LABEL(vbox1), stmp);
         SetKeyCode(code, local_target_code); 
+        return TRUE;
 }
 
 

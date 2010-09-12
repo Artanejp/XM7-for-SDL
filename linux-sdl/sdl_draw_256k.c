@@ -34,10 +34,6 @@ Draw256k(void)
 {
     int             x,
                     y;
-    int             offset;
-    int             i;
-    BYTE            bit;
-    DWORD           color;
     BYTE 	   *addr;
     DWORD		c[8];
 
@@ -300,7 +296,7 @@ Draw256k(void)
     // SDL_UnlockSurface(displayArea);
     SDL_UnlockSurface(realDrawArea);
     if (!bFullScan) {
-            RenderSetOddLine();
+    	RenderSetOddLine();
     } else {
             RenderFullScan();
     }

@@ -52,6 +52,8 @@ extern BOOL     BitBlt(int nDestLeft, int nDestTop, int nWidth,
 //extern void     RenderSetOddLine(void);
 extern void     SetDrawFlag(BOOL flag);
 extern void     AllClear(void);
+extern void Palet640(void);
+
 /*
  * SETDOT（inline）
  * 24bpp前提,SurfaceLockしません!!
@@ -226,12 +228,6 @@ Draw640Sub2_DDRAW1280(BYTE *vramptr, int top, int bottom)
 static void
 Draw400lSub(int top, int bottom)
 {
-    int             x,
-                    y;
-    int             i;
-    int             offset;
-    BYTE            bit;
-    BYTE            col[2];
 
 
     SDL_LockSurface(realDrawArea);
@@ -316,27 +312,6 @@ Draw400lSub(int top, int bottom)
 static void
 Draw400lWSub(int top, int bottom, int left, int right)
 {
-    int             x,
-                    y;
-    int             i;
-    int             offset;
-    BYTE            bit;
-    BYTE            col[2];
-    DWORD           r,
-                    g,
-                    b;
-    BYTE            c0,
-                    c1,
-                    c2,
-                    c3,
-                    c4,
-                    c5,
-                    c6,
-                    c7;
-    BYTE            cb,
-                    cr,
-                    cg;
-    // SDL_LockSurface(displayArea);
     SDL_LockSurface(realDrawArea);
     switch (nDrawWidth) {
     case 1280:

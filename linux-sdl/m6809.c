@@ -520,7 +520,6 @@ int_cycle:
 static void cpu_execline(cpu6809_t *m68_state)
 {
         BYTE ireg;
-        BYTE c;
 
 //			debugger_instruction_hook(device, PCD);
 

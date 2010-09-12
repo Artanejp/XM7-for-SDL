@@ -225,11 +225,10 @@ static int  MixingBEEP(WORD *q, int samples, BOOL bZero);
 static int  MixingTAPE(WORD *q, int samples, BOOL bZero);
 static int  MixingWAV(WORD *q, int samples, BOOL bZero);
 
-static int  PlayThread(void *a);
+//static int  PlayThread(void *a);
 
 
-static void
-WaveSnd();
+//static void WaveSnd();
 
 /*
  *  サウンドバッファへのコピー
@@ -619,9 +618,7 @@ LoadWav(char *fname, struct _WAVDATA *wav)
 void
 InitFDDSnd(void)
 {
-        int i, ret, size;
-    int fileh;
-    struct stat fileStat;
+	int i;
     for (i = 0; i < 3; i++) {
             /*
              * ワーク初期化 
@@ -711,15 +708,8 @@ SetReg(FM::OPN * pOPN, BYTE * reg)
 BOOL
 SelectSnd(void)
 {
-    int                 fmt;
-    int                 channel;
-    int                 freq;
-    int                 arg;
     int                 i,j;
-    int                 len;
     DWORD               bytes;
-    SDL_AudioCVT        cvt;
-    SDL_AudioSpec       in, out;
 
     /*
      * 起動フラグ立てる 
@@ -1069,8 +1059,6 @@ void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
 void
 PlaySnd()
 {
-    int
-                    i;
 
     /*
      * サンプルカウンタ、サウンド時間をクリア 
@@ -1178,8 +1166,6 @@ BeepSnd16(int16 * sbuf, int samples)
                     i;
     int16          *
 	buf = (int16 *) sbuf;
-    Mix_Chunk
-	chunk;
 
     /*
      * BEEP音出力チェック 
@@ -1247,8 +1233,6 @@ TapeSnd(int32 * sbuf, int samples)
                     i;
     int
                     tmp;
-    Mix_Chunk
-	chunk;
     int32          *
 	buf = (int32 *) sbuf;
 
@@ -1347,8 +1331,7 @@ TapeSnd16(int16 * sbuf, int samples)
                     i;
     int
                     tmp;
-    Mix_Chunk
-	chunk;
+//    Mix_Chunk	chunk;
     int16          *
 	buf = (int16 *) sbuf;
 
@@ -1671,6 +1654,7 @@ MixingOPN(DWORD *q, int samples, BOOL bZero)
                                 }
                         }
         }
+        return TRUE;
 }
 
 static int
@@ -1709,6 +1693,7 @@ MixingWHG(DWORD *q, int samples, BOOL bZero)
                                         }
 
         }
+        return TRUE;
 }
 
 static int
@@ -1734,6 +1719,7 @@ MixingTHG(DWORD *q, int samples, BOOL bZero)
                                         }
                 }
         }
+        return TRUE;
 }
 
 static int
@@ -1743,6 +1729,7 @@ MixingTAPE(WORD *q, int samples, BOOL bZero)
         if (!bZero) {
                 TapeSnd16((int16 *)q, samples);
         }
+        return TRUE;
 }
 
 static int
@@ -1752,6 +1739,7 @@ MixingWAV(WORD *q, int samples, BOOL bZero)
         if (!bZero) {
                 WaveSnd16((int16 *)q, samples);
         }
+        return TRUE;
 }
 
 static int
@@ -1761,6 +1749,7 @@ MixingBEEP(WORD *q, int samples, BOOL bZero)
         if (!bZero) {
                 BeepSnd16((int16 *)q, samples);
         }
+        return TRUE;
 }
 
 
@@ -1775,12 +1764,9 @@ AddSnd(BOOL bFill, BOOL bZero)
 {
     int	samples;
     int	i;
-    int          j;
-    int	retval;
     DWORD        *q;
     WORD         *p;
     int wbank;
-    int rbank;
 
     /*
      * OPNデバイスが作成されていなければ、何もしない 
@@ -2053,12 +2039,12 @@ void
 ProcessSnd(BOOL bZero)
 {
         BOOL    bWrite;
-        WORD    *ptr1;
-        DWORD   size1;
-        DWORD   *p;
-        DWORD   dwOffset;
-        int     i,len;
-        int     wsamples;
+//        WORD    *ptr1;
+//        DWORD   size1;
+//        DWORD   *p;
+//        DWORD   dwOffset;
+//        int     i,len;
+//        int     wsamples;
 
 /*
  * 初期化されていなければ、何もしない 

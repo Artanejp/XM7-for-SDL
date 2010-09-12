@@ -298,7 +298,7 @@ int            x,
 GdkModifierType state;
 GdkCursor * cursor;
 //    SDL_Cursor * cursor;
-SDL_SysWMinfo sdlinfo;
+//SDL_SysWMinfo sdlinfo;
 /*
  * キャプチャ停止中/VM停止中/非アクティブ時は強制的に無効
  */

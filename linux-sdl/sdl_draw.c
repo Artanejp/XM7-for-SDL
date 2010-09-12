@@ -44,7 +44,7 @@ WORD            nDrawHeight;
 BOOL            bPaletFlag;		/* パレット変更フラグ */
 BOOL            bClearFlag;
 int             nOldVideoMode;
-
+WORD			nDrawFPS;   /* FPS値 20100913 */
 
 /*
  *  スタティック ワーク 
@@ -80,6 +80,11 @@ static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
  */
 static SDL_TimerID DrawTID;
 static SDL_sem   *DrawSem;
+static BOOL DrawINGFlag;
+static BOOL DrawSHUTDOWN;
+static BOOL DrawWaitFlag;
+static SDL_Thread *DrawThread;
+static WORD nDrawCount;
 static BOOL       SelectDraw2(void);
 static void       ChangeResolution();
 
@@ -105,6 +110,30 @@ void           RenderFullScan(void);
 extern void Draw640All(void);
 extern void Draw320All(void);
 
+static WORD DrawCountSet(WORD fps)
+{
+	DWORD intr;
+	DWORD wait;
+
+#if XM7_VER >= 3
+    if (screen_mode == SCR_400LINE) {
+#else
+    if (enable_400line && enable_400linecard) {
+#endif
+	    /*
+	     * 400ライン(24kHzモード) 0.98ms + 16.4ms
+	     */
+    	intr = 980 + 16400;
+    } else {
+	    /*
+	     * 200ライン(15kHzモード) 1.91ms + 12.7ms
+	     */
+    	intr = 1910 + 12700;
+    }
+    wait = (DWORD)fps * 1000;
+    wait = wait / intr + 1; /* 整数化 */
+    return (WORD) wait;
+}
 static int
 DrawTaskMain(void *arg)
 {
@@ -112,7 +141,7 @@ DrawTaskMain(void *arg)
 
 
         p = SDL_GetVideoSurface();
-        if(p == NULL) return;
+        if(p == NULL) return FALSE;
         
         displayArea = p;
         realDrawArea = p;
@@ -157,42 +186,75 @@ DrawTaskMain(void *arg)
 static SDL_NewTimerCallback
 DrawTaskInt(Uint32 interval, void *arg)
 {
-        SDL_Surface *p;
+//        SDL_Surface *p;
 //        if(SDL_SemWaitTimeout(DrawSem, 3) !=0) { /* 3msだけ待つ */
 //                return (interval);
 //        }
 
         DrawTaskMain(NULL);
-        if(DrawSem != NULL) {
-                SDL_SemPost(DrawSem);
-        }
-        return interval;
+//        if(DrawSem != NULL) {
+//                SDL_SemPost(DrawSem);
+//        }
+        return (SDL_NewTimerCallback)interval;
+}
+
+static SDL_NewTimerCallback
+DrawWait(Uint32 interval, void *arg)
+{
+	DrawWaitFlag = FALSE;
+	return interval;
+}
+
+static void
+*DrawThreadMain(void)
+{
+	if(DrawSHUTDOWN) return; /* シャットダウン期間 */
+	if(DrawWaitFlag) return; /* 非表示期間中 */
+	if(DrawINGFlag) return; /* 別スレッドが表示動作してる */
+
+	DrawWaitFlag = TRUE;
+    if(DrawTID == NULL) {
+    		DrawWaitFlag = TRUE;
+            DrawTID = SDL_AddTimer(1000/nDrawFPS, DrawWait, NULL);
+    }
+//	if(DrawSem != NULL) {
+//		SDL_SemPost(DrawSem);
+//	}
+
+//	while(!DrawSHUTDOWN) {
+//		if(DrawSem != NULL) {
+//			SDL_SemWait(DrawSem);
+//		}
+//		if(DrawINGFlag) continue;
+//	    if(DrawTID == NULL) {
+//	    		DrawWaitFlag = TRUE;
+//	            DrawTID = SDL_AddTimer(1000/nDrawFPS, DrawWait, NULL);
+//	    }
+//		DrawWaitFlag = TRUE;
+		DrawINGFlag = TRUE;
+		DrawTaskMain(NULL);
+		DrawINGFlag = FALSE;
+//		SDL_RemoveTimer(DrawTID);
+//		DrawTID = NULL;
+
+//	}
+	while(DrawWaitFlag) SDL_Delay(1); /* 非表示期間 */
+	SDL_RemoveTimer(DrawTID);
+	DrawTID = NULL;
+		if(DrawSem != NULL) {
+			SDL_SemPost(DrawSem);
+		}
+
 }
 
 /*
  * 描画タスク: 差分書き込み
  */
 
-
-
-    /*
-     *  SETDOT（そのまま） 
-     */ 
-static void
-SETDOT(WORD x, WORD y, DWORD c) 
-{
-    Uint8 * addr =
-	(Uint8 *) realDrawArea->pixels + y * realDrawArea->pitch +
-	x * realDrawArea->format->BytesPerPixel;
-    SDL_LockSurface(realDrawArea);
-    *(DWORD *) addr = c;
-    SDL_UnlockSurface(realDrawArea);
-} 
-
 static void
 ChangeResolution() 
 {
-        SDL_Surface *p;
+//        SDL_Surface *p;
         if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
                 return;
         }
@@ -301,8 +363,10 @@ InitDraw(void)
         nOldDrawWidth = 640;
         nDrawHeight = 480;
         nDrawWidth = 640;
-        nOldVideoMode = 
-        bOldFullScan = TRUE;
+        nDrawFPS = 25;
+        nDrawCount = DrawCountSet(nDrawFPS);
+        nOldVideoMode =
+        		bOldFullScan = TRUE;
         bPaletFlag = FALSE;
 #if XM7_VER >= 3
         nOldVideoMode = SCR_200LINE;
@@ -322,7 +386,10 @@ InitDraw(void)
         bDirectDraw = TRUE;
         DrawSem = NULL;
         DrawTID = NULL;
-
+        DrawThread = NULL;
+    	DrawINGFlag = FALSE;
+    	DrawSHUTDOWN = FALSE;
+    	DrawWaitFlag = FALSE;
 
 /*
  * 直接書き込み→間接書き込み
@@ -337,10 +404,16 @@ InitDraw(void)
 void
 CleanDraw(void) 
 {
+		DrawSHUTDOWN = TRUE;
+		if(DrawThread != NULL) {
+			SDL_KillThread(DrawThread);
+            	DrawThread = NULL;
+		}
         if(DrawTID != NULL) {
                 SDL_RemoveTimer(DrawTID);
                 DrawTID = NULL;
         }
+
 
         if(DrawSem != NULL) {
                 SDL_DestroySemaphore(DrawSem);
@@ -536,7 +609,7 @@ SelectDraw2(void)
             return TRUE;
     }
     displayArea = SDL_GetVideoSurface();
-    if(displayArea == NULL) return;
+    if(displayArea == NULL) return FALSE;
     rect.h = nDrawWidth;
     rect.w = nDrawHeight;
     rect.x = 0;
@@ -615,6 +688,7 @@ SelectDraw(void)
     rect.w = nDrawHeight;
     rect.x = 0;
     rect.y = 0;
+    DrawSHUTDOWN = FALSE;
     
     /*
      * すべてクリア 
@@ -661,6 +735,10 @@ SelectDraw(void)
             SDL_DestroySemaphore(DrawSem);
             DrawSem = NULL;
     }
+    if(DrawThread != NULL) {
+            SDL_KillThread(DrawThread);
+            DrawThread = NULL;
+    }
 
     /*
      * セレクト 
@@ -693,9 +771,9 @@ SelectDraw(void)
             DrawSem = SDL_CreateSemaphore(1);
             SDL_SemPost(DrawSem);
     }
-    if(DrawTID == NULL) {
-            DrawTID = SDL_AddTimer(50, DrawTaskInt, NULL);
-    }
+//    if(DrawThread == NULL) {
+//            DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
+//    }
 
 
     return ret;
@@ -862,15 +940,28 @@ OnDraw(void)
        /*
         * ここまでやっておいてから解像度を変更する 
         */ 
-    if(DrawSem == NULL) {
-            DrawSem = SDL_CreateSemaphore(1);
-    }
-    if(DrawTID == NULL) {
+//    if(DrawSem == NULL) {
+//            DrawSem = SDL_CreateSemaphore(1);
+//    }
+//    if(DrawTID == NULL) {
 //            SDL_SemWait(DrawSem);
-            ChangeResolution(); 
-            DrawTID = SDL_AddTimer(50, DrawTaskInt, NULL);
-    }
-    SDL_SemPost(DrawSem);
+//            ChangeResolution();
+//            DrawTID = SDL_AddTimer(1000/nDrawFPS, DrawTaskInt, NULL);
+//    }
+	if(nDrawCount > 0) {
+		nDrawCount --;
+	} else {
+        nDrawCount = DrawCountSet(nDrawFPS);
+        if(DrawThread == NULL) {
+        	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
+        } else {
+        	SDL_WaitThread(DrawThread, NULL);
+        	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
+        }
+		if(DrawSem != NULL) {
+			SDL_SemPost(DrawSem);
+		}
+	}
 }
 
 

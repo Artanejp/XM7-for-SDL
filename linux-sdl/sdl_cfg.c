@@ -143,7 +143,6 @@ LoadCfg(void)
     char           string[128];
     char           dir[MAXPATHLEN];
     char           InitDir[MAXPATHLEN];
-    char           status[MAXPATHLEN];
     BOOL flag;
     static const int JoyTable[] =
 	{ 0x70, 0x71, 0x72, 0x73, 0, 0x74, 0x75 

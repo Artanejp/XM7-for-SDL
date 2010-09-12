@@ -756,7 +756,7 @@ schedule_exec(DWORD microsec)
     DWORD           count;
     DWORD           cycle;
     DWORD           ratio;
-    WORD            main;
+    WORD            maincnt;
     WORD            sub;
     DWORD           limit;
     DWORD           tmp;
@@ -764,7 +764,6 @@ schedule_exec(DWORD microsec)
     DWORD           ratio_js;
     WORD            jsub;
 #endif
-    extern DWORD    dwSoundTotal;
 
     ASSERT(run_flag);
     ASSERT(!stopreq_flag);
@@ -809,10 +808,10 @@ schedule_exec(DWORD microsec)
 	count = cycle;
 	count *= (exec - exec2);
 	count /= 10000;
-	main = (WORD) count;
-	sub = (WORD) ((main * ratio) >> 12);
+	maincnt = (WORD) count;
+	sub = (WORD) ((maincnt * ratio) >> 12);
 #if (XM7_VER == 1) && defined(JSUB)
-	jsub = (WORD) ((main * ratio_js) >> 12);
+	jsub = (WORD) ((maincnt * ratio_js) >> 12);
 #endif
 
 	/*
@@ -834,7 +833,7 @@ schedule_exec(DWORD microsec)
 		/*
 		 * 実行 
 		 */
-		while ((maincpu.total < main) && !mmr_modify) {
+		while ((maincpu.total < maincnt) && !mmr_modify) {
 		    if (schedule_chkbreak()) {
 			stopreq_flag = TRUE;
 		    }
@@ -937,7 +936,7 @@ schedule_exec(DWORD microsec)
 		/*
 		 * 実行 
 		 */
-		while ((maincpu.total < main) && !mmr_modify) {
+		while ((maincpu.total < maincnt) && !mmr_modify) {
 #if XM7_VER >= 3
 		    /*
 		     * メインCPU実行 
@@ -1014,7 +1013,7 @@ schedule_exec(DWORD microsec)
 		/*
 		 * 実行 
 		 */
-		while ((maincpu.total < main) && !mmr_modify) {
+		while ((maincpu.total < maincnt) && !mmr_modify) {
 		    if (schedule_chkbreak()) {
 			stopreq_flag = TRUE;
 		    }
@@ -1134,7 +1133,7 @@ schedule_exec(DWORD microsec)
 		/*
 		 * 実行 
 		 */
-		while ((maincpu.total < main) && !mmr_modify) {
+		while ((maincpu.total < maincnt) && !mmr_modify) {
 #if XM7_VER >= 3
 		    /*
 		     * メインCPU実行 
@@ -1237,8 +1236,8 @@ schedule_exec(DWORD microsec)
     /*
      * オーバーサイクル処理 
      */
-    if (maincpu.total > main) {
-	main_overcycles = (WORD) (maincpu.total - main);
+    if (maincpu.total > maincnt) {
+	main_overcycles = (WORD) (maincpu.total - maincnt);
     } else {
 	main_overcycles = 0;
     }

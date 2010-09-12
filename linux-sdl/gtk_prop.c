@@ -250,8 +250,8 @@ GtkWidget
 /*
  * Page 7
  */
-   GtkWidget   *w;
-/*
+
+ /*
  * Cancel,OK 
  */
     GtkWidget *btnCancel;

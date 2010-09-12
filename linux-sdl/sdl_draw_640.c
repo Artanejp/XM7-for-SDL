@@ -35,8 +35,6 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
 {
     int             x,
                     y;
-    int             i;
-    BYTE            bit;
     Uint8          *addr;
     DWORD           c[8];
 
@@ -156,8 +154,6 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
 {
     int             x,
                     y;
-    int             i;
-    BYTE            bit;
     Uint8          *addr;
 
     DWORD           c[8];
@@ -273,9 +269,6 @@ Draw640Sub2_DDRAW1280p(int top, int bottom)
 {
     int             x,
                     y;
-    int             i;
-    int             offset;
-    BYTE            bit;
     Uint8          *addr;
     DWORD           c[8];
 
@@ -317,8 +310,6 @@ Draw640Sub2_DDRAW1280i(int top, int bottom)
 {
     int             x,
                     y;
-    int             i;
-    BYTE            bit;
     Uint8          *addr;
     DWORD           c[8];
     /*
@@ -358,13 +349,6 @@ Draw640Sub2_DDRAW1280i(int top, int bottom)
 static void
 Draw640Sub(int top, int bottom)
 {
-    int             x,
-                    y;
-    int             i;
-    int             offset;
-    BYTE            bit;
-    Uint8          *addr;
-    DWORD           c[8];
 
     SDL_LockSurface(realDrawArea);
 
@@ -519,8 +503,6 @@ void
 Draw640All(void)
 {
 #if XM7_VER >= 3
-    WORD            wdtop,
-                    wdbtm;
 #endif
     realDrawArea = SDL_GetVideoSurface();
     if(realDrawArea == NULL) return;

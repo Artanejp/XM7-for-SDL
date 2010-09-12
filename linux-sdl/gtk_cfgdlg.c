@@ -60,7 +60,7 @@ static void SheetInit(void);
 static void
 GeneralPageInit(void) 
 {
-    char           string[128];
+//    char           string[128];
     
 	/*
 	 * 動作機種 
@@ -432,7 +432,7 @@ GeneralPageApply(void)
 static void
 SoundPageInit(void) 
 {
-    char           string[128];
+//    char           string[128];
     
 	/*
 	 * シート初期化 
@@ -621,9 +621,7 @@ SoundPageApply(void)
 static void
 KbdPageInit(void) 
 {
-    int            index;
-    int            i;
-    char           string[128];
+//    char           string[128];
     
 	/*
 	 * シート初期化 
@@ -721,9 +719,7 @@ KbdPageApply(void)
 static void
 JsPageInit(void) 
 {
-    int            index;
-    int            i;
-    char           string[128];
+//    char           string[128];
     
 	/*
 	 * シート初期化 
@@ -1393,7 +1389,6 @@ OnConfig(GtkWidget * widget, gpointer data)
 void
 OnCancelPressed(GtkWidget * widget, gpointer data)
 {
-        int i,j;
         /*
          * この関数はarg2のWidgetをhideする
          */ 

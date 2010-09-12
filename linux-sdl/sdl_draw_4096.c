@@ -247,8 +247,6 @@ void
 Draw320All(void)
 {
 #if XM7_VER >= 3
-    WORD            wdtop,
-                    wdbtm;
 #endif
     realDrawArea = SDL_GetVideoSurface();
     if(realDrawArea == NULL) return;

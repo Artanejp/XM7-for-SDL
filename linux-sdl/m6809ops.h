@@ -944,7 +944,7 @@ OP_HANDLER( deca )
 OP_HANDLER( dcca )
 {
 	BYTE s;
-	BYTE t = A;
+//	BYTE t = A;
 	--A;
 	CLR_NZVC;
 	SET_FLAGS8D(A);
@@ -1086,7 +1086,7 @@ OP_HANDLER( decb )
 /* $5B DCCB */
 OP_HANDLER( dccb )
 {
-	BYTE t,s;
+	BYTE s;
 	--B;
 	CLR_NZVC;
 	SET_FLAGS8D(B);

@@ -209,7 +209,7 @@ GetDefMapKbd(local_sdlkeymap * pMap, int mode)
     int            i;
     int            type;
     Uint16 num;
-    Uint8 code;
+//    Uint8 code;
 //    ASSERT(pMap);
     ASSERT((mode >= 0) && (mode <= 3));
     
@@ -613,7 +613,7 @@ Cur2Ten_Break(BYTE code)
 void
 PollKbd(void) 
 {
-    BYTE buf[256];
+//    BYTE buf[256];
     int            i;
     BYTE fm7;
     BOOL bFlag;
@@ -879,7 +879,6 @@ PollKbd(void)
 BOOL
 GetKbd(BYTE * pBuf) 
 {
-    int            i;
 //    ASSERT(pBuf);
     
 	/*
