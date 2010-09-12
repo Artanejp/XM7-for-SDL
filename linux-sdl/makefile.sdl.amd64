@@ -134,8 +134,6 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 LDFLAGS = 
 #CFLAGS =        -g -O0 -export-dynamic
 CFLAGS =        -O3 -export-dynamic
-#CFLAGS =        -g -O0
-#CFLAGS =        -O3
 CFLAGS += 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
 CFLAGS +=  -I. -I/usr/local/include
