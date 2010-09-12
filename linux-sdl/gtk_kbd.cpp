@@ -100,7 +100,7 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x3e, 0x54, /* 右SHIFT */
 	0x40, 0x55, /* CAP(左ALT) */
 	// 0x83, 0x56, /* GRAPH(無変換) */
-	102, 0x56, /* GRAPH(無変換) for 109 */
+	133, 0x56, /* GRAPH(LWIN) for 109 */
 	// 0x81, 0x57, /* 左SPACE(変換) */
 	100, 0x57, /* 左SPACE(変換) for 109 */
 	0x78, 0x58, /* 中SPACE(カタカナ) */
