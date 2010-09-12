@@ -46,7 +46,7 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
     switch(realDrawArea->format->BitsPerPixel) {
     case 24:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+      //              if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -63,7 +63,7 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 32:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;  
+    //                if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -80,7 +80,7 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 16:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+  //                  if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -97,7 +97,7 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 15:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+//                    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -114,7 +114,7 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     case 8:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+              //      if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -131,7 +131,7 @@ Draw640Sub2_DDRAW640p(int top, int bottom)
             break;
     default:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+                //    if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -164,7 +164,7 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
     switch(realDrawArea->format->BitsPerPixel) {
     case 24:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+            //        if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -181,7 +181,7 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
             break;
     case 32:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;  
+          //          if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -198,7 +198,7 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
             break;
     case 16:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+        //            if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -215,7 +215,7 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
             break;
     case 15:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+      //              if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -232,7 +232,7 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
             break;
     case 8:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+    //                if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -249,7 +249,7 @@ Draw640Sub2_DDRAW640i(int top, int bottom)
             break;
     default:
             for (y = top; y < bottom; y++) {
-                    if( y >= realDrawArea->h) return;
+  //                  if( y >= realDrawArea->h) return;
                     /*
                      * xループ     
                      */
@@ -283,7 +283,7 @@ Draw640Sub2_DDRAW1280p(int top, int bottom)
      * yループ 
      */
     for (y = top; y < bottom; y++) {
-            if( y >= realDrawArea->h) return;
+            //if( y >= realDrawArea->h) return;
 	/*
 	 * xループ 
 	 */
@@ -325,7 +325,7 @@ Draw640Sub2_DDRAW1280i(int top, int bottom)
      * yループ 
      */
     for (y = top; y < bottom; y++) {
-            if( y >= realDrawArea->h) return;
+//            if( y >= realDrawArea->h) return;
 	/*
 	 * xループ 
 	 */
@@ -553,7 +553,7 @@ Draw640All(void)
             break;
     case 640:
     default:
-            Draw640Sub(0,200>>1);
+            Draw640Sub(0,400>>1);
             break;
     }
 	if(!bFullScan){

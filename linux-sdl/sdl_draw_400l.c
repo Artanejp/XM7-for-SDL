@@ -23,6 +23,7 @@
 #include "sdl.h"
 #include "sdl_draw.h"
 
+#include "sdl_drawcommon.h"
 /*
  *      グローバル ワーク(のextern設定)
  */
@@ -101,7 +102,123 @@ __SETDOT_DDRAW(WORD x, WORD y, DWORD c)
 #endif
 }
 
+static inline void
+__GETBYTE_400(DWORD *c, BYTE *vramptr, int x, int y)
+{
+	int offset;
+	BYTE cg,cr,cb;
+
+    offset = 80 * y + x;
+    cb = vramptr[offset + 0x00000];
+    cr = vramptr[offset + 0x08000];
+    cg = vramptr[offset + 0x10000];
+
+    c[0] = rgbTTLGDI[(cb & 0x01) + ((cr & 0x01) << 1) + ((cg & 0x01) << 2)];
+    c[1] = rgbTTLGDI[((cb & 0x02) >> 1) + (cr & 0x02) + ((cg & 0x02) << 1)];
+    c[2] = rgbTTLGDI[((cb & 0x04) >> 2) + ((cr & 0x04) >> 1) + (cg & 0x04)];
+    c[3] = rgbTTLGDI[((cb & 0x08) >> 3) + ((cr & 0x08) >> 2) +((cg & 0x08) >> 1)];
+    c[4] = rgbTTLGDI[((cb & 0x10) >> 4) + ((cr & 0x10) >> 3) +((cg & 0x10) >> 2)];
+    c[5] = rgbTTLGDI[((cb & 0x20) >> 5) + ((cr & 0x20) >> 4) +((cg & 0x20) >> 3)];
+    c[6]= rgbTTLGDI[((cb & 0x40) >> 6) + ((cr & 0x40) >> 5) +	((cg & 0x40) >> 4)];
+    c[7] = rgbTTLGDI[((cb & 0x80) >> 7) + ((cr & 0x80) >> 6) +((cg & 0x80) >> 5)];
+
+
+}
+
 #if XM7_VER >= 3
+
+/*
+ *      640x200、デジタルモード
+ *      ウィンドウ外描画サブ
+ */
+
+static void
+Draw640Sub2_DDRAW640(BYTE *vramptr, int top, int bottom)
+{
+    int             x,
+                    y;
+    Uint8          *addr;
+    DWORD           c[8];
+
+
+    /*
+     * yループ
+     */
+    for (y = top; y < bottom; y++) {
+            if( y >= realDrawArea->h) return;
+	/*
+	 * xループ
+	 */
+	for (x = 0 >> 3; x < 640 >> 3; x++) {
+            if(x << 3  >= realDrawArea->w) break;
+
+	    addr = (Uint8 *) realDrawArea->pixels +
+		y  * realDrawArea->pitch +
+		(x << 3) * realDrawArea->format->BytesPerPixel;
+
+	    __GETBYTE_400(c, vramptr, x, y);
+        switch(realDrawArea->format->BitsPerPixel) {
+        case 24:
+        case 32:
+	    __SETBYTE_DDRAW_640i(addr,
+				  realDrawArea->format->BytesPerPixel,
+				  realDrawArea->pitch, c);
+        break;
+        case 8:
+        default:
+	    __SETBYTE_DDRAW_640i_8(addr,
+				  realDrawArea->format->BytesPerPixel,
+				  realDrawArea->pitch, c);
+        break;
+        }
+	}
+    }
+
+}
+static void
+Draw640Sub2_DDRAW1280(BYTE *vramptr, int top, int bottom)
+{
+    int             x,
+                    y;
+    Uint8          *addr;
+    DWORD           c[8];
+
+
+    /*
+     * yループ
+     */
+    for (y = top; y < bottom; y++) {
+            if( y >= realDrawArea->h) return;
+	/*
+	 * xループ
+	 */
+	for (x = 0 >> 3; x < 640 >> 3; x++) {
+            if(x << 3  >= realDrawArea->w) break;
+
+	    addr = (Uint8 *) realDrawArea->pixels +
+		(y << 1) * realDrawArea->pitch +
+		(x << 4) * realDrawArea->format->BytesPerPixel;
+	    __GETBYTE_400(c, vramptr, x, y);
+        switch(realDrawArea->format->BitsPerPixel) {
+        case 24:
+        case 32:
+	    __SETBYTE_DDRAW_1280_640i(addr,
+				  realDrawArea->format->BytesPerPixel,
+				  realDrawArea->pitch, c);
+        break;
+        case 8:
+        default:
+	    __SETBYTE_DDRAW_1280_640i_8(addr,
+				  realDrawArea->format->BytesPerPixel,
+				  realDrawArea->pitch, c);
+        break;
+        }
+	}
+    }
+}
+
+
+
 /*
  *      640x400、デジタルモード
  *      ウィンドウ外描画サブ
@@ -114,25 +231,21 @@ Draw400lSub(int top, int bottom)
     int             i;
     int             offset;
     BYTE            bit;
-    BYTE           *vramptr;
     BYTE            col[2];
-    DWORD           r,
-                    g,
-                    b;
-    BYTE            c0,
-                    c1,
-                    c2,
-                    c3,
-                    c4,
-                    c5,
-                    c6,
-                    c7;
-    BYTE            cb,
-                    cr,
-                    cg;
 
 
     SDL_LockSurface(realDrawArea);
+
+    switch (nDrawWidth) {
+    case 1280:
+	    Draw640Sub2_DDRAW1280(vram_dptr, top, bottom);
+	break;
+    default:
+	    Draw640Sub2_DDRAW640(vram_dptr, top, bottom);
+	break;
+    }
+
+#if 0
     /*
      * yループ 
      */
@@ -190,6 +303,7 @@ Draw400lSub(int top, int bottom)
 	    }
 	}
     }
+#endif
     // SDL_UnlockSurface(displayArea);
     SDL_UnlockSurface(realDrawArea);
 
@@ -207,7 +321,6 @@ Draw400lWSub(int top, int bottom, int left, int right)
     int             i;
     int             offset;
     BYTE            bit;
-    BYTE           *vramptr;
     BYTE            col[2];
     DWORD           r,
                     g,
@@ -225,6 +338,15 @@ Draw400lWSub(int top, int bottom, int left, int right)
                     cg;
     // SDL_LockSurface(displayArea);
     SDL_LockSurface(realDrawArea);
+    switch (nDrawWidth) {
+    case 1280:
+	    Draw640Sub2_DDRAW1280(vram_bdptr, top, bottom);
+	break;
+    default:
+	    Draw640Sub2_DDRAW640(vram_bdptr, top, bottom);
+	break;
+    }
+#if 0
     /*
      * yループ 
      */
@@ -284,6 +406,7 @@ Draw400lWSub(int top, int bottom, int left, int right)
 
 	}
     }
+#endif
     // SDL_UnlockSurface(displayArea);
     SDL_UnlockSurface(realDrawArea);
 
