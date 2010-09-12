@@ -69,7 +69,7 @@ LOCALSRC = \
 	sdl_main.c \
                  sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c \
 	gtk_prop.c gtk_propkeyboard.c \
-        gtk_cfgdlg.c gtk_main.c gtk_toolbox.c sdl_bar.c
+        gtk_cfgdlg.c gtk_main.c gtk_toolbox.c sdl_bar.c gtk_kbd.c
 #                 xw_sub.asm 
 
 COMMONOBJ = \
@@ -118,7 +118,8 @@ LOCALOBJ = \
 	sdl_snd_mt.o sdl_main.o \
                  sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o \
                  sdl_draw.o \
-                 gtk_cfgdlg.o gtk_main.o gtk_prop.o gtk_propkeyboard.o gtk_toolbox.o sdl_bar.o
+                 gtk_cfgdlg.o gtk_main.o gtk_prop.o gtk_propkeyboard.o \
+		 gtk_toolbox.o sdl_bar.o gtk_kbd.o
 #	xw_sub.o 
 
 .SUFFIXES: .c .cpp .asm .o
@@ -131,7 +132,8 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 
 LDFLAGS = 
-CFLAGS =        -g -O0 -export-dynamic
+#CFLAGS =        -g -O0 -export-dynamic
+CFLAGS =        -O3 -export-dynamic
 #CFLAGS =        -g -O0
 #CFLAGS =        -O3
 CFLAGS += 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
