@@ -391,7 +391,13 @@ CleanSnd(void)
      * サウンド停止 
      */
     StopSnd();
+/*
+ * スレッド停止
+ */
 
+/*
+ * スレッド資源解放待ち
+ */
     for(j = 0; j < XM7_SND_END; j++) {
             for (i = 0; i < 2; i++) {
                     if (sndDstBuf[j][i]) {

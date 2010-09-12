@@ -39,6 +39,7 @@ Draw256k(void)
     BYTE            bit;
     DWORD           color;
     BYTE 	   *addr;
+    DWORD		c[8];
 
     /*
      * クリア処理 
@@ -54,6 +55,97 @@ Draw256k(void)
 	return;
     }
     // SDL_LockSurface(displayArea);
+    for (y = 0; y < 200; y++) {
+            if(y >= realDrawArea->h) break;
+
+            /*
+             * xループ
+             */
+            for (x = 0 >> 4; x < 640 >> 4; x++) {
+                    if(x << 4  >= realDrawArea->w) break;
+
+//                    __GETVRAM_12bpp(vram_dptr, x, y, c);
+                    __GETVRAM_18bpp(vram_dptr, x, y, c);
+
+                    switch (nDrawWidth) {
+                    case 1280:
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 2) * realDrawArea->pitch +
+                                    (x << 5) * realDrawArea->format->BytesPerPixel;
+                            switch(realDrawArea->format->BitsPerPixel) {
+                            case 32:
+                            case 24:
+                                    if(bFullScan) {
+                                    __SETBYTE_DDRAW_1280_320p(addr,
+                                                   realDrawArea->
+                                                   format->BytesPerPixel,
+                                                   realDrawArea->pitch, c);
+                                    } else {
+                                    __SETBYTE_DDRAW_1280_320i(addr,
+                                                              realDrawArea->
+                                                              format->BytesPerPixel,
+                                                              realDrawArea->pitch, c);
+                                    }
+                                    break;
+                            case 16:
+                            case 15:
+                            default:
+                                    if(bFullScan) {
+                                    __SETBYTE_DDRAW_1280_320p_16(addr,
+                                                   realDrawArea->
+                                                   format->BytesPerPixel,
+                                                   realDrawArea->pitch, c);
+                                    } else {
+                                    __SETBYTE_DDRAW_1280_320i_16(addr,
+                                                              realDrawArea->
+                                                              format->BytesPerPixel,
+                                                              realDrawArea->pitch, c);
+                                    }
+                                    break;
+                            }
+                            break;
+                    case 640:
+                    default:
+                            addr = (Uint8 *) realDrawArea->pixels +
+                                    (y << 1) * realDrawArea->pitch +
+                                    (x << 4) * realDrawArea->format->BytesPerPixel;
+                            switch(realDrawArea->format->BitsPerPixel) {
+                            case 24:
+                            case 32:
+                            if (bFullScan) {
+                                    __SETBYTE_DDRAW_320p(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            } else {
+                                    __SETBYTE_DDRAW_320i(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            }
+                            break;
+                            case 16:
+                            case 15:
+                            default:
+                            if (bFullScan) {
+                                    __SETBYTE_DDRAW_320p_16(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            } else {
+                                    __SETBYTE_DDRAW_320i_16(addr,
+                                                         realDrawArea->format->
+                                                         BytesPerPixel,
+                                                         realDrawArea->pitch, c);
+                            }
+                            break;
+                            }
+                    break;
+                    }
+            }
+    }
+    SDL_UnlockSurface(realDrawArea);
+#if 0
     SDL_LockSurface(realDrawArea);
     /*
      * yループ 
@@ -197,7 +289,6 @@ Draw256k(void)
 			}
 			break;
 		}
-
 		/*
 		 * 次のビットへ 
 		 */
@@ -205,6 +296,7 @@ Draw256k(void)
 	    }
 	}
     }
+#endif
     // SDL_UnlockSurface(displayArea);
     SDL_UnlockSurface(realDrawArea);
     if (!bFullScan) {
