@@ -889,9 +889,9 @@ GetKbd(BYTE * pBuf)
 }
 
 
-    /*
-     *  ジョイスティック デバイスより読み込み 
-     */ 
+/*
+ *  ジョイスティック デバイスより読み込み
+ */
 static BYTE     FASTCALL
 GetJoy(int index, BOOL flag) 
 {
