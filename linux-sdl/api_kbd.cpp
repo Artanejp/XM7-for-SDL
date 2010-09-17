@@ -5,11 +5,11 @@
  *  Created on: 2010/09/17
  *      Author: K.Ohta<whatisthis.sowhat@gmail.com>
  */
-
+extern "C" {
 #include <X11/Xlib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-#include <gdk/gdkkeysyms.h>
+//#include <gtk/gtk.h>
+//#include <gdk/gdkx.h>
+//#include <gdk/gdkkeysyms.h>
 #include <memory.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
@@ -25,6 +25,7 @@
 #include "api_kbd.h"
 #include "KbdInterface.h"
 #include "SDLKbdInterface.h"
+#include "GtkKbdInterface.h"
 //#include "gtk_propkeyboard.h"
 
 BOOL bKbdReal;			/* 疑似リアルタイムキースキャン
@@ -50,6 +51,13 @@ static BYTE    nLastKey2;	/* 最後に押されたキー(10KEY) */
 static BYTE    nTenDir;	/* テンキー変換 方向データ */
 static BYTE    nTenDir2;	/* テンキー変換 方向データ2 */
 static SDL_Sem *KeySem; /* キーバッファセマフォ */
+
+/*
+ * ドライバクラス
+ */
+static SDLKbdInterface *SDLDrv;
+static GtkKbdInterface *GTKDrv;
+
 
 
 /*
@@ -83,10 +91,11 @@ InitKbd(void)
 	memset(kibuf, 0, sizeof(kibuf));
 	keytime = 0;
 	/*
-	 * Gtk
+	 * ここにドライバー作成する
 	 */
-	SDLKbdInterface::SDLKbdInterface();
-	//InitKbd_Gtk();
+	SDLDrv = new SDLKbdInterface();
+	GTKDrv = new GtkKbdInterface();
+
 	/*
 	 * ワークエリア初期化(キーボード NT/PC-9801対策)
 	 */
@@ -125,6 +134,7 @@ InitKbd(void)
 		KeySem = SDL_CreateSemaphore(1);
 		if(KeySem == NULL) return;
 	}
+
 	// printf("KBDInit\n");
 
 }
@@ -135,7 +145,9 @@ InitKbd(void)
 void            FASTCALL
 CleanKbd(void)
 {
-	SDLKbdInterface::~SDLKbdInterface();
+	if(SDLDrv != NULL) delete SDLDrv;
+	if(GTKDrv != NULL) delete GTKDrv;
+
 	if(KeySem != NULL){
 		SDL_DestroySemaphore(KeySem);
 		KeySem = NULL;
@@ -150,6 +162,7 @@ SelectKbd(void)
 {
 	return TRUE;
 }
+
 
 void
 PushKeyData(Uint8 code,Uint8 MakeBreak)
@@ -610,3 +623,50 @@ GetKbd(BYTE * pBuf)
 	memset(pBuf, 0, 256);
 	return TRUE;
 }
+
+/*
+ * ここから先、Toolkit依存Wrapper
+ */
+/**[ アクションイベント ]***********************************************/
+
+    /*
+     *  キープレスアクション
+     */
+gboolean OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
+		    gpointer data)
+{
+	if(GTKDrv == NULL) return FALSE;
+	GTKDrv->OnPress((void *)event);
+    return TRUE;
+}
+
+
+/*
+ *  キーリリースアクション
+ */
+gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
+		gpointer data)
+{
+	if(GTKDrv == NULL) return FALSE;
+	GTKDrv->OnRelease((void *)event);
+    return TRUE;
+}
+
+/*
+ * SDL
+ */
+BOOL OnKeyPress(SDL_Event *event)
+{
+	if(SDLDrv == NULL) return FALSE;
+	SDLDrv->OnPress((void *)event);
+	return TRUE;
+}
+
+BOOL OnKeyRelease(SDL_Event *event)
+{
+	if(SDLDrv == NULL) return FALSE;
+	SDLDrv->OnRelease((void *)event);
+	return TRUE;
+}
+
+} /* extern "C" */

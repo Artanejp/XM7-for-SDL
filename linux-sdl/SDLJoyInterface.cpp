@@ -6,9 +6,9 @@
  */
 
 #include<X11/Xlib.h>
-#include<gtk/gtk.h>
-#include<gdk/gdkx.h>
-#include<gdk/gdkkeysyms.h>
+//#include<gtk/gtk.h>
+//#include<gdk/gdkx.h>
+//#include<gdk/gdkkeysyms.h>
 #include<memory.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>

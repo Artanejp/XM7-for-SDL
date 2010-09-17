@@ -21,7 +21,9 @@ struct {
 	Uint8 code;
 } KeyCode2;
 
-const struct KeyCode2 KeyTable[] =
+struct KeyCode KeyCodeTable2[256];
+
+const struct KeyCode2 KeyTable106[] =
 {
 	       SDLK_ESCAPE, 0x5c,	/* BREAK(ESC)
 										 */
@@ -132,10 +134,10 @@ void InitKeyTable(void){
 	int i;
 	for(i = 0; i<256 ; i++)
 	{
-		KeyCodeTable2[i].code = KeyTable[i].sym;
+		KeyCodeTable2[i].code = KeyTable106[i].sym;
 		KeyCodeTable2[i].mod = KMOD_NONE;
-		KeyCodeTable2[i].pushCode = KeyTable[i].code;
-		if(KeyTable[i].sym == 0xffff) return;
+		KeyCodeTable2[i].pushCode = KeyTable106[i].code;
+		if(KeyTable106[i].sym == 0xffff) return;
 	}
 	/*
 	 * マウスキャプチャの初期値はPF11
@@ -187,38 +189,83 @@ KbdInterface::~KbdInterface() {
 	// TODO Auto-generated destructor stub
 }
 
-struct KeyCode *GetKeyCode(int num)
+void CleanKbd(void)
 {
-	return &KeyCodeTable2[num & 0x00ff];
+	~KbdInterFace();
 }
 
 
+void LoadKeyMap(void *pMap){
+	int i;
+	struct KeyCode *p = (struct KeyCode *)pMap;
+	for(i = 0; i<256 ; i++)
+	{
+		KeyCodeTable2[i].code = p[i].sym;
+		KeyCodeTable2[i].mod = p[i].mod;
+		KeyCodeTable2[i].pushCode = p[i].code;
+		if(p[i].sym == 0xffff) return;
+	}
 
-Uint32 GetKeymap(void *nativeCode)
+}
+
+void InitLocalVar(void){
+//	kbd_snooped = FALSE;
+}
+
+void ResetKeyMap(void)
 {
-	// キーコードの変換
-	SDL_keysym *p = (SDL_keysym *)nativeCode;
+	InitKeyTable();
+}
+
+
+Uint32 GetKeyCode(Uint8 num)
+{
 	struct KeyCode *q = KeyCodeTable2;
-	SDLKey sym = p->sym;
-	SDLMod mod = p->mod;
-	Uint32 u = 0xffffffff;
 	int i;
 
-	for(i = 0;i < 256; i++){
+	for(i = 0; i<256; i++){
 		if(q[i].code == 0xffff) break;
-		if((sym == q[i].code) && (mod == q[i].mod)){
-			u = (Uint32) (q[i].pushCode & 0x000000ff); // 8bit
-			break;
-		}
+		if(q[i].pushCode == num) return q[i].code;
 	}
-	return u;
+	return 0x0000;
+}
+
+Uint32 GetKeyMod(Uint8 num)
+{
+	struct KeyCode *q = KeyCodeTable2;
+	int i;
+
+	for(i = 0; i<256; i++){
+		if(q[i].code == 0xffff) break;
+		if(q[i].pushCode == num) return q[i].mod;
+	}
+	return 0x0000;
+}
+
+
+struct KeyCode *GetKeyMap(Uint8 pushCode)
+{
+	// キーコードの変換
+	struct KeyCode *q = KeyCodeTable2;
+	int i;
+
+	for(i = 0; i<256; i++){
+		if(q[i].code == 0xffff) break;
+		if(q[i].pushCode == pushCode) return &q[i];
+	}
+	return NULL;
+}
+
+struct KeyCode *GetKeyMap(void)
+{
+	return KeyCodeTable2;
 }
 
 void SetKeymap(Uint32 keyCode, Uint32 nativeCode, Uint32 keyMod)
 {
 	struct KeyCode *q = KeyCodeTable2;
-	SDLKey code = (SDLKey)keyCode;
-	SDLMod mod = (SDLMod)keyMod;
+	Uint32 code = keyCode;
+	Uint32 mod = keyMod;
 
 	for(i = 0;i < 256; i++){
 		/*
@@ -232,8 +279,8 @@ void SetKeymap(Uint32 keyCode, Uint32 nativeCode, Uint32 keyMod)
 			 * 終端コード新規
 			 */
 			q[i].pushCode = (Uint8)(nativeCode & 0x000000ff);
-			q[i+1].code = (SDLKey)0xffff;
-			q[i+1].mod = (SDLMod)0xffff;
+			q[i+1].code = (Uint32)0xffff;
+			q[i+1].mod = (Uint32)0xffff;
 			q[i].pushCode = 0xff;
 			return;
 		}
@@ -246,68 +293,52 @@ void SetKeymap(Uint32 keyCode, Uint32 nativeCode, Uint32 keyMod)
 			return;
 		}
 	}
-
 }
 
-void OnPress(void *eventh)
+void SetKeymap(struct KeyCode *p)
 {
-    int            i = 0;
-    SDL_Event *event = (SDL_Event *)eventh;
-    SDLMod modifier = event->key.keysym.mod;
-    SDLKey code = event->key.keysym.sym;
-    Uint8 scan = event->key.keysym.scancode;
-    struct KeyCode *p = KeyCodeTable2;
+	struct KeyCode *q = KeyCodeTable2;
 
-    if(kbd_snooped) {
-            return SnoopedOnKeyPressedCallback(event);
-    }
-    //printf("Key SDL:%04x\n",code);
-    for (i = 0; i < 255; i++) {
-	if (p[i].code == 0xffff)   break;
-	if ((code == p[i].code) && (modifier == p[i].mod)){
-			pushKeyCode(p[i].pushCode, 0x80); /* Make */
-			break;
+	for(i = 0;i < 256; i++){
+		/*
+		 * 新規設定
+		 */
+		if(q[i].code == 0xffff) {// 終わりだよね
+			if(i>= 255) break; // キーテーブル一杯だからなにもしない
+			q[i].code = p->code;
+			q[i].mod = p->mod;
+			/*
+			 * 終端コード新規
+			 */
+			q[i].pushCode = (Uint8)(nativeCode & 0x000000ff);
+			q[i+1].code = (Uint32)0xffff;
+			q[i+1].mod = (Uint32)0xffff;
+			q[i].pushCode = 0xff;
+			return;
 		}
-    }
-    return;
+		/*
+		 * 置換
+		 */
+		if(q[i].pushCode == p->pushCode){
+			q[i].code = p->code;
+			q[i].mod = p->mod;
+			return;
+		}
+	}
+
 }
 
-void OnRelease(void *eventh)
+void SetResetKey(Uint32 code, Uint32 mod)
 {
-    int            i;
-    SDLMod modifier = event->key.keysym.mod;
-    SDLKey code = event->key.keysym.sym;
-    Uint8 scan = event->key.keysym.scancode;
+	ResetKey.code = code;
+	ResetKey.mod = mod;
 
-    for (i = 0; i < 255; i++) {
-    	if (p[i].code == 0xffff)   break;
-    	if ((code == p[i].code) && (modifier == p[i].mod)){
-    			pushKeyCode(p[i].pushCode, 0x00); /* Break */
-    			break;
-    		}
-    }
-
-	/*
-	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え
-	 */
-	if ((scan == MouseCapture.sym) && (modifier == MouseCapture.mod)) {
-		SDLMouseInterface::ToggleMouseCapture();
-    }
-
-	/*
-	 * F12押下の場合はVMリセット
-	 */
-	if ((scan == ResetKey.sym) && (modifier == ResetKey.mod)) {
-		LockVM();
-		system_reset();
-		UnlockVM();
-    }
 }
 
-void SetKbdSnoop(BOOL t)
+void SetMouseKey(Uint32 code, Uint32 mod)
 {
-	kbd_snoop = t;
+	MouseCapture.code = code;
+	MouseCapture.mod = mod;
 }
-
 
 

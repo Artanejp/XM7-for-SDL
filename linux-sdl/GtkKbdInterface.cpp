@@ -143,8 +143,10 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x5a, 0x46, /* Tenkey 0 */
 	0x5b, 0x47, /* Tenkey . */
 	0x6c, 0x45 /* Tenkey CR */
+	0xff, 0xff /* End Code 20100917 */
 };
-static BYTE kbd_tbl_gtk[256 * 2];
+//static BYTE kbd_tbl_gtk[256 * 2];
+struct KeyCode KeyCodeTable2[256];
 
 GtkKbdInterface::GtkKbdInterface() {
 	// TODO Auto-generated constructor stub
@@ -162,11 +164,18 @@ void GtkKbdInterface::InitKeyTable(void)
 	/*
 	 * キーボードテーブルの転写
 	 */
-	kbd_tbl_gtk =(BYTE *)malloc(256*2); // 実際にキーを読み込む領域
-	if(kbd_tbl_gtk) {
-		memset(kbd_tbl_gtk,0,256*2);
-		memcpy(kbd_tbl_gtk,kbd_106_table,sizeof(kbd_106_table));
-	}
+		memset(KeyCodeTable2,0x00,sizeof(KeyCodeTable2));
+		for(i=0 ; i<256; i++) {
+			if((kbd_106_table[i * 2] == 0xff) && (kbd_106_table[i * 2 + 1] == 0xff)) break;
+			KeyCodeTable2[i].code = (Uint32)kbd_106_table[i * 2];
+			KeyCodeTable2[i].mod = 0x0000;
+			KeyCodeTable2[i].pushCode = (Uint8)kbd_106_table[i * 2 + 1];
+		}
+		if(i < 256) {
+			KeyCodeTable2[i].code = 0xffff;
+			KeyCodeTable2[i].mod = 0xffff;
+			KeyCodeTable2[i].pushCode = 0xff;
+		}
 	/*
 	 * マウスキャプチャの初期値はPF11
 	 */
@@ -177,169 +186,54 @@ void GtkKbdInterface::InitKeyTable(void)
 	 */
 	ResetKey.code = 0x5f;
 	ResetKey.mod = 0x00;
-
 }
 
-void CleanKbd(void)
+void OnPress(void *arg)
 {
-	if(kbd_tbl_gtk != NULL) {
-		free(kbd_tbl_gtk);
-	}
-	kbd_tbl_gtk = NULL;
-}
-
-
-void LoadKeyTable(void *pMap){
 	int i;
-	struct KeyCode *p = (struct KeyCode *)pMap;
-	for(i = 0; i<256 ; i++)
-	{
-		KeyCodeTable2[i].code = p[i].sym;
-		KeyCodeTable2[i].mod = p[i].mod;
-		KeyCodeTable2[i].pushCode = p[i].code;
-		if(p[i].sym == 0xffff) return;
-	}
+	GdkEventKey *event = (GdkEventKey *)arg;
+	guint16 scan = event->hardware_keycode;
+	guint   mod = event->state;
+	struct KeyCode *p;
 
-}
-
-void InitLocalVar(void){
-//	kbd_snooped = FALSE;
-}
-
-
-
-
-void ResetKeyMap(void)
-{
-	InitKeyTable();
-}
-
-struct KeyCode *GetKeyCode(int num)
-{
-	return &KeyCodeTable2[num & 0x00ff];
-}
-
-SDLKey GetKeyCode(int num)
-{
-	return KeyCodeTable2[num & 0x00ff].code;
-}
-
-Uint8 GetKeyCode(int num)
-{
-	return (Uint8)KeyCodeTable2[num & 0x00ff].pushCode;
-}
-
-SDLMod GetKeyMod(int num)
-{
-	return KeyCodeTable2[num & 0x00ff].mod;
-}
-
-SDL_keysym GetNativeCode(void)
-{
-
-}
-
-Uint32 GetKeymap(void *nativeCode)
-{
-	// キーコードの変換
-	SDL_keysym *p = (SDL_keysym *)nativeCode;
-	struct KeyCode *q = KeyCodeTable2;
-	SDLKey sym = p->sym;
-	SDLMod mod = p->mod;
-	Uint32 u = 0xffffffff;
-	int i;
-
-	for(i = 0;i < 256; i++){
-		if(q[i].code == 0xffff) break;
-		if((sym == q[i].code) && (mod == q[i].mod)){
-			u = (Uint32) (q[i].pushCode & 0x000000ff); // 8bit
-			break;
-		}
-	}
-	return u;
-}
-
-void SetKeymap(Uint32 keyCode, Uint32 nativeCode, Uint32 keyMod)
-{
-	struct KeyCode *q = KeyCodeTable2;
-	SDLKey code = (SDLKey)keyCode;
-	SDLMod mod = (SDLMod)keyMod;
-
-	for(i = 0;i < 256; i++){
-		/*
-		 * 新規設定
-		 */
-		if(q[i].code == 0xffff) {// 終わりだよね
-			if(i>= 255) break; // キーテーブル一杯だからなにもしない
-			q[i].code = code;
-			q[i].mod = mod;
-			/*
-			 * 終端コード新規
-			 */
-			q[i].pushCode = (Uint8)(nativeCode & 0x000000ff);
-			q[i+1].code = (SDLKey)0xffff;
-			q[i+1].mod = (SDLMod)0xffff;
-			q[i].pushCode = 0xff;
-			return;
-		}
-		/*
-		 * 置換
-		 */
-		if(q[i].pushCode == (Uint8)(nativeCode & 0x000000ff)){
-			q[i].code = code;
-			q[i].mod = mod;
-			return;
-		}
-	}
-
-}
-
-
-/**[ アクションイベント ]***********************************************/
-
-    /*
-     *  キープレスアクション
-     */
-gboolean
-OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
-		    gpointer data)
-{
-    int            i;
-      // printf("Key - GTK: %04x\n", event->hardware_keycode);
     for (i = 0; i<255; i++) {
-    	if (kbd_tbl_gtk[i * 2] == event->hardware_keycode) {
-    		PushKeyData(kbd_tbl_gtk[i * 2 + 1], 0x00);
+    	if(p[i].code == 0xffff) break;
+    	if (p[i].code == (Uint32)scan) {
+    		PushKeyData(p[i].pushCode, 0x00);
     		break;
 		}
     }
     return TRUE;
 }
 
-
 /*
  *  キーリリースアクション
  */
-gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
-		gpointer data)
+void OnRelease(void *arg)
 {
     int            i;
+	GdkEventKey *event = (GdkEventKey *)arg;
+	guint16 scan = event->hardware_keycode;
+	guint   mod = event->state;
+
     for (i = 0; i < 256; i++) {
-	if (kbd_tbl_gtk[i * 2] == event->hardware_keycode) {
-		PushKeyData(kbd_tbl_gtk[i * 2 + 1], 0x80);
-	    break;
+    	if(p[i].code == 0xffff) break;
+    	if (p[i].code == (Uint32)scan) {
+    		PushKeyData(p[i].pushCode, 0x80);
+    		break;
 		}
     }
 	/*
 	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え
 	 */
-	if ((scan == MouseCapture.sym) && (modifier == MouseCapture.mod)) {
+	if ((scan == MouseCapture.sym) && (mod == MouseCapture.mod)) {
 		GtkMouseInterface::ToggleMouseCapture();
     }
 
 	/*
 	 * F12押下の場合はVMリセット
 	 */
-	if ((scan == ResetKey.sym) && (modifier == ResetKey.mod)) {
+	if ((scan == ResetKey.sym) && (mod == ResetKey.mod)) {
 		LockVM();
 		system_reset();
 		UnlockVM();
@@ -348,3 +242,5 @@ gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
 
     return TRUE;
 }
+
+

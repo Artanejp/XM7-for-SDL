@@ -11,24 +11,19 @@
 #include "KbdInterface.h"
 
 
-class SDLKbdInterface: public virtual KbdInterface {
+class SDLKbdInterface: public KbdInterface {
 public:
 	SDLKbdInterface();
-	virtual ~SDLKbdInterface();
-	Uint32 GetKeymap(void *nativeCode);
-	void SetKeymap(Uint32 keyCode, Uint32 nativeCode, Uint32 mod);
-	struct KeyCode *GetKeyCode(int num);
-	SDLKey GetKeyCode(int num);
-	Uint8 GetKeyCode(int num);
-	SDLMod GetKeyMod(int num);
-	SDL_keysym GetNativeCode(void);
+	~SDLKbdInterface();
 	void OnPress(void *eventh);
 	void OnRelease(void *eventh);
-	void SetKbdSnoop(BOOL t);
+	void InitKeyTable(void);
 	void ResetKeyMap(void);
+	void LoadKeyMap(void *pMap);
 private:
 	struct KeyCode KeyCodeTable2[256];
-	void SDLKbdInterface::InitKeyTable(void);
+	const struct KeyCode2 KeyTable[];
+//	void InitKeyTable(void);
 	BOOL kbd_snooped = FALSE;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
