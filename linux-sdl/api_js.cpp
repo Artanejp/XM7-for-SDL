@@ -4,6 +4,7 @@
  *  Created on: 2010/09/17
  *      Author: whatisthis
  */
+
 #include<X11/Xlib.h>
 #include<gtk/gtk.h>
 #include<gdk/gdkx.h>
@@ -11,6 +12,9 @@
 #include<memory.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
+#include "SDLJoyInterface.h"
+
+extern "C" {
 
 #include "xm7.h"
 #include "mainetc.h"
@@ -22,12 +26,12 @@
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "api_js.h"
-#include "SDLJoyInterface.h"
 //#include "gtk_propkeyboard.h"
 
 int            nJoyType[2];	/* ジョイスティックタイプ */
 int            nJoyRapid[2][2];	/* 連射タイプ */
 int            nJoyCode[2][7];	/* 生成コード */
+//BYTE nJoyRaw[MAX_SDL_JOY];
 
 static BYTE   joydat[3];	/* ジョイスティックデータ */
 static BYTE    joybk[2];	/* ジョイスティックバックアップ */
@@ -35,7 +39,7 @@ static int     joyrapid[2][2];	/* ジョイスティック連射カウンタ */
 static DWORD   joytime;	/* ジョイスティックポーリング時間	 */
 static DWORD   joytime2;	/* ジョイスティックポーリング時間	 */
 static BOOL    joyplugged[2];	/* ジョイスティック接続フラグ	 */
-
+static SDLJoyInterFace *SDLDrv; /* SDL JSドライバー */
 
 
 
@@ -82,7 +86,104 @@ GetRapidJoy(int index, BOOL flag)
 	/*
 	 * データ取得
 	 */
-	dat = SDLJoyInterface::GetJoy(index, flag);
+	if(index >= MAX_SDL_JOY) return 0x00;
+	dat = SDLDrv[index].GetJoy(flag);
+
+	/*
+	 * 非接続チェック2
+	 */
+	if (!joyplugged[index]) {
+		return 0x00;
+	}
+
+	/*
+	 * ボタンチェック
+	 */
+	bit = 0x10;
+	for (i = 0; i < 2; i++) {
+		if ((dat & bit) && (nJoyRapid[index][i] > 0)) {
+
+			/*
+			 * 連射ありで押されている。カウンタチェック
+			 */
+			if (joyrapid[index][i] == 0) {
+
+				/*
+				 * 初期カウンタを代入
+				 */
+				joyrapid[index][i] =
+						JoyRapidCounter[nJoyRapid[index][i]];
+			}
+
+			else {
+
+				/*
+				 * カウンタデクリメント
+				 */
+				joyrapid[index][i]--;
+				if ((joyrapid[index][i] & 0xff) == 0) {
+
+					/*
+					 * 反転タイミングなので、時間を加算して反転
+					 */
+					joyrapid[index][i] +=
+							JoyRapidCounter[nJoyRapid[index][i]];
+					joyrapid[index][i] ^= 0x100;
+				}
+			}
+
+			/*
+			 * ボタンが押されていないように振る舞う
+			 */
+			if (joyrapid[index][i] >= 0x100) {
+				dat &= (BYTE) (~bit);
+			}
+		}
+
+		else {
+
+			/*
+			 * ボタンが押されてないので、連射カウンタクリア
+			 */
+			joyrapid[index][i] = 0;
+		}
+
+		/*
+		 * 次のビットへ
+		 */
+		bit <<= 1;
+	}
+	return dat;
+}
+
+/*
+ *  ジョイスティック 拡張ボタン
+ * デバイスより読み込み(連射つき)
+ */
+static BYTE     FASTCALL
+GetRapidJoyExt(int index, BOOL flag)
+{
+	int            i;
+	BYTE bit;
+	BYTE dat;
+
+	/*
+	 * assert
+	 */
+	ASSERT((index == 0) || (index == 1));
+
+	/*
+	 * 非接続チェック1 (接続チェック時は通す)
+	 */
+	if ((!flag) && (!joyplugged[index])) {
+		return 0x00;
+	}
+
+	/*
+	 * データ取得
+	 */
+	if(index >= MAX_SDL_JOY) return 0x00;
+	dat = SDLDrv[index].GetJoyExt(flag);
 
 	/*
 	 * 非接続チェック2
@@ -373,6 +474,7 @@ PollJoyKbd(int index, BYTE dat)
 		}
 		bit <<= 1;
 	}
+	/* ここに拡張ボタンを */
 }
 
 
@@ -484,6 +586,15 @@ BYTE FASTCALL joy_request(BYTE no)
 }
 
 /*
+ * 仮のものです
+ */
+static void OpenJoyInit(void)
+{
+	int i;
+	for(i = 0;i<MAX_SDL_JOY; i++) SDLDrv[i].Open(i);
+    SDL_JoystickEventState(SDL_ENABLE);
+}
+/*
  * ジョイスティック初期化
  */
 
@@ -506,14 +617,18 @@ BOOL FASTCALL initJoy(void)
     nJoyType[1] = 0;
     nJoyType[0] = 1;
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-    SDL_JoystickOpen(0);
     memset(joydat, 0, sizeof(joydat));
     memset(joybk, 0, sizeof(joybk));
     memset(joyrapid, 0, sizeof(joyrapid));
     joyplugged[0] = TRUE;
     joyplugged[1] = TRUE;
 
-	SDLJoyInterface::SDLJoyInterFace();
+    SDLDrv = new SDLJoyInterface[MAX_SDL_JOY];
+/*
+ * ジョイスティック初期化
+ */
+    OpenJoyInit();
+
 	return TRUE;
 }
 
@@ -524,7 +639,44 @@ BOOL FASTCALL initJoy(void)
  */
 void FASTCALL cleanJoy(void)
 {
-
-	SDLJoyInterface::~SDLJoyInterFace();
+    SDL_JoystickEventState(SDL_IGNORE);
+    delete [] SDLDrv;
 }
 
+
+/*
+ *  JS関連イベントハンドラ
+ */
+BOOL OnMoveJoy(SDL_Event * event)
+{
+
+	/*
+	 * 感度設定とかリダイレクトとかあるけど取り合えず後;)
+	 */
+	int 			i;
+	for(i = 0; i< MAX_SDL_JOY; i++) SDLDrv[i].OnMove(event);
+	return TRUE;
+}
+
+BOOL OnPressJoy(SDL_Event * event)
+{
+
+	/*
+	 * 感度設定とかリダイレクトとかあるけど取り合えず後;)
+	 */
+	int 			i;
+	for(i = 0; i< MAX_SDL_JOY; i++) SDLDrv[i].OnPress(event);
+	return TRUE;
+}
+
+BOOL OnReleaseJoy(SDL_Event * event)
+{
+
+	/*
+	 * 感度設定とかリダイレクトとかあるけど取り合えず後;)
+	 */
+	int 			i;
+	for(i = 0; i< MAX_SDL_JOY; i++) SDLDrv[i].OnRelease(event);
+	return TRUE;
+}
+}

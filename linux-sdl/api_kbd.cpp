@@ -135,6 +135,9 @@ InitKbd(void)
 		if(KeySem == NULL) return;
 	}
 
+	/*
+	 * ジョイスティック初期化(やる？）
+	 */
 	// printf("KBDInit\n");
 
 }

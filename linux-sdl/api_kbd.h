@@ -39,72 +39,28 @@ extern          "C" {
                                  gpointer data);
 #endif
         extern BOOL kbd_snooped;
-	/*
-	 * キーリリースアクション
-	 */
-
-
 #ifdef MOUSE
 	gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,
 			       gpointer user_data);
 
-	/*
-	 * キープレスアクション
-	 */
 	gboolean OnButtonRelease(GtkWidget * widget,
 				 GdkEventButton * event,
 				 gpointer user_data);
 
-	/*
-	 * キーリリースアクション
-	 */
 #endif				/*  */
      void FASTCALL InitKbd(void);
-
-	/*
-	 * 初期化
-	 */
     void FASTCALL   CleanKbd(void);
-
-	/*
-	 * クリーンアップ
-	 */
-                    BOOL FASTCALL SelectKbd(void);
-
-	/*
-	 * セレクト
-	 */
+    BOOL FASTCALL SelectKbd(void);
     void FASTCALL   PollKbd(void);
-
-	/*
-	 * キーボードポーリング
-	 */
     void        GetDefMapKbd(BYTE * pMap, int mode);
-
-	/*
-	 * デフォルトマップ取得
-	 */
     void        SetMapKbd(BYTE *pMap);
-
-	/*
-	 * マップ設定
-	 */
     BOOL FASTCALL GetKbd(BYTE * pBuf);
+    void PushKeyData(Uint8 code,Uint8 MakeBreak);
 
-	/*
-	 * ポーリング＆キー情報取得
-	 */
+
 #ifdef MOUSE
         void FASTCALL   PollMos(void);
-
-	/*
-	 * マウスポーリング
-	 */
         void FASTCALL   SetMouseCapture(BOOL en);
-
-	/*
-	 * マウスキャプチャ設定
-	 */
 #endif				/*  */
 
 /*
@@ -120,43 +76,16 @@ extern          "C" {
 	 * キーボード マップ
 	 */
 //    extern struct local_sdlkeymap kbd_table[256];
-
 	/*
 	 * 対応するFM-7物理コード
 	 */
-	/*
-	 * 生成コード
-	 */
     extern BOOL     bKbdReal;
-
-	/*
-	 * 擬似リアルタイムキースキャン
-	 */
     extern BOOL     bTenCursor;
-
-	/*
-	 * テンキー変換
-	 */
     extern BOOL     bArrow8Dir;
-
-	/*
-	 * テンキー変換 8方向モード
-	 */
     extern BOOL     bNTkeyPushFlag[3];
-
-	/*
-	 * キー押下フラグ(NT)
-	 */
     extern BOOL     bNTkeyMakeFlag[128];
-
-	/*
-	 * キーMake中フラグ(NT)
-	 */
     extern BOOL     bNTkbMode;
 
-	/*
-	 * NT対策中フラグ
-	 */
 #ifdef MOUSE
     extern BYTE     nMidBtnMode;
 

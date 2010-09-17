@@ -26,47 +26,86 @@
 
 #include "SDLJoyInterface.h"
 
-BYTE nJoyRaw[MAX_SDL_JOY];
-SDL_JoyStick *JoyEntry[MAX_SDL_JOY];
-int nJoyMAX;
+extern int nJoyMAX;
+SDL_JoyStick *SDLJoyInterface::JoyEntry;
+/*
+ * nJoyRaw構成
+ * b0 上
+ * b1 下
+ * b2 左
+ * b3 右
+ * b4 ボタン0
+ * b5 ボタン1
+ *
+ */
+BYTE SDLJoyInterface::nJoyRaw;
+
+/*
+ * nJoyRawExt構成
+ * b0
+ * b1
+ * b2
+ * b3
+ * b4 ボタン2
+ * b5 ボタン3
+ *
+ */
+
+BYTE SDLJoyInterface::nJoyRawExt;
+
+Uint8 SDLJoyInterface::XAXIS;
+Uint8 SDLJoyInterface::YAXIS;
+
+
+Uint8 SDLJoyInterFace::BUTTON0;
+Uint8 SDLJoyInterFace::BUTTON1;
+Uint8 SDLJoyInterFace::BUTTON2;
+Uint8 SDLJoyInterFace::BUTTON3;
+int SDLJoyInterface::JoyIndex;
+
+
 
 SDLJoyInterface::SDLJoyInterface() {
 	// TODO Auto-generated constructor stub
-	int i;
-	for(i = 0; i<MAX_SDL_JOY; i++) {
-		nJoyRaw[i] = 0x00;
-		JoyEntry[i] = NULL;
-	}
-	nJoyMAX = MAX_SDL_JOY;
+	JoyEntry = NULL;
+	nJoyRaw = 0x00;
+	nJoyRawExt = 0x00;
+
+	YAXIS = 1;
+	XAXIS = 0;
+	BUTTON0 = 0:
+	BUTTON1 = 1;
+	BUTTON2 = 2;
+	BUTTON3 = 3;
+	JoyIndex = -1;
 }
 
 SDLJoyInterface::~SDLJoyInterface() {
-	int i;
 	// TODO Auto-generated destructor stub
-	for(i=0; i<MAX_SDL_JOY ; i++) {
-		SDLJoyInterface::Close(i);
-		nJoyRaw[i] = 0x00;
-	}
-	nJoyMAX = 0;
+		Close();
+		nJoyRaw = 0x00;
+		nJoyRawExt = 0x00;
+
 }
 
 
 
-SDL_Joystick *SDLJoyInterface::Open(int emulNo,int physNo )
+SDL_Joystick *SDLJoyInterface::Open(int physNo )
 {
 	if(SDL_WasInit(SDL_INIT_SUBSYSTEM) == 0) {
 		SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 	}
 	if(SDL_JoystickOpened(physNo) != 0) return NULL; /* 既に使用されてる */
-    JoyEntry[emulNo % MAX_SDL_JOY] = SDL_JoystickOpen(physNo);
-    return JoyEntry[emulNo % MAX_SDL_JOY];
+    JoyEntry = SDL_JoystickOpen(physNo);
+	if(JoyEntry != NULL) JoyIndex = physNo;
+    return JoyEntry;
 }
 
 /*
  * Open
  *
  */
-SDL_Joystick *SDLJoyInterface::Open(int emulNo, char *name)
+SDL_Joystick *SDLJoyInterface::Open(char *name)
 {
 	int i,joys;
 	char *s;
@@ -74,50 +113,48 @@ SDL_Joystick *SDLJoyInterface::Open(int emulNo, char *name)
 	if(SDL_WasInit(SDL_INIT_SUBSYSTEM) == 0) {
 		SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 	}
-
+	if(name == NULL) return NULL;
 	joys = SDL_NumJoisticks();
-	for(i = 0; i < joys; i++) {
+	for(i = 0; i<joys; i++) {
 		s = SDL_JoystickName(i);
 		if(s == NULL) continue;
-		if(strcmp(s,name) == 0){
-			if(SDL_JoystickOpened(i) != 0) return NULL; /* 既に使用されてる */
-			JoyEntry[emulNo % MAX_SDL_JOY] = SDL_JoystickOpen(i);
-			return JoyEntry[emulNo % MAX_SDL_JOY];
+		if(strcmp(s,name) != 0) continue;
+		if(SDL_JoystickOpened(i) != 0) return NULL; /* 既に使用されてる */
+			JoyEntry = SDL_JoystickOpen(i);
+			if(JoyEntry != NULL) JoyIndex = i;
+			return JoyEntry;
 		}
-	}
 	return NULL;
 }
 
-void SDLJoyInterface::Close(int emulNo)
+void SDLJoyInterface::Close(void)
 {
-	if(JoyEntry[emulNo % MAX_SDL_JOY] != NULL) {
-		SDL_JoystickClose(JoyEntry[emulNo % MAX_SDL_JOY]);
-		JoyEntry[emulNo % MAX_SDL_JOY] = NULL;
+	if(JoyEntry != NULL) {
+		SDL_JoystickClose(JoyEntry);
+		JoyEntry = NULL;
+		JoyIndex = -1;
 	}
 }
 
-SDL_Joystick *SDLJoyInterface::GetEntry(int emulNo)
+SDL_Joystick *SDLJoyInterface::GetEntry(void)
 {
-	return JoyEntry[emulNo % MAX_SDL_JOY];
+	return JoyEntry;
 }
 
-SDL_Joystick *SDLJoyInterface::GetEntry(int emulNo)
+int SDLJoyInterface::GetIndex(void)
 {
-	return JoyEntry[emulNo % MAX_SDL_JOY];
+	return JoyIndex;
 }
 
 
-char *SDLJoyInterface::Check(void)
+BOOL SDLJoyInterface::Check(void)
 {
-	int i;
-	for(i = 0; i< MAX_SDL_JOY; i++){
-		if(JoyEntry[i] == NULL) continue;
-		if(SDL_JoystickOpened(JoyEntry[i]->which) == 0) {
-			// ジョイスティックが抜かれた
-			Close(i);
-		}
+	if(SDL_JoystickOpened(JoyEntry->which) == 0) {
+		// ジョイスティックが抜かれた
+		Close();
+		return FALSE;
 	}
-	return NULL;
+	return TRUE;
 }
 
 BOOL SDLJoyInterface::RegEvent(void)
@@ -132,165 +169,208 @@ BOOL SDLJoyInterface::UnRegEvent(void)
 	return TRUE;
 }
 
-/*
- *  JS関連イベントハンドラ
- */
-BOOL OnMoveJoy(SDL_Event * event)
-{
 
-	/*
-	 * 感度設定とかリダイレクトとかあるけど取り合えず後;)
-	 */
-	Uint8 num = event->jaxis.which;
+
+/*
+ *  ジョイスティック デバイスより読み込み
+ */
+BYTE SDLJoyInterface::GetJoy( BOOL flag)
+{
+	BYTE code = 0;
+	code = nJoyRaw;	/* いい加減だが… */
+	// printf("JS: code = %04x\n",code);
+	return code;
+}
+
+/*
+ *  ジョイスティック デバイスより読み込み(拡張ボタン)
+ */
+
+BYTE SDLJoyInterface::GetJoyExt( BOOL flag)
+{
+	BYTE code = 0;
+	code = nJoyRawExt;	/* いい加減だが… */
+	// printf("JS: code = %04x\n",code);
+	return code;
+}
+
+
+void SDLJoyInterface::SetXAXIS(Uint8 val)
+{
+	XAXIS = val;
+}
+
+void SDLJoyInterface::SetYAXIS(Uint8 val)
+{
+	YAXIS = val;
+}
+
+void SDLJoyInterface::SetBUTTON0(Uint8 val)
+{
+	BUTTON0 = val;
+}
+
+void SDLJoyInterface::SetBUTTON1(Uint8 val)
+{
+	BUTTON1 = val;
+}
+void SDLJoyInterface::SetBUTTON2(Uint8 val)
+{
+	BUTTON2 = val;
+}
+void SDLJoyInterface::SetBUTTON3(Uint8 val)
+{
+	BUTTON3 = val;
+}
+
+Uint8 SDLJoyInterface::GetXAXIS(void)
+{
+	return XAXIS;
+}
+
+Uint8 SDLJoyInterface::GetYAXIS(void)
+{
+	return YAXIS;
+}
+
+Uint8 SDLJoyInterface::GetBUTTON0(void)
+{
+	return BUTTON0;
+}
+
+Uint8 SDLJoyInterface::GetBUTTON1(void)
+{
+	return BUTTON1;
+}
+
+Uint8 SDLJoyInterface::GetBUTTON2(void)
+{
+	return BUTTON2;
+}
+
+Uint8 SDLJoyInterface::GetBUTTON3(void)
+{
+	return BUTTON3;
+}
+
+void SDLJoyInterface::OnMove(SDL_Event *event)
+{
 	Uint8 axis = event->jaxis.axis;
 	Sint16 value = event->jaxis.value;
-	int            index;
-	int            code = 0;
-	int i;
+	Uint8 num = event->jaxis.which;
 
-	// printf("JS:index = %d axis = %d num = %d value =
-	// 0x%02x\n",index,axis,num,value);
-	/*
-	 * JS番号探知
-	 */
-	for(i = 0; i<MAX_SDL_JOY ; i++){
-		if(JoyEntry[i] == NULL) continue;
-		if(num == SDL_JoystickIndex(GetEntry(i))) {
-			index = i;
-			break;
-		}
+	if(num != SDL_JoystickIndex(JoyEntry)) {
+			return;
 	}
-	if(i>=2) return TRUE; /* 使用外のJS */
 
 	/*
 	 * 軸は0,1のみ(暫定)
 	 */
 	switch (axis)
 	{
-	case 1:			/* Y軸? */
+	case YAXIS:			/* Y軸? */
 		if (value > 256) {
 			code = 0x02;	/* 下 */
 		} else if (value < -256) {
 			code = 0x01;	/* 上 */
 		}
-		nJoyRaw[index] &= 0xfc;
-		nJoyRaw[index] |= code;
+		nJoyRaw &= 0xfc;
+		nJoyRaw |= code;
 		break;
-	case 0:			/* X軸? */
+	case XAXIS:			/* X軸? */
 		if (value > 256) {
 			code = 0x08;	/* 右 */
 		} else if (value < -256) {
 			code = 0x04;	/* 左 */
 		}
-		nJoyRaw[index] &= 0xf3;
-		nJoyRaw[index] |= code;
+		nJoyRaw &= 0xf3;
+		nJoyRaw |= code;
 		break;
 	default:
 		break;
 	}
-	return TRUE;
+	return;
 }
 
-BOOL OnPressJoy(SDL_Event * event)
+void SDLJoyInterface::OnPress(SDL_Event *event)
 {
-
-	/*
-	 * 感度設定とかリダイレクトとかあるけど取り合えず後;)
-	 */
 	Uint8 num = event->jbutton.which;
 	Uint8 button = event->jbutton.button;
-	int           index;
 	int            code = 0;
-	int 			i;
 
-	// printf("JS:index = %d num = %d value =
-	// 0x%02x\n",index,num,button);
 	/*
 	 * JS番号探知
 	 */
-	for(i = 0; i<MAX_SDL_JOY ; i++){
-		if(JoyEntry[i] == NULL) continue;
-		if(num == SDL_JoystickIndex(GetEntry(i))) {
-			index = i;
-			break;
-		}
+	if(num != SDL_JoystickIndex(JoyEntry)) {
+			return;
 	}
-	if(i>=2) return TRUE; /* 使用外のJS */
 
 	/*
 	 * ボタンは0,1のみ(暫定)
 	 */
 	switch (button)
 	{
-	case 1:			/* ボタン1? */
+	case BUTTON1:			/* ボタン1? */
 		code = 0x20;
-		nJoyRaw[index] |= code;
+		nJoyRaw |= code;
 		break;
-	case 0:			/* ボタン0? */
+	case BUTTON0:			/* ボタン0? */
 		code = 0x10;
-		nJoyRaw[index] |= code;
+		nJoyRaw |= code;
+		break;
+	case BUTTON3:			/* ボタン1? */
+		code = 0x20;
+		nJoyRawExt |= code;
+		break;
+	case BUTTON2:			/* ボタン1? */
+		code = 0x10;
+		nJoyRawExt |= code;
 		break;
 	default:
 		break;
 	}
-	return TRUE;
+	return;
+
 }
 
-BOOL OnReleaseJoy(SDL_Event * event)
+void SDLJoyInterface::OnRelease(SDL_Event *event)
 {
-
-	/*
-	 * 感度設定とかリダイレクトとかあるけど取り合えず後;)
-	 */
 	Uint8 num = event->jbutton.which;
 	Uint8 button = event->jbutton.button;
-	int           index;
 	int            code = 0;
-	int 		i;
+
 	/*
 	 * JS番号探知
 	 */
-	for(i = 0; i<MAX_SDL_JOY ; i++){
-		if(JoyEntry[i] == NULL) continue;
-		if(num == SDL_JoystickIndex(GetEntry(i))) {
-			index = i;
-			break;
-		}
+	if(num != SDL_JoystickIndex(JoyEntry)) {
+			return;
 	}
-	if(i>=2) return TRUE; /* 使用外のJS */
-
 
 	/*
 	 * ボタンは0,1のみ(暫定)
 	 */
 	switch (button)
 	{
-	case 1:			/* ボタン1? */
+	case BUTTON1:			/* ボタン1? */
 		code = 0x20;
-		nJoyRaw[index] &= ~code;
+		nJoyRaw &= ~code;
 		break;
-	case 0:			/* ボタン0? */
+	case BUTTON0:			/* ボタン0? */
 		code = 0x10;
-		nJoyRaw[index] &= ~code;
+		nJoyRaw &= ~code;
 		break;
+	case BUTTON3:			/* ボタン1? */
+		code = 0x20;
+		nJoyRawExt &= ~code;
+		break;
+	case BUTTON2:			/* ボタン1? */
+		code = 0x10;
+		nJoyRawExt &= ~code;
+		break;
+
 	default:
 		break;
 	}
-	return TRUE;
-}
+	return;
 
-
-/*
- *  ジョイスティック デバイスより読み込み
- */
-BYTE SDLJoyInterface::GetJoy(int index, BOOL flag)
-{
-	BYTE code = 0;
-//	if ((index > 1) || (index < 0))
-	if(index >= MAX_SDL_JOY)
-		return 0;
-	code = nJoyRaw[index];	/* いい加減だが… */
-
-	// printf("JS: code = %04x\n",code);
-	return code;
 }
