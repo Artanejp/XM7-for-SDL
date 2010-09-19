@@ -5,6 +5,7 @@
  *      Author: whatisthis
  */
 
+
 #include<X11/Xlib.h>
 #include<gtk/gtk.h>
 #include<gdk/gdkx.h>
@@ -12,6 +13,7 @@
 #include<memory.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
+#include <vector>
 #include "SDLJoyInterface.h"
 
 extern "C" {
@@ -39,7 +41,7 @@ static int     joyrapid[2][2];	/* ジョイスティック連射カウンタ */
 static DWORD   joytime;	/* ジョイスティックポーリング時間	 */
 static DWORD   joytime2;	/* ジョイスティックポーリング時間	 */
 static BOOL    joyplugged[2];	/* ジョイスティック接続フラグ	 */
-static SDLJoyInterFace *SDLDrv; /* SDL JSドライバー */
+static SDLJoyInterface *SDLDrv; /* SDL JSドライバー */
 
 
 
@@ -87,6 +89,7 @@ GetRapidJoy(int index, BOOL flag)
 	 * データ取得
 	 */
 	if(index >= MAX_SDL_JOY) return 0x00;
+	if(SDLDrv == NULL) return 0x00; /* ドライバ初期化前にはダミー返す */
 	dat = SDLDrv[index].GetJoy(flag);
 
 	/*
@@ -598,7 +601,7 @@ static void OpenJoyInit(void)
  * ジョイスティック初期化
  */
 
-BOOL FASTCALL initJoy(void)
+BOOL FASTCALL InitJoy(void)
 {
 	/*
 	 * ワークエリア初期化(ジョイスティック)

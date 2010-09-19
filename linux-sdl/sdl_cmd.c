@@ -22,7 +22,9 @@
 #include "sdl_prop.h"
 #include "sdl_snd.h"
 #include "sdl_sch.h"
-#include "sdl_kbd.h"
+#include "api_kbd.h"
+#include "api_js.h"
+
 #ifdef USE_GTK
 #include "gtk_toolbox.h"
 #endif

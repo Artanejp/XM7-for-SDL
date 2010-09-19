@@ -24,10 +24,8 @@ public:
 	void ResetKeyMap(void);
 	void LoadKeyMap(void *pMap);
 private:
-	struct KeyCode KeyCodeTable2[256];
-	static const BYTE   kbd_106_table[];
-//	void InitKeyTable(void);
-	BOOL kbd_snooped = FALSE;
+	struct XM7KeyCode KeyCodeTable2[256];
+	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
 

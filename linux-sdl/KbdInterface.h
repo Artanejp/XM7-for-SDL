@@ -11,17 +11,26 @@
 
 #include <SDL/SDL.h>
 #include "xm7.h"
+#include "api_kbd.h"
 
-struct {
+struct XM7KeyCode {
 		Uint32 code;
 		Uint32 mod;
 		Uint8 pushCode;
-} KeyCode;
+};
 
-struct {
+struct SpecialKey {
 	Uint32 sym;
 	Uint32 mod;
-} SpecialKey;
+} ;
+
+/*
+ * キーコードテーブル
+ */
+struct KeyCode2 {
+	SDLKey sym;
+	Uint8 code;
+};
 
 extern void PushKeyData(Uint8 code,Uint8 MakeBreak);
 
@@ -34,24 +43,22 @@ public:
 	Uint32 GetKeyCode(Uint8 num);
 	Uint32 GetKeyMod(Uint8 num);
 
-	struct KeyCode *GetKeyMap(Uint8 pushCode);
-	struct KeyCode *GetKeyMap(void);
+	struct XM7KeyCode *GetKeyMap(Uint8 pushCode);
+	struct XM7KeyCode *GetKeyMap(void);
 	void SetKeymap(Uint32 keyCode, Uint32 nativeCode, Uint32 mod);
-	void SetKeymap(struct KeyCode *p);
+	void SetKeymap(struct XM7KeyCode *p);
 //	virtual void SetKbdSnoop(BOOL t);
-	void ResetKeyMap(void);
 	void SetResetKey(Uint32 code, Uint32 mod);
 	void SetMouseKey(Uint32 code, Uint32 mod);
-	virtual void InitKeyTable(void);
-	virtual void ResetKeyMap(void);
-	virtual void LoadKeyMap(void *pMap);
+	void InitKeyTable(void);
+	void ResetKeyMap(void);
+	void LoadKeyTable(void *pMap);
 
 private:
-	struct KeyCode KeyCodeTable2[256];
-	const struct KeyCode2 KeyTable106[];
-	void InitKeyTable(void);
+	struct XM7KeyCode KeyCodeTable2[256];
+	struct KeyCode2 KeyTable106[];
 	void InitLocalVar(void);
-	BOOL kbd_snooped = FALSE;
+	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
 };

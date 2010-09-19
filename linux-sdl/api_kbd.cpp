@@ -32,6 +32,9 @@ BOOL bKbdReal;			/* 疑似リアルタイムキースキャン
  */
 BOOL bTenCursor;		/* テンキー変換 */
 BOOL bArrow8Dir;		/* テンキー変換 8方向モード */
+BYTE   kibuf[256];	/* キーボード押下状態 */
+BYTE   kbd_map[256];
+
 /*
  *  スタティック ワーク
  */
@@ -50,7 +53,8 @@ static BYTE    nLastKey;	/* 最後に押されたキー(FULL) */
 static BYTE    nLastKey2;	/* 最後に押されたキー(10KEY) */
 static BYTE    nTenDir;	/* テンキー変換 方向データ */
 static BYTE    nTenDir2;	/* テンキー変換 方向データ2 */
-static SDL_Sem *KeySem; /* キーバッファセマフォ */
+static SDL_sem *KeySem; /* キーバッファセマフォ */
+static BOOL bCursorGrabbed;
 
 /*
  * ドライバクラス
@@ -89,6 +93,8 @@ InitKbd(void)
 	 * ワークエリア初期化(キーボード)
 	 */
 	memset(kibuf, 0, sizeof(kibuf));
+	memset(kbd_map, 0, sizeof(kbd_map));
+
 	keytime = 0;
 	/*
 	 * ここにドライバー作成する

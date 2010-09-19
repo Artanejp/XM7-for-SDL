@@ -22,7 +22,7 @@
 #include "sdl_prop.h"
 #include "sdl_snd.h"
 #include "sdl_sch.h"
-#include "sdl_kbd.h"
+#include "api_kbd.h"
 #include "gtk_toolbox.h"
 
 static Disk   disk[2][FDC_MEDIAS];

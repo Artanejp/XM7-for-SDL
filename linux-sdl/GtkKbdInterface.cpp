@@ -21,12 +21,11 @@
 #include "event.h"
 #include "sdl.h"
 #include "sdl_sch.h"
-#include "sdl_kbd.h"
+#include "api_kbd.h"
 
 //#include "gtk_propkeyboard.h"
 #include "GtkKbdInterface.h"
-
-
+//#include "GtkMouseInterface.h"
 
 static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x43, 0x5d, /* PF1 */
@@ -142,11 +141,13 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x59, 0x44, /* Tenkey 3 */
 	0x5a, 0x46, /* Tenkey 0 */
 	0x5b, 0x47, /* Tenkey . */
-	0x6c, 0x45 /* Tenkey CR */
+	0x6c, 0x45, /* Tenkey CR */
 	0xff, 0xff /* End Code 20100917 */
 };
 //static BYTE kbd_tbl_gtk[256 * 2];
-struct KeyCode KeyCodeTable2[256];
+//struct XM7KeyCode KeyCodeTable2[256];
+//struct SpecialKey ResetKey;
+//struct SpecialKey MouseCapture;
 
 GtkKbdInterface::GtkKbdInterface() {
 	// TODO Auto-generated constructor stub
@@ -161,15 +162,16 @@ GtkKbdInterface::~GtkKbdInterface() {
 
 void GtkKbdInterface::InitKeyTable(void)
 {
+	int i;
 	/*
 	 * キーボードテーブルの転写
 	 */
-		memset(KeyCodeTable2,0x00,sizeof(KeyCodeTable2));
+		//memset(KeyCodeTable2,0x00,sizeof(KeyCodeTable2));
 		for(i=0 ; i<256; i++) {
 			if((kbd_106_table[i * 2] == 0xff) && (kbd_106_table[i * 2 + 1] == 0xff)) break;
-			KeyCodeTable2[i].code = (Uint32)kbd_106_table[i * 2];
+			KeyCodeTable2[i].code = kbd_106_table[i * 2];
 			KeyCodeTable2[i].mod = 0x0000;
-			KeyCodeTable2[i].pushCode = (Uint8)kbd_106_table[i * 2 + 1];
+			KeyCodeTable2[i].pushCode = kbd_106_table[i * 2 + 1];
 		}
 		if(i < 256) {
 			KeyCodeTable2[i].code = 0xffff;
@@ -179,47 +181,48 @@ void GtkKbdInterface::InitKeyTable(void)
 	/*
 	 * マウスキャプチャの初期値はPF11
 	 */
-	MouseCapture.code = 0x5f;
+	MouseCapture.sym = 0x5f;
 	MouseCapture.mod = 0x00;
 	/*
 	 *    リセットキーの初期値はPF12
 	 */
-	ResetKey.code = 0x5f;
+	ResetKey.sym = 0x60;
 	ResetKey.mod = 0x00;
 }
 
-void OnPress(void *arg)
+void GtkKbdInterface::OnPress(void *arg)
 {
 	int i;
 	GdkEventKey *event = (GdkEventKey *)arg;
 	guint16 scan = event->hardware_keycode;
 	guint   mod = event->state;
-	struct KeyCode *p;
+	struct XM7KeyCode *p = KeyCodeTable2;
 
     for (i = 0; i<255; i++) {
     	if(p[i].code == 0xffff) break;
     	if (p[i].code == (Uint32)scan) {
-    		PushKeyData(p[i].pushCode, 0x00);
+    		PushKeyData(p[i].pushCode, 0x80);
     		break;
 		}
     }
-    return TRUE;
+    return;
 }
 
 /*
  *  キーリリースアクション
  */
-void OnRelease(void *arg)
+void GtkKbdInterface::OnRelease(void *arg)
 {
     int            i;
 	GdkEventKey *event = (GdkEventKey *)arg;
 	guint16 scan = event->hardware_keycode;
 	guint   mod = event->state;
+	struct XM7KeyCode *p = KeyCodeTable2;
 
     for (i = 0; i < 256; i++) {
     	if(p[i].code == 0xffff) break;
     	if (p[i].code == (Uint32)scan) {
-    		PushKeyData(p[i].pushCode, 0x80);
+    		PushKeyData(p[i].pushCode, 0x00);
     		break;
 		}
     }
@@ -227,7 +230,7 @@ void OnRelease(void *arg)
 	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え
 	 */
 	if ((scan == MouseCapture.sym) && (mod == MouseCapture.mod)) {
-		GtkMouseInterface::ToggleMouseCapture();
+//		GtkMouseInterface::ToggleMouseCapture();
     }
 
 	/*
@@ -240,7 +243,7 @@ void OnRelease(void *arg)
     }
 
 
-    return TRUE;
+    return;
 }
 
 

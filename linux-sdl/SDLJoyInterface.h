@@ -51,7 +51,7 @@ public:
 
 
 private:
-	SDL_JoyStick *JoyEntry;
+	SDL_Joystick *JoyEntry;
 	int JoyIndex;
 	BYTE nJoyRaw;
 	BYTE nJoyRawExt;

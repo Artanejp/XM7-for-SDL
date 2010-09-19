@@ -24,7 +24,9 @@
 #include "sdl.h"
 #include "sdl_bar.h"
 #include "sdl_draw.h"
-#include "sdl_kbd.h"
+#include "api_kbd.h"
+#include "api_js.h"
+
 #include "sdl_sch.h"
 #include "sdl_snd.h"
 #include "sdl_cfg.h"
@@ -103,20 +105,20 @@ KbdSetOnClicked(GtkWidget *widget, gpointer data)
         int i;
         SnoopKeyEvent(FALSE);
         do{
-                kbd_table[i].keysym = local_kbd_map[i].keysym;
-                kbd_table[i].code = local_kbd_map[i].code;
+//                kbd_table[i].keysym = local_kbd_map[i].keysym;
+//                kbd_table[i].code = local_kbd_map[i].code;
                 
                 if(local_kbd_map[i].keysym == 0xffff) {
                         /* キーテーブルにターゲットのKeySymがない */
-                        kbd_table[i].keysym = 0xffff;
-                        kbd_table[i].code = 0xff;
+//                        kbd_table[i].keysym = 0xffff;
+//                        kbd_table[i].code = 0xff;
                         return;
                 }
                 i++;
         } while(i < 256);
         if(i < 256) return;
-        kbd_table[i].keysym = 0xffff;
-        kbd_table[i].code = 0xff;
+//        kbd_table[i].keysym = 0xffff;
+//        kbd_table[i].code = 0xff;
 
 }
                 
@@ -137,11 +139,11 @@ StartGetKeycodeForProp(GtkWidget *widget, gpointer data)
 
         
         for(i = 0; i<256 ; i++) {
-                if(kbd_table[i].keysym == 0xffff) {
-                        break;
-                }
-                local_kbd_map[i].keysym = kbd_table[i].keysym;
-                local_kbd_map[i].code = kbd_table[i].code;
+        //        if(kbd_table[i].keysym == 0xffff) {
+            //            break;
+        //        }
+//                local_kbd_map[i].keysym = kbd_table[i].keysym;
+//                local_kbd_map[i].code = kbd_table[i].code;
         }
         local_kbd_map[i].keysym = 0xffff;
         local_kbd_map[i].code = 0xff;
@@ -199,11 +201,11 @@ static GtkWidget
         GObject     *keymap;
 
         for(i = 0; i<256 ; i++) {
-                if(kbd_table[i].keysym == 0xffff) {
-                        break;
-                }
-                local_kbd_map[i].keysym = kbd_table[i].keysym;
-                local_kbd_map[i].code = kbd_table[i].code;
+//                if(kbd_table[i].keysym == 0xffff) {
+//                        break;
+//                }
+//                local_kbd_map[i].keysym = kbd_table[i].keysym;
+//                local_kbd_map[i].code = kbd_table[i].code;
         }
 //        key = gtk_builder_new();
         keymap = gtk_builder_get_object(gbuilderMain, "dialog_keycode");

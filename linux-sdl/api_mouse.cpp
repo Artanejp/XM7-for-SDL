@@ -22,9 +22,14 @@
 #include "event.h"
 #include "sdl.h"
 #include "sdl_sch.h"
-#include "sdl_kbd.h"
+
+#include "api_kbd.h"
+#include "api_js.h"
+#include "api_mouse.h"
+
 #include "gtk_propkeyboard.h"
 
+extern "C" {
 static GdkCursor *nullcursor;	/* 透明カーソル */
 
 #ifdef MOUSE
@@ -44,6 +49,8 @@ static int     nMousePY;	/* マウス Y座標保存(一時) */
 static int     nDAreaW;	/* ドローイングエリアの幅 */
 static int     nDAreaH;	/* ドローイングエリアの高さ */
 static BOOL    rgbButtons[3];	/* マウスボタン押下状態 */
+
+BYTE nMidBtnMode;
 
 //static SDL_Cursor *nullcursor;	/* 透明カーソル */
 
@@ -418,4 +425,5 @@ void OnMoveMouse(SDL_Event *event)
 	nMouseX += (int)xrel;
 	nMouseY += (int)yrel;
 
+}
 }

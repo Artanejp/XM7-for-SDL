@@ -7,6 +7,26 @@
 
 #ifndef API_KBD_H_
 #define API_KBD_H_
+#include<X11/Xlib.h>
+#include<gtk/gtk.h>
+#include<gdk/gdkx.h>
+#include<gdk/gdkkeysyms.h>
+#include<memory.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_syswm.h>
+
+#include "xm7.h"
+#include "mainetc.h"
+#include "keyboard.h"
+#include "device.h"
+#include "mouse.h"
+#include "event.h"
+#include "sdl.h"
+#include "sdl_sch.h"
+//#include "sdl_kbd.h"
+#include "gtk_propkeyboard.h"
+
+
 
 
     /*
@@ -38,17 +58,8 @@ extern          "C" {
         gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
                                  gpointer data);
 #endif
-        extern BOOL kbd_snooped;
-#ifdef MOUSE
-	gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,
-			       gpointer user_data);
-
-	gboolean OnButtonRelease(GtkWidget * widget,
-				 GdkEventButton * event,
-				 gpointer user_data);
-
-#endif				/*  */
-     void FASTCALL InitKbd(void);
+     extern BOOL kbd_snooped;
+    void FASTCALL InitKbd(void);
     void FASTCALL   CleanKbd(void);
     BOOL FASTCALL SelectKbd(void);
     void FASTCALL   PollKbd(void);
@@ -58,10 +69,6 @@ extern          "C" {
     void PushKeyData(Uint8 code,Uint8 MakeBreak);
 
 
-#ifdef MOUSE
-        void FASTCALL   PollMos(void);
-        void FASTCALL   SetMouseCapture(BOOL en);
-#endif				/*  */
 
 /*
  *  主要ワーク
@@ -86,13 +93,6 @@ extern          "C" {
     extern BOOL     bNTkeyMakeFlag[128];
     extern BOOL     bNTkbMode;
 
-#ifdef MOUSE
-    extern BYTE     nMidBtnMode;
-
-	/*
-	 * 中央ボタン状態取得モード
-	 */
-#endif				/*  */
 #ifdef __cplusplus
 }
 #endif				/*  */

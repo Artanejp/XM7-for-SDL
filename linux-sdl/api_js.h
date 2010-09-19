@@ -15,7 +15,7 @@ extern int            nJoyType[2];	/* ジョイスティックタイプ */
 extern int            nJoyRapid[2][2];	/* 連射タイプ */
 extern int            nJoyCode[2][7];	/* 生成コード */
 extern BYTE FASTCALL joy_request(BYTE no);
-extern BOOL FASTCALL initJoy(void);
+extern BOOL FASTCALL InitJoy(void);
 extern void FASTCALL PollJoy(void);
 extern void FASTCALL CleanJoy(void);
 

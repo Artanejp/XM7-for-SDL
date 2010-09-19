@@ -19,14 +19,16 @@ public:
 	void OnRelease(void *eventh);
 	void InitKeyTable(void);
 	void ResetKeyMap(void);
-	void LoadKeyMap(void *pMap);
+	void LoadKeyTable(void *pMap);
 private:
-	struct KeyCode KeyCodeTable2[256];
-	const struct KeyCode2 KeyTable[];
+	struct XM7KeyCode KeyCodeTable2[256];
+	struct KeyCode2 KeyTableSDL[];
+	void InitLocalVar(void);
 //	void InitKeyTable(void);
-	BOOL kbd_snooped = FALSE;
+	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
+
 
 };
 

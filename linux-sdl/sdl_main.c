@@ -21,7 +21,10 @@
 #include "sdl.h"
 #include "sdl_bar.h"
 #include "sdl_draw.h"
-#include "sdl_kbd.h"
+#include "api_kbd.h"
+#include "api_js.h"
+#include "api_mouse.h"
+
 #include "sdl_sch.h"
 #include "sdl_snd.h"
 #include "sdl_cfg.h"
@@ -149,6 +152,7 @@ OnCreate(void *parent)
         InitDraw();
         InitSnd();
         InitKbd();
+        InitJoy();
         InitSch();
         CreateStatus();
  
