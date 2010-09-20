@@ -85,7 +85,7 @@ void PSG::SetClock(int clock, int rate, bool ipflag)
 	tmp = ((reg[11] + reg[12] * 256) & 0xffff);
 	eperiod = tmp ? eperiodbase / tmp : eperiodbase * 2;
 
-	// 線形補間ワークを初期化
+	// 波形補間ワークを初期化
 	mb[0] = mb[1] = mb[2] = mb[3] = 0;
 	mixdelta = 0;
 }

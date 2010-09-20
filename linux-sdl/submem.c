@@ -567,8 +567,12 @@ submem_readb(WORD addr)
     /*
      * ワークRAM 
      */
-    if (addr >= 0xd500) {
-	return sub_ram[(addr - 0xd500) + 0x1380];
+//    if (addr >= 0xd500) {
+//	return sub_ram[(addr - 0xd500) + 0x1380];
+	if (fm7_ver >= 2) {
+		if (addr >= 0xd500){
+			return sub_ram[(addr - 0xd500) + 0x1380];
+		}
     }
 #else
     if (addr >= 0xd800) {
@@ -589,6 +593,19 @@ submem_readb(WORD addr)
     /*
      *      サブI/O
      */
+#if XM7_VER == 1
+	/* $D410〜$D7FFは$D400〜$D40Fのミラー */
+	addr &= 0xfc0f;
+#else
+	if (fm7_ver == 1) {
+		/* $D410〜$D7FFは$D400〜$D40Fのミラー */
+		addr &= 0xfc0f;
+	}
+	else if (fm7_ver == 2) {
+		/* $D440〜$D4FFは$D400〜$D43Fのミラー */
+		addr &= 0xff3f;
+	}
+#endif
 
     /*
      * ディスプレイ 
@@ -730,18 +747,44 @@ submem_readbnio(WORD addr)
 	return shared_ram[(WORD) (addr - 0xd380)];
     }
 
-    /*
-     * サブI/O 
-     */
-    if (addr < 0xd500) {
-	return sub_io[addr - 0xd400];
-    }
+ //   /*
+ //    * サブI/O 
+ //    */
+ //   if (addr < 0xd500) {
+//	return sub_io[addr - 0xd400];
+//    }
+	/* ワークRAM */
+#if XM7_VER >= 2
+	if (fm7_ver >= 2) {
+		if ((addr >= 0xd500) && (addr < 0xd800)) {
+			return sub_ram[(addr - 0xd500) + 0x1380];
+		}
+ 	}
+#endif
 
-    /*
-     * ワークRAM 
-     */
-    if (addr < 0xd800) {
-	return sub_ram[(addr - 0xd500) + 0x1380];
+    
+//    /*
+//     * ワークRAM 
+//     */
+//    if (addr < 0xd800) {
+//	return sub_ram[(addr - 0xd500) + 0x1380];
+	/* サブI/O */
+	if (addr < 0xd800) {
+#if XM7_VER == 1
+		/* $D410〜$D7FFは$D400〜$D40Fのミラー */
+		addr &= 0xfc0f;
+#else
+		if (fm7_ver == 1) {
+			/* $D410〜$D7FFは$D400〜$D40Fのミラー */
+			addr &= 0xfc0f;
+		}
+		else if (fm7_ver == 2) {
+			/* $D440〜$D4FFは$D400〜$D43Fのミラー */
+			addr &= 0xff3f;
+		}
+#endif
+		return sub_io[addr - 0xd400];
+
     }
 #if XM7_VER >= 2
     /*
@@ -987,10 +1030,16 @@ submem_writeb(WORD addr, BYTE dat)
      * ワークRAM 
      */
 #if XM7_VER >= 2
-    if ((addr >= 0xd500) && (addr < 0xd800)) {
-	sub_ram[(addr - 0xd500) + 0x1380] = dat;
-	return;
+//    if ((addr >= 0xd500) && (addr < 0xd800)) {
+//	sub_ram[(addr - 0xd500) + 0x1380] = dat;
+//	return;
+	if (fm7_ver >= 2) {
+		if ((addr >= 0xd500) && (addr < 0xd800)) {
+			sub_ram[(addr - 0xd500) + 0x1380] = dat;
+			return;
+		}
     }
+   
 #endif
 
     /*
@@ -1029,6 +1078,20 @@ submem_writeb(WORD addr, BYTE dat)
     /*
      *      サブI/O
      */
+#if XM7_VER == 1
+	/* $D410〜$D7FFは$D400〜$D40Fのミラー */
+	addr &= 0xfc0f;
+#else
+	if (fm7_ver == 1) {
+		/* $D410〜$D7FFは$D400〜$D40Fのミラー */
+		addr &= 0xfc0f;
+	}
+	else if (fm7_ver == 2) {
+		/* $D440〜$D4FFは$D400〜$D43Fのミラー */
+		addr &= 0xff3f;
+	}
+#endif
+   
     sub_io[addr - 0xd400] = dat;
 
     /*

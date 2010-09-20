@@ -29,13 +29,13 @@
 #define	VERSION		"V1.1"
 #endif
 #if XM7_VER == 1
-#define	LEVEL		"L20"
+#define	LEVEL		"L21a"
 // #define BETAVER
 #else
-#define	LEVEL		"L30"
+#define	LEVEL		"L31a"
 // #define BETAVER
 #endif
-#define          LOCALVER         "SDL 0.1α82  "
+#define          LOCALVER         "SDL 0.1α88  "
 #define	DATE		"2010/09/13"
 
 /*
@@ -220,10 +220,12 @@ typedef struct {
 #define FBASIC10_ROM	"FBASIC10.ROM"	/* F-BASIC V1.0 */
 #define BOOTBAS_ROM		"BOOT_BAS.ROM"
 #define BOOTDOS_ROM		"BOOT_DOS.ROM"
+#define BOOT1MB_ROM		"BOOT_1MB.ROM"	/* FM-77 1MB BOOT */
+#define BOOTMMR_ROM		"BOOT_MMR.ROM"	/* FM-77 MMR BOOT */
 #define BOOTBAS8_ROM	"BOOTBAS8.ROM"	/* MICRO 8 BASIC BOOT */
-#define BOOTDOS5_ROM	"BOOTDOS5.ROM"	/* MICRO 8 5inchDOS BOOT */
-#define BOOTBBL_ROM		"BOOT_BBL.ROM"	/* MICRO 8 Bubble BOOT */
-#define BOOTDOS8_ROM	"BOOTDOS8.ROM"	/* MICRO 8 8inchDOS BOOT */
+#define BOOTDOS8_ROM	"BOOTDOS8.ROM"	/* MICRO 8 5inchDOS BOOT */
+#define BOOTBBL8_ROM	"BOOTBBL8.ROM"	/* MICRO 8 Bubble BOOT */
+#define BOOTSFD8_ROM	"BOOTSFD8.ROM"	/* MICRO 8 8inchDOS BOOT */
 #define SUBSYSC_ROM		"SUBSYS_C.ROM"
 #define SUBSYS8_ROM		"SUBSYS_8.ROM"	/* MICRO 8 SUBSYSTEM */
 #define SUBSYSL4_ROM	"SUBSYSL4.ROM"	/* FM-77L4 400LINE SUBSYSTEM */
@@ -713,6 +715,11 @@ extern          "C" {
     /*
      * BOOT (DOS,FM-8) $200 
      */
+    extern BYTE *boot_mmr;
+     /*
+      * BOOT (MMR)        $200
+      */
+   
     extern BOOL     available_fm7roms;
     /*
      * FM-7 ROM使用可能フラグ 
@@ -721,6 +728,10 @@ extern          "C" {
     /*
      * FM-8 ROM使用可能フラグ 
      */
+   extern BOOL available_mmrboot;
+     /*
+      * FM-77 MMRブートROM使用可能フラグ
+      */
 #endif
     extern BOOL     boot_mode;
     /*
@@ -731,6 +742,15 @@ extern          "C" {
      * F-BASIC 3.0 ROM イネーブル 
      */
 
+    extern BYTE *boot_ram;
+   /*
+    * BOOT (RAM)        $200
+    */
+    extern BOOL bootram_rw;
+   /*
+    * ブートRAM 書き込み可能
+    */
+   
     /*
      *      メモリ (FM-77)
      */
@@ -762,14 +782,14 @@ extern          "C" {
      */
 #endif
 #endif
-    extern BYTE    *boot_ram;
-    /*
-     * BOOT (RAM) $200 
-     */
-    extern BOOL     bootram_rw;
-    /*
-     * ブートRAM 書き込み可能 
-     */
+//    extern BYTE    *boot_ram;
+//    /*
+//     * BOOT (RAM) $200 
+//     */
+//    extern BOOL     bootram_rw;
+//    /*
+//     * ブートRAM 書き込み可能 
+//     */
 
     /*
      *      メモリ (FM77AV)

@@ -1003,6 +1003,11 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
 				return FALSE;
 			}
 		case 0xfd15:
+#if XM7_VER == 1
+			if (fm_subtype == FMSUB_FM8) {
+				return FALSE;
+			}
+#endif
 			*dat = 0xff;
 			return TRUE;
 
@@ -1013,6 +1018,11 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
 				return FALSE;
 			}
 		case 0xfd16:
+#if XM7_VER == 1
+			if (fm_subtype == FMSUB_FM8) {
+				return FALSE;
+			}
+#endif
 			opn_read_data_reg(OPN_STD, dat);
 			return TRUE;
 
@@ -1055,6 +1065,11 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
 			/* PSGアクセス時は下位2bitのみ有効 */
 			dat &= 0x03;
 		case 0xfd15:
+#if XM7_VER == 1
+			if (fm_subtype == FMSUB_FM8) {
+				return FALSE;
+			}
+#endif
 			opn_write_command_reg(OPN_STD, dat);
 			return TRUE;
 
@@ -1065,6 +1080,11 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
 				return FALSE;
 			}
 		case 0xfd16:
+#if XM7_VER == 1
+			if (fm_subtype == FMSUB_FM8) {
+				return FALSE;
+			}
+#endif
 			opn_write_data_reg(OPN_STD, dat);
 			return TRUE;
 	}

@@ -54,6 +54,7 @@ BYTE            fm_subtype;	/* ハードウェアサブバージョン
 BOOL            lowspeed_mode;	/* 動作クロックモード */
 BOOL            available_fm8roms;	/* FM-8 ROM使用可能フラグ */
 BOOL            available_fm7roms;	/* FM-7 ROM使用可能フラグ */
+BOOL            available_mmrboot;	/* FM-77 MMRブートROM使用可能フラグ */
 #endif
 
 BOOL            hotreset_flag;	/* メインホットリセットフラグ 
@@ -69,7 +70,7 @@ const char     *state_header = "XM7 VM STATE 912";
 #elif XM7_VER >= 2
 const char     *state_header = "XM7 VM STATE 711";
 #else
-const char     *state_header = "XM7 VM STATE 301";
+const char     *state_header = "XM7 VM STATE 302";
 #endif
 
 /*
@@ -92,6 +93,7 @@ system_init(void)
     lowspeed_mode = FALSE;
     available_fm8roms = TRUE;
     available_fm7roms = TRUE;
+    available_mmrboot = TRUE;
 #endif
     boot_mode = BOOT_BASIC;	/* BASIC MODE */
 

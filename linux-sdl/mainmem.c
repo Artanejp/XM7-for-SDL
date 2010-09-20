@@ -46,6 +46,7 @@ BYTE           *boot_bas;	/* ブート(BASIC,FM-7) $200 */
 BYTE           *boot_dos;	/* ブート(DOS,FM-7) $200 */
 BYTE           *boot_bas8;	/* ブート(BASIC,FM-8) $200 */
 BYTE           *boot_dos8;	/* ブート(DOS,FM-8) $200 */
+BYTE           *boot_mmr;	/* ブート(MMR,FM-77)   $200 */
 #endif
 BYTE           *boot_ram;	/* ブートRAM $200 */
 BOOL            bootram_rw;	/* ブートRAM 書き込みフラグ */
@@ -60,6 +61,7 @@ BYTE           *init_rom;	/* イニシエータROM $2000 */
 BOOL            initrom_en;	/* イニシエータROMイネーブルフラグ 
 				 */
 #endif
+
 
 /*
  *      スタティック ワーク
@@ -90,6 +92,9 @@ mainmem_init(void)
 #if XM7_VER == 1
     boot_bas = NULL;
     boot_dos = NULL;
+    boot_mmr = NULL;
+    boot_bas8 = NULL;
+    boot_dos8 = NULL;
 #else
 #if XM7_VER >= 3
     extram_c = NULL;
@@ -105,7 +110,11 @@ mainmem_init(void)
     if (mainram_a == NULL) {
 	return FALSE;
     }
-    mainram_b = (BYTE *) malloc(0x7c80);
+#if XM7_VER == 1
+	mainram_b = (BYTE *)malloc(0x7e00);
+#else
+ 	mainram_b = (BYTE *)malloc(0x7c80);
+#endif
     if (mainram_b == NULL) {
 	return FALSE;
     }
@@ -168,6 +177,10 @@ mainmem_init(void)
     if (boot_dos == NULL) {
 	return FALSE;
     }
+    boot_mmr = (BYTE *)malloc(0x200);
+    if (boot_mmr == NULL) {
+	return FALSE;
+    }
     boot_bas8 = (BYTE *) malloc(0x200);
     if (boot_bas8 == NULL) {
 	return FALSE;
@@ -218,7 +231,7 @@ mainmem_init(void)
     }
 #endif
     /*
-     * 高速起動・ドライブ対応変更抑制(EX/SX) 
+     * 高速起動・ドライブ対応変更抑制(AV20EX/AV40EX/AV40SX)
      */
     p = &init_rom[0x1c00];
     if ((p[0x8f] == 0x10) && (p[0x90] == 0x23)) {
@@ -233,7 +246,7 @@ mainmem_init(void)
     }
 
     /*
-     * 高速起動・ドライブ対応変更抑制(AV40/20) 
+     * 高速起動・ドライブ対応変更抑制(AV20EX/AV40EX/AV40SX)
      */
     if ((p[0x74] == 0x10) && (p[0x75] == 0x23)) {
 	p[0x74] = 0x12;
@@ -252,6 +265,9 @@ mainmem_init(void)
     if (!file_load(BOOTDOS_ROM, boot_dos, 0x1e0)) {
 	available_fm7roms = FALSE;
     }
+    if (!file_load(BOOTMMR_ROM, boot_mmr, 0x1e0)) {
+	available_mmrboot = FALSE;
+    }
     if (!file_load(BOOTBAS8_ROM, boot_bas8, 0x1e0)) {
 	available_fm8roms = FALSE;
     }
@@ -262,7 +278,7 @@ mainmem_init(void)
     /*
      * 高速起動モード(旧ブート) 
      */
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 5; i++) {
 	switch (i) {
 	case 0:
 	    p = boot_bas;
@@ -271,9 +287,12 @@ mainmem_init(void)
 	    p = boot_dos;
 	    break;
 	case 2:
-	    p = boot_bas8;
+	    p = boot_mmr;
 	    break;
 	case 3:
+	    p = boot_bas8;
+	    break;
+	case 4:
 	    p = boot_dos8;
 	    break;
 	default:
@@ -332,6 +351,7 @@ mainmem_cleanup(void)
     ASSERT(basic_rom8);
     ASSERT(boot_bas);
     ASSERT(boot_dos);
+    ASSERT(boot_mmr);
     ASSERT(boot_bas8);
     ASSERT(boot_dos8);
 #endif
@@ -376,6 +396,9 @@ mainmem_cleanup(void)
     }
     if (boot_dos) {
 	free(boot_dos);
+    }
+    if (boot_mmr) {
+	free(boot_mmr);
     }
     if (boot_bas8) {
 	free(boot_bas8);
@@ -1025,7 +1048,12 @@ mainmem_save(int fileh)
     if (!file_write(fileh, mainram_a, 0x8000)) {
 	return FALSE;
     }
+
+#if XM7_VER == 1
+    if (!file_write(fileh, mainram_b, 0x7e00)) {
+#else
     if (!file_write(fileh, mainram_b, 0x7c80)) {
+#endif
 	return FALSE;
     }
 
@@ -1097,9 +1125,24 @@ mainmem_load(int fileh, int ver)
     if (!file_read(fileh, mainram_a, 0x8000)) {
 	return FALSE;
     }
-    if (!file_read(fileh, mainram_b, 0x7c80)) {
-	return FALSE;
-    }
+#if XM7_VER == 1
+    /* Ver302拡張 */
+    if (ver <= 301) {
+         if (!file_read(fileh, mainram_b, 0x7c80)) {
+		return FALSE;
+		}
+		memset(&mainram_b[0x7c80], 0, 0x180);
+	}
+	else {
+	   if (!file_read(fileh, mainram_b, 0x7e00)) {
+			return FALSE;
+		}
+	}
+#else
+   if (!file_read(fileh, mainram_b, 0x7c80)) {
+ 		return FALSE;
+ 	}
+#endif
 
     if (!file_read(fileh, main_io, 0x100)) {
 	return FALSE;

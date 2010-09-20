@@ -210,8 +210,10 @@ mos_load(int fileh, int ver)
 
 #if XM7_VER >= 3
     if ((ver >= 900) || ((ver >= 700) && (ver <= 799))) {
-#else
+#elif XM7_VER >= 2    
     if (ver >= 700) {
+#else 
+    if ((ver >= 302) && (ver <= 399)) {
 #endif
 	if (!file_byte_read(fileh, &mos_x)) {
 	    return FALSE;

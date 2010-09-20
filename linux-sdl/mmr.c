@@ -54,6 +54,9 @@ WORD            mr2_secreg;	/* MR2 セクタレジスタ */
 BOOL            FASTCALL
 mmr_init(void)
 {
+	/* 初回起動時のみMMRをクリアするように変更 */
+	memset(mmr_reg, 0, sizeof(mmr_reg));
+
 #if XM7_VER >= 3
     /*
      * 768KB 拡張RAMカードをディセーブル 
@@ -85,7 +88,7 @@ mmr_reset(void)
      */
     mmr_flag = FALSE;
     twr_flag = FALSE;
-    memset(mmr_reg, 0, sizeof(mmr_reg));
+//    memset(mmr_reg, 0, sizeof(mmr_reg)); // XM7 3431
     mmr_seg = 0;
     twr_reg = 0;
     mmr_modify = FALSE;
@@ -246,10 +249,45 @@ mmr_extrb(WORD * addr, BYTE * dat)
 	/*
 	 * MMRは再配置禁止 
 	 */
-	if ((raddr >= 0x3fd80) && (raddr <= 0x3fd97)) {
-	    *dat = 0xff;
+//	if ((raddr >= 0x3fd80) && (raddr <= 0x3fd97)) {
+//	    *dat = 0xff;
+#if XM7_VER >= 2
+		if (fm7_ver >= 2) {
+			if ((raddr >= 0x3fd80) && (raddr <= 0x3fd97)) {
+				*dat = 0xff;
+				return TRUE;
+			}
+		}
+#endif
+#if XM7_VER == 1
+		/* BASIC ROM直後のRAM・共有RAM・I/O領域にはROM/RAMが見える */
+		if ((raddr >= 0x3fc00) && (raddr < 0x3fe00)) {
+			if (basicrom_en) {
+				*dat = 0x00;
+			}
+			else {
+				*dat = mainram_b[raddr - 0x38000];
+			}
+
 	    return TRUE;
 	}
+		/* ブート領域にはROM/RAMが見える */
+		if (raddr >= 0x3fe00) {
+			if (basicrom_en) {
+				if (available_mmrboot) {
+					*dat = boot_mmr[raddr - 0x3fe00];
+				}
+				else {
+					*dat = boot_bas[raddr - 0x3fe00];
+				}
+			}
+			else {
+				*dat = boot_ram[raddr - 0x3fe00];
+			}
+			return TRUE;
+		}
+#endif
+
 
 	/*
 	 * $30セグメント 
@@ -350,11 +388,47 @@ mmr_extbnio(WORD * addr, BYTE * dat)
 	/*
 	 * MMRは再配置禁止 
 	 */
-	if ((raddr >= 0x3fd80) && (raddr <= 0x3fd95)) {
-	    *dat = 0xff;
+//	if ((raddr >= 0x3fd80) && (raddr <= 0x3fd95)) {
+//	    *dat = 0xff;
+#if XM7_VER >= 2
+		if (fm7_ver >= 2) {
+			if ((raddr >= 0x3fd80) && (raddr <= 0x3fd97)) {
+				*dat = 0xff;
+				return TRUE;
+			}
+		}
+#endif
+
+#if XM7_VER == 1
+		/* BASIC ROM直後のRAM・共有RAM・I/O領域にはROM/RAMが見える */
+		if ((raddr >= 0x3fc00) && (raddr < 0x3fe00)) {
+			if (basicrom_en) {
+				*dat = 0x00;
+			}
+			else {
+				*dat = mainram_b[raddr - 0x38000];
+			}
+			return TRUE;
+		}
+
+		/* ブート領域にはROM/RAMが見える */
+		if (raddr >= 0x3fe00) {
+			if (basicrom_en) {
+				if (available_mmrboot) {
+					*dat = boot_mmr[raddr - 0x3fe00];
+				}
+				else {
+					*dat = boot_bas[raddr - 0x3fe00];
+				}
+			}
+			else {
+				*dat = boot_ram[raddr - 0x3fe00];
+			}
+	   
 	    return TRUE;
 	}
-
+#endif
+       
 	/*
 	 * $30セグメント 
 	 */
@@ -454,9 +528,34 @@ mmr_extwb(WORD * addr, BYTE dat)
 	/*
 	 * MMRは再配置禁止 
 	 */
-	if ((raddr >= 0x3fd80) && (raddr <= 0x3fd95)) {
-	    return TRUE;
-	}
+//	if ((raddr >= 0x3fd80) && (raddr <= 0x3fd95)) {
+#if XM7_VER >= 2
+		if (fm7_ver >= 2) {
+			if ((raddr >= 0x3fd80) && (raddr <= 0x3fd97)) {
+				return TRUE;
+			}
+		}
+#endif
+
+#if XM7_VER == 1
+		/* BASIC ROM直後のRAM・共有RAM・I/O領域にはROM/RAMが見える */
+		if ((raddr >= 0x3fc00) && (raddr < 0x3fe00)) {
+			if (!basicrom_en) {
+				mainram_b[raddr - 0x38000] = dat;
+			}
+			return TRUE;
+		}
+ 
+		/* ブート領域にはROM/RAMが見える */
+		if (raddr >= 0x3fe00) {
+			if (!basicrom_en) {
+				boot_ram[raddr - 0x3fe00] = dat;
+			}
+			return TRUE;
+		}
+#endif
+//	    return TRUE;
+//	}
 
 	/*
 	 * $30セグメント 
@@ -745,7 +844,6 @@ mmr_readb(WORD addr, BYTE * dat)
 	*dat = 0xff;
 	return TRUE;
 #endif
-
 #endif
     }
 

@@ -15,7 +15,6 @@
 /* XM7 header file by RHG */
 #include	"xm7.h"
 #include	"opn.h"
-//#include	"whg.h"
 #include	"w32.h"
 #include	"w32_sch.h"
 
