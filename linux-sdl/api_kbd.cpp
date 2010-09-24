@@ -185,6 +185,7 @@ PushKeyData(Uint8 code,Uint8 MakeBreak)
 			kibuf[code] = 0x80;
 		}
 	}
+//	printf("KEY: PUSH #%02x as %02x\n", code, MakeBreak);
 	SDL_SemPost(KeySem);
 }
 
@@ -199,7 +200,7 @@ PushKeyCode(BYTE code)
 	if (nKeyWritePtr < KEYBUFFER_SIZE) {
 		nKeyBuffer[nKeyWritePtr++] = code;
 	}else {
-		for (i = 0; i < KEYBUFFER_SIZE; i++) {
+		for (i = 0; i < KEYBUFFER_SIZE - 1; i++) {
 			nKeyBuffer[i] = nKeyBuffer[i + 1];
 		}
 		nKeyBuffer[KEYBUFFER_SIZE - 1] = code;

@@ -42,7 +42,7 @@ static DWORD   joytime;	/* ジョイスティックポーリング時間	 */
 static DWORD   joytime2;	/* ジョイスティックポーリング時間	 */
 static BOOL    joyplugged[2];	/* ジョイスティック接続フラグ	 */
 static SDLJoyInterface *SDLDrv; /* SDL JSドライバー */
-
+static BYTE nJoyKeyCode[MAX_SDL_JOY][16]; /* ジョイスティックキーコードアサイン */
 
 
 /*
@@ -385,6 +385,41 @@ PollJoySub(int index, BYTE dat)
 	return ret;
 }
 
+static void
+PollJoyKbdSub(int index, BYTE dat, BYTE MakeBreak)
+{
+	switch(dat & 0x0f)
+	{
+	case 1: /* 上 */
+		PushKeyData(nJoyKeyCode[index][0], MakeBreak);
+		break;
+	case 2: /* 下 */
+		PushKeyData(nJoyKeyCode[index][1], MakeBreak);
+		break;
+	case 4: /* 左 */
+		PushKeyData(nJoyKeyCode[index][2], MakeBreak);
+		break;
+	case 8: /* 右 */
+		PushKeyData(nJoyKeyCode[index][3], MakeBreak);
+		break;
+	case 5: /* 左上 */
+		PushKeyData(nJoyKeyCode[index][8], MakeBreak);
+		break;
+	case 9: /* 右上 */
+		PushKeyData(nJoyKeyCode[index][9], MakeBreak);
+		break;
+	case 6: /* 左下 */
+		PushKeyData(nJoyKeyCode[index][10], MakeBreak);
+		break;
+	case 10: /* 右下 */
+		PushKeyData(nJoyKeyCode[index][11], MakeBreak);
+		break;
+	default:
+	case 0: /* 押されてない */
+		PushKeyData(nJoyKeyCode[index][4], MakeBreak);
+		break;
+	}
+}
 
 /*
  *  ジョイスティック ポーリング(キーボード)
@@ -393,58 +428,30 @@ static void
 PollJoyKbd(int index, BYTE dat)
 {
 	BYTE bit;
+	BYTE diff;
 	int            i;
+
 
 	/*
 	 * 上下左右
 	 */
+
 	bit = 0x01;
-	for (i = 0; i < 4; i++) {
-		if (dat & bit) {
-
+	diff = (dat ^ joybk[index]) & 0x0f;
+	if(diff != 0) {
+		/*
+		 * 前キーbreak
+		 */
+		PollJoyKbdSub(index, joybk[index] & 0x0f, 0x00);
+		PollJoyKbdSub(index, dat & 0x0f, 0x80);
+	} else {
+		if((dat & 0x0f) == 0){
 			/*
-			 * 初めて押されたら、make発行
+			 * 強制的に方向キー解除
 			 */
-			if ((joybk[index] & bit) == 0) {
-				if ((nJoyCode[index][i] > 0)
-						&& (nJoyCode[index][i] <= 0x66)) {
-					keyboard_make((BYTE) nJoyCode[index][i]);
-				}
-			}
-		}
-
-		else {
-
-			/*
-			 * 初めて離されたら、break発行
-			 */
-			if ((joybk[index] & bit) != 0) {
-				if ((nJoyCode[index][i] > 0)
-						&& (nJoyCode[index][i] <= 0x66)) {
-					keyboard_break((BYTE) nJoyCode[index][i]);
-				}
-			}
-		}
-		bit <<= 1;
-	}
-
-	/*
-	 * センターチェック
-	 */
-	if ((dat & 0x0f) == 0) {
-		if ((joybk[index] & 0x0f) != 0) {
-
-			/*
-			 * make/breakを続けて出す
-			 */
-			if ((nJoyCode[index][4] > 0)
-					&& (nJoyCode[index][4] <= 0x66)) {
-				keyboard_make((BYTE) nJoyCode[index][4]);
-				keyboard_break((BYTE) nJoyCode[index][4]);
-			}
+			PushKeyData(nJoyKeyCode[index][4], 0x00);
 		}
 	}
-
 	/*
 	 * ボタン
 	 */
@@ -456,10 +463,10 @@ PollJoyKbd(int index, BYTE dat)
 			 * 初めて押さたら、make発行
 			 */
 			if ((joybk[index] & bit) == 0) {
-				if ((nJoyCode[index][i + 5] > 0)
-						&& (nJoyCode[index][i + 5] <= 0x66)) {
-					keyboard_make((BYTE) nJoyCode[index][i + 5]);
-				}
+//				if ((nJoyCode[index][i + 5] > 0)
+//						&& (nJoyCode[index][i + 5] <= 0x66)) {
+					PushKeyData(nJoyKeyCode[index][i + 5], 0x80);
+//				}
 			}
 		}
 
@@ -469,15 +476,17 @@ PollJoyKbd(int index, BYTE dat)
 			 * 初めて離されたら、break発行
 			 */
 			if ((joybk[index] & bit) != 0) {
-				if ((nJoyCode[index][i + 5] > 0)
-						&& (nJoyCode[index][i + 5] <= 0x66)) {
-					keyboard_break((BYTE) nJoyCode[index][i + 5]);
-				}
+//				if ((nJoyCode[index][i + 5] > 0)
+//						&& (nJoyCode[index][i + 5] <= 0x66)) {
+					PushKeyData(nJoyKeyCode[index][i + 5], 0x00);
+//				}
 			}
 		}
 		bit <<= 1;
 	}
 	/* ここに拡張ボタンを */
+
+	joybk[index] = dat;
 }
 
 
@@ -603,6 +612,7 @@ static void OpenJoyInit(void)
 
 BOOL FASTCALL InitJoy(void)
 {
+	int index;
 	/*
 	 * ワークエリア初期化(ジョイスティック)
 	 */
@@ -625,6 +635,24 @@ BOOL FASTCALL InitJoy(void)
     memset(joyrapid, 0, sizeof(joyrapid));
     joyplugged[0] = TRUE;
     joyplugged[1] = TRUE;
+
+    /*
+     * キーコードエミュレーション領域に初期値入れる
+     */
+    for(index = 0; index < 2 ; index++) {
+    	nJoyKeyCode[index][0] = 0x3b;/* 上 : KP8*/
+    	nJoyKeyCode[index][1] = 0x43;/* 下  : KP2*/
+    	nJoyKeyCode[index][2] = 0x3e;/* 左 : KP4*/
+    	nJoyKeyCode[index][3] = 0x40;/* 右 : KP6*/
+    	nJoyKeyCode[index][4] = 0x3f;/* センター : KP5 */
+    	nJoyKeyCode[index][5] = 0x35;/* ボタン1 : 右SPACE*/
+    	nJoyKeyCode[index][6] = 0x5c;/* ボタン2 : BREAK*/
+    	nJoyKeyCode[index][8] = 0x3a;/* 左上 : KP7*/
+    	nJoyKeyCode[index][9] = 0x3c;/* 右上  : KP9*/
+    	nJoyKeyCode[index][10] = 0x42;/* 左下 : KP1*/
+    	nJoyKeyCode[index][11] = 0x44;/* 右下 : KP3*/
+
+    }
 
     SDLDrv = new SDLJoyInterface[MAX_SDL_JOY];
 /*
