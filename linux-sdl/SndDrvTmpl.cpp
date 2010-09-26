@@ -17,9 +17,9 @@ int samples;
 int channels;
 int playCh;
 int srate;
-int howlong; /* 実際の演奏秒数 */
 Mix_Chunk chunk;
 BOOL enable;
+SDL_Sem *RenderSem;
 
 
 
@@ -38,6 +38,7 @@ SndDrvTmpl::SndDrvTmpl() {
 	chunk.allocated = 0; /* アロケートされてる */
 	chunk.volume = 128; /* 一応最大 */
 	enable = FALSE;
+	RenderSem = NULL;
 }
 
 SndDrvTmpl::~SndDrvTmpl() {
@@ -47,30 +48,40 @@ SndDrvTmpl::~SndDrvTmpl() {
 
 Uint8 *SndDrvTmpl::NewBuffer(void)
 {
+	int uStereo;
 	if(buf != NULL) return NULL; /* バッファがあるよ？Deleteしましょう */
-	bufSize = (ms * srate * ch * sizeof(int16)) / 1000;
+	uStereo = uStereoOut %4;
+    if ((uStereo > 0) || bForceStereo) {
+    	channels = 2;
+    } else {
+    	channels = 1;
+    }
+
+	bufSize = (ms * srate * channels * sizeof(int16)) / 1000;
 	buf = (Uint8 *)malloc(bufSize);
 	if(buf == NULL) return NULL; /* バッファ取得に失敗 */
 	memset(buf, 0x00, bufSize); /* 初期化 */
-	howlong = ms;
 	chunk.abuf = buf;
 	chunk.alen = bufSize;
 	chunk.allocated = 1; /* アロケートされてる */
 	chunk.volume = 128; /* 一応最大 */
+	if(RenderSem == NULL) {
+		RenderSem = SDL_CreateSemaphore(1);
+	}
 }
 
 void SndDrvTmpl::DeleteBuffer(void)
 {
-	do{
-	} while(Mix_Playing(playCh));
-
+	if(RenderSem != NULL) {
+		SDL_SemWait(RenderSem);
+		SDL_DestroySemaphore(RenderSem);
+		RenderSem = NULL;
+	}
 	if(buf != NULL) free(buf);
 	buf = NULL;
-	playCh = -1;
 	srate = 0;
 	ms = 0;
 	bufSize = 0;
-	howlong = 0;
 	channels = 1;
 	chunk.abuf = buf;
 	chunk.alen = 0;
@@ -79,16 +90,24 @@ void SndDrvTmpl::DeleteBuffer(void)
 
 }
 
-Uint8  *SndDrvTmpl::Setup(int ch)
+Uint8  *SndDrvTmpl::Setup(void *p)
 {
+	int uStereo,uChannels;
 
-	   if((ch == playCh) && (nSampleRate == srate)
+	uStereo = uStereoOut %4;
+    if ((uStereo > 0) || bForceStereo) {
+    	uChannels = 2;
+    } else {
+    	uChannels = 1;
+    }
+
+	   if((nSampleRate == srate) && (channels == uChannels)
 			   && (nSoundBuffer == ms)) return buf;
+	   channels = uChannels;
 	   if(buf == NULL) {
 		   /*
 		    * バッファが取られてない == 初期状態
 		    */
-		   playCh = ch;
 		   ms = nSoundBuffer;
 		   srate = nSampleRate;
 		   buf = NewBuffer();
@@ -97,7 +116,6 @@ Uint8  *SndDrvTmpl::Setup(int ch)
 		    * バッファが取られてる == 初期状態ではない
 		    */
 		   DeleteBuffer(); /* 演奏終了後バッファを潰す */
-		   playCh = ch;
 		   ms = nSoundBuffer;
 		   srate = nSampleRate;
 		   buf = NewBuffer();
@@ -105,57 +123,38 @@ Uint8  *SndDrvTmpl::Setup(int ch)
 	   return buf;
 }
 
-
-void SndDrvTmpl::SetCh(int ch)
+Mix_Chunk *SndDrvTmpl::GetChunk(void)
 {
-	playCh = ch;
+	chunk.abuf = buf;
+	chunk.alen = sSample * channels * sizeof(int16);
+	chunk.allocated = 1;
+	chunk.volume = 128;
+	return &chunk;
 }
 
-
-
-void SndDrvTmpl::SetVolume(int vol)
-{
-	if(playCh < 0) return;
-	Mix_Volume(playCh, vol);
-}
 
 void SndDrvTmpl::Enable(BOOL flag)
 {
 	enable = flag;
 }
 
-
-void SndDrvTmpl::Play(void)
-{
-	if(playCh < 0) return;
-	chunk.abuf = buf;
-	chunk.alen = (srate * howlong * channels * sizeof(int16)) / 1000;
-	chunk.allocated = 0; /* アロケートされてる */
-	chunk.volume = 128; /* 一応最大 */
-	Mix_PlayChannel(playCh, &chunk, 0);
-}
-
 /*
  * レンダリング
  */
-void SndDrvTmpl::Render(int msec, BOOL clear)
+void SndDrvTmpl::Render(int uSample, BOOL clear)
 {
-	int s = msec;
-	int size;
+	int sSample = uSample;
 	if(buf == NULL) return;
 	if(!enable) return;
-	if(s>ms) s = ms;
-	do {
-		SDL_Delay(1); /* Waitいるか? */
-	} while(playCh < -1);
-	size = (uRate * s * channels * sizeof(int16)) / 1000;
-	if(clear) memset(buf, 0x00, size);
+	if(samples < sSample) sSample = samples;
+	if(clear)  memset(buf, 0x00, size);
+	SDL_SemWait(RenderSem);
 	/*
 	 * ここにレンダリング関数ハンドリング
 	 */
 	/*
 	 * ここではヌルレンダラ
 	 */
-
-	howlong = s;
+	SDL_SemPost(RenderSem);
+	samples = sSample;
 }

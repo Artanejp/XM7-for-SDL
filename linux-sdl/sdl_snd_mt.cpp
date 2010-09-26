@@ -1822,6 +1822,7 @@ AddSnd(BOOL bFill, BOOL bZero)
 
     wbank  = bNowBank?0:1;
 //    rbank  = bNowBank?1:0;
+    SDL_SemWait(applySem);
 
 
 #if 1
@@ -1923,6 +1924,7 @@ AddSnd(BOOL bFill, BOOL bZero)
 	uSample += samples;
     }
 #endif
+    SDL_SemPost(applySem);
     return;
 }
 
@@ -2382,12 +2384,12 @@ opn_notify(BYTE reg, BYTE dat) {
         if(applySem == NULL) {
                 return;
         }
-        SDL_SemTryWait(applySem);
+//        SDL_SemTryWait(applySem);
 /*
  * OPNがなければ、何もしない 
  */
         if (!pOPN[OPN_STD]) {
-                SDL_SemPost(applySem);
+               SDL_SemPost(applySem);
                 return;
         }
 /*
@@ -2413,7 +2415,7 @@ opn_notify(BYTE reg, BYTE dat) {
  */
         if (reg == 0x27) {
                 if (uCh3Mode[OPN_STD] == dat) {
-                        SDL_SemPost(applySem);
+                       SDL_SemPost(applySem);
                         return;
                 }
                 uCh3Mode[OPN_STD] = dat;
@@ -2424,7 +2426,7 @@ opn_notify(BYTE reg, BYTE dat) {
  */
         if (reg == 0xff) {
                 if ((opn_reg[OPN_STD][0x27] & 0xc0) != 0x80) {
-                        SDL_SemPost(applySem);
+                       SDL_SemPost(applySem);
                         return;
                 }
         }
@@ -2440,7 +2442,7 @@ opn_notify(BYTE reg, BYTE dat) {
         if(pOPN[OPN_STD]) {
                 pOPN[OPN_STD]->SetReg((uint8) reg, (uint8) dat);
         }
-        SDL_SemPost(applySem);
+       SDL_SemPost(applySem);
     }
 }
 /*

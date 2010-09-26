@@ -20,21 +20,18 @@ public:
 	Uint8 *NewBuffer(void);
 	void DeleteBuffer(void);
 	Uint8  *Setup(int ch);
-	void SetCh(int ch);
-	void SetVolume(int vol);
-	void Play(void);
 	void Render(int msec, BOOL clear);
 	void Enable(BOOL flag);
 private:
 	Uint8 *buf;
 	int bufSize;
-	int ms;
+	int samples;
 	int channels;
 	int playCh;
 	int srate;
-	int howlong; /* 実際の演奏秒数 */
 	Mix_Chunk chunk;
 	BOOL enable;
+	SDL_Sem *RenderSem;
 };
 
 #endif /* SNDDRVTMPL_H_ */

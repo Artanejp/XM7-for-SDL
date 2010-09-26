@@ -317,5 +317,366 @@ wav_notify(BYTE no)
 }
 }
 
+static void memcpy_add16(Uint8 *out,Uint8 in,int  size)
+{
+	int16 *p = (int16 *)out;
+	int16 *q = (int16 *)in;
+	int i,j;
+	for(j = 0; j < (size - 8); j+=8){
+			*p++ += *q++;
+			*p++ += *q++;
+			*p++ += *q++;
+			*p++ += *q++;
+	}
+	for(i = j - 8; i < size; i++){
+			*p++ += *q++;
+	}
 
+}
+
+static int WavCaptureSub(Uint8 *out)
+{
+	int bytes;
+	int w,tmp;
+	Mix_Chunk *p;
+	int16 *q = (int16 *)out;
+	int len;
+	int slots = 0;
+	int i,j;
+
+
+	if(!bWavCapture) return 0;
+	if(out == NULL) return 0;
+	if(DrvBeep[slot] != NULL) {
+		p = DrvBeep[slot].GetChunk();
+		len = p->alen / sizeof(int16);
+		memcpy_add16(out, p->abuf, len);
+		slots++;
+	}
+	if(DrvWav[0][slot] != NULL) {
+		p = DrvWav[0][slot].GetChunk();
+		len = p->alen / sizeof(int16);
+		memcpy_add16(out, p->abuf, len);
+		slots++;
+	}
+	if(DrvWav[1][slot] != NULL) {
+		p = DrvWav[1][slot].GetChunk();
+		len = p->alen / sizeof(int16);
+		memcpy_add16(out, p->abuf, len);
+		slots++;
+	}
+	if(DrvWav[2][slot] != NULL) {
+		p = DrvWav[2][slot].GetChunk();
+		len = p->alen / sizeof(int16);
+		memcpy_add16(out, p->abuf, len);
+		slots++;
+	}
+	if(slots>0) {
+		for(j = 0; j < (size - 8); j+=8){
+			*p += *p / slots;
+			p++;
+			*p += *p / slots;
+			p++;
+			*p += *p / slots;
+			p++;
+			*p += *p / slots;
+			p++;
+		}
+		for(i = j - 8; i < size; i++){
+			*p += *p / slots;
+			p++;
+		}
+
+	}
+	return len;
+}
+
+static int
+RenderThreadSub(int start,int size,int slot)
+{
+	int bufsize;
+	int wsize;
+	int uChannels;
+	int uStereo;
+	int w, tmp;
+
+	uStereo = uStereoOut %4;
+    if ((uStereo > 0) || bForceStereo) {
+    	uChannels = 2;
+    } else {
+    	uChannels = 1;
+    }
+	bufsize = ((nSampleRate*  nSoundBuffer) / 2 ) / 1000;
+	if((start + size) > bufsize) { /* 大きすぎるのでサイズ切り詰める */
+		wsize = (start + size) - bufsize;
+	} else {
+		wsize = size;
+	}
+	if(slot > SND_BUF) return 0;
+	/* レンダリング */
+	/* BEEP */
+	if(DrvBeep[slot] != NULL) {
+		w = DrvBeep[slot].Render(start, wsize, FALSE);
+	}
+	if(DrvWav[0][slot] != NULL) {
+		tmp = DrvWav[0][slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+	if(DrvWav[1][slot] != NULL) {
+		tmp = DrvWav[1][slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+	if(DrvWav[2][slot] != NULL) {
+		tmp = DrvWav[2][slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+
+#if 0
+	if(bTapeMon) {
+		if(DrvCmt[slot] == NULL) break;
+		tmp = DrvCMT[slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+
+	if(DrvOpn[slot] != NULL) {
+		tmp =DrvOpn[slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+
+	if(DrvPsg[slot] != NULL) {
+		tmp = DrvPsg[slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+
+
+	if(whg_use) {
+		if(DrvWhg[slot] == NULL) break;
+		tmp = DrvWhg[slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+	if(thg_use) {
+		if(DrvThg[slot] == NULL) break;
+		tmp = DrvThg[slot].Render(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+#endif
+	return wsize;
+}
+
+static int
+RenderThreadBZero(int start,int size,int slot)
+{
+	int bufsize;
+	int wsize;
+	int uChannels;
+	int uStereo;
+	int w, tmp;
+
+	uStereo = uStereoOut %4;
+    if ((uStereo > 0) || bForceStereo) {
+    	uChannels = 2;
+    } else {
+    	uChannels = 1;
+    }
+	bufsize = ((nSampleRate*  nSoundBuffer) / 2 ) / 1000;
+	if((start + size) > bufsize) { /* 大きすぎるのでサイズ切り詰める */
+		wsize = (start + size) - bufsize;
+	} else {
+		wsize = size;
+	}
+	if(slot > SND_BUF) return 0;
+	/* レンダリング */
+	/* BEEP */
+	if(DrvBeep[slot] != NULL) {
+		w = DrvBeep[slot].BZero(start, wsize);
+	}
+	if(DrvWav[0][slot] != NULL) {
+		tmp = DrvWav[0][slot].BZero(start, wsize);
+		if(tmp < w) w = tmp;
+	}
+	if(DrvWav[1][slot] != NULL) {
+		tmp = DrvWav[1][slot].BZero(start, wsize);
+		if(tmp < w) w = tmp;
+	}
+	if(DrvWav[2][slot] != NULL) {
+		tmp = DrvWav[2][slot].BZero(start, wsize);
+		if(tmp < w) w = tmp;
+	}
+
+#if 0
+	if(bTapeMon) {
+		if(DrvCmt[slot] == NULL) break;
+		tmp = DrvCMT[slot].BZero(start, wsize);
+		if(tmp < w) w = tmp;
+	}
+
+	if(DrvOpn[slot] != NULL) {
+		tmp =DrvOpn[slot].BZero(start, wsize);
+		if(tmp < w) w = tmp;
+	}
+
+	if(DrvPsg[slot] != NULL) {
+		tmp = DrvPsg[slot].Render(BZero, wsize);
+		if(tmp < w) w = tmp;
+	}
+
+
+	if(whg_use) {
+		if(DrvWhg[slot] == NULL) break;
+		tmp = DrvWhg[slot].BZero(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+	if(thg_use) {
+		if(DrvThg[slot] == NULL) break;
+		tmp = DrvThg[slot].BZero(start, wsize, FALSE);
+		if(tmp < w) w = tmp;
+	}
+#endif
+	return wsize;
+}
+
+static void RenderPlay(int slot, BOOL play)
+{
+
+	if(play) {
+		if(DrvBeep[slot] != NULL) {
+			Mix_PlayChannel(0 + slot * 10, DrvBeep[slot].GetChunk(), 0);
+		}
+		if(DrvWav[0][slot] != NULL) {
+			Mix_PlayChannel(1 + slot * 10, DrvWav[0][slot].GetChunk(), 0);
+		}
+		if(DrvWav[1][slot] != NULL) {
+			Mix_PlayChannel(2 + slot * 10, DrvWav[1][slot].GetChunk(), 0);
+		}
+		if(DrvWav[2][slot] != NULL) {
+			Mix_PlayChannel(3 + slot * 10, DrvWav[2][slot].GetChunk(), 0);
+		}
+#if 0
+		if(DrvPsg[slot] != NULL) {
+			if(bTapeMon) {
+				Mix_PlayChannel(0 + slot * 10, DrvPsg[slot].GetChunk(), 0);
+			}
+		}
+		if(DrvOpn[slot] != NULL) {
+			Mix_PlayChannel(0 + slot * 10, DrvOpn[slot].GetChunk(), 0);
+		}
+		if(DrvWhg[slot] != NULL) {
+			if(whg_use) {
+				Mix_PlayChannel(0 + slot * 10, DrvWhg[slot].GetChunk(), 0);
+			}
+		}
+		if(DrvThg[slot] != NULL) {
+			if(thg_use) {
+				Mix_PlayChannel(0 + slot * 10, DrvThg[slot].GetChunk(), 0);
+			}
+		}
+#endif
+	}
+
+}
+
+/*
+ * bfill
+ */
+static void RenderThread(void)
+{
+	int i,j;
+	int samples;
+	int uSample;
+	int uChannels;
+	BOOL bFill;
+	int uPtr = 0;
+	int uSample = 0;
+	int wsamples;
+	int cmd;
+	int wbank,wbankOld;
+	int totalSamples;
+
+	wbank = 0;
+	wbankOld = 0;
+
+	while(1){
+		/*
+		 * メッセージキュー取り込み、判断
+		 */
+		// Wait(MessageQ);
+		// Get(MessageQ);
+		switch(cmd) {
+		case SND_RENDER:
+		case SND_BZERO: /* ARG: bFill, uSample */
+
+		/*
+		 * レンダリング: bFill = TRUEで音声出力
+		 */
+			if ((uStereo > 0) || bForceStereo) {
+				uChannels = 2;
+			} else {
+				uChannels = 1;
+			}
+			samples = totalSamples;
+			samples -= uSample;
+			/*
+			 * 時間経過から求めた理論サンプル数
+			 */
+			/*
+			 * 計算結果がオーバーフローする問題に対策
+			 * 2002/11/25
+			 */
+			if(!bFill) {
+				i = (uRate / 25);
+				i *= dwSoundTotal;
+				i /= 40000;
+				/*
+				 * uSampleと比較、一致していれば何もしない
+				 */
+				if (i <= (int) uSample) {
+					continue ;
+				}
+				/*
+				 * uSampleとの差が今回生成するサンプル数
+				 */
+				i -= (int) (uSample);
+				/*
+				 * samplesよりも小さければ合格
+				 */
+				if (i <= samples) {
+					samples = i;
+				}
+			}
+			if(cmd != SND_BZERO){
+				wsamples = RenderThreadSub(uSample, samples, wbank);
+			} else {
+				wsamples = RenderThreadBZero(uSample, samples, wbank);
+			}
+			if(bFill) {
+				wbankOld = wbank;
+				wbank = (wbank==0)?1:0;
+//				WavCaptureSub(Uint8 *out); /* ここでWAV書き込みやる */
+				RenderPlay(wbankOld, TRUE);
+				uSample = 0;
+			} else {
+				uSample += sample;
+			}
+			break;
+		case SND_SETUP:
+			/*
+			 * SETUP : ARG=SAMPLES;
+			 */
+			break;
+		case SND_SHUTDOWN:
+			/*
+			 * WAV書き込みバッファのクリーンアップ
+			 */
+			/*
+			 * 演奏のクリーンアップ
+			 */
+			/*
+			 * スレッド終了(その他諸々の資源解放後)
+			 */
+			// return;
+			break;
+		defalt:
+			break;
+		}
+	}
 }
