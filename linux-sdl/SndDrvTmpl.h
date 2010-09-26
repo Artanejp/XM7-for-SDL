@@ -11,6 +11,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 #include "xm7.h"
+#include "sdl.h"
 #include "sdl_snd.h"
 
 class SndDrvTmpl {
@@ -19,7 +20,7 @@ public:
 	virtual ~SndDrvTmpl();
 	Uint8 *NewBuffer(void);
 	void DeleteBuffer(void);
-	Uint8  *Setup(int ch);
+	Uint8  *Setup(void *p);
 	void Render(int msec, BOOL clear);
 	void Enable(BOOL flag);
 private:

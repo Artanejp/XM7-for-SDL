@@ -15,11 +15,11 @@ Uint8 *buf;
 int bufSize;
 int samples;
 int channels;
-int playCh;
 int srate;
+int ms;
 Mix_Chunk chunk;
 BOOL enable;
-SDL_Sem *RenderSem;
+SDL_sem *RenderSem;
 
 
 
@@ -27,12 +27,11 @@ SndDrvTmpl::SndDrvTmpl() {
 	// TODO Auto-generated constructor stub
 	bufSize = 0;
 	buf = NULL;
-	ms = 0;
 	srate = nSampleRate;
+	ms = 0;
 	channels = 1;
 	playCh = -1;
 	bufSize = 0;
-	howlong = 0;
 	chunk.abuf = buf;
 	chunk.alen = bufSize;
 	chunk.allocated = 0; /* アロケートされてる */
@@ -57,7 +56,7 @@ Uint8 *SndDrvTmpl::NewBuffer(void)
     	channels = 1;
     }
 
-	bufSize = (ms * srate * channels * sizeof(int16)) / 1000;
+	bufSize = (ms * srate * channels * sizeof(Int16)) / 1000;
 	buf = (Uint8 *)malloc(bufSize);
 	if(buf == NULL) return NULL; /* バッファ取得に失敗 */
 	memset(buf, 0x00, bufSize); /* 初期化 */
