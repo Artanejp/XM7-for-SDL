@@ -10,6 +10,8 @@
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+#include <math.h>
+
 #include "xm7.h"
 #include "sdl.h"
 #include "sdl_snd.h"
@@ -21,18 +23,23 @@ public:
 	Uint8 *NewBuffer(void);
 	void DeleteBuffer(void);
 	Uint8  *Setup(void *p);
-	void Render(int msec, BOOL clear);
+	int Render(int start, int uSamples, BOOL clear);
 	void Enable(BOOL flag);
+	void SetRenderVolume(int level);
+	Mix_Chunk *GetChunk(void);
 private:
 	Uint8 *buf;
 	int bufSize;
 	int samples;
-	int channels;
-	int playCh;
-	int srate;
+	UINT channels;
+	UINT srate;
+	UINT counter;
+	UINT ms;
+	int nLevel;
 	Mix_Chunk chunk;
 	BOOL enable;
-	SDL_Sem *RenderSem;
+	SDL_sem *RenderSem;
+
 };
 
 #endif /* SNDDRVTMPL_H_ */

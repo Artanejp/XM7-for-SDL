@@ -37,15 +37,24 @@
 #include "sdl_snd.h"
 
 #include "SndDrvBeep.h"
-
+#include "SndDrvWav.h"
+#include "util_ringbuffer.h"
 
 #define WAV_SLOT 5
 #define SND_BUF 2
+
+enum {
+SND_SETUP,
+SND_SHUTDOWN,
+SND_BZERO,
+SND_RENDER
+};
 /*
  *      * アセンブラ関数のためのプロトタイプ宣言→x86依存一度外す
  */
 #ifdef __cplusplus
 extern "C" {
+#endif
 
 /*
  *  グローバル ワーク
@@ -71,7 +80,18 @@ UINT                    uChSeparation;
 UINT                    uStereoOut;     /* 出力モード */
 
 
-static int16 *Wav[WAV_SLOT];
+/*
+ * 内部変数
+ */
+static SDL_sem          *applySem;      /* マルチスレッドで同期するためのセマフォ(Apply期間中) */
+static int              uProcessCount;
+static SDL_TimerID      uTid;
+static DWORD            dwExecLocal;
+static DWORD            dwPlayC;        /* DSP用サウンド作成バッファ内の再生位置 */
+static BOOL             bNowBank;
+
+static Sint16 *WavCache[WAV_SLOT];
+
 /* ステレオ出力時の左右バランステーブル */
 static int              l_vol[3][4] = {
 		{	16,	23,	 9,	16	},
@@ -96,8 +116,13 @@ static char     *WavName[] = {
 #endif  /* */
 };
 
+
+
+/*
+ * サウンドレンダリングドライバ
+ */
 static SndDrvBeep *DrvBeep;
-static SndDrvBeep *DrvWav[WAV_SLOT];
+static SndDrvWav *DrvWav[WAV_SLOT];
 
 /*
  * 予めLoadしておいたWAVを演奏できるようにする
@@ -110,24 +135,24 @@ static SndDrvBeep *DrvWav[WAV_SLOT];
 static Uint8 *LoadWav(char *filename, int slot)
 {
 	int fileh;
-	int filesize;
+	DWORD filesize;
 	if(slot >= WAV_SLOT) return NULL;
-	Uint8 *rbuf = (Uint8 *)Wav[slot];
+	Uint8 *rbuf = (Uint8 *)WavCache[slot];
 
-	if(Wav[slot] != NULL) return NULL; /* 既にWAVが読み込まれてる */
+	if(WavCache[slot] != NULL) return NULL; /* 既にWAVが読み込まれてる */
 	fileh = file_open(filename, OPEN_R);
 	if(fileh < 0) return NULL;
-	filesize = file_size(fileh);
+	filesize = file_getsize(fileh);
 
-	Wav[slot] = malloc(filesize + 1);
-	if(Wav[slot] == NULL) {
+	WavCache[slot] = malloc(filesize + 1);
+	if(WavCache[slot] == NULL) {
 		file_close(fileh);
 		return NULL; /* 領域確保に失敗 */
 	}
 
 	file_read(fileh, rbuf, filesize);
 	file_close(fileh);
-	return Wav[slot];
+	return (Uint8 *)WavCache[slot];
 }
 
 /*
@@ -136,9 +161,9 @@ static Uint8 *LoadWav(char *filename, int slot)
 static void WavDelete(int slot)
 {
 	if(slot >= WAV_SLOT) return;
-	if(Wav[slot] == NULL) return;
-	free(Wav[slot]);
-	Wav[slot] = NULL;
+	if(WavCache[slot] == NULL) return;
+	free(WavCache[slot]);
+	WavCache[slot] = NULL;
 }
 
 /*
@@ -171,7 +196,7 @@ InitSnd(void)
 	uStereo = 0;
 
 	uClipCount = 0;
-	bInitFlag = FALSE;
+//	bInitFlag = FALSE;
 	//    InitFDDSnd();
 	SDL_InitSubSystem(SDL_INIT_AUDIO);
 
@@ -179,7 +204,7 @@ InitSnd(void)
 	 * WAVよむ
 	 */
 	for(i = 0; i < WAV_SLOT; i++){
-		Wav[i] = (Uint16 *)LoadWav(WavName[i], i);
+		WavCache[i] = (Sint16 *)LoadWav(WavName[i], i);
 	}
 
 	/*
@@ -187,7 +212,7 @@ InitSnd(void)
 	 */
 	DrvBeep = new SndDrvBeep[SND_BUF];
 	for(i = 0; i<WAV_SLOT; i++) {
-		DrvWav[i] = new SndDrvWav[SND_BUF];
+		DrvWav[i] = new SndDrvWav [SND_BUF];
 	}
 }
 
@@ -230,8 +255,6 @@ CleanSnd(void)
 	 * uRateをクリア
 	 */
 	uRate = 0;
-	snd_desc.uSample = 0;
-	snd_desc.bank   = 0;
 
 
 #if 1				/* WAVキャプチャは後で作る */
@@ -241,48 +264,14 @@ CleanSnd(void)
 	if (hWavCapture >= 0) {
 		CloseCaptureSnd();
 	}
-	if (pWavCapture) {
-		free(pWavCapture);
-		pWavCapture = NULL;
-	}
+//	if (pWavCapture) {
+//		free(pWavCapture);
+//		pWavCapture = NULL;
+//	}
 	hWavCapture = -1;
 	bWavCapture = FALSE;
 #endif				/* */
 	Mix_CloseAudio();
-
-}
-
-static void AddSnd()
-{
-	int sp;
-	int samples;
-
-    samples = DrvBeep[0].GetSamples();
-    samples -= uSample;
-	sp = (uRate / 25);
-	sp *= dwSoundTotal;
-	sp /= 40000;
-
-	/*
-	 * uSampleと比較、一致していれば何もしない
-	 */
-	if (sp <= (int) uSample) {
-	    return ;
-	}
-	/*
-	 * uSampleとの差が今回生成するサンプル数
-	 */
-	sp -= (int) (uSample);
-
-	/*
-	 * samplesよりも小さければ合格
-	 */
-	if (sp <= samples) {
-	    samples = sp;
-	}
-
-	uSample += samples;
-
 
 }
 
@@ -310,14 +299,14 @@ wav_notify(BYTE no)
         else {
         	// レンダリング
         	for(j = 0; j<SND_BUF; j++) {
-        		if(DrvWav[no][j].isPlay() == FALSE) {
-        			DrvWav[no][j].Render();
-        		}
+        		/*
+        		 * ここにAddSnd(FALSE,FALSE)相当とあきスロット検索ロジックを入れる
+        		 */
         }
 }
 }
 
-static void memcpy_add16(Uint8 *out,Uint8 in,int  size)
+static void memcpy_add16(Uint8 *out,Uint8 *in,int  size)
 {
 	int16 *p = (int16 *)out;
 	int16 *q = (int16 *)in;
@@ -334,56 +323,59 @@ static void memcpy_add16(Uint8 *out,Uint8 in,int  size)
 
 }
 
-static int WavCaptureSub(Uint8 *out)
+static int WavCaptureSub(Uint8 *out, int slot)
 {
 	int bytes;
 	int w,tmp;
 	Mix_Chunk *p;
-	int16 *q = (int16 *)out;
+	Sint16 *q = (Sint16 *)out;
 	int len;
 	int slots = 0;
 	int i,j;
+	int size;
 
 
 	if(!bWavCapture) return 0;
 	if(out == NULL) return 0;
-	if(DrvBeep[slot] != NULL) {
+	if(DrvBeep != NULL) {
 		p = DrvBeep[slot].GetChunk();
-		len = p->alen / sizeof(int16);
+		len = p->alen / sizeof(Sint16);
 		memcpy_add16(out, p->abuf, len);
 		slots++;
 	}
-	if(DrvWav[0][slot] != NULL) {
+	if(DrvWav[0] != NULL) {
 		p = DrvWav[0][slot].GetChunk();
-		len = p->alen / sizeof(int16);
+		len = p->alen / sizeof(Sint16);
 		memcpy_add16(out, p->abuf, len);
 		slots++;
 	}
-	if(DrvWav[1][slot] != NULL) {
+	if(DrvWav[1] != NULL) {
 		p = DrvWav[1][slot].GetChunk();
-		len = p->alen / sizeof(int16);
+		len = p->alen / sizeof(Sint16);
 		memcpy_add16(out, p->abuf, len);
 		slots++;
 	}
-	if(DrvWav[2][slot] != NULL) {
+	if(DrvWav[2] != NULL) {
 		p = DrvWav[2][slot].GetChunk();
-		len = p->alen / sizeof(int16);
+		len = p->alen / sizeof(Sint16);
 		memcpy_add16(out, p->abuf, len);
 		slots++;
 	}
 	if(slots>0) {
+		p = DrvBeep[slot].GetChunk();
+		if(p) size = p->alen / sizeof(Sint16);
 		for(j = 0; j < (size - 8); j+=8){
-			*p += *p / slots;
+			*p /=  slots;
 			p++;
-			*p += *p / slots;
+			*p /=  slots;
 			p++;
-			*p += *p / slots;
+			*p /= slots;
 			p++;
-			*p += *p / slots;
+			*p /= slots;
 			p++;
 		}
 		for(i = j - 8; i < size; i++){
-			*p += *p / slots;
+			*p /= slots;
 			p++;
 		}
 
@@ -392,7 +384,7 @@ static int WavCaptureSub(Uint8 *out)
 }
 
 static int
-RenderThreadSub(int start,int size,int slot)
+RenderThreadSub(int start, int size, int slot)
 {
 	int bufsize;
 	int wsize;
@@ -539,16 +531,16 @@ static void RenderPlay(int slot, BOOL play)
 {
 
 	if(play) {
-		if(DrvBeep[slot] != NULL) {
+		if(DrvBeep != NULL) {
 			Mix_PlayChannel(0 + slot * 10, DrvBeep[slot].GetChunk(), 0);
 		}
-		if(DrvWav[0][slot] != NULL) {
+		if(DrvWav[0] != NULL) {
 			Mix_PlayChannel(1 + slot * 10, DrvWav[0][slot].GetChunk(), 0);
 		}
-		if(DrvWav[1][slot] != NULL) {
+		if(DrvWav[1] != NULL) {
 			Mix_PlayChannel(2 + slot * 10, DrvWav[1][slot].GetChunk(), 0);
 		}
-		if(DrvWav[2][slot] != NULL) {
+		if(DrvWav[2] != NULL) {
 			Mix_PlayChannel(3 + slot * 10, DrvWav[2][slot].GetChunk(), 0);
 		}
 #if 0
@@ -582,7 +574,6 @@ static void RenderThread(void)
 {
 	int i,j;
 	int samples;
-	int uSample;
 	int uChannels;
 	BOOL bFill;
 	int uPtr = 0;
@@ -591,6 +582,7 @@ static void RenderThread(void)
 	int cmd;
 	int wbank,wbankOld;
 	int totalSamples;
+	UINT uStereo;
 
 	wbank = 0;
 	wbankOld = 0;
@@ -608,6 +600,7 @@ static void RenderThread(void)
 		/*
 		 * レンダリング: bFill = TRUEで音声出力
 		 */
+			uStereo = nStereoOut % 4;
 			if ((uStereo > 0) || bForceStereo) {
 				uChannels = 2;
 			} else {
@@ -655,7 +648,7 @@ static void RenderThread(void)
 				RenderPlay(wbankOld, TRUE);
 				uSample = 0;
 			} else {
-				uSample += sample;
+				uSample += samples;
 			}
 			break;
 		case SND_SETUP:
@@ -680,3 +673,7 @@ static void RenderThread(void)
 		}
 	}
 }
+
+#ifdef __cplusplus
+}
+#endif

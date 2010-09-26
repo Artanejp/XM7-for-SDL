@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include "build_config.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 #ifdef MEMWATCH
 #include <memwatch.h>
@@ -87,6 +87,9 @@ typedef int     BOOL;
 typedef Uint8 BYTE;
 typedef Uint16 WORD;
 typedef Uint32 DWORD;
+typedef Sint8 int8_t;
+typedef Sint16 int16_t;
+typedef Sint32 int32_t;
 typedef int     BOOL;
 #endif
 

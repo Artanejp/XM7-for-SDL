@@ -14,12 +14,14 @@
 Uint8 *buf;
 int bufSize;
 int samples;
-int channels;
-int srate;
-int ms;
+UINT channels;
+UINT srate;
+UINT counter;
+UINT ms;
 Mix_Chunk chunk;
 BOOL enable;
 SDL_sem *RenderSem;
+int nLevel;
 
 
 
@@ -30,7 +32,6 @@ SndDrvTmpl::SndDrvTmpl() {
 	srate = nSampleRate;
 	ms = 0;
 	channels = 1;
-	playCh = -1;
 	bufSize = 0;
 	chunk.abuf = buf;
 	chunk.alen = bufSize;
@@ -38,6 +39,8 @@ SndDrvTmpl::SndDrvTmpl() {
 	chunk.volume = 128; /* 一応最大 */
 	enable = FALSE;
 	RenderSem = NULL;
+	nLevel = 0;
+	counter = 0;
 }
 
 SndDrvTmpl::~SndDrvTmpl() {
@@ -49,14 +52,14 @@ Uint8 *SndDrvTmpl::NewBuffer(void)
 {
 	int uStereo;
 	if(buf != NULL) return NULL; /* バッファがあるよ？Deleteしましょう */
-	uStereo = uStereoOut %4;
+	uStereo = nStereoOut %4;
     if ((uStereo > 0) || bForceStereo) {
     	channels = 2;
     } else {
     	channels = 1;
     }
 
-	bufSize = (ms * srate * channels * sizeof(Int16)) / 1000;
+	bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000;
 	buf = (Uint8 *)malloc(bufSize);
 	if(buf == NULL) return NULL; /* バッファ取得に失敗 */
 	memset(buf, 0x00, bufSize); /* 初期化 */
@@ -67,6 +70,7 @@ Uint8 *SndDrvTmpl::NewBuffer(void)
 	if(RenderSem == NULL) {
 		RenderSem = SDL_CreateSemaphore(1);
 	}
+	return buf;
 }
 
 void SndDrvTmpl::DeleteBuffer(void)
@@ -91,9 +95,10 @@ void SndDrvTmpl::DeleteBuffer(void)
 
 Uint8  *SndDrvTmpl::Setup(void *p)
 {
-	int uStereo,uChannels;
+	int uStereo;
+	UINT uChannels;
 
-	uStereo = uStereoOut %4;
+	uStereo = nStereoOut %4;
     if ((uStereo > 0) || bForceStereo) {
     	uChannels = 2;
     } else {
@@ -125,10 +130,15 @@ Uint8  *SndDrvTmpl::Setup(void *p)
 Mix_Chunk *SndDrvTmpl::GetChunk(void)
 {
 	chunk.abuf = buf;
-	chunk.alen = sSample * channels * sizeof(int16);
+	chunk.alen = samples * channels * sizeof(Sint16);
 	chunk.allocated = 1;
 	chunk.volume = 128;
 	return &chunk;
+}
+
+void SndDrvTmpl::SetRenderVolume(int level)
+{
+	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
 }
 
 
@@ -140,14 +150,30 @@ void SndDrvTmpl::Enable(BOOL flag)
 /*
  * レンダリング
  */
-void SndDrvTmpl::Render(int uSample, BOOL clear)
+int SndDrvTmpl::Render(int start, int uSamples, BOOL clear)
 {
-	int sSample = uSample;
-	if(buf == NULL) return;
-	if(!enable) return;
-	if(samples < sSample) sSample = samples;
-	if(clear)  memset(buf, 0x00, size);
+	int sSamples = uSamples;
+	int s = chunk.alen / (sizeof(Sint16) * channels);
+	int ss,ss2;
+
+
+	if(buf == NULL) return -1;
+	if(!enable) return 0;
+	if(sSamples > s) sSamples = s;
+
+	ss = sSamples + start;
+	if(ss > s) {
+		ss2 = s - start;
+	} else {
+		ss2 = sSamples;
+	}
+	if(ss2 <= 0) return 0;
+
+
+
 	SDL_SemWait(RenderSem);
+//	if(clear)  memset(buf, 0x00, size);
+
 	/*
 	 * ここにレンダリング関数ハンドリング
 	 */
@@ -155,5 +181,6 @@ void SndDrvTmpl::Render(int uSample, BOOL clear)
 	 * ここではヌルレンダラ
 	 */
 	SDL_SemPost(RenderSem);
-	samples = sSample;
+	samples = sSamples;
+	return 0;
 }

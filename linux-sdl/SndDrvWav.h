@@ -7,52 +7,39 @@
 
 #ifndef SNDDRVWAV_H_
 #define SNDDRVWAV_H_
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
+#include <math.h>
+
+#include "xm7.h"
+#include "sdl.h"
+#include "sdl_snd.h"
+
+#include "SndDrvTmpl.h"
 
 class SndDrvWav: public SndDrvTmpl {
 public:
 	SndDrvWav();
 	virtual ~SndDrvWav();
-	void Render(int msec, BOOL clear);
 	Uint8 *NewBuffer(void);
 	void DeleteBuffer(void);
+	void SetRenderVolume(int level);
+	Uint8 *Setup(void *p);
+	Mix_Chunk  *GetChunk(void);
+	int Render(int start, int uSamples, BOOL clear);
 private:
 	Uint8 *buf;
 	int bufSize;
-	int ms;
-	int channels;
-	int playCh;
-	int srate;
-	int howlong; /* 実際の演奏秒数 */
+	int samples;
+	UINT channels;
+	UINT srate;
+	UINT ms;
+	UINT counter;
+	int nLevel;
 	Mix_Chunk chunk;
 	Mix_Chunk *chunkP;
 	BOOL enable;
-	int counter;
-	struct _WAVDATA {
-	    short          *p;  /* 波形データポインタ */
-	    DWORD       size;   /* データサイズ(サンプル数) */
-
-	    DWORD       freq;   /* サンプリング周波数 */
-	} Wav[3];
-	struct _WAVPLAY {
-	    BOOL        bPlay;          /* WAV再生フラグ */
-	    DWORD       dwWaveNo;       /* WAVでーたなんばー */
-	    DWORD       dwCount1;       /* WAVでーたかうんた(整数部) */
-	    DWORD       dwCount2;       /* WAVでーたかうんた(小数部) */
-	    DWORD       dwCount3;       /* WAV再生かうんた */
-	} WavP[SNDBUF];
-	static char     *WavName[] = {
-	 /* WAVファイル名 */
-	    "RELAY_ON.WAV",
-	    "RELAY_OFF.WAV",
-	    "FDDSEEK.WAV",
-	    NULL,
-	    NULL
-	#if 0
-	    "HEADUP.WAV",
-	    "HEADDOWN.WAV"
-	#endif  /* */
-	};
-
+	SDL_sem *RenderSem;
 
 };
 

@@ -14,20 +14,26 @@ class SndDrvBeep: public SndDrvTmpl {
 public:
 	SndDrvBeep();
 	virtual ~SndDrvBeep();
-	void Render(int msec, BOOL clear);
 	Uint8 *NewBuffer(void);
 	void DeleteBuffer(void);
+	Uint8  *Setup(void *p);
+	int Render(int start, int uSamples, BOOL clear);
+	void Enable(BOOL flag);
+	void SetRenderVolume(int level);
+	Mix_Chunk *GetChunk(void);
 private:
 	Uint8 *buf;
 	int bufSize;
-	int ms;
-	int channels;
-	int playCh;
-	int srate;
-	int howlong; /* 実際の演奏秒数 */
+	int samples;
+	UINT channels;
+	UINT srate;
+	UINT ms;
+	UINT counter;
+	int nLevel;
 	Mix_Chunk chunk;
 	BOOL enable;
-	int counter;
+	SDL_sem *RenderSem;
+
 };
 
 #endif /* SNDDRVBEEP_H_ */
