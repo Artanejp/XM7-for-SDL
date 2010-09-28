@@ -10,7 +10,7 @@
 
 #include "SndDrvTmpl.h"
 
-
+namespace {
 Uint8 *buf;
 int bufSize;
 int samples;
@@ -22,11 +22,11 @@ Mix_Chunk chunk;
 BOOL enable;
 SDL_sem *RenderSem;
 int nLevel;
-
-
+}
 
 SndDrvTmpl::SndDrvTmpl() {
 	// TODO Auto-generated constructor stub
+
 	bufSize = 0;
 	buf = NULL;
 	srate = nSampleRate;
@@ -148,6 +148,34 @@ void SndDrvTmpl::Enable(BOOL flag)
 }
 
 /*
+ * BZERO : 指定領域を0x00で埋める
+ */
+int SndDrvTmpl::BZero(int start, int uSamples, BOOL clear)
+{
+	int sSamples = uSamples;
+	int s = chunk.alen / (sizeof(Sint16) * channels);
+	int ss,ss2;
+	Sint16          *wbuf = (Sint16 *) buf;
+
+
+	if(buf == NULL) return 0;
+	if(start > s) return 0; /* 開始点にデータなし */
+	if(!enable) return 0;
+	if(sSamples > s) sSamples = s;
+
+	ss = sSamples + start;
+	if(ss > s) {
+		ss2 = s - start;
+	} else {
+		ss2 = sSamples;
+	}
+	if(ss2 <= 0) return 0;
+	memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
+
+	return ss2;
+}
+
+/*
  * レンダリング
  */
 int SndDrvTmpl::Render(int start, int uSamples, BOOL clear)
@@ -184,3 +212,4 @@ int SndDrvTmpl::Render(int start, int uSamples, BOOL clear)
 	samples = sSamples;
 	return 0;
 }
+

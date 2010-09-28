@@ -27,6 +27,8 @@ public:
 	Uint8 *Setup(void *p);
 	Mix_Chunk  *GetChunk(void);
 	int Render(int start, int uSamples, BOOL clear);
+	int BZero(int start, int uSamples, BOOL clear);
+	void Enable(BOOL flag);
 private:
 	Uint8 *buf;
 	int bufSize;

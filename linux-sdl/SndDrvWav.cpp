@@ -11,7 +11,7 @@
 #include "xm7.h"
 
 #include "SndDrvWav.h"
-
+namespace {
 Uint8 *buf;
 int bufSize;
 int samples;
@@ -23,6 +23,7 @@ int nLevel;
 Mix_Chunk chunk;
 BOOL enable;
 SDL_sem *RenderSem;
+}
 
 SndDrvWav::SndDrvWav() {
 	// TODO Auto-generated constructor stub
@@ -36,7 +37,7 @@ SndDrvWav::SndDrvWav() {
 	chunk.alen = bufSize;
 	chunk.allocated = 0; /* アロケートされてる */
 	chunk.volume = 128; /* 一応最大 */
-	enable = FALSE;
+	enable = TRUE;
 	counter = 0;
 }
 
@@ -131,22 +132,65 @@ Uint8 *SndDrvWav::Setup(void *p)
     	ms = nSoundBuffer;
     	srate = nSampleRate;
     }
-
+    if(p == NULL) {
+    	chunkP = NULL;
+    	enable = FALSE;
+    	counter = 0;
+    	return NULL;
+    }
 	chunkP = Mix_QuickLoad_WAV((Uint8 *)p);
 	if(chunkP == NULL) return NULL;
 	ms = chunkP->alen / (srate * channels * sizeof(Sint16));
-	enable = FALSE;
+	enable = TRUE;
 	counter = 0;
 	return chunkP->abuf;
 }
 
 
-Mix_Chunk  *SndDrvWav::GetChunk(void)
+Mix_Chunk *SndDrvWav::GetChunk(void)
 {
+	chunk.abuf = buf;
+	chunk.alen = bufSize;
+	chunk.allocated = 1;
+	chunk.volume = 128;
 	return &chunk;
 }
 
 
+
+void SndDrvWav::Enable(BOOL flag)
+{
+	enable = flag;
+}
+
+
+
+/*
+ * BZERO : 指定領域を0x00で埋める
+ */
+int SndDrvWav::BZero(int start, int uSamples, BOOL clear)
+{
+	int sSamples = uSamples;
+	int s = chunk.alen / (sizeof(Sint16) * channels);
+	int ss,ss2;
+	Sint16          *wbuf = (Sint16 *) buf;
+
+
+	if(buf == NULL) return 0;
+	if(start > s) return 0; /* 開始点にデータなし */
+	if(!enable) return 0;
+	if(sSamples > s) sSamples = s;
+
+	ss = sSamples + start;
+	if(ss > s) {
+		ss2 = s - start;
+	} else {
+		ss2 = sSamples;
+	}
+	if(ss2 <= 0) return 0;
+	memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
+	return ss2;
+}
 
 /*
  * レンダリング
@@ -194,3 +238,4 @@ int SndDrvWav::Render(int start, int uSamples, BOOL clear)
 	SDL_SemPost(RenderSem);
 	return ss2;
 }
+

@@ -8,6 +8,9 @@
 
 #include "util_ringbuffer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct RingBufferDesc *CreateRingBuffer(int chunkSize, int chunks)
 {
@@ -21,7 +24,7 @@ struct RingBufferDesc *CreateRingBuffer(int chunkSize, int chunks)
 	q->chunkSize = chunkSize;
 	q->sem = SDL_CreateSemaphore(1);
 
-	size = ((chunks * sizeof(struct RingBufferIndex *))/8 + 1)* 8;
+	size = (chunks * (sizeof(struct RingBufferIndex))/8 + 1)* 8;
 	p = malloc(size);
 	if(p != NULL) {
 		memset(p, 0, size);
@@ -71,15 +74,16 @@ void DeleteRingBuffer(struct RingBufferDesc *q)
 int WriteRingBuffer(struct RingBufferDesc *q, void *p)
 {
 	int i;
-	int chunks = q->chunks;
+	int chunks;
 
 	if(q == NULL) return -1;
 	if(q->index == NULL) return -1;
+	chunks = q->chunks;
 	SDL_SemWait(q->sem);
 
 	for(i = 0; i <chunks; i++) {
 		if(q->index != NULL) {
-			if(!q->index[i].use && (q->index[i].buffer != NULL)) {
+			if((!q->index[i].use) && (q->index[i].buffer != NULL)) {
 				memcpy(q->index[i].buffer, (Uint8 *)p, q->chunkSize);
 				q->index[i].use = TRUE;
 				SDL_SemPost(q->sem);
@@ -109,7 +113,7 @@ int ReadRingBuffer(struct RingBufferDesc *q, void *p)
 		if(q->index != NULL) {
 			if(q->index[i].use && (q->index[i].buffer != NULL)) {
 				memcpy((Uint8 *)p, q->index[i].buffer,  q->chunkSize);
-				q->index[i].use = TRUE;
+				q->index[i].use = FALSE;
 				SDL_SemPost(q->sem);
 				return q->chunkSize;
 			}
@@ -125,3 +129,6 @@ int ReadRingBuffer(struct RingBufferDesc *q, void *p)
 	return 0;
 }
 
+#ifdef __cplusplus
+}
+#endif

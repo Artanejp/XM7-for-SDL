@@ -24,6 +24,7 @@ public:
 	void DeleteBuffer(void);
 	Uint8  *Setup(void *p);
 	int Render(int start, int uSamples, BOOL clear);
+	int BZero(int start, int uSamples, BOOL clear);
 	void Enable(BOOL flag);
 	void SetRenderVolume(int level);
 	Mix_Chunk *GetChunk(void);

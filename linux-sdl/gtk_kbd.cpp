@@ -144,7 +144,8 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x59, 0x44, /* Tenkey 3 */
 	0x5a, 0x46, /* Tenkey 0 */
 	0x5b, 0x47, /* Tenkey . */
-	0x6c, 0x45 /* Tenkey CR */
+//	0x6c, 0x45 /* Tenkey CR */
+	104, 0x45 /* Tenkey CR */
 };
 static BYTE *kbd_tbl_gtk;
 static GdkCursor *nullcursor;	/* 透明カーソル */
