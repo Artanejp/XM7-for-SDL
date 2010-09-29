@@ -99,8 +99,10 @@ struct SNDPushPacket {
 	int cmd;
 	int arg1;
 	int arg2;
-	void *arg3;
-	void *arg4;
+	int arg3;
+	int arg4;
+	void *arg5;
+	void *arg6;
 };
 
 /*
@@ -189,6 +191,11 @@ static SDL_Thread *snd_thread;
 static struct RingBufferDesc *CmdRing;
 static SDL_cond *SndCond;
 static SDL_mutex *SndMutex;
+
+static void RenderPlay(int samples, int slot, BOOL play);
+static int RenderThreadBZero(int start,int size,int slot);
+static int RenderThreadSub(int start, int size, int slot);
+
 
 static void InitCommandBuffer(void)
 {
@@ -347,8 +354,16 @@ CleanSnd(void)
 	/*
 	 * スレッド停止
 	 */
+#if 0
 	cmd.cmd = SND_SHUTDOWN;
 	PushCommand(&cmd);
+#else
+	Mix_Pause(-1);
+	while(Mix_Playing(-1)>0) {
+		SDL_Delay(10);
+	}
+	Mix_CloseAudio();
+#endif
 	/*
 	 * スレッド資源解放待ち
 	 */
@@ -358,7 +373,7 @@ CleanSnd(void)
 	/*
 	 * サウンド作成バッファを解放
 	 */
-
+#if 0
 	if(snd_thread != NULL) {
 		SDL_WaitThread(snd_thread, &i);
 		snd_thread = NULL;
@@ -373,7 +388,7 @@ CleanSnd(void)
 		SDL_DestroyMutex(SndMutex);
 		SndMutex = NULL;
 	}
-
+#endif
 #if 1				/* WAVキャプチャは後で作る */
 	/*
 	 * キャプチャ関連
@@ -403,7 +418,7 @@ CleanSnd(void)
 	}
 	for(i = 0; i< WAV_SLOT ; i++) {
 		if(DrvWav[i]){
-			delete [] DrvWav[i];
+			delete DrvWav[i];
 		}
 	}
 	if(DrvPSG)		{
@@ -411,15 +426,15 @@ CleanSnd(void)
 		DrvPSG = NULL;
 	}
 	if(DrvOPN)		{
-		delete [] DrvOPN;
+		delete DrvOPN;
 		DrvOPN = NULL;
 	}
 	if(DrvWHG)		{
-		delete [] DrvWHG;
+		delete DrvWHG;
 		DrvWHG = NULL;
 	}
 	if(DrvTHG)		{
-		delete [] DrvTHG;
+		delete DrvTHG;
 		DrvTHG = NULL;
 	}
 
@@ -509,7 +524,7 @@ BOOL SelectSnd(void)
 
 	DrvBeep= new SndDrvBeep;
 	if(DrvBeep) {
-			DrvBeep->Setup(NULL);
+			DrvBeep->Setup(uTick / 2);
 	}
 
 //	DrvPSG= new SndDrvOpn[SND_BUF] ;
@@ -523,31 +538,29 @@ BOOL SelectSnd(void)
 	/*
 	 * OPNデバイス(標準)を作成
 	 */
-	DrvOPN= new SndDrvOpn[SND_BUF] ;
+	DrvOPN= new SndDrvOpn ;
 	if(DrvOPN) {
-		for(i = 0; i < SND_BUF ; i++) {
-			DrvOPN[i].SetOpNo(OPN_STD);
-			DrvOPN[i].NewBuffer();
-		}
+			DrvOPN->SetOpNo(OPN_STD);
+			DrvOPN->Setup(uTick / 2);
 	}
 	/*
 	 * OPNデバイス(WHG)を作成
 	 */
-	DrvWHG= new SndDrvOpn[SND_BUF];
+	DrvWHG= new SndDrvOpn;
 	if(DrvWHG) {
 		for(i = 0; i < SND_BUF ; i++) {
-			DrvWHG[i].SetOpNo(OPN_WHG);
-			DrvWHG[i].NewBuffer();
+			DrvWHG->SetOpNo(OPN_WHG);
+			DrvWHG->Setup(uTick / 2);
 		}
 	}
 	/*
 	 * OPNデバイス(THG)を作成
 	 */
-	DrvTHG= new SndDrvOpn[SND_BUF];
+	DrvTHG= new SndDrvOpn;
 	if(DrvTHG) {
 		for(i = 0; i < SND_BUF ; i++) {
-			DrvTHG[i].SetOpNo(OPN_THG);
-			DrvTHG[i].NewBuffer();
+			DrvTHG->SetOpNo(OPN_THG);
+			DrvTHG->Setup(uTick / 2);
 		}
 	}
 
@@ -561,16 +574,13 @@ BOOL SelectSnd(void)
 	whg_notify(0x27, 0);
 	thg_notify(0x27, 0);
 	if(DrvOPN) {
-		DrvOPN[0].SetReg(opn_reg[OPN_STD]);
-		DrvOPN[1].SetReg(opn_reg[OPN_STD]);
+		DrvOPN->SetReg(opn_reg[OPN_STD]);
 	}
 	if(DrvWHG) {
-		DrvWHG[0].SetReg(opn_reg[OPN_STD]);
-		DrvWHG[1].SetReg(opn_reg[OPN_WHG]);
+		DrvWHG->SetReg(opn_reg[OPN_WHG]);
 	}
 	if(DrvTHG) {
-		DrvWHG[0].SetReg(opn_reg[OPN_STD]);
-		DrvTHG[1].SetReg(opn_reg[OPN_THG]);
+		DrvTHG->SetReg(opn_reg[OPN_THG]);
 	}
 
 	/*
@@ -605,6 +615,7 @@ BOOL SelectSnd(void)
 	/*
 	 * テンプレ作成
 	 */
+#if 0
 	if(SndCond == NULL) {
 		SndCond = SDL_CreateCond();
 	}
@@ -615,7 +626,7 @@ BOOL SelectSnd(void)
 	if(snd_thread == NULL) {
 		snd_thread = SDL_CreateThread(RenderThread, NULL);
 	}
-
+#endif
 #ifdef FDDSND
 	/*
 	 * 予めOpenしてあったWAVデータの読み込み
@@ -706,19 +717,13 @@ void SetSoundVolume(void)
 
 	/* FM音源/PSGボリューム設定 */
 	if(DrvOPN) {
-		for(i = 0; i< SND_BUF; i++) {
 			DrvOPN->SetRenderVolume(nFMVolume, nPSGVolume);
-		}
 	}
 	if(DrvWHG) {
-		for(i = 0; i< SND_BUF; i++) {
-			DrvWHG[i].SetRenderVolume(nFMVolume, nPSGVolume);
-		}
+			DrvWHG->SetRenderVolume(nFMVolume, nPSGVolume);
 	}
 	if(DrvTHG) {
-		for(i = 0; i< SND_BUF; i++) {
-			DrvTHG[i].SetRenderVolume(nFMVolume, nPSGVolume);
-		}
+			DrvTHG->SetRenderVolume(nFMVolume, nPSGVolume);
 	}
 
 	/* BEEP音/CMT音/各種効果音ボリューム設定 */
@@ -740,10 +745,15 @@ void SetSoundVolume(void)
 #endif
 
 	/* チャンネルセパレーション設定 */
-	l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
-			r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChSeparation;
-	r_vol[0][1] = r_vol[1][2] = r_vol[2][3] =
-			l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - uChSeparation;
+//	l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
+//			r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChSeparation;
+//	r_vol[0][1] = r_vol[1][2] = r_vol[2][3] =
+//			l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - uChSeparation;
+	if(DrvOPN) DrvOPN->SetLRVolume();
+	if(DrvTHG) DrvTHG->SetLRVolume();
+	if(DrvWHG) DrvWHG->SetLRVolume();
+
+
 }
 
 /*
@@ -752,7 +762,6 @@ void SetSoundVolume(void)
 void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
 		int nBeep, int nCMT, int nWav)
 {
-	int i;
 
 	uChSeparation = uSp;
 	uChanSep = uChSeparation;
@@ -810,6 +819,100 @@ StopSnd()
 
 
 }
+
+static void AddSnd(BOOL bfill, BOOL bZero)
+{
+	int samples;
+	int i;
+	int wbank;
+	struct SNDPushPacket cmd;
+
+
+	/*
+	 * レンダリング: bFill = TRUEで音声出力
+	 */
+	samples = (uRate *  uTick ) / 1000;
+	samples -= uSample;
+	/*
+	 * 時間経過から求めた理論サンプル数
+	 */
+	/*
+	 * 計算結果がオーバーフローする問題に対策
+	 * 2002/11/25
+	 */
+	if(!bfill) {
+		i = (uRate / 25);
+		i *= dwSoundTotal;
+		i /= 40000;
+		/*
+		 * uSampleと比較、一致していれば何もしない
+		 */
+		if (i <= (int) uSample) {
+			return;
+		}
+		/*
+		 * uSampleとの差が今回生成するサンプル数
+		 */
+		i -= (int)uSample;
+		/*
+		 * samplesよりも小さければ合格
+		 */
+		if (i <= samples) {
+			samples = i;
+		}
+	}
+	wbank = bNowBank?0:1;
+#if 0
+	if(bZero){
+		cmd.cmd = SND_BZERO;
+	} else {
+		cmd.cmd = SND_RENDER;
+	}
+	cmd.arg1 = bfill;
+	cmd.arg2 = wbank;
+	cmd.arg3 = uSample;
+	cmd.arg4 = samples;
+	PushCommand(&cmd);
+#endif
+	if(!bZero) {
+		RenderThreadSub(uSample,samples,wbank);
+	} else {
+		RenderThreadBZero(uSample,samples,wbank);
+	}
+
+	if(bfill) {
+		uSample += samples;
+		RenderPlay(uSample, wbank, TRUE);
+		dwSoundTotal = 0;
+		uSample = 0;
+	} else {
+		uSample += samples;
+	}
+}
+
+static void SetReg2(int opn, Uint8 reg, Uint8 dat)
+{
+	struct SNDPushPacket cmd;
+
+	switch(opn) {
+	case 0:
+		cmd.cmd = SND_OPN_SETREG;
+		break;
+	case 1:
+		cmd.cmd = SND_WHG_SETREG;
+		break;
+	case 2:
+		cmd.cmd = SND_THG_SETREG;
+		break;
+	default:
+		cmd.cmd =  SND_OPN_SETREG;
+		break;
+	}
+	cmd.arg1 = (int)reg;
+	cmd.arg2 = (int)dat;
+	PushCommand(&cmd);
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -833,25 +936,16 @@ void opn_notify(BYTE reg, BYTE dat)
 		nScale[OPN_STD] = opn_scale[OPN_STD];
 		switch (opn_scale[OPN_STD]) {
 		case 2:
-			packet.cmd = SND_OPN_SETREG;
-			packet.arg1 = 0x2f;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//pOPN->SetReg(0x2f, 0);
+			DrvOPN->SetReg(0x2f, 0);
+//			SetReg2(0, 0x2f, 0);
 			break;
 		case 3:
-			packet.cmd = SND_OPN_SETREG;
-			packet.arg1 = 0x2e;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//	                        pOPN->SetReg(0x2e, 0);
+//			SetReg2(0, 0x2e, 0);
+            DrvOPN->SetReg(0x2e, 0);
 			break;
 		case 6:
-			packet.cmd = SND_OPN_SETREG;
-			packet.arg1 = 0x2d;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//	                        pOPN->SetReg(0x2d, 0);
+//			SetReg2(0, 0x2d, 0);
+            DrvOPN->SetReg(0x2d, 0);
 			break;
 		}
 	}
@@ -873,18 +967,6 @@ void opn_notify(BYTE reg, BYTE dat)
 		/*
 		 * スレッド間の逆方向チェックやるか？
 		 */
-//		flag = FALSE;
-//		packet.cmd = SND_OPN_READREG;
-//		packet.arg1 = 0x27;
-//		packet.arg2 = 0x00;
-//		packet.arg3 = (void *)&r;
-//		packet.arg4 = (void *)&flag;
-//		PushCommand(&packet);
-		/*
-		 * 返事待ち
-		 */
-//		 do {
-//		 } while(!flag);
 		r = opn_reg[OPN_STD][0x27];
 		if ((r & 0xc0) != 0x80) {
 			return;
@@ -894,22 +976,14 @@ void opn_notify(BYTE reg, BYTE dat)
 	/*
 	 * サウンド合成
 	 */
-	packet.cmd = SND_RENDER;
-	packet.arg1 = FALSE;
-	packet.arg2 = bNowBank;
-	PushCommand(&packet);
-
-	// AddSnd(FALSE, FALSE);
+	 AddSnd(FALSE, FALSE);
 
 	/*
 	 * 出力
 	 */
 	if(DrvOPN) {
-		packet.cmd = SND_OPN_SETREG;
-		packet.arg1 = (int) reg;
-		packet.arg2 = (int) dat;
-		PushCommand(&packet);
-		//	                pOPN->SetReg((uint8) reg, (uint8) dat);
+		//SetReg2(0, reg, dat);
+	    DrvOPN->SetReg((uint8) reg, (uint8) dat);
 	}
 }
 
@@ -936,25 +1010,13 @@ thg_notify(BYTE reg, BYTE dat)
 		nScale[OPN_THG] = opn_scale[OPN_THG];
 		switch (opn_scale[OPN_THG]) {
 		case 2:
-			packet.cmd = SND_THG_SETREG;
-			packet.arg1 = 0x2f;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//                        pOPN[OPN_THG]->SetReg(0x2f, 0);
+			DrvTHG->SetReg(0x2f, 0);
 			break;
 		case 3:
-			packet.cmd = SND_THG_SETREG;
-			packet.arg1 = 0x2e;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//                        pOPN[OPN_THG]->SetReg(0x2e, 0);
+            DrvTHG->SetReg(0x2e, 0);
 			break;
 		case 6:
-			packet.cmd = SND_THG_SETREG;
-			packet.arg1 = 0x2d;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//                        pOPN[OPN_THG]->SetReg(0x2d, 0);
+            DrvTHG->SetReg(0x2d, 0);
 			break;
 		}
 	}
@@ -975,19 +1037,6 @@ thg_notify(BYTE reg, BYTE dat)
 		/*
 		 * スレッド間の逆方向チェックやるか？
 		 */
-//		flag = FALSE;
-//		packet.cmd = SND_THG_READREG;
-//		packet.arg1 = 0x27;
-//		packet.arg2 = 0x00;
-//		packet.arg3 = (void *)&r;
-//		packet.arg4 = (void *)&flag;
-//		PushCommand(&packet);
-		/*
-		 * 返事待ち
-		 */
-//		 do {
-//		 } while(!flag);
-//		r = DrvOPN->ReadReg(0x27);
 		r = opn_reg[OPN_THG][0x27];
 		 if ((r & 0xc0) != 0x80) {
 			 return;
@@ -998,20 +1047,12 @@ thg_notify(BYTE reg, BYTE dat)
 	/*
 	 * サウンド合成
 	 */
-	//        AddSnd(FALSE, FALSE);
-	packet.cmd = SND_RENDER;
-	packet.arg1 = FALSE;
-	packet.arg2 = bNowBank;
-	PushCommand(&packet);
-
+    AddSnd(FALSE, FALSE);
 	/*
 	 * 出力
 	 */
 	if(DrvTHG) {
-		packet.cmd = SND_THG_SETREG;
-		packet.arg1 = (int)reg;
-		packet.arg2 = (int)dat;
-		PushCommand(&packet);
+	    DrvTHG->SetReg((uint8) reg, (uint8) dat);
 	}
 }
 
@@ -1036,25 +1077,13 @@ whg_notify(BYTE reg, BYTE dat)
 		nScale[OPN_WHG] = opn_scale[OPN_WHG];
 		switch (opn_scale[OPN_THG]) {
 		case 2:
-			packet.cmd = SND_WHG_SETREG;
-			packet.arg1 = 0x2f;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//                        pOPN[OPN_THG]->SetReg(0x2f, 0);
+			DrvWHG->SetReg(0x2f, 0);
 			break;
 		case 3:
-			packet.cmd = SND_WHG_SETREG;
-			packet.arg1 = 0x2e;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//                        pOPN[OPN_THG]->SetReg(0x2e, 0);
+			DrvWHG->SetReg(0x2e, 0);
 			break;
 		case 6:
-			packet.cmd = SND_WHG_SETREG;
-			packet.arg1 = 0x2d;
-			packet.arg2 = 0x00;
-			PushCommand(&packet);
-			//                        pOPN[OPN_THG]->SetReg(0x2d, 0);
+			DrvWHG->SetReg(0x2d, 0);
 			break;
 		}
 	}
@@ -1075,19 +1104,6 @@ whg_notify(BYTE reg, BYTE dat)
 		/*
 		 * スレッド間の逆方向チェックやるか？
 		 */
-//		flag = FALSE;
-//		packet.cmd = SND_WHG_READREG;
-//		packet.arg1 = 0x27;
-//		packet.arg2 = 0x00;
-//		packet.arg3 = (void *)&r;
-//		packet.arg4 = (void *)&flag;
-//		PushCommand(&packet);
-		/*
-		 * 返事待ち
-		 */
-//		 do {
-//		 } while(!flag);
-//		r = DrvWHG->ReadReg(0x27);
 		r = opn_reg[OPN_WHG][0x27];
 
 		 if ((r & 0xc0) != 0x80) {
@@ -1099,20 +1115,13 @@ whg_notify(BYTE reg, BYTE dat)
 	/*
 	 * サウンド合成
 	 */
-	//        AddSnd(FALSE, FALSE);
-	packet.cmd = SND_RENDER;
-	packet.arg1 = FALSE;
-	packet.arg2 = bNowBank;
-	PushCommand(&packet);
+	AddSnd(FALSE, FALSE);
 
 	/*
 	 * 出力
 	 */
 	if(DrvWHG) {
-		packet.cmd = SND_WHG_SETREG;
-		packet.arg1 = (int)reg;
-		packet.arg2 = (int)dat;
-		PushCommand(&packet);
+		DrvWHG->SetReg(reg, dat);
 	}
 }
 
@@ -1134,14 +1143,11 @@ beep_notify(void)
 {
 	struct SNDPushPacket packet;
 
+	if(DrvBeep)  DrvBeep->Enable(bBeepFlag);
 	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
 		return;
 	}
-	packet.cmd = SND_RENDER;
-	packet.arg1 = (int)FALSE;
-	packet.arg2 = bNowBank;
-	PushCommand(&packet);
-	//                AddSnd(FALSE, FALSE);
+    AddSnd(FALSE, FALSE);
 	if (beep_flag && speaker_flag) {
 		bBeepFlag = TRUE;
 	} else {
@@ -1160,12 +1166,7 @@ tape_notify(BOOL flag)
 	}
 
 	if (bTapeMon) {
-		packet.cmd = SND_RENDER;
-		packet.arg1 = (int)FALSE;
-		packet.arg2 = bNowBank;
-		PushCommand(&packet);
-
-		//            AddSnd(FALSE, FALSE);
+    AddSnd(FALSE, FALSE);
 	}
 
 	bTapeFlag = flag;
@@ -1236,16 +1237,7 @@ void        ProcessSnd(BOOL bZero)
 		    * どちらかがONなら、バッファ充填
 		    */
 		   if (bWrite) {
-			   if(bZero) {
-				   cmd.cmd = SND_BZERO;
-			   } else {
-				   cmd.cmd = SND_RENDER;
-			   }
-			   cmd.arg1 = (int)FALSE;
-			   cmd.arg2 = bNowBank;
-			   PushCommand(&cmd);
-
-			   //	                        AddSnd(FALSE, bZero);
+               AddSnd(FALSE, bZero);
 		   }
 		   return;
 	  }
@@ -1253,15 +1245,7 @@ void        ProcessSnd(BOOL bZero)
 	  /*
 	   * ここから演奏開始
 	   */
-	  if(bZero) {
-		  cmd.cmd = SND_BZERO;
-	  } else {
-		  cmd.cmd = SND_RENDER;
-	  }
-	  cmd.arg1 = (int)TRUE;
-	  cmd.arg2 = bNowBank;
-	  PushCommand(&cmd);
-	  //	        AddSnd(TRUE, bZero);
+      AddSnd(TRUE, bZero);
 
 	  /*
 	   * 書き込みバンク(仮想)
@@ -1405,7 +1389,6 @@ RenderThreadSub(int start, int size, int slot)
 	int bufsize;
 	int wsize;
 //	int uChannels;
-	int uStereo;
 	int w;
 	int tmp;
 
@@ -1449,7 +1432,7 @@ RenderThreadSub(int start, int size, int slot)
 //	}
 
 	if(DrvOPN != NULL) {
-		tmp =DrvOPN[slot].Render(start, wsize, TRUE);
+		tmp =DrvOPN->Render(start, wsize, slot, TRUE);
 		if(tmp < w) w = tmp;
 	}
 
@@ -1461,13 +1444,13 @@ RenderThreadSub(int start, int size, int slot)
 
 	if(whg_use) {
 		if(DrvWHG != NULL) {
-			tmp = DrvWHG[slot].Render(start, wsize, TRUE);
+			tmp = DrvWHG->Render(start, wsize, slot, TRUE);
 			if(tmp < w) w = tmp;
 		}
 	}
 	if(thg_use) {
 		if(DrvTHG != NULL) {
-			tmp = DrvTHG[slot].Render(start, wsize, TRUE);
+			tmp = DrvTHG->Render(start, wsize, slot, TRUE);
 			if(tmp < w) w = tmp;
 		}
 	}
@@ -1525,20 +1508,20 @@ RenderThreadBZero(int start,int size,int slot)
 //	}
 
 	if(DrvOPN != NULL) {
-		tmp =DrvOPN[slot].BZero(start, wsize, FALSE);
+		tmp =DrvOPN->BZero(start, wsize, slot, TRUE);
 		if(tmp < w) w = tmp;
 	}
 
 
 	if(whg_use) {
 		if(DrvWHG != NULL) {
-			tmp = DrvWHG[slot].BZero(start, wsize, FALSE);
+			tmp = DrvWHG->BZero(start, wsize, slot, TRUE);
 			if(tmp < w) w = tmp;
 		}
 	}
 	if(thg_use) {
 		if(DrvTHG != NULL) {
-			tmp = DrvTHG[slot].BZero(start, wsize, FALSE);
+			tmp = DrvTHG->BZero(start, wsize, slot, TRUE);
 			if(tmp < w) w = tmp;
 		}
 	}
@@ -1568,7 +1551,7 @@ static void RenderPlay(int samples, int slot, BOOL play)
 	if(play) {
 		if(DrvBeep != NULL) {
 			c = DrvBeep->GetChunk(slot);
-//			if(c) c->alen = len;
+			if(c) c->alen = len;
 			Mix_Volume(0 + slot * 10, 128);
 			Mix_PlayChannel(0 + slot * 10, c, 0);
 		}
@@ -1594,19 +1577,25 @@ static void RenderPlay(int samples, int slot, BOOL play)
 //			}
 //		}
 		if(DrvOPN != NULL) {
+			c = DrvOPN->GetChunk(slot);
+			if(c) c->alen = len;
 			Mix_Volume(2 + slot * 10, 128);
-			Mix_PlayChannel(2 + slot * 10, DrvOPN[slot].GetChunk(), 0);
+			Mix_PlayChannel(2 + slot * 10, c, 0);
 		}
 		if(DrvWHG != NULL) {
 			if(whg_use) {
+				c = DrvWHG->GetChunk(slot);
+				if(c) c->alen = len;
 				Mix_Volume(3 + slot * 10, 128);
-				Mix_PlayChannel(3 + slot * 10, DrvWHG[slot].GetChunk(), 0);
+				Mix_PlayChannel(3 + slot * 10, c, 0);
 			}
 		}
 		if(DrvTHG != NULL) {
 			if(thg_use) {
+				c = DrvTHG->GetChunk(slot);
+				if(c) c->alen = len;
 				Mix_Volume(4 + slot * 10, 128);
-				Mix_PlayChannel(4 + slot * 10, DrvTHG[slot].GetChunk(), 0);
+				Mix_PlayChannel(4 + slot * 10, c, 0);
 			}
 		}
 #endif
@@ -1621,13 +1610,13 @@ static int RenderThread(void *arg)
 {
 	int i,j;
 	int samples;
-//	int uChannels;
 	BOOL bFill;
 	int uSample = 0;
 	int wsamples;
 	int cmd;
 	int wbank,wbankOld;
 	int totalSamples;
+	int start;
 	BYTE r;
 	UINT uStereo;
 	struct SNDPushPacket cmdarg;
@@ -1657,7 +1646,7 @@ static int RenderThread(void *arg)
 			SDL_Delay(1);
 			continue;
 		}
-		SDL_mutexP(SndMutex);
+//		SDL_mutexP(SndMutex);
 		SDL_CondWait(SndCond, SndMutex);
 		PullCommand(&cmdarg);
 //		while(PullCommand(&cmdarg) == 0) {
@@ -1669,64 +1658,16 @@ static int RenderThread(void *arg)
 		case SND_RENDER:
 			bFill = (BOOL)cmdarg.arg1;
 			wbank = cmdarg.arg2;
-#if 1
-			/*
-			 * レンダリング: bFill = TRUEで音声出力
-			 */
-//			uStereo = nStereoOut % 4;
-//			if ((uStereo > 0) || bForceStereo) {
-//				uChannels = 2;
-//			} else {
-//				uChannels = 1;
-//			}
-			samples = (uRate *  uTick) / 1000;
-			samples -= uSample;
-			/*
-			 * 時間経過から求めた理論サンプル数
-			 */
-			/*
-			 * 計算結果がオーバーフローする問題に対策
-			 * 2002/11/25
-			 */
-			if(!bFill) {
-				i = (uRate / 25);
-				i *= dwSoundTotal;
-				i /= 40000;
-				/*
-				 * uSampleと比較、一致していれば何もしない
-				 */
-				if (i <= (int) uSample) {
-					continue ;
-				}
-				/*
-				 * uSampleとの差が今回生成するサンプル数
-				 */
-				i -= (int) (uSample);
-				/*
-				 * samplesよりも小さければ合格
-				 */
-				if (i <= samples) {
-					samples = i;
-				}
-			}
+			start = cmdarg.arg3;
+			samples = cmdarg.arg4;
 			if(cmd != SND_BZERO){
-				wsamples = RenderThreadSub(uSample, samples, wbank);
+				wsamples = RenderThreadSub(start, samples, wbank);
 			} else {
-				wsamples = RenderThreadBZero(uSample, samples, wbank);
+				wsamples = RenderThreadBZero(start, samples, wbank);
 			}
-			wbankOld = wbank;
-//			wbankOld = (wbank==0)?1:0;
-
 			if(bFill) {
-				//				WavCaptureSub(Uint8 *out); /* ここでWAV書き込みやる */
-				RenderPlay(uSample + samples, wbankOld, TRUE);
-				dwSoundTotal = 0;
-				uSample = 0;
-			} else {
-				uSample += samples;
+				RenderPlay(start + samples, wbank, TRUE);
 			}
-#endif
-
 			break;
 		case SND_SETUP:
 			/*
@@ -1738,7 +1679,7 @@ static int RenderThread(void *arg)
 			 * WAV書き込みバッファのクリーンアップ
 			 */
 			do {
-				SDL_Delay(1);
+				SDL_Delay(10);
 			} while(Mix_Playing(-1) != 0);
 //			Mix_CloseAudio();
 #if 0
@@ -1764,20 +1705,16 @@ static int RenderThread(void *arg)
 			return 0;
 			break;
 		case SND_PSG_SETREG:
-			DrvPSG[0].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
-			DrvPSG[1].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
+			DrvPSG->SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
 			break;
 		case SND_OPN_SETREG:
-			DrvOPN[0].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
-			DrvOPN[1].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
+			DrvOPN->SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
 			break;
 		case SND_WHG_SETREG:
-			DrvWHG[0].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
-			DrvWHG[1].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
+			DrvWHG->SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
 			break;
 		case SND_THG_SETREG:
-			DrvTHG[0].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
-			DrvTHG[1].SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
+			DrvTHG->SetReg((Uint8) cmdarg.arg1, (Uint8)cmdarg.arg2);
 			break;
 
 
@@ -1785,20 +1722,20 @@ static int RenderThread(void *arg)
 		case SND_OPN_READREG:
 			//
 			r = opn_reg[OPN_STD][cmdarg.arg1];
-			*((BYTE *)cmdarg.arg3) = r;
-			*((BYTE *)cmdarg.arg4) = TRUE;
+			*((BYTE *)cmdarg.arg5) = r;
+			*((BYTE *)cmdarg.arg6) = TRUE;
 			break;
 		case SND_THG_READREG:
 			//
 			r = opn_reg[OPN_THG][cmdarg.arg1];
-			*((BYTE *)cmdarg.arg3) = r;
-			*((BYTE *)cmdarg.arg4) = TRUE;
+			*((BYTE *)cmdarg.arg5) = r;
+			*((BYTE *)cmdarg.arg6) = TRUE;
 			break;
 		case SND_WHG_READREG:
 			//
 			r = opn_reg[OPN_WHG][cmdarg.arg1];
-			*((BYTE *)cmdarg.arg3) = r;
-			*((BYTE *)cmdarg.arg4) = TRUE;
+			*((BYTE *)cmdarg.arg5) = r;
+			*((BYTE *)cmdarg.arg6) = TRUE;
 			break;
 
 
@@ -1824,7 +1761,7 @@ static int RenderThread(void *arg)
 			SDL_Delay(1);
 			break;
 		}
-//		SDL_mutexP(SndMutex);
+		SDL_mutexP(SndMutex);
 
 	}
 }

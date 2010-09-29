@@ -15,32 +15,49 @@
 #include "xm7.h"
 #include "sdl.h"
 #include "sdl_snd.h"
+#include <vector>
+
+#define DEFAULT_SLOT 2
 
 class SndDrvTmpl {
 public:
 	SndDrvTmpl();
 	virtual ~SndDrvTmpl();
+
+	Uint8 *NewBuffer(int slot);
 	Uint8 *NewBuffer(void);
 	void DeleteBuffer(void);
-	Uint8  *Setup(void *p);
-	int Render(int start, int uSamples, BOOL clear);
-	int BZero(int start, int uSamples, BOOL clear);
-	void Enable(BOOL flag);
-	void SetRenderVolume(int level);
+	void DeleteBuffer(int slot);
+
+	Uint8  *Setup(int tick);
 	Mix_Chunk *GetChunk(void);
+	Mix_Chunk *GetChunk(int slot);
+	int GetBufSlots(void);
+	void Enable(BOOL flag);
+	void SetRate(int rate);
+	void SetVolume(Uint8 level);
+	void SetLRVolume(void);
+
+
+	int Render(int start, int uSamples, int slot, BOOL clear);
+	int BZero(int start, int uSamples, int slot, BOOL clear);
+	void SetRenderVolume(int level);
+
 private:
-	Uint8 *buf;
+	std::vector<Uint8 *> buf;
+	std::vector<Mix_Chunk>chunk;
 	int bufSize;
 	int samples;
 	UINT channels;
 	UINT srate;
-	UINT counter;
 	UINT ms;
-	int nLevel;
-	Mix_Chunk chunk;
+	UINT uStereo;
+	int bufSlot;
+	int nLevel; /* レンダリングの音量 */
+	Uint8 volume; /* 出力する音量 */
 	BOOL enable;
+	int counter;
 	SDL_sem *RenderSem;
-
 };
 
 #endif /* SNDDRVTMPL_H_ */

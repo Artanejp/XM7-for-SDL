@@ -17,10 +17,18 @@ class SndDrvBeep: public SndDrvTmpl {
 public:
 	SndDrvBeep();
 	virtual ~SndDrvBeep();
+
+	Uint8 *NewBuffer(void);
 	Uint8 *NewBuffer(int slot);
 	void DeleteBuffer(void);
 	void DeleteBuffer(int slot);
+
+	void SetVolume(Uint8 vol);
+	void SetLRVolume(void);
+	void SetRate(int rate);
+
 	Uint8  *Setup(void *p);
+	Uint8  *Setup(int tick);
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	int Render(int start, int uSamples, int slot, BOOL clear);
 	void Enable(BOOL flag);
@@ -28,15 +36,21 @@ public:
 	Mix_Chunk *GetChunk(void);
 	Mix_Chunk *GetChunk(int slot);
 private:
-	Uint8 *buf[BEEP_SLOT];
+	std::vector<Uint8 *> buf;
+	std::vector<Mix_Chunk>chunk;
+
 	int bufSize;
+	int bufSlot;
 	int samples;
 	UINT channels;
 	UINT srate;
+	int uStereo;
+	Uint8 volume;
+
+	int lastslot;
 	UINT ms;
 	UINT counter;
 	int nLevel;
-	Mix_Chunk chunk[BEEP_SLOT];
 	BOOL enable;
 	SDL_sem *RenderSem;
 
