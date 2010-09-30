@@ -52,7 +52,19 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
                 t[j] = (int16)tmp1;
         }
 #endif
-        for (j = 0; j < (size / 2); j++) {
+        for (j = 0; j < i; j += 8) {
+                tmp1 = p[j];
+                t[j] = (Sint16) tmp1 ;
+                tmp1 = p[j + 2];
+                t[j + 1] = (Sint16) tmp1;
+                tmp1 = p[j + 4];
+                t[j + 2] = (Sint16) tmp1 ;
+                tmp1 = p[j + 6];
+                t[j + 3] = (Sint16) tmp1;
+        }
+       i = size - i;
+        i = size;
+        for (j = 0; j < i; j++) {
                 tmp1 = p[j * 2];
                 t[j] = (int16)tmp1;
         }
@@ -366,8 +378,8 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 	if(RenderSem == NULL) {
 		return NULL;
 	}
-	SDL_SemWait(RenderSem);
-    channels = uChannels;
+	//SDL_SemWait(RenderSem);
+        channels = uChannels;
 	bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000;
 
 	buf[slot] = (Uint8 *)malloc(bufSize);
@@ -385,9 +397,7 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 	chunk[slot].volume = volume; /* 一応最大 */
 	enable = TRUE;
 	counter = 0;
-	if(RenderSem) {
-		SDL_SemPost(RenderSem);
-	}
+	//SDL_SemPost(RenderSem);
 	return buf[slot];
 }
 
@@ -404,9 +414,9 @@ void SndDrvOpn::DeleteBuffer(int slot)
 {
 
 	if(slot > bufSlot) return;
-	if(RenderSem) {
-		SDL_SemWait(RenderSem);
-	}
+//	if(RenderSem) {
+//		SDL_SemWait(RenderSem);
+//	}
 	if(buf[slot] != NULL) free(buf[slot]);
 	buf[slot] = NULL;
 	if(buf32[slot] != NULL) free(buf32[slot]);
@@ -417,9 +427,9 @@ void SndDrvOpn::DeleteBuffer(int slot)
 	chunk[slot].allocated = 0; /* アロケートされてる */
 	chunk[slot].volume = 128; /* 一応最大 */
 	enable = TRUE;
-	if(RenderSem) {
-		SDL_SemPost(RenderSem);
-	}
+//	if(RenderSem) {
+//		SDL_SemPost(RenderSem);
+//	}
 
 }
 
