@@ -15,31 +15,43 @@
 #include "sdl.h"
 #include "sdl_snd.h"
 
+#include <vector>
 #include "SndDrvTmpl.h"
+
+#define WAV_SLOT 3
 
 class SndDrvWav: public SndDrvTmpl {
 public:
 	SndDrvWav();
 	virtual ~SndDrvWav();
 	Uint8 *NewBuffer(void);
+	Uint8 *NewBuffer(int slot);
 	void DeleteBuffer(void);
+	void DeleteBuffer(int slot);
+
 	void SetRenderVolume(int level);
+
 	Uint8 *Setup(void *p);
+	Uint8 *Setup(void *p, int wslot);
 	Mix_Chunk  *GetChunk(void);
-	int Render(int start, int uSamples, BOOL clear);
-	int BZero(int start, int uSamples, BOOL clear);
+	Mix_Chunk  *GetChunk(int slot);
+	int Render(int start, int uSamples, int slot, BOOL clear);
+	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void Enable(BOOL flag);
 private:
-	Uint8 *buf;
+	void SetRenderVolume(int level, int slot);
+	std::vector<Uint8 *> buf;
+	std::vector<Mix_Chunk>chunk;
+	std::vector<Mix_Chunk *> chunkP;
 	int bufSize;
+	int bufSlot;
 	int samples;
+	int lastslot;
 	UINT channels;
 	UINT srate;
 	UINT ms;
 	UINT counter;
 	int nLevel;
-	Mix_Chunk chunk;
-	Mix_Chunk *chunkP;
 	BOOL enable;
 	SDL_sem *RenderSem;
 

@@ -27,7 +27,6 @@ public:
 	void SetLRVolume(void);
 	void SetRate(int rate);
 
-	Uint8  *Setup(void *p);
 	Uint8  *Setup(int tick);
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	int Render(int start, int uSamples, int slot, BOOL clear);
@@ -36,8 +35,8 @@ public:
 	Mix_Chunk *GetChunk(void);
 	Mix_Chunk *GetChunk(int slot);
 private:
-	std::vector<Uint8 *> buf;
-	std::vector<Mix_Chunk>chunk;
+	Uint8 *buf[BEEP_SLOT];
+	Mix_Chunk chunk[BEEP_SLOT];
 
 	int bufSize;
 	int bufSlot;

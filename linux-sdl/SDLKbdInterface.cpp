@@ -18,7 +18,7 @@
 //struct SpecialKey MouseCapture;
 //struct SpecialKey ResetKey;
 //struct XM7KeyCode KeyCodeTable2[256];
-struct KeyCode2 KeyTableSDL[] = {
+const struct KeyCode2 KeyTableSDL[] = {
 		{SDLK_ESCAPE, 0x5c},	/* BREAK(ESC) */
 		{SDLK_F1, 0x5d}, /* PF1 */
 		{SDLK_F2, 0x5e}, /* PF2 */
@@ -130,10 +130,10 @@ void SDLKbdInterface::InitKeyTable(void){
 
 	for(i = 0; i<256 ; i++)
 	{
+		if(KeyTableSDL[i].sym == 0xffff) break;
 		KeyCodeTable2[i].code = KeyTableSDL[i].sym;
 		KeyCodeTable2[i].mod = KMOD_NONE;
 		KeyCodeTable2[i].pushCode = KeyTableSDL[i].code;
-		if(KeyTableSDL[i].sym == 0xffff) return;
 	}
 	/*
 	 * マウスキャプチャの初期値はPF11

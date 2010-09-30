@@ -10,46 +10,64 @@
 #include <SDL/SDL_rwops.h>
 #include "xm7.h"
 
+#include <vector>
 #include "SndDrvWav.h"
+
 namespace {
-Uint8 *buf;
-int bufSize;
-int samples;
-UINT channels;
-UINT srate;
-UINT ms;
-UINT counter;
-int nLevel;
-Mix_Chunk chunk;
-BOOL enable;
-SDL_sem *RenderSem;
+std::vector<Uint8 *> buf;
+std::vector<Mix_Chunk>chunk;
+std::vector<Mix_Chunk *> chunkP;
 }
 
 SndDrvWav::SndDrvWav() {
 	// TODO Auto-generated constructor stub
-	bufSize = 0;
-	buf = NULL;
+	int i;
+
+	bufSlot = WAV_SLOT;
+	buf.reserve(bufSlot);
+	chunk.reserve(bufSlot);
+	chunkP.reserve(3);
+	lastslot = 0;
+
 	ms = 0;
 	srate = nSampleRate;
 	channels = 1;
 	bufSize = 0;
-	chunk.abuf = buf;
-	chunk.alen = bufSize;
-	chunk.allocated = 0; /* アロケートされてる */
-	chunk.volume = 128; /* 一応最大 */
-	enable = TRUE;
+	for(i = 0 ; i< bufSlot; i++) {
+		buf[i] = NULL;
+		chunk[i].abuf = buf[i];
+		chunk[i].alen = bufSize;
+		chunk[i].allocated = 0; /* アロケートされてる */
+		chunk[i].volume = 128; /* 一応最大 */
+	}
+	enable = FALSE;
 	counter = 0;
+	nLevel = (int)32767.0;
+	RenderSem = SDL_CreateSemaphore(1);
 }
 
 SndDrvWav::~SndDrvWav() {
 	// TODO Auto-generated destructor stub
-	DeleteBuffer();
+	int i;
+	for(i = 0; i < bufSlot; i++) {
+		DeleteBuffer(i);
+	}
+	if(RenderSem) SDL_DestroySemaphore(RenderSem);
 }
 
 Uint8 *SndDrvWav::NewBuffer(void)
 {
+	int i;
+	for(i=0; i<bufSlot ; i++) {
+		NewBuffer(i);
+	}
+	return buf[0];
+}
+
+Uint8 *SndDrvWav::NewBuffer(int slot)
+{
 	int uStereo;
-	if(buf != NULL) return NULL; /* バッファがあるよ？Deleteしましょう */
+	if(buf[slot] != NULL) return NULL; /* バッファがあるよ？Deleteしましょう */
 	uStereo = nStereoOut %4;
     if ((uStereo > 0) || bForceStereo) {
     	channels = 2;
@@ -58,53 +76,68 @@ Uint8 *SndDrvWav::NewBuffer(void)
     }
 
 	bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000;
-	buf = (Uint8 *)malloc(bufSize);
-	if(buf == NULL) return NULL; /* バッファ取得に失敗 */
-	memset(buf, 0x00, bufSize); /* 初期化 */
-	chunk.abuf = buf;
-	chunk.alen = bufSize;
-	chunk.allocated = 1; /* アロケートされてる */
-	chunk.volume = 128; /* 一応最大 */
+	buf[slot] = (Uint8 *)malloc(bufSize);
+	if(buf[slot] == NULL) return NULL; /* バッファ取得に失敗 */
+	memset(buf[slot], 0x00, bufSize); /* 初期化 */
+	chunk[slot].abuf = buf[slot];
+	chunk[slot].alen = bufSize;
+	chunk[slot].allocated = 1; /* アロケートされてる */
+	chunk[slot].volume = 128; /* 一応最大 */
 	if(RenderSem == NULL) {
 		RenderSem = SDL_CreateSemaphore(1);
 	}
-	return buf;
+	return buf[slot];
 }
 
 void SndDrvWav::DeleteBuffer(void)
 {
-	if(RenderSem != NULL) {
+	int i;
+	for(i = 0; i<bufSlot ; i++) {
+		DeleteBuffer(i);
+	}
+}
+
+void SndDrvWav::DeleteBuffer(int slot)
+{
+
+	if(RenderSem == NULL) return;
+	if(slot > bufSlot) return;
 		SDL_SemWait(RenderSem);
-		SDL_DestroySemaphore(RenderSem);
-		RenderSem = NULL;
-	}
-	if(buf != NULL) {
-		free(buf);
-		buf = NULL;
-	}
-	if(chunkP != NULL) {
-		Mix_FreeChunk(chunkP);
-		chunkP = NULL;
-	}
-	srate = 0;
-	ms = 0;
-	bufSize = 0;
-	channels = 1;
-	chunk.abuf = buf;
-	chunk.alen = 0;
-	chunk.allocated = 0; /* アロケートされてる */
-	chunk.volume = 128; /* 一応最大 */
+		if(buf[slot] != NULL) {
+			free(buf[slot]);
+			buf[slot] = NULL;
+		}
+		SDL_SemPost(RenderSem);
 }
 
 void SndDrvWav::SetRenderVolume(int level)
 {
+	SetRenderVolume(level, 0);
+}
+
+void SndDrvWav::SetRenderVolume(int level, int slot)
+{
+	int i;
+	int s;
+	Sint32 tmp;
+	Sint16 *p;
+	Sint16 *q;
+
 	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
+	if(chunkP[slot] == NULL) return;
+	Render(0,chunkP[slot]->alen / (channels * sizeof(Sint16)), slot, TRUE);
+
+}
+
+Uint8 *SndDrvWav::Setup(void *p)
+{
+	return Setup(p, 0);
 }
 
 /*
  * RAM上のWAVデータを演奏可能な形で読み込む
  */
-Uint8 *SndDrvWav::Setup(void *p)
+Uint8 *SndDrvWav::Setup(void *p, int wslot)
 {
 	int uStereo;
 	UINT uChannels;
@@ -115,15 +148,16 @@ Uint8 *SndDrvWav::Setup(void *p)
     } else {
     	uChannels = 1;
     }
-    if((nSampleRate == srate) && (channels == uChannels)
-    		&& (nSoundBuffer == ms)) return buf;
+//    if((nSampleRate == srate) && (channels == uChannels)
+//    		&& (nSoundBuffer == ms)) return buf[0];
     channels = uChannels;
-    if(chunkP == NULL) {
+    if(chunkP[wslot] == NULL) {
     	/*
     	 * バッファが取られてない == 初期状態
     	 */
     	ms = nSoundBuffer;
     	srate = nSampleRate;
+    	NewBuffer();
     } else {
     	/*
     	 * バッファが取られてる == 初期状態ではない
@@ -131,31 +165,32 @@ Uint8 *SndDrvWav::Setup(void *p)
     	DeleteBuffer();
     	ms = nSoundBuffer;
     	srate = nSampleRate;
+    	NewBuffer();
     }
     if(p == NULL) {
-    	chunkP = NULL;
-    	enable = FALSE;
+    	chunkP[wslot] = NULL;
+  //  	enable = FALSE;
     	counter = 0;
     	return NULL;
     }
-	chunkP = Mix_QuickLoad_WAV((Uint8 *)p);
-	if(chunkP == NULL) return NULL;
-	ms = chunkP->alen / (srate * channels * sizeof(Sint16));
-	enable = TRUE;
-	counter = 0;
-	return chunkP->abuf;
+//	chunkP[wslot] = Mix_QuickLoad_WAV((Uint8 *)p);
+	chunkP[wslot] = Mix_LoadWAV((char *)p);
+	if(chunkP[wslot] == NULL) return NULL;
+	SetRenderVolume(nWaveVolume, wslot);
+	return buf[wslot];
 }
 
 
 Mix_Chunk *SndDrvWav::GetChunk(void)
 {
-	chunk.abuf = buf;
-	chunk.alen = bufSize;
-	chunk.allocated = 1;
-	chunk.volume = 128;
-	return &chunk;
+	return GetChunk(0);
 }
 
+Mix_Chunk *SndDrvWav::GetChunk(int slot)
+{
+	if(slot > bufSlot) return NULL;
+	return &chunk[slot];
+}
 
 
 void SndDrvWav::Enable(BOOL flag)
@@ -168,18 +203,24 @@ void SndDrvWav::Enable(BOOL flag)
 /*
  * BZERO : 指定領域を0x00で埋める
  */
-int SndDrvWav::BZero(int start, int uSamples, BOOL clear)
+int SndDrvWav::BZero(int start, int uSamples, int slot, BOOL clear)
 {
+#if 1
 	int sSamples = uSamples;
-	int s = chunk.alen / (sizeof(Sint16) * channels);
+	int s;
 	int ss,ss2;
-	Sint16          *wbuf = (Sint16 *) buf;
+	Sint16 *wbuf;
 
+	if(slot > bufSlot) return 0;
 
-	if(buf == NULL) return 0;
+	if(chunkP[slot] == NULL) return 0;
+	s = chunkP[slot]->alen / (channels * sizeof(Sint16));
+
+	if(buf[slot] == NULL) return 0;
 	if(start > s) return 0; /* 開始点にデータなし */
-	if(!enable) return 0;
 	if(sSamples > s) sSamples = s;
+    wbuf = (Sint16 *) buf[slot];
+    wbuf = &wbuf[start];
 
 	ss = sSamples + start;
 	if(ss > s) {
@@ -190,52 +231,44 @@ int SndDrvWav::BZero(int start, int uSamples, BOOL clear)
 	if(ss2 <= 0) return 0;
 	memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
 	return ss2;
+#else
+	return uSamples;
+#endif
 }
 
 /*
  * レンダリング
  */
-int SndDrvWav::Render(int start, int uSamples, BOOL clear)
+int SndDrvWav::Render(int start, int uSamples, int slot, BOOL clear)
 {
 	int i;
 	int sSamples = uSamples;
-	int s = chunkP->alen / (sizeof(Sint16) * channels);
+	int s;
 	int ss,ss2;
-	Sint16 *p = (Sint16 *)buf;
-	Sint16 *q = (Sint16 *)chunkP->abuf;
+	Sint16 *p;
+	Sint16 *q;
+	Sint32 tmp;
 
+	if(chunkP[slot] == NULL) return 0;
+	s = chunkP[slot]->alen / (channels * sizeof(Sint16));
 
-	if(buf == NULL) return 0;
-	if(start > s) return 0; /* 開始点にデータなし */
-	if(!enable) return 0;
-	if(sSamples > s) sSamples = s;
-
-	ss = sSamples + start;
-	if(ss > s) {
-		ss2 = s - start;
-	} else {
-		ss2 = sSamples;
-	}
-	if(ss2 <= 0) return 0;
-
-	p = &p[start];
-	q = &q[start];
-	if(clear)  memset(p, 0x00, ss2 * channels * sizeof(Sint16));
-	SDL_SemWait(RenderSem);
-
-	for(i = 0;i < ss2; i++){
-		if(channels == 1){
-			*p++ = *q++;
-		} else if(channels == 2) {
-			*p++ = *q++; // ステレオ出力の時、WAVを読んだバッファはステレオか？
-			*p++ = *q++;
+	if(buf[slot]) {
+		if(RenderSem == NULL) return 0;
+		if(chunkP[slot] == NULL) return 0;
+		p = (Sint16 *)chunkP[slot]->abuf;
+		q = (Sint16 *)buf[slot];
+		SDL_SemWait(RenderSem);
+		for(i = 0; i< s; i++) {
+			tmp = (nLevel * *p++);
+			*q++ = (Sint16)(tmp >>14); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
+//			*q++ = *p++;
 		}
+		SDL_SemPost(RenderSem);
 	}
-	chunk.abuf = buf;
-	chunk.alen = (sSamples + start) * channels * sizeof(Sint16);
-	chunk.allocated = 1; /* アロケートされてる */
-	chunk.volume = chunkP->volume; /* 一応最大 */
-	SDL_SemPost(RenderSem);
-	return ss2;
+	chunk[slot].abuf = buf[slot];
+	chunk[slot].alen = chunkP[slot]->alen;
+	chunk[slot].allocated = 1; /* アロケートされてる */
+	chunk[slot].volume = 128; /* 一応最大 */
+	return s;
 }
 

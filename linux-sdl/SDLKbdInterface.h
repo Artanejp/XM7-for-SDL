@@ -22,7 +22,7 @@ public:
 	void LoadKeyTable(void *pMap);
 private:
 	struct XM7KeyCode KeyCodeTable2[256];
-	struct KeyCode2 KeyTableSDL[];
+	//struct KeyCode2 KeyTableSDL[];
 	void InitLocalVar(void);
 //	void InitKeyTable(void);
 	BOOL kbd_snooped;
