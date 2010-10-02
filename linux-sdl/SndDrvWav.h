@@ -31,18 +31,20 @@ public:
 
 	void SetRenderVolume(int level);
 
-	Uint8 *Setup(void *p);
-	Uint8 *Setup(void *p, int wslot);
+	Uint8 *Setup(char *p);
+	Uint8 *Setup(char *p, int wslot);
 	Mix_Chunk  *GetChunk(void);
 	Mix_Chunk  *GetChunk(int slot);
 	int Render(int start, int uSamples, int slot, BOOL clear);
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void Enable(BOOL flag);
+	void Play(int ch, int vol, int slot);
+
 private:
 	void SetRenderVolume(int level, int slot);
-	std::vector<Uint8 *> buf;
-	std::vector<Mix_Chunk>chunk;
-	std::vector<Mix_Chunk *> chunkP;
+	Uint8 *buf;
+	Mix_Chunk chunk;
+	Mix_Chunk *chunkP;
 	int bufSize;
 	int bufSlot;
 	int samples;

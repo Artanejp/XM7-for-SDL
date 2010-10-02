@@ -143,12 +143,13 @@ static BOOL             bTapeFlag2;     /* 前回のテープ出力状態 */
 static BYTE             uTapeDelta;     /* テープ波形補間カウンタ */
 static int bNowBank;
 static DWORD dwPlayC;
+static BOOL				bWavFlag; /* WAV演奏許可フラグ */
 //ここまで
-static Sint16 *WavCache[WAV_SLOT];
 static Mix_Chunk *WavChunk[WAV_SLOT];
 static BOOL bMode;
 static DWORD uProcessCount;
-
+static SDL_sem *applySem;
+static BOOL bPlayEnable;
 
 /* ステレオ出力時の左右バランステーブル */
 static int              l_vol[3][4] = {
@@ -181,7 +182,7 @@ static char     *WavName[] = {
  * サウンドレンダリングドライバ
  */
 static SndDrvBeep *DrvBeep;
-static SndDrvWav *DrvWav[WAV_SLOT];
+static SndDrvWav *DrvWav;
 static SndDrvOpn *DrvPSG;
 static SndDrvOpn *DrvOPN;
 static SndDrvOpn *DrvWHG;
@@ -244,42 +245,7 @@ static int PullCommand(void *ret)
  */
 
 
-/*
- * ファイルの読み込みは別オブジェクトにする
- */
-static Uint8 *LoadWav(char *filename, int slot)
-{
-	int fileh;
-	DWORD filesize;
-	if(slot >= WAV_SLOT) return NULL;
-	Uint8 *rbuf;
 
-	if(WavCache[slot] != NULL) return NULL; /* 既にWAVが読み込まれてる */
-	fileh = file_open(filename, OPEN_R);
-	if(fileh < 0) return NULL;
-	filesize = file_getsize(fileh);
-
-	WavCache[slot] = (Sint16 *)malloc(filesize + 1);
-	if(WavCache[slot] == NULL) {
-		file_close(fileh);
-		return NULL; /* 領域確保に失敗 */
-	}
-	rbuf = (Uint8 *)WavCache[slot];
-	file_read(fileh, rbuf, filesize);
-	file_close(fileh);
-	return (Uint8 *)WavCache[slot];
-}
-
-/*
- * 読み込んだWAVを消去する
- */
-static void WavDelete(int slot)
-{
-	if(slot >= WAV_SLOT) return;
-	if(WavCache[slot] == NULL) return;
-	free(WavCache[slot]);
-	WavCache[slot] = NULL;
-}
 
 /*
  *  初期化
@@ -311,14 +277,15 @@ InitSnd(void)
 	bNowBank = 0;
 	dwPlayC = 0;
 
+	bWavFlag = FALSE;
 	DrvBeep = NULL;
 	DrvOPN = NULL;
 	DrvPSG = NULL;
 	DrvWHG = NULL;
 	DrvTHG = NULL;
-	for(i = 0; i < WAV_SLOT ; i++) {
-		DrvWav[i] = NULL;
-	}
+	DrvWav = NULL;
+	applySem = NULL;
+	bPlayEnable = FALSE;
 
 	snd_thread = NULL;
 	CmdRing = NULL;
@@ -330,17 +297,6 @@ InitSnd(void)
 	/*
 	 * WAVよむ
 	 */
-	for(i = 0; i< WAV_SLOT; i++) {
-		WavChunk[i] = NULL;
-	}
-#if 0
-	for(i = 0; i < WAV_SLOT; i++){
-	   char prefix[MAXPATHLEN];
-	   strcpy(prefix, ModuleDir);
-       strcat(prefix, WavName[i]);
-       LoadWav(prefix, i);
-	}
-#endif
 
 }
 
@@ -365,16 +321,16 @@ CleanSnd(void)
 	/*
 	 * スレッド停止
 	 */
-#if 0
-	cmd.cmd = SND_SHUTDOWN;
-	PushCommand(&cmd);
-#else
-	Mix_Pause(-1);
+	SDL_SemWait(applySem);
+	bWavFlag = FALSE;
+	Mix_HaltChannel(-1);
 	while(Mix_Playing(-1)>0) {
 		SDL_Delay(10);
 	}
 	Mix_CloseAudio();
-#endif
+	bPlayEnable = FALSE;
+	SDL_DestroySemaphore(applySem);
+	applySem = NULL;
 	/*
 	 * スレッド資源解放待ち
 	 */
@@ -415,26 +371,14 @@ CleanSnd(void)
 	bWavCapture = FALSE;
 #endif				/* */
 
-	/*
-	 * Wavバッファを解放
-	 */
-	for(i = 0; i< WAV_SLOT; i++){
-		if(WavChunk[i]) Mix_FreeChunk(WavChunk[i]);
-//		WavDelete(i);
-	}
+//	if(DrvBeep) 	{
+//		delete DrvBeep;
+//		DrvBeep = NULL;
+//	}
 
-	if(DrvBeep) 	{
-		delete DrvBeep;
-		DrvBeep = NULL;
-	}
-	for(i = 0; i< WAV_SLOT ; i++) {
-		if(DrvWav[i]){
-			delete DrvWav[i];
-		}
-	}
-	if(DrvPSG)		{
-		delete [] DrvPSG;
-		DrvPSG = NULL;
+	if(DrvWav) {
+			delete [] DrvWav;
+			DrvWav = NULL;
 	}
 	if(DrvOPN)		{
 		delete DrvOPN;
@@ -449,10 +393,7 @@ CleanSnd(void)
 		DrvTHG = NULL;
 	}
 
-	for(i = 0 ; i<WAV_SLOT; i++) {
-		WavDelete(i);
-	}
-	DeleteCommandBuffer();
+//	DeleteCommandBuffer();
 	/*
 	 * uRateをクリア
 	 */
@@ -519,32 +460,18 @@ BOOL SelectSnd(void)
 	uSample = 0;
 	dwSoundTotal = 0;
 	uClipCount = 0;
-#if 0
-		for(i = 0; i < 3; i++) {
-			DrvWav[i] = new SndDrvWav[2];
-			if(DrvWav[i]) {
-				for(j = 0; j < 2; j++) {
-					DrvWav[i][j].NewBuffer();
-//					if(WavCache[i]) {
-//						DrvWav[i][j].Setup((void *)WavCache[i]);
-//					}
-				}
-			}
-		}
-#endif
 
-	DrvBeep= new SndDrvBeep;
-	if(DrvBeep) {
-			DrvBeep->Setup(uTick);
+	if(applySem == NULL) {
+		applySem = SDL_CreateSemaphore(1);
+		SDL_SemPost(applySem);
 	}
 
-//	DrvPSG= new SndDrvOpn[SND_BUF] ;
-//	if(DrvPSG) {
-//		for(i = 0; i < SND_BUF ; i++) {
-//			DrvPSG[i].SetOpNo(OPN_STD);
-//			DrvPSG[i].NewBuffer();
-//		}
+
+//	DrvBeep= new SndDrvBeep;
+//	if(DrvBeep) {
+//			DrvBeep->Setup(uTick);
 //	}
+
 
 	/*
 	 * OPNデバイス(標準)を作成
@@ -553,26 +480,25 @@ BOOL SelectSnd(void)
 	if(DrvOPN) {
 			DrvOPN->SetOpNo(OPN_STD);
 			DrvOPN->Setup(uTick);
+			DrvOPN->Enable(TRUE);
 	}
 	/*
 	 * OPNデバイス(WHG)を作成
 	 */
 	DrvWHG= new SndDrvOpn;
 	if(DrvWHG) {
-		for(i = 0; i < SND_BUF ; i++) {
 			DrvWHG->SetOpNo(OPN_WHG);
 			DrvWHG->Setup(uTick);
-		}
+			DrvWHG->Enable(TRUE);
 	}
 	/*
 	 * OPNデバイス(THG)を作成
 	 */
 	DrvTHG= new SndDrvOpn;
 	if(DrvTHG) {
-		for(i = 0; i < SND_BUF ; i++) {
 			DrvTHG->SetOpNo(OPN_THG);
 			DrvTHG->Setup(uTick);
-		}
+			DrvTHG->Enable(TRUE);
 	}
 
 	/*
@@ -616,30 +542,19 @@ BOOL SelectSnd(void)
 		return FALSE;
 	}
 	Mix_AllocateChannels(20);
+	bPlayEnable = TRUE;
+    DrvWav = new SndDrvWav[WAV_SLOT];
+    if(!DrvWav) return FALSE;
 	for(i = 0; i < WAV_SLOT; i++) {
 		   strcpy(prefix, ModuleDir);
 	       strcat(prefix, WavName[i]);
 //	       WavChunk[i] = Mix_LoadWAV(prefix);
-	       DrvWav[i] = new SndDrvWav;
-	       if(DrvWav[i] == NULL) return FALSE;
-	       DrvWav[i]->Setup(prefix);
+	       DrvWav[i].Setup(prefix);
 	}
 
 	/*
 	 * テンプレ作成
 	 */
-#if 0
-	if(SndCond == NULL) {
-		SndCond = SDL_CreateCond();
-	}
-	if(SndMutex == NULL) {
-		SndMutex = SDL_CreateMutex();
-	}
-	InitCommandBuffer();
-	if(snd_thread == NULL) {
-		snd_thread = SDL_CreateThread(RenderThread, NULL);
-	}
-#endif
 #ifdef FDDSND
 	/*
 	 * 予めOpenしてあったWAVデータの読み込み
@@ -743,6 +658,11 @@ void SetSoundVolume(void)
 	if(DrvBeep) {
 			DrvBeep->SetRenderVolume(nBeepVolume);
 	}
+	if(DrvWav) {
+		for(i = 0; i < 3; i++) {
+				DrvWav[i].SetRenderVolume(nWaveVolume);
+			}
+	}
 
 	//	nBeepLevel = (int)(32767.0 * pow(10.0, nBeepVolume / 20.0));
 	//	nCMTLevel = (int)(32767.0 * pow(10.0, nCMTVolume / 20.0));
@@ -825,9 +745,9 @@ void
 StopSnd()
 {
 
-	do {
-		SDL_Delay(1);
-	} while(Mix_Playing(-1));
+//	do {
+//		SDL_Delay(1);
+//	} while(Mix_Playing(-1));
 	//        Mix_CloseAudio();
 
 
@@ -895,7 +815,7 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 
 	if(bfill) {
 		uSample += samples;
-		RenderPlay(uSample, wbank, TRUE);
+		RenderPlay(uSample, wbank, bPlayEnable);
 		dwSoundTotal = 0;
 		uSample = 0;
 	} else {
@@ -1154,12 +1074,11 @@ wav_notify(BYTE no)
 		Mix_HaltChannel(CH_WAV_RELAY_OFF);
 		Mix_HaltChannel(CH_WAV_FDDSEEK);
 	} else {
-		if(DrvWav[no] != NULL) {
-			c = DrvWav[no]->GetChunk();
-			if(c) {
-				Mix_Volume(CH_WAV_RELAY_ON + no, iTotalVolume);
-				Mix_PlayChannel(CH_WAV_RELAY_ON + no, c, 0);
-			}
+		if(DrvWav != NULL) {
+//			c = DrvWav[no].GetChunk();
+				DrvWav[no].Play(CH_WAV_RELAY_ON + no, iTotalVolume, 0);
+				//Mix_Volume(CH_WAV_RELAY_ON + no, iTotalVolume);
+				//if(c) Mix_PlayChannel(CH_WAV_RELAY_ON + no, c, 0);
 		}
 	}
 
@@ -1212,9 +1131,10 @@ void        ProcessSnd(BOOL bZero)
 	/*
 	 * 初期化されていなければ、何もしない
 	 */
-	if (!DrvBeep) {
+	if (!DrvOPN) {
 		return;
 	}
+	SDL_SemWait(applySem);
 
 
 
@@ -1265,6 +1185,7 @@ void        ProcessSnd(BOOL bZero)
 		   if (bWrite) {
                AddSnd(FALSE, bZero);
 		   }
+			SDL_SemPost(applySem);
 		   return;
 	  }
 
@@ -1277,6 +1198,7 @@ void        ProcessSnd(BOOL bZero)
 	   * 書き込みバンク(仮想)
 	   */
 	  bNowBank = (!bNowBank);
+	SDL_SemPost(applySem);
 
 }
 
@@ -1552,12 +1474,12 @@ static void RenderPlay(int samples, int slot, BOOL play)
 		uChannels = 1;
 	}
 
-
 	len = samples * uChannels * sizeof(Sint16);
-	if(play) {
+	if(play && bPlayEnable) {
+		if(applySem == NULL) return;
+		SDL_SemWait(applySem);
 		if(DrvBeep != NULL) {
 			c = DrvBeep->GetChunk(slot);
-			//if(c) c->alen = len;
 			Mix_Volume(0 + slot * 10, iTotalVolume);
 			if(c) Mix_PlayChannel(0 + slot * 10, c, 0);
 		}
@@ -1582,25 +1504,47 @@ static void RenderPlay(int samples, int slot, BOOL play)
 //				Mix_PlayChannel(0 + slot * 10, DrvPsg[slot].GetChunk(), 0);
 //			}
 //		}
+		if(!bPlayEnable) {
+			if(applySem) SDL_SemPost(applySem);
+			return;
+		}
 		if(DrvOPN != NULL) {
 			c = DrvOPN->GetChunk(slot);
 			Mix_Volume(2 + slot * 10, iTotalVolume);
 			if(c) Mix_PlayChannel(2 + slot * 10, c, 0);
+//			DrvOPN->Play(2 + slot * 10, iTotalVolume, slot);
 		}
+
+		if(!bPlayEnable) {
+			if(applySem) SDL_SemPost(applySem);
+			return;
+		}
+
 		if(DrvWHG != NULL) {
 			if(whg_use) {
 				c = DrvWHG->GetChunk(slot);
 				Mix_Volume(3 + slot * 10, iTotalVolume);
 				if(c) Mix_PlayChannel(3 + slot * 10, c, 0);
+
+//				DrvWHG->Play(3 + slot * 10, iTotalVolume, slot);
 			}
 		}
+
+		if(!bPlayEnable) {
+			if(applySem) SDL_SemPost(applySem);
+			return;
+		}
+
 		if(DrvTHG != NULL) {
 			if(thg_use) {
-				c = DrvTHG->GetChunk(slot);
+				c = DrvWHG->GetChunk(slot);
 				Mix_Volume(4 + slot * 10, iTotalVolume);
 				if(c) Mix_PlayChannel(4 + slot * 10, c, 0);
+
+//				DrvTHG->Play(4 + slot * 10, iTotalVolume, slot);
 			}
 		}
+		SDL_SemPost(applySem);
 #endif
 	}
 //	SDL_Delay(100);

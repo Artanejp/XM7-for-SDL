@@ -58,6 +58,8 @@ public:
 	int Render(int start, int uSamples,int slot,  BOOL clear);
 	int BZero(int start, int uSamples,int slot,  BOOL clear);
 	int GetLevelSnd(int ch);
+
+	void Play(int ch, int vol, int slot);
 private:
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);

@@ -76,8 +76,7 @@ void SndDrvOpn::InitOpn(void)
 {
 	if(!pOPN) return;
 	pOPN->Reset();
-		pOPN->Init(OPN_CLOCK * 100, srate, bFMHQmode, NULL);
-//	pOPN->Init(OPN_CLOCK * 100, nSampleRate, bFMHQmode, NULL);
+	pOPN->Init(OPN_CLOCK * 100, srate, bFMHQmode, NULL);
     pOPN->SetReg(0x27, 0);
     uCh3Mode = 0xff;
 }
@@ -169,8 +168,8 @@ SndDrvOpn::SndDrvOpn(void) {
 	uCh3Mode = 0;
 	opn_number = 0;
 	volume = MIX_MAX_VOLUME;
-	RenderSem = NULL;
 	RenderSem = SDL_CreateSemaphore(1);
+	SDL_SemPost(RenderSem);
 	pOPN = new FM::OPN;
 	InitOpn();
 }
@@ -358,7 +357,7 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 {
 	int uChannels;
 
-	if(slot > bufSlot) return NULL;
+	if(slot >= bufSlot) return NULL;
 
     if(buf[slot] != NULL) {
     	return NULL; /* バッファがあるよ？Deleteしましょう */
@@ -378,9 +377,8 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 	if(RenderSem == NULL) {
 		return NULL;
 	}
-	//SDL_SemWait(RenderSem);
-        channels = uChannels;
-	bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000;
+	SDL_SemWait(RenderSem);
+    channels = uChannels;
 
 	buf[slot] = (Uint8 *)malloc(bufSize);
 	if(buf[slot] == NULL) return NULL; /* バッファ取得に失敗 */
@@ -397,7 +395,7 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 	chunk[slot].volume = volume; /* 一応最大 */
 	enable = TRUE;
 	counter = 0;
-	//SDL_SemPost(RenderSem);
+	SDL_SemPost(RenderSem);
 	return buf[slot];
 }
 
@@ -414,22 +412,19 @@ void SndDrvOpn::DeleteBuffer(int slot)
 {
 
 	if(slot > bufSlot) return;
-//	if(RenderSem) {
-//		SDL_SemWait(RenderSem);
-//	}
+	if(!RenderSem) return;
+	SDL_SemWait(RenderSem);
 	if(buf[slot] != NULL) free(buf[slot]);
 	buf[slot] = NULL;
 	if(buf32[slot] != NULL) free(buf32[slot]);
 	buf32[slot] = NULL;
 
-	chunk[slot].abuf = buf[slot];
+	chunk[slot].abuf = NULL;
 	chunk[slot].alen = 0;
 	chunk[slot].allocated = 0; /* アロケートされてる */
-	chunk[slot].volume = 128; /* 一応最大 */
+	chunk[slot].volume = MIX_MAX_VOLUME; /* 一応最大 */
 	enable = TRUE;
-//	if(RenderSem) {
-//		SDL_SemPost(RenderSem);
-//	}
+	SDL_SemPost(RenderSem);
 
 }
 
@@ -463,6 +458,8 @@ Uint8  *SndDrvOpn::Setup(int tick, int opno)
 		   ms = nSoundBuffer;
 	   }
 	   srate = nSampleRate;
+		bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000 ;
+
 	   InitOpn();
 	   SetOpNo(opno);
 	   for(i = 0; i < bufSlot; i++) {
@@ -660,3 +657,15 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 }
 
 
+void SndDrvOpn::Play(int ch, int vol, int slot)
+	{
+		if(slot >= bufSlot) return;
+		if(chunk[slot].abuf == NULL) return;
+		if(chunk[slot].alen <= 0) return;
+		//if(!enable) return;
+		if(RenderSem == NULL) return;
+		SDL_SemWait(RenderSem);
+		Mix_Volume(ch, vol);
+		Mix_PlayChannel(ch, &chunk[slot], 0);
+		SDL_SemPost(RenderSem);
+	}
