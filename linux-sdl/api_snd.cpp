@@ -25,8 +25,6 @@
 #include "device.h"
 #include "mainetc.h"
 #include "opn.h"
-// #include "whg.h"
-// #include "thg.h"
 #include "tapelp.h"
 #include "cisc.h"
 #include "opna.h"
@@ -95,15 +93,6 @@ UINT                    uChSeparation;
 UINT                    uStereoOut;     /* 出力モード */
 
 
-struct SNDPushPacket {
-	int cmd;
-	int arg1;
-	int arg2;
-	int arg3;
-	int arg4;
-	void *arg5;
-	void *arg6;
-};
 
 /*
  * 内部変数
@@ -151,25 +140,12 @@ static DWORD uProcessCount;
 static SDL_sem *applySem;
 static BOOL bPlayEnable;
 
-/* ステレオ出力時の左右バランステーブル */
-static int              l_vol[3][4] = {
-		{	16,	23,	 9,	16	},
-		{	16,	 9,	23,	 9	},
-		{	16,	16,	16,	23	},
-};
-static int r_vol[3][4] = {
-		{	16,	 9,	23,	16	},
-		{	16,	23,	 9,	23	},
-		{	16,	16,	16,	 9	},
-};
 
 static char     *WavName[] = {
 		/* WAVファイル名 */
 		"RELAY_ON.WAV",
 		"RELAY_OFF.WAV",
 		"FDDSEEK.WAV",
-		NULL,
-		NULL
 #if 0
 		"HEADUP.WAV",
 		"HEADDOWN.WAV"
@@ -424,7 +400,7 @@ BOOL SelectSnd(void)
 	}
 	if (Mix_OpenAudio
 			(uRate, AUDIO_S16SYS, uChannels, uBufSize / (2 * sizeof(Sint16) * uChannels)) == -1) {
-		printf("Warning: Audio can't initialize!\n");
+	   printf("Warning: Audio can't initialize!\n");
 		return FALSE;
 	}
 	Mix_AllocateChannels(CH_CHANNELS - 1);
@@ -443,7 +419,6 @@ BOOL SelectSnd(void)
 	DrvBeep= new SndDrvBeep;
 	if(DrvBeep) {
 			DrvBeep->Setup(uTick);
-//			DrvBeep->Enable(TRUE);
 	}
 
 
@@ -617,13 +592,6 @@ void SetSoundVolume(void)
 				DrvWav[i].SetRenderVolume(nWaveVolume);
 			}
 	}
-	//	nBeepLevel = (int)(32767.0 * pow(10.0, nBeepVolume / 20.0));
-	//	nCMTLevel = (int)(32767.0 * pow(10.0, nCMTVolume / 20.0));
-	/* チャンネルセパレーション設定 */
-//	l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
-//			r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChSeparation;
-//	r_vol[0][1] = r_vol[1][2] = r_vol[2][3] =
-//			l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - uChSeparation;
 	if(DrvOPN) DrvOPN->SetLRVolume();
 	if(DrvTHG) DrvTHG->SetLRVolume();
 	if(DrvWHG) DrvWHG->SetLRVolume();
@@ -955,15 +923,14 @@ wav_notify(BYTE no)
 {
 	int    i;
 	int    j;
-	Mix_Chunk *c;
+   int ch;
 
 	if(no == SOUND_STOP){
-		Mix_HaltChannel(CH_WAV_RELAY_ON);
-		Mix_HaltChannel(CH_WAV_RELAY_OFF);
-		Mix_HaltChannel(CH_WAV_FDDSEEK);
+		Mix_HaltGroup(GROUP_SND_SFX);
 	} else {
 		if(DrvWav != NULL) {
-				DrvWav[no].Play(CH_WAV_RELAY_ON + no, iTotalVolume, 0);
+		  ch = CH_WAV_RELAY_ON + no;
+			DrvWav[no].Play(ch, iTotalVolume, 0);
 		}
 	}
 
@@ -1211,7 +1178,7 @@ RenderThreadSub(int start, int size, int slot)
 	/* レンダリング */
 	/* BEEP */
 	if(DrvBeep != NULL){
-		w = DrvBeep->Render(start, size, slot, TRUE);
+		w = DrvBeep->Render(start, size, slot, FALSE);
 	}
 #if 1
 //	if(bTapeMon) {

@@ -101,8 +101,7 @@ void SndDrvWav::SetRenderVolume(int level)
 {
 	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
 	if(chunkP == NULL) return;
-	Render(0,chunkP->alen / (channels * sizeof(Sint16)), 0, TRUE);
-
+	Render(0, (ms * srate)/1000 , 0, TRUE);
 }
 
 Uint8 *SndDrvWav::Setup(char *p)
@@ -226,20 +225,17 @@ int SndDrvWav::Render(int start, int uSamples, int slot, BOOL clear)
 	Sint16 *p;
 	Sint16 *q;
 	Sint32 tmp;
-
 	if(chunkP == NULL) return 0;
 	s = chunkP->alen / (channels * sizeof(Sint16));
 
 	if(buf) {
 		if(RenderSem == NULL) return 0;
-		if(chunkP == NULL) return 0;
 		p = (Sint16 *)chunkP->abuf;
 		q = (Sint16 *)buf;
 		SDL_SemWait(RenderSem);
 		for(i = 0; i< s; i++) {
 			tmp = (nLevel * *p++);
 			*q++ = (Sint16)(tmp >>14); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
-//			*q++ = *p++;
 		}
 		SDL_SemPost(RenderSem);
 	}
@@ -248,6 +244,7 @@ int SndDrvWav::Render(int start, int uSamples, int slot, BOOL clear)
 	chunk.allocated = 1; /* アロケートされてる */
 	chunk.volume = MIX_MAX_VOLUME; /* 一応最大 */
 	return s;
+
 }
 
 void SndDrvWav::Play(int ch, int vol, int slot)
@@ -255,10 +252,21 @@ void SndDrvWav::Play(int ch, int vol, int slot)
 	if(slot >= bufSlot) return;
 	if(chunk.abuf == NULL) return;
 	if(chunk.alen <= 0) return;
-	//if(!enable) return;
+//	if(!enable) return;
 	if(RenderSem == NULL) return;
 	SDL_SemWait(RenderSem);
-	Mix_Volume(ch, vol);
+	//Mix_Volume(ch, vol);
 	Mix_PlayChannel(ch, &chunk, 0);
+	SDL_SemPost(RenderSem);
+}
+
+void SndDrvWav::Play(int ch, int vol, Mix_Chunk *c)
+{
+	if(c->abuf == NULL) return;
+	if(c->alen <= 0) return;
+	if(!enable) return;
+	if(RenderSem == NULL) return;
+	SDL_SemWait(RenderSem);
+	Mix_PlayChannel(ch, c, 0);
 	SDL_SemPost(RenderSem);
 }

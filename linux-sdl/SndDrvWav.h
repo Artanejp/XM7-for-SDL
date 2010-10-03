@@ -39,10 +39,12 @@ public:
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void Enable(BOOL flag);
 	void Play(int ch, int vol, int slot);
+	void Play(int ch, int vol, Mix_Chunk *c);
 
 private:
 	void SetRenderVolume(int level, int slot);
 	Uint8 *buf;
+	Uint8 *sbuf;
 	Mix_Chunk chunk;
 	Mix_Chunk *chunkP;
 	int bufSize;
@@ -56,7 +58,7 @@ private:
 	int nLevel;
 	BOOL enable;
 	SDL_sem *RenderSem;
-
+	Uint8 volume;
 };
 
 #endif /* SNDDRVWAV_H_ */
