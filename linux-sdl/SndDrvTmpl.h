@@ -37,8 +37,6 @@ public:
 	void SetRate(int rate);
 	void SetVolume(Uint8 level);
 	void SetLRVolume(void);
-
-
 	int Render(int start, int uSamples, int slot, BOOL clear);
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void SetRenderVolume(int level);

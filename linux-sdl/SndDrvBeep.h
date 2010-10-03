@@ -32,12 +32,12 @@ public:
 	int Render(int start, int uSamples, int slot, BOOL clear);
 	void Enable(BOOL flag);
 	void SetRenderVolume(int level);
-	Mix_Chunk *GetChunk(void);
+	void Play(int ch, int slot);
 	Mix_Chunk *GetChunk(int slot);
 private:
 	Uint8 *buf[BEEP_SLOT];
 	Mix_Chunk chunk[BEEP_SLOT];
-
+	Mix_Chunk *GetChunk(void);
 	int bufSize;
 	int bufSlot;
 	int samples;
@@ -45,14 +45,12 @@ private:
 	UINT srate;
 	int uStereo;
 	Uint8 volume;
-
 	int lastslot;
 	UINT ms;
 	UINT counter;
 	int nLevel;
 	BOOL enable;
 	SDL_sem *RenderSem;
-
 };
 
 #endif /* SNDDRVBEEP_H_ */

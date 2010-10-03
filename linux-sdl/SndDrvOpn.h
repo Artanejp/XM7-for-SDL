@@ -53,14 +53,16 @@ public:
 	void SetOpNo(int num);
 
 	void SetVolume(Uint8 level);
-	Mix_Chunk *GetChunk(void);
-	Mix_Chunk *GetChunk(int slot);
 	int Render(int start, int uSamples,int slot,  BOOL clear);
 	int BZero(int start, int uSamples,int slot,  BOOL clear);
 	int GetLevelSnd(int ch);
+	void Play(int ch, int slot, int samples);
+	Mix_Chunk *GetChunk(int slot);
 
-	void Play(int ch, int vol, int slot);
 private:
+	Mix_Chunk *GetChunk(void);
+	DWORD *GetBuf32(int slot);
+
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
@@ -69,7 +71,6 @@ private:
 	Mix_Chunk chunk[OPN_SLOT];
 
 	int bufSize;
-	int samples;
 	UINT channels;
 	UINT srate;
 	UINT ms;

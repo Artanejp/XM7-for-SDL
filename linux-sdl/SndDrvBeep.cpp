@@ -45,6 +45,7 @@ SndDrvBeep::SndDrvBeep() {
 SndDrvBeep::~SndDrvBeep() {
 	// TODO Auto-generated destructor stub
 	int i;
+	enable = FALSE;
 	for(i = 0; i < BEEP_SLOT; i++) {
 		DeleteBuffer(i);
 	}
@@ -185,7 +186,6 @@ int SndDrvBeep::BZero(int start, int uSamples, int slot, BOOL clear)
 	Sint16          *wbuf;
 
 	if((slot > BEEP_SLOT) || (slot < 0)) return 0;
-//	s = bufSize / (channels * sizeof(Sint16));
 	s = (ms * srate)/1000;
 
 	if(buf[slot] == NULL) return 0;
@@ -280,7 +280,7 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 			/*
 			 * 矩形波を作成
 			 */
-			sf = (int) (counter * nBeepFreq * 2);
+			sf = (int) (counter * nBeepFreq );
 			sf /= (int) srate;
 
 			/*
@@ -325,3 +325,14 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 	return ss2;
 }
 
+void SndDrvBeep::Play(int ch,  int slot)
+	{
+		if(slot >= bufSlot) return;
+		if(chunk[slot].abuf == NULL) return;
+		if(chunk[slot].alen <= 0) return;
+		if(!enable) return;
+		if(RenderSem == NULL) return;
+		SDL_SemWait(RenderSem);
+		if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);
+		SDL_SemPost(RenderSem);
+	}

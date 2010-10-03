@@ -44,27 +44,27 @@
 #define WAV_SLOT 3
 #define SND_BUF 2
 
-enum {
-	SND_SETUP,
-	SND_SHUTDOWN,
-	SND_BZERO,
-	SND_RENDER,
-	SND_BEEP_SETFREQ,
-	SND_WAV_PLAY,
-	SND_PSG_SETREG,
-	SND_PSG_READREG,
-	SND_OPN_SETREG,
-	SND_OPN_READREG,
-	SND_WHG_SETREG,
-	SND_WHG_READREG,
-	SND_THG_SETREG,
-	SND_THG_READREG
-};
 
 enum {
-	CH_WAV_RELAY_ON = 5,
-			CH_WAV_RELAY_OFF,
-			CH_WAV_FDDSEEK
+	CH_SND_BEEP = 0,
+	CH_SND_CMT = 2,
+	CH_SND_OPN = 4,
+	CH_SND_WHG = 6,
+	CH_SND_THG = 8,
+	CH_WAV_RELAY_ON = 10,
+	CH_WAV_RELAY_OFF,
+	CH_WAV_FDDSEEK,
+	CH_WAV_RESERVE1,
+	CH_WAV_RESERVE2,
+	CH_CHANNELS
+};
+enum {
+	GROUP_SND_BEEP = 0,
+	GROUP_SND_CMT ,
+	GROUP_SND_OPN ,
+	GROUP_SND_WHG ,
+	GROUP_SND_THG ,
+	GROUP_SND_SFX
 };
 
 /*
@@ -198,46 +198,6 @@ static int RenderThreadBZero(int start,int size,int slot);
 static int RenderThreadSub(int start, int size, int slot);
 
 
-static void InitCommandBuffer(void)
-{
-	CmdRing = CreateRingBuffer(sizeof(SNDPushPacket), 255); /* キューは255段 */
-}
-
-static void DeleteCommandBuffer(void)
-{
-	DeleteRingBuffer(CmdRing); /* キューは255段 */
-	CmdRing = NULL;
-}
-
-
-static int PushCommand(void *arg)
-{
-//	struct SNDPushPacket *p;
-	int r = 0;
-
-	if(arg != NULL) {
-//		p = (struct SNDPushPacket *)malloc(sizeof(struct SNDPushPacket));
-//		memcpy(p, arg, sizeof(struct SNDPushPacket));
-		r = WriteRingBuffer(CmdRing, arg);
-		if(SndCond != NULL) {
-			SDL_CondSignal(SndCond);
-		}
-	}
-	return r;
-}
-
-static int PullCommand(void *ret)
-{
-	struct SNDPushPacket p;
-	int r;
-
-	r = ReadRingBuffer(CmdRing, ret);
-//	if(r>0) {
-//		memcpy(ret, p, sizeof(struct SNDPushPacket));
-//	}
-	return r;
-}
-
 
 
 /*
@@ -312,8 +272,6 @@ CleanFDDSnd(void)
 void
 CleanSnd(void)
 {
-	int i;
-	struct SNDPushPacket cmd;
 	/*
 	 * サウンド停止
 	 */
@@ -321,14 +279,6 @@ CleanSnd(void)
 	/*
 	 * スレッド停止
 	 */
-	SDL_SemWait(applySem);
-	bWavFlag = FALSE;
-	Mix_HaltChannel(-1);
-	while(Mix_Playing(-1)>0) {
-		SDL_Delay(10);
-	}
-	Mix_CloseAudio();
-	bPlayEnable = FALSE;
 	SDL_DestroySemaphore(applySem);
 	applySem = NULL;
 	/*
@@ -371,10 +321,10 @@ CleanSnd(void)
 	bWavCapture = FALSE;
 #endif				/* */
 
-//	if(DrvBeep) 	{
-//		delete DrvBeep;
-//		DrvBeep = NULL;
-//	}
+	if(DrvBeep) 	{
+		delete DrvBeep;
+		DrvBeep = NULL;
+	}
 
 	if(DrvWav) {
 			delete [] DrvWav;
@@ -409,6 +359,7 @@ BOOL SelectSnd(void)
 {
 	int                 i,j;
 	char prefix[MAXPATHLEN];
+	int bytes;
 
 	/*
 	 * 起動フラグ立てる
@@ -428,6 +379,8 @@ BOOL SelectSnd(void)
 	nWavVol = nWaveVolume;
 	uChanSep = uChSeparation;
 	uTapeDelta = 0;
+	uStereo = nStereoOut %4;
+
 	if ((uStereo > 0) || bForceStereo) {
 		uChannels = 2;
 	} else {
@@ -453,7 +406,11 @@ BOOL SelectSnd(void)
 	/*
 	 * サウンドバッファを作成(DSP用バッファの半分の時間で、DWORD)
 	 */
-	uBufSize = (uRate * uTick * uChannels * sizeof(Sint16)) / 1000;
+    bytes = (uRate * sizeof(WORD) * uChannels * uTick) / 1000;
+    bytes += (DWORD) 7;
+    bytes &= (DWORD) 0xfffffff8;        /* 8バイト境界 */
+    uBufSize = bytes;
+
 	/*
 	 * サンプルカウンタ、サウンド時間をクリア
 	 */
@@ -465,12 +422,29 @@ BOOL SelectSnd(void)
 		applySem = SDL_CreateSemaphore(1);
 		SDL_SemPost(applySem);
 	}
+	if (Mix_OpenAudio
+			(uRate, AUDIO_S16SYS, uChannels, uBufSize / (2 * sizeof(Sint16) * uChannels)) == -1) {
+		printf("Warning: Audio can't initialize!\n");
+		return FALSE;
+	}
+	Mix_AllocateChannels(CH_CHANNELS - 1);
+	/*
+	 *
+	 */
+	Mix_GroupChannels(CH_SND_BEEP, CH_SND_BEEP + 1, GROUP_SND_BEEP);
+	Mix_GroupChannels(CH_SND_CMT, CH_SND_CMT + 1, GROUP_SND_CMT);
+	Mix_GroupChannels(CH_SND_OPN, CH_SND_OPN + 1, GROUP_SND_OPN);
+	Mix_GroupChannels(CH_SND_WHG, CH_SND_WHG + 1, GROUP_SND_WHG);
+	Mix_GroupChannels(CH_SND_THG, CH_SND_THG + 1, GROUP_SND_THG);
+	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
+	Mix_Volume(-1,iTotalVolume);
 
 
-//	DrvBeep= new SndDrvBeep;
-//	if(DrvBeep) {
-//			DrvBeep->Setup(uTick);
-//	}
+	DrvBeep= new SndDrvBeep;
+	if(DrvBeep) {
+			DrvBeep->Setup(uTick);
+//			DrvBeep->Enable(TRUE);
+	}
 
 
 	/*
@@ -530,18 +504,9 @@ BOOL SelectSnd(void)
 	ASSERT(!bWavCapture);
 
 	/*
-	 * SDL用に仕様変更
+	 * SDL用に仕様変更…出来ればInitSnd()でやったら後はOpen/Closeしたくないんぼだけれどー。
 	 */
 
-	// if(Mix_OpenAudio(uRate, AUDIO_S16SYS, uChannels, uBufSize) ==
-	// -1) {
-	if (Mix_OpenAudio
-			(uRate, AUDIO_S16SYS, uChannels,
-					uBufSize / (2 * sizeof(int16) * uChannels)) == -1) {
-		printf("Warning: Audio can't initialize!\n");
-		return FALSE;
-	}
-	Mix_AllocateChannels(20);
 	bPlayEnable = TRUE;
     DrvWav = new SndDrvWav[WAV_SLOT];
     if(!DrvWav) return FALSE;
@@ -551,26 +516,13 @@ BOOL SelectSnd(void)
 //	       WavChunk[i] = Mix_LoadWAV(prefix);
 	       DrvWav[i].Setup(prefix);
 	}
-
-	/*
-	 * テンプレ作成
-	 */
-#ifdef FDDSND
-	/*
-	 * 予めOpenしてあったWAVデータの読み込み
-	 */
-
-#endif				/* */
-
 	/*
 	 * サウンドスタート
 	 */
 	PlaySnd();
 	/* ボリューム設定 */
 	SetSoundVolume();
-
 	return TRUE;
-
 }
 
 
@@ -605,6 +557,7 @@ ApplySnd(void)
 	 * 既に準備ができているなら、解放
 	 */
 	if (uRate != 0) {
+		Mix_HaltChannel(-1);
 		CleanSnd();
 	}
 
@@ -643,6 +596,7 @@ void SetSoundVolume(void)
 	int i;
 	int j;
 
+	SDL_SemWait(applySem);
 	/* FM音源/PSGボリューム設定 */
 	if(DrvOPN) {
 			DrvOPN->SetRenderVolume(nFMVolume, nPSGVolume);
@@ -663,20 +617,8 @@ void SetSoundVolume(void)
 				DrvWav[i].SetRenderVolume(nWaveVolume);
 			}
 	}
-
 	//	nBeepLevel = (int)(32767.0 * pow(10.0, nBeepVolume / 20.0));
 	//	nCMTLevel = (int)(32767.0 * pow(10.0, nCMTVolume / 20.0));
-#ifdef FDDSND
-//	for(i = 0; i < WAV_SLOT; i++) {
-//		if(DrvWav[i]) {
-//			for(j = 0 ; j < SND_BUF; j++) {
-//				DrvWav[i][j].SetRenderVolume(nWaveVolume);
-//			}
-//		}
-//	}
-	//	nWaveLevel = (int)(32767.0 * pow(10.0, nWaveVolume / 20.0));
-#endif
-
 	/* チャンネルセパレーション設定 */
 //	l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
 //			r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChSeparation;
@@ -685,6 +627,7 @@ void SetSoundVolume(void)
 	if(DrvOPN) DrvOPN->SetLRVolume();
 	if(DrvTHG) DrvTHG->SetLRVolume();
 	if(DrvWHG) DrvWHG->SetLRVolume();
+	SDL_SemPost(applySem);
 
 
 }
@@ -742,15 +685,13 @@ PlaySnd()
  *  演奏停止
  */
 void
-StopSnd()
+StopSnd(void)
 {
-
-//	do {
-//		SDL_Delay(1);
-//	} while(Mix_Playing(-1));
-	//        Mix_CloseAudio();
-
-
+	SDL_SemWait(applySem);
+	bWavFlag = FALSE;
+	bPlayEnable = FALSE;
+	Mix_CloseAudio();
+	SDL_SemPost(applySem);
 }
 
 static void AddSnd(BOOL bfill, BOOL bZero)
@@ -758,13 +699,11 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 	int samples;
 	int i;
 	int wbank;
-	struct SNDPushPacket cmd;
-
 
 	/*
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
-	samples = (uRate *  uTick ) / 1000;
+	samples = (uBufSize >>2) / uChannels;
 	samples -= uSample;
 	/*
 	 * 時間経過から求めた理論サンプル数
@@ -795,18 +734,6 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 		}
 	}
 	wbank = bNowBank?0:1;
-#if 0
-	if(bZero){
-		cmd.cmd = SND_BZERO;
-	} else {
-		cmd.cmd = SND_RENDER;
-	}
-	cmd.arg1 = bfill;
-	cmd.arg2 = wbank;
-	cmd.arg3 = uSample;
-	cmd.arg4 = samples;
-	PushCommand(&cmd);
-#endif
 	if(!bZero) {
 		RenderThreadSub(uSample,samples,wbank);
 	} else {
@@ -823,38 +750,13 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 	}
 }
 
-static void SetReg2(int opn, Uint8 reg, Uint8 dat)
-{
-	struct SNDPushPacket cmd;
-
-	switch(opn) {
-	case 0:
-		cmd.cmd = SND_OPN_SETREG;
-		break;
-	case 1:
-		cmd.cmd = SND_WHG_SETREG;
-		break;
-	case 2:
-		cmd.cmd = SND_THG_SETREG;
-		break;
-	default:
-		cmd.cmd =  SND_OPN_SETREG;
-		break;
-	}
-	cmd.arg1 = (int)reg;
-	cmd.arg2 = (int)dat;
-	PushCommand(&cmd);
-}
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void opn_notify(BYTE reg, BYTE dat)
 {
-	struct SNDPushPacket packet;
 	BYTE r;
-	BOOL flag;
 
 	/*
 	 * OPNがなければ、何もしない
@@ -870,14 +772,11 @@ void opn_notify(BYTE reg, BYTE dat)
 		switch (opn_scale[OPN_STD]) {
 		case 2:
 			DrvOPN->SetReg(0x2f, 0);
-//			SetReg2(0, 0x2f, 0);
 			break;
 		case 3:
-//			SetReg2(0, 0x2e, 0);
             DrvOPN->SetReg(0x2e, 0);
 			break;
 		case 6:
-//			SetReg2(0, 0x2d, 0);
             DrvOPN->SetReg(0x2d, 0);
 			break;
 		}
@@ -915,7 +814,6 @@ void opn_notify(BYTE reg, BYTE dat)
 	 * 出力
 	 */
 	if(DrvOPN) {
-		//SetReg2(0, reg, dat);
 	    DrvOPN->SetReg((uint8) reg, (uint8) dat);
 	}
 }
@@ -925,10 +823,7 @@ void opn_notify(BYTE reg, BYTE dat)
 void
 thg_notify(BYTE reg, BYTE dat)
 {
-	struct SNDPushPacket packet;
 	BYTE r;
-	BOOL flag;
-
 	/*
 	 * THGがなければ、何もしない
 	 */
@@ -994,10 +889,7 @@ thg_notify(BYTE reg, BYTE dat)
 void
 whg_notify(BYTE reg, BYTE dat)
 {
-	struct SNDPushPacket packet;
 	BYTE r;
-	BOOL flag;
-
 	/*
 	 * THGがなければ、何もしない
 	 */
@@ -1032,7 +924,6 @@ whg_notify(BYTE reg, BYTE dat)
 		}
 		DrvWHG->SetCh3Mode(dat);
 	}
-
 	/*
 	 * 0xffレジスタはチェック
 	 */
@@ -1046,13 +937,10 @@ whg_notify(BYTE reg, BYTE dat)
 			 return;
 		 }
 	}
-
-
 	/*
 	 * サウンド合成
 	 */
 	AddSnd(FALSE, FALSE);
-
 	/*
 	 * 出力
 	 */
@@ -1075,10 +963,7 @@ wav_notify(BYTE no)
 		Mix_HaltChannel(CH_WAV_FDDSEEK);
 	} else {
 		if(DrvWav != NULL) {
-//			c = DrvWav[no].GetChunk();
 				DrvWav[no].Play(CH_WAV_RELAY_ON + no, iTotalVolume, 0);
-				//Mix_Volume(CH_WAV_RELAY_ON + no, iTotalVolume);
-				//if(c) Mix_PlayChannel(CH_WAV_RELAY_ON + no, c, 0);
 		}
 	}
 
@@ -1104,7 +989,6 @@ beep_notify(void)
 void
 tape_notify(BOOL flag)
 {
-	struct SNDPushPacket packet;
 
 	if (bTapeFlag == flag) {
 		return;
@@ -1127,7 +1011,6 @@ tape_notify(BOOL flag)
 void        ProcessSnd(BOOL bZero)
 {
 	BOOL    bWrite;
-	struct SNDPushPacket cmd;
 	/*
 	 * 初期化されていなければ、何もしない
 	 */
@@ -1285,33 +1168,17 @@ static int WavCaptureSub(Uint8 *out, int slot)
 
 	if(!bWavCapture) return 0;
 	if(out == NULL) return 0;
+#if 0
 	if(DrvBeep != NULL) {
 		p = DrvBeep->GetChunk(slot);
 		len = p->alen / sizeof(Sint16);
 		memcpy_add16(out, p->abuf, len);
 		slots++;
 	}
-	//	if(DrvWav[0] != NULL) {
-	//		p = DrvWav[0][slot].GetChunk();
-	//		len = p->alen / sizeof(Sint16);
-	//		memcpy_add16(out, p->abuf, len);
-	//		slots++;
-	//	}
-	//	if(DrvWav[1] != NULL) {
-	//		p = DrvWav[1][slot].GetChunk();
-	//		len = p->alen / sizeof(Sint16);
-	//		memcpy_add16(out, p->abuf, len);
-	//		slots++;
-	//	}
-	//	if(DrvWav[2] != NULL) {
-	//		p = DrvWav[2][slot].GetChunk();
-	//		len = p->alen / sizeof(Sint16);
-	//		memcpy_add16(out, p->abuf, len);
-	//		slots++;
-	//	}
+#endif
 	if(slots>0) {
-		p = DrvBeep->GetChunk(slot);
-		if(p) size = p->alen / sizeof(Sint16);
+//		p = DrvBeep->GetChunk(slot);
+//		if(p) size = p->alen / sizeof(Sint16);
 		for(j = 0; j < (size - 8); j+=8){
 			*q =  *q / slots;
 			q++;
@@ -1335,44 +1202,17 @@ static int
 RenderThreadSub(int start, int size, int slot)
 {
 	int bufsize;
-	int wsize;
 	int w;
-	int tmp;
+	DWORD *bank = NULL;
 
-//	uStereo = uStereoOut %4;
-//	if ((uStereo > 0) || bForceStereo) {
-//		uChannels = 2;
-//	} else {
-//		uChannels = 1;
-//	}
-	//	bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000;
 
-	bufsize = (uTick * uRate ) / (1000 * 1);
-	if((start + size) > bufsize) { /* 大きすぎるのでサイズ切り詰める */
-		wsize = bufsize - start;
-	} else {
-		wsize = size;
-	}
+	bufsize = (uTick * uRate ) / 1000;
 	if(slot > SND_BUF) return 0;
 	/* レンダリング */
 	/* BEEP */
 	if(DrvBeep != NULL){
-		w = DrvBeep->Render(start, wsize, slot, TRUE);
+		w = DrvBeep->Render(start, size, slot, TRUE);
 	}
-#if 0
-		if(DrvWav[0] != NULL) {
-			tmp = DrvWav[0][slot].Render(start, wsize, FALSE);
-			if(tmp < w) w = tmp;
-		}
-		if(DrvWav[1] != NULL) {
-			tmp = DrvWav[1][slot].Render(start, wsize, FALSE);
-			if(tmp < w) w = tmp;
-		}
-		if(DrvWav[2] != NULL) {
-			tmp = DrvWav[2][slot].Render(start, wsize, FALSE);
-			if(tmp < w) w = tmp;
-		}
-#endif
 #if 1
 //	if(bTapeMon) {
 //		if(DrvCmt[slot] == NULL) break;
@@ -1381,54 +1221,36 @@ RenderThreadSub(int start, int size, int slot)
 //	}
 
 	if(DrvOPN != NULL) {
-		tmp =DrvOPN->Render(start, wsize, slot, TRUE);
-		if(tmp < w) w = tmp;
+		w =DrvOPN->Render(start, size, slot, TRUE);
 	}
 
 
 	if(whg_use) {
 		if(DrvWHG != NULL) {
-			tmp = DrvWHG->Render(start, wsize, slot, TRUE);
-			if(tmp < w) w = tmp;
+			w = DrvWHG->Render(start, size, slot, TRUE);
 		}
 	}
 	if(thg_use) {
 		if(DrvTHG != NULL) {
-			tmp = DrvTHG->Render(start, wsize, slot, TRUE);
-			if(tmp < w) w = tmp;
+			w = DrvTHG->Render(start, size, slot, TRUE);
 		}
 	}
+
 #endif
-	return w;
+	return size;
 }
 
 static int
 RenderThreadBZero(int start,int size,int slot)
 {
-	int bufsize;
-	int wsize;
-//	int uChannels;
-//	int uStereo;
 	int w;
-	int tmp;
+	DWORD *bank = NULL;
 
-//	uStereo = uStereoOut %4;
-//	if ((uStereo > 0) || bForceStereo) {
-//		uChannels = 2;
-//	} else {
-//		uChannels = 1;
-//	}
-	bufsize = ((nSampleRate*  nSoundBuffer) / 2 ) / 1000;
-	if((start + size) > bufsize) { /* 大きすぎるのでサイズ切り詰める */
-		wsize = (start + size) - bufsize;
-	} else {
-		wsize = size;
-	}
 	if(slot > SND_BUF) return 0;
 	/* レンダリング */
 	/* BEEP */
 	if(DrvBeep != NULL) {
-		w = DrvBeep->BZero(start, wsize, slot, TRUE);
+		w = DrvBeep->BZero(start, size, slot, TRUE);
 	}
 #if 1
 //	if(bTapeMon) {
@@ -1438,115 +1260,56 @@ RenderThreadBZero(int start,int size,int slot)
 //	}
 
 	if(DrvOPN != NULL) {
-		tmp =DrvOPN->BZero(start, wsize, slot, TRUE);
-		if(tmp < w) w = tmp;
+		w =DrvOPN->BZero(start, size, slot, TRUE);
 	}
-
 
 	if(whg_use) {
 		if(DrvWHG != NULL) {
-			tmp = DrvWHG->BZero(start, wsize, slot, TRUE);
-			if(tmp < w) w = tmp;
+			w = DrvWHG->BZero(start, size, slot, TRUE);
 		}
 	}
 	if(thg_use) {
 		if(DrvTHG != NULL) {
-			tmp = DrvTHG->BZero(start, wsize, slot, TRUE);
-			if(tmp < w) w = tmp;
+			w = DrvTHG->BZero(start, size, slot, TRUE);
 		}
 	}
+
 #endif
-	return w;
+	return size;
 }
 
 static void RenderPlay(int samples, int slot, BOOL play)
 {
-	int len;
-	Mix_Chunk *c;
-
 	/*
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
-	uStereo = nStereoOut % 4;
-	if ((uStereo > 0) || bForceStereo) {
-		uChannels = 2;
-	} else {
-		uChannels = 1;
-	}
+	DWORD *bank = NULL;
 
-	len = samples * uChannels * sizeof(Sint16);
-	if(play && bPlayEnable) {
+	if(play) {
 		if(applySem == NULL) return;
 		SDL_SemWait(applySem);
+
 		if(DrvBeep != NULL) {
-			c = DrvBeep->GetChunk(slot);
-			Mix_Volume(0 + slot * 10, iTotalVolume);
-			if(c) Mix_PlayChannel(0 + slot * 10, c, 0);
+			if(bPlayEnable) DrvBeep->Play(CH_SND_BEEP + slot, slot);
 		}
-#if 0
-		if(DrvWav[0] != NULL) {
-			Mix_Volume(5 + slot * 10, 128);
-			Mix_PlayChannel(5 + slot * 10, DrvWav[0][slot].GetChunk(), 0);
-		}
-		if(DrvWav[1] != NULL) {
-			Mix_Volume(6 + slot * 10, 128);
-			Mix_PlayChannel(6 + slot * 10, DrvWav[1][slot].GetChunk(), 0);
-		}
-		if(DrvWav[1] != NULL) {
-			Mix_Volume(7 + slot * 10, 128);
-			Mix_PlayChannel(7 + slot * 10, DrvWav[2][slot].GetChunk(), 0);
-		}
-#endif
-
 #if 1
-//		if(DrvPsg != NULL) {
-//			if(bTapeMon) {
-//				Mix_PlayChannel(0 + slot * 10, DrvPsg[slot].GetChunk(), 0);
-//			}
-//		}
-		if(!bPlayEnable) {
-			if(applySem) SDL_SemPost(applySem);
-			return;
-		}
-		if(DrvOPN != NULL) {
-			c = DrvOPN->GetChunk(slot);
-			Mix_Volume(2 + slot * 10, iTotalVolume);
-			if(c) Mix_PlayChannel(2 + slot * 10, c, 0);
-//			DrvOPN->Play(2 + slot * 10, iTotalVolume, slot);
-		}
 
-		if(!bPlayEnable) {
-			if(applySem) SDL_SemPost(applySem);
-			return;
+		if(DrvOPN != NULL) {
+			if(bPlayEnable) DrvOPN->Play(CH_SND_OPN + slot , slot, samples);
 		}
 
 		if(DrvWHG != NULL) {
 			if(whg_use) {
-				c = DrvWHG->GetChunk(slot);
-				Mix_Volume(3 + slot * 10, iTotalVolume);
-				if(c) Mix_PlayChannel(3 + slot * 10, c, 0);
-
-//				DrvWHG->Play(3 + slot * 10, iTotalVolume, slot);
+				if(bPlayEnable) DrvWHG->Play(CH_SND_WHG + slot, slot, samples);
 			}
 		}
-
-		if(!bPlayEnable) {
-			if(applySem) SDL_SemPost(applySem);
-			return;
-		}
-
 		if(DrvTHG != NULL) {
 			if(thg_use) {
-				c = DrvWHG->GetChunk(slot);
-				Mix_Volume(4 + slot * 10, iTotalVolume);
-				if(c) Mix_PlayChannel(4 + slot * 10, c, 0);
-
-//				DrvTHG->Play(4 + slot * 10, iTotalVolume, slot);
+				if(bPlayEnable) DrvTHG->Play(CH_SND_THG + slot , slot, samples);
 			}
 		}
-		SDL_SemPost(applySem);
 #endif
+		SDL_SemPost(applySem);
 	}
-//	SDL_Delay(100);
 }
 
