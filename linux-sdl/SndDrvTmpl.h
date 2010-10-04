@@ -40,10 +40,10 @@ public:
 	int Render(int start, int uSamples, int slot, BOOL clear);
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void SetRenderVolume(int level);
-
-private:
-	std::vector<Uint8 *> buf;
-	std::vector<Mix_Chunk>chunk;
+	void Play(int ch,  int slot);
+protected:
+	Uint8 *buf[DEFAULT_SLOT];
+	Mix_Chunk chunk[DEFAULT_SLOT];
 	int bufSize;
 	int samples;
 	UINT channels;

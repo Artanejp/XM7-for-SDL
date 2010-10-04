@@ -483,7 +483,7 @@ BOOL SelectSnd(void)
 	 */
 
 	bPlayEnable = TRUE;
-    DrvWav = new SndDrvWav[WAV_SLOT];
+    DrvWav = new SndDrvWav[3];
     if(!DrvWav) return FALSE;
 	for(i = 0; i < WAV_SLOT; i++) {
 		   strcpy(prefix, ModuleDir);
@@ -930,7 +930,7 @@ wav_notify(BYTE no)
 	} else {
 		if(DrvWav != NULL) {
 		  ch = CH_WAV_RELAY_ON + no;
-			DrvWav[no].Play(ch, iTotalVolume, 0);
+			DrvWav[no].Play(ch, 0);
 		}
 	}
 
