@@ -264,7 +264,7 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 	SDL_SemWait(RenderSem);
 	wbuf = (Sint16 *)buf[slot];
 	wbuf = &wbuf[start * channels];
-        level = nLevel >>4;
+        level = nLevel >>2;
 	//if(clear)  memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
         memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
 	if(enable) {
