@@ -78,8 +78,6 @@ static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
 /*
  * マルチスレッド向け定義
  */
-static SDL_TimerID DrawTID;
-static SDL_sem   *DrawSem;
 static BOOL DrawINGFlag;
 static BOOL DrawSHUTDOWN;
 static BOOL DrawWaitFlag;
@@ -87,7 +85,8 @@ static SDL_Thread *DrawThread;
 static WORD nDrawCount;
 static BOOL       SelectDraw2(void);
 static void       ChangeResolution();
-
+static SDL_cond *DrawCond;
+static SDL_mutex *DrawMutex;
 
 
 
@@ -183,68 +182,36 @@ DrawTaskMain(void *arg)
         return 0;
 }
 
-static SDL_NewTimerCallback
-DrawTaskInt(Uint32 interval, void *arg)
+static int
+DrawThreadMain(void)
 {
-//        SDL_Surface *p;
-//        if(SDL_SemWaitTimeout(DrawSem, 3) !=0) { /* 3msだけ待つ */
-//                return (interval);
-//        }
+	while(1) {
+		if(DrawMutex == NULL) {
+			SDL_Delay(1);
+			continue;
+		}
+		if(DrawCond == NULL) {
+			SDL_Delay(1);
+			continue;
+		}
+#if 1
+		SDL_mutexP(DrawMutex);
+		SDL_CondWait(DrawCond, DrawMutex);
+#else
+		SDL_Delay(33 - 1);
+#endif
+		if(DrawSHUTDOWN) return 0; /* シャットダウン期間 */
+//		if(DrawWaitFlag) continue; /* 非表示期間中 */
+//		if(DrawINGFlag) continue; /* 別スレッドが表示動作してる */
 
-        DrawTaskMain(NULL);
-//        if(DrawSem != NULL) {
-//                SDL_SemPost(DrawSem);
-//        }
-        return (SDL_NewTimerCallback)interval;
-}
-
-static SDL_NewTimerCallback
-DrawWait(Uint32 interval, void *arg)
-{
-	DrawWaitFlag = FALSE;
-	return interval;
-}
-
-static void
-*DrawThreadMain(void)
-{
-	if(DrawSHUTDOWN) return; /* シャットダウン期間 */
-	if(DrawWaitFlag) return; /* 非表示期間中 */
-	if(DrawINGFlag) return; /* 別スレッドが表示動作してる */
-
-	DrawWaitFlag = TRUE;
-    if(DrawTID == NULL) {
-    		DrawWaitFlag = TRUE;
-            DrawTID = SDL_AddTimer(1000/nDrawFPS, DrawWait, NULL);
-    }
-//	if(DrawSem != NULL) {
-//		SDL_SemPost(DrawSem);
-//	}
-
-//	while(!DrawSHUTDOWN) {
-//		if(DrawSem != NULL) {
-//			SDL_SemWait(DrawSem);
-//		}
-//		if(DrawINGFlag) continue;
-//	    if(DrawTID == NULL) {
-//	    		DrawWaitFlag = TRUE;
-//	            DrawTID = SDL_AddTimer(1000/nDrawFPS, DrawWait, NULL);
-//	    }
-//		DrawWaitFlag = TRUE;
+		DrawWaitFlag = TRUE;
 		DrawINGFlag = TRUE;
 		DrawTaskMain(NULL);
 		DrawINGFlag = FALSE;
-//		SDL_RemoveTimer(DrawTID);
-//		DrawTID = NULL;
+		DrawWaitFlag = FALSE;
 
-//	}
-	while(DrawWaitFlag) SDL_Delay(1); /* 非表示期間 */
-	SDL_RemoveTimer(DrawTID);
-	DrawTID = NULL;
-		if(DrawSem != NULL) {
-			SDL_SemPost(DrawSem);
-		}
-
+	//while(DrawWaitFlag) SDL_Delay(1); /* 非表示期間 */
+	}
 }
 
 /*
@@ -384,8 +351,8 @@ InitDraw(void)
         nWindowDy2 = 0;
 #endif				/*  */
         bDirectDraw = TRUE;
-        DrawSem = NULL;
-        DrawTID = NULL;
+        DrawCond = NULL;
+        DrawMutex = NULL;
         DrawThread = NULL;
     	DrawINGFlag = FALSE;
     	DrawSHUTDOWN = FALSE;
@@ -395,6 +362,17 @@ InitDraw(void)
  * 直接書き込み→間接書き込み
  */ 
         realDrawArea = SDL_GetVideoSurface();
+        if(!DrawMutex) {
+        	DrawMutex = SDL_CreateMutex();
+        }
+        if(!DrawCond) {
+        	DrawCond = SDL_CreateCond();
+        }
+        if(!DrawThread) {
+        	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
+        	SDL_mutexV(DrawMutex);
+        }
+
 }
 
 
@@ -404,21 +382,27 @@ InitDraw(void)
 void
 CleanDraw(void) 
 {
+	int reti;
 		DrawSHUTDOWN = TRUE;
-		if(DrawThread != NULL) {
-			SDL_KillThread(DrawThread);
-            	DrawThread = NULL;
+		if(DrawCond != NULL) {
+			SDL_CondSignal(DrawCond);
 		}
-        if(DrawTID != NULL) {
-                SDL_RemoveTimer(DrawTID);
-                DrawTID = NULL;
+		if(DrawThread != NULL) {
+//			SDL_KillThread(DrawThread);
+			SDL_WaitThread(DrawThread, &reti);
+           	DrawThread = NULL;
+		}
+        if(DrawCond != NULL) {
+                SDL_DestroyCond(DrawCond);
+                DrawCond = NULL;
         }
 
 
-        if(DrawSem != NULL) {
-                SDL_DestroySemaphore(DrawSem);
-                DrawSem = NULL;
+        if(DrawMutex != NULL) {
+                SDL_DestroyMutex(DrawMutex);
+                DrawMutex = NULL;
         }
+
 
 } 
 
@@ -683,6 +667,8 @@ SelectDraw(void)
 {
     SDL_Rect rect;
     BOOL ret;
+    int reti;
+
     displayArea = SDL_GetVideoSurface();
     rect.h = nDrawWidth;
     rect.w = nDrawHeight;
@@ -727,19 +713,32 @@ SelectDraw(void)
             }
 
     bOldFullScan = bFullScan;
-    if(DrawTID != NULL) {
-            SDL_RemoveTimer(DrawTID);
-            DrawTID = NULL;
-    }
-    if(DrawSem != NULL) {
-            SDL_DestroySemaphore(DrawSem);
-            DrawSem = NULL;
+#if 0
+    if(DrawCond != NULL) {
+    	SDL_CondSignal(DrawCond);
+    	SDL_DestroyCond(DrawCond);
+    	DrawCond = NULL;
     }
     if(DrawThread != NULL) {
             SDL_KillThread(DrawThread);
+            SDL_WaitThread(DrawThread,&reti);
             DrawThread = NULL;
     }
-
+    if(DrawMutex != NULL) {
+    	SDL_DestroyMutex(DrawMutex);
+    	DrawMutex = NULL;
+    }
+#endif
+    if(!DrawMutex) {
+    	DrawMutex = SDL_CreateMutex();
+    }
+    if(!DrawCond) {
+    	DrawCond = SDL_CreateCond();
+    }
+    if(!DrawThread) {
+    	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
+    	SDL_mutexV(DrawMutex);
+    }
     /*
      * セレクト 
      */ 
@@ -767,10 +766,6 @@ SelectDraw(void)
         ret = TRUE; 
     }
 #endif				/*  */
-    if(DrawSem == NULL) {
-            DrawSem = SDL_CreateSemaphore(1);
-            SDL_SemPost(DrawSem);
-    }
 //    if(DrawThread == NULL) {
 //            DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
 //    }
@@ -940,18 +935,12 @@ OnDraw(void)
        /*
         * ここまでやっておいてから解像度を変更する 
         */ 
-//    if(DrawSem == NULL) {
-//            DrawSem = SDL_CreateSemaphore(1);
-//    }
-//    if(DrawTID == NULL) {
-//            SDL_SemWait(DrawSem);
-//            ChangeResolution();
-//            DrawTID = SDL_AddTimer(1000/nDrawFPS, DrawTaskInt, NULL);
-//    }
 	if(nDrawCount > 0) {
+//		if(DrawCond) SDL_CondSignal(DrawCond);
 		nDrawCount --;
 	} else {
         nDrawCount = DrawCountSet(nDrawFPS);
+#if 0
         if(DrawThread == NULL) {
         	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
         } else {
@@ -961,6 +950,8 @@ OnDraw(void)
 		if(DrawSem != NULL) {
 			SDL_SemPost(DrawSem);
 		}
+#endif
+		if(DrawCond) SDL_CondSignal(DrawCond);
 	}
 }
 

@@ -47,38 +47,24 @@ public:
 	void SetRenderVolume(int fm, int psg);
 
 	void SetLRVolume(void);
+	int *GetLVolume(int num);
+	int *GetRVolume(int num);
+
 	BYTE GetReg(BYTE);
 	void SetReg(BYTE reg, BYTE dat);
 	void SetReg(BYTE *reg);
 	void SetOpNo(int num);
 
-	void SetVolume(Uint8 level);
 	int Render(int start, int uSamples,int slot,  BOOL clear);
 	int BZero(int start, int uSamples,int slot,  BOOL clear);
 	int GetLevelSnd(int ch);
 	void Play(int ch, int slot, int samples);
-	Mix_Chunk *GetChunk(int slot);
-
 private:
-	Mix_Chunk *GetChunk(void);
 	DWORD *GetBuf32(int slot);
-
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
-	Uint8 *buf[OPN_SLOT];
-	Uint32 *buf32[OPN_SLOT];
-	Mix_Chunk chunk[OPN_SLOT];
-
-	int bufSize;
-	UINT channels;
-	UINT srate;
-	UINT ms;
-	UINT uStereo;
-	int nLevel; /* レンダリングの音量 */
-	Uint8 volume; /* 出力する音量 */
-	BOOL enable;
-	SDL_sem *RenderSem;
+	Uint32 *buf32[DEFAULT_SLOT];
 	int opn_number;
 	UINT counter;
 	int nScale; /* プリスケーラ */

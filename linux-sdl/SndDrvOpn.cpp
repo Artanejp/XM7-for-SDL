@@ -122,25 +122,10 @@ void SndDrvOpn::SetReg(BYTE *reg)
 SndDrvOpn::SndDrvOpn(void) {
 	// TODO Auto-generated constructor stub
 	int i;
-
-	int uStereo = nStereoOut %4;
-	if ((uStereo > 0) || bForceStereo) {
-		channels = 2;
-	} else {
-		channels = 1;
-	}
-	ms = nSoundBuffer;
-	srate = nSampleRate;
-	bufSlot = OPN_SLOT;
+	bufSlot = DEFAULT_SLOT;
 	bufSize = (ms * srate * channels *sizeof(Sint16)) / 1000;
-
 	for(i = 0; i<bufSlot; i++) {
-		buf[i] = NULL;
 		buf32[i] = NULL;
-		chunk[i].abuf = buf[i];
-		chunk[i].alen = bufSize;
-		chunk[i].allocated = 1; /* アロケートされてる */
-		chunk[i].volume = 128; /* 一応最大 */
 	}
 
 
@@ -150,7 +135,7 @@ SndDrvOpn::SndDrvOpn(void) {
 	uCh3Mode = 0;
 	opn_number = 0;
 	volume = MIX_MAX_VOLUME;
-	RenderSem = SDL_CreateSemaphore(1);
+	if(RenderSem == NULL) RenderSem = SDL_CreateSemaphore(1);
 	SDL_SemPost(RenderSem);
 	pOPN = new FM::OPN;
 	InitOpn();
@@ -162,12 +147,10 @@ void SndDrvOpn::DeleteOpn(void)
 }
 SndDrvOpn::~SndDrvOpn() {
 	// TODO Auto-generated destructor stub
-
+	if(RenderSem) SDL_SemWait(RenderSem);
 	enable = FALSE;
-	DeleteBuffer();
 	DeleteOpn();
 
-	if(RenderSem) SDL_DestroySemaphore(RenderSem);
 }
 
 
@@ -181,22 +164,13 @@ void SndDrvOpn::SetOpNo(int num)
  */
 void SndDrvOpn::SetRenderVolume(void)
 {
-	/* FM音源/PSGボリューム設定 */
-		if (pOPN) {
-			pOPN->SetVolumeFM(nFMVolume * 2);
-			pOPN->psg.SetVolume(nPSGVolume * 2);
-		}
-		SetLRVolume();
+	SetRenderVolume((int)nFMVolume, (int)nPSGVolume);
 }
 
 void SndDrvOpn::SetRenderVolume(int level)
 {
 	/* FM音源/PSGボリューム設定 */
-		if (pOPN) {
-			pOPN->SetVolumeFM(level * 2);
-			pOPN->psg.SetVolume(level * 2);
-		}
-		SetLRVolume();
+	SetRenderVolume(level, level);
 }
 
 void SndDrvOpn::SetRenderVolume(int fm, int psg)
@@ -212,17 +186,22 @@ void SndDrvOpn::SetRenderVolume(int fm, int psg)
 void SndDrvOpn::SetLRVolume(void)
 {
     l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
-    r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChSeparation;
+    r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChanSep;
     r_vol[0][1] = r_vol[1][2] = r_vol[2][3] =
-    l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - uChSeparation;
+    l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - 	uChanSep ;
 }
 
-void SndDrvOpn::SetVolume(Uint8 level)
+int *SndDrvOpn::GetLVolume(int num)
 {
-	volume = level;
-	if(volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
+	if((num >3) || (num<0)) return NULL;
+	return l_vol[num];
 }
 
+int *SndDrvOpn::GetRVolume(int num)
+{
+	if((num >3) || (num<0)) return NULL;
+	return r_vol[num];
+}
 
 int SndDrvOpn::GetLevelSnd(int ch)
 {
@@ -311,29 +290,13 @@ int SndDrvOpn::GetLevelSnd(int ch)
 	        }
 	        return (int) s;
 }
-
-Mix_Chunk *SndDrvOpn::GetChunk(void)
-{
-	return GetChunk(0);
-}
-
-Mix_Chunk *SndDrvOpn::GetChunk(int slot)
-{
-	if(slot > bufSlot) return NULL;
-	return &chunk[slot];
-}
-
-
 Uint8 *SndDrvOpn::NewBuffer(void)
 {
 	int i;
-	Uint8 *p;
-	for(i = 0; i <bufSlot ; i++)
-	{
-		p=NewBuffer(i);
+	for(i = 0; i< bufSlot; i++) {
+		NewBuffer(i);
 	}
 	return buf[0];
-
 }
 
 Uint8 *SndDrvOpn::NewBuffer(int slot)
@@ -436,6 +399,7 @@ Uint8  *SndDrvOpn::Setup(int tick, int opno)
 	   }
 	   srate = nSampleRate;
 		bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000 ;
+		uChanSep = uChSeparation;
 
 	   SetOpNo(opno);
 	   InitOpn();
@@ -608,7 +572,6 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
    	return ss2;
 }
 
-
 void SndDrvOpn::Play(int ch,  int slot, int samples)
 {
 		if(slot >= bufSlot) return;
@@ -627,4 +590,3 @@ void SndDrvOpn::Play(int ch,  int slot, int samples)
         }
 		SDL_SemPost(RenderSem);
 }
-
