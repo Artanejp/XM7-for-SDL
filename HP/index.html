@@ -1,5 +1,4 @@
-<!--Created by GeoCities Home Page Generator-->
-<html><head><!--����-->
+<html><head>
 <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
 <title>XM-7 for SDL</title></head>
 <!--COLOR-->
@@ -16,35 +15,39 @@ Sorry, under construction and Japanese only,Yet...<BR>
 <BR>
 <BR>
 <B>現在のリリースは、
-*  Version 0.1r74 (αレベル) Aug 25,2010<BR>
+*  Version 0.1r112 (αレベル) Oct 05,2010<BR>
 です。</B><BR>
 解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
 <BR>
 ・ダウンロード：<BR>
-<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r74.7z">ソースコード+GNU/Linux amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r112.7z">ソースコード+GNU/Linux amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
 <BR>
 <H2>変更点:</H2>
-<B>※今回はBUGFIX版です(詳細はDoc/00_svnlog.r74.txt 参照)※</B><BR>
-- 描画処理を別スレッドにした（現状はFPS固定,この副作用で400lや26万色モードの再現が停止、なるべく早く直します)<BR>
+- 描画処理を別スレッドにした（現状はFPS固定)<BR>
+&nbsp;&nbsp;26万色・400lineが復活しました
 - 音声出力を大幅にSDL_mixer依存にした<BR>
 - スクリーン内表示にSDL_ttfを使用（追々OSDに移行するかもしないかも)<BR>
-- Eclipseでのビルドに移行開始<BR>
-- 全部Cソースコード化<BR>
+- Eclipseでのビルドに移行開始(Makefileでもビルド出来ます)<BR>
+- 全部C/C++ソースコード化<BR>
 - M6809コアを <A
 HREF="http://rbelmont.mameworld.info/?page_id=163">SDLMESS 0.136</A>ベースのCコードにした（ソースツリーにアセンブラコードも残してあります）<BR>
 - ~/.xm7 に設定ファイルやROMファイルを置くようにした<BR>
+- 音声・入力などのドライバを書きやすいようにClass分けしました（殆ど一から書きなおしかも）<BR>
 etc...<BR>
 <BR>
 <BR>
 <H2>インストール:</H2>
-- JIS0208 encoding のIPA Gothicが必要です(/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf 決め打ちです)<BR>
+- JIS0208 encoding のIPA Gothicが必要です(/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf
+決め打ちですが、XM7.INIの書き替えで対応可能)<BR>
 - usr.local.bin/xm7 と usr.local.bin/xm7_debug  を/usr/local/bin などにinstall<BR>
 - usr.local.share.xm7 以下のファイルを/usr/local/share/xm7 にコピー<BR>
 <BR>
 <HR>
 <H2>旧版:</H2>
 <BR>
-<H5>0.1r67 Apr.02,2010</H5>
+<H5>0.1r74 Aug.25,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r74.7z">ソースコード+GNU/Linux amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
+<H5>0.1r67 Aug.02,2010</H5>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-lsdl-linux-amd64.0.1r67.7z">ソースコード+GNU/Linux amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
 <H5>0.1r57 ??,2010</H5>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-sdl_0.1r57.7z">ソースコード+GNU/Linux ia32/amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
