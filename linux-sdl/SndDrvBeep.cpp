@@ -14,7 +14,6 @@
 
 SndDrvBeep::SndDrvBeep() {
 	// TODO Auto-generated constructor stub
-	int i;
 	enable = FALSE;
 }
 
@@ -162,13 +161,14 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 				counter = 0;
 			}
 		}
+		bufSize = (start + ss2) * channels * sizeof(Sint16);
 		chunk[slot].abuf = buf[slot];
 		chunk[slot].alen = (ss2 + start) * channels * sizeof(Sint16);
 		chunk[slot].allocated = 1; /* アロケートされてる */
 		chunk[slot].volume = volume; /* 一応最大 */
 
 	}
-	//    bufSize = ss2 + start;
+	bufSize = (start + ss2) * channels * sizeof(Sint16);
 	SDL_SemPost(RenderSem);
 	return ss2;
 }

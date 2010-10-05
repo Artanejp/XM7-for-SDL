@@ -37,6 +37,7 @@
 #include "SndDrvBeep.h"
 #include "SndDrvWav.h"
 #include "SndDrvOpn.h"
+#include "SndDrvCMT.h"
 #include "util_ringbuffer.h"
 
 #define WAV_SLOT 3
@@ -128,8 +129,6 @@ static int              nWaveLevel;     /* 各種効果音出力レベル */
 #endif
 
 static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
-static BOOL             bTapeFlag2;     /* 前回のテープ出力状態 */
-static BYTE             uTapeDelta;     /* テープ波形補間カウンタ */
 static int bNowBank;
 static DWORD dwPlayC;
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
@@ -163,6 +162,7 @@ static SndDrvOpn *DrvPSG;
 static SndDrvOpn *DrvOPN;
 static SndDrvOpn *DrvWHG;
 static SndDrvOpn *DrvTHG;
+static SndDrvCMT *DrvCMT;
 
 static SDL_Thread *snd_thread;
 static struct RingBufferDesc *CmdRing;
@@ -203,7 +203,7 @@ InitSnd(void)
 	uChSeparation = 9;
 	uChanSep = uChSeparation;
 	bBeepFlag = FALSE;      /* BEEP出力 */
-
+	bTapeFlag = TRUE;
 
 	iTotalVolume = SDL_MIX_MAXVOLUME;
 	snd_thread = NULL;
@@ -220,6 +220,7 @@ InitSnd(void)
 	DrvWHG = NULL;
 	DrvTHG = NULL;
 	DrvWav = NULL;
+	DrvCMT = NULL;
 	applySem = NULL;
 	bPlayEnable = FALSE;
 
@@ -319,6 +320,10 @@ CleanSnd(void)
 		delete DrvTHG;
 		DrvTHG = NULL;
 	}
+	if(DrvCMT) 		{
+		delete DrvCMT;
+		DrvCMT = NULL;
+	}
 
 	bWavFlag = FALSE;
 	bPlayEnable = FALSE;
@@ -356,7 +361,6 @@ BOOL SelectSnd(void)
 	nBeepVol = nBeepVolume;
 	nWavVol = nWaveVolume;
 	uChanSep = uChSeparation;
-	uTapeDelta = 0;
 	uStereo = nStereoOut %4;
 
 	if ((uStereo > 0) || bForceStereo) {
@@ -452,6 +456,15 @@ BOOL SelectSnd(void)
 			DrvTHG->Enable(TRUE);
 	}
 
+	/*
+	 * CMT
+	 */
+	DrvCMT = new SndDrvCMT;
+	if(DrvCMT) {
+		DrvCMT->Setup(uTick);
+		DrvCMT->Enable(TRUE);
+		DrvCMT->SetState(FALSE);
+	}
 	/*
 	 * 再セレクトに備え、レジスタ設定
 	 */
@@ -589,6 +602,9 @@ void SetSoundVolume(void)
 	/* BEEP音/CMT音/各種効果音ボリューム設定 */
 	if(DrvBeep) {
 			DrvBeep->SetRenderVolume(nBeepVolume);
+	}
+	if(DrvCMT) {
+			DrvCMT->SetRenderVolume(nCMTVolume);
 	}
 	if(DrvWav) {
 		for(i = 0; i < 3; i++) {
@@ -961,11 +977,15 @@ tape_notify(BOOL flag)
 	if (bTapeFlag == flag) {
 		return;
 	}
-
+	DrvCMT->SetState((BOOL)bTapeFlag);
+	if(!DrvCMT) return;
 	if (bTapeMon) {
-    AddSnd(FALSE, FALSE);
+		DrvCMT->Enable(TRUE);
+		AddSnd(FALSE, FALSE);
+	} else {
+		DrvCMT->Enable(FALSE);
+		AddSnd(FALSE, FALSE);
 	}
-
 	bTapeFlag = flag;
 }
 
@@ -1182,11 +1202,9 @@ RenderThreadSub(int start, int size, int slot)
 		w = DrvBeep->Render(start, size, slot, FALSE);
 	}
 #if 1
-//	if(bTapeMon) {
-//		if(DrvCmt[slot] == NULL) break;
-//		tmp = DrvCMT[slot].Render(start, wsize, FALSE);
-//		if(tmp < w) w = tmp;
-//	}
+	if(DrvCMT != NULL) {
+		w = DrvCMT->Render(start, size, slot, FALSE);
+	}
 
 	if(DrvOPN != NULL) {
 		w =DrvOPN->Render(start, size, slot, TRUE);
@@ -1221,11 +1239,9 @@ RenderThreadBZero(int start,int size,int slot)
 		w = DrvBeep->BZero(start, size, slot, TRUE);
 	}
 #if 1
-//	if(bTapeMon) {
-//		if(DrvCmt[slot] == NULL) break;
-//		tmp = DrvCMT[slot].BZero(start, wsize);
-//		if(tmp < w) w = tmp;
-//	}
+	if(DrvCMT != NULL) {
+		w =DrvCMT->BZero(start, size, slot, TRUE);
+	}
 
 	if(DrvOPN != NULL) {
 		w =DrvOPN->BZero(start, size, slot, TRUE);
@@ -1260,6 +1276,11 @@ static void RenderPlay(int samples, int slot, BOOL play)
 		if(DrvBeep != NULL) {
 			if(bPlayEnable) DrvBeep->Play(CH_SND_BEEP + slot, slot);
 		}
+
+		if(DrvCMT != NULL) {
+			if(bPlayEnable) DrvCMT->Play(CH_SND_CMT + slot, slot);
+		}
+
 #if 1
 
 		if(DrvOPN != NULL) {
