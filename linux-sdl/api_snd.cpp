@@ -255,6 +255,7 @@ CleanSnd(void)
 	/*
 	 * スレッド停止
 	 */
+	SDL_SemWait(applySem);
 	SDL_DestroySemaphore(applySem);
 	applySem = NULL;
 	/*
@@ -319,14 +320,15 @@ CleanSnd(void)
 		DrvTHG = NULL;
 	}
 
+	bWavFlag = FALSE;
+	bPlayEnable = FALSE;
+	Mix_CloseAudio();
+
 //	DeleteCommandBuffer();
 	/*
 	 * uRateをクリア
 	 */
 	uRate = 0;
-
-
-
 }
 
 //static int RenderThread(void *arg);
@@ -519,6 +521,7 @@ ApplySnd(void)
 	/*
 	 * パラメータ一致チェック
 	 */
+
 	if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
 			(bMode == bFMHQmode) && (uStereo == nStereoOut) &&
 			(nFMVol == nFMVolume) && (nPSGVol == nPSGVolume) &&
@@ -527,7 +530,7 @@ ApplySnd(void)
 		return;
 	}
 	/* 音声プロパティとOPNが衝突しないようにするためのセマフォ初期化 */
-	//    SDL_SemWait(applySem);
+	    SDL_SemWait(applySem);
 	/*
 	 * 既に準備ができているなら、解放
 	 */
@@ -540,7 +543,7 @@ ApplySnd(void)
 	 * 再セレクト
 	 */
 	SelectSnd();
-	//    SDL_SemPost(applySem);
+	    SDL_SemPost(applySem);
 
 }
 
@@ -655,11 +658,6 @@ PlaySnd()
 void
 StopSnd(void)
 {
-	SDL_SemWait(applySem);
-	bWavFlag = FALSE;
-	bPlayEnable = FALSE;
-	Mix_CloseAudio();
-	SDL_SemPost(applySem);
 }
 
 static void AddSnd(BOOL bfill, BOOL bZero)
@@ -925,6 +923,9 @@ wav_notify(BYTE no)
 	int    j;
    int ch;
 
+   if(applySem == NULL) return;
+   SDL_SemWait(applySem);
+
 	if(no == SOUND_STOP){
 		Mix_HaltGroup(GROUP_SND_SFX);
 	} else {
@@ -933,7 +934,7 @@ wav_notify(BYTE no)
 			DrvWav[no].Play(ch, 0);
 		}
 	}
-
+	SDL_SemPost(applySem);
 }
 
 void
