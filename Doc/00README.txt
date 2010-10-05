@@ -1,17 +1,18 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
-*  Version 0.1r74 (αレベル)
+*  Version 0.1r109 (αレベル)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2010.08.02 Artane.
+* 2010.10.05 Artane.
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
 * http://xm7-sdl.unfuddle.com/
+
 
 1.はじめに
  非常に古いマイコンであるFM-7のエミュレータに、XM-7(*0)と言う物があります。
@@ -89,6 +90,11 @@ e.
  手持ちのFD・テープをD77・T77形式に変換した物を動かして見てください。
 
 *** 動くことを願っています(ぉぃ ***
+
+5. SVNのおさそい
+現在、SVNリポジトリを使用してソースコードを管理しています。
+但し、管理権限の関係があるので公開されてるかどうかわかりません（いいかげんでごめんなさい）
+$ svn co http://xm7-sdl.unfuddle.com/svn/xm7-sdl_xm7-sdl-linux/linux-sdl
 
 5.TIPS
 
