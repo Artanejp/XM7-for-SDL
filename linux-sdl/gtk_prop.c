@@ -185,9 +185,10 @@ BOOL IsDlgButtonChecked(GtkWidget * widget)
     /*
      *  テープスピード状態の連動 
      */ 
-static void
+void
 OnGP_TAPESPEEDClicked(GtkWidget * widget, gpointer data) 
 {
+	printf("DBG:TAPESPEED CLICKED\n");
     SetEnable(GP_TAPESPEEDMODE, IsDlgButtonChecked(GP_TAPESPEED));
 } 
     /*
@@ -661,8 +662,10 @@ GtkWidget
                        GTK_SIGNAL_FUNC(OnGP_CPUDEFAULTClicked), NULL);
     g_signal_connect((gpointer) GP_CPUCOMBO, "changed",
                        GTK_SIGNAL_FUNC(OnGP_CPUCOMBOChanged), NULL);
+#if 0
     g_signal_connect((gpointer) GP_TAPESPEED, "clicked",
                        GTK_SIGNAL_FUNC(OnGP_TAPESPEEDClicked), NULL);
+#endif
     g_signal_connect((gpointer) KP_USEARROWFOR10, "clicked",
                        GTK_SIGNAL_FUNC(OnKP_USEARROWFOR10Clicked), NULL);
     g_signal_connect((gpointer) btnOk, "clicked",

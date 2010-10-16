@@ -37,10 +37,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAction" id="action_JOYKEY"/>
-  <object class="GtkAction" id="action_KEYCODE"/>
-  <object class="GtkAction" id="action_WriteKEYMAP"/>
-  <object class="GtkAction" id="action_ReadKEYMAP"/>
   <object class="GtkAction" id="action_bFULLSCAN"/>
   <object class="GtkAction" id="action_CMTMON"/>
   <object class="GtkAction" id="action_WAVMON"/>
@@ -57,7 +53,9 @@
   <object class="GtkAction" id="action_EMUMODE_FAST"/>
   <object class="GtkAction" id="action_EMUMODE_SLOW"/>
   <object class="GtkAction" id="action_SPEED_SETDEFAULT"/>
-  <object class="GtkAction" id="action_SPEED_TAPEON_FULL"/>
+  <object class="GtkAction" id="action_SPEED_TAPEON_FULL">
+    <signal name="activate" handler="OnGP_TAPESPEEDClicked"/>
+  </object>
   <object class="GtkAction" id="action_SPEED_TAPEON_NOAUTO"/>
   <object class="GtkAction" id="action_SPEED_FDD_WAIT"/>
   <object class="GtkAction" id="action_SPEED_FULLSPEED"/>
@@ -763,7 +761,7 @@ audio-volume-medium</property>
                                     <property name="image_position">bottom</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <signal name="group_changed" handler="OnEmuTypeFM7Selected" object="1"/>
+                                    <signal name="group_changed" handler="OnEmuTypeFM7Selected" object="1" after="yes"/>
                                   </object>
                                   <packing>
                                     <property name="position">0</property>
@@ -955,6 +953,7 @@ audio-volume-medium</property>
                                 <property name="receives_default">False</property>
                                 <property name="related_action">action_SPEED_TAPEON_FULL</property>
                                 <property name="draw_indicator">True</property>
+                                <signal name="toggled" handler="OnGP_TAPESPEEDClicked" after="yes"/>
                               </object>
                               <packing>
                                 <property name="position">1</property>
@@ -1505,7 +1504,6 @@ audio-volume-medium</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="related_action">action_ReadKEYMAP</property>
                             <property name="use_underline">True</property>
                             <property name="image_position">right</property>
                           </object>
@@ -1521,7 +1519,6 @@ audio-volume-medium</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="related_action">action_WriteKEYMAP</property>
                             <property name="use_underline">True</property>
                           </object>
                           <packing>
@@ -1539,7 +1536,6 @@ audio-volume-medium</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="related_action">action_KEYCODE</property>
                             <property name="use_underline">True</property>
                           </object>
                           <packing>
@@ -2748,9 +2744,11 @@ audio-volume-medium</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON1_MOTION_MASK | GDK_BUTTON2_MOTION_MASK | GDK_BUTTON3_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_FOCUS_CHANGE_MASK | GDK_STRUCTURE_MASK | GDK_PROPERTY_CHANGE_MASK | GDK_VISIBILITY_NOTIFY_MASK | GDK_PROXIMITY_IN_MASK | GDK_PROXIMITY_OUT_MASK | GDK_SUBSTRUCTURE_MASK | GDK_SCROLL_MASK</property>
                     <property name="related_action">action_BUTTON_OK</property>
                     <property name="use_underline">True</property>
                     <accelerator key="y" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                    <signal name="clicked" handler="OnConfig_OK"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -3059,9 +3057,9 @@ audio-volume-medium</property>
   </object>
   <object class="GtkSizeGroup" id="sizegroup_EMU">
     <widgets>
-      <widget name="radiobutton_EMU_FM7"/>
-      <widget name="radiobutton_EMU_77AV"/>
       <widget name="radiobutton_EMU_77AVEX"/>
+      <widget name="radiobutton_EMU_77AV"/>
+      <widget name="radiobutton_EMU_FM7"/>
     </widgets>
     <signal name="notify" handler="OnEmuTypeFM7Selected" object="0"/>
   </object>

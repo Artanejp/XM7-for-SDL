@@ -35,8 +35,8 @@
 #define	LEVEL		"L31a"
 // #define BETAVER
 #endif
-#define          LOCALVER         "SDL 0.1α88  "
-#define	DATE		"2010/09/13"
+#define          LOCALVER         "SDL 0.1α112  "
+#define	DATE		"2010/10/05"
 
 /*
  *      定数、型定義

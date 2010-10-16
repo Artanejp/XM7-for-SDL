@@ -436,7 +436,9 @@ InitInstanceGtk(void)
 #endif
     wndMain = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "window_main"));
     gtk_window_set_title(GTK_WINDOW(wndMain), "XM7");
-   
+    /* This is important */
+    gtk_builder_connect_signals (gbuilderMain, NULL);
+
     gtk_container_border_width(GTK_CONTAINER(wndMain), 0);
     gtk_window_set_resizable(GTK_WINDOW(wndMain), FALSE);
 //    gtk_window_set_position(GTK_WINDOW(wndMain), GTK_WIN_POS_CENTER);

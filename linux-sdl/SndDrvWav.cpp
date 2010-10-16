@@ -190,7 +190,7 @@ int SndDrvWav::Render(int start, int uSamples, int slot, BOOL clear)
 		SDL_SemWait(RenderSem);
 		for(i = 0; i< s; i++) {
 			tmp = (nLevel * *p++);
-			*q++ = (Sint16)(tmp >>14); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
+			*q++ = (Sint16)(tmp >>15); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
 		}
 		SDL_SemPost(RenderSem);
 	}
