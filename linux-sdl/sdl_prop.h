@@ -36,6 +36,7 @@ extern GtkWidget *GP_FDDWAIT;
 #endif				/*  */
 extern GtkWidget *GP_FULLSPEED;
 extern GtkWidget *GP_AUTOSPEEDADJUST;
+
 extern GtkWidget *SP_96K;
 extern GtkWidget *SP_88K;
 extern GtkWidget *SP_48K;
@@ -54,9 +55,11 @@ extern GtkWidget *SP_TAPEMON;
 #ifdef FDDSND
 extern GtkWidget *SP_FDDSOUND;
 #endif				/*  */
+
 extern GtkWidget *KP_ARROW8DIR;
 extern GtkWidget *KP_USEARROWFOR10;
 extern GtkWidget *KP_KBDREAL;
+
 extern GtkWidget *JOY1_UNUSED;
 extern GtkWidget *JOY1_PORT1;
 extern GtkWidget *JOY1_PORT2;
@@ -79,8 +82,11 @@ extern GtkWidget *JOY_RAPID12[2][4];
 extern GtkWidget *JOY_RAPID25[2][4];
 
 extern GtkWidget *SCP_24K;
+extern GtkWidget *SCP_320X200;
 extern GtkWidget *SCP_640X400;
 extern GtkWidget *SCP_1280X800;
+extern GtkWidget *SCP_FPS;
+
 extern GtkWidget *OP_OPNB;
 extern GtkWidget *OP_WHGB;
 extern GtkWidget *OP_THGB;

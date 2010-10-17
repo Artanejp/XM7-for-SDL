@@ -65,6 +65,7 @@ extern          "C" {
                 BOOL bFullScanFS;
                 WORD uWidth;	/* 表示サイズ(横) */
                 WORD uHeight;	/* 表示サイズ(縦) */
+                WORD nDrawFPS;
                 BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
                 BOOL bWHGEnable;	/* WHG有効フラグ */
                 BOOL bTHGEnable;	/* THG有効フラグ */

@@ -375,7 +375,10 @@ LoadCfg(void)
        && (configdat.uHeight != 800) ){
                 configdat.uHeight = 400;
     }
-    
+    /*
+     * FPS追加 20101018
+     */
+    configdat.nDrawFPS = LoadCfgInt("DrawFPS", 25);
 /*
  * Optionセクション 
  */ 
@@ -544,6 +547,7 @@ SaveCfg(void)
     SaveCfgBool("FullScan", configdat.bFullScan);
     SaveCfgInt("DrawWidth", configdat.uWidth);
     SaveCfgInt("DrawHeight", configdat.uHeight);
+    SaveCfgInt("DrawFPS", configdat.nDrawFPS); // 20101018
 /*
  * Optionセクション 
  */ 
@@ -658,6 +662,7 @@ ApplyCfg(void)
     bFullScan = configdat.bFullScan;
     nDrawHeight = configdat.uHeight;
     nDrawWidth = configdat.uWidth;
+    nDrawFPS = configdat.nDrawFPS;
     display_notify();
     
 /*

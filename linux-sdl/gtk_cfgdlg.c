@@ -1014,6 +1014,7 @@ ScrPageInit(void)
 		CheckDlgButton(SCP_1280X800, BST_UNCHECKED);
 		break;
 	}
+	 SetSpin(SCP_FPS, propdat.nDrawFPS);
 }
 
 
@@ -1053,6 +1054,8 @@ ScrPageApply(void)
 	else {
 		propdat.bFullScan = FALSE;
 	}
+	 propdat.nDrawFPS = (WORD)GetSpin(SCP_FPS);
+
 }
 
 

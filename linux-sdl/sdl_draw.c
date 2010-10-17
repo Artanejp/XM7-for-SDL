@@ -129,10 +129,12 @@ static WORD DrawCountSet(WORD fps)
 	     */
     	intr = 1910 + 12700;
     }
-    wait = (DWORD)fps * 1000;
+    if(fps<= 0) fps=1;
+    wait = 1000000 / (DWORD)fps ;
     wait = wait / intr + 1; /* 整数化 */
     return (WORD) wait;
 }
+
 static int
 DrawTaskMain(void *arg)
 {
@@ -936,21 +938,9 @@ OnDraw(void)
         * ここまでやっておいてから解像度を変更する 
         */ 
 	if(nDrawCount > 0) {
-//		if(DrawCond) SDL_CondSignal(DrawCond);
 		nDrawCount --;
 	} else {
         nDrawCount = DrawCountSet(nDrawFPS);
-#if 0
-        if(DrawThread == NULL) {
-        	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
-        } else {
-        	SDL_WaitThread(DrawThread, NULL);
-        	DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
-        }
-		if(DrawSem != NULL) {
-			SDL_SemPost(DrawSem);
-		}
-#endif
 		if(DrawCond) SDL_CondSignal(DrawCond);
 	}
 }

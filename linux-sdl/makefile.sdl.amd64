@@ -68,7 +68,7 @@ INPUTSRC = \
 
 UISRC = \
 	sdl_gtkdlg.c \
-        gtk_prop.c gtk_propkeyboard.c \
+        gtk_prop2.c gtk_propkeyboard.c \
         gtk_cfgdlg.c gtk_main.c gtk_toolbox.c
 
 LOCALSRC = \
@@ -131,7 +131,7 @@ INPUTOBJ = \
 
 UIOBJ = \
 	sdl_gtkdlg.o \
-        gtk_prop.o gtk_propkeyboard.o \
+        gtk_prop2.o gtk_propkeyboard.o \
         gtk_cfgdlg.o gtk_main.o gtk_toolbox.o
 
 LOCALOBJ = \
@@ -155,8 +155,8 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 
 LDFLAGS = 
-CFLAGS =        -g -O0 -export-dynamic
-#CFLAGS =        -O3 -export-dynamic
+#CFLAGS =        -g -O0 -export-dynamic
+CFLAGS =        -O3 -export-dynamic
 CFLAGS += 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
 CFLAGS +=  -I. -I/usr/local/include
