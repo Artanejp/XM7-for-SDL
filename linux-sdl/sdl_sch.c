@@ -160,6 +160,12 @@ ExecSch(void)
 	case SDL_JOYBUTTONUP:
 	    OnReleaseJoy(&eventQueue);
 	    break;
+	case SDL_SYSWMEVENT:
+		printf("NOTICE: SYSWM\n");
+		break;
+	case SDL_MOUSEMOTION:
+		printf("MOUSE: X Y XREL YREL: %03d %03d %03d %03d\n", eventQueue.motion.x,  eventQueue.motion.y, eventQueue.motion.xrel, eventQueue.motion.yrel);
+		break;
 	default:
 	    break;
 	    }

@@ -27,6 +27,8 @@
 #include "GtkKbdInterface.h"
 //#include "GtkMouseInterface.h"
 
+extern BOOL bCaptureFlag;
+
 static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 	0x43, 0x5d, /* PF1 */
 	0x44, 0x5e, /* PF2 */
@@ -150,6 +152,7 @@ static BYTE   kbd_106_table[] = { 0x09, 0x5c, /* BREAK(ESC) */
 //struct SpecialKey ResetKey;
 //struct SpecialKey MouseCapture;
 
+
 GtkKbdInterface::GtkKbdInterface() {
 	// TODO Auto-generated constructor stub
 	InitKeyTable();
@@ -232,6 +235,13 @@ void GtkKbdInterface::OnRelease(void *arg)
 	 */
 	if ((scan == MouseCapture.sym) && (mod == MouseCapture.mod)) {
 //		GtkMouseInterface::ToggleMouseCapture();
+		if(bCaptureFlag) {
+			bCaptureFlag = FALSE;
+			SDL_WM_GrabInput(SDL_GRAB_OFF);
+		} else {
+			bCaptureFlag = TRUE;
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+		}
     }
 
 	/*

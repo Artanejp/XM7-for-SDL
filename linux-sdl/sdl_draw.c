@@ -148,7 +148,7 @@ DrawTaskMain(void *arg)
         realDrawArea = p;
         ChangeResolution(); 
         SelectDraw2();
-        DrawStatus();    
+//        DrawStatus();
 #if XM7_VER >= 3
         /*
          *    いずれかを使って描画 
@@ -187,6 +187,7 @@ DrawTaskMain(void *arg)
 static int
 DrawThreadMain(void)
 {
+    nDrawCount = DrawCountSet(nDrawFPS);
 	while(1) {
 		if(DrawMutex == NULL) {
 			SDL_Delay(1);
@@ -205,6 +206,13 @@ DrawThreadMain(void)
 		if(DrawSHUTDOWN) return 0; /* シャットダウン期間 */
 //		if(DrawWaitFlag) continue; /* 非表示期間中 */
 //		if(DrawINGFlag) continue; /* 別スレッドが表示動作してる */
+        DrawStatus();
+		if(nDrawCount > 0) {
+			nDrawCount --;
+			continue;
+		} else {
+	        nDrawCount = DrawCountSet(nDrawFPS);
+		}
 
 		DrawWaitFlag = TRUE;
 		DrawINGFlag = TRUE;
@@ -933,16 +941,19 @@ RenderSetOddLine(void)
 void
 OnDraw(void) 
 {
-//        DrawStatus();    
-       /*
-        * ここまでやっておいてから解像度を変更する 
-        */ 
+#if 0
 	if(nDrawCount > 0) {
 		nDrawCount --;
 	} else {
         nDrawCount = DrawCountSet(nDrawFPS);
 		if(DrawCond) SDL_CondSignal(DrawCond);
 	}
+#else
+	/*
+	 * 描画スレッドのKICKを1/60secごとにする。
+	 */
+	if(DrawCond) SDL_CondSignal(DrawCond);
+#endif
 }
 
 

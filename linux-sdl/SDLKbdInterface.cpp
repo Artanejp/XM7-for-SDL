@@ -14,6 +14,7 @@
  * キーコードテーブル
  */
 
+extern BOOL bCaptureFlag;
 
 //struct SpecialKey MouseCapture;
 //struct SpecialKey ResetKey;
@@ -230,14 +231,21 @@ void SDLKbdInterface::OnRelease(void *eventh)
 	/*
 	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え
 	 */
-	if ((scan == MouseCapture.sym) && (modifier == MouseCapture.mod)) {
-		//SDLMouseInterface::ToggleMouseCapture();
+	if ((code == MouseCapture.sym) && (modifier == MouseCapture.mod)) {
+		if(bCaptureFlag) {
+			bCaptureFlag = FALSE;
+			SDL_WM_GrabInput(SDL_GRAB_OFF);
+		} else {
+			bCaptureFlag = TRUE;
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+		}
+
     }
 
 	/*
 	 * F12押下の場合はVMリセット
 	 */
-	if ((scan == ResetKey.sym) && (modifier == ResetKey.mod)) {
+	if ((code == ResetKey.sym) && (modifier == ResetKey.mod)) {
 		LockVM();
 		system_reset();
 		UnlockVM();

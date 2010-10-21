@@ -519,11 +519,11 @@ DrawCAP(void)
         p = SDL_GetVideoSurface();
         if(p == NULL) return;
 
-//        if (nCAP) {
-//                SDL_BlitSurface(pCapsOn, NULL, p, &drec);
-//        } else {
-//                SDL_BlitSurface(pCapsOff, NULL, p, &drec);
-//        }
+        if (nCAP) {
+                SDL_BlitSurface(pCapsOn, NULL, p, &drec);
+        } else {
+                SDL_BlitSurface(pCapsOff, NULL, p, &drec);
+        }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
         //SDL_Flip(p);
 }
@@ -573,11 +573,11 @@ DrawKANA(void)
         p = SDL_GetVideoSurface();
         if(p == NULL) return;
 
-//        if (nKANA) {
-//                SDL_BlitSurface(pKanaOn, &rec, p, &drec);
-//        } else {
-//                SDL_BlitSurface(pKanaOff, &rec, p, &drec);
-//        }
+        if (nKANA) {
+                SDL_BlitSurface(pKanaOn, &rec, p, &drec);
+        } else {
+                SDL_BlitSurface(pKanaOff, &rec, p, &drec);
+        }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
 }
 
@@ -622,11 +622,11 @@ DrawINS(void)
         drec.h = 20;
         p = SDL_GetVideoSurface();
         if(p == NULL) return;
-//        if (nINS) {
-//                SDL_BlitSurface(pInsOn, &rec, p, &drec);
-//        } else {
-//                SDL_BlitSurface(pInsOff, &rec, p, &drec);
-//        }
+        if (nINS) {
+                SDL_BlitSurface(pInsOn, &rec, p, &drec);
+        } else {
+                SDL_BlitSurface(pInsOff, &rec, p, &drec);
+        }
         SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
         //SDL_Flip(p);
 
