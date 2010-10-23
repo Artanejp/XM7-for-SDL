@@ -13,6 +13,10 @@
 #ifdef _XWIN
 
 #include <SDL/SDL.h>
+#if 1
+#include <SDL/SDL_rotozoom.h>
+#endif
+
 #include "xm7.h"
 #include "multipag.h"
 #include "ttlpalet.h"
@@ -346,6 +350,71 @@ Draw640Sub2_DDRAW1280i(int top, int bottom)
     }
 }
 
+static void Draw640Sub_DDRAW_Zoom(int w, int h, int top, int bottom, BOOL interlace)
+{
+	DWORD c[8];
+	DWORD nil[8] = {0,0,0,0,0,0,0,0};
+	double zoomx,zoomy;
+	int x,y;
+	int x1,y1; // 書き込み座標
+	double xfactor,yfactor;
+	Uint8 *addr;
+	Uint8 *addr2, *addr3;
+	int i;
+	SDL_Surface *p;
+
+	zoomx = (double)w / 640;
+	zoomy = (double)h / 200;
+	p = SDL_GetVideoSurface();
+	y1 = 0;
+	for(y = top; y < bottom; y++) {
+		x1 = 0;
+		for(x = 0; x < 80 ; x++) {
+			__GETVRAM_3bpp(vram_dptr, x, y, c);
+			addr = (Uint8 *)p->pixels + p->pitch * y1 + p->format->BytesPerPixel * x1;
+			addr2 = addr;
+			if(interlace) {
+				for(yfactor = 0.0; yfactor <zoomy / 2.0; yfactor += 1.0) {
+					addr3 =addr2;
+					for(i = 7; i >= 0; i--) {
+						for(xfactor = 0.0; xfactor < zoomx ; xfactor+=1.0) {
+							__SETDOT_DDRAW_640i(addr3, c[i]);
+							addr3 += p->format->BytesPerPixel;
+						}
+					}
+					addr2 += p->pitch;
+				}
+				for(yfactor = 0.0; yfactor <zoomy / 2.0; yfactor += 1.0) {
+					addr3 =addr2;
+					for(i = 7; i >= 0; i--) {
+						for(xfactor = 0.0; xfactor < zoomx ; xfactor+=1.0) {
+							__SETDOT_DDRAW_640i(addr3, nil[i]);
+							addr3 += p->format->BytesPerPixel;
+						}
+					}
+					addr2 += p->pitch;
+				}
+				yfactor *= 2.0;
+			}else {
+				for(yfactor = 0.0; yfactor <zoomy; yfactor += 1.0) {
+					addr3 =addr2;
+					for(i = 7; i >= 0; i--) {
+						for(xfactor = 0.0; xfactor < zoomx ; xfactor+=1.0) {
+							__SETDOT_DDRAW_640i(addr3, c[i]);
+							addr3 += p->format->BytesPerPixel;
+						}
+					}
+					addr2 += p->pitch;
+				}
+		}
+			x1 += (int)(xfactor * 8.0);
+		}
+		y1 += (int)yfactor;
+
+	}
+
+}
+
 static void
 Draw640Sub(int top, int bottom)
 {
@@ -356,8 +425,11 @@ Draw640Sub(int top, int bottom)
     case 1280:
 	if (bFullScan) {
 	    Draw640Sub2_DDRAW1280p(top, bottom);
+//		Draw640Sub_DDRAW_Zoom(1280, 800, top, bottom, FALSE);
+
 	} else {
 	    Draw640Sub2_DDRAW1280i(top, bottom);
+//		Draw640Sub_DDRAW_Zoom(1280,800, top, bottom, TRUE);
 	}
 	break;
     default:

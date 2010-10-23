@@ -63,6 +63,8 @@ __SETDOT_DDRAW_640i(Uint8 * addr, DWORD c)
 
 }
 
+
+
 /*
  * 640x200ドット画面の描画(非FullScan)
  * 直接SDLの画面を叩くときに使う
