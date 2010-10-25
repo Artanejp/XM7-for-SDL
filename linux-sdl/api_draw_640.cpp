@@ -200,15 +200,15 @@ Palet640(void)
 
 static void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
-	if(b400lFlag) {
-		if(vramhdr_400l != NULL) {
-			vramhdr_400l->GetVram(addr, cbuf, mpage);
-		}
-	} else {
+//	if(b400lFlag) {
+//		if(vramhdr_400l != NULL) {
+//			vramhdr_400l->GetVram(addr, cbuf, mpage);
+//		}
+//	} else {
 		if(vramhdr != NULL) {
 			vramhdr->GetVram(addr, cbuf, mpage);
 		}
-	}
+//	}
 }
 
 static void PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
