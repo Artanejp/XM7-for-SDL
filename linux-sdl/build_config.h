@@ -9,7 +9,8 @@
 /*
  * Toolkit
  */
-#define USE_GTK
+//#define USE_GTK
+
 /*
  * Target
  */
@@ -52,7 +53,7 @@
 #undef CPU_ASM
 #define MOUSE
 #define MR2
-#define FDDSND
+//#define FDDSND
 
 
 /*

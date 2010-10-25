@@ -451,7 +451,7 @@ Draw640Sub(int top, int bottom)
  *      パレット設定
  */
 void
-Palet640(void)
+Palet640_2(void)
 {
     int             i;
     int             vpage;
@@ -572,7 +572,7 @@ Palet640(void)
  *      描画
  */
 void
-Draw640All(void)
+Draw640All_2(void)
 {
 #if XM7_VER >= 3
 #endif
@@ -584,6 +584,7 @@ Draw640All(void)
     /*
      *描画モードを変えたら強制的にPalet640すること。
      */
+
     Palet640();
     nDrawTop = 0;
     nDrawBottom = 400;

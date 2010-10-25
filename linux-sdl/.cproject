@@ -73,7 +73,7 @@
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.478411111" name="sdl_kbd.h" rcbsApplicability="disable" resourcePath="sdl_kbd.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="gtk_prop.c|sdl_snd_mt.cpp|sdl_kbd.h|sdl_kbd.cpp|gtk_kbd.cpp|cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|sdl_snd_mt.cpp|sdl_kbd.h|sdl_kbd.cpp|gtk_kbd.cpp|cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -457,7 +457,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="gtk_prop.c|cpu_x86.asm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|cpu_x86.asm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

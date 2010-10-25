@@ -51,7 +51,7 @@ static int     nDAreaH;	/* ドローイングエリアの高さ */
 static BOOL    rgbButtons[3];	/* マウスボタン押下状態 */
 
 BYTE nMidBtnMode;
-BOOL bCaptureFlag;
+BOOL bMouseCaptureFlag;
 
 //static SDL_Cursor *nullcursor;	/* 透明カーソル */
 
@@ -69,7 +69,7 @@ void InitMouse()
 	 */
     mostime = 0;
     bCapture = FALSE;
-    bCaptureFlag = FALSE;
+    bMouseCaptureFlag = FALSE;
     nMouseX = 0;
     nMouseY = 0;
     nCenterButton = 0;

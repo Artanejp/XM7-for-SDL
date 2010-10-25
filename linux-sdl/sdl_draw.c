@@ -248,10 +248,13 @@ ChangeResolution()
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
 
-
+        detach_640();
+        detach_4096();
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
+        init_640();
+        init_4096();
 
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
@@ -413,6 +416,8 @@ CleanDraw(void)
                 DrawMutex = NULL;
         }
 
+        detach_640();
+
 
 } 
 
@@ -456,7 +461,7 @@ Select640(void)
         bAnalog = FALSE;
     
 #endif				/*  */
-
+        init_640();
         return TRUE;
 }
 
@@ -517,6 +522,7 @@ Select320(void)
         bAnalog = TRUE;
     
 #endif				/*  */
+        init_4096();
         return TRUE;
 }
 
@@ -668,6 +674,11 @@ SelectDraw2(void)
 #endif				/*  */
 }
 
+extern BOOL init_640(void);
+extern void detach_640(void);
+
+extern BOOL init_4096(void);
+extern void detach_4096(void);
 
 /*
  *  セレクト 
@@ -761,7 +772,8 @@ SelectDraw(void)
     case SCR_4096:
             ret = Select320();
     default:
-            ret = Select640();
+    	ret = Select640();
+
     }
     } else {
             ret = TRUE;

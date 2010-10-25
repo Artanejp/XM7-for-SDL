@@ -12,6 +12,7 @@
 #include <SDL/SDL.h>
 #include "xm7.h"
 #include "api_kbd.h"
+#include "api_mouse.h"
 
 struct XM7KeyCode {
 		Uint32 code;

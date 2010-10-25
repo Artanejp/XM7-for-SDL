@@ -231,15 +231,16 @@ void GtkKbdInterface::OnRelease(void *arg)
 		}
     }
 	/*
-	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え
+	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え→メニューに
 	 */
-	if ((scan == MouseCapture.sym) && (mod == MouseCapture.mod)) {
+//	if ((scan == MouseCapture.sym) && (mod == MouseCapture.mod)) {
+	if (scan == MouseCapture.sym ) {
 //		GtkMouseInterface::ToggleMouseCapture();
-		if(bCaptureFlag) {
-			bCaptureFlag = FALSE;
+		if(bMouseCaptureFlag) {
+			bMouseCaptureFlag = FALSE;
 			SDL_WM_GrabInput(SDL_GRAB_OFF);
 		} else {
-			bCaptureFlag = TRUE;
+			bMouseCaptureFlag = TRUE;
 			SDL_WM_GrabInput(SDL_GRAB_ON);
 		}
     }
@@ -247,13 +248,12 @@ void GtkKbdInterface::OnRelease(void *arg)
 	/*
 	 * F12押下の場合はVMリセット
 	 */
-	if ((scan == ResetKey.sym) && (mod == ResetKey.mod)) {
+//	if ((scan == ResetKey.sym) && (mod == ResetKey.mod)) {
+	if (scan == ResetKey.sym) {
 		LockVM();
 		system_reset();
 		UnlockVM();
     }
-
-
     return;
 }
 

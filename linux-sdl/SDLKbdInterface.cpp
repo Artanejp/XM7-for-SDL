@@ -14,7 +14,6 @@
  * キーコードテーブル
  */
 
-extern BOOL bCaptureFlag;
 
 //struct SpecialKey MouseCapture;
 //struct SpecialKey ResetKey;
@@ -193,7 +192,7 @@ void SDLKbdInterface::OnPress(void *eventh)
     SDL_Event *event = (SDL_Event *)eventh;
     SDLMod modifier = event->key.keysym.mod;
     SDLKey code = event->key.keysym.sym;
-    Uint8 scan = event->key.keysym.scancode;
+//    Uint8 scan = event->key.keysym.scancode;
     struct XM7KeyCode  *p = KeyCodeTable2;
 
     if(kbd_snooped) {
@@ -202,7 +201,7 @@ void SDLKbdInterface::OnPress(void *eventh)
     //printf("Key SDL:%04x\n",code);
     for (i = 0; i < 255; i++) {
 	if (p[i].code == 0xffff)   break;
-	if ((code == p[i].code) && (modifier == p[i].mod)){
+	if ((code == (SDLKey)p[i].code) && (modifier == (SDLMod)p[i].mod)){
 			PushKeyData(p[i].pushCode, 0x80); /* Make */
 			break;
 		}
@@ -217,7 +216,7 @@ void SDLKbdInterface::OnRelease(void *eventh)
 
     Uint32 modifier = (Uint32)event->key.keysym.mod;
     Uint32 code = (Uint32)event->key.keysym.sym;
-    Uint8 scan = event->key.keysym.scancode;
+//    Uint8 scan = event->key.keysym.scancode;
     struct XM7KeyCode *p = KeyCodeTable2;
 
     for (i = 0; i < 255; i++) {
@@ -229,14 +228,15 @@ void SDLKbdInterface::OnRelease(void *eventh)
     }
 
 	/*
-	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え
+	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え->メニューにする
 	 */
-	if ((code == MouseCapture.sym) && (modifier == MouseCapture.mod)) {
-		if(bCaptureFlag) {
-			bCaptureFlag = FALSE;
+//	if ((code == MouseCapture.sym) && (modifier == MouseCapture.mod)) {
+	if (code == MouseCapture.sym) {
+    	if(bMouseCaptureFlag) {
+			bMouseCaptureFlag = FALSE;
 			SDL_WM_GrabInput(SDL_GRAB_OFF);
 		} else {
-			bCaptureFlag = TRUE;
+			bMouseCaptureFlag = TRUE;
 			SDL_WM_GrabInput(SDL_GRAB_ON);
 		}
 
@@ -245,7 +245,8 @@ void SDLKbdInterface::OnRelease(void *eventh)
 	/*
 	 * F12押下の場合はVMリセット
 	 */
-	if ((code == ResetKey.sym) && (modifier == ResetKey.mod)) {
+//	if ((code == ResetKey.sym) && (modifier == ResetKey.mod)) {
+	if (code == ResetKey.sym) {
 		LockVM();
 		system_reset();
 		UnlockVM();

@@ -27,7 +27,7 @@
  *      パレット設定
  */
 void
-Palet320()
+Palet320_i()
 {
         int     i,
                 j;
@@ -244,7 +244,7 @@ Draw320Sub(int top, int bottom)
  * タイマイベント描画
  */
 void
-Draw320All(void)
+Draw320All_i(void)
 {
 #if XM7_VER >= 3
 #endif

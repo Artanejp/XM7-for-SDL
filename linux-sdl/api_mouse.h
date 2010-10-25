@@ -12,6 +12,9 @@
 extern "C"{
 #endif
 
+extern BYTE nMidBtnMode;
+extern BOOL bMouseCaptureFlag;
+
 void FASTCALL   PollMos(void);
 void FASTCALL   SetMouseCapture(BOOL en);
 gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,

@@ -52,10 +52,23 @@ COMMONSRC = \
 	vm_sub.c \
 	m6809.c
 	
+#VIDEODRVSRC = \
+#        sdl_draw.c \
+#        sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c
+
 VIDEODRVSRC = \
         sdl_draw.c \
-        sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c
+	api_draw_640.cpp api_draw_4096.cpp \
+	EmuGrphLib.cpp EmuGrph4096c.cpp  EmuGrph400l.cpp \
+	EmuGrph256kc.cpp 
 
+SCALERSRC = \
+        EmuGrphScale1x1.cpp \
+        EmuGrphScale1x2.cpp EmuGrphScale1x2i.cpp \
+        EmuGrphScale2x2.cpp EmuGrphScale2x2i.cpp \
+	EmuGrphScale2x4.cpp EmuGrphScale2x4i.cpp \
+	EmuGrphScale4x4.cpp EmuGrphScale4x4i.cpp 	
+	
 SNDDRVSRC = \
 	api_snd.cpp \
 	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
@@ -77,7 +90,7 @@ LOCALSRC = \
 	sdl_main.c \
 	sdl_bar.c \
 	util_ringbuffer.c \
-	$(VIDEODRVSRC) $(SNDDRVSRC) $(INPUTSRC) $(UISRC)
+	$(VIDEODRVSRC) $(SCALERSRC) $(SNDDRVSRC) $(INPUTSRC) $(UISRC)
 
 COMMONOBJ = \
         aluline.o \
@@ -118,9 +131,23 @@ COMMONOBJ = \
 #	xw_sub.o
 
 
+#VIDEODRVOBJ = \
+#        sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o
+
 VIDEODRVOBJ = \
-        sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o
-	
+        sdl_draw.o \
+	api_draw_640.o api_draw_4096.o \
+	EmuGrphLib.o EmuGrph4096c.o  EmuGrph400l.o \
+	EmuGrph256kc.o 
+
+SCALEROBJ = \
+        EmuGrphScale1x1.o \
+        EmuGrphScale1x2.o EmuGrphScale1x2i.o \
+        EmuGrphScale2x2.o EmuGrphScale2x2i.o \
+	EmuGrphScale2x4.o EmuGrphScale2x4i.o \
+	EmuGrphScale4x4.o EmuGrphScale4x4i.o 	
+
+
 SNDDRVOBJ = \
 	SndDrvTmpl.o SndDrvOpn.o SndDrvWav.o SndDrvBeep.o SndDrvCMT.o
 
@@ -138,12 +165,11 @@ LOCALOBJ = \
 	sdl_cfg.o sdl_inifile.o  \
 	sdl_cmd.o sdl_sch.o sdl_file.o \
 	sdl_main.o \
-        sdl_draw.o \
 	sdl_bar.o \
 	util_ringbuffer.o \
 	api_kbd.o api_js.o api_mouse.o \
 	api_snd.o \
-	$(VIDEODRVOBJ) $(SNDDRVOBJ) $(INPUTOBJ) $(UIOBJ)
+	$(VIDEODRVOBJ) $(SCALEROBJ) $(SNDDRVOBJ) $(INPUTOBJ) $(UIOBJ)
 
 .SUFFIXES: .c .cpp .asm .o
 

@@ -30,7 +30,7 @@
  *      描画
  */
 void
-Draw256k(void)
+Draw256k_i(void)
 {
     int             x,
                     y;
