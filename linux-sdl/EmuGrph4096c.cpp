@@ -25,10 +25,10 @@ void EmuGrph4096c::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a, S
 	if(palette == NULL) return;
 	if(disp == NULL) return;
 
-	ds = (r << disp->format->Rshift & disp->format->Rmask) |
-			(g << disp->format->Gshift & disp->format->Gmask) |
-			(b << disp->format->Bshift & disp->format->Bmask) |
-			(a << disp->format->Ashift & disp->format->Amask);
+	ds = ((r << disp->format->Rshift) & disp->format->Rmask) |
+			((g << disp->format->Gshift) & disp->format->Gmask) |
+			((b << disp->format->Bshift) & disp->format->Bmask) |
+			((a << disp->format->Ashift) & disp->format->Amask);
 	palette[src & 4095] = ds;
 }
 

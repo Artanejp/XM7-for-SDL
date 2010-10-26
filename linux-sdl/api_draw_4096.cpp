@@ -222,25 +222,25 @@ static void init_4096_scaler(void)
 	if(scaler2x2 == NULL) {
 		scaler2x2 = new EmuGrphScale2x2;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2->SetVramReader(VramReader);
+		scaler2x2->SetVramReader(VramReader, 80, 400);
 		scaler2x2->SetPutWord(PutWord2x);
 	}
 	if(scaler2x2i == NULL) {
 		scaler2x2i = new EmuGrphScale2x2i;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2i->SetVramReader(VramReader);
+		scaler2x2i->SetVramReader(VramReader, 80, 400);
 		scaler2x2i->SetPutWord(PutWord2x);
 	}
 	if(scaler4x4 == NULL) {
 		scaler4x4 = new EmuGrphScale4x4;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler4x4->SetVramReader(VramReader);
+		scaler4x4->SetVramReader(VramReader, 80, 400);
 		scaler4x4->SetPutWord(PutWord4x);
 	}
 	if(scaler4x4i == NULL) {
 		scaler4x4i = new EmuGrphScale4x4i;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler4x4i->SetVramReader(VramReader);
+		scaler4x4i->SetVramReader(VramReader, 80, 400);
 		scaler4x4i->SetPutWord(PutWord4x);
 	}
 }

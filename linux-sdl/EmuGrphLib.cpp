@@ -32,11 +32,11 @@ void EmuGrphLib::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL
 	if(palette == NULL) return;
 	if(disp == NULL) return;
 
-	ds = (r << disp->format->Rshift & disp->format->Rmask) |
-			(g << disp->format->Gshift & disp->format->Gmask) |
-			(b << disp->format->Bshift & disp->format->Bmask) |
-			(a << disp->format->Ashift & disp->format->Amask);
-	palette[src & 7] = ds;
+	ds = ((r << disp->format->Rshift) & disp->format->Rmask) |
+			((g << disp->format->Gshift) & disp->format->Gmask) |
+			((b << disp->format->Bshift) & disp->format->Bmask) |
+			((a << disp->format->Ashift) & disp->format->Amask);
+	palette[src] = ds;
 }
 
 void EmuGrphLib::ConvWord(SDL_Surface *p, Uint32 *dst, Uint32 *src)

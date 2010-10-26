@@ -71,126 +71,62 @@ extern "C"
 {
 #endif
 
+static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+	SDL_Surface *p;
+	p = SDL_GetVideoSurface();
+	if(p == NULL) return;
+	if(vramhdr != NULL) {
+		vramhdr->CalcPalette(i, r, g, b, a, p);
+	}
+	if(vramhdr_400l != NULL) {
+		vramhdr_400l->CalcPalette(i, r, g, b, a, p);
+	}
+
+}
+
 void
 Palet640(void)
 {
-	int             i;
+	int i;
 	int             vpage;
-	SDL_Color       hardPalette[10];
+	BYTE          tmp;
+	BYTE         g,r,b;
+	BYTE         a = 255; // Alpha
 
-	/*
-	 * パレットテーブル
-	 */
-	static DWORD    rgbTable_24[] = {
-			0x00000000,
-			0x000000ff,
-			0x00ff0000,
-			0x00ff00ff,
-			0x0000ff00,
-			0x0000ffff,
-			0x00ffff00,
-			0x00ffffff
-	};
-	static DWORD    rgbTable_16[] = {
-			0x00000000,
-			0x0000002f,
-			0x0000f800,
-			0x0000f82f,
-			0x000007c0,
-			0x000007ff,
-			0x0000ffc0,
-			0x0000ffff
-	};
-	static DWORD    rgbTable_15[] = {
-			0x00000000,
-			0x0000001f,
-			0x00007c00,
-			0x00007c1f,
-			0x000003e0,
-			0x000003ff,
-			0x00007fe0,
-			0x00007fff
-	};
-	static DWORD    rgbTable_8[] = {
-			0x00000000,
-			0x00000001,
-			0x00000004,
-			0x00000005,
-			0x00000002,
-			0x00000003,
-			0x00000006,
-			0x00000007
-	};
-	static DWORD *rgbTable;
-
-	/*
-	 * マルチページより、表示プレーン情報を得る
-	 */
 	vpage = (~(multi_page >> 4)) & 0x07;
 	if(vramhdr != NULL) {
 		vramhdr->SetPaletteTable((Uint32 *)rgbTTLGDI);
-		//    	vramhdr->InitPalette();
 	}
 	if(vramhdr_400l != NULL) {
 		vramhdr_400l->SetPaletteTable((Uint32 *)rgbTTLGDI);
-		//    	vramhdr->InitPalette();
-	}
-#if 1
-	realDrawArea = SDL_GetVideoSurface();
-	switch(realDrawArea->format->BitsPerPixel){
-	case 24:
-	case 32:
-		rgbTable = rgbTable_24;
-		break;
-	case 16:
-		rgbTable = rgbTable_16;
-		break;
-	case 15:
-		rgbTable = rgbTable_15;
-		break;
-	case 8:
-		rgbTable = rgbTable_8;
-		break;
-	default:
-		rgbTable = rgbTable_8;
-		break;
 	}
 
-	/*
-	 * 640x200/400、デジタルパレット
-	 */
-	 for (i = 0; i < 8; i++) {
+	for (i = 0; i < 8; i++) {
 		 if (crt_flag) {
 			 /*
 			  * CRT ON
 			  */
-			 rgbTTLGDI[i] = rgbTable[ttl_palet[i & vpage] & 0x07];
-			 if(realDrawArea->format->BitsPerPixel <= 8) {
-				 hardPalette[i].b = (i & 0x01) << 7;
-				 hardPalette[i].r = (i & 0x02) << 6;
-				 hardPalette[i].g = (i & 0x04) << 5;
-			 }
-
+			 tmp = ttl_palet[i & vpage] & 0x07;
+			 b = ((tmp & 0x01)==0)?0:255;
+			 r = ((tmp & 0x02)==0)?0:255;
+			 g = ((tmp & 0x04)==0)?0:255;
+			 Palet640Sub(i & 7, r, g, b, a);
 		 } else {
 			 /*
 			  * CRT OFF
 			  */
-			 rgbTTLGDI[i] = rgbTable[0];
+			 r = 0;
+			 g = 0;
+			 b = 0;
+			 Palet640Sub(i & 7, r, g, b, a);
 		 }
 	 }
-
 	 /*
 	  * 奇数ライン用
 	  */
-	 rgbTTLGDI[8] = rgbTable[0];
-	 rgbTTLGDI[9] = rgbTable[4];
-	 if(realDrawArea->format->BitsPerPixel <= 8) {
-		 hardPalette[8]  = hardPalette[0];
-		 hardPalette[9]  = hardPalette[4];
-		 SDL_SetPalette(realDrawArea, SDL_LOGPAL | SDL_PHYSPAL , hardPalette, 0,10);
-	 }
-#endif
-
+	 Palet640Sub(8, 0, 0, 0, a);
+	 Palet640Sub(9, 0, 255, 0, a);
 }
 
 #ifdef __cplusplus
@@ -200,15 +136,16 @@ Palet640(void)
 
 static void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
-//	if(b400lFlag) {
-//		if(vramhdr_400l != NULL) {
-//			vramhdr_400l->GetVram(addr, cbuf, mpage);
-//		}
-//	} else {
 		if(vramhdr != NULL) {
 			vramhdr->GetVram(addr, cbuf, mpage);
 		}
-//	}
+}
+
+static void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
+{
+		if(vramhdr_400l != NULL) {
+			vramhdr_400l->GetVram(addr, cbuf, mpage);
+		}
 }
 
 static void PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
@@ -222,8 +159,6 @@ static void PutWord2x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {
 	if(scaler2x4 != NULL) {
 		scaler2x4->PutWord2x(disp, pixsize, cbuf);
-	} else if(scaler2x4i != NULL) {
-		scaler2x4i->PutWord2x(disp, pixsize, cbuf);
 	}
 }
 
@@ -233,44 +168,44 @@ static void init_640_scaler(void)
 	if(scaler1x1 == NULL) {
 		scaler1x1 = new EmuGrphScale1x1;
 		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
-		scaler1x1->SetVramReader(VramReader);
+		scaler1x1->SetVramReader(VramReader, 80, 400);
 		scaler1x1->SetPutWord(PutWord);
 	}
 	if(scaler1x2 == NULL) {
 		scaler1x2 = new EmuGrphScale1x2;
 		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
-		scaler1x2->SetVramReader(VramReader);
+		scaler1x2->SetVramReader(VramReader, 80, 400);
 		scaler1x2->SetPutWord(PutWord);
 	}
 	if(scaler1x2i == NULL) {
 		scaler1x2i = new EmuGrphScale1x2i;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler1x2i->SetVramReader(VramReader);
+		scaler1x2i->SetVramReader(VramReader, 80, 400);
 		scaler1x2i->SetPutWord(PutWord);
 	}
 	if(scaler2x2 == NULL) {
 		scaler2x2 = new EmuGrphScale2x2;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2->SetVramReader(VramReader);
+		scaler2x2->SetVramReader(VramReader, 80, 400);
 		scaler2x2->SetPutWord(PutWord2x);
 	}
 	if(scaler2x2i == NULL) {
 		scaler2x2i = new EmuGrphScale2x2i;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2i->SetVramReader(VramReader);
+		scaler2x2i->SetVramReader(VramReader, 80, 400);
 		scaler2x2i->SetPutWord(PutWord2x);
 	}
 
 	if(scaler2x4 == NULL) {
 		scaler2x4 = new EmuGrphScale2x4;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x4->SetVramReader(VramReader);
+		scaler2x4->SetVramReader(VramReader, 80, 400);
 		scaler2x4->SetPutWord(PutWord2x);
 	}
 	if(scaler2x4i == NULL) {
 		scaler2x4i = new EmuGrphScale2x4i;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x4i->SetVramReader(VramReader);
+		scaler2x4i->SetVramReader(VramReader, 80, 400);
 		scaler2x4i->SetPutWord(PutWord2x);
 	}
 
@@ -383,6 +318,69 @@ static void PutVram_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 	scaler2x4i->PutVram(p, x, y, w, h, mpage);
 }
 
+static void SetVramReader_200l()
+{
+	if(scaler1x1 != NULL) {
+		scaler1x1->SetVramReader(VramReader, 80, 400);
+	}
+	if(scaler1x2 != NULL) {
+		scaler1x2->SetVramReader(VramReader, 80, 400);
+	}
+	if(scaler1x2i != NULL) {
+		scaler1x2i->SetVramReader(VramReader, 80, 400);
+	}
+	if(scaler2x2 != NULL) {
+		scaler2x2->SetVramReader(VramReader, 80, 400);
+	}
+	if(scaler2x2i != NULL) {
+		scaler2x2i->SetVramReader(VramReader, 80, 400);
+	}
+	if(scaler2x4 != NULL) {
+		scaler2x4->SetVramReader(VramReader, 80, 400);
+	}
+	if(scaler2x4i != NULL) {
+		scaler2x4i->SetVramReader(VramReader, 80, 400);
+	}
+//	if(scaler4x4 != NULL) {
+//		scaler4x4->SetVramReader(VramReader, 80, 400);
+//	}
+//	if(scaler4x4i != NULL) {
+//		scaler4x4i->SetVramReader(VramReader, 80, 400);
+//	}
+}
+
+static void SetVramReader_400l()
+{
+	if(scaler1x1 != NULL) {
+		scaler1x1->SetVramReader(VramReader_400l, 80, 400);
+	}
+	if(scaler1x2 != NULL) {
+		scaler1x2->SetVramReader(VramReader_400l, 80, 400);
+	}
+	if(scaler1x2i != NULL) {
+		scaler1x2i->SetVramReader(VramReader_400l, 80, 400);
+	}
+	if(scaler2x2 != NULL) {
+		scaler2x2->SetVramReader(VramReader_400l, 80, 400);
+	}
+	if(scaler2x2i != NULL) {
+		scaler2x2i->SetVramReader(VramReader_400l, 80, 400);
+	}
+	if(scaler2x4 != NULL) {
+		scaler2x4->SetVramReader(VramReader_400l, 80, 400);
+	}
+	if(scaler2x4i != NULL) {
+		scaler2x4i->SetVramReader(VramReader_400l, 80, 400);
+	}
+//	if(scaler4x4 != NULL) {
+//		scaler4x4->SetVramReader(VramReader_400l, 80, 400);
+//	}
+//	if(scaler4x4i != NULL) {
+//		scaler4x4i->SetVramReader(VramReader_400l, 80, 400);
+//	}
+}
+
+
 void
 Draw640All(void)
 {
@@ -396,15 +394,16 @@ Draw640All(void)
 	/*
 	 *描画モードを変えたら強制的にPalet640すること。
 	 */
-
-	Palet640();
-	b400lFlag = FALSE;
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
-	//    SetDrawFlag(TRUE);
-
+	SetVramReader_200l();
+	if(bPaletFlag) {
+		Palet640();
+		b400lFlag = FALSE;
+		nDrawTop = 0;
+		nDrawBottom = 400;
+		nDrawLeft = 0;
+		nDrawRight = 640;
+	    SetDrawFlag(TRUE);
+	}
 	/*
 	 * クリア処理
 	 */
@@ -464,7 +463,7 @@ Draw640All(void)
 	nDrawLeft = 0;
 	nDrawRight = 640;
 	bPaletFlag = FALSE;
-	//    SetDrawFlag(FALSE);
+	SetDrawFlag(FALSE);
 }
 
 
@@ -474,13 +473,21 @@ Draw400l(void)
 
 	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
 	SDL_Surface *p;
+	WORD wdtop, wdbtm;
     /*
      * パレット設定
      */
 	b400lFlag = TRUE;
-//	PutVramFunc = NULL;
+	SetVramReader_400l();
+    if (bPaletFlag) {
+             Palet640();
+             nDrawTop = 0;
+             nDrawBottom = 400;
+             nDrawLeft = 0;
+             nDrawRight = 640;
+             SetDrawFlag(TRUE);
+     }
 
-	Palet640();
 
     /*
      * クリア処理
@@ -493,10 +500,6 @@ Draw400l(void)
      * レンダリング
      */
 
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
 
@@ -532,18 +535,40 @@ Draw400l(void)
 			break;
 		}
 		}
-
+	if(PutVramFunc == NULL) return;
+	if(vramhdr_400l == NULL) return;
 	if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-		if(window_open) {
-			if(vramhdr_400l != NULL) {
-				vramhdr_400l->SetVram(vram_bdptr, 80, 400);
-			}
-		} else {
-			if(vramhdr_400l != NULL) {
-				vramhdr_400l->SetVram(vram_dptr, 80, 400);
-			}
-		}
-		if(PutVramFunc != NULL) {
+		if(window_open) { // ハードウェアウインドウ開いてる
+            if (nDrawTop < window_dy1) {
+    				vramhdr_400l->SetVram(vram_dptr, 80, 400);
+    				PutVramFunc(p, 0, nDrawTop, 640, window_dy1, multi_page);
+            }
+            /* ウィンドウ内の描画 */
+            if (nDrawTop > window_dy1) {
+                    wdtop = nDrawTop;
+            }
+            else {
+                    wdtop = window_dy1;
+            }
+
+            if (nDrawBottom < window_dy2) {
+                    wdbtm = nDrawBottom;
+            }
+            else {
+                    wdbtm = window_dy2;
+            }
+
+            if (wdbtm > wdtop) {
+            		vramhdr_400l->SetVram(vram_bdptr, 80, 400);
+            		PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
+            }
+    		/* ハードウェアウインドウ外下部 */
+            if (nDrawBottom  > window_dy2) {
+           		vramhdr_400l->SetVram(vram_dptr, 80, 400);
+           		PutVramFunc(p, 0 , wdbtm, 640, nDrawBottom - wdbtm, multi_page);
+            }
+		} else { // ハードウェアウィンドウ開いてない
+			vramhdr_400l->SetVram(vram_dptr, 80, 400);
 			PutVramFunc(p, 0, 0, 640, 400, multi_page);
 		}
 	}
@@ -552,6 +577,7 @@ Draw400l(void)
 	nDrawLeft = 0;
 	nDrawRight = 640;
 	bPaletFlag = FALSE;
+    //SetDrawFlag(FALSE);
 
 }
 #ifdef __cplusplus

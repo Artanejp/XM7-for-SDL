@@ -18,9 +18,11 @@ EmuGrphScale1x2::~EmuGrphScale1x2() {
 	// TODO Auto-generated destructor stub
 }
 
-void EmuGrphScale1x2::SetVramReader(void p(Uint32, Uint32 *, Uint32))
+void EmuGrphScale1x2::SetVramReader(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
 	getvram = p;
+	vramwidth = w;
+	vramheight = h;
 }
 
 void EmuGrphScale1x2::SetPutWord(void p(Uint32 *, Uint32, Uint32 *))
