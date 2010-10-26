@@ -28,16 +28,24 @@ void EmuGrphScale1x2i::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint3
 	int xx,yy;
 	Uint32 addr;
 	Uint32 *disp;
+	int	 ww, hh;
+
+	ww = w + x;
+	if(ww > (vramwidth * 8)) ww = vramwidth * 8;
+	hh = h + y;
+	if(hh > vramheight) hh = vramheight;
 
 	if(p == NULL) return;
 	if(putword == NULL) return;
 	if(getvram == NULL) return;
 	SDL_LockSurface(p);
 	nullline = SDL_MapRGBA(p->format, 0, 0, 0, p->format->alpha);
-	for(yy = y; yy < h ; yy++) {
-		addr = yy * w / 8;
+	for(yy = y; yy < hh ; yy++) {
+		if(yy >= vramheight) break;
+		addr = yy * vramwidth + x / 8;
 		if(convword != NULL) {
-			for (xx = x / 8; xx < w / 8; xx++) {
+			for (xx = x / 8; xx < ww / 8; xx++) {
+				if(xx >= vramwidth) break;
 				disp = (Uint32 *)((void *)p->pixels + yy * 2 * p->pitch + xx * 8 * p->format->BytesPerPixel);
 				getvram(addr, wbuf, mpage);
 				convword(p, wbuf2, wbuf);
@@ -45,7 +53,8 @@ void EmuGrphScale1x2i::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint3
 				addr++;
 			}
 		} else {
-			for (xx = x / 8; xx < w / 8; xx++) {
+			for (xx = x / 8; xx < ww / 8; xx++) {
+				if(xx >= vramwidth) break;
 				disp = (Uint32 *)((void *)p->pixels + yy * 2 * p->pitch + xx * 8 * p->format->BytesPerPixel);
 				getvram(addr, wbuf, mpage);
 				putword(disp, p->format->BytesPerPixel, wbuf);

@@ -29,7 +29,7 @@ void EmuGrph4096c::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a, S
 			((g << disp->format->Gshift) & disp->format->Gmask) |
 			((b << disp->format->Bshift) & disp->format->Bmask) |
 			((a << disp->format->Ashift) & disp->format->Amask);
-	palette[src & 4095] = ds;
+	palette[src] = ds;
 }
 
 void EmuGrph4096c::InitPalette(void)
