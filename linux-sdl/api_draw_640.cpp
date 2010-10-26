@@ -397,15 +397,15 @@ Draw640All(void)
 	 *描画モードを変えたら強制的にPalet640すること。
 	 */
 	SetVramReader_200l();
-	if(bPaletFlag) {
+//	if(bPaletFlag) {
 		Palet640();
 		b400lFlag = FALSE;
 		nDrawTop = 0;
 		nDrawBottom = 400;
 		nDrawLeft = 0;
 		nDrawRight = 640;
-	    SetDrawFlag(TRUE);
-	}
+	//    SetDrawFlag(TRUE);
+//	}
 	/*
 	 * クリア処理
 	 */
