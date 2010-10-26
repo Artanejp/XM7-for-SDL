@@ -35,8 +35,8 @@
 #define	LEVEL		"L31a"
 // #define BETAVER
 #endif
-#define          LOCALVER         "SDL 0.1α115  "
-#define	DATE		"2010/10/18"
+#define          LOCALVER         "SDL 0.1α127"
+#define	DATE		"2010/10/26"
 
 /*
  *      定数、型定義
@@ -68,21 +68,11 @@
 /*
  * 最適化 ->FASTCALLは64bitだとバグることがあるのですっぱり削除
  */
-//#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && (defined(_M_IX86))))
-//#define FASTCALL		__fastcall
-//#else
 #define FASTCALL
-//#endif
 
 /*
  * 基本型定義 -> SDL定義にする(コンパイラ依存の吸収 20100802 α66)
  */
-#if 0
-typedef unsigned char BYTE;
-typedef unsigned short WORD;
-typedef unsigned long DWORD;
-typedef int     BOOL;
-#else
 /* 64bit */
 typedef Uint8 BYTE;
 typedef Uint16 WORD;
@@ -91,7 +81,7 @@ typedef Sint8 int8_t;
 typedef Sint16 int16_t;
 typedef Sint32 int32_t;
 typedef int     BOOL;
-#endif
+
 
 /*
  * CPUレジスタ定義 
