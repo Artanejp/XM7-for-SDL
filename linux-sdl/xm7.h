@@ -35,7 +35,7 @@
 #define	LEVEL		"L31a"
 // #define BETAVER
 #endif
-#define          LOCALVER         "SDL 0.1α127"
+#define          LOCALVER         "SDL 0.1α129 (;_;)"
 #define	DATE		"2010/10/26"
 
 /*
