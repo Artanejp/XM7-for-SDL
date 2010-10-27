@@ -16,7 +16,8 @@
 #include <sys/param.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_syswm.h>
-    
+#include <SDL/SDL_opengl.h>
+
 #include "xm7.h"
 #include "mouse.h"
 #include "tapelp.h"
@@ -35,6 +36,8 @@
 GtkWidget       *wndMain;		/* メインウィンドウ */
 GtkWidget       *gtkDrawArea;
 GtkBuilder      *gbuilderMain;
+static BOOL wasInit;
+
 /*
  * ドロー領域の生成 GTKパート
  */
@@ -63,6 +66,7 @@ CreateDrawGTK(GtkWidget * parent)
      */ 
     gtk_widget_show(hbox);
     gtk_widget_show(gtkDrawArea);
+    wasInit = FALSE;
 } 
 
 /*
@@ -251,6 +255,8 @@ OnFocusOut(GtkWidget * widget, gpointer data)
 /*
  * 表示解像度を変更する
  */
+extern void InitGL(int w, int h);
+
 void 
 ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 {       
@@ -259,11 +265,14 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         GtkWidget        *hbox;
         SDL_Surface     *tmpSurface;
         SDL_Rect        srcrect, dstrect;
-//        SDL_SysWMinfo        sdlinfo;
+        SDL_SysWMinfo        sdlinfo;
+        int rgb_size[4];
+        int tmpHeight2, tmpWidth2;
+
 /*
  * まずは現在のサーフェイスを退避する 
  */ 
-
+#ifndef USE_OPENGL
         tmpSurface =
                 SDL_CreateRGBSurface(SDL_SWSURFACE, oldwidth,
                                      oldheight, 24, 0, 0, 0, 0);
@@ -284,8 +293,12 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         /*
          * 1度サーフェースを削除する(クラッシュ対策)
          */
-        SDL_FreeSurface(displayArea);
-        displayArea = NULL;
+#endif  
+        if(displayArea != NULL) {
+	   SDL_FreeSurface(displayArea);
+	           displayArea = NULL;
+	}
+
 
 /*
  * 表示部分のリサイズ : GTK依存部分につき変更？
@@ -294,17 +307,22 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         switch(height) {
         case 240:
                 tmpHeight = height + 40;
+	   tmpHeight2 = 480;
                 break;
         default:
         case 400:
+        		tmpHeight = 480;
+	   tmpHeight2 = 480;
+        		break;
         case 800:
                 tmpHeight = height + 40;
+                tmpHeight2 = 960;
                 break;
         }
         hbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
-        gtk_widget_set_size_request(hbox, width, tmpHeight);
+        gtk_widget_set_size_request(hbox, width, tmpHeight2);
         SDL_Delay(100);
-//        gtk_widget_set_size_request(gtkDrawArea, width, tmpHeight);
+        gtk_widget_set_size_request(gtkDrawArea, width, tmpHeight2);
 
 
         if((gtkDrawArea != NULL) && (gtkDrawArea->window != NULL)) {
@@ -315,33 +333,41 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 	    
 #endif				/*  */
                         SDL_putenv(EnvMainWindow);
+
 #if XM7_VER >= 3
+#ifndef USE_OPENGL
                         switch(screen_mode) {
                         case SCR_400LINE:
                         case SCR_200LINE:
                         displayArea =
-                                SDL_SetVideoMode(width, tmpHeight, 16,
+                                SDL_SetVideoMode(width, tmpHeight, 32,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT |
                                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                                 SDL_ASYNCBLIT | SDL_HWPALETTE);
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE |
+                                                 0);
 
                         break;
                         case SCR_4096:
                         displayArea =
-                                SDL_SetVideoMode(width, tmpHeight, 16,
+                                SDL_SetVideoMode(width, tmpHeight, 32,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT | 
                                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                                 SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE |
+                                                 0);
                         break;
                         case SCR_262144:
                         default:
                         displayArea =
-                                SDL_SetVideoMode(width, tmpHeight, 24,
+                                SDL_SetVideoMode(width, tmpHeight, 32,
                                                  SDL_HWSURFACE | SDL_ANYFORMAT | 
                                                  SDL_RESIZABLE | SDL_DOUBLEBUF |
-                                                 SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
+                                                 SDL_ASYNCBLIT | SDL_HWPALETTE |
+                                                 0);
                         break;
                         }
+#else
+                        InitGL(width, tmpHeight2);
+#endif
 #else
                         if(mode320) {
                                 displayArea =
@@ -370,6 +396,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 /*
  * 退避したエリアの復帰（原寸…) 
  */ 
+#ifndef USE_OPENGL
         dstrect.x = 0;
         dstrect.y = 0;
         dstrect.w = displayArea->w;
@@ -383,28 +410,33 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         if (srcrect.h > dstrect.h)
                 srcrect.h = dstrect.h;
         SDL_BlitSurface(tmpSurface, &srcrect, displayArea, &dstrect);
+        SDL_FreeSurface(tmpSurface);
+#endif
 /*
  * ステータス表示
  */
-        
-        SDL_FreeSurface(tmpSurface);
+        wasInit = TRUE;
 
 /*
  * 以下に、全画面強制再描画処理を入れる 
- */ 
-//        SDL_GetWMInfo(&sdlinfo);
-//        gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
-
+ */
+#ifndef USE_OPENGL
+        SDL_GetWMInfo(&sdlinfo);
+        gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
         realDrawArea = SDL_GetVideoSurface();
+#endif
+
         /*
          * ステータスラインの強制再描画
          */
+#ifndef USE_OPENGL
         DrawStatusForce();
         if (!bFullScan) {
                 RenderSetOddLine();
         } else {
                 RenderFullScan();
         }
+#endif
 }
 
 
@@ -475,16 +507,18 @@ InitInstanceGtk(void)
  * イベント 
  */ 
     OnCreate(vbox);
-    SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
-    
+
+    SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | 0);        
+
     SDL_GetWMInfo(&sdlinfo);
-    gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
+//    gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
+//    sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
+//            gdk_x11_drawable_get_xid(gtkDrawArea->window));
     
-    sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-            gdk_x11_drawable_get_xid(gtkDrawArea->window));
-    
-    SDL_putenv(EnvMainWindow);
-    SDL_InitSubSystem(SDL_INIT_VIDEO);
+//    SDL_putenv(EnvMainWindow);
+       SDL_InitSubSystem(SDL_INIT_VIDEO); 
+
+
     
     CreateDrawSDL();
 #ifdef RSSDIR

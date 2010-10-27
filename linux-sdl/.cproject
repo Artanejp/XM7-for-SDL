@@ -26,6 +26,7 @@
 								<option id="gnu.cpp.compiler.option.other.other.658519306" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value=" -I.. -pthread -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12  -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/include/SDL" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.377304442" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_XWIN"/>
+									<listOptionValue builtIn="false" value="USE_OPENGL"/>
 									<listOptionValue builtIn="false" value="FDDSND"/>
 									<listOptionValue builtIn="false" value="USE_GTK"/>
 									<listOptionValue builtIn="false" value="XM7_VER=3"/>
@@ -42,6 +43,7 @@
 								<option id="gnu.c.compiler.option.misc.other.1521899367" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-export-dynamic -I.. -pthread -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12  -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/include/SDL" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1767584346" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_XWIN"/>
+									<listOptionValue builtIn="false" value="USE_OPENGL"/>
 									<listOptionValue builtIn="false" value="FDDSND"/>
 									<listOptionValue builtIn="false" value="USE_GTK"/>
 									<listOptionValue builtIn="false" value="XM7_VER=3"/>
@@ -57,6 +59,8 @@
 								<option id="gnu.cpp.link.option.flags.1168899226" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 -lgmodule-2.0 -lgthread-2.0 -lrt -lglib-2.0" valueType="string"/>
 								<option id="gnu.cpp.link.option.libs.866274557" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="SDL_mixer"/>
+									<listOptionValue builtIn="false" value="GL"/>
+									<listOptionValue builtIn="false" value="GLU"/>
 									<listOptionValue builtIn="false" value="SDL_gfx"/>
 									<listOptionValue builtIn="false" value="SDL_ttf"/>
 									<listOptionValue builtIn="false" value="SDL"/>

@@ -39,7 +39,7 @@ extern "C"
 #include "EmuGrphScale2x2i.h"
 #include "EmuGrphScale2x4.h"
 #include "EmuGrphScale2x4i.h"
-
+#include "EmuGLUtils.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -63,6 +63,8 @@ static EmuGrphScale2x2i *scaler2x2i;
 
 static EmuGrphScale2x4 *scaler2x4;
 static EmuGrphScale2x4i *scaler2x4i;
+
+static EmuGLUtils *scalerGL;
 
 static BOOL b400lFlag;
 
@@ -208,6 +210,13 @@ static void init_640_scaler(void)
 		scaler2x4i->SetVramReader(VramReader, 80, 400);
 		scaler2x4i->SetPutWord(PutWord2x);
 	}
+	if(scalerGL == NULL) {
+		scalerGL = new EmuGLUtils;
+		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
+		scalerGL->SetVramReader(VramReader, 80, 400);
+		scalerGL->SetPutWord(PutWord);
+	}
+
 
 }
 
@@ -242,6 +251,7 @@ BOOL init_640(void)
 
 	scaler2x4 = NULL;
 	scaler2x4i = NULL;
+	scalerGL = NULL;
 	init_640_scaler();
 	return TRUE;
 }
@@ -275,6 +285,10 @@ void detach_640(void)
 	if(scaler2x4i != NULL) {
 		delete scaler2x4i;
 		scaler2x4i = NULL;
+	}
+	if(scalerGL != NULL) {
+		delete scalerGL;
+		scalerGL = NULL;
 	}
 	// 最後にVRAMハンドラ
 	if(vramhdr != NULL) {
@@ -318,6 +332,12 @@ static void PutVram_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 	scaler2x4i->PutVram(p, x, y, w, h, mpage);
 }
 
+static void PutVram_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
+{
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->PutVram(p, x, y, w, h, mpage);
+}
+
 static void SetVramReader_200l()
 {
 	if(scaler1x1 != NULL) {
@@ -340,6 +360,9 @@ static void SetVramReader_200l()
 	}
 	if(scaler2x4i != NULL) {
 		scaler2x4i->SetVramReader(VramReader, 80, 400);
+	}
+	if(scalerGL != NULL) {
+		scalerGL->SetVramReader(VramReader, 80, 400);
 	}
 //	if(scaler4x4 != NULL) {
 //		scaler4x4->SetVramReader(VramReader, 80, 400);
@@ -372,6 +395,10 @@ static void SetVramReader_400l()
 	if(scaler2x4i != NULL) {
 		scaler2x4i->SetVramReader(VramReader_400l, 80, 400);
 	}
+	if(scalerGL != NULL) {
+		scalerGL->SetVramReader(VramReader, 80, 400);
+	}
+
 //	if(scaler4x4 != NULL) {
 //		scaler4x4->SetVramReader(VramReader_400l, 80, 400);
 //	}
@@ -417,29 +444,54 @@ Draw640All(void)
 	if(bFullScan) {
 		switch(nDrawWidth) {
 		case 1280:
+#ifndef USE_OPENGL
 			if(scaler2x4 != NULL) {
 				PutVramFunc = &PutVram_2x4;
 			}
+#else
+			if(scalerGL != NULL) {
+				PutVramFunc = &PutVram_GL;
+			}
+#endif
+
 			break;
 		case 640:
 		default:
+#ifndef USE_OPENGL
 			if(scaler1x1 != NULL) {
 				PutVramFunc = &PutVram_1x2;
 			}
+#else
+			if(scalerGL != NULL) {
+				PutVramFunc = &PutVram_GL;
+			}
+#endif
 			break;
 		}
 	} else {
 		switch(nDrawWidth) {
 		case 1280:
+#ifndef USE_OPENGL
 			if(scaler2x4i != NULL) {
 				PutVramFunc = &PutVram_2x4i;
 			}
+#else
+			if(scalerGL != NULL) {
+				PutVramFunc = &PutVram_GL;
+			}
+#endif
 			break;
 		case 640:
 		default:
+#ifndef USE_OPENGL
 			if(scaler1x2i != NULL) {
 				PutVramFunc = &PutVram_1x2i;
 			}
+#else
+			if(scalerGL != NULL) {
+				PutVramFunc = &PutVram_GL;
+			}
+#endif
 			break;
 		}
 		}

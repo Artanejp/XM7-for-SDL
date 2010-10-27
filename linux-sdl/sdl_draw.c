@@ -14,6 +14,9 @@
 #endif
 
 #include <SDL/SDL.h>
+#ifdef USE_OPENGL
+#include <SDL/SDL_opengl.h>
+#endif
 #include "xm7.h"
 #include "multipag.h"
 #include "ttlpalet.h"
@@ -70,10 +73,6 @@ static WORD    nWindowDx2;	/* ウィンドウ右下X座標 */
 static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
 
 #endif				/*  */
-#if defined(USE_OPENGL)
-    GLuint src_texture = 0;
-
-#endif				/*  */
 
 /*
  * マルチスレッド向け定義
@@ -87,7 +86,7 @@ static BOOL       SelectDraw2(void);
 static void       ChangeResolution();
 static SDL_cond *DrawCond;
 static SDL_mutex *DrawMutex;
-
+static BOOL GLWasInit;
 
 
     /*
@@ -168,7 +167,6 @@ DrawTaskMain(void *arg)
                 Draw640All();
                 break;
         }
-
 #else				/*  */
 /*
  * どちらかを使って描画 
@@ -228,10 +226,70 @@ DrawThreadMain(void)
  * 描画タスク: 差分書き込み
  */
 
+void InitGL(int w, int h)
+{
+#ifdef USE_OPENGL
+	int rgb_size[4];
+   
+    GLWasInit = FALSE;
+    if(!GLWasInit) {
+    GLWasInit = TRUE;
+    switch (SDL_GetVideoInfo()->vfmt->BitsPerPixel) {
+         case 8:
+             rgb_size[0] = 3;
+             rgb_size[1] = 3;
+             rgb_size[2] = 2;
+             break;
+         case 15:
+         case 16:
+             rgb_size[0] = 5;
+             rgb_size[1] = 5;
+             rgb_size[2] = 5;
+             break;
+         default:
+             rgb_size[0] = 8;
+             rgb_size[1] = 8;
+             rgb_size[2] = 8;
+             break;
+     }
+     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
+     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
+     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
+     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+     //if ( fsaa ) {
+//                  SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+//                  SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 1 );
+      //}
+      //if ( accel ) {
+              SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+      //}
+      //if ( sync ) {
+              SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
+      //} else {
+      //        SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
+      //}
+
+    displayArea =
+            SDL_SetVideoMode(w, h, 32,
+                             SDL_OPENGL | SDL_RESIZABLE |
+			     0);
+    printf("Screen BPP: %d\n", SDL_GetVideoSurface()->format->BitsPerPixel);
+    printf("\n");
+    printf( "Vendor     : %s\n", glGetString( GL_VENDOR ) );
+    printf( "Renderer   : %s\n", glGetString( GL_RENDERER ) );
+    printf( "Version    : %s\n", glGetString( GL_VERSION ) );
+    printf( "Extensions : %s\n", glGetString( GL_EXTENSIONS ) );
+    printf("\n");
+    }
+#endif
+}
+
 static void
 ChangeResolution() 
 {
-//        SDL_Surface *p;
+        SDL_Surface *p;
+        int rgb_size[4];
         if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
                 return;
         }
@@ -245,16 +303,14 @@ ChangeResolution()
         /*
          * KILL Thread
          */
-        displayArea = SDL_GetVideoSurface();
-        realDrawArea = SDL_GetVideoSurface();
-
         detach_640();
         detach_4096();
-        ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
+        ChangeResolutionGTK(nDrawWidth, nDrawHeight, nOldDrawWidth, nOldDrawHeight);
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
         init_640();
         init_4096();
+
 
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
@@ -296,18 +352,13 @@ BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
                 }
         } else {
                 SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+#ifdef USE_OPENGL
+                SDL_GL_SwapBuffers( );
+#else
                 SDL_Flip(displayArea);
+#endif	   
         }
-
         bOldFullScan = bFullScan;
-//        if (!bDirectDraw) {
-//                SDL_UpdateRect(realDrawArea, 0, 0, realDrawArea->w,
-//                               realDrawArea->h);
-//                SDL_BlitSurface(realDrawArea, &srcrect, displayArea, &dstrect);
-//        } else {
-//                SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-//                SDL_Flip(displayArea);
-//        }
 }
 
 
@@ -335,6 +386,7 @@ InitDraw(void)
         bNowBPP = 24;
         memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
         memset(rgbAnalogGDI, 0, sizeof(rgbAnalogGDI));
+        GLWasInit = FALSE;
         nDrawTop = 0;
         nDrawBottom = 400;
         nDrawLeft = 0;
@@ -614,7 +666,7 @@ SelectDraw2(void)
     rect.w = nDrawHeight;
     rect.x = 0;
     rect.y = 0;
-    
+#ifndef USE_OPENGL    
     /*
      * すべてクリア 
      */ 
@@ -649,6 +701,7 @@ SelectDraw2(void)
 #endif				/*  */
             SDL_UnlockSurface(realDrawArea);
     }
+#endif /* !USE_OPENGL */   
     bOldFullScan = bFullScan;
     /*
      * セレクト 
@@ -701,6 +754,7 @@ SelectDraw(void)
      * すべてクリア 
      */ 
     if(displayArea != NULL) {
+#ifndef USE_OPENGL           
             SDL_LockSurface(displayArea);
 
     
@@ -712,12 +766,13 @@ SelectDraw(void)
     
 #endif				/*  */
             SDL_UnlockSurface(displayArea);
-    
+#endif /* !USE_OPENGL */    
     /*
      * すべてクリア 
      */ 
             if((realDrawArea != displayArea) && (realDrawArea != NULL)) {
-                    SDL_LockSurface(realDrawArea);
+#ifndef USE_OPENGL
+	           SDL_LockSurface(realDrawArea);
                     rect.h = realDrawArea->h;
                     rect.w = realDrawArea->w;
                     rect.x = 0;
@@ -731,25 +786,10 @@ SelectDraw(void)
     
 #endif				/*  */
                     SDL_UnlockSurface(realDrawArea);
+#endif	       
             }
 
     bOldFullScan = bFullScan;
-#if 0
-    if(DrawCond != NULL) {
-    	SDL_CondSignal(DrawCond);
-    	SDL_DestroyCond(DrawCond);
-    	DrawCond = NULL;
-    }
-    if(DrawThread != NULL) {
-            SDL_KillThread(DrawThread);
-            SDL_WaitThread(DrawThread,&reti);
-            DrawThread = NULL;
-    }
-    if(DrawMutex != NULL) {
-    	SDL_DestroyMutex(DrawMutex);
-    	DrawMutex = NULL;
-    }
-#endif
     if(!DrawMutex) {
     	DrawMutex = SDL_CreateMutex();
     }
@@ -815,7 +855,7 @@ AllClear(void)
     rect.w = nDrawWidth;
     rect.x = 0;
     rect.y = 0;
-    
+#ifndef USE_OPENGL
     /*
      * すべてクリア 
      */ 
@@ -854,6 +894,7 @@ AllClear(void)
     /*
      * 全領域をレンダリング対象とする 
      */ 
+#endif /* !USE_OPENGL */   
     nDrawTop = 0;
     nDrawBottom = 400;
     nDrawLeft = 0;
@@ -874,7 +915,13 @@ RenderFullScan(void)
     WORD u;
     SDL_Surface *s = SDL_GetVideoSurface();
     Uint32 pitch;
+#ifdef USE_OPENGL
+   return;
+#endif
 
+#ifdef USE_OPENGL
+   SDL_GL_SwapBuffers( );
+#else
     SDL_LockSurface(s);
     
 /*
@@ -895,8 +942,8 @@ RenderFullScan(void)
     SDL_UnlockSurface(s);
     displayArea = SDL_GetVideoSurface();
     SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-    SDL_Flip(displayArea);
-
+   SDL_Flip(displayArea);
+#endif
 }
 
 
@@ -911,7 +958,9 @@ RenderSetOddLine(void)
     SDL_Surface *s = SDL_GetVideoSurface();
     SDL_Rect r;
     Uint32 pitch;
-
+#ifdef USE_OPENGL
+   return;
+#endif
     if(s == NULL) return;
     SDL_LockSurface(s);
     switch (nDrawWidth) {
@@ -943,7 +992,11 @@ RenderSetOddLine(void)
     SDL_UnlockSurface(s);
     displayArea = SDL_GetVideoSurface();
     SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+#ifdef USE_OPENGL
+   SDL_GL_SwapBuffers( );
+#else
     SDL_Flip(displayArea);
+#endif
 }
 
 

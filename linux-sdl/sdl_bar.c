@@ -918,7 +918,7 @@ DrawTape(void)
 void  
 DrawStatus(void) 
 {
-
+#ifndef USE_OPENGL
         DrawMainCaption();
         DrawCAP();
         DrawKANA();
@@ -927,7 +927,7 @@ DrawStatus(void)
         DrawDrive(1);
         DrawTape();
         nInitialDrawFlag = FALSE;
-
+#endif
 } 
 
         

@@ -7,6 +7,7 @@
 XM7_VER		= 3
 #OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
 OPTION		= -DMOUSE -DMR2 -DFDDSND
+OPTION          += -DUSE_OPENGL
 #OPTION		= -DMOUSE -DMR2
 OPTION		+= -DUSE_GTK
 INSTALL          = install -c 
@@ -68,7 +69,10 @@ SCALERSRC = \
         EmuGrphScale2x2.cpp EmuGrphScale2x2i.cpp \
 	EmuGrphScale2x4.cpp EmuGrphScale2x4i.cpp \
 	EmuGrphScale4x4.cpp EmuGrphScale4x4i.cpp 	
-	
+
+GLSCALERSRC = \
+         EmuGLUtils.cpp
+
 SNDDRVSRC = \
 	api_snd.cpp \
 	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
@@ -90,7 +94,9 @@ LOCALSRC = \
 	sdl_main.c \
 	sdl_bar.c \
 	util_ringbuffer.c \
-	$(VIDEODRVSRC) $(SCALERSRC) $(SNDDRVSRC) $(INPUTSRC) $(UISRC)
+	$(VIDEODRVSRC) $(GLSCALERSRC) $(SCALERSRC) \
+	$(SNDDRVSRC) $(INPUTSRC) \
+	$(UISRC)
 
 COMMONOBJ = \
         aluline.o \
@@ -147,6 +153,8 @@ SCALEROBJ = \
 	EmuGrphScale2x4.o EmuGrphScale2x4i.o \
 	EmuGrphScale4x4.o EmuGrphScale4x4i.o 	
 
+GLSCALEROBJ = \
+         EmuGLUtils.o
 
 SNDDRVOBJ = \
 	SndDrvTmpl.o SndDrvOpn.o SndDrvWav.o SndDrvBeep.o SndDrvCMT.o
@@ -169,7 +177,8 @@ LOCALOBJ = \
 	util_ringbuffer.o \
 	api_kbd.o api_js.o api_mouse.o \
 	api_snd.o \
-	$(VIDEODRVOBJ) $(SCALEROBJ) $(SNDDRVOBJ) $(INPUTOBJ) $(UIOBJ)
+	$(VIDEODRVOBJ) $(SCALEROBJ) $(GLSCALEROBJ) \
+	$(SNDDRVOBJ) $(INPUTOBJ) $(UIOBJ)
 
 .SUFFIXES: .c .cpp .asm .o
 
@@ -196,6 +205,7 @@ LIBS += `pkg-config --libs gtk+-x11-2.0` `pkg-config --libs gdk-pixbuf-2.0`
 LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
+LIBS += -lGL -lGLU
 #LIBS += -lmemwatch
 
 

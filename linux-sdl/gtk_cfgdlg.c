@@ -1000,11 +1000,13 @@ ScrPageInit(void)
 		CheckDlgButton(SCP_24K, BST_UNCHECKED);
 	}
 	switch (propdat.uHeight) {
-	case 400:
+	case 480:
+	 case 400:
 		CheckDlgButton(SCP_640X400, BST_CHECKED);
 		CheckDlgButton(SCP_1280X800, BST_UNCHECKED);
 		break;
-	case 800:
+	case 960:
+	 case 800:
 		CheckDlgButton(SCP_640X400, BST_UNCHECKED);
 		CheckDlgButton(SCP_1280X800, BST_CHECKED);
 		break;

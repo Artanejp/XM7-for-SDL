@@ -366,13 +366,18 @@ LoadCfg(void)
     configdat.bFullScan = LoadCfgBool("FullScan", FALSE);
     
     configdat.uWidth = LoadCfgInt("DrawWidth", 640); 
-    if((configdat.uWidth != 640) && (configdat.uWidth != 1280) 
+    if((configdat.uWidth != 640) 
+       && (configdat.uWidth != 1280) 
        && (configdat.uWidth != 320)) {
             configdat.uWidth = 640;
     }
     configdat.uHeight = LoadCfgInt("DrawHeight", 400);
-    if((configdat.uHeight != 400) && (configdat.uHeight != 200) 
-       && (configdat.uHeight != 800) ){
+    if((configdat.uHeight != 400) 
+       && (configdat.uHeight != 200) 
+       && (configdat.uHeight != 240)
+       && (configdat.uHeight != 480) 
+       && (configdat.uHeight != 960) 
+       && (configdat.uHeight != 960)){
                 configdat.uHeight = 400;
     }
     /*
