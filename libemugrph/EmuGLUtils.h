@@ -23,6 +23,7 @@ public:
 	int InitGL(int w, int h);
 	void PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void SetViewPort(int x, int y, int w, int h);
+	void SetViewPort(void);
 	void DiscardTextures(int n, GLuint *tid);
 	void DiscardTextures(void);
 	void Flip(void);
@@ -33,6 +34,10 @@ protected:
 	int viewport_h;
 	int gl_bpp;
 	GLuint textureid;
+	float minX;
+	float minY;
+	float maxX;
+	float maxY;
 	GLuint CreateTexture(int w, int h, Uint8 *bitmap);
 	void Enter2DMode();
 	void Leave2DMode();
