@@ -14,6 +14,7 @@ EmuGLUtils::EmuGLUtils() {
 	minY = 0.0f;
 	maxX = 1.0f;
 	maxY = 1.0f;
+	InitVideo = FALSE;
 }
 
 EmuGLUtils::~EmuGLUtils() {
@@ -33,26 +34,22 @@ int EmuGLUtils::InitGL(int w, int h)
 	SDL_Surface *p;
 	float aspect;
 	int rgb_size[4];
-	int fsaa = 1;
+	int fsaa = 0;
 	int sync = 1;
 	int accel = 1;
+	int bpp=32;
 
-	info = SDL_GetVideoInfo();
 
-	if(info == NULL) return -1;
-	p = SDL_GetVideoSurface();
-	if(p == NULL) return -1;
-	flags = p->flags;
-	flags |= SDL_OPENGL;
-	if(SDL_SetVideoMode(w, h, info->vfmt->BitsPerPixel, flags) == 0)
-	{
-		return -1;
-	}
-
-	aspect = (float)w / (float)h;
+//	p = SDL_GetVideoSurface();
+//	if(p == NULL) {
+//		return -1;
+//	}
+//	flags = p->flags;
+	flags = SDL_OPENGL | SDL_RESIZABLE;
+//	aspect = (float)w / (float)h;
 //	glClearColor(0, 0, 0, 0);
-
-    switch (p->format->BitsPerPixel) {
+#if 0
+    switch (bpp) {
          case 8:
              rgb_size[0] = 3;
              rgb_size[1] = 3;
@@ -70,15 +67,17 @@ int EmuGLUtils::InitGL(int w, int h)
              rgb_size[2] = 8;
              break;
      }
+#endif
+#if 0
      SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
      SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
      SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
-     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
      SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-     if ( fsaa ) {
-              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
-      }
+//     if ( fsaa ) {
+//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
+//      }
       if ( accel ) {
               SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
       }
@@ -87,6 +86,10 @@ int EmuGLUtils::InitGL(int w, int h)
       } else {
               SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
       }
+  	if(SDL_SetVideoMode(w, h, 32, flags) == 0)
+  	{
+  		return -1;
+  	}
 
       printf("Screen BPP: %d\n", SDL_GetVideoSurface()->format->BitsPerPixel);
       printf("\n");
@@ -95,7 +98,8 @@ int EmuGLUtils::InitGL(int w, int h)
       printf( "Version    : %s\n", glGetString( GL_VERSION ) );
       printf( "Extensions : %s\n", glGetString( GL_EXTENSIONS ) );
       printf("\n");
-
+#endif
+      InitVideo = TRUE;
 }
 
 /*
@@ -147,9 +151,9 @@ void EmuGLUtils::SetViewPort(int x, int y, int w, int h)
 	minY = 0.0f;
 	maxX =  ((float)vramwidth * 8.0f) / (float)viewport_w ;
 	maxY = (float)vramheight / (float)viewport_h;
-#if 1
+#if 0
 	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
-			viewport_x, viewport_y, viewport_h, viewport_w,
+			viewport_x, viewport_y, viewport_w, viewport_h,
 			minX, minY, maxX, maxY);
 #endif
 }
@@ -177,6 +181,7 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 	Uint32 c[8];
 	GLubyte *bitmap;
 
+	if(!InitVideo) return;
 	size = vramwidth * vramheight * 8 * 4;
 	glClearColor(0, 0, 0, 0);
 
@@ -193,12 +198,14 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 			}
 		}
 	}
+	printf("Transfer: %08x bytes \n", ofset);
 	textureid = CreateTexture(vramwidth * 8 , vramheight, bitmap);
 	if(textureid <= 0) {
 		free(bitmap);
 		return;
 	}
 	DrawTexture();
+	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
 	free(bitmap);
 }
 
@@ -292,7 +299,8 @@ void EmuGLUtils::DiscardTextures(int n, GLuint *tid)
 
 void EmuGLUtils::Flip(void)
 {
-	glFlush();
+//	glFlush();
+	if(!InitVideo) return;
 	SDL_GL_SwapBuffers();
 	DiscardTextures();
 }

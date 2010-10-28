@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include "EmuGrphScale1x2.h"
 
+
 class EmuGLUtils : public EmuGrphScale1x2 {
 public:
 	EmuGLUtils();
@@ -24,10 +25,14 @@ public:
 	void PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void SetViewPort(int x, int y, int w, int h);
 	void SetViewPort(void);
-	void DiscardTextures(int n, GLuint *tid);
-	void DiscardTextures(void);
 	void Flip(void);
 protected:
+	GLuint CreateTexture(int w, int h, Uint8 *bitmap);
+	void DiscardTextures(int n, GLuint *tid);
+	void DiscardTextures(void);
+	void Enter2DMode();
+	void Leave2DMode();
+	void DrawTexture(void);
 	int viewport_x;
 	int viewport_y;
 	int viewport_w;
@@ -38,12 +43,10 @@ protected:
 	float minY;
 	float maxX;
 	float maxY;
-	GLuint CreateTexture(int w, int h, Uint8 *bitmap);
-	void Enter2DMode();
-	void Leave2DMode();
-	void DrawTexture(void);
 private:
 	int power_of_two(int input);
+	SDL_semaphore *InitSem;
+	BOOL InitVideo;
 };
 
 #endif /* EMUGLUTILS_H_ */

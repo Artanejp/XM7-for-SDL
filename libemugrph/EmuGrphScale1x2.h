@@ -9,6 +9,14 @@
 #define EMUGRPHSCALE1X2_H_
 #include <SDL/SDL.h>
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+typedef int BOOL;
+
 class EmuGrphScale1x2 {
 public:
 	EmuGrphScale1x2();
