@@ -108,7 +108,7 @@ CreateDrawSDL(void)
     if(SDL_WasInit(SDL_INIT_VIDEO) == 0) {
     	SDL_Init(SDL_INIT_VIDEO);
     }
-    InitGL(640, 480);
+    ret = SDL_SetVideoMode(640,480,32, SDL_RESIZABLE | SDL_OPENGL);
     displayArea = SDL_GetVideoSurface();
 
     /*
@@ -137,7 +137,7 @@ OnCreate(void *parent)
 #ifdef USE_GTK    
     CreateMenu(parent);
     CreateDrawGTK(parent);
-//    CreateStatus();
+   CreateStatus();
 
 #else
 //    CreateStatus();
@@ -163,7 +163,7 @@ OnCreate(void *parent)
         InitKbd();
         InitJoy();
         InitSch();
-        CreateStatus();
+//        CreateStatus();
  
     
 //#ifdef FDDSND
@@ -270,7 +270,9 @@ main(int argc, char *argv[])
  */ 
         bMMXflag = FALSE;
         bCMOVflag = FALSE;
-    
+       	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVERYTHING);
+        SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
+
 #if ((XM7_VER <= 2) && defined(FMTV151))
         bFMTV151 = TRUE;
 #endif				/*  */

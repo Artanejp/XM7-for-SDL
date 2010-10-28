@@ -129,11 +129,13 @@ vsync_notify(void)
     /*
      *  1ms実行 
      */ 
+extern void ResizeGL(int w, int h);
 void
 ExecSch(void) 
 {
     DWORD dwCount;
     DWORD dwExec;
+    SDL_Surface *p;
     
 #if 1
 	SDL_Event eventQueue;
@@ -141,9 +143,12 @@ ExecSch(void)
 	/*
 	 * SDL POLLING 
 	 */ 
+
 	if(SDL_WasInit(SDL_INIT_VIDEO) != 0) {
+
 	while (SDL_PollEvent(&eventQueue))
 	 {
+		p = SDL_GetVideoSurface();
 	switch (eventQueue.type)
 	     {
 	case SDL_KEYDOWN:	/* キーボードはSDL */
@@ -166,7 +171,9 @@ ExecSch(void)
 		break;
 	case SDL_VIDEORESIZE:
 #ifdef USE_OPENGL
-		SDL_SetVideoMode(eventQueue.resize.h, eventQueue.resize.w, 32, SDL_OPENGL | SDL_RESIZABLE);
+
+		ResizeGL(eventQueue.resize.w, eventQueue.resize.h);
+		//SDL_SetVideoMode(eventQueue.resize.w, eventQueue.resize.h, 32, SDL_OPENGL | SDL_RESIZABLE);
 		drawArea = SDL_GetVideoSurface();
 #endif
 		break;

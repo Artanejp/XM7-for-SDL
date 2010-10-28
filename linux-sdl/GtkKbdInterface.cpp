@@ -212,6 +212,9 @@ void GtkKbdInterface::OnPress(void *arg)
     return;
 }
 
+extern void LockVM(void);
+extern void UnlockVM(void);
+
 /*
  *  キーリリースアクション
  */

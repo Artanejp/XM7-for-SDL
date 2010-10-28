@@ -150,7 +150,7 @@ OnScreenPlugged(void)
                 sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                         gdk_x11_drawable_get_xid(gtkDrawArea->window));
         
-//                SDL_putenv(EnvMainWindow);
+                SDL_putenv(EnvMainWindow);
                 SDL_InitSubSystem(SDL_INIT_VIDEO);
                 CreateDrawSDL();
         }
@@ -332,7 +332,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         SDL_Delay(100);
         if((gtkDrawArea != NULL) && (gtkDrawArea->window != NULL)) {
 
-#if 0
+#if 1
         gtk_widget_set_size_request(gtkDrawArea, width, tmpHeight2);
                         sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                                 gdk_x11_drawable_get_xid(gtkDrawArea->window));
@@ -374,7 +374,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
                         break;
                         }
 #else
-                        SetupGL(width, tmpHeight2);
+                        ResizeGL(width, tmpHeight2);
 #endif
 #else
                         if(mode320) {
@@ -525,7 +525,8 @@ InitInstanceGtk(void)
     SDL_putenv(EnvMainWindow);
        SDL_InitSubSystem(SDL_INIT_VIDEO); 
 #else
-       SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_VIDEO | 0);
+//      	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVERYTHING);
+//          SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
 #endif
     
     CreateDrawSDL();

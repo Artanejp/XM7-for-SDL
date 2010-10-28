@@ -216,8 +216,6 @@ static void init_640_scaler(void)
 		scalerGL->SetVramReader(VramReader, 80, 400);
 		scalerGL->SetPutWord(PutWord);
 	}
-
-
 }
 
 #ifdef __cplusplus
