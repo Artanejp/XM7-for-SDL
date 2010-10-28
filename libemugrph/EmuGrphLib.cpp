@@ -107,8 +107,8 @@ void EmuGrphLib::GetVram(Uint32 addr, Uint32 *cbuf)
         cg = vram_p[addr + 0x10000];
 #else
         cb = vram_p[addr + 0x00000];
-        cr = vram_p[sddr + 0x04000];
-        cg = vram_p[sddr + 0x08000];
+        cr = vram_p[addr + 0x04000];
+        cg = vram_p[addr + 0x08000];
 #endif				/* XM7_VER */
         cbuf[0] =   palette[(cb & 0x01) + ((cr & 0x01) << 1) + ((cg & 0x01) << 2)];
         cbuf[1] =   palette[((cb & 0x02) >> 1) + (cr & 0x02) + ((cg & 0x02) << 1)];
