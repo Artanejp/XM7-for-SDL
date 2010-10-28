@@ -5,11 +5,15 @@
  *      Author: whatisthis
  */
 
+#include <math.h>
 #include "EmuGLUtils.h"
 
 EmuGLUtils::EmuGLUtils() {
 	// TODO Auto-generated constructor stub
-
+	minX = 0.0f;
+	minY = 0.0f;
+	maxX = 1.0f;
+	maxY = 1.0f;
 }
 
 EmuGLUtils::~EmuGLUtils() {
@@ -139,8 +143,28 @@ void EmuGLUtils::SetViewPort(int x, int y, int w, int h)
 	viewport_y = y;
 	viewport_h = h;
 	viewport_w = w;
-
+	minX = 0.0f;
+	minY = 0.0f;
+	maxX =  ((float)vramwidth * 8.0f) / (float)viewport_w ;
+	maxY = (float)vramheight / (float)viewport_h;
+#if 1
+	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
+			viewport_x, viewport_y, viewport_h, viewport_w,
+			minX, minY, maxX, maxY);
+#endif
 }
+
+/*
+ * ビューポートのリセット
+ */
+void EmuGLUtils::SetViewPort(void)
+{
+	SDL_Surface *p;
+	p = SDL_GetVideoSurface();
+	if(p == NULL) return;
+	SetViewPort(0, 0, p->w, p->h);
+}
+
 
 void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
@@ -181,8 +205,8 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 
 void EmuGLUtils::Enter2DMode()
 {
-        int w = vramwidth * 8;
-        int h = vramheight;
+     int w = viewport_w;
+     int h = viewport_h;
 
 
         /* Note, there may be other things you need to change,
@@ -192,20 +216,24 @@ void EmuGLUtils::Enter2DMode()
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_2D);
-
+        glPushMatrix();
         /* This allows alpha blending of 2D textures with the scene */
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        glViewport(0, 0 , viewport_w, viewport_h);
-//        glViewport(0, 0 , 100, 100);
-
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         glLoadIdentity();
-
-        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 1.0);
-
+        /*
+         * ビューポートは表示する画面の大きさ
+         */
+        glViewport(0, 0 , w,  h);
+        /*
+         * 座標系は(0,0)-(0,1)
+         */
+        glOrtho(0.0, 1.0 ,
+        		1.0, 0.0,
+        		0.0,  1.0);
+//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -234,25 +262,20 @@ void EmuGLUtils::DrawTexture(void)
         static int w, h;
 
         SDL_Surface *screen = SDL_GetVideoSurface();
-        w = vramwidth * 8;
-        h = vramheight;
-
-                /* Make texture coordinates easy to understand */
-                texMinX = 0.0f;
-                texMinY = 0.0f;
-                texMaxX = 1.0f;
-                texMaxY = 1.0f;
+        /* Make texture coordinates easy to understand */
         /* Make sure that the texture conversion is okay */
         /* Move the image around */
                 Enter2DMode();
                 glBindTexture(GL_TEXTURE_2D, textureid);
                 glBegin(GL_TRIANGLE_STRIP);
-                glTexCoord2f(texMinX, texMinY); glVertex2i(x,   y  );
-                glTexCoord2f(texMaxX, texMinY); glVertex2i(x+w, y  );
-                glTexCoord2f(texMinX, texMaxY); glVertex2i(x,   y+h);
-                glTexCoord2f(texMaxX, texMaxY); glVertex2i(x+w, y+h);
+                glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0, 0.0  );
+                glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0, 1.0);
+                glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0, 0.0 );
+                glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0, 1.0);
+             //   glViewport(0, 0 , viewport_w, viewport_h);
                 glEnd();
                 Leave2DMode();
+
 //                SDL_GL_SwapBuffers();
 }
 
