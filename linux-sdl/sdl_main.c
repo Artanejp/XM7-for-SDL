@@ -105,11 +105,11 @@ CreateDrawSDL(void)
 	exit(1);
     }
 #endif
-    if(SDL_WasInit(SDL_INIT_VIDEO) == 0) {
-    	SDL_Init(SDL_INIT_VIDEO);
-    }
+//    if(SDL_WasInit(SDL_INIT_VIDEO) == 0) {
+//    	SDL_Init(SDL_INIT_VIDEO);
+//    }
     ret = SDL_SetVideoMode(640,480,32, SDL_RESIZABLE | SDL_OPENGL);
-    displayArea = SDL_GetVideoSurface();
+//    displayArea = SDL_GetVideoSurface();
 
     /*
  * マウス処理やWIndowとの接続をここに入れる 
@@ -241,13 +241,15 @@ ui_update(void)
 int
 main(int argc, char *argv[]) 
 {
-    
+   int rgb_size[3];
+   int flags;
 /*
  * 実行モジュールのディレクトリを取得 
  */ 
 
 
         char    *p;
+   
         p = getenv("HOME");
         if(p == NULL) {
                 perror("Werning : Can't get HOME directory...Making ./.xm7/ .");
@@ -272,6 +274,29 @@ main(int argc, char *argv[])
         bCMOVflag = FALSE;
        	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVERYTHING);
         SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
+     rgb_size[0] = 8;
+    rgb_size[1] = 8;
+    rgb_size[2] = 8;
+	flags = SDL_OPENGL | SDL_RESIZABLE;
+
+    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
+    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
+    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+//     if ( fsaa ) {
+//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
+//      }
+//     if ( accel ) {
+//             SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+//     }
+//     if ( sync ) {
+//             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
+//     } else {
+//             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
+//     }
+       SDL_SetVideoMode(640,480,32,SDL_OPENGL | SDL_RESIZABLE);
 
 #if ((XM7_VER <= 2) && defined(FMTV151))
         bFMTV151 = TRUE;
