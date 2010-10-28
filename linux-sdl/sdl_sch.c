@@ -164,8 +164,14 @@ ExecSch(void)
 	case SDL_SYSWMEVENT:
 		printf("NOTICE: SYSWM\n");
 		break;
+	case SDL_VIDEORESIZE:
+#ifdef USE_OPENGL
+		SDL_SetVideoMode(eventQueue.resize.h, eventQueue.resize.w, 32, SDL_OPENGL | SDL_RESIZABLE);
+		drawArea = SDL_GetVideoSurface();
+#endif
+		break;
 	case SDL_MOUSEMOTION:
-		printf("MOUSE: X Y XREL YREL: %03d %03d %03d %03d\n", eventQueue.motion.x,  eventQueue.motion.y, eventQueue.motion.xrel, eventQueue.motion.yrel);
+//		printf("MOUSE: X Y XREL YREL: %03d %03d %03d %03d\n", eventQueue.motion.x,  eventQueue.motion.y, eventQueue.motion.xrel, eventQueue.motion.yrel);
 		break;
 	default:
 	    break;

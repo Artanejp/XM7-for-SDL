@@ -348,7 +348,8 @@ static void PutVram_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 
 static void PutVram_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
-	scalerGL->SetViewPort(0, 0, 640, 400);
+//	scalerGL->SetViewPort(0,0,p->w, p->h);
+	scalerGL->SetViewPort();
 	scalerGL->PutVram(p, x, y, w, h, mpage);
 }
 

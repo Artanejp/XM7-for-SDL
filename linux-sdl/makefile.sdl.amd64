@@ -59,19 +59,7 @@ COMMONSRC = \
 
 VIDEODRVSRC = \
         sdl_draw.c \
-	api_draw_640.cpp api_draw_4096.cpp \
-	EmuGrphLib.cpp EmuGrph4096c.cpp  EmuGrph400l.cpp \
-	EmuGrph256kc.cpp 
-
-SCALERSRC = \
-        EmuGrphScale1x1.cpp \
-        EmuGrphScale1x2.cpp EmuGrphScale1x2i.cpp \
-        EmuGrphScale2x2.cpp EmuGrphScale2x2i.cpp \
-	EmuGrphScale2x4.cpp EmuGrphScale2x4i.cpp \
-	EmuGrphScale4x4.cpp EmuGrphScale4x4i.cpp 	
-
-GLSCALERSRC = \
-         EmuGLUtils.cpp
+	api_draw_640.cpp api_draw_4096.cpp 
 
 SNDDRVSRC = \
 	api_snd.cpp \
@@ -94,7 +82,7 @@ LOCALSRC = \
 	sdl_main.c \
 	sdl_bar.c \
 	util_ringbuffer.c \
-	$(VIDEODRVSRC) $(GLSCALERSRC) $(SCALERSRC) \
+	$(VIDEODRVSRC) \
 	$(SNDDRVSRC) $(INPUTSRC) \
 	$(UISRC)
 
@@ -142,19 +130,9 @@ COMMONOBJ = \
 
 VIDEODRVOBJ = \
         sdl_draw.o \
-	api_draw_640.o api_draw_4096.o \
-	EmuGrphLib.o EmuGrph4096c.o  EmuGrph400l.o \
-	EmuGrph256kc.o 
+	api_draw_640.o api_draw_4096.o
 
-SCALEROBJ = \
-        EmuGrphScale1x1.o \
-        EmuGrphScale1x2.o EmuGrphScale1x2i.o \
-        EmuGrphScale2x2.o EmuGrphScale2x2i.o \
-	EmuGrphScale2x4.o EmuGrphScale2x4i.o \
-	EmuGrphScale4x4.o EmuGrphScale4x4i.o 	
 
-GLSCALEROBJ = \
-         EmuGLUtils.o
 
 SNDDRVOBJ = \
 	SndDrvTmpl.o SndDrvOpn.o SndDrvWav.o SndDrvBeep.o SndDrvCMT.o
@@ -194,12 +172,14 @@ LDFLAGS =
 CFLAGS =        -O3 -export-dynamic
 CFLAGS += 	-DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
-CFLAGS +=  -I. -I/usr/local/include
+CFLAGS +=  -I. -I/usr/local/include -I/usr/local/include/libemugrph
 CFLAGS += `pkg-config --cflags sdl`
 CFLAGS += `pkg-config --cflags gtk+-x11-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
 
+LIBS += -L/usr/local/lib
+LIBS += -lemugrph
 LIBS += `pkg-config --libs sdl`
 LIBS += `pkg-config --libs gtk+-x11-2.0` `pkg-config --libs gdk-pixbuf-2.0`
 LIBS +=  \

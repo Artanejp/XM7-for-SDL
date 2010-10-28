@@ -147,11 +147,13 @@ DrawTaskMain(void *arg)
         
         displayArea = p;
         realDrawArea = p;
+#ifndef USE_OPENGL
         ChangeResolution(); 
-        SelectDraw2();
-#ifdef USE_OPENGL
-        if((p->flags & SDL_OPENGL) == 0) return;
 #endif
+        SelectDraw2();
+//#ifdef USE_OPENGL
+//        if((p->flags & SDL_OPENGL) == 0) return;
+///#endif
 //        DrawStatus();
 #if XM7_VER >= 3
         /*
@@ -193,6 +195,9 @@ static int
 DrawThreadMain(void)
 {
     nDrawCount = DrawCountSet(nDrawFPS);
+#ifdef USE_OPENGL
+    init_640();
+#endif
 	while(1) {
 		if(DrawMutex == NULL) {
 			SDL_Delay(1);
@@ -208,10 +213,17 @@ DrawThreadMain(void)
 #else
 		SDL_Delay(33 - 1);
 #endif
-		if(DrawSHUTDOWN) return 0; /* シャットダウン期間 */
+		if(DrawSHUTDOWN) {
+#ifdef USE_OPENGL
+    detach_640();
+#endif
+			return 0; /* シャットダウン期間 */
+		}
 //		if(DrawWaitFlag) continue; /* 非表示期間中 */
 //		if(DrawINGFlag) continue; /* 別スレッドが表示動作してる */
-        DrawStatus();
+#ifndef USE_OPENGL
+       DrawStatus();
+#endif
 		if(nDrawCount > 0) {
 			nDrawCount --;
 			continue;
@@ -235,51 +247,12 @@ DrawThreadMain(void)
 void SetupGL(int w, int h)
 {
 #ifdef USE_OPENGL
-	int rgb_size[4];
-	return;
-    switch (SDL_GetVideoInfo()->vfmt->BitsPerPixel) {
-         case 8:
-             rgb_size[0] = 3;
-             rgb_size[1] = 3;
-             rgb_size[2] = 2;
-             break;
-         case 15:
-         case 16:
-             rgb_size[0] = 5;
-             rgb_size[1] = 5;
-             rgb_size[2] = 5;
-             break;
-         default:
-             rgb_size[0] = 8;
-             rgb_size[1] = 8;
-             rgb_size[2] = 8;
-             break;
-     }
-     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
-     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
-     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
-     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
-     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-     //if ( fsaa ) {
-                  SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-                  SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 1 );
-      //}
-      //if ( accel ) {
-              SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
-      //}
-      //if ( sync ) {
-              SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
-      //} else {
-      //        SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
-      //}
-
-//              if(SDL_SetVideoMode(w, h, 32,
- //                                      SDL_OPENGL | SDL_RESIZABLE |  0) == NULL) {
- //             	printf("ERROR: %s\n", SDL_GetError());
-//              	return;
- //             }
+              if(SDL_SetVideoMode(w, h, 32,
+                                      SDL_OPENGL | SDL_RESIZABLE |  0) == NULL) {
+             	printf("ERROR: %s\n", SDL_GetError());
+              	return;
+             }
               displayArea = SDL_GetVideoSurface();
-
 #endif
 
 }
@@ -308,6 +281,7 @@ void InitGL(int w, int h)
              rgb_size[2] = 8;
              break;
      }
+#if 0
      SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
      SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
      SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
@@ -325,7 +299,7 @@ void InitGL(int w, int h)
       //} else {
       //        SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
       //}
-
+#endif
     if(SDL_SetVideoMode(w, h, 32,
                              SDL_OPENGL | SDL_RESIZABLE |  0) == NULL) {
     	printf("ERROR: %s\n", SDL_GetError());
@@ -361,17 +335,13 @@ ChangeResolution()
         /*
          * KILL Thread
          */
-#ifndef USE_OPENGL
         detach_640();
         detach_4096();
-#endif
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
-#ifndef USE_OPENGL
         init_640();
         init_4096();
-#endif
 
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;

@@ -306,6 +306,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
  * 表示部分のリサイズ : GTK依存部分につき変更？
  */ 
 #ifdef USE_GTK
+#ifndef USE_OPENGL
         switch(height) {
         case 240:
                 tmpHeight = height + 40;
@@ -322,6 +323,10 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         		tmpHeight2 = 480;
         		break;
         }
+#else
+        tmpHeight = height;
+        tmpHeight2 = height;
+#endif
         hbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
         gtk_widget_set_size_request(hbox, width, tmpHeight2);
         SDL_Delay(100);
@@ -369,7 +374,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
                         break;
                         }
 #else
-//                        SetupGL(width, tmpHeight2);
+                        SetupGL(width, tmpHeight2);
 #endif
 #else
                         if(mode320) {
