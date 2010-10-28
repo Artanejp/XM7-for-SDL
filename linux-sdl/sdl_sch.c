@@ -141,6 +141,7 @@ ExecSch(void)
 	/*
 	 * SDL POLLING 
 	 */ 
+	if(SDL_WasInit(SDL_INIT_VIDEO) != 0) {
 	while (SDL_PollEvent(&eventQueue))
 	 {
 	switch (eventQueue.type)
@@ -170,7 +171,7 @@ ExecSch(void)
 	    break;
 	    }
 	}
-    
+	}
 #endif				/*  */
 	
 	/*

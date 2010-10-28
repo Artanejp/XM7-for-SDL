@@ -57,7 +57,7 @@ CreateDrawGTK(GtkWidget * parent)
     hbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
     gtkDrawArea = gtk_socket_new();
     gtk_widget_set_size_request(hbox, 640, 520);
-    gtk_widget_set_size_request(gtkDrawArea, 1280, 880);
+    gtk_widget_set_size_request(gtkDrawArea, 1280, 960);
 
     gtk_container_add(GTK_CONTAINER(hbox), gtkDrawArea);
     
@@ -150,7 +150,7 @@ OnScreenPlugged(void)
                 sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                         gdk_x11_drawable_get_xid(gtkDrawArea->window));
         
-                SDL_putenv(EnvMainWindow);
+//                SDL_putenv(EnvMainWindow);
                 SDL_InitSubSystem(SDL_INIT_VIDEO);
                 CreateDrawSDL();
         }
@@ -256,6 +256,8 @@ OnFocusOut(GtkWidget * widget, gpointer data)
  * 表示解像度を変更する
  */
 extern void InitGL(int w, int h);
+extern void SetupGL(int w, int h);
+
 
 void 
 ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
@@ -293,11 +295,11 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         /*
          * 1度サーフェースを削除する(クラッシュ対策)
          */
-#endif  
         if(displayArea != NULL) {
 	   SDL_FreeSurface(displayArea);
 	           displayArea = NULL;
 	}
+#endif
 
 
 /*
@@ -307,32 +309,33 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         switch(height) {
         case 240:
                 tmpHeight = height + 40;
-	   tmpHeight2 = 480;
+                tmpHeight2 = 240;
+                break;
+        case 800:
+        case 960:
+                tmpHeight = height + 40;
+                tmpHeight2 = 960;
                 break;
         default:
         case 400:
         		tmpHeight = 480;
-	   tmpHeight2 = 480;
+        		tmpHeight2 = 480;
         		break;
-        case 800:
-                tmpHeight = height + 40;
-                tmpHeight2 = 960;
-                break;
         }
         hbox = GTK_WIDGET(gtk_builder_get_object(gbuilderMain, "hbox_drawing"));
         gtk_widget_set_size_request(hbox, width, tmpHeight2);
         SDL_Delay(100);
-        gtk_widget_set_size_request(gtkDrawArea, width, tmpHeight2);
-
-
         if((gtkDrawArea != NULL) && (gtkDrawArea->window != NULL)) {
+
+#if 0
+        gtk_widget_set_size_request(gtkDrawArea, width, tmpHeight2);
                         sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                                 gdk_x11_drawable_get_xid(gtkDrawArea->window));
                         printf("RESO CHG: %d x %d -> %d x %d\n", oldwidth,
                                oldheight, width, height);
-	    
-#endif				/*  */
                         SDL_putenv(EnvMainWindow);
+#endif
+#endif				/*  */
 
 #if XM7_VER >= 3
 #ifndef USE_OPENGL
@@ -366,7 +369,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
                         break;
                         }
 #else
-                        InitGL(width, tmpHeight2);
+//                        SetupGL(width, tmpHeight2);
 #endif
 #else
                         if(mode320) {
@@ -415,7 +418,6 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 /*
  * ステータス表示
  */
-        wasInit = TRUE;
 
 /*
  * 以下に、全画面強制再描画処理を入れる 
@@ -508,17 +510,18 @@ InitInstanceGtk(void)
  */ 
     OnCreate(vbox);
 
+#if 0
     SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | 0);        
-
     SDL_GetWMInfo(&sdlinfo);
-//    gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
-//    sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-//            gdk_x11_drawable_get_xid(gtkDrawArea->window));
+    gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
+    sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
+            gdk_x11_drawable_get_xid(gtkDrawArea->window));
     
-//    SDL_putenv(EnvMainWindow);
+    SDL_putenv(EnvMainWindow);
        SDL_InitSubSystem(SDL_INIT_VIDEO); 
-
-
+#else
+       SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_VIDEO | 0);
+#endif
     
     CreateDrawSDL();
 #ifdef RSSDIR

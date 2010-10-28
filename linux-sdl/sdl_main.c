@@ -89,10 +89,13 @@ UnlockVM(void)
     /*
      *  ドローウインドウ作成(SDL) 
      */ 
+extern void InitGL(int w, int h);
+
 void
 CreateDrawSDL(void) 
 {
     SDL_Surface * ret;
+#ifndef USE_OPENGL
     ret = SDL_SetVideoMode(640, 480, 16,
 	 SDL_HWSURFACE | SDL_ANYFORMAT | SDL_RESIZABLE |
 	 SDL_DOUBLEBUF | SDL_ASYNCBLIT | SDL_HWPALETTE | 0);
@@ -101,8 +104,14 @@ CreateDrawSDL(void)
 	SDL_FreeSurface(drawArea);
 	exit(1);
     }
+#endif
+    if(SDL_WasInit(SDL_INIT_VIDEO) == 0) {
+    	SDL_Init(SDL_INIT_VIDEO);
+    }
+    InitGL(640, 480);
     displayArea = SDL_GetVideoSurface();
-/*
+
+    /*
  * マウス処理やWIndowとの接続をここに入れる 
  */ 
 // SDL_UpdateRect(displayArea ,0 ,0 ,640 ,480);
