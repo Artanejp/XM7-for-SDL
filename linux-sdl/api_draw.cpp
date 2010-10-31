@@ -248,19 +248,19 @@ static void SetVramReader_200l()
 		scaler2x2->SetPutWord(PutWord2x);
 	}
 	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader, 80, 400);
+		scaler2x2i->SetVramReader(VramReader, 80, 200);
 		scaler2x2i->SetPutWord(PutWord2x);
 	}
 	if(scaler2x4 != NULL) {
-		scaler2x4->SetVramReader(VramReader, 80, 400);
+		scaler2x4->SetVramReader(VramReader, 80, 200);
 		scaler2x4->SetPutWord(PutWord2x);
 	}
 	if(scaler2x4i != NULL) {
-		scaler2x4i->SetVramReader(VramReader, 80, 400);
+		scaler2x4i->SetVramReader(VramReader, 80, 200);
 		scaler2x4i->SetPutWord(PutWord2x);
 	}
 	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader, 80, 400);
+		scalerGL->SetVramReader(VramReader, 80, 200);
 	}
 }
 
@@ -317,7 +317,7 @@ static void SetVramReader_4096(void)
 		scaler4x4i->SetPutWord(PutWord4x);
 	}
 	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_4096, 80, 400);
+		scalerGL->SetVramReader(VramReader_4096, 40, 200);
 	}
 }
 
@@ -340,7 +340,7 @@ static void SetVramReader_256k(void)
 		scaler4x4i->SetPutWord(PutWord4x);
 	}
 	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_256k, 80, 400);
+		scalerGL->SetVramReader(VramReader_256k, 40, 200);
 	}
 }
 
@@ -606,10 +606,13 @@ static int DrawTaskMain(void *arg)
 		return 0;
 }
 
+static void initsub(void);
 static void detachsub(void);
 
 static int DrawThreadMain(void *p)
 {
+	initsub();
+    InitGL(640, 480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;
 		while(1) {
@@ -707,8 +710,8 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 				RenderFullScan();
 			}
 		} else {
-			SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-			SDL_Flip(displayArea);
+//			SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+//			SDL_Flip(displayArea);
 		}
 		bOldFullScan = bFullScan;
 }
@@ -1013,8 +1016,6 @@ void	InitDraw(void)
 			SDL_SemPost(InitSem);
 		}
 
-		initsub();
-	    InitGL(640, 480);
 
 //		SDL_SetVideoMode(nDrawWidth, nDrawHeight, 32, SDL_OPENGL | SDL_RESIZABLE);
 }
@@ -1332,7 +1333,7 @@ void RenderFullScan(void)
 	SDL_Surface *s = SDL_GetVideoSurface();
 	Uint32 pitch;
 	Uint32 nullcolor;
-
+return;
 	if(s == NULL) return;
 	if(!bUseOpenGL) {
 		SDL_LockSurface(s);
@@ -1352,8 +1353,8 @@ void RenderFullScan(void)
 			q += pitch * 2;
 		}
 		SDL_UnlockSurface(s);
-		displayArea = SDL_GetVideoSurface();
-		SDL_UpdateRect(s, 0, 0, s->w, s->h);
+//		displayArea = SDL_GetVideoSurface();
+//		SDL_UpdateRect(s, 0, 0, s->w, s->h);
 	}
 	Flip();
 #endif
@@ -1371,7 +1372,7 @@ void RenderSetOddLine(void)
 	SDL_Rect r;
 	Uint32 pitch;
 	Uint32 nullcolor;
-
+return;
 	if(s == NULL) return;
 	if(!bUseOpenGL) {
 		SDL_LockSurface(s);
@@ -2269,7 +2270,7 @@ void Draw320(void)
 	if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
 		if(window_open) { // ハードウェアウインドウ開いてる
 			if (nDrawTop < window_dy1) {
-				vramhdr->SetVram(vram_dptr, 40, 200);
+				vramhdr_4096->SetVram(vram_dptr, 40, 200);
 				PutVramFunc(p, 0, nDrawTop, 320, window_dy1, multi_page);
 			}
 			/* ウィンドウ内の描画 */
@@ -2288,16 +2289,16 @@ void Draw320(void)
 			}
 
 			if (wdbtm > wdtop) {
-				vramhdr->SetVram(vram_bdptr, 40, 200);
+				vramhdr_4096->SetVram(vram_bdptr, 40, 200);
 				PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
 			}
 			/* ハードウェアウインドウ外下部 */
 			if (nDrawBottom  > window_dy2) {
-				vramhdr->SetVram(vram_dptr, 40, 200);
+				vramhdr_4096->SetVram(vram_dptr, 40, 200);
 				PutVramFunc(p, 0 , wdbtm, 320, nDrawBottom - wdbtm, multi_page);
 			}
 		} else { // ハードウェアウィンドウ開いてない
-			vramhdr->SetVram(vram_dptr, 40, 200);
+			vramhdr_4096->SetVram(vram_dptr, 40, 200);
 			PutVramFunc(p, 0, 0, 320, 400, multi_page);
 		}
 	}

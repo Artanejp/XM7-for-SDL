@@ -145,10 +145,10 @@ ExecSch(void)
 	 */ 
 
 	if(SDL_WasInit(SDL_INIT_VIDEO) != 0) {
-
+		p = SDL_GetVideoSurface();
+		if(p == NULL) return;
 	while (SDL_PollEvent(&eventQueue))
 	 {
-		p = SDL_GetVideoSurface();
 	switch (eventQueue.type)
 	     {
 	case SDL_KEYDOWN:	/* キーボードはSDL */

@@ -271,6 +271,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
         int rgb_size[4];
         int tmpHeight2, tmpWidth2;
 
+        if((width == oldwidth) && (height == oldheight)) return;
 /*
  * まずは現在のサーフェイスを退避する 
  */ 
@@ -525,8 +526,8 @@ InitInstanceGtk(void)
     SDL_putenv(EnvMainWindow);
        SDL_InitSubSystem(SDL_INIT_VIDEO); 
 #else
-//      	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVERYTHING);
-//          SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
+      	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVERYTHING);
+          SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER);
 #endif
     
     CreateDrawSDL();

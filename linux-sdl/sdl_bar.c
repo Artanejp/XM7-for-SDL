@@ -271,6 +271,7 @@ CreateStatus(void)
         /*
          * Draw
          */
+#ifndef USE_OPENGL
         p = SDL_GetVideoSurface();
         if(p == NULL) return;
         DrawStatus();
@@ -279,6 +280,7 @@ CreateStatus(void)
         rec.w = 50;
         rec.h = 20;
         SDL_UpdateRect(p, 0, 0, p->w, p->h);
+#endif
 } 
 
 void
@@ -464,11 +466,13 @@ DrawMainCaption(void)
                             SDL_BlitSurface(tmpSurface, NULL, pCaption, &rec);
                             SDL_FreeSurface(tmpSurface);
                     }
+#ifndef USE_OPENGL
                     pS = SDL_GetVideoSurface();
                     if(pS == NULL) return;
                     SDL_BlitSurface(pCaption, NULL, pS, &drec);
                     SDL_UpdateRect(pS, drec.x, drec.y, drec.w, drec.h);
                     //SDL_Flip(pS);
+#endif
     }    
             
 

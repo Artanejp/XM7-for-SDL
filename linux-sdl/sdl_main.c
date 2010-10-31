@@ -108,7 +108,7 @@ CreateDrawSDL(void)
 //    if(SDL_WasInit(SDL_INIT_VIDEO) == 0) {
 //    	SDL_Init(SDL_INIT_VIDEO);
 //    }
-    ret = SDL_SetVideoMode(640,480,32, SDL_RESIZABLE | SDL_OPENGL);
+//    ret = SDL_SetVideoMode(640,480,32, SDL_RESIZABLE | SDL_OPENGL);
 //    displayArea = SDL_GetVideoSurface();
 
     /*
@@ -279,24 +279,6 @@ main(int argc, char *argv[])
     rgb_size[2] = 8;
 	flags = SDL_OPENGL | SDL_RESIZABLE;
 
-    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
-    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
-    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
-    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
-    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-//     if ( fsaa ) {
-//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
-//      }
-//     if ( accel ) {
-//             SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
-//     }
-//     if ( sync ) {
-//             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
-//     } else {
-//             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
-//     }
-       SDL_SetVideoMode(640,480,32,SDL_OPENGL | SDL_RESIZABLE);
 
 #if ((XM7_VER <= 2) && defined(FMTV151))
         bFMTV151 = TRUE;
