@@ -26,6 +26,7 @@ public:
 	void SetViewPort(int x, int y, int w, int h);
 	void SetViewPort(void);
 	void Flip(void);
+	void DrawScanLine(void);
 protected:
 	GLuint CreateTexture(int w, int h, Uint8 *bitmap);
 	void DiscardTextures(int n, GLuint *tid);

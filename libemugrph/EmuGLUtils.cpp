@@ -232,6 +232,7 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 		return;
 	}
 	DrawTexture();
+	DrawScanLine();
 #if 0   
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
 #endif   
@@ -297,10 +298,10 @@ void EmuGLUtils::DrawTexture(void)
                 Enter2DMode();
                 glBindTexture(GL_TEXTURE_2D, textureid);
                 glBegin(GL_TRIANGLE_STRIP);
-                glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0, 0.0  );
-                glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0, 1.0);
-                glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0, 0.0 );
-                glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0, 1.0);
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0, 0.0, -1.0);
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0, 1.0, -1.0);
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0, 0.0, -1.0);
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0, 1.0, -1.0);
              //   glViewport(0, 0 , viewport_w, viewport_h);
                 glEnd();
                 Leave2DMode();
@@ -308,6 +309,24 @@ void EmuGLUtils::DrawTexture(void)
 //                SDL_GL_SwapBuffers();
 }
 
+void EmuGLUtils::DrawScanLine(void)
+{
+	float ofset = 1.0 / ((float)vramheight * 2.0);
+	float step = 1.0 / (float)vramheight;
+	int y;
+	float yf;
+	Enter2DMode();
+	for(y = 0; y < vramheight; y++) {
+		glBegin(GL_LINES);
+		glLineWidth(4.0f);
+		glColor3f(0.0, 0.0, 0.0);
+		yf = (float)y * step + ofset;
+		glVertex3f(0.0f, yf, -0.5f);
+		glVertex3f(1.0f, yf, -0.5f);
+		glEnd();
+	}
+	Leave2DMode();
+}
 
 void EmuGLUtils::DiscardTextures(void)
 {
