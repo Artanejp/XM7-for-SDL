@@ -50,8 +50,8 @@ SRCS =	${COMMONSRC} ${LOCALSRC}
 OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 LDFLAGS = 
-#CFLAGS =        -g -O0 -export-dynamic
-CFLAGS =        -O3 -export-dynamic
+CFLAGS =        -g -O0 -export-dynamic
+#CFLAGS =        -O3 -export-dynamic
 CFLAGS += -fPIC
 
 CFLAGS +=  -I. -I/usr/local/include

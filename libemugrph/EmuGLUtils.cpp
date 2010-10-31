@@ -14,7 +14,7 @@ EmuGLUtils::EmuGLUtils() {
 	minY = 0.0f;
 	maxX = 1.0f;
 	maxY = 1.0f;
-	InitVideo = FALSE;
+	InitVideo = TRUE;
 }
 
 EmuGLUtils::~EmuGLUtils() {
@@ -48,7 +48,7 @@ int EmuGLUtils::InitGL(int w, int h)
 	flags = SDL_OPENGL | SDL_RESIZABLE;
 //	aspect = (float)w / (float)h;
 //	glClearColor(0, 0, 0, 0);
-#if 0
+#if 1
     switch (bpp) {
          case 8:
              rgb_size[0] = 3;
@@ -86,6 +86,7 @@ int EmuGLUtils::InitGL(int w, int h)
       } else {
               SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
       }
+#endif
   	if(SDL_SetVideoMode(w, h, 32, flags) == 0)
   	{
   		return -1;
@@ -98,7 +99,6 @@ int EmuGLUtils::InitGL(int w, int h)
       printf( "Version    : %s\n", glGetString( GL_VERSION ) );
       printf( "Extensions : %s\n", glGetString( GL_EXTENSIONS ) );
       printf("\n");
-#endif
       InitVideo = TRUE;
 }
 
@@ -180,8 +180,14 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 	int i;
 	Uint32 c[8];
 	GLubyte *bitmap;
+	SDL_Surface *surface;
 
 	if(!InitVideo) return;
+	// Test
+#if 0
+	surface = SDL_GetVideoSurface();
+	printf("Video w: %d h:%d FLAGS:%02x\n", surface->w, surface->h, surface->flags);
+#endif
 	size = vramwidth * vramheight * 8 * 4;
 	glClearColor(0, 0, 0, 0);
 
@@ -198,14 +204,18 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 			}
 		}
 	}
+#if 0
 	printf("Transfer: %08x bytes \n", ofset);
+#endif
 	textureid = CreateTexture(vramwidth * 8 , vramheight, bitmap);
 	if(textureid <= 0) {
 		free(bitmap);
 		return;
 	}
 	DrawTexture();
+#if 0   
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
+#endif   
 	free(bitmap);
 }
 
@@ -262,13 +272,6 @@ void EmuGLUtils::Leave2DMode()
 
 void EmuGLUtils::DrawTexture(void)
 {
-        static GLfloat texMinX, texMinY;
-        static GLfloat texMaxX, texMaxY;
-        static int x = 0;
-        static int y = 0;
-        static int w, h;
-
-        SDL_Surface *screen = SDL_GetVideoSurface();
         /* Make texture coordinates easy to understand */
         /* Make sure that the texture conversion is okay */
         /* Move the image around */
