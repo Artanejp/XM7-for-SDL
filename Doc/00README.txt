@@ -1,21 +1,13 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
-<<<<<<< .mine
 *  Version 0.1r151 (αレベル / OpenGL)
-=======
-*  Version 0.1r128 (αレベル)
->>>>>>> .r152
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-<<<<<<< .mine
 * 2010.11.01 Artane.
-=======
-* 2010.10.26 Artane.
->>>>>>> .r152
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
