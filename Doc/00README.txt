@@ -1,13 +1,21 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
+<<<<<<< .mine
+*  Version 0.1r151 (αレベル / OpenGL)
+=======
 *  Version 0.1r128 (αレベル)
+>>>>>>> .r152
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
+<<<<<<< .mine
+* 2010.11.01 Artane.
+=======
 * 2010.10.26 Artane.
+>>>>>>> .r152
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
@@ -37,6 +45,7 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 　からCに移植した部分もかなりあるし、APIが全く違うのでかなり手を入れて
 　います。
 　messのライセンスについてはDoc/mess/license.txtに入れておきました
+・OpenGLで描画しています（試験版）
 
 (*2) PC-88エミュレータであるQuasi88に同等の機能があったので…
 (*3) SDLMESS http://rbelmont.mameworld.info/?page_id=163
@@ -59,6 +68,16 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 ・libmemwatch (http://www.linkdata.se/sourcecode/memwatch )
 ・eclipse (統合開発環境/  http://www.eclipse.org/ )
 
+※r151あたりから、描画機能をlibemugrphに分離しています。
+　仕様が未だ固まっていない状態ですが…
+  以下のようにインストールしてください
+  $ cd libemugrph
+  $ make
+  $ sudo make install
+  
+  $ sudo install libemugrph.so /usr/local/lib
+  $ sudo ldconfig
+  
 -- 以下、過去の話 --
 現状では6809エミュレーションをXM7添付のアセンブラコアで
 やっているので、ia32でしかビルドできません。（最終的にはCコア
@@ -66,6 +85,7 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 amd64環境の方はクロスビルドする必要がありますが、そのままmake出来
 ちゃいます。多分。
 -- ここまで --
+
 
 libmemwatchはメモリリークをチェックする為の物なので…
 
