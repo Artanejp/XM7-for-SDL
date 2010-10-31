@@ -30,15 +30,10 @@ void EmuGrph400l::GetVram(Uint32 addr, Uint32 *cbuf)
             cr,
             cg;
 
-#if XM7_VER >= 3
-        cb = vram_p[addr + 0x00000];
-        cr = vram_p[addr + 0x08000];
-        cg = vram_p[addr + 0x10000];
-#else
-        cb = vram_p[addr + 0x00000];
-        cr = vram_p[addr + 0x04000];
-        cg = vram_p[addr + 0x08000];
-#endif				/* XM7_VER */
+        cb = vram_pb[addr];
+        cr = vram_pr[addr];
+        cg = vram_pg[addr];
+#if 1
         cbuf[0] =   palette[(cb & 0x01) + ((cr & 0x01) << 1) + ((cg & 0x01) << 2)];
         cbuf[1] =   palette[((cb & 0x02) >> 1) + (cr & 0x02) + ((cg & 0x02) << 1)];
         cbuf[2] =   palette[((cb & 0x04) >> 2) + ((cr & 0x04) >> 1) + (cg & 0x04)];
@@ -47,7 +42,7 @@ void EmuGrph400l::GetVram(Uint32 addr, Uint32 *cbuf)
         cbuf[5] =   palette[((cb & 0x20) >> 5) + ((cr & 0x20) >> 4) + ((cg & 0x20) >> 3)];
         cbuf[6] =   palette[((cb & 0x40) >> 6) + ((cr & 0x40) >> 5) + ((cg & 0x40) >> 4)];
         cbuf[7] =   palette[((cb & 0x80) >> 7) + ((cr & 0x80) >> 6) + ((cg & 0x80) >> 5)];
-
+#endif
 }
 
 static inline void

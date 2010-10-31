@@ -10,7 +10,10 @@
 
 EmuGrphLib::EmuGrphLib() {
 	// TODO Auto-generated constructor stub
-	vram_p = NULL;
+	vram_pr = NULL;
+	vram_pg = NULL;
+	vram_pb = NULL;
+
 	vram_w = 0;
 	vram_h = 0;
 	palette = NULL;
@@ -38,6 +41,27 @@ void EmuGrphLib::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL
 			((a << disp->format->Ashift) & disp->format->Amask);
 	palette[src] = ds;
 }
+/*
+ * RGBA固定の場合(OpenGLとか)
+ */
+void EmuGrphLib::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+	Uint32 ds;
+
+	if(palette == NULL) return;
+#if 0
+	ds = a<<24 + r<<16 +
+#endif
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	ds =r<<8 + g<<16 + b<<0;
+#else
+	ds = r<<24 + g<<16 + b<<8 + 255<<0;
+#endif
+//			(a << 0);
+	palette[src] = ds;
+}
+
 
 void EmuGrphLib::ConvWord(SDL_Surface *p, Uint32 *dst, Uint32 *src)
 {
@@ -79,10 +103,23 @@ void EmuGrphLib::SetPaletteTable(Uint32 *p)
 /*
  * vramアドレスを設定する
  */
-
 void EmuGrphLib::SetVram(Uint8 *p, Uint32 w, Uint32 h)
 {
-	vram_p = p;
+	vram_pb = p + 0;
+	vram_pg = p + 0x10000;
+	vram_pr = p + 0x8000;
+
+	vram_w = w;
+	vram_h = h;
+
+}
+
+void EmuGrphLib::SetVram(Uint8 *pr, Uint8 *pg, Uint8 *pb, Uint32 w, Uint32 h)
+{
+	vram_pb = pb;
+	vram_pg = pg;
+	vram_pr = pr;
+
 	vram_w = w;
 	vram_h = h;
 }
@@ -101,15 +138,9 @@ void EmuGrphLib::GetVram(Uint32 addr, Uint32 *cbuf)
             cr,
             cg;
 
-#if XM7_VER >= 3
-        cb = vram_p[addr + 0x00000];
-        cr = vram_p[addr + 0x08000];
-        cg = vram_p[addr + 0x10000];
-#else
-        cb = vram_p[addr + 0x00000];
-        cr = vram_p[addr + 0x04000];
-        cg = vram_p[addr + 0x08000];
-#endif				/* XM7_VER */
+        cb = vram_pb[addr];
+        cr = vram_pr[addr];
+        cg = vram_pg[addr];
         cbuf[0] =   palette[(cb & 0x01) + ((cr & 0x01) << 1) + ((cg & 0x01) << 2)];
         cbuf[1] =   palette[((cb & 0x02) >> 1) + (cr & 0x02) + ((cg & 0x02) << 1)];
         cbuf[2] =   palette[((cb & 0x04) >> 2) + ((cr & 0x04) >> 1) + (cg & 0x04)];

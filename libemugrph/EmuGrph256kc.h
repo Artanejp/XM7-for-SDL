@@ -19,6 +19,10 @@ public:
 	void InitPalette(void);
 	void GetVram(Uint32 addr, Uint32 *cbuf2, Uint32 mpage);
 	void PutVram(BOOL interlace);
+	void SetVram(Uint8 *p, Uint32 w, Uint32 h);
+	void SetVram(Uint8 *pr, Uint8 *pg, Uint8 *pb, Uint32 w, Uint32 h);
+protected:
+	Uint8 *vram_p;
 };
 
 #endif /* EMUGRPH256KC_H_ */

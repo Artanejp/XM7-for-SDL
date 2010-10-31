@@ -87,6 +87,7 @@ int EmuGLUtils::InitGL(int w, int h)
               SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
       }
 #endif
+      SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
   	if(SDL_SetVideoMode(w, h, 32, flags) == 0)
   	{
   		return -1;
@@ -124,6 +125,8 @@ GLuint EmuGLUtils::CreateTexture(int w, int h, Uint8 *bitmap)
 
 	return textureid;
 }
+
+
 
 static inline void putdot(GLubyte *addr, Uint32 c)
 {
@@ -169,6 +172,17 @@ void EmuGLUtils::SetViewPort(void)
 	SetViewPort(0, 0, p->w, p->h);
 }
 
+static inline void SetByte(GLubyte * addr, Uint32 *c)
+{
+	putdot((GLubyte *)&addr[0], c[7]);
+	putdot((GLubyte *)&addr[4], c[6]);
+	putdot((GLubyte *)&addr[8], c[5]);
+	putdot((GLubyte *)&addr[12], c[4]);
+	putdot((GLubyte *)&addr[16], c[3]);
+	putdot((GLubyte *)&addr[20], c[2]);
+	putdot((GLubyte *)&addr[24], c[1]);
+	putdot((GLubyte *)&addr[28], c[0]);
+}
 
 void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
@@ -181,8 +195,10 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 	Uint32 c[8];
 	GLubyte *bitmap;
 	SDL_Surface *surface;
+	Uint8 *disp;
 
 	if(!InitVideo) return;
+	if(putword == NULL) return;
 	// Test
 #if 0
 	surface = SDL_GetVideoSurface();
@@ -190,19 +206,22 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 #endif
 	size = vramwidth * vramheight * 8 * 4;
 	glClearColor(0, 0, 0, 0);
+	ww = w >>3;
+	hh = h + y;
 
 	bitmap = (GLubyte *)malloc(size); // この関数内で全て処理する
 	if(bitmap == NULL) return;
 	ofset = 0;
-	for(yy = 0; yy < vramheight; yy++) {
-		for(xx = 0; xx < vramwidth; xx++) {
-			addr = yy * vramwidth + xx;
+	for(yy = y; yy < hh; yy++) {
+		for(xx = 0; xx < ww; xx++) {
+			addr = yy  * vramwidth + xx + x;
+			ofset = yy * vramwidth * 32 + xx * 32;
 			getvram(addr, c, mpage);
-			for(i = 7; i >= 0; i--){
-				putdot((GLubyte *)&bitmap[ofset], c[i]);
-				ofset+=4;
+			disp = &bitmap[ofset];
+			putword((Uint32 *)disp, 32, c);
+			ofset+=32;
+			addr++;
 			}
-		}
 	}
 #if 0
 	printf("Transfer: %08x bytes \n", ofset);
@@ -285,7 +304,7 @@ void EmuGLUtils::DrawTexture(void)
              //   glViewport(0, 0 , viewport_w, viewport_h);
                 glEnd();
                 Leave2DMode();
-
+            	DiscardTextures();
 //                SDL_GL_SwapBuffers();
 }
 
@@ -305,7 +324,7 @@ void EmuGLUtils::Flip(void)
 //	glFlush();
 	if(!InitVideo) return;
 	SDL_GL_SwapBuffers();
-	DiscardTextures();
+//	DiscardTextures();
 }
 /* Quick utility function for texture creation */
 int EmuGLUtils::power_of_two(int input)

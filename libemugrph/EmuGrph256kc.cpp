@@ -26,6 +26,20 @@ void EmuGrph256kc::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a, S
 	return;
 }
 
+void EmuGrph256kc::SetVram(Uint8 *p, Uint32 w, Uint32 h)
+{
+	vram_p = p;
+	vram_w = w;
+	vram_h = h;
+}
+
+void EmuGrph256kc::SetVram(Uint8 *pr, Uint8 *pg, Uint8 *pb, Uint32 w, Uint32 h)
+{
+	vram_p = pb;
+	vram_w = w;
+	vram_h = h;
+}
+
 void EmuGrph256kc::GetVram(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
     Uint8           b[6],
@@ -62,8 +76,8 @@ void EmuGrph256kc::GetVram(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
     	r[4] = vram_p[addr + 0x0a000];
     	r[3] = vram_p[addr + 0x0c000];
     	r[2] = vram_p[addr + 0x0e000];
-    	r[1] = vram_p[addr + 0x20000];
-    	r[0] = vram_p[addr + 0x22000];
+    	r[1] = vram_p[addr + 0x28000];
+    	r[0] = vram_p[addr + 0x2a000];
     }
     if(!(mpage & 0x10)){
     	b[5] = vram_p[addr + 0x00000];
@@ -74,7 +88,7 @@ void EmuGrph256kc::GetVram(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
     	b[0] = vram_p[addr + 0x1a000];
     }
 
- for(i = 0; i<8;i++){
+ for(i = 7; i >= 0;i--){
 	 cbuf[i] = 0x00000000;
    if(!(mpage & 0x20)){
 	   cbuf[i] = cbuf[i] | (r[0] & 0x80)>>5 | (r[1] & 0x80)>>4 | (r[2] & 0x80)>>3 | (r[3] & 0x80)>>2 | (r[4] & 0x80)>>1 | (r[5] & 0x80);
