@@ -15,12 +15,19 @@ Sorry, under construction and Japanese only,Yet...<BR>
 <BR>
 <BR>
 <B>現在のリリースは、<BR>
+*  Version 0.1r151 (OpenGL仕様  / αレベル) Nov 01,2010<BR>
 *  Version 0.1r129 (αレベル) Oct 26,2010<BR>
 です。</B><BR>
 解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
 <BR>
 ・ダウンロード：<BR>
-<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">ソースコード+GNU/Linux amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
+<A
+HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux.0.1r151.7z">
+ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r151 極めてUnstableだがたぶんうごくはずだ)</A><BR>
+<BR>
+<A
+HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
+ソースコード+GNU/Linux amd64バイナリ(r128 Unstableだがたぶんうごくはずだ)</A><BR>
 <BR>
 <H2>変更点:</H2>
 - 描画処理を別スレッドにした（現状はFPS固定)<BR>
@@ -33,9 +40,18 @@ Sorry, under construction and Japanese only,Yet...<BR>
 HREF="http://rbelmont.mameworld.info/?page_id=163">SDLMESS 0.136</A>ベースのCコードにした（ソースツリーにアセンブラコードも残してあります）<BR>
 - ~/.xm7 に設定ファイルやROMファイルを置くようにした<BR>
 - 音声・入力などのドライバを書きやすいようにClass分けしました（殆ど一から書きなおしかも）<BR>
-- 毎秒の描画枚数(FPS値)を1〜60の間で可変出来るようにした(NEW!)<BR>
+- 毎秒の描画枚数(FPS値)を1〜60の間で可変出来るようにした<BR>
+- 描画について、モジュール化による書きなおしを進めています。(NEW!)<BR>
 etc...<BR>
 <BR>
+<H2>TODO:</H2>
+- モジュール化の推進（部品の再利用や改良を促進する）とライブラリへの分離<BR>
+- OpenGLレンダラの試作（やってみたが胡散臭いヽ(°▽、°)ﾉ）<BR>
+- 縮小表示レンダラの作成<BR>
+- タイミングの不確定要素の排除<BR>
+- デバッガの作成<BR>
+- SDLだけでメニュー表示できるようにする：GTKの排除（雲を掴むような話しだがやらないとだめだろう…)<BR>
+etc...<BR>
 <BR>
 <H2>インストール:</H2>
 - JIS0208 encoding のIPA Gothicが必要です(/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf
