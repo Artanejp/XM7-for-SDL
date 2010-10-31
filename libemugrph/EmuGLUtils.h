@@ -26,7 +26,7 @@ public:
 	void SetViewPort(int x, int y, int w, int h);
 	void SetViewPort(void);
 	void Flip(void);
-	void DrawScanLine(void);
+        void SetScanLine(BOOL flag);
 protected:
 	GLuint CreateTexture(int w, int h, Uint8 *bitmap);
 	void DiscardTextures(int n, GLuint *tid);
@@ -34,6 +34,7 @@ protected:
 	void Enter2DMode();
 	void Leave2DMode();
 	void DrawTexture(void);
+	void DrawScanLine(void);
 	int viewport_x;
 	int viewport_y;
 	int viewport_w;
@@ -44,9 +45,10 @@ protected:
 	float minY;
 	float maxX;
 	float maxY;
+   	BOOL ScanLine;
+   	float ScanLineWidth;
 private:
 	int power_of_two(int input);
-	SDL_semaphore *InitSem;
 	BOOL InitVideo;
 };
 

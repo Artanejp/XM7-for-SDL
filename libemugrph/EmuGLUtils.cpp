@@ -15,6 +15,8 @@ EmuGLUtils::EmuGLUtils() {
 	maxX = 1.0f;
 	maxY = 1.0f;
 	InitVideo = TRUE;
+        ScanLine = FALSE;
+        ScanLineWidth = 4.0f;
 }
 
 EmuGLUtils::~EmuGLUtils() {
@@ -144,6 +146,12 @@ static inline void putdot(GLubyte *addr, Uint32 c)
 
 }
 
+void EmuGLUtils::SetScanLine(BOOL flag)
+{
+   ScanLine = flag;
+}
+
+
 void EmuGLUtils::SetViewPort(int x, int y, int w, int h)
 {
 	viewport_x = x;
@@ -232,7 +240,10 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 		return;
 	}
 	DrawTexture();
+   if(ScanLine) {
 	DrawScanLine();
+   }
+   
 #if 0   
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
 #endif   
@@ -318,7 +329,7 @@ void EmuGLUtils::DrawScanLine(void)
 	Enter2DMode();
 	for(y = 0; y < vramheight; y++) {
 		glBegin(GL_LINES);
-		glLineWidth(4.0f);
+		glLineWidth(ScanLineWidth);
 		glColor3f(0.0, 0.0, 0.0);
 		yf = (float)y * step + ofset;
 		glVertex3f(0.0f, yf, -0.5f);
