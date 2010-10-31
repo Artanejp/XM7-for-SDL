@@ -584,6 +584,7 @@ SaveCfg(void)
     SaveCfgFile();
 }
 
+extern void 	ResizeGL(int w, int h);
 
     /*
      *  設定データ適用
@@ -669,6 +670,8 @@ ApplyCfg(void)
     nDrawWidth = configdat.uWidth;
     nDrawFPS = configdat.nDrawFPS;
     display_notify();
+	ResizeGL(nDrawWidth, nDrawHeight);
+
     
 /*
  * Optionセクション 

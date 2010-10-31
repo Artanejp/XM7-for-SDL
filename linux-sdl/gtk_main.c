@@ -428,7 +428,7 @@ ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight)
 /*
  * 以下に、全画面強制再描画処理を入れる 
  */
-#ifndef USE_OPENGL
+#if 1
         SDL_GetWMInfo(&sdlinfo);
         gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
         realDrawArea = SDL_GetVideoSurface();
@@ -516,7 +516,7 @@ InitInstanceGtk(void)
  */ 
     OnCreate(vbox);
 
-#if 0
+#if 1
     SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | 0);        
     SDL_GetWMInfo(&sdlinfo);
     gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);

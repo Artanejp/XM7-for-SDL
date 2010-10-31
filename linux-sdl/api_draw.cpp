@@ -12,9 +12,15 @@
 
 #ifdef USE_GTK
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
+#include <gdk/gdkkeysyms.h>
+
 #endif
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_syswm.h>
+
 #ifdef USE_OPENGL
 #include <SDL/SDL_opengl.h>
 #endif
@@ -125,7 +131,7 @@ void    Draw640All(void);
 void    Draw400l(void);
 void    Draw320(void);
 void    Draw256k(void);
-void           SetDrawFlag(BOOL flag);
+void   SetDrawFlag(BOOL flag);
 void   InitGL(int w, int h);
 void   SetupGL(int w, int h);
 
@@ -606,6 +612,27 @@ static BOOL SelectDraw2(void)
 		return TRUE;
 }
 
+static void ResizeWindow(int w, int h)
+{
+    char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
+    SDL_SysWMinfo sdlinfo;
+#if 0
+#ifdef USE_GTK
+            sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
+                    gdk_x11_drawable_get_xid(gtkDrawArea->window));
+            SDL_putenv(EnvMainWindow);
+            SDL_InitSubSystem(SDL_INIT_VIDEO);
+#endif
+            InitGL(w, h);
+#ifdef USE_GTK
+            gtk_widget_set_size_request(gtkDrawArea, w, h);
+            SDL_GetWMInfo(&sdlinfo);
+            gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
+#endif
+#else
+            InitGL(w, h);
+#endif
+}
 
 static int DrawTaskMain(void *arg)
 {
@@ -620,7 +647,8 @@ static int DrawTaskMain(void *arg)
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
 			nDrawHeight = newDrawHeight;
-			SetupGL(nDrawWidth, nDrawHeight);
+			ResizeWindow(nDrawWidth, nDrawHeight);
+//			SetupGL(nDrawWidth, nDrawHeight);
 			newResize = FALSE;
 		}
 		ChangeResolution();
@@ -665,13 +693,16 @@ static int DrawTaskMain(void *arg)
 		return 0;
 }
 
+#ifdef USE_GTK
+extern GtkWidget       *gtkDrawArea;
+#endif
 static void initsub(void);
 static void detachsub(void);
 
 static int DrawThreadMain(void *p)
 {
-	initsub();
-    InitGL(640, 480);
+		initsub();
+		ResizeWindow(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;
 		while(1) {
@@ -912,6 +943,7 @@ void SetupGL(int w, int h)
 #ifdef USE_OPENGL
 	SDL_SemWait(InitSem);
 //	SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE);
+	scalerGL->InitGL(w, h);
 	SDL_SemPost(InitSem);
 #endif
 }
@@ -2002,6 +2034,11 @@ static void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 	scalerGL->SetViewPort(0,0,p->w, p->h);
 //	scalerGL->SetViewPort();
+        if(!bFullScan) {
+	   scalerGL->SetScanLine(TRUE);
+	} else {
+	   scalerGL->SetScanLine(FALSE);
+	}
 	scalerGL->PutVram(p, x, y, w, h, mpage);
 }
 
