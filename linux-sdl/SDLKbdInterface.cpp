@@ -201,7 +201,8 @@ void SDLKbdInterface::OnPress(void *eventh)
     //printf("Key SDL:%04x\n",code);
     for (i = 0; i < 255; i++) {
 	if (p[i].code == 0xffff)   break;
-	if ((code == (SDLKey)p[i].code) && (modifier == (SDLMod)p[i].mod)){
+//	if ((code == (SDLKey)p[i].code) && (modifier == (SDLMod)p[i].mod)){
+	if (code == (SDLKey)p[i].code){
 			PushKeyData(p[i].pushCode, 0x80); /* Make */
 			break;
 		}
