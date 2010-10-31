@@ -252,7 +252,7 @@ main(int argc, char *argv[])
    
         p = getenv("HOME");
         if(p == NULL) {
-                perror("Werning : Can't get HOME directory...Making ./.xm7/ .");
+                perror("Warning : Can't get HOME directory...Making ./.xm7/ .");
                 strcpy(ModuleDir, "./.xm7/");
         } else {
                 strcpy(ModuleDir, p);

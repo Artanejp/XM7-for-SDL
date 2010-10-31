@@ -165,6 +165,7 @@ static EmuGrphScale4x4i *scaler4x4i;
 static EmuGLUtils *scalerGL;
 
 
+
 static void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
 		if(vramhdr != NULL) {
@@ -192,6 +193,60 @@ static void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 			vramhdr_256k->GetVram(addr, cbuf, mpage);
 
 		}
+}
+
+static inline void putdot(GLubyte *addr, Uint32 c)
+{
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[0] = 0xff;		/* A */
+    addr[1] = c & 0xff;	/* B */
+    addr[2] = (c >> 8) & 0xff;	/* R */
+    addr[3] = (c >> 16) & 0xff; /* G */
+#else
+    addr[3] = 0xff;		/* A */
+    addr[2] = c & 0xff;	/* B */
+    addr[1] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff; /* G */
+#endif
+}
+
+static void PutWordGL(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
+{
+		putdot((GLubyte *)&disp[0], cbuf[7]);
+		putdot((GLubyte *)&disp[1], cbuf[6]);
+		putdot((GLubyte *)&disp[2], cbuf[5]);
+		putdot((GLubyte *)&disp[3], cbuf[4]);
+		putdot((GLubyte *)&disp[4], cbuf[3]);
+		putdot((GLubyte *)&disp[5], cbuf[2]);
+		putdot((GLubyte *)&disp[6], cbuf[1]);
+		putdot((GLubyte *)&disp[7], cbuf[0]);
+}
+
+static inline void putdot8(GLubyte *addr, Uint32 c)
+{
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    addr[0] = 0xff;		/* A */
+    addr[1] = c & 0xff;	/* B */
+    addr[2] = (c >> 8) & 0xff;	/* R */
+    addr[3] = (c >> 16) & 0xff; /* G */
+#else
+//    addr[3] = 0xff;		/* A */
+    addr[3] = c & 0xff;	/* B */
+    addr[2] = (c >> 8) & 0xff;	/* R */
+    addr[0] = (c >> 16) & 0xff; /* G */
+#endif
+}
+
+static void PutWordGL8(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
+{
+		putdot((GLubyte *)&disp[0], cbuf[7]);
+		putdot((GLubyte *)&disp[1], cbuf[6]);
+		putdot((GLubyte *)&disp[2], cbuf[5]);
+		putdot((GLubyte *)&disp[3], cbuf[4]);
+		putdot((GLubyte *)&disp[4], cbuf[3]);
+		putdot((GLubyte *)&disp[5], cbuf[2]);
+		putdot((GLubyte *)&disp[6], cbuf[1]);
+		putdot((GLubyte *)&disp[7], cbuf[0]);
 }
 
 static void PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
@@ -261,6 +316,7 @@ static void SetVramReader_200l()
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader, 80, 200);
+		scalerGL->SetPutWord(PutWordGL8);
 	}
 }
 
@@ -295,6 +351,7 @@ static void SetVramReader_400l()
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_400l, 80, 400);
+		scalerGL->SetPutWord(PutWordGL);
 	}
 }
 
@@ -318,6 +375,7 @@ static void SetVramReader_4096(void)
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_4096, 40, 200);
+		scalerGL->SetPutWord(PutWordGL);
 	}
 }
 
@@ -341,6 +399,7 @@ static void SetVramReader_256k(void)
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_256k, 40, 200);
+		scalerGL->SetPutWord(PutWordGL);
 	}
 }
 
@@ -407,7 +466,7 @@ static void init_scaler(void)
 		scalerGL = new EmuGLUtils;
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
 		scalerGL->SetVramReader(VramReader, 80, 400);
-		scalerGL->SetPutWord(PutWord);
+		scalerGL->SetPutWord(PutWordGL8);
 	}
 }
 
@@ -1786,15 +1845,23 @@ void	OnWindowedScreen(void)
 static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 	SDL_Surface *p;
+#if 1
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
 	if(vramhdr != NULL) {
 		vramhdr->CalcPalette(i, r, g, b, a, p);
 	}
-	if(vramhdr_400l != NULL) {
-		vramhdr_400l->CalcPalette(i, r, g, b, a, p);
+//	if(vramhdr_400l != NULL) {
+//		vramhdr_400l->CalcPalette(i, r, g, b, a, p);
+//	}
+#else
+	if(vramhdr != NULL) {
+		vramhdr->CalcPalette(i, r, g, b, a);
 	}
-
+	if(vramhdr_400l != NULL) {
+		vramhdr_400l->CalcPalette(i, r, g, b, a);
+	}
+#endif
 }
 
 #ifdef __cplusplus
@@ -2251,7 +2318,7 @@ void Draw320(void)
 	Palet320();
 	SetVramReader_4096();
 	nDrawTop = 0;
-	nDrawBottom = 400;
+	nDrawBottom = 200;
 	nDrawLeft = 0;
 	nDrawRight = 320;
 	//SetDrawFlag(TRUE);
@@ -2299,12 +2366,12 @@ void Draw320(void)
 			}
 		} else { // ハードウェアウィンドウ開いてない
 			vramhdr_4096->SetVram(vram_dptr, 40, 200);
-			PutVramFunc(p, 0, 0, 320, 400, multi_page);
+			PutVramFunc(p, 0, 0, 320, 200, multi_page);
 		}
 	}
 
 	nDrawTop = 0;
-	nDrawBottom = 400;
+	nDrawBottom = 200;
 	nDrawLeft = 0;
 	nDrawRight = 320;
 	bPaletFlag = FALSE;
@@ -2344,7 +2411,7 @@ void Draw256k(void)
 		PutVramFunc = &Scaler_GL;
 	}
 	nDrawTop = 0;
-	nDrawBottom = 400;
+	nDrawBottom = 200;
 	nDrawLeft = 0;
 	nDrawRight = 320;
 	//    SetDrawFlag(TRUE);
@@ -2364,10 +2431,11 @@ void Draw256k(void)
 	/*
 	 * 26万色モードの時は、ハードウェアウィンドウを考慮しない。
 	 */
+	vramhdr_256k->SetVram(vram_dptr, 40, 200);
 	SetVramReader_256k();
-	PutVramFunc(p, 0, 0, 320, 400, multi_page);
+	PutVramFunc(p, 0, 0, 320, 200, multi_page);
 	nDrawTop = 0;
-	nDrawBottom = 400;
+	nDrawBottom = 200;
 	nDrawLeft = 0;
 	nDrawRight = 320;
 	bPaletFlag = FALSE;
