@@ -58,7 +58,7 @@ COMMONSRC = \
 #        sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c
 
 VIDEODRVSRC = \
-	api_draw.cpp 
+	api_draw.cpp api_scaler.cpp
 
 SNDDRVSRC = \
 	api_snd.cpp \
@@ -128,7 +128,7 @@ COMMONOBJ = \
 #        sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o
 
 VIDEODRVOBJ = \
-	api_draw.o
+	api_draw.o api_scaler.o
 
 
 

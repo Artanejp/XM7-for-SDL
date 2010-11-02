@@ -7,7 +7,7 @@
 
 #include "xm7.h"
 #include "sdl.h"
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "SDLKbdInterface.h"
 
 /*
@@ -201,7 +201,6 @@ void SDLKbdInterface::OnPress(void *eventh)
     //printf("Key SDL:%04x\n",code);
     for (i = 0; i < 255; i++) {
 	if (p[i].code == 0xffff)   break;
-//	if ((code == (SDLKey)p[i].code) && (modifier == (SDLMod)p[i].mod)){
 	if (code == (SDLKey)p[i].code){
 			PushKeyData(p[i].pushCode, 0x80); /* Make */
 			break;
@@ -222,7 +221,7 @@ void SDLKbdInterface::OnRelease(void *eventh)
 
     for (i = 0; i < 255; i++) {
     	if (p[i].code == 0xffff)   break;
-    	if ((code == p[i].code) && (modifier == p[i].mod)){
+    	if (code == p[i].code){
     			PushKeyData(p[i].pushCode, 0x00); /* Break */
     			break;
     		}

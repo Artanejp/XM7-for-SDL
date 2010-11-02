@@ -295,6 +295,9 @@ static BOOL SelectDraw2(void)
 #endif				/*  */
 		return TRUE;
 }
+#ifdef USE_GTK
+extern GtkWidget       *gtkDrawArea;
+#endif
 
 static void ResizeWindow(int w, int h)
 {
@@ -305,7 +308,7 @@ static void ResizeWindow(int w, int h)
             sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
                     gdk_x11_drawable_get_xid(gtkDrawArea->window));
             SDL_putenv(EnvMainWindow);
-            SDL_InitSubSystem(SDL_INIT_VIDEO);
+//            SDL_InitSubSystem(SDL_INIT_VIDEO);
 #endif
             InitGL(w, h);
 #ifdef USE_GTK
@@ -377,16 +380,13 @@ static int DrawTaskMain(void *arg)
 		return 0;
 }
 
-#ifdef USE_GTK
-extern GtkWidget       *gtkDrawArea;
-#endif
 static void initsub(void);
 static void detachsub(void);
 
 static int DrawThreadMain(void *p)
 {
 		initsub();
-		ResizeWindow(640,480);
+		ResizeWindow(640,400);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;
 		while(1) {
