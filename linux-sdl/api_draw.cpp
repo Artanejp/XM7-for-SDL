@@ -15,7 +15,6 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
-
 #endif
 
 #include <SDL/SDL.h>
@@ -32,23 +31,8 @@
 #include "display.h"
 #include "device.h"
 #include "sdl.h"
-#include "sdl_draw.h"
-
-#include "EmuGrphLib.h"
-#include "EmuGrph400l.h"
-#include "EmuGrph4096c.h"
-#include "EmuGrph256kc.h"
-
-#include "EmuGrphScale1x1.h"
-#include "EmuGrphScale1x2.h"
-#include "EmuGrphScale1x2i.h"
-#include "EmuGrphScale2x2.h"
-#include "EmuGrphScale2x2i.h"
-#include "EmuGrphScale2x4.h"
-#include "EmuGrphScale2x4i.h"
-#include "EmuGrphScale4x4.h"
-#include "EmuGrphScale4x4i.h"
-#include "EmuGLUtils.h"
+#include "api_draw.h"
+#include "api_scaler.h"
 
 
 /*
@@ -72,6 +56,8 @@ BOOL            bPaletFlag;		/* パレット変更フラグ */
 BOOL            bClearFlag;
 int             nOldVideoMode;
 WORD			nDrawFPS;   /* FPS値 20100913 */
+BOOL  bUseOpenGL; /* OPENGLを描画に使う */
+SDL_semaphore *DrawInitSem;
 
 /*
  *  スタティック ワーク
@@ -87,7 +73,6 @@ static BYTE     bNowBPP;	/* 現在のビット深度 */
 static BOOL   bOldFullScan;	/* クリアフラグ */
 static WORD    nOldDrawWidth;
 static WORD    nOldDrawHeight;
-static BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 
 
 #if XM7_VER >= 3
@@ -111,7 +96,6 @@ static WORD nDrawCount;
 static BOOL       SelectDraw2(void);
 static SDL_cond *DrawCond;
 static SDL_mutex *DrawMutex;
-static SDL_semaphore *InitSem;
 static int newDrawWidth;
 static int newDrawHeight;
 static BOOL newResize;
@@ -123,77 +107,49 @@ static BOOL newResize;
 extern "C"
 {
 #endif
-
-void    Palet320();
-void    Palet640(void);
-
-void    Draw640All(void);
-void    Draw400l(void);
-void    Draw320(void);
-void    Draw256k(void);
-void   SetDrawFlag(BOOL flag);
-void   InitGL(int w, int h);
-void   SetupGL(int w, int h);
-
 static  BOOL Select640(void);
 static  BOOL Select400l(void);
 static  BOOL Select320(void);
 static  BOOL Select256k(void);
 static void ChangeResolution(void) ;
-
 #ifdef __cplusplus
 }
 #endif
-void Flip(void);
-
-void           RenderSetOddLine(void);
-void           RenderFullScan(void);
 
 
 /*
  * ビデオドライバ関連
  */
-static EmuGrphLib *vramhdr;
-static EmuGrph400l *vramhdr_400l;
-static EmuGrph4096c *vramhdr_4096;
-static EmuGrph256kc *vramhdr_256k;
-
-static EmuGrphScale1x1 *scaler1x1;
-static EmuGrphScale1x2 *scaler1x2;
-static EmuGrphScale1x2i *scaler1x2i;
-static EmuGrphScale2x2 *scaler2x2;
-static EmuGrphScale2x2i *scaler2x2i;
-static EmuGrphScale2x4 *scaler2x4;
-static EmuGrphScale2x4i *scaler2x4i;
-static EmuGrphScale4x4 *scaler4x4;
-static EmuGrphScale4x4i *scaler4x4i;
-
-static EmuGLUtils *scalerGL;
+EmuGrphLib *vramhdr;
+EmuGrph400l *vramhdr_400l;
+EmuGrph4096c *vramhdr_4096;
+EmuGrph256kc *vramhdr_256k;
 
 
 
-static void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
+
+void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
 		if(vramhdr != NULL) {
 			vramhdr->GetVram(addr, cbuf, mpage);
 		}
 }
 
-static void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
+void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
 		if(vramhdr_400l != NULL) {
 			vramhdr_400l->GetVram(addr, cbuf, mpage);
 		}
 }
 
-static void VramReader_4096(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
+void VramReader_4096(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
 		if(vramhdr_4096 != NULL) {
 			vramhdr_4096->GetVram(addr, cbuf, mpage);
 		}
 }
 
-static void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
+void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
 		if(vramhdr_256k != NULL) {
 			vramhdr_256k->GetVram(addr, cbuf, mpage);
@@ -201,280 +157,8 @@ static void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 		}
 }
 
-static inline void putdot(GLubyte *addr, Uint32 c)
-{
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    addr[0] = 0xff;		/* A */
-    addr[1] = c & 0xff;	/* B */
-    addr[2] = (c >> 8) & 0xff;	/* R */
-    addr[3] = (c >> 16) & 0xff; /* G */
-#else
-    addr[3] = 0xff;		/* A */
-    addr[2] = c & 0xff;	/* B */
-    addr[1] = (c >> 8) & 0xff;	/* R */
-    addr[0] = (c >> 16) & 0xff; /* G */
-#endif
-}
-
-static void PutWordGL(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-		putdot((GLubyte *)&disp[0], cbuf[7]);
-		putdot((GLubyte *)&disp[1], cbuf[6]);
-		putdot((GLubyte *)&disp[2], cbuf[5]);
-		putdot((GLubyte *)&disp[3], cbuf[4]);
-		putdot((GLubyte *)&disp[4], cbuf[3]);
-		putdot((GLubyte *)&disp[5], cbuf[2]);
-		putdot((GLubyte *)&disp[6], cbuf[1]);
-		putdot((GLubyte *)&disp[7], cbuf[0]);
-}
-
-static inline void putdot8(GLubyte *addr, Uint32 c)
-{
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    addr[0] = 0xff;		/* A */
-    addr[1] = c & 0xff;	/* B */
-    addr[2] = (c >> 8) & 0xff;	/* R */
-    addr[3] = (c >> 16) & 0xff; /* G */
-#else
-//    addr[3] = 0xff;		/* A */
-    addr[3] = c & 0xff;	/* B */
-    addr[2] = (c >> 8) & 0xff;	/* R */
-    addr[0] = (c >> 16) & 0xff; /* G */
-#endif
-}
-
-static void PutWordGL8(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-		putdot((GLubyte *)&disp[0], cbuf[7]);
-		putdot((GLubyte *)&disp[1], cbuf[6]);
-		putdot((GLubyte *)&disp[2], cbuf[5]);
-		putdot((GLubyte *)&disp[3], cbuf[4]);
-		putdot((GLubyte *)&disp[4], cbuf[3]);
-		putdot((GLubyte *)&disp[5], cbuf[2]);
-		putdot((GLubyte *)&disp[6], cbuf[1]);
-		putdot((GLubyte *)&disp[7], cbuf[0]);
-}
-
-static void PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-	if(vramhdr != NULL) {
-		vramhdr->PutWord(disp, pixsize, cbuf);
-	}
-}
-
-static void PutWord2x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-	if(scaler2x4 != NULL) {
-		scaler2x4->PutWord2x(disp, pixsize, cbuf);
-	}
-}
-
-static void PutWord_4096(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-	if(vramhdr_4096 != NULL) {
-		vramhdr_4096->PutWord(disp, pixsize, cbuf);
-	}
-}
-
-static void PutWord2x2(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-		if(vramhdr_4096 != NULL) {
-			vramhdr_4096->PutWordx2(disp, pixsize, cbuf);
-		}
-}
-
-static void PutWord4x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-	if(scaler4x4 != NULL) {
-		scaler4x4->PutWord4x(disp, pixsize, cbuf);
-	}
-}
 
 
-static void SetVramReader_200l()
-{
-	if(scaler1x1 != NULL) {
-		scaler1x1->SetVramReader(VramReader, 80, 200);
-	}
-	if(scaler1x2 != NULL) {
-		scaler1x2->SetVramReader(VramReader, 80, 200);
-		scaler1x2->SetPutWord(PutWord);
-	}
-	if(scaler1x2i != NULL) {
-		scaler1x2i->SetVramReader(VramReader, 80, 200);
-		scaler1x2i->SetPutWord(PutWord);
-	}
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader, 80, 200);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader, 80, 200);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4 != NULL) {
-		scaler2x4->SetVramReader(VramReader, 80, 200);
-		scaler2x4->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4i != NULL) {
-		scaler2x4i->SetVramReader(VramReader, 80, 200);
-		scaler2x4i->SetPutWord(PutWord2x);
-	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader, 80, 200);
-		scalerGL->SetPutWord(PutWordGL8);
-	}
-}
-
-static void SetVramReader_400l()
-{
-	if(scaler1x1 != NULL) {
-		scaler1x1->SetVramReader(VramReader_400l, 80, 400);
-	}
-	if(scaler1x2 != NULL) {
-		scaler1x2->SetVramReader(VramReader_400l, 80, 400);
-		scaler1x2->SetPutWord(PutWord);
-	}
-	if(scaler1x2i != NULL) {
-		scaler1x2i->SetVramReader(VramReader_400l, 80, 400);
-		scaler1x2i->SetPutWord(PutWord);
-	}
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4 != NULL) {
-		scaler2x4->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x4->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4i != NULL) {
-		scaler2x4i->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x4i->SetPutWord(PutWord2x);
-	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_400l, 80, 400);
-		scalerGL->SetPutWord(PutWordGL);
-	}
-}
-
-static void SetVramReader_4096(void)
-{
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader_4096, 40, 200);
-		scaler2x2->SetPutWord(PutWord2x2);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader_4096, 40, 200);
-		scaler2x2i->SetPutWord(PutWord2x2);
-	}
-	if(scaler4x4 != NULL) {
-		scaler4x4->SetVramReader(VramReader_4096, 40, 200);
-		scaler4x4->SetPutWord(PutWord4x);
-	}
-	if(scaler4x4i != NULL) {
-		scaler4x4i->SetVramReader(VramReader_4096, 40, 200);
-		scaler4x4i->SetPutWord(PutWord4x);
-	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_4096, 40, 200);
-		scalerGL->SetPutWord(PutWordGL);
-	}
-}
-
-static void SetVramReader_256k(void)
-{
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader_256k, 40, 200);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader_256k, 40, 200);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-	if(scaler4x4 != NULL) {
-		scaler4x4->SetVramReader(VramReader_256k, 40, 200);
-		scaler4x4->SetPutWord(PutWord4x);
-	}
-	if(scaler4x4i != NULL) {
-		scaler4x4i->SetVramReader(VramReader_256k, 40, 200);
-		scaler4x4i->SetPutWord(PutWord4x);
-	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_256k, 40, 200);
-		scalerGL->SetPutWord(PutWordGL);
-	}
-}
-
-
-
-static void init_scaler(void)
-{
-	if(scaler1x1 == NULL) {
-		scaler1x1 = new EmuGrphScale1x1;
-		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
-		scaler1x1->SetVramReader(VramReader, 80, 400);
-		scaler1x1->SetPutWord(PutWord);
-	}
-	if(scaler1x2 == NULL) {
-		scaler1x2 = new EmuGrphScale1x2;
-		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
-		scaler1x2->SetVramReader(VramReader, 80, 400);
-		scaler1x2->SetPutWord(PutWord);
-	}
-	if(scaler1x2i == NULL) {
-		scaler1x2i = new EmuGrphScale1x2i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler1x2i->SetVramReader(VramReader, 80, 400);
-		scaler1x2i->SetPutWord(PutWord);
-	}
-	if(scaler2x2 == NULL) {
-		scaler2x2 = new EmuGrphScale2x2;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2->SetVramReader(VramReader, 80, 400);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i == NULL) {
-		scaler2x2i = new EmuGrphScale2x2i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2i->SetVramReader(VramReader, 80, 400);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-
-	if(scaler2x4 == NULL) {
-		scaler2x4 = new EmuGrphScale2x4;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x4->SetVramReader(VramReader, 80, 400);
-		scaler2x4->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4i == NULL) {
-		scaler2x4i = new EmuGrphScale2x4i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x4i->SetVramReader(VramReader, 80, 400);
-		scaler2x4i->SetPutWord(PutWord2x);
-	}
-	if(scaler4x4 == NULL) {
-		scaler4x4 = new EmuGrphScale4x4;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler4x4->SetVramReader(VramReader, 40, 200);
-		scaler4x4->SetPutWord(PutWord4x);
-	}
-	if(scaler4x4i == NULL) {
-		scaler4x4i = new EmuGrphScale4x4i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler4x4i->SetVramReader(VramReader, 40, 200);
-		scaler4x4i->SetPutWord(PutWord4x);
-	}
-	if(scalerGL == NULL) {
-		scalerGL = new EmuGLUtils;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scalerGL->SetVramReader(VramReader, 80, 400);
-		scalerGL->SetPutWord(PutWordGL8);
-	}
-}
 
 /*
  *  セレクトチェック
@@ -661,7 +345,7 @@ static int DrawTaskMain(void *arg)
 		/*
 		 *    いずれかを使って描画
 		 */
-		SDL_SemWait(InitSem);
+		SDL_SemWait(DrawInitSem);
 		switch (bMode) {
 		case SCR_400LINE:
 			Draw400l();
@@ -676,7 +360,7 @@ static int DrawTaskMain(void *arg)
 			Draw640All();
 			break;
 		}
-		SDL_SemPost(InitSem);
+		SDL_SemPost(DrawInitSem);
 #else				/*  */
 		/*
 		 * どちらかを使って描画
@@ -745,24 +429,6 @@ static int DrawThreadMain(void *p)
 }
 
 
-void Flip(void)
-{
-	SDL_Surface *p;
-	p = SDL_GetVideoSurface();
-	if(p == NULL) return;
-	if(InitSem == NULL) return;
-	SDL_SemWait(InitSem);
-	if(!bUseOpenGL) {
-		SDL_Flip(p);
-	} else {
-		if(scalerGL != NULL) {
-			scalerGL->Flip();
-		} else {
-			SDL_Flip(p);
-		}
-	}
-	SDL_SemPost(InitSem);
-}
 
 /*
  *  BITBLT
@@ -808,60 +474,8 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 
 static void detachsub(void)
 {
-	if(scaler1x1 != NULL) {
-		delete scaler1x1;
-		scaler1x1 = NULL;
-	}
-	if(scaler1x2 != NULL) {
-		delete scaler1x2;
-		scaler1x2 = NULL;
-	}
-	if(scaler1x2i != NULL) {
-		delete scaler1x2i;
-		scaler1x2i = NULL;
-	}
-	if(scaler2x2 != NULL) {
-		delete scaler2x2;
-		scaler2x2 = NULL;
-	}
-	if(scaler2x2i != NULL) {
-		delete scaler2x2i;
-		scaler2x2i = NULL;
-	}
-	if(scaler2x4 != NULL) {
-		delete scaler2x4;
-		scaler2x4 = NULL;
-	}
-	if(scaler2x4i != NULL) {
-		delete scaler2x4i;
-		scaler2x4i = NULL;
-	}
 
-	if(scaler1x1 != NULL) {
-		delete scaler1x1;
-		scaler1x1 = NULL;
-	}
-	if(scaler2x2 != NULL) {
-		delete scaler2x2;
-		scaler2x2 = NULL;
-	}
-	if(scaler2x2i != NULL) {
-		delete scaler2x2i;
-		scaler2x2i = NULL;
-	}
-	if(scaler4x4 != NULL) {
-		delete scaler4x4;
-		scaler4x4 = NULL;
-	}
-	if(scaler4x4i != NULL) {
-		delete scaler4x4i;
-		scaler4x4i = NULL;
-	}
-
-	if(scalerGL != NULL) {
-		delete scalerGL;
-		scalerGL = NULL;
-	}
+    detachsub_scaler();
 	// 最後にVRAMハンドラ
 	if(vramhdr != NULL) {
 		delete vramhdr;
@@ -886,18 +500,9 @@ static void detachsub(void)
 
 static void initsub()
 {
-	//	b256kFlag = FALSE;
-	scaler1x1 = NULL;
-	scaler1x2 = NULL;
-	scaler1x2i = NULL;
-	scaler2x2 = NULL;
-	scaler2x2i = NULL;
-	scaler2x4 = NULL;
-	scaler2x4i = NULL;
-	scaler4x4 = NULL;
-	scaler4x4i = NULL;
-	scalerGL = NULL;
 
+	initsub_scaler();
+	//	b256kFlag = FALSE;
 	vramhdr = new EmuGrphLib();
 	vramhdr_400l = new EmuGrph400l();
 	vramhdr_4096 = new EmuGrph4096c;
@@ -937,76 +542,6 @@ void ResizeGL(int w, int h)
 /*
  *  初期化
  */
-void SetupGL(int w, int h)
-{
-	int rgb_size[3];
-#ifdef USE_OPENGL
-	SDL_SemWait(InitSem);
-//	SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE);
-	scalerGL->InitGL(w, h);
-	SDL_SemPost(InitSem);
-#endif
-}
-
-
-void InitGL(int w, int h)
-{
-#if 0
-        int rgb_size[4];
-        int flags;
-        BOOL accel = TRUE;
-        BOOL sync = TRUE;
-
-    if(SDL_WasInit(SDL_INIT_VIDEO) == 0) return;
-    //if(!bUseOpenGL) return;
-    SDL_SemWait(InitSem);
-    rgb_size[0] = 8;
-    rgb_size[1] = 8;
-    rgb_size[2] = 8;
-	flags = SDL_OPENGL | SDL_RESIZABLE;
-
-    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
-    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
-    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
-    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
-    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-//     if ( fsaa ) {
-//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
-//      }
-     if ( accel ) {
-             SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
-     }
-     if ( sync ) {
-             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
-     } else {
-             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
-     }
-// 	if(SDL_SetVideoMode(w, h, 32, flags) == 0)
-// 	{
-// 		return ;
-// 	}
-
-     printf("Screen BPP: %d\n", SDL_GetVideoSurface()->format->BitsPerPixel);
-     printf("\n");
-     printf( "Vendor     : %s\n", glGetString( GL_VENDOR ) );
-     printf( "Renderer   : %s\n", glGetString( GL_RENDERER ) );
-     printf( "Version    : %s\n", glGetString( GL_VERSION ) );
-     printf( "Extensions : %s\n", glGetString( GL_EXTENSIONS ) );
-     printf("\n");
-   if(scalerGL) {
-    	scalerGL->InitGL(w, h);
-    }
-    SDL_SemPost(InitSem);
-
-#else
-       SDL_SemWait(InitSem);
-   if(scalerGL) {
-    	scalerGL->InitGL(w, h);
-    }
-    SDL_SemPost(InitSem);
-#endif
-}
 
 static void ChangeResolution(void)
 {
@@ -1025,9 +560,9 @@ static void ChangeResolution(void)
          * KILL Thread
          */
 //        detachsub();
-        SDL_SemWait(InitSem);
+        SDL_SemWait(DrawInitSem);
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
-        SDL_SemPost(InitSem);
+        SDL_SemPost(DrawInitSem);
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
 //        initsub();
@@ -1102,9 +637,9 @@ void	InitDraw(void)
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
 			SDL_mutexV(DrawMutex);
 		}
-		if(!InitSem) {
-			InitSem = SDL_CreateSemaphore(1);
-			SDL_SemPost(InitSem);
+		if(!DrawInitSem) {
+			DrawInitSem = SDL_CreateSemaphore(1);
+			SDL_SemPost(DrawInitSem);
 		}
 
 
@@ -1132,8 +667,8 @@ void	CleanDraw(void)
 			SDL_DestroyCond(DrawCond);
 			DrawCond = NULL;
 		}
-		if(InitSem != NULL) {
-			SDL_DestroySemaphore(InitSem);
+		if(DrawInitSem != NULL) {
+			SDL_DestroySemaphore(DrawInitSem);
 		}
 
 		if(DrawMutex != NULL) {
@@ -1148,8 +683,7 @@ void	CleanDraw(void)
 	/*
 	 *  全ての再描画フラグを設定
 	 */
-void
-SetDrawFlag(BOOL flag)
+void SetDrawFlag(BOOL flag)
 {
 		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
 }
@@ -1500,8 +1034,7 @@ return;
 /*
  *  描画(通常)
  */
-void
-OnDraw(void)
+void OnDraw(void)
 {
 #if 0
 	if(nDrawCount > 0) {
@@ -2011,66 +1544,6 @@ void Palet320(void)
  * 描画処理
  */
 
-static void Scaler_1x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler1x2->PutVram(p, x, y, w, h, mpage);
-}
-
-static void Scaler_1x2i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler1x2i->PutVram(p, x, y, w, h, mpage);
-}
-
-static void Scaler_2x4(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler2x4->PutVram(p, x, y, w, h, mpage);
-}
-static void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler2x4i->PutVram(p, x, y, w, h, mpage);
-}
-
-static void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scalerGL->SetViewPort(0,0,p->w, p->h);
-//	scalerGL->SetViewPort();
-        if(!bFullScan) {
-	   scalerGL->SetScanLine(TRUE);
-	} else {
-	   scalerGL->SetScanLine(FALSE);
-	}
-	scalerGL->PutVram(p, x, y, w, h, mpage);
-}
-
-
-static void Scaler_1x1(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler1x1 == NULL) return;
-	scaler1x1->PutVram(p, x, y, w, h, multip );
-}
-
-static void Scaler_2x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler2x2 == NULL) return;
-	scaler2x2->PutVram(p, x, y, w, h, multip );
-}
-
-static void Scaler_2x2i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler2x2i == NULL) return;
-	scaler2x2i->PutVram(p, x, y, w, h, multip );
-}
-static void Scaler_4x4(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler4x4 == NULL) return;
-	scaler4x4->PutVram(p, x, y, w, h, multip );
-}
-
-static void Scaler_4x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler4x4 == NULL) return;
-	scaler4x4i->PutVram(p, x, y, w, h, multip );
-}
 
 #ifdef __cplusplus
 extern "C"

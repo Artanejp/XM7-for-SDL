@@ -19,8 +19,9 @@
 #include "sdl.h"
 #include "sdl_bar.h"
 #include "sdl_sch.h"
-#include "sdl_draw.h"
-#include "SDL/SDL_ttf.h"
+#include "api_draw.h"
+
+#include <SDL_ttf.h>
 #include <iconv.h>
 
 #define COL_BLACK       0xff000000

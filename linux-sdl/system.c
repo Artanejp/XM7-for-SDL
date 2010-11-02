@@ -30,8 +30,8 @@
 /*
  * XM7/SDL依存 
  */
-#include <sdl.h>
-#include <sdl_draw.h>
+#include "sdl.h"
+#include "api_draw.h"
 
 #ifdef MIDI
 #include "midi.h"

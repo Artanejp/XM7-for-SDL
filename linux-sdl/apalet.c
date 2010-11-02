@@ -18,8 +18,7 @@
 /*
  * XM7/SDL依存 
  */
-#include <sdl.h>
-#include <sdl_draw.h>
+#include "sdl.h"
 
 /*
  *      グローバル ワーク

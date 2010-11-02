@@ -34,7 +34,7 @@
 #include "api_kbd.h"
 #include "api_js.h"
 
-#include "sdl_draw.h"
+//#include "api_draw.h"
 
 /*
  *  設定データ定義 →sdl_cfg.h に。

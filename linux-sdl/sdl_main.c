@@ -20,7 +20,7 @@
 #include "keyboard.h"
 #include "sdl.h"
 #include "sdl_bar.h"
-#include "sdl_draw.h"
+#include "api_draw.h"
 #include "api_kbd.h"
 #include "api_js.h"
 #include "api_mouse.h"
