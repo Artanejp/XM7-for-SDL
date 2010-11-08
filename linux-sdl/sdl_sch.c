@@ -22,10 +22,10 @@
 #include "api_js.h"
 #include "api_draw.h"
     
-    /*
-     *  グローバル ワーク 
-     */ 
-    DWORD dwExecTotal;		/* 実行トータル時間(us) */
+/*
+ *  グローバル ワーク
+ */
+DWORD dwExecTotal;		/* 実行トータル時間(us) */
 DWORD dwDrawTotal;		/* 描画トータル回数 */
 DWORD dwSoundTotal;		/* サウンドトータル時間 */
 DWORD uTimerResolution;	/* タイマー精度 */
@@ -129,8 +129,7 @@ vsync_notify(void)
      *  1ms実行 
      */ 
 extern void ResizeGL(int w, int h);
-void
-ExecSch(void) 
+void ExecSch(void)
 {
     DWORD dwCount;
     DWORD dwExec;

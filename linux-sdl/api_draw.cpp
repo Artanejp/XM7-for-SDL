@@ -94,8 +94,8 @@ static BOOL DrawWaitFlag;
 static SDL_Thread *DrawThread;
 static WORD nDrawCount;
 static BOOL       SelectDraw2(void);
-static SDL_cond *DrawCond;
-static SDL_mutex *DrawMutex;
+SDL_cond *DrawCond;
+SDL_mutex *DrawMutex;
 static int newDrawWidth;
 static int newDrawHeight;
 static BOOL newResize;
@@ -326,11 +326,6 @@ static int DrawTaskMain(void *arg)
 		SDL_Surface *p;
 
 
-//		p = SDL_GetVideoSurface();
-//		if(p == NULL) return FALSE;
-
-//		displayArea = p;
-//		realDrawArea = p;
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
 			nDrawHeight = newDrawHeight;
@@ -387,6 +382,9 @@ static int DrawThreadMain(void *p)
 {
 		initsub();
 		ResizeWindow(640,400);
+#ifdef USE_AGAR
+
+#endif
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;
 		while(1) {
@@ -408,11 +406,14 @@ static int DrawThreadMain(void *p)
 				detachsub();
 				return 0; /* シャットダウン期間 */
 			}
-			//		if(DrawWaitFlag) continue; /* 非表示期間中 */
-			//		if(DrawINGFlag) continue; /* 別スレッドが表示動作してる */
 #ifndef USE_OPENGL
 			DrawStatus();
 #endif
+
+#ifdef USE_AGAR
+			AGDrawTaskEvent();
+#endif
+
 			if(nDrawCount > 0) {
 				nDrawCount --;
 				continue;
@@ -421,7 +422,11 @@ static int DrawThreadMain(void *p)
 			}
 			DrawWaitFlag = TRUE;
 			DrawINGFlag = TRUE;
+#ifdef USE_AGAR
+			AGDrawTaskMain();
+#else
 			DrawTaskMain(NULL);
+#endif
 			DrawINGFlag = FALSE;
 			DrawWaitFlag = FALSE;
 			//while(DrawWaitFlag) SDL_Delay(1); /* 非表示期間 */
@@ -543,7 +548,7 @@ void ResizeGL(int w, int h)
  *  初期化
  */
 
-static void ChangeResolution(void)
+void ChangeResolution(void)
 {
         SDL_Surface *p;
         int rgb_size[4];
