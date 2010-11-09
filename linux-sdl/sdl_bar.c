@@ -16,7 +16,13 @@
 #include "apalet.h"
 #include "subctrl.h"
 #include "fdc.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
+
 #include "sdl_bar.h"
 #include "sdl_sch.h"
 #include "api_draw.h"

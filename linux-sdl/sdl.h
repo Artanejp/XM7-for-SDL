@@ -4,7 +4,6 @@
  * Takegami Copyright (C) 2004 GIMONS  [ XWIN ] 
  */  
     
-#ifdef _XWIN
     
 #ifndef _sdl_h_
 #define _sdl_h_
@@ -24,7 +23,7 @@
 #endif /* USE_GTK */				/*  */
     
 #ifndef _SDL_H
-#include <SDL/SDL.h>
+#include <SDL.h>
 #endif				/*  */
     
 #ifdef __cplusplus
@@ -34,8 +33,11 @@ extern          "C" {
 /*
  *  定数、型定義 
  */ 
-        typedef unsigned int UINT;
-                 
+typedef unsigned int UINT;
+#ifndef BOOL
+typedef int BOOL;
+#endif
+
 /*
  *  主要エントリ 
  */            
@@ -99,4 +101,3 @@ extern          "C" {
 #endif	/*  */
                
 #endif	/* _sdl_h_ */
-#endif	/* _XWIN */

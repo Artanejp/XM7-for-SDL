@@ -5,27 +5,28 @@
  *      Author: whatisthis
  */
 
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include <SDL_opengl.h>
 #include <libintl.h>
 #include <agar/core.h>
+#include <agar/core/types.h>
 #include <agar/gui.h>
+#include <agar/gui/opengl.h>
 
 #include "xm7.h"
-#include "mouse.h"
-#include "tapelp.h"
-#include "keyboard.h"
-#include "display.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#include "agar_cfg.h"
+#else
 #include "sdl.h"
+#include "sdl_cfg.h"
+#endif
+
 #include "sdl_bar.h"
 #include "api_kbd.h"
 #include "sdl_sch.h"
 #include "sdl_snd.h"
-#include "agar_cfg.h"
 #include "sdl_inifile.h"
 #include "api_draw.h"
-#include "sdl_cfg.h"
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 
@@ -39,7 +40,7 @@ void ProcessKeyDown(AG_Event *event)
 	int sym = AG_INT(2);
 	int mod = AG_INT(3);
 	Uint32  unicode = (Uint32)AG_ULONG(4);
-	OnKeyPress(sym, mod, unicode);
+	OnKeyPressAG(sym, mod, unicode);
 }
 
 void ProcessKeyUp(AG_Event *event)
@@ -48,7 +49,7 @@ void ProcessKeyUp(AG_Event *event)
 	int sym = AG_INT(2);
 	int mod = AG_INT(3);
 	Uint32  unicode = (Uint32)AG_ULONG(4);
-	OnKeyRelease(sym, mod, unicode);
+	OnKeyReleaseAG(sym, mod, unicode);
 
 }
 
@@ -108,8 +109,8 @@ void Create_AGMainBar(void)
 {
 	ToolBarMenu = AG_MenuNewGlobal(AG_MENU_HFILL);
 	Menu_File = AG_MenuNode(ToolBarMenu->root, "File", NULL);
-	Menu_Drive1 = AG_MenuAction(ToolBarMenu->root, "Drive 1", NULL, OnDiskPopup, 1);
-	Menu_Drive0 = AG_MenuNode(ToolBarMenu->root, "Drive 0", NULL, OnDiskPopup, 0);
+//	Menu_Drive1 = AG_MenuAction(ToolBarMenu->root, "Drive 1", NULL, OnDiskPopup, 1);
+//	Menu_Drive0 = AG_MenuNode(ToolBarMenu->root, "Drive 0", NULL, OnDiskPopup, 0);
 	Menu_Tape = AG_MenuNode(ToolBarMenu->root, "Tape", NULL);
 	Menu_Debug = AG_MenuNode(ToolBarMenu->root, "Debug", NULL);
 	Menu_Tools = AG_MenuNode(ToolBarMenu->root, "Tools", NULL);
@@ -229,6 +230,7 @@ void OpenErrorMessageDialog(char *strMessage)
 /*
  *  OKボタンイベント
   */
+#ifdef USE_GTK
 static void     FASTCALL
 OnDiskImageDialogOk(GtkWidget * widget, gpointer user_data)
 {
@@ -508,7 +510,7 @@ DiskTitleDialog FASTCALL OpenDiskTitleDialog(void)
 #endif
     return dlg;
 }
-
+#endif
 
 void MainLoop(int argc, char *argv[])
 {
@@ -529,21 +531,21 @@ void MainLoop(int argc, char *argv[])
 		 * コマンドライン処理
 		 */
 		if (argc > 1) {
-			OnCmdLine(argv[1]);
+//			OnCmdLine(argv[1]);
 		}
 		break;
 		/*
 		 * VM初期化エラー
 		 */
 	case 1:
-		OpenErrorMessageDialog("XM7", "仮想マシンを初期化できません");
+//		OpenErrorMessageDialog("XM7", "仮想マシンを初期化できません");
 		break;
 
 		/*
 		 * コンポーネント初期化エラー
 		 */
 	case 2:
-		OpenErrorMessageDialog("XM7","コンポーネントを初期化できません");
+//		OpenErrorMessageDialog("XM7","コンポーネントを初期化できません");
 		break;
 	}
 //	AG_AtExitFunc(SDL_Quit);

@@ -8,7 +8,7 @@
 #ifndef SDLJOYINTERFACE_H_
 #define SDLJOYINTERFACE_H_
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "xm7.h"
 
 #define MAX_SDL_JOY 2

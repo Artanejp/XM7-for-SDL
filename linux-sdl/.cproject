@@ -27,14 +27,15 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.527331940" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.other.other.658519306" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value=" -I.. -pthread -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12  -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/include/SDL" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.377304442" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="_XWIN"/>
 									<listOptionValue builtIn="false" value="USE_OPENGL"/>
+									<listOptionValue builtIn="false" value="_XWIN"/>
+									<listOptionValue builtIn="false" value="USE_AGAR"/>
 									<listOptionValue builtIn="false" value="FDDSND"/>
-									<listOptionValue builtIn="false" value="USE_GTK"/>
 									<listOptionValue builtIn="false" value="XM7_VER=3"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1777167180" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/agar"/>
 									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
 									<listOptionValue builtIn="false" value="/usr/include/gtk-2.0"/>
@@ -48,13 +49,14 @@
 								<option id="gnu.c.compiler.option.misc.other.1521899367" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-export-dynamic -I.. -pthread -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12  -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/include/SDL" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1767584346" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_XWIN"/>
+									<listOptionValue builtIn="false" value="USE_AGAR"/>
 									<listOptionValue builtIn="false" value="USE_OPENGL"/>
 									<listOptionValue builtIn="false" value="FDDSND"/>
-									<listOptionValue builtIn="false" value="USE_GTK"/>
 									<listOptionValue builtIn="false" value="XM7_VER=3"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1470335925" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/agar"/>
 									<listOptionValue builtIn="false" value="/usr/include/gtk-2.0"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>

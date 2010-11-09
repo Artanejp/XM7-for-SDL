@@ -28,8 +28,6 @@ private:
 	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
-
-
 };
 
 #endif /* SDLKBDINTERFACE_H_ */

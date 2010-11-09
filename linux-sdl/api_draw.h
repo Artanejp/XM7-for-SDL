@@ -28,7 +28,12 @@
 #include "display.h"
 #include "device.h"
 #include "xm7.h"
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
+
 
 
 #ifdef __cplusplus
@@ -66,7 +71,10 @@ extern int             nOldVideoMode;
 extern WORD			nDrawFPS;   /* FPS値 20100913 */
 extern BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 
-
+extern int newDrawWidth;
+extern int newDrawHeight;
+extern BOOL newResize;
+extern BYTE bMode;
 
 /*
  * 初期化・終了
@@ -93,6 +101,8 @@ extern gint OnPaint(GtkWidget * widget, GdkEventExpose * event);
 #else
 extern int OnPaint(void);
 #endif
+
+
 
 /*
  * XM7 NOTIFY APIs
@@ -126,6 +136,7 @@ extern void Palet640(void);
 extern void Palet320(void);
 extern BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 		int nSrcLeft, int nSrcTop);
+extern BOOL SelectDraw2(void);
 
 /*
  * ウインドウリサイズ
@@ -134,5 +145,11 @@ extern void ResizeGL(int w, int h);
 
 #ifdef __cplusplus
 }
+#endif
+#ifdef USE_AGAR
+extern void ResizeWindow_Agar(int w, int h);
+extern void AGDrawTaskEvent(void);
+extern void AGDrawTaskMain(void);
+
 #endif
 #endif /* API_DRAW_H_ */

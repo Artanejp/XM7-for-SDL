@@ -25,14 +25,20 @@
 #include "tools.h"
 #include "mouse.h"
 #include "rtc.h"
-#include "sdl.h"
-#include "sdl_cmd.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
 #include "agar_cfg.h"
-#include "sdl_gtkdlg.h"
+
+#else
+#include "sdl.h"
+#endif
+#include "sdl_cmd.h"
 #include "sdl_prop.h"
 #include "sdl_snd.h"
 #include "sdl_sch.h"
 #include "api_kbd.h"
+
 #include "agar_toolbox.h"
 
 static Disk   disk[2][FDC_MEDIAS];
@@ -41,10 +47,10 @@ static char    DiskTitle[16 + 1];
 static BOOL    DiskMedia;
 static BOOL    DiskFormat;
 
-static guint   hidWavCapture;
+//static guint   hidWavCapture;
 
 #ifdef MOUSE
-static guint   hidMouseCapture;
+//static guint   hidMouseCapture;
 #endif				/*  */
 
 
@@ -138,9 +144,9 @@ static void OnLoadStatusSub(char *filename)
 
 static void OnLoadStatusSub(AG_Event *event)
 {
-    AG_FileDlg *dlg = AG_SELF();
+    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
-    AG_FileType *ft = AG_PTR(2);
+    AG_FileType *ft = (AG_FileType *)AG_PTR(2);
     OnLoadStatusSub(sFilename);
 }
 
@@ -150,7 +156,7 @@ void OnLoadStatus(void)
     AG_FileDlg *dlg;
     dlgWin = AG_WindowNew(0);
     if(dlgWin == NULL) return;
-    dlg = AG_FileDlgNew(win, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSub, NULL);
@@ -176,7 +182,7 @@ static void OnSaveStatusSub(char *filename)
 	/*
 	 * ファイル選択
 	 */
-¥
+
     /*
      * ステートセーブ
      */
@@ -199,14 +205,14 @@ static void OnSaveStatusSub(char *filename)
 
 static void OnSaveStatusSub(AG_Event *event)
 {
-    AG_FileDlg *dlg = AG_SELF();
+    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
     AG_FileType *ft = AG_PTR(2);
     OnSaveStatusSub(sFilename);
 }
 
 
-void OnSaveAs(GtkWidget * widget, gpointer data)
+void OnSaveAs(void)
 {
 	/*
 	 * ファイル選択
@@ -224,7 +230,7 @@ void OnSaveAs(GtkWidget * widget, gpointer data)
 void OnQuickSave(char *s)
 {
 	if(strlen(s) <= 0){
-		OnSaveStatus();
+		OnSaveAs();
 		return;
 	}
 	OnSaveStatusSub(s);
@@ -239,40 +245,40 @@ void OnQuickSave(char *s)
 
 static void OnOpenDisk(AG_Event *event)
 {
-	AG_MenuItem self = AG_SELF();
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
 static void OnOpenDiskBoth(AG_Event *event)
 {
-	AG_MenuItem self = AG_SELF();
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
 static void OnEjectDisk(AG_Event *event)
 {
-	AG_MenuItem self = AG_SELF();
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
 static void OnEjectDiskTemp(AG_Event *event)
 {
-	AG_MenuItem self = AG_SELF();
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
 
 static void OnWriteProtectDisk(AG_Event *event)
 {
-	AG_MenuItem self = AG_SELF();
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
 static void OnSelectDiskMedia(AG_Event *event)
 {
-	AG_MenuItem self = AG_SELF();
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
-	BOOL selected = AG_BOOL(2);
+	BOOL selected = (BOOL)AG_BOOL(2);
 }
 
 
@@ -282,7 +288,7 @@ static void OnSelectDiskMedia(AG_Event *event)
 
 void OnDiskPopup(AG_Event *event)
 {
-	AG_MenuItem     self = AG_SELF();
+	AG_MenuItem     *self = (AG_MenuItem *)AG_SELF();
     int            Drive = AG_INT(1);
     int            i;
     iconv_t       hd;
@@ -339,7 +345,7 @@ void OnDiskPopup(AG_Event *event)
 	 */
 	for (i = 0; i < fdc_medias[Drive]; i++) {
 		strcpy(medianame, fdc_name[Drive][i]);
-        pIn = string;
+        pIn = medianame;
         pOut = utf8;
         in = strlen(pIn);
         out = 256;
@@ -526,6 +532,7 @@ void CreateFileMenu(void)
  */
 static void CreateDiskMenu(AG_MenuItem *self, int Drive)
 {
+	int i;
     if(midrive_open[Drive] != NULL) AG_MenuItemFree(midrive_open[Drive]);
     if(midrive_openboth[Drive] != NULL) AG_MenuItemFree(midrive_openboth[Drive]);
     if(midrive_eject[Drive] != NULL) AG_MenuItemFree(midrive_eject[Drive]);
@@ -616,8 +623,7 @@ void CreateDiskMenu_1 (void)
     /*
      *  テープ(A)メニュー更新
      */
-void
-OnTapePopup(GtkWidget * widget, gpointer data)
+void OnTapePopup(void)
 {
 #if 0
 	/*

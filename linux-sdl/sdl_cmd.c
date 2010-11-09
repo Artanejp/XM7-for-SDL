@@ -15,11 +15,19 @@
 #include "tools.h"
 #include "mouse.h"
 #include "rtc.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#include "agar_cfg.h"
+
+#else
 #include "sdl.h"
-#include "sdl_cmd.h"
 #include "sdl_cfg.h"
-#include "sdl_gtkdlg.h"
 #include "sdl_prop.h"
+#endif
+
+#include "sdl_cmd.h"
+#include "sdl_gtkdlg.h"
 #include "sdl_snd.h"
 #include "sdl_sch.h"
 #include "api_kbd.h"

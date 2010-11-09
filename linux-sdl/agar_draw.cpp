@@ -5,78 +5,39 @@
  *      Author: whatisthis
  */
 
-#include <SDL.h>
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
-
+#include "api_draw.h"
+#include "api_scaler.h"
 
 extern AG_Window *MainWindow;
+extern void EventSDL(void);
 
 
-void EventSDL(void)
-{
-	SDL_Surface *p;
-	SDL_Event eventQueue;
-
-	/*
-	 * JoyStickなどはSDLが管理する
-	 */
-
-	if(SDL_WasInit(SDL_INIT_VIDEO) != 0) {
-		p = SDL_GetVideoSurface();
-		if(p == NULL) return;
-		while (SDL_PollEvent(&eventQueue))
-		{
-			switch (eventQueue.type)
-			{
-			case SDL_JOYAXISMOTION:	/* JS動く */
-				OnMoveJoy(&eventQueue);
-				break;
-			case SDL_JOYBUTTONDOWN:
-				OnPressJoy(&eventQueue);
-				break;
-			case SDL_JOYBUTTONUP:
-				OnReleaseJoy(&eventQueue);
-				break;
-			case SDL_SYSWMEVENT:
-				printf("NOTICE: SYSWM\n");
-				break;
-			default:
-				break;
-			}
-		}
-	}
-}
-
-
-static void InitGUI(void)
+static void InitGUI(int w, int h)
 {
 	Uint flags = AG_VIDEO_DOUBLEBUF | AG_VIDEO_HWSURFACE | AG_VIDEO_ASYNCBLIT |
 			AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_RESIZABLE;
 	AG_InitVideo(w, h, 32, flags);
 	MainWindow = AG_WindowNew(0);
 }
-
-
-
-
-void ResizeWindow(int w, int h)
+void ResizeWindow_Agar(int w, int h)
 {
-	AG_ResizeDisplay((Uint)w, (Uint)h);
+	AG_ResizeDisplay(w, h);
 }
 static void ProcessGUI(void)
 {
-	AG_BeginRendering();
-	AG_WindowDraw();
-	AG_EndRendering();
+	AG_BeginRendering(NULL);
+	AG_WindowDraw(MainWindow);
+	AG_EndRendering(NULL);
 
 }
 
 void AGDrawTaskEvent(void)
 {
 	EventSDL();
-	EventGUI();
+//	EventGUI();
 	ProcessGUI();
 }
 
@@ -86,10 +47,9 @@ void AGDrawTaskMain(void)
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
 			nDrawHeight = newDrawHeight;
-			ResizeWindow(nDrawWidth, nDrawHeight);
+			ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 			newResize = FALSE;
 		}
-		ChangeResolution();
 		SelectDraw2();
 
 #if XM7_VER >= 3

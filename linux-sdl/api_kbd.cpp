@@ -11,8 +11,8 @@ extern "C" {
 //#include <gdk/gdkx.h>
 //#include <gdk/gdkkeysyms.h>
 #include <memory.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
+#include <SDL.h>
+#include <SDL_syswm.h>
 
 #include "xm7.h"
 #include "mainetc.h"
@@ -20,12 +20,20 @@ extern "C" {
 #include "device.h"
 #include "mouse.h"
 #include "event.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "KbdInterface.h"
 #include "SDLKbdInterface.h"
 #include "GtkKbdInterface.h"
+#ifdef USE_AGAR
+#include "AgarKbdInterface.h"
+#endif
 //#include "gtk_propkeyboard.h"
 
 BOOL bKbdReal;			/* 疑似リアルタイムキースキャン
@@ -60,7 +68,12 @@ static BOOL bCursorGrabbed;
  * ドライバクラス
  */
 static SDLKbdInterface *SDLDrv;
+#ifdef USE_GTK
 static GtkKbdInterface *GTKDrv;
+#endif
+#ifdef USE_AGAR
+static AgarKbdInterface *AGARDrv;
+#endif
 
 
 
@@ -639,6 +652,7 @@ GetKbd(BYTE * pBuf)
  */
 /**[ アクションイベント ]***********************************************/
 
+#ifdef USE_GTK
     /*
      *  キープレスアクション
      */
@@ -661,6 +675,7 @@ gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
 	GTKDrv->OnRelease((void *)event);
     return TRUE;
 }
+#endif
 
 /*
  * SDL
@@ -679,4 +694,22 @@ BOOL OnKeyRelease(SDL_Event *event)
 	return TRUE;
 }
 
+#ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#ifdef USE_AGAR
+BOOL OnKeyPressAG(int sym, int mod, Uint32 unicode)
+{
+	if(AGARDrv == NULL) return FALSE;
+	AGARDrv->OnPress(sym, mod, unicode);
+	return TRUE;
+}
+
+BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode)
+{
+	if(AGARDrv == NULL) return FALSE;
+	AGARDrv->OnRelease(sym, mod, unicode);
+	return TRUE;
+}
+#endif

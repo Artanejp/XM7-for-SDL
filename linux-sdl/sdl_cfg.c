@@ -21,9 +21,16 @@
 #include "mmr.h"
 #include "mouse.h"
 #include "aluline.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#include "agar_cfg.h"
+#else
 #include "sdl.h"
-#include "sdl_inifile.h"
 #include "sdl_cfg.h"
+#endif
+
+#include "sdl_inifile.h"
 #include "sdl_prop.h"
 #include "sdl_sch.h"
 #include "sdl_snd.h"

@@ -8,7 +8,6 @@
  *  2010.10.28 sdl_draw.c から移動
  */
 
-#ifdef _XWIN
 
 #ifdef USE_GTK
 #include <gtk/gtk.h>
@@ -17,12 +16,18 @@
 #include <gdk/gdkkeysyms.h>
 #endif
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
-
+#include <SDL.h>
+#ifdef USE_AGAR
+#include <agar/core.h>
+#include <agar/core/types.h>
+#include <agar/gui.h>
+#else
+#include <SDL_syswm.h>
 #ifdef USE_OPENGL
-#include <SDL/SDL_opengl.h>
+#include <SDL_opengl.h>
 #endif
+#endif
+
 #include "xm7.h"
 #include "multipag.h"
 #include "ttlpalet.h"
@@ -30,7 +35,13 @@
 #include "subctrl.h"
 #include "display.h"
 #include "device.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
+
 #include "api_draw.h"
 #include "api_scaler.h"
 
@@ -63,7 +74,7 @@ SDL_semaphore *DrawInitSem;
  *  スタティック ワーク
  */
 #if XM7_VER >= 3
-static BYTE    bMode;		/* 画面モード */
+BYTE    bMode;		/* 画面モード */
 
 #else				/*  */
 static BOOL     bAnalog;	/* アナログモードフラグ */
@@ -93,12 +104,11 @@ static BOOL DrawSHUTDOWN;
 static BOOL DrawWaitFlag;
 static SDL_Thread *DrawThread;
 static WORD nDrawCount;
-static BOOL       SelectDraw2(void);
 SDL_cond *DrawCond;
 SDL_mutex *DrawMutex;
-static int newDrawWidth;
-static int newDrawHeight;
-static BOOL newResize;
+int newDrawWidth;
+int newDrawHeight;
+BOOL newResize;
 
 /*
  *  プロトタイプ宣言
@@ -156,8 +166,6 @@ void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 
 		}
 }
-
-
 
 
 /*
@@ -230,11 +238,19 @@ static WORD DrawCountSet(WORD fps)
 	/*
 	 *  セレクト(内部向き)
 	 */
-static BOOL SelectDraw2(void)
+BOOL SelectDraw2(void)
 {
-		SDL_Rect rect;
+#ifdef USE_AGAR
+		AG_Color nullcolor;
+		AG_Driver *drv;
+		AG_Rect rect;
+#else // SDL
 		Uint32 nullcolor;
 		SDL_Surface *p;
+		SDL_Rect rect;
+#endif
+
+
 
 		/*
 		 * 一致しているかチェック
@@ -242,8 +258,14 @@ static BOOL SelectDraw2(void)
 		if (SelectCheck()) {
 			return TRUE;
 		}
+#ifdef USE_AGAR
+		if(agDriverOps == NULL) return FALSE;
+		drv = AG_DriverOpen(agDriverOps);
+		if(drv == NULL) return FALSE;
+#else
 		p = SDL_GetVideoSurface();
 		if(p == NULL) return FALSE;
+#endif
 		rect.h = nDrawWidth;
 		rect.w = nDrawHeight;
 		rect.x = 0;
@@ -252,13 +274,26 @@ static BOOL SelectDraw2(void)
 			/*
 			 * すべてクリア
 			 */
+#ifdef USE_AGAR
+			AG_ObjectLock(agDriverOps);
+			nullcolor.r = 0;
+			nullcolor.g = 0;
+			nullcolor.b = 0;
+			nullcolor.a = 255;
+			agDriverOps->fillRect(drv, rect, nullcolor);
+			AG_ObjectUnlock(agDriverOps);
+#else
 			SDL_LockSurface(p);
 			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
 			SDL_FillRect(p, &rect, nullcolor);
 			SDL_UnlockSurface(p);
+#endif
 			/*
 			 * すべてクリア
 			 */
+#ifdef USE_AGAR
+			AG_DriverClose(drv);
+#else
 			if(realDrawArea != p) {
 				SDL_LockSurface(realDrawArea);
 				rect.h = realDrawArea->h;
@@ -269,6 +304,7 @@ static BOOL SelectDraw2(void)
 				SDL_FillRect(realDrawArea, &rect, nullcolor);
 				SDL_UnlockSurface(realDrawArea);
 			}
+#endif
 		}
 		bOldFullScan = bFullScan;
 		/*
@@ -303,6 +339,9 @@ static void ResizeWindow(int w, int h)
 {
     char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
     SDL_SysWMinfo sdlinfo;
+#ifdef USE_AGAR
+            ResizeWindow_Agar(w, h);
+#else
 #if 0
 #ifdef USE_GTK
             sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
@@ -318,6 +357,7 @@ static void ResizeWindow(int w, int h)
 #endif
 #else
             InitGL(w, h);
+#endif
 #endif
 }
 
@@ -335,10 +375,6 @@ static int DrawTaskMain(void *arg)
 		}
 		ChangeResolution();
 		SelectDraw2();
-		//#ifdef USE_OPENGL
-		//        if((p->flags & SDL_OPENGL) == 0) return;
-		///#endif
-		//        DrawStatus();
 #if XM7_VER >= 3
 		/*
 		 *    いずれかを使って描画
@@ -441,7 +477,12 @@ static int DrawThreadMain(void *p)
 BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 			int nSrcLeft, int nSrcTop)
 {
+
+#ifdef USE_AGAR
+	AG_Rect srcrect, dstrect;
+#else
 	SDL_Rect srcrect, dstrect;
+#endif
 
 	if(bUseOpenGL) {
 		Flip();
@@ -459,8 +500,9 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 		/*
 		 * データ転送
 		 */
+#ifndef USE_AGAR
 		displayArea = SDL_GetVideoSurface();
-
+#endif
 		/*
 		 * 擬似インタレース設定をここでやる
 		 */
@@ -550,8 +592,9 @@ void ResizeGL(int w, int h)
 
 void ChangeResolution(void)
 {
+#ifndef USE_AGAR
         SDL_Surface *p;
-        int rgb_size[4];
+#endif
         if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
                 return;
         }
@@ -564,13 +607,19 @@ void ChangeResolution(void)
         /*
          * KILL Thread
          */
-//        detachsub();
         SDL_SemWait(DrawInitSem);
+#ifdef USE_AGAR
+        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+#else
+#ifdef USE_GTK
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
+#endif
+#endif
         SDL_SemPost(DrawInitSem);
+#ifndef USE_AGAR
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
-//        initsub();
+#endif
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
 }
@@ -646,9 +695,6 @@ void	InitDraw(void)
 			DrawInitSem = SDL_CreateSemaphore(1);
 			SDL_SemPost(DrawInitSem);
 		}
-
-
-//		SDL_SetVideoMode(nDrawWidth, nDrawHeight, 32, SDL_OPENGL | SDL_RESIZABLE);
 }
 
 
@@ -812,34 +858,60 @@ static  BOOL Select256k()
  */
 BOOL SelectDraw(void)
 {
-	SDL_Rect rect;
 	BOOL ret;
-	Uint32 nullcolor;
 	int reti;
-	SDL_Surface *p;
+#ifdef USE_AGAR
+	AG_Driver *drv;
+	AG_Color nullcolor;
+	AG_Rect rect;
 
+	if(agDriverOps == NULL) return FALSE;
+	drv = AG_DriverOpen(agDriverOps);
+
+#else
+	SDL_Surface *p;
+	Uint32 nullcolor;
+	SDL_Rect rect;
 
 	p = SDL_GetVideoSurface();
 	displayArea = p;
+#endif
+
 	rect.h = nDrawWidth;
 	rect.w = nDrawHeight;
 	rect.x = 0;
 	rect.y = 0;
 	DrawSHUTDOWN = FALSE;
+#ifdef USE_AGAR
+	if(drv == NULL) return TRUE;
+#else
 	if(p == NULL) return TRUE;
+#endif
 	/*
 	 * すべてクリア
 	 */
 	 if(!bUseOpenGL) {
+#ifdef USE_AGAR
+		 AG_ObjectLock(agDriverOps);
+		 nullcolor.r = 0;
+		 nullcolor.g = 0;
+		 nullcolor.b = 0;
+		 nullcolor.a = 255;
+		 agDriverOps->fillRect(drv, rect, nullcolor);
+		 AG_DriverClose(drv);
+		 AG_ObjectUnlock(agDriverOps);
+#else
 		 SDL_LockSurface(p);
 		 nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
 		 SDL_FillRect(p, &rect, nullcolor);
 		 SDL_UnlockSurface(p);
+#endif
 	 } else { // OpenGLのとき
 	 }
 	 /*
 	  * すべてクリア
 	  */
+#ifndef USE_AGAR
 	 if((realDrawArea != p) && (realDrawArea != NULL)) {
 		 if(!bUseOpenGL) {
 			 SDL_LockSurface(realDrawArea);
@@ -853,6 +925,7 @@ BOOL SelectDraw(void)
 		 } else { // OpenGLのときここ
 		 }
 	 }
+#endif
 	 bOldFullScan = bFullScan;
 	 if(!DrawMutex) {
 		 DrawMutex = SDL_CreateMutex();
@@ -896,16 +969,27 @@ if (mode320) {
  */
 void AllClear(void)
 {
-	SDL_Rect rect;
 	int            i;
+#ifdef USE_AGAR
+	AG_Color nullcolor;
+	AG_Rect rect;
+	AG_Driver *drv;
+#else
 	Uint32 nullcolor;
 	SDL_Surface *p;
-
+	SDL_Rect rect;
+#endif
 	for (i = 0; i < (80 * 50); i++) {
 		GDIDrawFlag[i] = 0;
 	}
+#ifdef USE_AGAR
+	if(agDriverOps == NULL) return;
+	drv = AG_DriverOpen(agDriverOps);
+	if(drv == NULL) return;
+#else
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
+#endif
 	if(!bUseOpenGL) {
 		rect.h = nDrawHeight;
 		rect.w = nDrawWidth;
@@ -914,6 +998,16 @@ void AllClear(void)
 		/*
 		 * すべてクリア
 		 */
+#ifdef USE_AGAR
+		 AG_ObjectLock(agDriverOps);
+		 nullcolor.r = 0;
+		 nullcolor.g = 0;
+		 nullcolor.b = 0;
+		 nullcolor.a = 255;
+		 agDriverOps->fillRect(drv, rect, nullcolor);
+		 AG_DriverClose(drv);
+		 AG_ObjectUnlock(agDriverOps);
+#else
 		SDL_LockSurface(p);
 		nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
 		SDL_FillRect(p, &rect, nullcolor);
@@ -936,10 +1030,10 @@ void AllClear(void)
 			}
 		}
 		Flip();
+#endif
 	} else {
 		// OpenGL
 	}
-//	Flip();
 	/*
 	 * 全領域をレンダリング対象とする
 	 */
@@ -960,16 +1054,45 @@ void RenderFullScan(void)
 	BYTE * p;
 	BYTE * q;
 	WORD u;
+	Uint32 pitch;
+
+#ifdef USE_AGAR
+	AG_Driver *drv;
+	AG_Color nullcolor;
+	AG_Surface *s;
+
+	if(agDriverOps == NULL) return;
+	drv = AG_DriverOpen(agDriverOps);
+	if(drv == NULL) return;
+	s = drv->sRef;
+#else
 	SDL_Surface *s = SDL_GetVideoSurface();
 	Uint32 pitch;
 	Uint32 nullcolor;
-return;
-	if(s == NULL) return;
+#endif
+	if(bUseOpenGL) {
+#ifdef USE_AGAR
+		AG_DriverClose(drv);
+#endif
+		return;
+	}
+	if(s == NULL) {
+#ifdef USE_AGAR
+		AG_DriverClose(drv);
+#endif
+		return;
+	}
+
 	if(!bUseOpenGL) {
+#ifdef USE_AGAR
+		AG_ObjectLock(agDriverOps);
+#else
 		SDL_LockSurface(s);
+#endif
 		/*
 		 * ポインタ初期化
 		 */
+
 		p = (BYTE *) s->pixels;
 		pitch = s->pitch;
 		q = p + pitch;
@@ -982,12 +1105,16 @@ return;
 			p += pitch * 2;
 			q += pitch * 2;
 		}
+#ifdef USE_AGAR
+		AG_DriverClose(drv);
+		AG_ObjectUnlock(agDriverOps);
+#else
 		SDL_UnlockSurface(s);
+#endif
 //		displayArea = SDL_GetVideoSurface();
 //		SDL_UpdateRect(s, 0, 0, s->w, s->h);
 	}
 	Flip();
-#endif
 }
 
 
@@ -996,17 +1123,52 @@ return;
  */
 void RenderSetOddLine(void)
 {
-	BYTE *p;
 	WORD u;
+	BYTE * p;
+	BYTE * q;
+	Uint32 pitch;
+
+#ifdef USE_AGAR
+	AG_Driver *drv;
+	AG_Color nullcolor;
+	AG_Surface *s;
+	AG_Rect r;
+
+	if(agDriverOps == NULL) return;
+	drv = AG_DriverOpen(agDriverOps);
+	if(drv == NULL) return;
+	s = drv->sRef;
+#else
 	SDL_Surface *s = SDL_GetVideoSurface();
 	SDL_Rect r;
 	Uint32 pitch;
 	Uint32 nullcolor;
-return;
-	if(s == NULL) return;
+#endif
+	if(bUseOpenGL) {
+#ifdef USE_AGAR
+		AG_DriverClose(drv);
+#endif
+		return;
+	}
+	if(s == NULL) {
+#ifdef USE_AGAR
+		AG_DriverClose(drv);
+#endif
+		return;
+	}
+
 	if(!bUseOpenGL) {
+#ifdef USE_AGAR
+		AG_ObjectLock(agDriverOps);
+		nullcolor.r = 0;
+		nullcolor.g = 0;
+		nullcolor.b = 0;
+		nullcolor.a = 255;
+#else
 		SDL_LockSurface(s);
 		nullcolor = SDL_MapRGBA(s->format, 0, 0, 0, 255);
+#endif
+
 		switch (nDrawWidth) {
 		case 1280:
 			r.x = 0;
@@ -1014,7 +1176,11 @@ return;
 			for (u = 2 ; u < nDrawBottom; u += (WORD) 4) {
 				r.y = u;
 				r.h = 2;
+#ifdef USE_AGAR
+				agDriverOps->fillRect(drv, r, nullcolor);
+#else
 				SDL_FillRect(s, &r, nullcolor);
+#endif
 			}
 			break;
 		case 640:
@@ -1024,13 +1190,22 @@ return;
 			for (u = 1; u < nDrawBottom; u += (WORD) 2) {
 				r.y = u;
 				r.h = 1;
+#ifdef USE_AGAR
+				agDriverOps->fillRect(drv, r, nullcolor);
+#else
 				SDL_FillRect(s, &r, nullcolor);
+#endif
 			}
 			break;
 		}
+#ifdef USE_AGAR
+		AG_DriverClose(drv);
+		AG_ObjectUnlock(agDriverOps);
+#else
 		SDL_UnlockSurface(s);
 		displayArea = SDL_GetVideoSurface();
 		SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
+#endif
 	}
 	Flip();
 }
@@ -1060,6 +1235,7 @@ void OnDraw(void)
 /*
  *  描画(PAINT) *GTK依存だが、ダミー。
  */
+
 #ifdef USE_GTK
 gint
 OnPaint(GtkWidget * widget, GdkEventExpose * event)
@@ -1399,11 +1575,14 @@ void OnFullScreen(void)
 }
 void	OnWindowedScreen(void)
 {
+#ifdef USE_AGAR
+#else
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
 	if(p != NULL) {
 		SDL_WM_ToggleFullScreen(p);
 	}
+#endif
 }
 #ifdef __cplusplus
 }
@@ -1414,6 +1593,11 @@ void	OnWindowedScreen(void)
 
 static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
+#ifdef USE_AGAR
+	if(scalerGL != NULL){
+		scalerGL->CalcPalette(i, r, g, b, a);
+	}
+#else
 	SDL_Surface *p;
 #if 1
 	p = SDL_GetVideoSurface();
@@ -1431,6 +1615,7 @@ static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	if(vramhdr_400l != NULL) {
 		vramhdr_400l->CalcPalette(i, r, g, b, a);
 	}
+#endif
 #endif
 }
 
@@ -1454,6 +1639,11 @@ void Palet640(void)
 	if(vramhdr_400l != NULL) {
 		vramhdr_400l->SetPaletteTable((Uint32 *)rgbTTLGDI);
 	}
+#ifdef USE_AGAR
+	if(scalerGL != NULL){
+		scalerGL->SetPaletteTable((Uint32 *)rgbTTLGDI);
+	}
+#endif
 
 	for (i = 0; i < 8; i++) {
 		if (crt_flag) {
@@ -1484,12 +1674,18 @@ void Palet640(void)
 
 static inline void Palet320Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
+#ifdef USE_AGAR
+	if(scalerGL != NULL){
+		scalerGL->CalcPalette(i, r, g, b, a);
+	}
+#else
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
 	if(vramhdr_4096 != NULL) {
 		vramhdr_4096->CalcPalette(i, r, g, b, a, p);
 	}
+#endif
 }
 
 void Palet320(void)
@@ -1509,6 +1705,11 @@ void Palet320(void)
 	 if(vramhdr != NULL) {
 		 vramhdr->SetPaletteTable((Uint32 *)rgbAnalogGDI);
 	 }
+#ifdef USE_AGAR
+	if(scalerGL != NULL){
+		scalerGL->SetPaletteTable((Uint32 *)rgbAnalogGDI);
+	}
+#endif
 	 amask = 0;
 	 if (!(multi_page & 0x10)) {
 		 amask |= 0x000f;
@@ -1560,10 +1761,20 @@ extern "C"
 void Draw640All(void)
 {
 	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
-	SDL_Surface *p;
 	WORD wdtop, wdbtm;
+	SDL_Surface *p;
 
+#ifdef USE_AGAR
+	AG_Driver *drv;
+
+	if(agDriverOps == NULL) return;
+	drv = AG_DriverOpen(agDriverOps);
+	if(drv == NULL) return;
+	p = (SDL_Surface *)(drv->sRef);
+
+#else
 	p = SDL_GetVideoSurface();
+#endif
 	if(p == NULL) return;
 	/*
 	 * パレット設定

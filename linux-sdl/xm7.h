@@ -12,7 +12,11 @@
 
 #include <stdio.h>
 #include "build_config.h"
-#include <SDL/SDL.h>
+#ifdef USE_AGAR
+#include <agar/core.h>
+#include <agar/core/types.h>
+#endif
+#include <SDL.h>
 
 #ifdef MEMWATCH
 #include <memwatch.h>

@@ -6,7 +6,10 @@
  */
 
 #include <agar/core.h>
-#include <SDL.h>
+#include <agar/core/types.h>
+#include <agar/gui.h>
+
+//#include <SDL.h>
 
 #include "xm7.h"
 #include "tapelp.h"
@@ -14,13 +17,23 @@
 #include "subctrl.h"
 #include "device.h"
 #include "mouse.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
 #include "sdl_bar.h"
 #include "sdl_sch.h"
+#include "sdl_snd.h"
 #include "api_kbd.h"
 #include "api_js.h"
 #include "api_draw.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 /*
  *  グローバル ワーク
  */
@@ -108,7 +121,7 @@ BOOL SelectSch(void)
 	/*
 	 * スレッド生成
 	 */
-	if (!AG_CreateThread(&SchThread, &ThreadSch, NULL))
+	if (!AG_ThreadCreate(&SchThread, &ThreadSch, NULL))
 	{
 		return FALSE;
 	}
@@ -141,7 +154,7 @@ void ExecSch(void)
 		PollJoy();
 
 #ifdef MOUSE
-		PollMos();
+	//	PollMos();
 
 #endif				/*  */
 		bPollVsync = FALSE;

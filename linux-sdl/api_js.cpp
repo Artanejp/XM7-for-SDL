@@ -24,7 +24,11 @@ extern "C" {
 #include "device.h"
 #include "mouse.h"
 #include "event.h"
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "api_js.h"

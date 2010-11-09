@@ -11,16 +11,6 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
-#include "EmuGrphScale1x1.h"
-#include "EmuGrphScale1x2.h"
-#include "EmuGrphScale1x2i.h"
-#include "EmuGrphScale2x2.h"
-#include "EmuGrphScale2x2i.h"
-#include "EmuGrphScale2x4.h"
-#include "EmuGrphScale2x4i.h"
-#include "EmuGrphScale4x4.h"
-#include "EmuGrphScale4x4i.h"
-#include "EmuGLUtils.h"
 
 EmuGrphScale1x1 *scaler1x1;
 EmuGrphScale1x2 *scaler1x2;
@@ -32,8 +22,11 @@ EmuGrphScale2x4i *scaler2x4i;
 EmuGrphScale4x4 *scaler4x4;
 EmuGrphScale4x4i *scaler4x4i;
 
+#ifdef USE_AGAR
+EmuAgarGL *scalerGL;
+#else
 EmuGLUtils *scalerGL;
-
+#endif
 
 
 #ifdef __cplusplus
@@ -309,7 +302,11 @@ void init_scaler(void)
 		scaler4x4i->SetPutWord(PutWord4x);
 	}
 	if(scalerGL == NULL) {
+#ifdef USE_AGAR
+		scalerGL = new EmuAgarGL;
+#else
 		scalerGL = new EmuGLUtils;
+#endif
 		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
 		scalerGL->SetVramReader(VramReader, 80, 400);
 		scalerGL->SetPutWord(PutWordGL8);

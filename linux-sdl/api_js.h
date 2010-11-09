@@ -18,5 +18,8 @@ extern BYTE FASTCALL joy_request(BYTE no);
 extern BOOL FASTCALL InitJoy(void);
 extern void FASTCALL PollJoy(void);
 extern void FASTCALL CleanJoy(void);
+extern BOOL OnMoveJoy(SDL_Event * event);
+extern BOOL OnPressJoy(SDL_Event * event);
+extern BOOL OnReleaseJoy(SDL_Event * event);
 
 #endif /* API_JS_H_ */

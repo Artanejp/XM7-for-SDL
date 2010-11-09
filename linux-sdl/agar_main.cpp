@@ -5,14 +5,20 @@
  *      Author: K.Ohta <whatisthis.soiwhat@gmail.com>
  */
 
-#include <SDL/SDL.h>
+#include <SDL.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+#include <agar/core/types.h>
 #include <agar/core.h>
+#include <agar/gui.h>
 
 #include "xm7.h"
 #include "mouse.h"
 #include "tapelp.h"
 #include "keyboard.h"
-#include "sdl.h"
+#include "agar_xm7.h"
 #include "sdl_bar.h"
 #include "api_draw.h"
 #include "api_kbd.h"
@@ -21,7 +27,7 @@
 
 #include "sdl_sch.h"
 #include "sdl_snd.h"
-#include "sdl_cfg.h"
+#include "agar_cfg.h"
 #include "sdl_inifile.h"
 
 #ifdef __cplusplus
@@ -97,8 +103,8 @@ void CreateDraw(void)
 void OnCreate(void *parent)
 {
         BOOL        flag;
-    CreateMenu(parent);
-    CreateDrawGTK(parent);
+//    CreateMenu();
+//    CreateDrawAG(parent);
     CreateStatus();
 /*
  * ワークエリア初期化
@@ -163,7 +169,7 @@ void OnCreate(void *parent)
         }
 }
 
-
+extern void MainLoop(int argc, char *argv[]);
 /*
  *  メイン関数
  */
@@ -196,11 +202,14 @@ int main(int argc, char *argv[])
         bFMTV151 = TRUE;
 #endif				/*  */
 
-        InitUI(argc, argv);
+//        InitUI(argc, argv);
 /*
  * アプリケーション初期化
  */
-        InitInstance();
+//        InitInstance();
         MainLoop(argc, argv);
         return nErrorCode;
 }
+#ifdef __cplusplus
+}
+#endif

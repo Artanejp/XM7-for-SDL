@@ -8,11 +8,11 @@
 #ifndef API_SCALER_H_
 #define API_SCALER_H_
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
+#include <SDL.h>
+#include <SDL_syswm.h>
 
 #ifdef USE_OPENGL
-#include <SDL/SDL_opengl.h>
+#include <SDL_opengl.h>
 #endif
 #include "multipag.h"
 #include "ttlpalet.h"
@@ -20,7 +20,12 @@
 #include "subctrl.h"
 #include "display.h"
 #include "device.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
 #include "api_draw.h"
 #include "xm7.h"
 
@@ -39,7 +44,11 @@
 #include "EmuGrphScale2x4i.h"
 #include "EmuGrphScale4x4.h"
 #include "EmuGrphScale4x4i.h"
+#ifdef USE_AGAR
+#include "EmuAgarGL.h"
+#else
 #include "EmuGLUtils.h"
+#endif
 
 extern EmuGrphLib *vramhdr;
 extern EmuGrph400l *vramhdr_400l;
@@ -56,7 +65,11 @@ extern EmuGrphScale2x4i *scaler2x4i;
 extern EmuGrphScale4x4 *scaler4x4;
 extern EmuGrphScale4x4i *scaler4x4i;
 
+#ifdef USE_AGAR
+extern EmuAgarGL *scalerGL;
+#else
 extern EmuGLUtils *scalerGL;
+#endif
 #endif
 
 

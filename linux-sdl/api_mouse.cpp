@@ -6,13 +6,16 @@
  *      Author: K.Ohta<whatisthis.sowhat@gmail.com>
  */
 
+#ifdef USE_GTK
 #include<X11/Xlib.h>
 #include<gtk/gtk.h>
 #include<gdk/gdkx.h>
 #include<gdk/gdkkeysyms.h>
+#endif
+
 #include<memory.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
+#include <SDL.h>
+#include <SDL_syswm.h>
 
 #include "xm7.h"
 #include "mainetc.h"
@@ -20,7 +23,12 @@
 #include "device.h"
 #include "mouse.h"
 #include "event.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
 #include "sdl_sch.h"
 
 #include "api_kbd.h"
@@ -353,6 +361,7 @@ mosbtn_request(void)
 /*
  *  マウスボタンプレスアクション
  */
+#ifdef USE_GTK
 gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
@@ -370,6 +379,19 @@ gboolean OnButtonRelease(GtkWidget * widget, GdkEventButton * event,
 	rgbButtons[event->button - 1] = FALSE;
 	return FALSE;
 }
+#endif
+#ifdef USE_AGAR
+void OnButtonPress(AG_Event *event)
+{
+
+}
+
+
+void OnButtonRelease(AG_Event *event)
+{
+
+}
+#endif
 #endif
 
 /*

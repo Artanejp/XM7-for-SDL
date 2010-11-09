@@ -102,7 +102,7 @@ void    LoadCfg(void);
 void    SaveCfg(void);
 void    ApplyCfg(void);
 void    SetMachineVersion(void);
-
+#ifdef USE_GTK
 /*
  * 動作機種再設定
  */
@@ -136,7 +136,7 @@ void    OnGP_PSGVolumeChanged(GtkWidget *widget, gpointer data);
 void    OnGP_BEEPVolumeChanged(GtkWidget *widget, gpointer data);
 void    OnGP_CMTVolumeChanged(GtkWidget *widget, gpointer data);
 void    OnGP_WAVVolumeChanged(GtkWidget *widget, gpointer data);
-
+#endif
 #ifdef __cplusplus
 }
 #endif  /*  */

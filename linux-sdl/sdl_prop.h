@@ -12,6 +12,7 @@
     /*
      *  グローバル ワーク 
      */ 
+#ifdef USE_GTK
 extern GtkWidget *winProperty;
 extern GtkWidget *GP_FM7;
 extern GtkWidget *GP_FM77AV;
@@ -161,6 +162,7 @@ BOOL FASTCALL IsDlgButtonChecked(GtkWidget * widget);
      *  設定ダイアログの生成 
      */ 
 GtkWidget * FASTCALL OpenPropertyPage(void);
+#endif
 
 #endif	/* _xw_prop_h_ */
 #endif	/* _XWIN */

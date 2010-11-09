@@ -11,13 +11,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-        extern  GtkWidget *ksetProperty;
         extern BOOL         SnoopedOnKeyPressedCallback(SDL_Event *event);
         //extern void     SnoopKeyEvent(BOOL flag);
         //extern void     StartGetKeycodeForProp(Uint16 keysym, BYTE code);
+#ifdef USE_GTK
+        extern  GtkWidget *ksetProperty;
         extern void         StartGetKeycodeForProp(GtkWidget *widget, gpointer data);
         extern void    OnClick_KeyMap(GtkWidget *widget, gpointer data);
-
+#endif
 
 #ifdef __cplusplus
 }
