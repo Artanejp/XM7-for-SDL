@@ -15,7 +15,9 @@
 #ifndef FALSE
 #define FALSE 0
 #endif
+#ifndef BOOL
 typedef int BOOL;
+#endif
 
 class EmuGrphScale1x2 {
 public:

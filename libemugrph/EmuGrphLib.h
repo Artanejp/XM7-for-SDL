@@ -8,9 +8,11 @@
 #ifndef EMUGRPHLIB_H_
 #define EMUGRPHLIB_H_
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 
-typedef int BOOL;
+#ifndef BOOL
+#define BOOL int
+#endif
 
 class EmuGrphLib {
 public:
