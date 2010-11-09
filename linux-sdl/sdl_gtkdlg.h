@@ -16,7 +16,7 @@
 #define DLG_CANCEL 2				/* ダイアログＣＡＮＣＥＬ */
 #define DLG_NONE 0					/* ダイアログ未確定 */
     typedef struct {
-    GtkWidget * dlg;
+GtkWidget * dlg;
     char           sFilename[256];
                    BYTE bResult;
                } FileSelectDialog;	/* ファイルセレクターダイアログ 

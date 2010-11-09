@@ -6,6 +6,7 @@
  */
 
 #include <SDL.h>
+#include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
 
@@ -62,7 +63,7 @@ static void InitGUI(void)
 
 void ResizeWindow(int w, int h)
 {
-	AG_ResizeDisplay((Uint) w, (Uint) h);
+	AG_ResizeDisplay((Uint)w, (Uint)h);
 }
 static void ProcessGUI(void)
 {
@@ -124,6 +125,5 @@ void AGDrawTaskMain(void)
 #endif				/*  */
 		//        SDL_UnlockSurface(p);
 		Flip();
-		return 0;
 }
 
