@@ -21,7 +21,8 @@ SCALERSRC = \
 	EmuGrphScale4x4.cpp EmuGrphScale4x4i.cpp 	
 
 GLSCALERSRC = \
-         EmuGLUtils.cpp
+         EmuGLUtils.cpp \
+	 EmuAgarGL.cpp
 
 
 LOCALSRC = \
@@ -39,7 +40,8 @@ SCALEROBJ = \
 	EmuGrphScale4x4.o EmuGrphScale4x4i.o 	
 
 GLSCALEROBJ = \
-         EmuGLUtils.o
+         EmuGLUtils.o \
+	 EmuAgarGL.o
 
 LOCALOBJ = \
 	$(VIDEODRVOBJ) $(SCALEROBJ) $(GLSCALEROBJ) 
@@ -50,11 +52,12 @@ SRCS =	${COMMONSRC} ${LOCALSRC}
 OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 LDFLAGS = 
-#CFLAGS =        -g -O0 -export-dynamic
-CFLAGS =        -O3 -export-dynamic
+CFLAGS =        -g -O0 -export-dynamic
+#CFLAGS =        -O3 -export-dynamic
 CFLAGS += -fPIC
 
-CFLAGS +=  -I. -I/usr/local/include
+CFLAGS +=  -I. -I/usr/local/include 
+CFLAGS += -I/usr/local/include/agar
 CFLAGS += `pkg-config --cflags sdl`
 CFLAGS += `pkg-config --cflags gtk+-x11-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
 
