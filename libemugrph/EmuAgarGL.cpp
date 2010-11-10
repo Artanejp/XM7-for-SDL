@@ -39,21 +39,14 @@ void EmuAgarGL::InitUI(char *name)
 	InitUI(name, AG_VERBOSE | AG_CREATE_DATADIR | AG_NO_CFG_AUTOLOAD);
 }
 
-void EmuAgarGL::SetDrawArea(AG_Window *p, int x, int y, int w, int h)
+void EmuAgarGL::SetDrawArea(AG_Widget *p, int x, int y, int w, int h)
 {
-	if(drawarea == NULL) {
-		drawarea = AG_BoxNew(p, AG_BOX_HORIZ,0);
-	}
-	if(drawarea != NULL){
-		AG_WidgetSetPosition(&(drawarea->wid), x, y);
-		AG_WidgetSetSize(&(drawarea->wid), w, h);
-	}
+	drawarea = p;
 }
 
 
 void EmuAgarGL::InitGL(int w, int h)
 {
-	SDL_Surface *s;
 	Uint32 flags;
 	int bpp = 32;
 	int rgb_size[3];
@@ -175,19 +168,20 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	if(putword == NULL) return;
 	// Test
 	if(agDriverOps == NULL) return;
-	drv = AG_DriverOpen(agDriverOps);
+	drv = AGWIDGET(drawarea)->drv;
 	if(drv == NULL) return;
+	//AG_ObjectLock(agDriverOps);
 #if 0
 	surface = SDL_GetVideoSurface();
 	printf("Video w: %d h:%d FLAGS:%02x\n", surface->w, surface->h, surface->flags);
 #endif
 	size = vramwidth * vramheight * 8 * 4;
-	glClearColor(0, 0, 0, 0);
+//	glClearColor(0, 0, 0, 0);
 	ww = w >>3;
 	hh = h + y;
 
 	if(video == NULL) {
-		AG_DriverClose(drv);
+		//AG_ObjectUnlock(agDriverOps);
 		return;
 	}
 	bitmap = (Uint8 *)video->pixels;
@@ -206,7 +200,7 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 #if 0
 	printf("Transfer: %08x bytes \n", ofset);
 #endif
-	agDriverOps->blitSurfaceGL(drv, &(drawarea->wid), video, 1.0, 1.0);
+	agDriverOps->blitSurfaceGL(drv, drawarea, video, 1.0, 1.0);
 
    if(ScanLine) {
 	   DrawScanLine();
@@ -215,7 +209,7 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 #if 0
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
 #endif
-	AG_DriverClose(drv);
+	//AG_ObjectUnlock(agDriverOps);
 
 }
 

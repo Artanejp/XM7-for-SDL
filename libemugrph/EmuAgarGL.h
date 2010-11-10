@@ -27,7 +27,7 @@ public:
 	void InitUI(char *name);
 	void InitUI(char *name, Uint Flags);
 	void InitGL(int w, int h);
-	void SetDrawArea(AG_Window *p, int x, int y, int w, int h);
+	void SetDrawArea(AG_Widget *p, int x, int y, int w, int h);
 	void PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void Flip(void);
@@ -38,7 +38,7 @@ protected:
     Uint32 *palette;
     BOOL   InitVideo;
     Uint textureid;
-    AG_Box *drawarea;
+    AG_Widget *drawarea;
     AG_PixelFormat format;
 private:
     BOOL  UseTexture;
