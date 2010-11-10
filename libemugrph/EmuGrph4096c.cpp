@@ -38,11 +38,12 @@ void EmuGrph4096c::InitPalette(void)
 	Uint8 r,g,b,a;
 
 	p = SDL_GetVideoSurface();
+	a = 255;
 	if(p == NULL) return; // これでいいのか？
 	for(r = 0; r < 16 ; r++){
 		for(g = 0; g < 16 ; g++) {
 			for(b = 0; b < 16; b++) {
-				CalcPalette(b + r<<4 + g<<8 , r<<4, g<<4, b<<4, 0xff,p );
+				CalcPalette(b + (r<<4) +(g<<8) , (r<<4), (g<<4), (b<<4), a,p );
 			}
 		}
 	}
@@ -293,11 +294,10 @@ void EmuGrph4096c::PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *c)
 
 void EmuGrph4096c::PutVram(BOOL interlace)
 {
-	Uint32 dat;
 	Uint32 cbuf[8];
 	SDL_Surface *p;
-	int x;
-	int y;
+	Uint32 x;
+	Uint32 y;
 	int ofset;
 	Uint32 *disp;
 	Uint32 pixsize;
@@ -317,7 +317,7 @@ void EmuGrph4096c::PutVram(BOOL interlace)
 	for(y = 0; y < vram_h; y++) {
 		if(y >= h) break;
 		ofset = y * vram_w;
-		disp =(Uint32 *)(p->pixels + (y * 2)* p->pitch);
+		disp =(Uint32 *)((Uint8 *)p->pixels + (y * 2)* p->pitch);
 		for(x = 0; x < vram_w ; x++) {
 			if((x<<4) >= w) break;
 			GetVram(ofset , cbuf);

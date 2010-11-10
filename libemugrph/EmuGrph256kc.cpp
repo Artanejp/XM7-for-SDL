@@ -128,12 +128,11 @@ void EmuGrph256kc::GetVram(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 
 void EmuGrph256kc::PutVram(BOOL interlace)
 {
-	Uint32 dat;
 	Uint32 cbuf[8];
 	Uint32 cbuf2[8];
 	SDL_Surface *p;
-	int x;
-	int y;
+	Uint32 x;
+	Uint32 y;
 	int ofset;
 	Uint32 *disp;
 	Uint32 pixsize;
@@ -153,7 +152,7 @@ void EmuGrph256kc::PutVram(BOOL interlace)
 	for(y = 0; y < vram_h; y++) {
 		if(y >= h) break;
 		ofset = y * vram_w;
-		disp =(Uint32 *)(p->pixels + (y * 2)* p->pitch);
+		disp =(Uint32 *)((Uint8 *)p->pixels + (y * 2)* p->pitch);
 		for(x = 0; x < vram_w ; x++) {
 			if((x<<4) >= w) break;
 			GetVram(ofset , cbuf, 0);

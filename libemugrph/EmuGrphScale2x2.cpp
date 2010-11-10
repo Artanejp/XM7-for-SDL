@@ -25,8 +25,6 @@ void EmuGrphScale2x2::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32
 	Uint32 addr;
 	Uint32 *disp;
 	Uint32 *disp2;
-	Uint32 *disp3;
-	Uint32 *disp4;
 
 	ww = w + x;
 	if(ww > (vramwidth * 8)) ww = vramwidth * 8;
@@ -43,8 +41,8 @@ void EmuGrphScale2x2::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32
 		if(convword != NULL) {
 			for (xx = x / 8; xx < ww / 8; xx++) {
 				if(xx >= vramwidth) break;
-				disp = (Uint32 *)((void *)p->pixels + yy * 2 *p->pitch + xx * p->format->BytesPerPixel * 16);
-				disp2 = (Uint32 *)((void *)disp + p->pitch);
+				disp = (Uint32 *)((Uint8 *)p->pixels + yy * 2 *p->pitch + xx * p->format->BytesPerPixel * 16);
+				disp2 = (Uint32 *)((Uint8 *)disp + p->pitch);
 				getvram(addr, wbuf, mpage);
 				convword(p, wbuf2, wbuf);
 				putword(disp, p->format->BytesPerPixel, wbuf2);
@@ -54,8 +52,8 @@ void EmuGrphScale2x2::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32
 		} else {
 			for (xx = x / 8; xx < ww / 8; xx++) {
 				if(xx >= vramwidth) break;
-				disp = (Uint32 *)((void *)p->pixels + yy * 2 *p->pitch + xx * p->format->BytesPerPixel * 16);
-				disp2 = (Uint32 *)((void *)disp + p->pitch);
+				disp = (Uint32 *)((Uint8 *)p->pixels + yy * 2 *p->pitch + xx * p->format->BytesPerPixel * 16);
+				disp2 = (Uint32 *)((Uint8 *)disp + p->pitch);
 				getvram(addr, wbuf, mpage);
 				putword(disp, p->format->BytesPerPixel, wbuf);
 				putword(disp2, p->format->BytesPerPixel, wbuf);

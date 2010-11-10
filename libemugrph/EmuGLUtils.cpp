@@ -31,25 +31,12 @@ EmuGLUtils::~EmuGLUtils() {
  */
 int EmuGLUtils::InitGL(int w, int h)
 {
-	const SDL_VideoInfo *info = NULL;
 	Uint32 flags;
-	SDL_Surface *p;
-	float aspect;
-	int rgb_size[4];
-	int fsaa = 0;
-	int sync = 1;
-	int accel = 1;
+	int rgb_size[3];
 	int bpp=32;
 
 
-//	p = SDL_GetVideoSurface();
-//	if(p == NULL) {
-//		return -1;
-//	}
-//	flags = p->flags;
 	flags = SDL_OPENGL | SDL_RESIZABLE;
-//	aspect = (float)w / (float)h;
-//	glClearColor(0, 0, 0, 0);
 #if 1
     switch (bpp) {
          case 8:
@@ -103,6 +90,7 @@ int EmuGLUtils::InitGL(int w, int h)
       printf( "Extensions : %s\n", glGetString( GL_EXTENSIONS ) );
       printf("\n");
       InitVideo = TRUE;
+      return 0;
 }
 
 /*
@@ -199,10 +187,8 @@ void EmuGLUtils::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpag
 	int addr;
 	int size;
 	int ofset;
-	int i;
 	Uint32 c[8];
 	GLubyte *bitmap;
-	SDL_Surface *surface;
 	Uint8 *disp;
 
 	if(!InitVideo) return;

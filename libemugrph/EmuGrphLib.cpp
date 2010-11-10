@@ -54,7 +54,7 @@ void EmuGrphLib::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 #endif
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	ds =r<<8 + g<<16 + b<<0;
+	ds =(r<<8) + (g<<16) + (b<<0);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
@@ -80,12 +80,13 @@ void EmuGrphLib::InitPalette(void)
 	SDL_Surface *p;
 	Uint8 r,g,b,a;
 
+	a = 255;
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return; // これでいいのか？
 	for(r = 0; r < 2 ; r++){
 		for(g = 0; g < 2 ; g++) {
 			for(b = 0; b < 2; b++) {
-				CalcPalette(b + r<<1 + g<<2 , r<<7, g<<7, b<<7, 0xff,p );
+				CalcPalette(b + (r<<1) + (g<<2) , (r<<7), (g<<7), (b<<7), a, p );
 			}
 		}
 	}
@@ -192,11 +193,10 @@ void EmuGrphLib::PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *c)
  */
 void EmuGrphLib::PutVram(BOOL interlace)
 {
-	Uint32 dat;
 	Uint32 cbuf[8];
 	SDL_Surface *p;
-	int x;
-	int y;
+	Uint32 x;
+	Uint32 y;
 	int ofset;
 	Uint32 *disp;
 	Uint32 pixsize;
@@ -216,7 +216,7 @@ void EmuGrphLib::PutVram(BOOL interlace)
 	for(y = 0; y < vram_h; y++) {
 		if(y >= h) break;
 		ofset = y * vram_w;
-		disp =(Uint32 *)(p->pixels + (y * 2)* p->pitch);
+		disp =(Uint32 *)((Uint8 *)p->pixels + (y * 2)* p->pitch);
 		for(x = 0; x < vram_w ; x++) {
 			if((x<<3) >= w) break;
 			GetVram(ofset , cbuf);

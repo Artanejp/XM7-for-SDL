@@ -49,6 +49,7 @@ void EmuAgarGL::SetDrawArea(AG_Window *p, int x, int y, int w, int h)
 	}
 }
 
+
 void EmuAgarGL::InitGL(int w, int h)
 {
 	// Surfaceつくる
@@ -79,7 +80,7 @@ void EmuAgarGL::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	if(palette == NULL) return;
 
 #if AG_LITTLE_ENDIAN
-	ds =r<<8 + g<<16 + b + a<<24;
+	ds =(r<<8) + (g<<16) + b + (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
@@ -122,13 +123,16 @@ static inline void SetByte(Uint8 *addr, Uint32 *c)
 
 void EmuAgarGL::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
+	PutVram((AG_Surface *)p, x, y, w, h, mpage);
+}
+
+void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
+{
 	int xx, yy;
 	int hh, ww;
 	int addr;
 	int size;
 	int ofset;
-	int i;
-	AG_Surface *pp =(AG_Surface *)p;
 	Uint32 c[8];
 	Uint8 *bitmap;
 	Uint8 *disp;
@@ -173,9 +177,9 @@ void EmuAgarGL::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage
 #endif
 	agDriverOps->blitSurfaceGL(drv, &(drawarea->wid), video, 1.0, 1.0);
 
-//   if(ScanLine) {
-//	   DrawScanLine();
-//   }
+   if(ScanLine) {
+	   DrawScanLine();
+   }
 
 #if 0
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
@@ -183,3 +187,4 @@ void EmuAgarGL::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage
 	AG_DriverClose(drv);
 
 }
+
