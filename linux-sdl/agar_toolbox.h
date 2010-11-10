@@ -23,6 +23,14 @@ extern AG_Menu *ToolBarMenu;
 #define DLG_CANCEL 2				/* ダイアログＣＡＮＣＥＬ */
 #define DLG_NONE 0					/* ダイアログ未確定 */
 
+#ifdef USE_AGAR
+		extern void StateLoad(char *path);
+        extern void OnLoadStatus(AG_Event *);
+        extern void OnQuickLoad(AG_Event *);
+        extern void OnSaveAs(AG_Event *);
+        extern void OnQuickSave(AG_Event *);
+        extern void OnDiskPopup(AG_Event *);
+#endif
 
 #ifdef USE_GTK
 

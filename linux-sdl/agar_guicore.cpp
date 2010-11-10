@@ -34,6 +34,10 @@
 AG_Window *MainWindow;
 AG_Menu *ToolBarMenu;
 
+static void Create_AGMainBar(void);
+static void Create_FileMenu(void);
+
+
 void ProcessKeyDown(AG_Event *event)
 {
 	// キーハンドラー
@@ -42,6 +46,8 @@ void ProcessKeyDown(AG_Event *event)
 	Uint32  unicode = (Uint32)AG_ULONG(4);
 	OnKeyPressAG(sym, mod, unicode);
 }
+
+
 
 void ProcessKeyUp(AG_Event *event)
 {
@@ -102,24 +108,75 @@ AG_MenuItem *Menu_Debug;
 AG_MenuItem *Menu_Tools;
 AG_MenuItem *Menu_Help;
 AG_MenuItem *Menu_About;
+AG_Menu *MenuBar;
 
 
-
-void Create_AGMainBar(void)
-{
-	ToolBarMenu = AG_MenuNewGlobal(AG_MENU_HFILL);
-	Menu_File = AG_MenuNode(ToolBarMenu->root, "File", NULL);
-//	Menu_Drive1 = AG_MenuAction(ToolBarMenu->root, "Drive 1", NULL, OnDiskPopup, 1);
-//	Menu_Drive0 = AG_MenuNode(ToolBarMenu->root, "Drive 0", NULL, OnDiskPopup, 0);
-	Menu_Tape = AG_MenuNode(ToolBarMenu->root, "Tape", NULL);
-	Menu_Debug = AG_MenuNode(ToolBarMenu->root, "Debug", NULL);
-	Menu_Tools = AG_MenuNode(ToolBarMenu->root, "Tools", NULL);
-	Menu_Help = AG_MenuNode(ToolBarMenu->root, "Help", NULL);
-	Menu_About = AG_MenuNode(ToolBarMenu->root, "About", NULL);
-
+extern "C" {
+void OnDestroy(AG_Event *event);
 }
 
-static AG_MenuItem *Menu_File_QuickSave;
+void MainLoop(int argc, char *argv[])
+{
+	/*
+	 * エラーコード別
+	 */
+	switch (nErrorCode) {
+	/*
+	 * エラーなし
+	 */
+	case 0:
+		/*
+		 * 実行開始
+		 */
+		stopreq_flag = FALSE;
+		run_flag = TRUE;
+		/*
+		 * コマンドライン処理
+		 */
+		if (argc > 1) {
+//			OnCmdLine(argv[1]);
+		}
+		break;
+		/*
+		 * VM初期化エラー
+		 */
+	case 1:
+//		OpenErrorMessageDialog("XM7", "仮想マシンを初期化できません");
+		break;
+
+		/*
+		 * コンポーネント初期化エラー
+		 */
+	case 2:
+//		OpenErrorMessageDialog("XM7","コンポーネントを初期化できません");
+		break;
+	}
+//	AG_AtExitFunc(SDL_Quit);
+	/*
+	 * Agar のメインループに入る
+	 */
+	Create_AGMainBar();
+	AG_EventLoop();
+}
+
+
+static void Create_AGMainBar(void)
+{
+	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
+	Menu_File = AG_MenuNode(MenuBar->root , "File", NULL);
+	Create_FileMenu();
+
+	Menu_Drive1 = AG_MenuNode(MenuBar->root, "Drive 1", NULL);
+	Menu_Drive0 = AG_MenuNode(MenuBar->root, "Drive 0", NULL);
+
+ 	Menu_Tape = AG_MenuNode(MenuBar->root, "Tape", NULL);
+ 	Menu_Debug = AG_MenuNode(MenuBar->root, "Debug", NULL);
+ 	Menu_Tools = AG_MenuNode(MenuBar->root, "Tools", NULL);
+ 	Menu_Help = AG_MenuNode(MenuBar->root, "Help", NULL);
+ 	Menu_About = AG_MenuNode(MenuBar->root, "About", NULL);
+}
+
+static  AG_MenuItem *Menu_File_QuickSave;
 static AG_MenuItem *Menu_File_QuickLoad;
 static AG_MenuItem *Menu_File_Save;
 static AG_MenuItem *Menu_File_Load;
@@ -128,8 +185,16 @@ static AG_MenuItem *Menu_File_HotReset;
 static AG_MenuItem *Menu_File_BootMode;
 static AG_MenuItem *Menu_File_Quit;
 
-void Create_FileMenu(void)
+
+static void Create_FileMenu(void)
 {
+	Menu_File_QuickSave = AG_MenuAction(Menu_File , "Quick Save", NULL, OnQuickSave, NULL);
+	Menu_File_QuickLoad = AG_MenuAction(Menu_File , "Quick Load", NULL, OnQuickLoad, NULL);
+	AG_MenuSeparator(Menu_File);
+	Menu_File_Save = AG_MenuAction(Menu_File , "Save As...", NULL, OnSaveAs, NULL);
+	Menu_File_Load = AG_MenuAction(Menu_File , "Load", NULL, OnLoadStatus, NULL);
+	AG_MenuSeparator(Menu_File);
+	Menu_File_Quit = AG_MenuAction(Menu_File , "Quit", NULL, OnDestroy, NULL);
 
 }
 
@@ -179,7 +244,7 @@ extern "C" {
 #endif
 
 
-void OnDestroy(void)
+void OnDestroy(AG_Event *event)
 {
 
         /*
@@ -201,7 +266,7 @@ void OnDestroy(void)
          * 仮想マシン クリーンアップ
          */
         system_cleanup();
-        AG_Destroy();
+        AG_Quit();
 }
 
 void InitInstance(void)
@@ -512,48 +577,6 @@ DiskTitleDialog FASTCALL OpenDiskTitleDialog(void)
 }
 #endif
 
-void MainLoop(int argc, char *argv[])
-{
-	/*
-	 * エラーコード別
-	 */
-	switch (nErrorCode) {
-	/*
-	 * エラーなし
-	 */
-	case 0:
-		/*
-		 * 実行開始
-		 */
-		stopreq_flag = FALSE;
-		run_flag = TRUE;
-		/*
-		 * コマンドライン処理
-		 */
-		if (argc > 1) {
-//			OnCmdLine(argv[1]);
-		}
-		break;
-		/*
-		 * VM初期化エラー
-		 */
-	case 1:
-//		OpenErrorMessageDialog("XM7", "仮想マシンを初期化できません");
-		break;
-
-		/*
-		 * コンポーネント初期化エラー
-		 */
-	case 2:
-//		OpenErrorMessageDialog("XM7","コンポーネントを初期化できません");
-		break;
-	}
-//	AG_AtExitFunc(SDL_Quit);
-	/*
-	 * Agar のメインループに入る
-	 */
-
-}
 
 #if 0
 void

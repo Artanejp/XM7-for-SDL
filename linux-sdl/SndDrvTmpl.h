@@ -54,7 +54,7 @@ protected:
 	int nLevel; /* レンダリングの音量 */
 	Uint8 volume; /* 出力する音量 */
 	BOOL enable;
-	int counter;
+	UINT counter;
 	SDL_sem *RenderSem;
 };
 

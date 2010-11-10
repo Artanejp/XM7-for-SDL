@@ -33,7 +33,7 @@
 #else
 #include "sdl.h"
 #endif
-#include "sdl_cmd.h"
+#include "agar_cmd.h"
 #include "sdl_prop.h"
 #include "sdl_snd.h"
 #include "sdl_sch.h"
@@ -159,25 +159,28 @@ static void OnLoadStatusSubEv(AG_Event *event)
     OnLoadStatusSub(sFilename);
 }
 
-void OnLoadStatus(void)
+
+void OnLoadStatus(AG_Event *event)
 {
     AG_Window *dlgWin;
     AG_FileDlg *dlg;
-    dlgWin = AG_WindowNew(0);
-    if(dlgWin == NULL) return;
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+//    dlgWin = AG_WindowNew(0);
+//    if(dlgWin == NULL) return;
+    dlg = AG_FileDlgNew(MainWindow, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
 }
 
-void OnQuickLoad(char *s)
+void OnQuickLoad(AG_Event *event)
 {
+#if 0
 	if(strlen(s) <= 0){
 		OnLoadStatus();
 		return;
 	}
 	OnLoadStatusSub(s);
+#endif
 }
 
 
@@ -221,7 +224,7 @@ static void OnSaveStatusSubEv(AG_Event *event)
 }
 
 
-void OnSaveAs(void)
+void OnSaveAs(AG_Event *event)
 {
 	/*
 	 * ファイル選択
@@ -236,13 +239,15 @@ void OnSaveAs(void)
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);
 }
 
-void OnQuickSave(char *s)
+void OnQuickSave(AG_Event *event)
 {
+#if 0
 	if(strlen(s) <= 0){
 		OnSaveAs();
 		return;
 	}
 	OnSaveStatusSub(s);
+#endif
 }
 
 
@@ -298,7 +303,7 @@ static void OnSelectDiskMedia(AG_Event *event)
 void OnDiskPopup(AG_Event *event)
 {
 	AG_MenuItem     *self = (AG_MenuItem *)AG_SELF();
-    int            Drive = AG_INT(1);
+    int            Drive = AG_INT_NAMED("drive");
     int            i;
     char medianame[64];
     char          utf8[256];

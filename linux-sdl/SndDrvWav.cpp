@@ -15,7 +15,6 @@
 
 SndDrvWav::SndDrvWav() {
 	// TODO Auto-generated constructor stub
-	int i;
 
 	chunkP = NULL;
 	enable = FALSE;
@@ -174,9 +173,7 @@ int SndDrvWav::BZero(int start, int uSamples, int slot, BOOL clear)
 int SndDrvWav::Render(int start, int uSamples, int slot, BOOL clear)
 {
 	int i;
-	int sSamples = uSamples;
 	int s;
-	int ss,ss2;
 	Sint16 *p;
 	Sint16 *q;
 	Sint32 tmp;

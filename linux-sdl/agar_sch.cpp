@@ -109,8 +109,9 @@ void  InitSch(void)
  */
 void CleanSch(void)
 {
-
-
+	void *ret;
+	bCloseReq = TRUE; // 終了要求
+	AG_ThreadJoin(SchThread,&ret); // スケジューラが終わるのを待つ
 }
 /*
  *  セレクト
@@ -228,7 +229,8 @@ static void *ThreadSch(void *param)
 {
 	DWORD dwTempTime;
 	BOOL fast_mode;
-	int            tmp;
+	int tmp;
+	int retval;
 
 	/*
 	 * 初期化
@@ -506,7 +508,8 @@ static void *ThreadSch(void *param)
 		 * 終了を明示するため、要求フラグを降ろす
 		 */
 		bCloseReq = FALSE;
-
+		retval = 0;
+		AG_ThreadExit((void *)&retval);
 }
 
 

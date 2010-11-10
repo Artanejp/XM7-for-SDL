@@ -86,12 +86,11 @@ int SndDrvBeep::BZero(int start, int uSamples, int slot, BOOL clear)
 int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 {
 	int i;
-	int sSamples = uSamples;
 	int s;
-	int ss,ss2;
+	int ss;
 	Sint16          *wbuf;
 	int sf;
-   Sint16 level;
+	Sint16 level;
 
 
 	if((slot > bufSlot)  || (slot <0)) return 0;
@@ -101,17 +100,17 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 	if(buf[slot] == NULL) return 0;
 	if(start > s) return 0; /* 開始点にデータなし */
 	if((uSamples + start) >s) {
-		ss2 = s - start;
+		ss = s - start;
 	} else {
-		ss2 = uSamples;
+		ss = uSamples;
 	}
 	if(RenderSem == NULL) return 0;
 	SDL_SemWait(RenderSem);
 	wbuf = (Sint16 *)buf[slot];
 	wbuf = &wbuf[start * channels];
         level = nLevel >>2;
-	//if(clear)  memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
-        memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
+	//if(clear)  memset(wbuf, 0x00, ss * channels * sizeof(Sint16));
+        memset(wbuf, 0x00, ss * channels * sizeof(Sint16));
 	if(enable) {
 
 		/*
@@ -121,7 +120,7 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 		/*
 		 * サンプル書き込み
 		 */
-		for (i = 0; i < ss2; i++) {
+		for (i = 0; i < ss; i++) {
 
 			/*
 			 * 矩形波を作成
@@ -161,15 +160,15 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 				counter = 0;
 			}
 		}
-		bufSize = (start + ss2) * channels * sizeof(Sint16);
+		bufSize = (start + ss) * channels * sizeof(Sint16);
 		chunk[slot].abuf = buf[slot];
-		chunk[slot].alen = (ss2 + start) * channels * sizeof(Sint16);
+		chunk[slot].alen = (ss + start) * channels * sizeof(Sint16);
 		chunk[slot].allocated = 1; /* アロケートされてる */
 		chunk[slot].volume = volume; /* 一応最大 */
 
 	}
-	bufSize = (start + ss2) * channels * sizeof(Sint16);
+	bufSize = (start + ss) * channels * sizeof(Sint16);
 	SDL_SemPost(RenderSem);
-	return ss2;
+	return ss;
 }
 

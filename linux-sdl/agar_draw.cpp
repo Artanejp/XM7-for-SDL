@@ -15,13 +15,14 @@ extern AG_Window *MainWindow;
 extern void EventSDL(void);
 
 
-static void InitGUI(int w, int h)
+void InitGUI(int w, int h)
 {
 	Uint flags = AG_VIDEO_DOUBLEBUF | AG_VIDEO_HWSURFACE | AG_VIDEO_ASYNCBLIT |
 			AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_RESIZABLE;
 	AG_InitVideo(w, h, 32, flags);
 	MainWindow = AG_WindowNew(0);
 }
+
 void ResizeWindow_Agar(int w, int h)
 {
 	AG_ResizeDisplay(w, h);

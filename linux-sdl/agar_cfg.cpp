@@ -99,7 +99,7 @@ static BOOL LoadCfgString(char *key, char *buf, int length)
     char          *dat;
     ASSERT(key);
     dat = INI_getString(pszSection, key, "");
-    if (strlen(dat) == 0 || strlen(dat) > length) {
+    if ((strlen(dat) == 0) || (strlen(dat) > (size_t)length)) {
 	return FALSE;
     }
     strcpy(buf, dat);

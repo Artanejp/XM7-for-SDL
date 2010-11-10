@@ -390,12 +390,16 @@ void detachsub_scaler(void)
 
 void SetupGL(int w, int h)
 {
-	int rgb_size[3];
 #ifdef USE_OPENGL
 	SDL_SemWait(DrawInitSem);
-//	SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE);
 	scalerGL->InitGL(w, h);
 	SDL_SemPost(DrawInitSem);
+#else
+#ifdef USE_AGAR
+
+#else
+	SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE);
+#endif
 #endif
 }
 

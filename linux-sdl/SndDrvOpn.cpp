@@ -472,7 +472,6 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	int sSamples = uSamples;
 	int s;
 	int ss,ss2;
-	Sint16          *wbuf;
 	Uint32 *q;
 
 	s = (ms * srate)/1000;

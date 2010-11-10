@@ -168,8 +168,13 @@ void OnCreate(void *parent)
                 nErrorCode = 2;
         }
 }
+#ifdef __cplusplus
+}
+#endif
 
 extern void MainLoop(int argc, char *argv[]);
+extern void InitGUI(int w, int h);
+
 /*
  *  メイン関数
  */
@@ -194,15 +199,12 @@ int main(int argc, char *argv[])
                 mkdir(ModuleDir, 0777);
         }
 
-        SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
         AG_InitCore("xm7", AG_CREATE_DATADIR | AG_VERBOSE);
-
 
 #if ((XM7_VER <= 2) && defined(FMTV151))
         bFMTV151 = TRUE;
 #endif				/*  */
-
-//        InitUI(argc, argv);
+        InitGUI(640, 480);
 /*
  * アプリケーション初期化
  */
@@ -210,6 +212,3 @@ int main(int argc, char *argv[])
         MainLoop(argc, argv);
         return nErrorCode;
 }
-#ifdef __cplusplus
-}
-#endif
