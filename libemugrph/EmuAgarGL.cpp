@@ -7,6 +7,7 @@
  *      see also : http://
  */
 
+#include <SDL.h>
 #include "EmuAgarGL.h"
 
 
@@ -52,6 +53,33 @@ void EmuAgarGL::SetDrawArea(AG_Window *p, int x, int y, int w, int h)
 
 void EmuAgarGL::InitGL(int w, int h)
 {
+	SDL_Surface *s;
+	Uint32 flags;
+	int bpp = 32;
+	int rgb_size[3];
+
+	flags = SDL_OPENGL | SDL_RESIZABLE;
+#if 1
+    switch (bpp) {
+         case 8:
+             rgb_size[0] = 3;
+             rgb_size[1] = 3;
+             rgb_size[2] = 2;
+             break;
+         case 15:
+         case 16:
+             rgb_size[0] = 5;
+             rgb_size[1] = 5;
+             rgb_size[2] = 5;
+             break;
+         default:
+             rgb_size[0] = 8;
+             rgb_size[1] = 8;
+             rgb_size[2] = 8;
+             break;
+     }
+#endif
+
 	// Surfaceつくる
 	format.BitsPerPixel = 32;
 	format.BytesPerPixel = 4;
@@ -71,6 +99,9 @@ void EmuAgarGL::InitGL(int w, int h)
 	format.Bshift = 0;
 	format.Ashift = 24;
 	video = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)w, (Uint)h , &format, AG_SRCCOLORKEY);
+    InitVideo = TRUE;
+
+	return;
 }
 
 void EmuAgarGL::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
