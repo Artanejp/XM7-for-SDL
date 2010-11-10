@@ -600,6 +600,7 @@ BYTE FASTCALL joy_request(BYTE no)
 	 * ASSERT((no >= 0) && (no < 3));
 	 */
 	ASSERT(no < 3);
+	printf("JOY: %02x %02x %02x\n", joydat[0], joydat[1], joydat[2]);
 	return joydat[no];
 }
 

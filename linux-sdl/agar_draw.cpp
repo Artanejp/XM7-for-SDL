@@ -11,7 +11,7 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
-extern AG_Box *DrawArea;
+extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
 extern void EventSDL(void);
 
@@ -94,6 +94,9 @@ void AGDrawTaskMain(void)
 		 */
 //		SDL_SemWait(DrawInitSem);
 		AG_ObjectLock(DrawArea);
+		if(scalerGL){
+			scalerGL->SetDrawArea(AGWIDGET(DrawArea), 0, 0, nDrawWidth, nDrawHeight);
+		}
 		switch (bMode) {
 		case SCR_400LINE:
 			Draw400l();
@@ -108,6 +111,7 @@ void AGDrawTaskMain(void)
 			Draw640All();
 			break;
 		}
+		AG_GLViewDraw(DrawArea);
 		AG_ObjectUnlock(DrawArea);
 //		SDL_SemPost(DrawInitSem);
 #else				/*  */

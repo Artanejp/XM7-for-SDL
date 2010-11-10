@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
         }
 
         AG_InitCore("xm7", AG_CREATE_DATADIR | AG_VERBOSE);
-        SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
+        //SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
 
 #if ((XM7_VER <= 2) && defined(FMTV151))
         bFMTV151 = TRUE;

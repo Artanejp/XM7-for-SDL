@@ -34,6 +34,14 @@ extern "C"
 {
 #endif
 
+#ifdef USE_AGAR
+static inline void putdot(GLubyte *addr, Uint32 c)
+{
+	Uint32 *addr32 = (Uint32 *)addr;
+	*addr32 = c;
+}
+
+#else
 static inline void putdot(GLubyte *addr, Uint32 c)
 {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -48,6 +56,7 @@ static inline void putdot(GLubyte *addr, Uint32 c)
     addr[0] = (c >> 16) & 0xff; /* G */
 #endif
 }
+#endif
 
 void PutWordGL(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {
@@ -61,6 +70,13 @@ void PutWordGL(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 		putdot((GLubyte *)&disp[7], cbuf[0]);
 }
 
+#ifdef USE_AGAR
+static inline void putdot8(GLubyte *addr, Uint32 c)
+{
+	Uint32 *addr32 = (Uint32 *)addr;
+	*addr32 = c;
+}
+#else
 static inline void putdot8(GLubyte *addr, Uint32 c)
 {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -75,6 +91,7 @@ static inline void putdot8(GLubyte *addr, Uint32 c)
     addr[0] = (c >> 16) & 0xff; /* G */
 #endif
 }
+#endif
 
 void PutWordGL8(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {

@@ -113,7 +113,7 @@ AG_MenuItem *Menu_Tools;
 AG_MenuItem *Menu_Help;
 AG_MenuItem *Menu_About;
 AG_Menu *MenuBar;
-AG_Box *DrawArea;
+AG_GLView *DrawArea;
 
 extern "C" {
 void OnDestroy(AG_Event *event);
@@ -122,7 +122,6 @@ extern int DrawThreadMain(void *);
 
 void MainLoop(int argc, char *argv[])
 {
-	SDL_Surface *s;
 	/*
 	 * エラーコード別
 	 */
@@ -167,11 +166,14 @@ void MainLoop(int argc, char *argv[])
 //	s = SDL_SetVideoMode(640, 480, 32, SDL_RESIZABLE | SDL_OPENGL | SDL_DOUBLEBUF | SDL_HWSURFACE);
 //	AG_InitVideoSDL(s, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
 	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
+    SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO);
+
 
 	InitInstance();
 	Create_AGMainBar();
-	DrawArea = AG_BoxNewHoriz(MainWindow, 0);
-	AG_WidgetSetSize(DrawArea, 1280, 800);
+	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow), AG_GLVIEW_EXPAND);
+	AG_GLViewSizeHint(DrawArea, 640, 400);
+	AG_WidgetSetSize(DrawArea, 640, 400);
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 
