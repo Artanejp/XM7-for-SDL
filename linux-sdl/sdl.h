@@ -34,9 +34,9 @@ extern          "C" {
  *  定数、型定義 
  */ 
 typedef unsigned int UINT;
-#ifndef BOOL
-typedef int BOOL;
-#endif
+//#ifndef BOOL
+//typedef int BOOL;
+//#endif
 
 /*
  *  主要エントリ 

@@ -1067,7 +1067,6 @@ void RenderFullScan(void)
 	s = drv->sRef;
 #else
 	SDL_Surface *s = SDL_GetVideoSurface();
-	Uint32 pitch;
 	Uint32 nullcolor;
 #endif
 	if(bUseOpenGL) {
@@ -1141,7 +1140,6 @@ void RenderSetOddLine(void)
 #else
 	SDL_Surface *s = SDL_GetVideoSurface();
 	SDL_Rect r;
-	Uint32 pitch;
 	Uint32 nullcolor;
 #endif
 	if(bUseOpenGL) {

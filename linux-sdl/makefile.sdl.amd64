@@ -184,6 +184,7 @@ LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
 LIBS += -lGL -lGLU
+LIBS += -lag_core -lag_gui -ljpeg
 #LIBS += -lmemwatch
 
 
