@@ -72,8 +72,8 @@ extern "C" {
 */
 void LockVM(void)
 {
-	if(VMMutex == NULL) return;
-	AG_MutexLock(VMMutex);
+//	if(VMMutex == NULL) return;
+//	AG_MutexLock(VMMutex);
 }
 /*
  *  VMをアンロック
@@ -81,8 +81,8 @@ void LockVM(void)
 void
 UnlockVM(void)
 {
-	if(VMMutex == NULL) return;
-	AG_MutexUnlock(VMMutex);
+//	if(VMMutex == NULL) return;
+//	AG_MutexUnlock(VMMutex);
 }
 /*-[ ドローウインドウ ]-----------------------------------------------------*/
 
@@ -100,7 +100,7 @@ void CreateDraw(void)
     /*
      *  ウインドウ作成
      */
-void OnCreate(void *parent)
+void OnCreate(AG_Widget *parent)
 {
         BOOL        flag;
 //    CreateMenu();
@@ -200,11 +200,11 @@ int main(int argc, char *argv[])
         }
 
         AG_InitCore("xm7", AG_CREATE_DATADIR | AG_VERBOSE);
+        SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
 
 #if ((XM7_VER <= 2) && defined(FMTV151))
         bFMTV151 = TRUE;
 #endif				/*  */
-        InitGUI(640, 480);
 /*
  * アプリケーション初期化
  */

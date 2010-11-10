@@ -54,7 +54,7 @@ extern "C"
 /*
  * VMアンロック
  */
-extern void     OnCreate(void *parent);
+extern void     OnCreate(AG_Widget *parent);
 /*
  * 以下、Toolkit依存部分
  */

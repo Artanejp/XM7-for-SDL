@@ -45,7 +45,10 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
-
+#ifdef USE_AGAR
+extern AG_Window *MainWindow;
+extern AG_Box *DrawArea;
+#endif
 /*
  *  グローバル ワーク
  */
@@ -260,7 +263,8 @@ BOOL SelectDraw2(void)
 		}
 #ifdef USE_AGAR
 		if(agDriverOps == NULL) return FALSE;
-		drv = AG_DriverOpen(agDriverOps);
+		if(DrawArea == NULL) return FALSE;
+		drv = AGWIDGET(DrawArea)->drv;
 		if(drv == NULL) return FALSE;
 #else
 		p = SDL_GetVideoSurface();
@@ -275,13 +279,14 @@ BOOL SelectDraw2(void)
 			 * すべてクリア
 			 */
 #ifdef USE_AGAR
-			AG_ObjectLock(agDriverOps);
+			AG_ObjectLock(DrawArea);
 			nullcolor.r = 0;
 			nullcolor.g = 0;
 			nullcolor.b = 0;
 			nullcolor.a = 255;
-			agDriverOps->fillRect(drv, rect, nullcolor);
-			AG_ObjectUnlock(agDriverOps);
+
+			AG_FillRect(drv->sRef, &rect, nullcolor);
+			AG_ObjectUnlock(DrawArea);
 #else
 			SDL_LockSurface(p);
 			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
@@ -292,7 +297,7 @@ BOOL SelectDraw2(void)
 			 * すべてクリア
 			 */
 #ifdef USE_AGAR
-			AG_DriverClose(drv);
+			//AG_DriverClose(drv);
 #else
 			if(realDrawArea != p) {
 				SDL_LockSurface(realDrawArea);
@@ -414,7 +419,7 @@ static int DrawTaskMain(void *arg)
 static void initsub(void);
 static void detachsub(void);
 
-static int DrawThreadMain(void *p)
+int DrawThreadMain(void *p)
 {
 		initsub();
 		ResizeWindow(640,400);
@@ -447,11 +452,15 @@ static int DrawThreadMain(void *p)
 #endif
 
 #ifdef USE_AGAR
-			AGDrawTaskEvent();
+			if(DrawArea == NULL) continue;
 #endif
 
 			if(nDrawCount > 0) {
 				nDrawCount --;
+#ifdef USE_AGAR
+
+				AGDrawTaskEvent();
+#endif
 				continue;
 			} else {
 				nDrawCount = DrawCountSet(nDrawFPS);
@@ -460,6 +469,7 @@ static int DrawThreadMain(void *p)
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
 			AGDrawTaskMain();
+			AGDrawTaskEvent();
 #else
 			DrawTaskMain(NULL);
 #endif
@@ -687,10 +697,12 @@ void	InitDraw(void)
 		if(!DrawCond) {
 			DrawCond = SDL_CreateCond();
 		}
+#ifndef USE_AGAR
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
 			SDL_mutexV(DrawMutex);
 		}
+#endif
 		if(!DrawInitSem) {
 			DrawInitSem = SDL_CreateSemaphore(1);
 			SDL_SemPost(DrawInitSem);
@@ -709,11 +721,13 @@ void	CleanDraw(void)
 		if(DrawCond != NULL) {
 			SDL_CondSignal(DrawCond);
 		}
+#ifndef USE_AGAR
 		if(DrawThread != NULL) {
 			//			SDL_KillThread(DrawThread);
 			SDL_WaitThread(DrawThread, &reti);
 			DrawThread = NULL;
 		}
+#endif
 		if(DrawCond != NULL) {
 			SDL_DestroyCond(DrawCond);
 			DrawCond = NULL;
@@ -864,10 +878,9 @@ BOOL SelectDraw(void)
 	AG_Driver *drv;
 	AG_Color nullcolor;
 	AG_Rect rect;
-
-	if(agDriverOps == NULL) return FALSE;
-	drv = AG_DriverOpen(agDriverOps);
-
+	if(DrawArea == NULL) return FALSE;
+	drv = AGWIDGET(DrawArea)->drv;
+	if(drv == NULL) return FALSE;
 #else
 	SDL_Surface *p;
 	Uint32 nullcolor;
@@ -892,14 +905,14 @@ BOOL SelectDraw(void)
 	 */
 	 if(!bUseOpenGL) {
 #ifdef USE_AGAR
-		 AG_ObjectLock(agDriverOps);
+		 AG_ObjectLock(DrawArea);
 		 nullcolor.r = 0;
 		 nullcolor.g = 0;
 		 nullcolor.b = 0;
 		 nullcolor.a = 255;
-		 agDriverOps->fillRect(drv, rect, nullcolor);
-		 AG_DriverClose(drv);
-		 AG_ObjectUnlock(agDriverOps);
+
+		 AG_FillRect(drv->sRef, &rect, nullcolor);
+		 AG_ObjectUnlock(DrawArea);
 #else
 		 SDL_LockSurface(p);
 		 nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
@@ -933,10 +946,12 @@ BOOL SelectDraw(void)
 	 if(!DrawCond) {
 		 DrawCond = SDL_CreateCond();
 	 }
+#ifndef USE_AGAR
 	 if(!DrawThread) {
 		 DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
 		 SDL_mutexV(DrawMutex);
 	 }
+#endif
 	 /*
 	  * セレクト
 	  */
@@ -983,8 +998,8 @@ void AllClear(void)
 		GDIDrawFlag[i] = 0;
 	}
 #ifdef USE_AGAR
-	if(agDriverOps == NULL) return;
-	drv = AG_DriverOpen(agDriverOps);
+	if(DrawArea == NULL) return;
+	drv = AGWIDGET(DrawArea)->drv;
 	if(drv == NULL) return;
 #else
 	p = SDL_GetVideoSurface();
@@ -999,14 +1014,13 @@ void AllClear(void)
 		 * すべてクリア
 		 */
 #ifdef USE_AGAR
-		 AG_ObjectLock(agDriverOps);
+		 AG_ObjectLock(DrawArea);
 		 nullcolor.r = 0;
 		 nullcolor.g = 0;
 		 nullcolor.b = 0;
 		 nullcolor.a = 255;
-		 agDriverOps->fillRect(drv, rect, nullcolor);
-		 AG_DriverClose(drv);
-		 AG_ObjectUnlock(agDriverOps);
+		 AG_FillRect(drv->sRef, &rect, nullcolor);
+		 AG_ObjectUnlock(DrawArea);
 #else
 		SDL_LockSurface(p);
 		nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
@@ -1062,7 +1076,8 @@ void RenderFullScan(void)
 	AG_Surface *s;
 
 	if(agDriverOps == NULL) return;
-	drv = AG_DriverOpen(agDriverOps);
+	if(DrawArea == NULL) return;
+	drv = AGWIDGET(DrawArea)->drv;
 	if(drv == NULL) return;
 	s = drv->sRef;
 #else
@@ -1071,20 +1086,18 @@ void RenderFullScan(void)
 #endif
 	if(bUseOpenGL) {
 #ifdef USE_AGAR
-		AG_DriverClose(drv);
 #endif
 		return;
 	}
 	if(s == NULL) {
 #ifdef USE_AGAR
-		AG_DriverClose(drv);
 #endif
 		return;
 	}
 
 	if(!bUseOpenGL) {
 #ifdef USE_AGAR
-		AG_ObjectLock(agDriverOps);
+		AG_ObjectLock(DrawArea);
 #else
 		SDL_LockSurface(s);
 #endif
@@ -1105,8 +1118,7 @@ void RenderFullScan(void)
 			q += pitch * 2;
 		}
 #ifdef USE_AGAR
-		AG_DriverClose(drv);
-		AG_ObjectUnlock(agDriverOps);
+		AG_ObjectUnlock(DrawArea);
 #else
 		SDL_UnlockSurface(s);
 #endif
@@ -1132,9 +1144,10 @@ void RenderSetOddLine(void)
 	AG_Color nullcolor;
 	AG_Surface *s;
 	AG_Rect r;
-
+	return;
 	if(agDriverOps == NULL) return;
-	drv = AG_DriverOpen(agDriverOps);
+	if(DrawArea == NULL) return;
+	drv = AGWIDGET(DrawArea)->drv;
 	if(drv == NULL) return;
 	s = drv->sRef;
 #else
@@ -1144,20 +1157,18 @@ void RenderSetOddLine(void)
 #endif
 	if(bUseOpenGL) {
 #ifdef USE_AGAR
-		AG_DriverClose(drv);
 #endif
 		return;
 	}
 	if(s == NULL) {
 #ifdef USE_AGAR
-		AG_DriverClose(drv);
 #endif
 		return;
 	}
 
 	if(!bUseOpenGL) {
 #ifdef USE_AGAR
-		AG_ObjectLock(agDriverOps);
+		AG_ObjectLock(DrawArea);
 		nullcolor.r = 0;
 		nullcolor.g = 0;
 		nullcolor.b = 0;
@@ -1175,7 +1186,7 @@ void RenderSetOddLine(void)
 				r.y = u;
 				r.h = 2;
 #ifdef USE_AGAR
-				agDriverOps->fillRect(drv, r, nullcolor);
+				AG_FillRect(drv->sRef, &r, nullcolor);
 #else
 				SDL_FillRect(s, &r, nullcolor);
 #endif
@@ -1189,7 +1200,7 @@ void RenderSetOddLine(void)
 				r.y = u;
 				r.h = 1;
 #ifdef USE_AGAR
-				agDriverOps->fillRect(drv, r, nullcolor);
+				AG_FillRect(drv->sRef, &r, nullcolor);
 #else
 				SDL_FillRect(s, &r, nullcolor);
 #endif
@@ -1197,8 +1208,7 @@ void RenderSetOddLine(void)
 			break;
 		}
 #ifdef USE_AGAR
-		AG_DriverClose(drv);
-		AG_ObjectUnlock(agDriverOps);
+		AG_ObjectUnlock(DrawArea);
 #else
 		SDL_UnlockSurface(s);
 		displayArea = SDL_GetVideoSurface();
@@ -1766,14 +1776,15 @@ void Draw640All(void)
 	AG_Driver *drv;
 
 	if(agDriverOps == NULL) return;
-	drv = AG_DriverOpen(agDriverOps);
-	if(drv == NULL) return;
-	p = (SDL_Surface *)(drv->sRef);
+//	drv = AG_DriverOpen(agDriverOps);
+//	drv = agDriverSw;
+//	if(drv == NULL) return;
+//	p = (SDL_Surface *)(drv->sRef);
 
 #else
 	p = SDL_GetVideoSurface();
 #endif
-	if(p == NULL) return;
+//	if(p == NULL) return;
 	/*
 	 * パレット設定
 	 */

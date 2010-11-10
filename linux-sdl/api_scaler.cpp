@@ -455,7 +455,10 @@ void InitGL(int w, int h)
     SDL_SemPost(InitSem);
 
 #else
-       SDL_SemWait(DrawInitSem);
+#ifdef USE_AGAR
+
+#endif
+    SDL_SemWait(DrawInitSem);
    if(scalerGL) {
     	scalerGL->InitGL(w, h);
     }
@@ -504,7 +507,7 @@ void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 
 void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
-	scalerGL->SetViewPort(0,0,p->w, p->h);
+	scalerGL->SetViewPort(0,0,w, h);
 //	scalerGL->SetViewPort();
         if(!bFullScan) {
 	   scalerGL->SetScanLine(TRUE);

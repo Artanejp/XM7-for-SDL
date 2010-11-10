@@ -25,7 +25,13 @@
 #ifndef _SDL_H
 #include <SDL.h>
 #endif				/*  */
-    
+
+#ifdef USE_AGAR
+#include <agar/core.h>
+#include <agar/core/types.h>
+#include <agar/gui.h>
+#endif
+
 #ifdef __cplusplus
 extern          "C" {
     
@@ -54,7 +60,11 @@ typedef unsigned int UINT;
 #ifdef USE_GTK
         extern void     OnCreate(GtkWidget *parent);
 #else
+#ifdef USE_AGAR
+        extern void     OnCreate(AG_Widget *parent);
+#else
         extern void     OnCreate(void *parent);
+#endif
 #endif
 /*
  * 以下、Toolkit依存部分

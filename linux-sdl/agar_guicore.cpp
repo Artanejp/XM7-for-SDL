@@ -4,7 +4,7 @@
  *  Created on: 2010/11/08
  *      Author: whatisthis
  */
-
+#include <SDL.h>
 #include <libintl.h>
 #include <agar/core.h>
 #include <agar/core/types.h>
@@ -30,9 +30,13 @@
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 
+extern "C" {
+void InitInstance(void);
+}
 
 AG_Window *MainWindow;
 AG_Menu *ToolBarMenu;
+
 
 static void Create_AGMainBar(void);
 static void Create_FileMenu(void);
@@ -109,14 +113,16 @@ AG_MenuItem *Menu_Tools;
 AG_MenuItem *Menu_Help;
 AG_MenuItem *Menu_About;
 AG_Menu *MenuBar;
-
+AG_Box *DrawArea;
 
 extern "C" {
 void OnDestroy(AG_Event *event);
 }
+extern int DrawThreadMain(void *);
 
 void MainLoop(int argc, char *argv[])
 {
+	SDL_Surface *s;
 	/*
 	 * エラーコード別
 	 */
@@ -124,6 +130,7 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * エラーなし
 	 */
+
 	case 0:
 		/*
 		 * 実行開始
@@ -155,8 +162,21 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
+	OnCreate((AG_Widget *)NULL);
+
+//	s = SDL_SetVideoMode(640, 480, 32, SDL_RESIZABLE | SDL_OPENGL | SDL_DOUBLEBUF | SDL_HWSURFACE);
+//	AG_InitVideoSDL(s, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
+	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
+
+	InitInstance();
 	Create_AGMainBar();
-	AG_EventLoop();
+	DrawArea = AG_BoxNewHoriz(MainWindow, 0);
+	AG_WidgetSetSize(DrawArea, 1280, 800);
+	stopreq_flag = FALSE;
+	run_flag = TRUE;
+
+//	AG_EventLoop();
+	DrawThreadMain(NULL);
 }
 
 
@@ -271,7 +291,7 @@ void OnDestroy(AG_Event *event)
 
 void InitInstance(void)
 {
-//	MainWindow = AG_WindowNew(0);
+	MainWindow = AG_WindowNew(0);
 }
 
 /*
