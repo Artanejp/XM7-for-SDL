@@ -3,7 +3,6 @@
  * INIファイルアクセス ] 
  */  
     
-#ifdef _XWIN
     
 #ifndef _xw_inifile_h_
 #define _xw_inifile_h_
@@ -16,7 +15,10 @@
     
     /*
      *  初期化 
-     */ 
+     */
+#ifdef __cplusplus
+extern "C" {
+#endif
 void            INI_init(char *inifile);
 
     /*
@@ -78,6 +80,7 @@ char           *INI_getString(char *section, char *key, char *defvalue);
      *  文字列を設定 
      */ 
 void            INI_setString(char *section, char *key, char *value);
-
+#ifdef __cplusplus
+}
+#endif
 #endif	/* _xw_inifile_h_ */
-#endif	/* _XWIN */

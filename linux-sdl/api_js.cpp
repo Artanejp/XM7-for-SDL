@@ -16,7 +16,9 @@
 #include <vector>
 #include "SDLJoyInterface.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #include "xm7.h"
 #include "mainetc.h"
@@ -32,7 +34,7 @@ extern "C" {
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "api_js.h"
-//#include "gtk_propkeyboard.h"
+
 
 int            nJoyType[2];	/* ジョイスティックタイプ */
 int            nJoyRapid[2][2];	/* 連射タイプ */
@@ -714,4 +716,6 @@ BOOL OnReleaseJoy(SDL_Event * event)
 	for(i = 0; i< MAX_SDL_JOY; i++) SDLDrv[i].OnRelease(event);
 	return TRUE;
 }
+#ifdef __cplusplus
 }
+#endif

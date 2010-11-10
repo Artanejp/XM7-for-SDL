@@ -13,6 +13,13 @@
 #include<gdk/gdkkeysyms.h>
 #endif
 
+#ifdef USE_AGAR
+#include <agar/core.h>
+#include <agar/core/types.h>
+#include <agar/gui.h>
+#include <agar/gui/cursors.h>
+#endif
+
 #include<memory.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -35,10 +42,17 @@
 #include "api_js.h"
 #include "api_mouse.h"
 
+#ifdef USE_GTK
 #include "gtk_propkeyboard.h"
+#endif
 
 extern "C" {
+#ifdef USE_GTK
 static GdkCursor *nullcursor;	/* 透明カーソル */
+#endif
+#ifdef USE_AGAR
+AG_Cursor *nullcursor;
+#endif
 
 #ifdef MOUSE
 static DWORD    mostime;	/* マウスポーリング時間 */
@@ -95,6 +109,10 @@ void InitMouse()
 /*
  * 透明カーソル生成
  */
+#ifdef USE_AGAR
+
+#endif
+
 #endif
 
 }
@@ -104,10 +122,15 @@ void InitMouse()
 void
 SetMouseCapture(BOOL en)
 {
-	int            x,
-	y;
+	int   x;
+	int   y;
+#ifdef USE_GTK
 	GdkModifierType state;
 	GdkCursor * cursor;
+#endif
+#ifdef USE_AGAR
+	AG_Cursor *cursor;
+#endif
 	//    SDL_Cursor * cursor;
 	//SDL_SysWMinfo sdlinfo;
 	/*
@@ -327,9 +350,11 @@ PollMos(void)
 			  * マウスキャプチャフラグを反転させてモード切り替え
 			  */
 			 mos_capture = (!mos_capture);
+#ifdef USE_GTK
 			 gdk_threads_enter();
 			 SetMouseCapture(bActivate);
 			 gdk_threads_leave();
+#endif
 		 }
 
 		 /*

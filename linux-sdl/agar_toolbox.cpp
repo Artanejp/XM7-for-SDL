@@ -41,6 +41,16 @@
 
 #include "agar_toolbox.h"
 
+
+extern AG_MenuItem *Menu_File;
+extern AG_MenuItem *Menu_Drive0;
+extern AG_MenuItem *Menu_Drive1;
+extern AG_MenuItem *Menu_Tape;
+extern AG_MenuItem *Menu_Debug;
+extern AG_MenuItem *Menu_Tools;
+extern AG_MenuItem *Menu_Help;
+extern AG_MenuItem *Menu_About;
+
 static Disk   disk[2][FDC_MEDIAS];
 static char     StatePath[MAXPATHLEN];
 static char    DiskTitle[16 + 1];
@@ -52,7 +62,6 @@ static BOOL    DiskFormat;
 #ifdef MOUSE
 //static guint   hidMouseCapture;
 #endif				/*  */
-
 
 
 static AG_MenuItem *drive_menu[2];
@@ -142,7 +151,7 @@ static void OnLoadStatusSub(char *filename)
     }
 }
 
-static void OnLoadStatusSub(AG_Event *event)
+static void OnLoadStatusSubEv(AG_Event *event)
 {
     AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
@@ -159,7 +168,7 @@ void OnLoadStatus(void)
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
-    AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSub, NULL);
+    AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
 }
 
 void OnQuickLoad(char *s)
@@ -203,11 +212,11 @@ static void OnSaveStatusSub(char *filename)
     }
 }
 
-static void OnSaveStatusSub(AG_Event *event)
+static void OnSaveStatusSubEv(AG_Event *event)
 {
     AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
-    AG_FileType *ft = AG_PTR(2);
+    AG_FileType *ft = (AG_FileType *)AG_PTR(2);
     OnSaveStatusSub(sFilename);
 }
 
@@ -221,10 +230,10 @@ void OnSaveAs(void)
     AG_FileDlg *dlg;
     dlgWin = AG_WindowNew(0);
     if(dlgWin == NULL) return;
-    dlg = AG_FileDlgNew(win, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
-    AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSub, NULL);
+    AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);
 }
 
 void OnQuickSave(char *s)
@@ -278,7 +287,7 @@ static void OnSelectDiskMedia(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
-	BOOL selected = (BOOL)AG_BOOL(2);
+	BOOL selected = (BOOL)AG_INT(2);
 }
 
 
@@ -291,7 +300,6 @@ void OnDiskPopup(AG_Event *event)
 	AG_MenuItem     *self = (AG_MenuItem *)AG_SELF();
     int            Drive = AG_INT(1);
     int            i;
-    iconv_t       hd;
     char medianame[64];
     char          utf8[256];
     char          *pIn, *pOut;
@@ -301,16 +309,13 @@ void OnDiskPopup(AG_Event *event)
     if(midrive_open[Drive] != NULL) AG_MenuItemFree(midrive_open[Drive]);
     if(midrive_openboth[Drive] != NULL) AG_MenuItemFree(midrive_openboth[Drive]);
     if(midrive_eject[Drive] != NULL) AG_MenuItemFree(midrive_eject[Drive]);
-    if(midrive_sep[Drive][0] != NULL) AG_MenuItemFree(midrive_sep[Drive][0]);
-    if(midrive_sep[Drive][1] != NULL)AG_MenuItemFree(midrive_sep[Drive][1]);
-    if(midrive_sep[Drive][2] != NULL)AG_MenuItemFree(midrive_sep[Drive][2]);
     if(midrive_teject[Drive] != NULL)AG_MenuItemFree(midrive_teject[Drive]);
     if(midrive_writep[Drive] != NULL)AG_MenuItemFree(midrive_writep[Drive]);
     for (i = 0; i < FDC_MEDIAS; i++) {
     	if(midrive_medias[Drive][i] != NULL)AG_MenuItemFree(midrive_medias[Drive][i]);
     }
-   midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, Drive);
-   midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, Drive);
+   midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
+   midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, "%i", Drive);
 	/*
 	 * ディスクが挿入されていなければ、ここまで
 	 */
@@ -321,7 +326,7 @@ void OnDiskPopup(AG_Event *event)
 	/*
 	 * イジェクト
 	 */
-	midrive_eject[Drive] = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, Drive);
+	midrive_eject[Drive] = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, "%i", Drive);
 	/*
 	 * セパレータ挿入
 	 */
@@ -330,11 +335,11 @@ void OnDiskPopup(AG_Event *event)
 	/*
 	 * 一時取り出し
 	 */
-	midrive_teject[Drive] = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, Drive, fdc_teject[Drive]);
+	midrive_teject[Drive] = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, "%i,%i", Drive, fdc_teject[Drive]);
 	/*
 	 * ライトプロテクト
 	 */
-	midrive_writep[Drive] = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, Drive, !fdc_fwritep[Drive]);
+	midrive_writep[Drive] = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i,%i", Drive, !fdc_fwritep[Drive]);
 
 	/*
 	 * セパレータ挿入
@@ -357,9 +362,9 @@ void OnDiskPopup(AG_Event *event)
                 iconv_close(hd);
         }
         if (fdc_media[Drive] == i) {
-        	midrive_medias[Drive][i] = AG_MenuDynamicItem(self, utf8, NULL, OnSelectDiskMedia, Drive, TRUE);
+        	midrive_medias[Drive][i] = AG_MenuDynamicItem(self, utf8, NULL, OnSelectDiskMedia, "%i,%i", Drive, TRUE);
         } else {
-        	midrive_medias[Drive][i] = AG_MenuDynamicItem(self, utf8, NULL, OnSelectDiskMedia, Drive, FALSE);
+        	midrive_medias[Drive][i] = AG_MenuDynamicItem(self, utf8, NULL, OnSelectDiskMedia, "%i,%i", Drive, FALSE);
         }
     }
 }
@@ -536,16 +541,13 @@ static void CreateDiskMenu(AG_MenuItem *self, int Drive)
     if(midrive_open[Drive] != NULL) AG_MenuItemFree(midrive_open[Drive]);
     if(midrive_openboth[Drive] != NULL) AG_MenuItemFree(midrive_openboth[Drive]);
     if(midrive_eject[Drive] != NULL) AG_MenuItemFree(midrive_eject[Drive]);
-    if(midrive_sep[Drive][0] != NULL) AG_MenuItemFree(midrive_sep[Drive][0]);
-    if(midrive_sep[Drive][1] != NULL)AG_MenuItemFree(midrive_sep[Drive][1]);
-    if(midrive_sep[Drive][2] != NULL)AG_MenuItemFree(midrive_sep[Drive][2]);
     if(midrive_teject[Drive] != NULL)AG_MenuItemFree(midrive_teject[Drive]);
     if(midrive_writep[Drive] != NULL)AG_MenuItemFree(midrive_writep[Drive]);
     for (i = 0; i < FDC_MEDIAS; i++) {
     	if(midrive_medias[Drive][i] != NULL)AG_MenuItemFree(midrive_medias[Drive][i]);
     }
-   midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, Drive);
-   midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, Drive);
+   midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
+   midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, "%i", Drive);
 	/*
 	 * ディスクが挿入されていなければ、ここまで
 	 */
@@ -556,7 +558,7 @@ static void CreateDiskMenu(AG_MenuItem *self, int Drive)
 	/*
 	 * イジェクト
 	 */
-	midrive_eject[Drive] = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, Drive);
+	midrive_eject[Drive] = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, "%i", Drive);
 	/*
 	 * セパレータ挿入
 	 */
@@ -565,11 +567,11 @@ static void CreateDiskMenu(AG_MenuItem *self, int Drive)
 	/*
 	 * 一時取り出し
 	 */
-	midrive_teject[Drive] = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, Drive, fdc_teject[Drive]);
+	midrive_teject[Drive] = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, "%i,%i", Drive, fdc_teject[Drive]);
 	/*
 	 * ライトプロテクト
 	 */
-	midrive_writep[Drive] = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, Drive, !fdc_fwritep[Drive]);
+	midrive_writep[Drive] = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i,%i", Drive, !fdc_fwritep[Drive]);
 
 	/*
 	 * セパレータ挿入
@@ -592,7 +594,7 @@ void CreateDiskMenu_0 (void)
             disk[0][i].drive = 0;
             disk[0][i].media = i;
     }
-    CreateDiskMenu(0, node);
+    CreateDiskMenu(node, 0);
     return;
 }
 
@@ -613,7 +615,7 @@ void CreateDiskMenu_1 (void)
             disk[1][i].drive = 1;
             disk[1][i].media = i;
     }
-    CreateDiskMenu(1, node);
+    CreateDiskMenu(node, 1);
     return;
 }
 
@@ -1498,7 +1500,7 @@ void CreateMenu(void)
 /*
  * 「ファイル」メニューを作成する関数を呼び出す
  */
-    CreateFileMenu(void);
+    //CreateFileMenu();
 /*
  * 「ドライブ0」メニューを作成する関数を呼び出す
  */

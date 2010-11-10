@@ -16,11 +16,6 @@
 #include "aluline.h"
 #include "ttlpalet.h"
 #include "multipag.h"
-/*
- * XM7/SDL依存 
- */
-#include "sdl.h"
-#include "api_draw.h"
 
 /*
  *      グローバル ワーク

@@ -17,8 +17,13 @@
 /*
  * XM7/SDL依存 
  */
-#include <sdl.h>
-#include <sdl_draw.h>
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
+#include "sdl.h"
+#endif
+
+#include "api_draw.h"
 
 /*
  *      グローバル ワーク

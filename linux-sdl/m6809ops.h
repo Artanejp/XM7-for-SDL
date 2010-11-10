@@ -11,7 +11,9 @@ HNZVC
 @ = special - carry set if bit 7 is set
 
 */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 //#define OP_HANDLER(_name) INLINE void _name (m68_state_t *m68_state)
 #define OP_HANDLER(_name) INLINE void _name (cpu6809_t *m68_state)
 
@@ -200,7 +202,7 @@ OP_HANDLER( nop )
 }
 
 /* $13 SYNC inherent ----- */
-OP_HANDLER( sync )
+OP_HANDLER( sync_09 ) // Rename 20101110
 {
    //cpu6809_t *t = m68_state;
      if((m68_state->intr & INTR_SYNC_IN) == 0)
@@ -3179,3 +3181,6 @@ OP_HANDLER( pref11 )
 	}
 }
 
+#ifdef __cplusplus
+}
+#endif

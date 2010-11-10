@@ -6,10 +6,12 @@
  *      Author: K.Ohta<whatisthis.sowhat@gmail.com>
  */
 extern "C" {
+#ifdef USE_GTK
 #include <X11/Xlib.h>
-//#include <gtk/gtk.h>
-//#include <gdk/gdkx.h>
-//#include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <gdk/gdkkeysyms.h>
+#endif
 #include <memory.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -30,11 +32,13 @@ extern "C" {
 #include "api_kbd.h"
 #include "KbdInterface.h"
 #include "SDLKbdInterface.h"
+#ifdef USE_GTK
 #include "GtkKbdInterface.h"
+#include "gtk_propkeyboard.h"
+#endif
 #ifdef USE_AGAR
 #include "AgarKbdInterface.h"
 #endif
-//#include "gtk_propkeyboard.h"
 
 BOOL bKbdReal;			/* 疑似リアルタイムキースキャン
  */
@@ -113,8 +117,12 @@ InitKbd(void)
 	 * ここにドライバー作成する
 	 */
 	SDLDrv = new SDLKbdInterface();
+#ifdef USE_GTK
 	GTKDrv = new GtkKbdInterface();
-
+#endif
+#ifdef USE_AGAR
+	AGARDrv = new AgarKbdInterface();
+#endif
 	/*
 	 * ワークエリア初期化(キーボード NT/PC-9801対策)
 	 */
@@ -168,8 +176,12 @@ void            FASTCALL
 CleanKbd(void)
 {
 	if(SDLDrv != NULL) delete SDLDrv;
+#ifdef USE_GTK
 	if(GTKDrv != NULL) delete GTKDrv;
-
+#endif
+#ifdef USE_AGAR
+	if(AGARDrv != NULL) delete AGARDrv;
+#endif
 	if(KeySem != NULL){
 		SDL_DestroySemaphore(KeySem);
 		KeySem = NULL;

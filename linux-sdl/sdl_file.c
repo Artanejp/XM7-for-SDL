@@ -12,8 +12,12 @@
 #include <stdlib.h>
 #include "xm7.h"
 #include "device.h"
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
-    
+#endif
+
     /*
      *  ファイルロード(ROM専用) 
      */ 

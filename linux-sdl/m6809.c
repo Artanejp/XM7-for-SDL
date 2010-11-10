@@ -550,7 +550,7 @@ static void cpu_execline(cpu6809_t *m68_state)
 			case 0x10: pref10(m68_state);					 break;
 			case 0x11: pref11(m68_state);					 break;
 			case 0x12: nop(m68_state);	    break;
-			case 0x13: sync(m68_state);	    break;
+			case 0x13: sync_09(m68_state);	    break; // Rename 20101110
 			case 0x14: trap(m68_state);   break;
 			case 0x15: trap(m68_state);   break;
 			case 0x16: lbra(m68_state);	    break;

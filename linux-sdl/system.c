@@ -27,11 +27,6 @@
 #include "rtc.h"
 #include "mouse.h"
 #include "jsubsys.h"
-/*
- * XM7/SDL依存 
- */
-#include "sdl.h"
-#include "api_draw.h"
 
 #ifdef MIDI
 #include "midi.h"

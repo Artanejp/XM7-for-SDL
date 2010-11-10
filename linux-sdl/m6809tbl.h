@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 INLINE void abx(cpu6809_t *m68_state);
 INLINE void adca_di(cpu6809_t *m68_state);
 INLINE void adca_ex(cpu6809_t *m68_state);
@@ -285,7 +289,7 @@ INLINE void subd_ix(cpu6809_t *m68_state);
 INLINE void swi2(cpu6809_t *m68_state);
 INLINE void swi3(cpu6809_t *m68_state);
 INLINE void swi(cpu6809_t *m68_state);
-INLINE void sync(cpu6809_t *m68_state);
+INLINE void sync_09(cpu6809_t *m68_state); // Rename 20101110
 INLINE void tfr(cpu6809_t *m68_state);
 INLINE void tsta(cpu6809_t *m68_state);
 INLINE void trap(cpu6809_t *m68_state);
@@ -386,7 +390,7 @@ static void (*const m6809_main[0x100])(cpu6809_t *) = {
 /* 0x0X */  neg_di, neg_di, ngc_di,com_di, lsr_di, lsr_di,ror_di, asr_di,
             asl_di, rol_di, dec_di, dcc_di,inc_di, tst_di, jmp_di, clr_di,
 
-/* 0x1X */  pref10, pref11, nop,	sync,	trap,trap,lbra,	lbsr,
+/* 0x1X */  pref10, pref11, nop,	sync_09,	trap,trap,lbra,	lbsr,
             aslcc_in,daa,	orcc,	nop, andcc,	sex,	exg,	tfr,
 
 /* 0x2X */  bra,	brn,	bhi,	bls,	bcc,	bcs,	bne,	beq,
@@ -431,4 +435,8 @@ static void (*const m6809_main[0x100])(cpu6809_t *) = {
 /* 0xFX */  subb_ex,cmpb_ex,sbcb_ex,addd_ex,andb_ex,bitb_ex,ldb_ex, stb_ex,
 	    eorb_ex,adcb_ex,orb_ex, addb_ex,ldd_ex, std_ex, ldu_ex, stu_ex
 };
+#endif
+
+#ifdef __cplusplus
+}
 #endif

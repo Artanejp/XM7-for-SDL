@@ -81,6 +81,10 @@ extern          "C" {
     void        SetMapKbd(BYTE *pMap);
     BOOL FASTCALL GetKbd(BYTE * pBuf);
     void PushKeyData(Uint8 code,Uint8 MakeBreak);
+#ifdef USE_AGAR
+    BOOL OnKeyPressAG(int sym, int mod, Uint32 unicode);
+    BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode);
+#endif
 
 
 
@@ -110,10 +114,5 @@ extern          "C" {
 #ifdef __cplusplus
 }
 #endif				/*  */
-
-#ifdef USE_AGAR
-BOOL OnKeyPressAG(int sym, int mod, Uint32 unicode);
-BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode);
-#endif
 
 #endif /* API_KBD_H_ */

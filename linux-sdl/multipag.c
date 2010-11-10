@@ -15,11 +15,6 @@
 #include "subctrl.h"
 #include "apalet.h"
 #include "device.h"
-/*
- * XM7/SDL依存 
- */
-#include <sdl.h>
-#include <sdl_draw.h>
 
 /*
  *      グローバル ワーク

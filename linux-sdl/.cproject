@@ -68,16 +68,21 @@
 							<tool errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.138012401" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option id="gnu.cpp.link.option.flags.1168899226" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 -lgmodule-2.0 -lgthread-2.0 -lrt -lglib-2.0" valueType="string"/>
 								<option id="gnu.cpp.link.option.libs.866274557" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="jpeg"/>
+									<listOptionValue builtIn="false" value="png"/>
 									<listOptionValue builtIn="false" value="SDL_mixer"/>
+									<listOptionValue builtIn="false" value="ag_core"/>
+									<listOptionValue builtIn="false" value="ag_math"/>
+									<listOptionValue builtIn="false" value="ag_gui"/>
 									<listOptionValue builtIn="false" value="emugrph"/>
 									<listOptionValue builtIn="false" value="GL"/>
 									<listOptionValue builtIn="false" value="GLU"/>
-									<listOptionValue builtIn="false" value="SDL_gfx"/>
 									<listOptionValue builtIn="false" value="SDL_ttf"/>
 									<listOptionValue builtIn="false" value="SDL"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.405175491" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 									<listOptionValue builtIn="false" value="/usr/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.userobjs.1931205500" name="Other objects" superClass="gnu.cpp.link.option.userobjs"/>
@@ -93,7 +98,7 @@
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.478411111" name="sdl_kbd.h" rcbsApplicability="disable" resourcePath="sdl_kbd.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|sdl_snd_mt.cpp|sdl_kbd.h|sdl_kbd.cpp|gtk_kbd.cpp|cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="sdl_cfg.c|sdl_main.c|sdl_sch.c|GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|sdl_snd_mt.cpp|sdl_kbd.h|sdl_kbd.cpp|gtk_kbd.cpp|cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -480,7 +485,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|cpu_x86.asm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="sdl_cfg.c|sdl_main.c|sdl_sch.c|GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|cpu_x86.asm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

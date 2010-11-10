@@ -21,7 +21,11 @@
 /*
  * XM7/SDL依存 
  */
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
 #include "sdl.h"
+#endif
 
 /*
  *      グローバル ワーク
