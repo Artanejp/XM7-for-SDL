@@ -120,7 +120,7 @@ static inline void SetByte(Uint8 *addr, Uint32 *c)
 	putdot(&addr[28], c[0]);
 }
 
-void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
+void EmuAgarGL::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 	int xx, yy;
 	int hh, ww;
@@ -128,6 +128,7 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	int size;
 	int ofset;
 	int i;
+	AG_Surface *pp =(AG_Surface *)p;
 	Uint32 c[8];
 	Uint8 *bitmap;
 	Uint8 *disp;
