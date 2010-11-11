@@ -17,16 +17,22 @@ EmuAgarGL::EmuAgarGL() {
 	minY = 0.0f;
 	maxX = 1.0f;
 	maxY = 1.0f;
-	InitVideo = TRUE;
+	InitVideo = FALSE;
     ScanLine = FALSE;
     ScanLineWidth = 4.0f;
     UseTexture = FALSE;
     video = NULL;
+    drawSem = SDL_CreateSemaphore(1);
+    SDL_SemPost(drawSem);
 }
 
 EmuAgarGL::~EmuAgarGL() {
 	// TODO Auto-generated destructor stub
-	if(video != NULL) AG_SurfaceFree(video);
+	if(video != NULL) 		AG_SurfaceFree(video);
+
+	if(drawSem != NULL) {
+		SDL_DestroySemaphore(drawSem);
+	}
 }
 
 void EmuAgarGL::InitUI(char *name, Uint Flags)
@@ -39,9 +45,41 @@ void EmuAgarGL::InitUI(char *name)
 	InitUI(name, AG_VERBOSE | AG_CREATE_DATADIR | AG_NO_CFG_AUTOLOAD);
 }
 
-void EmuAgarGL::SetDrawArea(AG_Widget *p, int x, int y, int w, int h)
+void EmuAgarGL::SetDrawArea(AG_GLView *p, int x, int y, int w, int h)
 {
 	drawarea = p;
+	SetDrawArea(x, y, w, h);
+	SetViewPort(x, y, w, h);
+}
+
+void EmuAgarGL::SetViewPort(void)
+{
+	SetViewPort(0, 0, vramwidth * 8, vramheight);
+}
+
+void EmuAgarGL::SetViewPort(int x, int y, int w, int h)
+{
+	viewport_x = x;
+	viewport_y = y;
+	viewport_h = h;
+	viewport_w = w;
+	minX = 0.0f;
+	minY = 0.0f;
+	maxX =  ((float)vramwidth * 8.0f) / (float)viewport_w ;
+	maxY = (float)vramheight / (float)viewport_h;
+#if 0
+	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
+			viewport_x, viewport_y, viewport_w, viewport_h,
+			minX, minY, maxX, maxY);
+#endif
+}
+
+void EmuAgarGL::SetDrawArea(int x, int y, int w, int h)
+{
+//	SDL_SemWait(drawSem);
+
+//	AG_WidgetMapSurface(drawarea, video);
+//	SDL_SemPost(drawSem);
 }
 
 
@@ -91,7 +129,7 @@ void EmuAgarGL::InitGL(int w, int h)
 	format.Gshift = 16;
 	format.Bshift = 0;
 	format.Ashift = 24;
-	video = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)w, (Uint)h , &format, AG_SRCCOLORKEY);
+	format.palette = NULL;
     InitVideo = TRUE;
 
 	return;
@@ -123,7 +161,7 @@ void EmuAgarGL::SetPaletteTable(Uint32 *p)
 void EmuAgarGL::Flip(void)
 {
 	if(!InitVideo) return;
-	SDL_GL_SwapBuffers();
+//	SDL_GL_SwapBuffers();
 }
 
 
@@ -161,7 +199,8 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	Uint8 *bitmap;
 	Uint8 *disp;
 	AG_Driver *drv;
-
+	float xratio;
+	float yratio;
 
 	if(!InitVideo) return;
 	if(drawarea == NULL) return;
@@ -176,15 +215,20 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	printf("Video w: %d h:%d FLAGS:%02x\n", surface->w, surface->h, surface->flags);
 #endif
 	size = vramwidth * vramheight * 8 * 4;
+	if((pixvram == NULL) &&(vramwidth != 0) &&(vramheight != 0)) {
+		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
+	}
+	if((pixvram->w != ((Uint)vramwidth * 8)) || (pixvram->h != (Uint)vramheight)){
+		AG_SurfaceFree(pixvram);
+		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
+	}
+
 //	glClearColor(0, 0, 0, 0);
 	ww = w >>3;
 	hh = h + y;
-
-	if(video == NULL) {
-		//AG_ObjectUnlock(agDriverOps);
-		return;
-	}
-	bitmap = (Uint8 *)video->pixels;
+//	AG_ObjectLock(agDriverOps);
+//	AG_ObjectLock(drawarea);
+	bitmap = (Uint8 *)pixvram->pixels;
 	ofset = 0;
 	for(yy = y; yy < hh; yy++) {
 		for(xx = 0; xx < ww; xx++) {
@@ -200,16 +244,142 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 #if 0
 	printf("Transfer: %08x bytes \n", ofset);
 #endif
-	agDriverOps->blitSurfaceGL(drv, drawarea, video, 1.0, 1.0);
-
-   if(ScanLine) {
-	   DrawScanLine();
-   }
-
+	xratio = (float)pixvram->w / (float)AGWIDGET(drawarea)->w;
+	yratio =  (float)pixvram->h / (float)AGWIDGET(drawarea)->h ;
+//	agDriverOps->blitSurface(drv, drawarea, pixvram, 1.0, 2.0);
+//   if(ScanLine) {
+//	   DrawScanLine();
+//   }
 #if 0
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
 #endif
-	//AG_ObjectUnlock(agDriverOps);
+//	AG_ObjectUnlock(drawarea);
+//	AG_ObjectUnlock(agDriverOps);
+}
+
+GLuint EmuAgarGL::CreateTexture(AG_Surface *p)
+{
+	Uint8 *pix;
+	int w;
+	int h;
+
+	if(agDriverOps == NULL) return 0;
+	if(p == NULL) return 0;
+	w = p->w;
+	h = p->h;
+	pix = (Uint8 *)p->pixels;
+
+    glGenTextures(1, &textureid);
+    glBindTexture(GL_TEXTURE_2D, textureid);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 w, h,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 pix);
+
+	return textureid;
+}
+
+void EmuAgarGL::DiscardTexture()
+{
+	DiscardTexture(textureid);
+}
+
+void EmuAgarGL::DiscardTexture(GLuint tid)
+{
+	DiscardTextures(1, &tid);
+}
+
+void EmuAgarGL::DiscardTextures(int n, GLuint *id)
+{
+	if(drawarea == NULL) return;
+	if(agDriverOps == NULL) return;
+	glDeleteTextures(n, id);
 
 }
 
+void EmuAgarGL::Enter2DMode(void)
+{
+	int w = viewport_w;
+	int h = viewport_h;
+
+	        /* Note, there may be other things you need to change,
+	           depending on how you have your OpenGL state set up.
+	        */
+	        glPushAttrib(GL_ENABLE_BIT);
+	        glDisable(GL_DEPTH_TEST);
+	        glDisable(GL_CULL_FACE);
+	        glEnable(GL_TEXTURE_2D);
+	        glPushMatrix();
+	        /* This allows alpha blending of 2D textures with the scene */
+	        glEnable(GL_BLEND);
+	        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	        glMatrixMode(GL_PROJECTION);
+	        glPushMatrix();
+	        glLoadIdentity();
+	        /*
+	         * ビューポートは表示する画面の大きさ
+	         */
+	        glViewport(0, 0 , w,  h);
+	        /*
+	         * 座標系は(0,0)-(0,1)
+	         */
+	        glOrtho(0.0, 1.0 ,
+	        		1.0, 0.0,
+	        		0.0,  1.0);
+	//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
+	        glMatrixMode(GL_MODELVIEW);
+	        glPushMatrix();
+	        glLoadIdentity();
+	        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+}
+
+void EmuAgarGL::Leave2DMode()
+{
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glPopAttrib();
+}
+
+
+void EmuAgarGL::DrawTexture()
+{
+	DrawTexture(textureid);
+}
+
+void EmuAgarGL::DrawTexture(GLuint tid)
+{
+    Enter2DMode();
+    glBindTexture(GL_TEXTURE_2D, tid);
+    glBegin(GL_TRIANGLE_STRIP);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0, 0.0, -1.0);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0, 1.0, -1.0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0, 0.0, -1.0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0, 1.0, -1.0);
+ //   glViewport(0, 0 , viewport_w, viewport_h);
+    glEnd();
+    Leave2DMode();
+	DiscardTexture();
+}
+
+void EmuAgarGL::SetTextureID(GLuint id)
+{
+	textureid = id;
+}
+
+GLuint EmuAgarGL::GetTextureID(void)
+{
+	return textureid;
+}
+
+AG_Surface *EmuAgarGL::GetVramSurface(void)
+{
+	return pixvram;
+}

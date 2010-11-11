@@ -8,6 +8,7 @@
 #ifndef EMUAGARGL_H_
 #define EMUAGARGL_H_
 
+
 #include "EmuGLUtils.h"
 #include <SDL.h>
 #include <agar/core.h>
@@ -27,21 +28,38 @@ public:
 	void InitUI(char *name);
 	void InitUI(char *name, Uint Flags);
 	void InitGL(int w, int h);
-	void SetDrawArea(AG_Widget *p, int x, int y, int w, int h);
+	void SetDrawArea(int x, int y, int w, int h);
+	void SetDrawArea(AG_GLView *p, int x, int y, int w, int h);
 	void PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void Flip(void);
+	void SetViewPort(void);
     void CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
     void SetPaletteTable(Uint32 *p);
+    void DiscardTexture(GLuint tid);
+    void DiscardTextures(int n, GLuint *tids);
+    GLuint CreateTexture(AG_Surface *p);
+    void DrawTexture(GLuint tid);
+    void SetTextureID(GLuint id);
+    GLuint GetTextureID(void);
+    AG_Surface *GetVramSurface(void);
+    void SetViewPort(int x, int y, int w, int h);
 protected:
-    AG_Surface *video;
+    void DiscardTexture(void);
+    void Enter2DMode(void);
+    void Leave2DMode(void);
+    void DrawTexture(void);
+    AG_Surface *video;   // スケーリング後
+    AG_Surface *pixvram; // スケーリング前
     Uint32 *palette;
     BOOL   InitVideo;
-    Uint textureid;
-    AG_Widget *drawarea;
+    AG_GLView *drawarea;
     AG_PixelFormat format;
+    SDL_semaphore *drawSem;
 private:
     BOOL  UseTexture;
+	AG_TexCoord texcoord;
+
 };
 
 #endif /* EMUAGARGL_H_ */
