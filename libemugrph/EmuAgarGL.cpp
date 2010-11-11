@@ -325,13 +325,17 @@ void EmuAgarGL::Enter2DMode(void)
 	        /*
 	         * ビューポートは表示する画面の大きさ
 	         */
-	        glViewport(0, 0 , w,  h);
+	        glViewport(0, 0 , w,  h );
 	        /*
 	         * 座標系は(0,0)-(0,1)
 	         */
+#if 1
 	        glOrtho(0.0, 1.0 ,
 	        		1.0, 0.0,
 	        		0.0,  1.0);
+#else
+	        glOrtho(0, agView->w, agView->h, 0, -1.0, 1.0);
+#endif
 	//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
 	        glMatrixMode(GL_MODELVIEW);
 	        glPushMatrix();
