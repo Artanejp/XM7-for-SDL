@@ -489,9 +489,6 @@ void InitGL(int w, int h)
 
 void Flip(void)
 {
-#ifdef USE_AGAR
-	return;
-#endif
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;

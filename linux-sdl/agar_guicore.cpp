@@ -197,19 +197,19 @@ void MainLoop(int argc, char *argv[])
 
 //	s = SDL_SetVideoMode(640, 480, 32, SDL_RESIZABLE | SDL_OPENGL | SDL_DOUBLEBUF | SDL_HWSURFACE);
 //	AG_InitVideoSDL(s, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
-	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
+	AG_InitVideo(640, 480, 32, AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
     SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO);
 
 	InitInstance();
 
-    vb = AG_BoxNewVert(MainWindow, 0);
+    vb = AG_BoxNewVert(MainWindow, AG_BOX_EXPAND);
     AG_WidgetSetSize(vb, 640, 32);
 
 	Create_AGMainBar(AGWIDGET(vb));
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-    //hb = AG_BoxNewVert(vb, AG_BOX_HFILL);
+    hb = AG_BoxNewVert(vb, AG_BOX_HFILL);
 	AG_WidgetEnable(AGWIDGET(MenuBar));
-	DrawArea = AG_GLViewNew(vb, AG_GLVIEW_EXPAND);
+	DrawArea = AG_GLViewNew(hb, AG_GLVIEW_EXPAND);
 //	AG_WidgetEnable(DrawArea);
 	AG_GLViewSizeHint(DrawArea, 640, 400);
 	AG_WidgetSetPosition(DrawArea, 0, 32);
@@ -220,7 +220,7 @@ void MainLoop(int argc, char *argv[])
 //	AG_GLViewOverlayFn(DrawArea, AGEventOverlayGL, NULL);
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
-//	AG_WindowShow(MainWindow);
+	AG_WindowShow(MainWindow);
 	AG_WidgetFocus(DrawArea);
 
 	//	AG_EventLoop();
@@ -339,8 +339,8 @@ void OnDestroy(AG_Event *event)
 
 void InitInstance(void)
 {
-	MainWindow = AG_WindowNew(AG_WINDOW_MODAL | AG_WINDOW_NOTITLE | AG_WINDOW_NOMOVE | AG_WINDOW_NOBORDERS);
-	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
+	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
+	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 32);
 }
 
 /*

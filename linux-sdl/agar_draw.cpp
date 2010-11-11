@@ -122,106 +122,73 @@ void AGDrawTaskEvent(BOOL flag)
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
 				if(flag) {
-				//AG_ObjectLock(glv);
-			#if XM7_VER >= 3
-				if(scalerGL){
-					scalerGL->SetDrawArea(glv, 0, 32, nDrawWidth, nDrawHeight);
-				}
-				switch (bMode) {
-				case SCR_400LINE:
-					Draw400l();
-					break;
-				case SCR_262144:
-					Draw256k();
-					break;
-				case SCR_4096:
-					Draw320();
-					break;
-				case SCR_200LINE:
-					Draw640All();
-					break;
-				}
-			#else				/*  */
-				/*
-				 * どちらかを使って描画
-				 */
-				if (bAnalog) {
-					Draw320All();
-				}
-				else {
-					Draw640All();
-				}
-			#endif				/*  */
-				if(scalerGL != NULL) {
-				pixvram = scalerGL->GetVramSurface();
+					//AG_ObjectLock(glv);
+#if XM7_VER >= 3
+					if(scalerGL){
+						scalerGL->SetDrawArea(glv, 0, 32, nDrawWidth, nDrawHeight);
+					}
+					switch (bMode) {
+					case SCR_400LINE:
+						Draw400l();
+						break;
+					case SCR_262144:
+						Draw256k();
+						break;
+					case SCR_4096:
+						Draw320();
+						break;
+					case SCR_200LINE:
+						Draw640All();
+						break;
+					}
+#else				/*  */
+					/*
+					 * どちらかを使って描画
+					 */
+					if (bAnalog) {
+						Draw320All();
+					}
+					else {
+						Draw640All();
+					}
+#endif				/*  */
+					if(scalerGL != NULL) {
+						pixvram = scalerGL->GetVramSurface();
 #if 0
-				if(pixvram == NULL) return;
-				scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
-				scalerGL->DrawTexture(scalerGL->GetTextureID());
-				scalerGL->DiscardTexture(scalerGL->GetTextureID());
+						if(pixvram == NULL) return;
+						scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
+						scalerGL->DrawTexture(scalerGL->GetTextureID());
+						scalerGL->DiscardTexture(scalerGL->GetTextureID());
 #else
 
-				AG_WidgetBlit(AGWIDGET(glv), pixvram,0,0);
+						//				AG_WidgetBlit(AGWIDGET(glv), pixvram,0,0);
+						AG_WidgetBlit(AGWIDGET(glv), pixvram,0,0);
+
 #endif
+					}
+					//	AG_GLViewDraw(glv);
+					//AG_WidgetDraw(AGWIDGET(glv));
+					//AG_WidgetShow(AGWIDGET(glv));
+					//	AG_ObjectUnlock(glv);
+					//	AG_WidgetUpdate(AGWIDGET(glv));
 				}
-				//	AG_GLViewDraw(glv);
-				AG_WidgetDraw(AGWIDGET(glv));
-				AG_WidgetShow(AGWIDGET(glv));
-				//	AG_ObjectUnlock(glv);
-				//	AG_WidgetUpdate(AGWIDGET(glv));
-				}
-		/*
-		 *    いずれかを使って描画
-		 */
-//		SDL_SemWait(DrawInitSem);
+				/*
+				 *    いずれかを使って描画
+				 */
+				//		SDL_SemWait(DrawInitSem);
 				AG_FOREACH_WINDOW(win, agDriverSw) {
 					AG_ObjectLock(win);
 					AG_WindowDraw(win);
 					AG_ObjectUnlock(win);
 				}
-#if 0
-				if(flag) {
-				AG_ObjectLock(DrawArea);
-#if XM7_VER >= 3
-				if(scalerGL){
-					scalerGL->SetDrawArea(AGWIDGET(DrawArea), 0, 32, nDrawWidth, nDrawHeight);
-				}
-				switch (bMode) {
-				case SCR_400LINE:
-					Draw400l();
-					break;
-				case SCR_262144:
-					Draw256k();
-					break;
-				case SCR_4096:
-					Draw320();
-					break;
-				case SCR_200LINE:
-					Draw640All();
-					break;
-				}
-				AG_GLViewDraw(DrawArea);
-				AG_ObjectUnlock(DrawArea);
-				AG_WidgetUpdate(DrawArea);
-			#else				/*  */
-				/*
-				 * どちらかを使って描画
-				 */
-				if (bAnalog) {
-					Draw320All();
-				}
-				else {
-					Draw640All();
-				}
-			#endif				/*  */
-				}
-#endif
 				AG_EndRendering(agDriverSw);
-//				AG_UnlockVFS(&agDrivers);
+//				Flip();
+				//				AG_UnlockVFS(&agDrivers);
 				nDrawTick1 = nDrawTick2;
-				drv = &agDriverSw->_inherit;
-				EventGUI(drv);
 			}
+		} else {
+			drv = &agDriverSw->_inherit;
+			EventGUI(drv);
 			EventSDL();
 		}
 	}

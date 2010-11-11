@@ -146,21 +146,9 @@ EmuGrph256kc *vramhdr_256k;
 
 void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
-#if 0
 		if(vramhdr != NULL) {
 			vramhdr->GetVram(addr, cbuf, mpage);
 		}
-#else
-		if((cbuf == NULL) || (vramhdr == NULL)) return;
-		cbuf[0] = 0xffffffff;
-		cbuf[1] = 0xffffffff;
-		cbuf[2] = 0xffffffff;
-		cbuf[3] = 0xffffffff;
-		cbuf[4] = 0xffffffff;
-		cbuf[5] = 0xffffffff;
-		cbuf[6] = 0xffffffff;
-		cbuf[7] = 0xffffffff;
-#endif
 }
 
 void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
