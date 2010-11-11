@@ -36,10 +36,39 @@ void InitInstance(void);
 
 AG_Window *MainWindow;
 AG_Menu *ToolBarMenu;
+AG_Menu *MenuBar;
+AG_GLView *DrawArea;
 
 
 static void Create_AGMainBar(void);
 static void Create_FileMenu(void);
+
+
+void EventGUI(AG_Driver *drv)
+{
+	AG_DriverEvent ev;
+
+	if(drv == NULL) return;
+	 if (AG_PendingEvents(drv) > 0) {
+				/*
+				 * Case 2: There are events waiting to be processed.
+				 */
+				do {
+					/* Retrieve the next queued event. */
+					if (AG_GetNextEvent(drv, &ev) == 1) {
+						switch (ev.type) {
+
+						default:
+							break;
+						}
+
+						/* Forward the event to Agar. */
+						if (AG_ProcessEvent(drv, &ev) == -1)
+							return;
+					}
+				} while (AG_PendingEvents(drv) > 0);
+	 }
+}
 
 
 void ProcessKeyDown(AG_Event *event)
@@ -112,8 +141,6 @@ AG_MenuItem *Menu_Debug;
 AG_MenuItem *Menu_Tools;
 AG_MenuItem *Menu_Help;
 AG_MenuItem *Menu_About;
-AG_Menu *MenuBar;
-AG_GLView *DrawArea;
 
 extern "C" {
 void OnDestroy(AG_Event *event);
@@ -173,7 +200,7 @@ void MainLoop(int argc, char *argv[])
 	Create_AGMainBar();
 	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow), AG_GLVIEW_EXPAND);
 	AG_GLViewSizeHint(DrawArea, 640, 400);
-	AG_WidgetSetSize(DrawArea, 640, 400);
+	AG_WidgetEnable(AGWIDGET(MenuBar));
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 
@@ -294,6 +321,7 @@ void OnDestroy(AG_Event *event)
 void InitInstance(void)
 {
 	MainWindow = AG_WindowNew(0);
+	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
 }
 
 /*

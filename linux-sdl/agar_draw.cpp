@@ -13,7 +13,11 @@
 
 extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
+extern Uint32 nDrawTick1;
 extern void EventSDL(void);
+extern void EventGUI(AG_Driver *drv);
+
+
 
 extern void InitGL(int w, int h);
 
@@ -34,43 +38,43 @@ static void ProcessGUI(void)
 {
 }
 
-void EventGUI(void)
-{
-	AG_Driver *drv;
-	AG_DriverEvent ev;
-	if(MainWindow == NULL) return;
-	drv = AGWIDGET(MainWindow)->drv;
-	if(drv == NULL) return;
-	 if (AG_PendingEvents(drv) > 0) {
-				/*
-				 * Case 2: There are events waiting to be processed.
-				 */
-				do {
-					/* Retrieve the next queued event. */
-					if (AG_GetNextEvent(drv, &ev) == 1) {
-						switch (ev.type) {
-						default:
-							break;
-						}
-
-						/* Forward the event to Agar. */
-						if (AG_ProcessEvent(drv, &ev) == -1)
-							return;
-					}
-				} while (AG_PendingEvents(drv) > 0);
-	 }
-}
 
 void AGDrawTaskEvent(void)
 {
+	Uint32 nDrawTick2;
+	AG_Window *win;
+	AG_Driver *drv;
+
+	nDrawTick2 = AG_GetTicks();
+	if(nDrawTick2 < nDrawTick1) nDrawTick1 = 0; // オーバーフロー対策
+	if(agDriverSw) {
+		if(nDrawTick2 - nDrawTick1 > agDriverSw->rNom) {
+			// ここにGUIの処理入れる
+			AG_LockVFS(&agDrivers);
+			if (agDriverSw) {
+				/* With single-window drivers (e.g., sdlfb). */
+				AG_BeginRendering(agDriverSw);
+				AG_FOREACH_WINDOW(win, agDriverSw) {
+					AG_ObjectLock(win);
+					AG_WindowDraw(win);
+					AG_ObjectUnlock(win);
+				}
+				AG_EndRendering(agDriverSw);
+				AG_UnlockVFS(&agDrivers);
+				nDrawTick1 = nDrawTick2;
+				drv = &agDriverSw->_inherit;
+				EventGUI(drv);
+			}
+		}
+	}
 	EventSDL();
-	EventGUI();
 }
 
 void AGDrawTaskMain(void)
 {
 
 	AG_Window *win;
+	Uint32 *nDrawTick2;
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
 			nDrawHeight = newDrawHeight;
@@ -79,15 +83,6 @@ void AGDrawTaskMain(void)
 		}
 		SelectDraw2();
 		/* Render the Agar windows */
-		AG_LockVFS(&agDrivers);
-		if (agDriverSw) {
-			/* With single-window drivers (e.g., sdlfb). */
-			AG_BeginRendering(agDriverSw);
-			AG_FOREACH_WINDOW(win, agDriverSw) {
-			AG_ObjectLock(win);
-			AG_WindowDraw(win);
-			AG_ObjectUnlock(win);
-			}
 #if XM7_VER >= 3
 		/*
 		 *    いずれかを使って描画
@@ -112,7 +107,6 @@ void AGDrawTaskMain(void)
 			break;
 		}
 		AG_GLViewDraw(DrawArea);
-		AG_ObjectUnlock(DrawArea);
 //		SDL_SemPost(DrawInitSem);
 #else				/*  */
 		/*
@@ -126,13 +120,8 @@ void AGDrawTaskMain(void)
 		}
 #endif				/*  */
 
-			AG_EndRendering(agDriverSw);
-		} else {
-		}
-		AG_UnlockVFS(&agDrivers);
 		//        SDL_UnlockSurface(p);
 //		Flip();
-		ProcessGUI();
 
 }
 

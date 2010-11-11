@@ -112,6 +112,9 @@ SDL_mutex *DrawMutex;
 int newDrawWidth;
 int newDrawHeight;
 BOOL newResize;
+Uint32 nDrawTick1;
+
+
 
 /*
  *  プロトタイプ宣言
@@ -421,11 +424,12 @@ static void detachsub(void);
 
 int DrawThreadMain(void *p)
 {
+#ifdef USE_AGAR
+		Uint32 nDrawTick2;
+		nDrawTick1 = AG_GetTicks();
+#endif
 		initsub();
 		ResizeWindow(640,400);
-#ifdef USE_AGAR
-
-#endif
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;
 		while(1) {
@@ -458,7 +462,6 @@ int DrawThreadMain(void *p)
 			if(nDrawCount > 0) {
 				nDrawCount --;
 #ifdef USE_AGAR
-
 				AGDrawTaskEvent();
 #endif
 				continue;
@@ -669,6 +672,7 @@ void	InitDraw(void)
 		nOldVideoMode = FALSE;
 #endif
 		SetDrawFlag(FALSE);
+		nDrawTick1 = 0;
 
 
 #if XM7_VER >= 3
