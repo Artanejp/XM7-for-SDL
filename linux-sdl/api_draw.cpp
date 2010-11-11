@@ -146,9 +146,21 @@ EmuGrph256kc *vramhdr_256k;
 
 void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
+#if 0
 		if(vramhdr != NULL) {
 			vramhdr->GetVram(addr, cbuf, mpage);
 		}
+#else
+		if((cbuf == NULL) || (vramhdr == NULL)) return;
+		cbuf[0] = 0xffffffff;
+		cbuf[1] = 0xffffffff;
+		cbuf[2] = 0xffffffff;
+		cbuf[3] = 0xffffffff;
+		cbuf[4] = 0xffffffff;
+		cbuf[5] = 0xffffffff;
+		cbuf[6] = 0xffffffff;
+		cbuf[7] = 0xffffffff;
+#endif
 }
 
 void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
@@ -426,10 +438,12 @@ int DrawThreadMain(void *p)
 {
 #ifdef USE_AGAR
 		Uint32 nDrawTick2;
+
 		nDrawTick1 = AG_GetTicks();
 #endif
 		initsub();
 		ResizeWindow(640,400);
+		InitGL(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;
 		while(1) {
@@ -462,7 +476,7 @@ int DrawThreadMain(void *p)
 			if(nDrawCount > 0) {
 				nDrawCount --;
 #ifdef USE_AGAR
-				AGDrawTaskEvent();
+				AGDrawTaskEvent(FALSE);
 #endif
 				continue;
 			} else {
@@ -472,7 +486,7 @@ int DrawThreadMain(void *p)
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
 			AGDrawTaskMain();
-			AGDrawTaskEvent();
+			AGDrawTaskEvent(TRUE);
 #else
 			DrawTaskMain(NULL);
 #endif
@@ -1079,6 +1093,7 @@ void RenderFullScan(void)
 	AG_Color nullcolor;
 	AG_Surface *s;
 
+	return;
 	if(agDriverOps == NULL) return;
 	if(DrawArea == NULL) return;
 	drv = AGWIDGET(DrawArea)->drv;
@@ -1927,10 +1942,12 @@ void Draw400l(void)
 	/*
 	 * レンダリング
 	 */
+#ifdef USE_AGAR
 
+#else
 	 p = SDL_GetVideoSurface();
 	 if(p == NULL) return;
-
+#endif
 	 /*
 	  * レンダリング
 	  */

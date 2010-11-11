@@ -32,15 +32,20 @@
 
 extern "C" {
 void InitInstance(void);
+void OnDestroy(AG_Event *event);
+extern void InitGL(int w, int h);
 }
 
 AG_Window *MainWindow;
-AG_Menu *ToolBarMenu;
 AG_Menu *MenuBar;
 AG_GLView *DrawArea;
+extern int DrawThreadMain(void *);
+extern void AGEventDrawGL(AG_Event *event);
+extern void AGEventScaleGL(AG_Event *event);
+extern void AGEventOverlayGL(AG_Event *event);
 
 
-static void Create_AGMainBar(void);
+static void Create_AGMainBar(AG_Widget *Parent);
 static void Create_FileMenu(void);
 
 
@@ -142,13 +147,13 @@ AG_MenuItem *Menu_Tools;
 AG_MenuItem *Menu_Help;
 AG_MenuItem *Menu_About;
 
-extern "C" {
-void OnDestroy(AG_Event *event);
-}
-extern int DrawThreadMain(void *);
+
+
 
 void MainLoop(int argc, char *argv[])
 {
+	AG_Box *vb;
+	AG_Box *hb;
 	/*
 	 * エラーコード別
 	 */
@@ -195,23 +200,37 @@ void MainLoop(int argc, char *argv[])
 	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
     SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO);
 
-
 	InitInstance();
-	Create_AGMainBar();
-	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow), AG_GLVIEW_EXPAND);
-	AG_GLViewSizeHint(DrawArea, 640, 400);
+
+    vb = AG_BoxNewVert(MainWindow, 0);
+    AG_WidgetSetSize(vb, 640, 32);
+
+	Create_AGMainBar(AGWIDGET(vb));
+    AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+    //hb = AG_BoxNewVert(vb, AG_BOX_HFILL);
 	AG_WidgetEnable(AGWIDGET(MenuBar));
+	DrawArea = AG_GLViewNew(vb, AG_GLVIEW_EXPAND);
+//	AG_WidgetEnable(DrawArea);
+	AG_GLViewSizeHint(DrawArea, 640, 400);
+	AG_WidgetSetPosition(DrawArea, 0, 32);
+	InitGL(640, 480);
+//	AG_WidgetFocus(DrawArea);
+//	AG_GLViewDrawFn(DrawArea, AGEventDrawGL, NULL);
+//	AG_GLViewScaleFn(DrawArea, AGEventScaleGL, NULL);
+//	AG_GLViewOverlayFn(DrawArea, AGEventOverlayGL, NULL);
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
+//	AG_WindowShow(MainWindow);
+	AG_WidgetFocus(DrawArea);
 
-//	AG_EventLoop();
+	//	AG_EventLoop();
 	DrawThreadMain(NULL);
 }
 
 
-static void Create_AGMainBar(void)
+static void Create_AGMainBar(AG_Widget *Parent)
 {
-	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
+	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
 	Menu_File = AG_MenuNode(MenuBar->root , "File", NULL);
 	Create_FileMenu();
 
@@ -320,7 +339,7 @@ void OnDestroy(AG_Event *event)
 
 void InitInstance(void)
 {
-	MainWindow = AG_WindowNew(0);
+	MainWindow = AG_WindowNew(AG_WINDOW_MODAL | AG_WINDOW_NOTITLE | AG_WINDOW_NOMOVE | AG_WINDOW_NOBORDERS);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
 }
 

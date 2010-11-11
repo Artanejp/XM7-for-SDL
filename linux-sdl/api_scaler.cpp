@@ -34,7 +34,7 @@ extern "C"
 {
 #endif
 
-#ifdef USE_AGAR
+#if 1
 static inline void putdot(GLubyte *addr, Uint32 c)
 {
 	Uint32 *addr32 = (Uint32 *)addr;
@@ -70,7 +70,7 @@ void PutWordGL(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 		putdot((GLubyte *)&disp[7], cbuf[0]);
 }
 
-#ifdef USE_AGAR
+#if  0
 static inline void putdot8(GLubyte *addr, Uint32 c)
 {
 	Uint32 *addr32 = (Uint32 *)addr;
@@ -473,7 +473,11 @@ void InitGL(int w, int h)
 
 #else
 #ifdef USE_AGAR
-
+    SDL_SemWait(DrawInitSem);
+   if(scalerGL) {
+    	scalerGL->InitGL(w, h);
+    }
+    SDL_SemPost(DrawInitSem);
 #endif
     SDL_SemWait(DrawInitSem);
    if(scalerGL) {
@@ -485,6 +489,9 @@ void InitGL(int w, int h)
 
 void Flip(void)
 {
+#ifdef USE_AGAR
+	return;
+#endif
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
@@ -524,7 +531,7 @@ void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 
 void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
-	scalerGL->SetViewPort(0,0,w, h);
+	scalerGL->SetViewPort(0,0, w, h);
 //	scalerGL->SetViewPort();
         if(!bFullScan) {
 	   scalerGL->SetScanLine(TRUE);

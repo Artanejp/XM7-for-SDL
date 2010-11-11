@@ -153,7 +153,7 @@ extern void ResizeGL(int w, int h);
 #endif
 #ifdef USE_AGAR
 extern void ResizeWindow_Agar(int w, int h);
-extern void AGDrawTaskEvent(void);
+extern void AGDrawTaskEvent(BOOL Flag);
 extern void AGDrawTaskMain(void);
 
 #endif
