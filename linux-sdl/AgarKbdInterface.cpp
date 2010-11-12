@@ -35,7 +35,7 @@ const struct KeyCode2_AG KeyTableAG[] = {
 		{AG_KEY_F9, 0x65}, /* PF9 */
 		{AG_KEY_F10, 0x66}, /* PF10 */
 //		{AG_KEY_FIRST, 0x01}, /* ESC(半角/全角) */
-		{AG_KEY_NONE, 0x01}, /* ESC(半角/全角) */
+		{AG_KEY_SCROLLOCK, 0x01}, /* ESC(ScrLk):半角/全角がIMに取られるため */
 		{AG_KEY_1, 0x02}, /* 1 */
 		{AG_KEY_2, 0x03}, /* 2 */
 		{AG_KEY_3, 0x04}, /* 3 */
