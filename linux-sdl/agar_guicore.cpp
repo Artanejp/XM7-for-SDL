@@ -43,11 +43,16 @@ extern int DrawThreadMain(void *);
 extern void AGEventDrawGL(AG_Event *event);
 extern void AGEventScaleGL(AG_Event *event);
 extern void AGEventOverlayGL(AG_Event *event);
+static BOOL bKeyboardSnooped;
 
 
 static void Create_AGMainBar(AG_Widget *Parent);
 static void Create_FileMenu(void);
 
+void KeyBoardSnoop(BOOL Flag)
+{
+	bKeyboardSnooped = Flag;
+}
 
 void EventGUI(AG_Driver *drv)
 {
@@ -62,7 +67,24 @@ void EventGUI(AG_Driver *drv)
 					/* Retrieve the next queued event. */
 					if (AG_GetNextEvent(drv, &ev) == 1) {
 						switch (ev.type) {
-
+#if 1
+						case AG_DRIVER_KEY_UP:
+							if(	!bKeyboardSnooped) {
+								OnKeyReleaseAG(ev.data.key.ks, 0, ev.data.key.ucs);
+							}
+							break;
+						case AG_DRIVER_KEY_DOWN:
+							if(!bKeyboardSnooped) {
+								OnKeyPressAG(ev.data.key.ks, 0, ev.data.key.ucs);
+							}
+							break;
+#endif
+						case AG_DRIVER_VIDEORESIZE:
+							newDrawWidth = ev.data.videoresize.w;
+							newDrawHeight = ev.data.videoresize.h;
+							newResize = TRUE;
+							AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
+							break;
 						default:
 							break;
 						}
@@ -79,9 +101,9 @@ void EventGUI(AG_Driver *drv)
 void ProcessKeyDown(AG_Event *event)
 {
 	// キーハンドラー
-	int sym = AG_INT(2);
-	int mod = AG_INT(3);
-	Uint32  unicode = (Uint32)AG_ULONG(4);
+	int sym = AG_INT(1);
+	int mod = AG_INT(2);
+	Uint32  unicode = (Uint32)AG_ULONG(3);
 	OnKeyPressAG(sym, mod, unicode);
 }
 
@@ -90,9 +112,9 @@ void ProcessKeyDown(AG_Event *event)
 void ProcessKeyUp(AG_Event *event)
 {
 	// キーハンドラー
-	int sym = AG_INT(2);
-	int mod = AG_INT(3);
-	Uint32  unicode = (Uint32)AG_ULONG(4);
+	int sym = AG_INT(1);
+	int mod = AG_INT(2);
+	Uint32  unicode = (Uint32)AG_ULONG(3);
 	OnKeyReleaseAG(sym, mod, unicode);
 
 }
@@ -201,18 +223,23 @@ void MainLoop(int argc, char *argv[])
     SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO);
 
 	InitInstance();
-
+	bKeyboardSnooped = FALSE;
     vb = AG_BoxNewVert(MainWindow, AG_BOX_EXPAND);
     AG_WidgetSetSize(vb, 640, 32);
 
 	Create_AGMainBar(AGWIDGET(vb));
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+	AG_WidgetSetSize(MenuBar, 640, 24);
     hb = AG_BoxNewVert(vb, AG_BOX_HFILL);
 	AG_WidgetEnable(AGWIDGET(MenuBar));
 	DrawArea = AG_GLViewNew(hb, AG_GLVIEW_EXPAND);
 //	AG_WidgetEnable(DrawArea);
 	AG_GLViewSizeHint(DrawArea, 640, 400);
 	AG_WidgetSetPosition(DrawArea, 0, 32);
+	AG_WidgetSetSize(DrawArea, 640, 400);
+//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
+//	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
+
 	InitGL(640, 480);
 //	AG_WidgetFocus(DrawArea);
 //	AG_GLViewDrawFn(DrawArea, AGEventDrawGL, NULL);
@@ -227,6 +254,8 @@ void MainLoop(int argc, char *argv[])
 	DrawThreadMain(NULL);
 }
 
+void Create_Drive0Menu(void);
+void Create_Drive1Menu(void);
 
 static void Create_AGMainBar(AG_Widget *Parent)
 {
@@ -235,7 +264,9 @@ static void Create_AGMainBar(AG_Widget *Parent)
 	Create_FileMenu();
 
 	Menu_Drive1 = AG_MenuNode(MenuBar->root, "Drive 1", NULL);
+	Create_Drive1Menu();
 	Menu_Drive0 = AG_MenuNode(MenuBar->root, "Drive 0", NULL);
+	Create_Drive0Menu();
 
  	Menu_Tape = AG_MenuNode(MenuBar->root, "Tape", NULL);
  	Menu_Debug = AG_MenuNode(MenuBar->root, "Debug", NULL);
@@ -266,14 +297,52 @@ static void Create_FileMenu(void)
 
 }
 
+extern void OnOpenDisk(AG_Event *event);
+extern void OnOpenDiskBoth(AG_Event *event);
+extern void OnEjectDisk(AG_Event *event);
+extern void OnEjectDiskTemp(AG_Event *event);
+extern void OnWriteProtectDisk(AG_Event *event);
+extern void OnSelectDiskMedia(AG_Event *event);
+
+
+
+void CreateDiskMenu(AG_MenuItem *self, int Drive)
+{
+	AG_MenuItem *item;
+
+	item = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
+	item = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, NULL);
+	AG_MenuSeparator(self);
+	item = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, "%i", Drive);
+	/*
+	 * セパレータ挿入
+	 */
+	AG_MenuSeparator(self);
+
+	/*
+	 * 一時取り出し
+	 */
+//	item = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, "%i,%i", Drive, fdc_teject[Drive]);
+	/*
+	 * ライトプロテクト
+	 */
+//	item = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i,%i", Drive, !fdc_fwritep[Drive]);
+
+	/*
+	 * セパレータ挿入
+	 */
+	AG_MenuSeparator(self);
+
+}
+
 void Create_Drive0Menu(void)
 {
-
+	CreateDiskMenu(Menu_Drive0, 0);
 }
 
 void Create_Drive1Menu(void)
 {
-
+	CreateDiskMenu(Menu_Drive1, 1);
 }
 
 void Create_TapeMenu(void)

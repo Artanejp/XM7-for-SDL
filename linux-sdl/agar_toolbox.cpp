@@ -41,6 +41,7 @@
 
 #include "agar_toolbox.h"
 
+extern void KeyBoardSnoop(BOOL Flag);
 
 extern AG_MenuItem *Menu_File;
 extern AG_MenuItem *Menu_Drive0;
@@ -98,6 +99,10 @@ static AG_MenuItem *help_menu;
 static AG_MenuItem *help_item;
 
 
+void OnCansel(AG_Event *event)
+{
+	KeyBoardSnoop(FALSE);
+}
     /*
      *  ステートロード処理
      */
@@ -164,12 +169,16 @@ void OnLoadStatus(AG_Event *event)
 {
     AG_Window *dlgWin;
     AG_FileDlg *dlg;
-//    dlgWin = AG_WindowNew(0);
-//    if(dlgWin == NULL) return;
-    dlg = AG_FileDlgNew(MainWindow, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlgWin = AG_WindowNew(0);
+    if(dlgWin == NULL) return;
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
+    KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
+    AG_WidgetFocus(dlg);
+    AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+    AG_WindowShow(dlgWin);
 }
 
 void OnQuickLoad(AG_Event *event)
@@ -221,6 +230,8 @@ static void OnSaveStatusSubEv(AG_Event *event)
     char  *sFilename = AG_STRING(1);
     AG_FileType *ft = (AG_FileType *)AG_PTR(2);
     OnSaveStatusSub(sFilename);
+    KeyBoardSnoop(FALSE);
+
 }
 
 
@@ -232,11 +243,16 @@ void OnSaveAs(AG_Event *event)
     AG_Window *dlgWin;
     AG_FileDlg *dlg;
     dlgWin = AG_WindowNew(0);
+//    dlgWin = MainWindow;
     if(dlgWin == NULL) return;
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
+    KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);
+    AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+    AG_WidgetFocus(dlg);
+    AG_WindowShow(dlgWin);
 }
 
 void OnQuickSave(AG_Event *event)
@@ -256,39 +272,122 @@ void OnQuickSave(AG_Event *event)
  */
 /*-[ ディスクメニュー ]-----------------------------------------------------*/
 
+static void OnOpenDiskSub(int Drive, char *sFilename)
+{
+	char *p;
+    /*
+     * セット
+     */
+    LockVM();
+    fdc_setdisk(Drive, sFilename);
+    ResetSch();
+    UnlockVM();
+    p = strrchr(sFilename, '/');
+    if (p != NULL) {
+	p[1] = '\0';
+	strcpy(InitialDir[0], sFilename);
+    }
+}
 
-static void OnOpenDisk(AG_Event *event)
+
+static void OnOpenDiskSubEv(AG_Event *event)
+{
+    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+    char  *sFilename = AG_STRING(2);
+    AG_FileType *ft = (AG_FileType *)AG_PTR(3);
+    int Drv = AG_INT(1);
+
+    OnOpenDiskSub(Drv, sFilename);
+    KeyBoardSnoop(FALSE);
+}
+
+static void OnOpenDiskBothSub(char *sFilename)
+{
+	char *p;
+    LockVM();
+    fdc_setdisk(0, sFilename);
+    fdc_setdisk(1, NULL);
+    if ((fdc_ready[0] != FDC_TYPE_NOTREADY) && (fdc_medias[0] >= 2)) {
+	fdc_setdisk(1, sFilename);
+	fdc_setmedia(1, 1);
+    }
+    ResetSch();
+    UnlockVM();
+    p = strrchr(sFilename, '/');
+    if (p != NULL) {
+	p[1] = '\0';
+	strcpy(InitialDir[0], sFilename);
+    }
+
+}
+
+static void OnOpenDiskBothSubEv(AG_Event *event)
+{
+    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+    char  *sFilename = AG_STRING(1);
+    AG_FileType *ft = (AG_FileType *)AG_PTR(2);
+
+    OnOpenDiskBothSub(sFilename);
+    KeyBoardSnoop(FALSE);
+}
+
+
+void OnOpenDisk(AG_Event *event)
+{
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
+	AG_Window *dlgWin;
+	AG_FileDlg *dlg;
+	int Drive = AG_INT(1);
+	dlgWin = AG_WindowNew(0);
+	if(dlgWin == NULL) return;
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+	if(dlg == NULL) return;
+	KeyBoardSnoop(TRUE);
+	AG_WidgetFocus(dlg);
+	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskSubEv, "%i", Drive);
+	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
+    AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+    AG_WindowShow(dlgWin);
+}
+
+void OnOpenDiskBoth(AG_Event *event)
+{
+	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
+	AG_Window *dlgWin;
+	AG_FileDlg *dlg;
+	int Drive = AG_INT(1);
+	dlgWin = AG_WindowNew(0);
+	if(dlgWin == NULL) return;
+	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+	if(dlg == NULL) return;
+	KeyBoardSnoop(TRUE);
+	AG_WidgetFocus(dlg);
+	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskBothSubEv, NULL);
+	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskBothSubEv, NULL);
+	AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+	AG_WindowShow(dlgWin);
+}
+
+void OnEjectDisk(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
-static void OnOpenDiskBoth(AG_Event *event)
-{
-	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
-	int Drive = AG_INT(1);
-}
-
-static void OnEjectDisk(AG_Event *event)
-{
-	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
-	int Drive = AG_INT(1);
-}
-
-static void OnEjectDiskTemp(AG_Event *event)
+void OnEjectDiskTemp(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
 
-static void OnWriteProtectDisk(AG_Event *event)
+void OnWriteProtectDisk(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
 }
 
-static void OnSelectDiskMedia(AG_Event *event)
+void OnSelectDiskMedia(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
@@ -311,14 +410,6 @@ void OnDiskPopup(AG_Event *event)
     iconv_t       hd;
     size_t        in, out;
 
-    if(midrive_open[Drive] != NULL) AG_MenuItemFree(midrive_open[Drive]);
-    if(midrive_openboth[Drive] != NULL) AG_MenuItemFree(midrive_openboth[Drive]);
-    if(midrive_eject[Drive] != NULL) AG_MenuItemFree(midrive_eject[Drive]);
-    if(midrive_teject[Drive] != NULL)AG_MenuItemFree(midrive_teject[Drive]);
-    if(midrive_writep[Drive] != NULL)AG_MenuItemFree(midrive_writep[Drive]);
-    for (i = 0; i < FDC_MEDIAS; i++) {
-    	if(midrive_medias[Drive][i] != NULL)AG_MenuItemFree(midrive_medias[Drive][i]);
-    }
    midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
    midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, "%i", Drive);
 	/*
