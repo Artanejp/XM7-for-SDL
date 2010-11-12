@@ -262,6 +262,16 @@ GetRapidJoyExt(int index, BOOL flag)
 }
 
 
+void InitJoyCode(int *p)
+{
+	p[0] = 0x70; // 上
+	p[1] = 0x71; // 下
+	p[2] = 0x72; // 左
+	p[3] = 0x73; // 右
+	p[4] = 0x74; // ボタン1
+	p[5] = 0x75; // ボタン2
+	p[6] = 0x76; // リザーブ
+}
 /*
  *  ジョイスティック コード変換
  */
@@ -657,9 +667,9 @@ BOOL FASTCALL InitJoy(void)
     	nJoyKeyCode[index][9] = 0x3c;/* 右上  : KP9*/
     	nJoyKeyCode[index][10] = 0x42;/* 左下 : KP1*/
     	nJoyKeyCode[index][11] = 0x44;/* 右下 : KP3*/
-
+    	// 内部コード初期化
+    	InitJoyCode(nJoyCode[index]);
     }
-
     SDLDrv = new SDLJoyInterface[MAX_SDL_JOY];
 /*
  * ジョイスティック初期化

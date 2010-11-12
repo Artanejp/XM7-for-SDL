@@ -54,6 +54,37 @@ void KeyBoardSnoop(BOOL Flag)
 	bKeyboardSnooped = Flag;
 }
 
+void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
+{
+	switch (ev->type) {
+#if 1
+	case AG_DRIVER_KEY_UP:
+		if(	!bKeyboardSnooped) {
+			OnKeyReleaseAG(ev->data.key.ks, 0, ev->data.key.ucs);
+		}
+		break;
+	case AG_DRIVER_KEY_DOWN:
+		if(!bKeyboardSnooped) {
+			OnKeyPressAG(ev->data.key.ks, 0, ev->data.key.ucs);
+		}
+		break;
+#endif
+	case AG_DRIVER_VIDEORESIZE:
+		newDrawWidth = ev->data.videoresize.w;
+		newDrawHeight = ev->data.videoresize.h;
+		newResize = TRUE;
+		AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
+		break;
+	default:
+		break;
+	}
+
+	/* Forward the event to Agar. */
+	if (AG_ProcessEvent(drv, ev) == -1)
+		return;
+
+}
+
 void EventGUI(AG_Driver *drv)
 {
 	AG_DriverEvent ev;
@@ -66,32 +97,7 @@ void EventGUI(AG_Driver *drv)
 				do {
 					/* Retrieve the next queued event. */
 					if (AG_GetNextEvent(drv, &ev) == 1) {
-						switch (ev.type) {
-#if 1
-						case AG_DRIVER_KEY_UP:
-							if(	!bKeyboardSnooped) {
-								OnKeyReleaseAG(ev.data.key.ks, 0, ev.data.key.ucs);
-							}
-							break;
-						case AG_DRIVER_KEY_DOWN:
-							if(!bKeyboardSnooped) {
-								OnKeyPressAG(ev.data.key.ks, 0, ev.data.key.ucs);
-							}
-							break;
-#endif
-						case AG_DRIVER_VIDEORESIZE:
-							newDrawWidth = ev.data.videoresize.w;
-							newDrawHeight = ev.data.videoresize.h;
-							newResize = TRUE;
-							AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
-							break;
-						default:
-							break;
-						}
-
-						/* Forward the event to Agar. */
-						if (AG_ProcessEvent(drv, &ev) == -1)
-							return;
+						EventGuiSingle(drv, &ev);
 					}
 				} while (AG_PendingEvents(drv) > 0);
 	 }

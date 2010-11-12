@@ -17,7 +17,7 @@ extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
 extern EmuAgarGL *scalerGL;
 extern Uint32 nDrawTick1;
-extern void EventSDL(void);
+extern void EventSDL(AG_Driver *drv);
 extern void EventGUI(AG_Driver *drv);
 
 
@@ -191,8 +191,8 @@ void AGDrawTaskEvent(BOOL flag)
 			}
 		}	else {
 			drv = &agDriverSw->_inherit;
+			EventSDL(drv);
 			EventGUI(drv);
-			EventSDL();
 		}
 		}
 }
