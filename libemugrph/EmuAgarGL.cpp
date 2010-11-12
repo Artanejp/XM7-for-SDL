@@ -22,6 +22,7 @@ EmuAgarGL::EmuAgarGL() {
     ScanLineWidth = 4.0f;
     UseTexture = FALSE;
     video = NULL;
+    pixvram = NULL;
     drawSem = SDL_CreateSemaphore(1);
     SDL_SemPost(drawSem);
 }
@@ -55,6 +56,11 @@ void EmuAgarGL::SetDrawArea(AG_GLView *p, int x, int y, int w, int h)
 void EmuAgarGL::SetViewPort(void)
 {
 	SetViewPort(0, 0, vramwidth * 8, vramheight);
+}
+
+void EmuAgarGL::SetViewPort(AG_Widget *wid)
+{
+	SetViewPort( wid->x, wid->y, wid->w, wid->h);
 }
 
 void EmuAgarGL::SetViewPort(int x, int y, int w, int h)
@@ -142,7 +148,7 @@ void EmuAgarGL::CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	if(palette == NULL) return;
 
 #if AG_LITTLE_ENDIAN
-	ds =(r<<8) + (g<<16) + b + (a<<24);
+	ds =r + (g << 8)+ (b << 16) + (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
@@ -223,7 +229,7 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
 	}
 
-//	glClearColor(0, 0, 0, 0);
+	glClearColor(0, 0, 0, 0);
 	ww = w >>3;
 	hh = h + y;
 //	AG_ObjectLock(agDriverOps);
@@ -305,6 +311,8 @@ void EmuAgarGL::DiscardTextures(int n, GLuint *id)
 
 void EmuAgarGL::Enter2DMode(void)
 {
+	int x = viewport_x;
+	int y = viewport_y;
 	int w = viewport_w;
 	int h = viewport_h;
 
@@ -325,17 +333,13 @@ void EmuAgarGL::Enter2DMode(void)
 	        /*
 	         * ビューポートは表示する画面の大きさ
 	         */
-	        glViewport(0, 0 , w,  h );
+	        glViewport(x, y , w + x,  h + y );
 	        /*
 	         * 座標系は(0,0)-(0,1)
 	         */
-#if 1
 	        glOrtho(0.0, 1.0 ,
 	        		1.0, 0.0,
 	        		0.0,  1.0);
-#else
-	        glOrtho(0, agView->w, agView->h, 0, -1.0, 1.0);
-#endif
 	//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
 	        glMatrixMode(GL_MODELVIEW);
 	        glPushMatrix();
@@ -360,13 +364,39 @@ void EmuAgarGL::DrawTexture()
 
 void EmuAgarGL::DrawTexture(GLuint tid)
 {
-    Enter2DMode();
+	float xbegin = 0.0f;
+	float xend = 1.0f;
+	float ybegin = 0.0f;
+	float yend = 1.0f;
+
+#if 1
+	if(viewport_w != 0) {
+		xbegin = (float)offset_x / (float)viewport_w;
+		xend = 1.0;
+//		viewport_x = -offset_x;
+//		viewport_w += offset_x;
+	} else {
+		xbegin = 0.0;
+		xend = 1.0;
+	}
+	if(viewport_h != 0) {
+		ybegin = (float)offset_y / (float)viewport_h;
+		yend = 1.0;
+//		viewport_y = -offset_y;
+//		viewport_h += offset_y;
+	} else {
+		xbegin = 0.0;
+		xend = 1.0;
+	}
+#endif
+
+	Enter2DMode();
     glBindTexture(GL_TEXTURE_2D, tid);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0, 0.0, -1.0);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0, 1.0, -1.0);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0, 0.0, -1.0);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0, 1.0, -1.0);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -1.0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
  //   glViewport(0, 0 , viewport_w, viewport_h);
     glEnd();
     Leave2DMode();
@@ -386,4 +416,10 @@ GLuint EmuAgarGL::GetTextureID(void)
 AG_Surface *EmuAgarGL::GetVramSurface(void)
 {
 	return pixvram;
+}
+
+void EmuAgarGL::SetOffset(int x, int y)
+{
+	offset_x = x;
+	offset_y = y;
 }

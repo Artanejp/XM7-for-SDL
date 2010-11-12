@@ -34,6 +34,7 @@ public:
 	void PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 	void Flip(void);
 	void SetViewPort(void);
+	void SetViewPort(AG_Widget *wid);
     void CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
     void SetPaletteTable(Uint32 *p);
     void DiscardTexture(GLuint tid);
@@ -44,6 +45,7 @@ public:
     GLuint GetTextureID(void);
     AG_Surface *GetVramSurface(void);
     void SetViewPort(int x, int y, int w, int h);
+    void SetOffset(int x, int y);
 protected:
     void DiscardTexture(void);
     void Enter2DMode(void);
@@ -56,6 +58,9 @@ protected:
     AG_GLView *drawarea;
     AG_PixelFormat format;
     SDL_semaphore *drawSem;
+	int offset_x;
+	int offset_y;
+
 private:
     BOOL  UseTexture;
 	AG_TexCoord texcoord;
