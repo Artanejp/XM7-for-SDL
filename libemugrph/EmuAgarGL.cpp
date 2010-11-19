@@ -137,6 +137,9 @@ void EmuAgarGL::InitGL(int w, int h)
 	format.Ashift = 24;
 	format.palette = NULL;
     InitVideo = TRUE;
+	if((pixvram == NULL) &&(w != 0) &&(h != 0)) {
+		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)w, (Uint)h , &format, AG_SRCCOLORKEY);
+	}
 
 	return;
 }
@@ -213,7 +216,12 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	if(putword == NULL) return;
 	// Test
 	if(agDriverOps == NULL) return;
-	drv = AGWIDGET(drawarea)->drv;
+//	drv = AGWIDGET(drawarea)->drv;
+	if(agDriverSw) {
+		drv = &agDriverSw->_inherit;
+	} else {
+		drv = AGWIDGET(drawarea)->drv;
+	}
 	if(drv == NULL) return;
 	//AG_ObjectLock(agDriverOps);
 #if 0
