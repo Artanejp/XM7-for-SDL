@@ -25,6 +25,10 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 	AG_Driver *drv = obj;
 	SDL_Event ev = *event;
 
+	if(agDriverSw) {
+		drv = &agDriverSw->_inherit;
+	}
+
 	switch (ev.type) {
 	case SDL_MOUSEMOTION:
 		AG_MouseMotionUpdate(drv->mouse, ev.motion.x, ev.motion.y);
@@ -53,9 +57,9 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 		dev->data.button.y = ev.button.y;
 		break;
 	case SDL_KEYDOWN:
-		AG_KeyboardUpdate(drv->kbd, AG_KEY_PRESSED,
-				(AG_KeySym)ev.key.keysym.sym,
-				(Uint32)ev.key.keysym.unicode);
+//		AG_KeyboardUpdate(drv->kbd, AG_KEY_PRESSED,
+//				(AG_KeySym)ev.key.keysym.sym,
+//				(Uint32)ev.key.keysym.unicode);
 
 		dev->type = AG_DRIVER_KEY_DOWN;
 		dev->win = NULL;
@@ -63,9 +67,9 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 		dev->data.key.ucs = (Uint32)ev.key.keysym.unicode;
 		break;
 	case SDL_KEYUP:
-		AG_KeyboardUpdate(drv->kbd, AG_KEY_RELEASED,
-				(AG_KeySym)ev.key.keysym.sym,
-				(Uint32)ev.key.keysym.unicode);
+//		AG_KeyboardUpdate(drv->kbd, AG_KEY_RELEASED,
+//				(AG_KeySym)ev.key.keysym.sym,
+//				(Uint32)ev.key.keysym.unicode);
 
 		dev->type = AG_DRIVER_KEY_UP;
 		dev->win = NULL;

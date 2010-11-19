@@ -47,7 +47,7 @@
 
 #ifdef USE_AGAR
 extern AG_Window *MainWindow;
-extern AG_Box *DrawArea;
+extern AG_GLView *DrawArea;
 #endif
 /*
  *  グローバル ワーク

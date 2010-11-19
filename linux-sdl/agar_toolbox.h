@@ -12,12 +12,17 @@
 
 #include <agar/core.h>
 #include <agar/gui.h>
-//#ifdef __cplusplus
-//extern          "C" {
-//#endif				/*  */
+
+#ifdef __cplusplus
+extern          "C" {
+#endif				/*  */
 
 extern AG_Window *MainWindow;
 extern AG_Menu *ToolBarMenu;
+extern AG_GLView *DrawArea;
+#ifdef __cplusplus
+}
+#endif				/*  */
 
 #define DLG_OK 1					/* ダイアログＯＫ */
 #define DLG_CANCEL 2				/* ダイアログＣＡＮＣＥＬ */

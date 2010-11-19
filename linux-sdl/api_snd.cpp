@@ -10,7 +10,7 @@
 #else				/* */
 #include <linux/soundcard.h>
 #endif				/* */
-#include <gtk/gtk.h>
+//#include <gtk/gtk.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>

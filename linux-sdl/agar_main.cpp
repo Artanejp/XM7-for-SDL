@@ -199,7 +199,6 @@ int main(int argc, char *argv[])
                 mkdir(ModuleDir, 0777);
         }
 
-        AG_InitCore("xm7", 0);
         //SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
 
 #if ((XM7_VER <= 2) && defined(FMTV151))

@@ -33,16 +33,22 @@
 extern "C" {
 void InitInstance(void);
 void OnDestroy(AG_Event *event);
+void OnDestroy2(void);
 extern void InitGL(int w, int h);
-}
+extern void OnReset(AG_Event *event);
+extern void OnHotReset(AG_Event *event);
 
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
 AG_GLView *DrawArea;
+}
+
 extern int DrawThreadMain(void *);
 extern void AGEventDrawGL(AG_Event *event);
 extern void AGEventScaleGL(AG_Event *event);
 extern void AGEventOverlayGL(AG_Event *event);
+
+
 static BOOL bKeyboardSnooped;
 
 
@@ -73,7 +79,9 @@ void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 		newDrawWidth = ev->data.videoresize.w;
 		newDrawHeight = ev->data.videoresize.h;
 		newResize = TRUE;
-		AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
+		if(AGWIDGET(MenuBar)) {
+			AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
+		}
 		break;
 	default:
 		break;
@@ -166,6 +174,7 @@ static void FileMenu_Quit(AG_Event *ev)
 
 }
 
+AG_Toolbar *MenuToolBar;
 AG_MenuItem *Menu_File;
 AG_MenuItem *Menu_Drive0;
 AG_MenuItem *Menu_Drive1;
@@ -182,6 +191,7 @@ void MainLoop(int argc, char *argv[])
 {
 	AG_Box *vb;
 	AG_Box *hb;
+	SDL_Surface *s;
 	/*
 	 * エラーコード別
 	 */
@@ -221,42 +231,38 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
-	OnCreate((AG_Widget *)NULL);
-
-//	s = SDL_SetVideoMode(640, 480, 32, SDL_RESIZABLE | SDL_OPENGL | SDL_DOUBLEBUF | SDL_HWSURFACE);
-//	AG_InitVideoSDL(s, AG_VIDEO_HWSURFACE | AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL | AG_VIDEO_DOUBLEBUF);
-	AG_InitVideo(640, 480, 32, AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
-    SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO);
-
+    AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
+	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
+			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
+//    SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
+    OnCreate((AG_Widget *)NULL);
 	InitInstance();
+	AG_WindowShow(MainWindow);
 	bKeyboardSnooped = FALSE;
     vb = AG_BoxNewVert(MainWindow, AG_BOX_EXPAND);
+    AG_WidgetSetSize(MainWindow, 640,480);
     AG_WidgetSetSize(vb, 640, 32);
+	Create_AGMainBar(NULL);
 
-	Create_AGMainBar(AGWIDGET(vb));
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+    AG_AtExitFunc(OnDestroy2);
 	AG_WidgetSetSize(MenuBar, 640, 24);
     hb = AG_BoxNewVert(vb, AG_BOX_HFILL);
 	AG_WidgetEnable(AGWIDGET(MenuBar));
-	DrawArea = AG_GLViewNew(hb, AG_GLVIEW_EXPAND);
-//	AG_WidgetEnable(DrawArea);
+	DrawArea = AG_GLViewNew(AGWIDGET(hb) , AG_GLVIEW_EXPAND);
+	AG_WidgetEnable(DrawArea);
 	AG_GLViewSizeHint(DrawArea, 640, 400);
-	AG_WidgetSetPosition(DrawArea, 0, 32);
-	AG_WidgetSetSize(DrawArea, 640, 400);
+//	AG_WidgetSetPosition(DrawArea, 0, 32);
+//	AG_WidgetSetSize(DrawArea, 640, 400);
 //	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
 //	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
 
-	InitGL(640, 480);
-//	AG_WidgetFocus(DrawArea);
-//	AG_GLViewDrawFn(DrawArea, AGEventDrawGL, NULL);
-//	AG_GLViewScaleFn(DrawArea, AGEventScaleGL, NULL);
-//	AG_GLViewOverlayFn(DrawArea, AGEventOverlayGL, NULL);
+	InitGL(640, 400);
+	AG_WidgetFocus(DrawArea);
+	AG_WidgetShow(MenuBar);
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
-	AG_WindowShow(MainWindow);
-	AG_WidgetFocus(DrawArea);
-
-	//	AG_EventLoop();
+//	AG_EventLoop();
 	DrawThreadMain(NULL);
 }
 
@@ -265,7 +271,12 @@ void Create_Drive1Menu(void);
 
 static void Create_AGMainBar(AG_Widget *Parent)
 {
-	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
+	AG_Menu *m;
+	MenuBar = AG_MenuNew(AGWIDGET(MainWindow), AG_MENU_HFILL);
+
+	if(!MenuBar) return;
+#if 1
+	AG_LockVFS(AGOBJECT(MenuBar));
 	Menu_File = AG_MenuNode(MenuBar->root , "File", NULL);
 	Create_FileMenu();
 
@@ -279,6 +290,8 @@ static void Create_AGMainBar(AG_Widget *Parent)
  	Menu_Tools = AG_MenuNode(MenuBar->root, "Tools", NULL);
  	Menu_Help = AG_MenuNode(MenuBar->root, "Help", NULL);
  	Menu_About = AG_MenuNode(MenuBar->root, "About", NULL);
+	AG_UnlockVFS(AGOBJECT(MenuBar));
+#endif
 }
 
 static  AG_MenuItem *Menu_File_QuickSave;
@@ -298,6 +311,9 @@ static void Create_FileMenu(void)
 	AG_MenuSeparator(Menu_File);
 	Menu_File_Save = AG_MenuAction(Menu_File , "Save As...", NULL, OnSaveAs, NULL);
 	Menu_File_Load = AG_MenuAction(Menu_File , "Load", NULL, OnLoadStatus, NULL);
+	AG_MenuSeparator(Menu_File);
+	Menu_File_Reset = AG_MenuAction(Menu_File, "Cold Reset", NULL, OnReset, NULL);
+	Menu_File_HotReset = AG_MenuAction(Menu_File, "Hot Reset", NULL, OnHotReset, NULL);
 	AG_MenuSeparator(Menu_File);
 	Menu_File_Quit = AG_MenuAction(Menu_File , "Quit", NULL, OnDestroy, NULL);
 
@@ -387,6 +403,10 @@ extern "C" {
 #endif
 
 
+void OnDestroy2(void)
+{
+	OnDestroy(NULL);
+}
 void OnDestroy(AG_Event *event)
 {
 
@@ -409,13 +429,15 @@ void OnDestroy(AG_Event *event)
          * 仮想マシン クリーンアップ
          */
         system_cleanup();
-        AG_Quit();
+        AG_QuitGUI();
 }
 
 void InitInstance(void)
 {
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
-	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 32);
+//	MainWindow = AG_WindowNew(0);
+	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
+	AG_WidgetEnable(AGWIDGET(MainWindow));
 }
 
 /*

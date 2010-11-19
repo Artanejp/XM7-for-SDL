@@ -24,6 +24,8 @@ EmuGrphScale4x4i *scaler4x4i;
 
 #ifdef USE_AGAR
 EmuAgarGL *scalerGL;
+extern AG_Window *MainWindow;
+extern AG_GLView *DrawArea;
 #else
 EmuGLUtils *scalerGL;
 #endif
@@ -478,12 +480,13 @@ void InitGL(int w, int h)
     	scalerGL->InitGL(w, h);
     }
     SDL_SemPost(DrawInitSem);
-#endif
+#else
     SDL_SemWait(DrawInitSem);
    if(scalerGL) {
     	scalerGL->InitGL(w, h);
     }
     SDL_SemPost(DrawInitSem);
+#endif
 #endif
 }
 
@@ -528,7 +531,11 @@ void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 
 void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
+#ifndef USE_AGAR
 	scalerGL->SetViewPort(0,0, w, h);
+#else
+	scalerGL->SetDrawArea(DrawArea, 0, 0, w, h);
+#endif
 //	scalerGL->SetViewPort();
         if(!bFullScan) {
 	   scalerGL->SetScanLine(TRUE);

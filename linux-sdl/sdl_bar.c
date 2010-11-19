@@ -7,7 +7,7 @@
     
 #ifdef _XWIN
     
-#include <gtk/gtk.h>
+//#include <gtk/gtk.h>
 #include "xm7.h"
 #include "keyboard.h"
 #include "tapelp.h"

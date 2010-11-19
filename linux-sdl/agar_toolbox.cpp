@@ -398,7 +398,7 @@ void OnSelectDiskMedia(AG_Event *event)
 /*
  *  ディスク(1)(0)メニュー更新
  */
-
+#if 0
 void OnDiskPopup(AG_Event *event)
 {
 	AG_MenuItem     *self = (AG_MenuItem *)AG_SELF();
@@ -465,7 +465,7 @@ void OnDiskPopup(AG_Event *event)
     }
 }
 
-
+#endif
     /*
      *  ドライブを開く
      */
