@@ -25,8 +25,6 @@ extern void EventGUI(AG_Driver *drv);
 
 
 
-
-
 void InitGUI(int w, int h)
 {
 }
@@ -60,9 +58,14 @@ void AGEventScaleGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
 	if(pixvram == NULL) return;
+	scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
+//	AG_WidgetUpdate(wid);
+
 }
 
 void AGEventDrawGL(AG_Event *event)
@@ -70,11 +73,7 @@ void AGEventDrawGL(AG_Event *event)
 	AG_GLView *wid = (AG_GLView *)AG_SELF();
 	AG_Surface *pixvram;
 
-	AG_ObjectLock(wid);
 #if XM7_VER >= 3
-	if(scalerGL){
-		scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
-	}
 	switch (bMode) {
 	case SCR_400LINE:
 		Draw400l();
@@ -89,9 +88,6 @@ void AGEventDrawGL(AG_Event *event)
 		Draw640All();
 		break;
 	}
-//	AG_GLViewDraw(wid);
-//	AG_ObjectUnlock(wid);
-	AG_WidgetUpdate(wid);
 #else				/*  */
 	/*
 	 * どちらかを使って描画
@@ -105,7 +101,7 @@ void AGEventDrawGL(AG_Event *event)
 #endif				/*  */
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
-	if(pixvram == NULL) return;
+	scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
 	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
 	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
@@ -122,7 +118,7 @@ void AGDrawTaskEvent(BOOL flag)
 	AG_Driver *drv;
 	AG_Surface *pixvram;
 	Uint32 fps;
-	if(nDrawFPS != 0) {
+	if(nDrawFPS > 2) {
 		fps = 1000 / nDrawFPS;
 	} else {
 		fps = 500;
@@ -131,59 +127,12 @@ void AGDrawTaskEvent(BOOL flag)
 	nDrawTick2 = AG_GetTicks();
 	if(nDrawTick2 < nDrawTick1) nDrawTick1 = 0; // オーバーフロー対策
 	if(agDriverSw) {
-		if(nDrawTick2 - nDrawTick1 > fps) {
+		if(flag && ((nDrawTick2 - nDrawTick1) > fps)) {
 			// ここにGUIの処理入れる
 			AG_LockVFS(&agDrivers);
 			if (agDriverSw) {
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
-#if XM7_VER >= 3
-				if(scalerGL != NULL) {
-					scalerGL->SetDrawArea(DrawArea, 0,0,nDrawWidth, nDrawHeight);
-				}
-				switch (bMode) {
-				case SCR_400LINE:
-					Draw400l();
-					break;
-				case SCR_262144:
-					Draw256k();
-					break;
-				case SCR_4096:
-					Draw320();
-					break;
-				case SCR_200LINE:
-					Draw640All();
-					break;
-				}
-#else				/*  */
-				/*
-				 * どちらかを使って描画
-				 */
-				if (bAnalog) {
-					Draw320All();
-				}
-				else {
-					Draw640All();
-				}
-#endif				/*  */
-				/*
-				 *    いずれかを使って描画
-				 */
-				//		SDL_SemWait(DrawInitSem);
-#if 0
-				if(scalerGL != NULL) {
-					AG_Color c;
-					AG_Rect r;
-					pixvram = scalerGL->GetVramSurface();
-					if(pixvram != NULL) {
-						scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
-						scalerGL->SetOffset(0,32);
-						scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
-						scalerGL->DrawTexture(scalerGL->GetTextureID());
-						scalerGL->DiscardTexture(scalerGL->GetTextureID());
-					}
-				}
-#endif
 				AG_WidgetDraw(DrawArea);
 				AG_WidgetDraw(MenuBar);
 				AG_FOREACH_WINDOW(win, agDriverSw) {
@@ -216,9 +165,5 @@ void AGDrawTaskMain(void)
 		}
 		SelectDraw2();
 		/* Render the Agar windows */
-
-		//        SDL_UnlockSurface(p);
-//		Flip();
-
 }
 

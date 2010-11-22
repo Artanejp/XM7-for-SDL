@@ -430,7 +430,7 @@ int DrawThreadMain(void *p)
 		nDrawTick1 = AG_GetTicks();
 #endif
 		initsub();
-		ResizeWindow(640,400);
+		ResizeWindow(640,480);
 		InitGL(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		newResize = FALSE;

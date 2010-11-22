@@ -33,6 +33,8 @@ EmuGrphScale4x4i *scaler4x4i;
 EmuAgarGL *scalerGL;
 extern AG_Window *MainWindow;
 extern AG_GLView *DrawArea;
+extern void GetVram_AGGL_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
+
 #else
 EmuGLUtils *scalerGL;
 #endif
@@ -215,7 +217,7 @@ void SetVramReader_400l()
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_400l, 80, 400);
-		scalerGL->SetPutWord(PutWordGL);
+		scalerGL->SetPutWord(PutWordGL8);
 	}
 }
 

@@ -413,9 +413,7 @@ void InitInstance(void)
 {
 	AG_Box *hb;
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
-//	MainWindow = AG_WindowNew(0);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
-//	AG_WidgetEnable(AGWIDGET(MainWindow));
 
     hb = AG_BoxNewHoriz(MainWindow, AG_BOX_EXPAND);
     AG_WidgetSetSize(MainWindow, 640,480);
