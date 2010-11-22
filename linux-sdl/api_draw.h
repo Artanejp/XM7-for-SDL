@@ -20,11 +20,15 @@
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #endif
+
+#ifdef USE_SDL
 #include <SDL.h>
 #include <SDL_syswm.h>
 #ifdef USE_OPENGL
 #include <SDL_opengl.h>
 #endif
+#endif
+
 #include "xm7.h"
 #include "multipag.h"
 #include "ttlpalet.h"

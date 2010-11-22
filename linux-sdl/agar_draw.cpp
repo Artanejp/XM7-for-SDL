@@ -13,12 +13,16 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
+extern "C" {
 extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
+extern AG_Menu  *MenuBar;
+}
 extern EmuAgarGL *scalerGL;
 extern Uint32 nDrawTick1;
 extern void EventSDL(AG_Driver *drv);
 extern void EventGUI(AG_Driver *drv);
+
 
 
 
@@ -30,7 +34,11 @@ void InitGUI(int w, int h)
 void ResizeWindow_Agar(int w, int h)
 {
 	AG_ResizeDisplay(w, h);
+	if(AGWIDGET(MenuBar)) {
+		AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
+	}
 }
+
 static void ProcessGUI(void)
 {
 }
@@ -65,7 +73,7 @@ void AGEventDrawGL(AG_Event *event)
 	AG_ObjectLock(wid);
 #if XM7_VER >= 3
 	if(scalerGL){
-		scalerGL->SetDrawArea(wid, 0, 32, nDrawWidth, nDrawHeight);
+		scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
 	}
 	switch (bMode) {
 	case SCR_400LINE:
@@ -98,6 +106,8 @@ void AGEventDrawGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
 	if(pixvram == NULL) return;
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
@@ -160,24 +170,26 @@ void AGDrawTaskEvent(BOOL flag)
 				 *    いずれかを使って描画
 				 */
 				//		SDL_SemWait(DrawInitSem);
+#if 0
 				if(scalerGL != NULL) {
 					AG_Color c;
 					AG_Rect r;
 					pixvram = scalerGL->GetVramSurface();
 					if(pixvram != NULL) {
 						scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
-						scalerGL->SetOffset(0,24);
+						scalerGL->SetOffset(0,32);
 						scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 						scalerGL->DrawTexture(scalerGL->GetTextureID());
 						scalerGL->DiscardTexture(scalerGL->GetTextureID());
 					}
 				}
+#endif
+				AG_WidgetDraw(DrawArea);
+				AG_WidgetDraw(MenuBar);
 				AG_FOREACH_WINDOW(win, agDriverSw) {
-					if(AGWIDGET(win)->drv != NULL) {
 						AG_ObjectLock(win);
 						AG_WindowDraw(win);
 						AG_ObjectUnlock(win);
-					}
 				}
 				nDrawTick1 = nDrawTick2;
 				AG_EndRendering(agDriverSw);

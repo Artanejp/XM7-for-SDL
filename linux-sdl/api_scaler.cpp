@@ -8,6 +8,13 @@
  *  2010.10.28 api_draw.cpp からスケーラ部分分割
  */
 
+#ifdef USE_AGAR
+//#include <agar/core.h>
+//#include <agar/core/types.h>
+#endif
+
+#include <SDL.h>
+
 #include "api_draw.h"
 #include "api_scaler.h"
 

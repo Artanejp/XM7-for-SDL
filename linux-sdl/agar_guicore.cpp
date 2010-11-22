@@ -6,11 +6,12 @@
  */
 #include <SDL.h>
 #include <libintl.h>
+extern "C" {
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #include <agar/gui/opengl.h>
-
+}
 #include "xm7.h"
 
 #ifdef USE_AGAR
@@ -79,9 +80,6 @@ void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 		newDrawWidth = ev->data.videoresize.w;
 		newDrawHeight = ev->data.videoresize.h;
 		newResize = TRUE;
-		if(AGWIDGET(MenuBar)) {
-			AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
-		}
 		break;
 	default:
 		break;
@@ -189,9 +187,7 @@ AG_MenuItem *Menu_About;
 
 void MainLoop(int argc, char *argv[])
 {
-	AG_Box *vb;
 	AG_Box *hb;
-	SDL_Surface *s;
 	/*
 	 * エラーコード別
 	 */
@@ -234,46 +230,27 @@ void MainLoop(int argc, char *argv[])
     AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
 			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
-//    SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
-	AG_WindowShow(MainWindow);
 	bKeyboardSnooped = FALSE;
-    vb = AG_BoxNewVert(MainWindow, AG_BOX_EXPAND);
-    AG_WidgetSetSize(MainWindow, 640,480);
-    AG_WidgetSetSize(vb, 640, 32);
-	Create_AGMainBar(NULL);
-
-    AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-    AG_AtExitFunc(OnDestroy2);
-	AG_WidgetSetSize(MenuBar, 640, 24);
-    hb = AG_BoxNewVert(vb, AG_BOX_HFILL);
-	AG_WidgetEnable(AGWIDGET(MenuBar));
-	DrawArea = AG_GLViewNew(AGWIDGET(hb) , AG_GLVIEW_EXPAND);
-	AG_WidgetEnable(DrawArea);
-	AG_GLViewSizeHint(DrawArea, 640, 400);
-//	AG_WidgetSetPosition(DrawArea, 0, 32);
-//	AG_WidgetSetSize(DrawArea, 640, 400);
-//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
-//	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
-
-	InitGL(640, 400);
-	AG_WidgetFocus(DrawArea);
-	AG_WidgetShow(MenuBar);
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
-//	AG_EventLoop();
 	DrawThreadMain(NULL);
 }
 
 void Create_Drive0Menu(void);
 void Create_Drive1Menu(void);
 
+static void Create_AGMainMenu(AG_Widget *parent)
+{
+
+}
+
 static void Create_AGMainBar(AG_Widget *Parent)
 {
-	AG_Menu *m;
-	MenuBar = AG_MenuNew(AGWIDGET(MainWindow), AG_MENU_HFILL);
+	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
 
+//	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
 	if(!MenuBar) return;
 #if 1
 	AG_LockVFS(AGOBJECT(MenuBar));
@@ -434,10 +411,36 @@ void OnDestroy(AG_Event *event)
 
 void InitInstance(void)
 {
+	AG_Box *hb;
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 //	MainWindow = AG_WindowNew(0);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
-	AG_WidgetEnable(AGWIDGET(MainWindow));
+//	AG_WidgetEnable(AGWIDGET(MainWindow));
+
+    hb = AG_BoxNewHoriz(MainWindow, AG_BOX_EXPAND);
+    AG_WidgetSetSize(MainWindow, 640,480);
+    AG_WidgetSetSize(hb, 640, 32);
+
+    Create_AGMainBar(AGWIDGET(hb));
+    AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+    AG_AtExitFunc(OnDestroy2);
+	AG_WidgetSetSize(MenuBar, 640, 32);
+	AG_WidgetEnable(AGWIDGET(MenuBar));
+
+	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
+	AG_WidgetEnable(DrawArea);
+	AG_GLViewSizeHint(DrawArea, 640, 400);
+	AG_WidgetSetPosition(DrawArea, 0, 32);
+	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
+	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
+//	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
+
+	//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
+//	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
+	InitGL(640, 400);
+	AG_WindowShow(MainWindow);
+
+
 }
 
 /*

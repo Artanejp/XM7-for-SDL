@@ -25,9 +25,9 @@
 #endif
 #endif /* USE_GTK */				/*  */
 
-//#ifndef _SDL_H
-//#include <SDL.h>
-//#endif				/*  */
+#ifndef _SDL_H
+#include <SDL.h>
+#endif				/*  */
 
 /*
  *  定数、型定義

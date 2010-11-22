@@ -355,7 +355,7 @@ void OnOpenDiskBoth(AG_Event *event)
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	AG_Window *dlgWin;
 	AG_FileDlg *dlg;
-	int Drive = AG_INT(1);
+//	int Drive = AG_INT(1);
 	dlgWin = AG_WindowNew(0);
 	if(dlgWin == NULL) return;
 	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);

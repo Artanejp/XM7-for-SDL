@@ -9,7 +9,7 @@
 #include <agar/core/types.h>
 #include <agar/gui.h>
 
-//#include <SDL.h>
+#include <SDL.h>
 
 #include "xm7.h"
 #include "tapelp.h"
