@@ -237,21 +237,17 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
 	}
 
-	glClearColor(0, 0, 0, 0);
-	ww = w >>3;
+//	glClearColor(0, 0, 0, 0);
+	ww = (w>>3) + (x>>3);
 	hh = h + y;
-//	AG_ObjectLock(agDriverOps);
-//	AG_ObjectLock(drawarea);
 	bitmap = (Uint8 *)pixvram->pixels;
 	ofset = 0;
 	for(yy = y; yy < hh; yy++) {
-		for(xx = 0; xx < ww; xx++) {
-			addr = yy  * vramwidth + xx + x;
-			ofset = yy * vramwidth * 32 + xx * 32;
+		for(xx = x>>3 ; xx < ww; xx++) {
+			addr = yy  * vramwidth + xx ;
 			getvram(addr, c, mpage);
-			disp = &bitmap[ofset];
+			disp = bitmap + vramwidth * yy * 32+ xx * 32;
 			putword((Uint32 *)disp, 32, c);
-			ofset+=32;
 			addr++;
 			}
 	}
@@ -260,10 +256,6 @@ void EmuAgarGL::PutVram(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 #endif
 	xratio = (float)pixvram->w / (float)AGWIDGET(drawarea)->w;
 	yratio =  (float)pixvram->h / (float)AGWIDGET(drawarea)->h ;
-//	agDriverOps->blitSurface(drv, drawarea, pixvram, 1.0, 2.0);
-//   if(ScanLine) {
-//	   DrawScanLine();
-//   }
 #if 0
 	printf("Draw: %08x bytes TID=%08x\n", ofset, textureid);
 #endif
