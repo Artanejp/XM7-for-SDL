@@ -217,6 +217,7 @@ void OnMediaChange(AG_Event *event)
 {
     int            Drive = AG_INT(1);
     int            Media = AG_INT(2);
+    AG_Button *self = (AG_Button *)AG_SELF();
 
 	/*
 	 * 書き込み禁止切り替え
@@ -225,6 +226,10 @@ void OnMediaChange(AG_Event *event)
     fdc_setmedia(Drive, Media);
     ResetSch();
     UnlockVM();
+
+	AG_WindowHide(self->wid.window);
+	AG_ObjectDetach(self->wid.window);
+
 }
 
 

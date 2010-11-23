@@ -46,6 +46,8 @@ extern void KeyBoardSnoop(BOOL Flag);
 extern AG_MenuItem *Menu_File;
 extern AG_MenuItem *Menu_Drive0;
 extern AG_MenuItem *Menu_Drive1;
+extern AG_MenuItem *Menu_DiskImages[FDC_DRIVES];
+
 extern AG_MenuItem *Menu_Tape;
 extern AG_MenuItem *Menu_Debug;
 extern AG_MenuItem *Menu_Tools;
@@ -98,11 +100,15 @@ static AG_MenuItem *miMouseCapture;
 static AG_MenuItem *help_menu;
 static AG_MenuItem *help_item;
 
-
-void OnCansel(AG_Event *event)
+static void OnPushCancel(AG_Event *event)
 {
+	AG_Button *self = (AG_Button *)AG_SELF();
 	KeyBoardSnoop(FALSE);
+	AG_WindowHide(self->wid.window);
+	AG_ObjectDetach(self->wid.window);
 }
+
+
     /*
      *  ステートロード処理
      */
@@ -158,9 +164,7 @@ static void OnLoadStatusSub(char *filename)
 
 static void OnLoadStatusSubEv(AG_Event *event)
 {
-    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
-    AG_FileType *ft = (AG_FileType *)AG_PTR(2);
     OnLoadStatusSub(sFilename);
 }
 
@@ -177,7 +181,7 @@ void OnLoadStatus(AG_Event *event)
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
     AG_WidgetFocus(dlg);
-    AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+    AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
     AG_WindowShow(dlgWin);
 }
 
@@ -226,9 +230,7 @@ static void OnSaveStatusSub(char *filename)
 
 static void OnSaveStatusSubEv(AG_Event *event)
 {
-    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
-    AG_FileType *ft = (AG_FileType *)AG_PTR(2);
     OnSaveStatusSub(sFilename);
     KeyBoardSnoop(FALSE);
 
@@ -250,7 +252,7 @@ void OnSaveAs(AG_Event *event)
     KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);
-    AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+    AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
     AG_WidgetFocus(dlg);
     AG_WindowShow(dlgWin);
 }
@@ -271,6 +273,14 @@ void OnQuickSave(AG_Event *event)
  *  「ファイル」メニュー生成
  */
 /*-[ ディスクメニュー ]-----------------------------------------------------*/
+void OnSelectDiskImage(AG_Event *event)
+{
+	AG_Menu *self = (AG_Menu *)AG_SELF();
+	AG_MenuItem *itemr = (AG_MenuItem *)AG_SENDER();
+
+	int Drive = AG_INT(1);
+
+}
 
 static void OnOpenDiskSub(int Drive, char *sFilename)
 {
@@ -295,7 +305,16 @@ static void OnOpenDiskSubEv(AG_Event *event)
     AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(2);
     AG_FileType *ft = (AG_FileType *)AG_PTR(3);
+    AG_MenuItem *parent;
     int Drv = AG_INT(1);
+
+    if(Drv == 0) {
+    	parent = Menu_Drive0;
+    } else if(Drv == 1) {
+    	parent = Menu_Drive1;
+    } else {
+    	parent = NULL;
+    }
 
     OnOpenDiskSub(Drv, sFilename);
     KeyBoardSnoop(FALSE);
@@ -342,11 +361,12 @@ void OnOpenDisk(AG_Event *event)
 	if(dlgWin == NULL) return;
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
+	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	KeyBoardSnoop(TRUE);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskSubEv, "%i", Drive);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
-    AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+    AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
     AG_WindowShow(dlgWin);
 }
 
@@ -360,360 +380,144 @@ void OnOpenDiskBoth(AG_Event *event)
 	if(dlgWin == NULL) return;
 	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
+	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	KeyBoardSnoop(TRUE);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskBothSubEv, NULL);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskBothSubEv, NULL);
-	AG_FileDlgCancelAction (dlg, OnCansel,NULL);
+	AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
 	AG_WindowShow(dlgWin);
 }
 
-void OnEjectDisk(AG_Event *event)
+
+void DisplayWriteProtectDisk(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
+	AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+	char Label[128];
 	int Drive = AG_INT(1);
+
+	strcpy(Label,gettext("Write Protect"));
+	strcat(Label, " ");
+	if(fdc_writep[Drive]) {
+		strcat(Label, "ON");
+	} else {
+		strcat(Label, "Off");
+	}
+	AG_MenuSetLabel(item, Label);
 }
 
-void OnEjectDiskTemp(AG_Event *event)
+
+static void SetWriteProtectDisk(AG_Event *event)
 {
-	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
-	int Drive = AG_INT(1);
-}
+	BOOL flag = AG_INT(1);
+	int Drive = AG_INT(2);
+	AG_Button *self = (AG_Button *)AG_SELF();
 
+    LockVM();
+	fdc_writep[Drive] = flag;
+    ResetSch();
+    UnlockVM();
+	AG_WindowHide(self->wid.window);
+	AG_ObjectDetach(self->wid.window);
+}
 
 void OnWriteProtectDisk(AG_Event *event)
 {
-	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
+	AG_Menu *self = (AG_Menu *)AG_SELF();
+	AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+	AG_Window *w;
+	AG_Button   *btn[3];
+	AG_Box *box;
+	AG_Box *box2;
+	char Label[128];
 	int Drive = AG_INT(1);
+	char *caption;
+	AG_Label *lbl;
+	int id;
+
+	if(fdc_ready[Drive] == FDC_TYPE_NOTREADY) {
+		return;
+	}
+
+	sprintf(Label, "Drive %d:", Drive);
+	caption = gettext("Switch Write Protect on");
+
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	AG_WindowSetMinSize(w, 230, 80);
+	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
+	AG_WidgetSetSize(box, 230, 32);
+	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s %d:", caption, Drive );
+	AG_LabelSizeHint (lbl, 2, caption);
+	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
+	AG_WidgetSetSize(box, 230, 8);
+	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
+	AG_WidgetSetSize(box, 230, 32);
+	box2 = AG_BoxNewVert(box, 0);
+	btn[0] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("ON"), SetWriteProtectDisk, "%i,%i", TRUE, Drive);
+	box2 = AG_BoxNewVert(box, 0);
+	btn[1] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("OFF"), SetWriteProtectDisk, "%i,%i", FALSE, Drive);
+	box2 = AG_BoxNewVert(box, 0);
+	btn[2] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
+
+	AG_WindowSetCaption(w, gettext(Label));
+	AG_WindowShow(w);
 }
 
 void OnSelectDiskMedia(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	int Drive = AG_INT(1);
-	BOOL selected = (BOOL)AG_INT(2);
+	AG_Window *w;
+	AG_Box *box;
+	AG_Box *box2;
+	AG_Label *lbl;
+	AG_Button *btn;
+	char *caption;
+	int i;
+
+	if(fdc_ready[Drive] == FDC_TYPE_NOTREADY) {
+		return;
+	}
+
+	caption = gettext("Select Disk Image on ");
+	w = AG_WindowNew(0);
+	AG_WindowSetMinSize(w, 250, 80);
+	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
+	AG_WidgetSetSize(box, 230, 32);
+	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s %d:", caption, Drive );
+	AG_LabelSizeHint (lbl, 2, caption);
+	{
+	 char utf8[256];
+	 char          *pIn, *pOut;
+	 iconv_t       hd;
+	 size_t        in, out;
+
+	 for(i = 0; i < fdc_medias[Drive]; i++) {
+		 box2 = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
+         pIn =  fdc_name[Drive][i];;
+         pOut = utf8;
+          in = strlen(pIn);
+          out = 256;
+          hd = iconv_open("utf8", "cp932");
+          if(hd >= 0) {
+                  while(in>0) {
+                          iconv(hd, &pIn, &in, &pOut, &out);
+                  }
+                  iconv_close(hd);
+          }
+		 btn = AG_ButtonNewFn (AGWIDGET(box2), 0, utf8 , OnMediaChange, "%i,%i",  Drive, i);
+
+		}
+	}
+	AG_WindowSetCaption(w, gettext("Select Image"));
+	AG_WindowShow(w);
 }
 
 
 /*
  *  ディスク(1)(0)メニュー更新
  */
-#if 0
-void OnDiskPopup(AG_Event *event)
-{
-	AG_MenuItem     *self = (AG_MenuItem *)AG_SELF();
-    int            Drive = AG_INT_NAMED("drive");
-    int            i;
-    char medianame[64];
-    char          utf8[256];
-    char          *pIn, *pOut;
-    iconv_t       hd;
-    size_t        in, out;
-
-   midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
-   midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, "%i", Drive);
-	/*
-	 * ディスクが挿入されていなければ、ここまで
-	 */
-	if (fdc_ready[Drive] == FDC_TYPE_NOTREADY) {
-	return;
-    }
-
-	/*
-	 * イジェクト
-	 */
-	midrive_eject[Drive] = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, "%i", Drive);
-	/*
-	 * セパレータ挿入
-	 */
-	AG_MenuSeparator(self);
-
-	/*
-	 * 一時取り出し
-	 */
-	midrive_teject[Drive] = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, "%i,%i", Drive, fdc_teject[Drive]);
-	/*
-	 * ライトプロテクト
-	 */
-	midrive_writep[Drive] = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i,%i", Drive, !fdc_fwritep[Drive]);
-
-	/*
-	 * セパレータ挿入
-	 */
-	AG_MenuSeparator(self);
-	/*
-	 * メディアを回す
-	 */
-	for (i = 0; i < fdc_medias[Drive]; i++) {
-		strcpy(medianame, fdc_name[Drive][i]);
-        pIn = medianame;
-        pOut = utf8;
-        in = strlen(pIn);
-        out = 256;
-		hd = iconv_open("utf-8", "cp932");
-        if(hd >= 0) {
-                while(in>0) {
-                        iconv(hd, &pIn, &in, &pOut, &out);
-                }
-                iconv_close(hd);
-        }
-        if (fdc_media[Drive] == i) {
-        	midrive_medias[Drive][i] = AG_MenuDynamicItem(self, utf8, NULL, OnSelectDiskMedia, "%i,%i", Drive, TRUE);
-        } else {
-        	midrive_medias[Drive][i] = AG_MenuDynamicItem(self, utf8, NULL, OnSelectDiskMedia, "%i,%i", Drive, FALSE);
-        }
-    }
-}
-
-#endif
-    /*
-     *  ドライブを開く
-     */
-#if 0
-G_MODULE_EXPORT void
-OnDiskOpen(GtkWidget * widget, gpointer data)
-{
-    char          *p;
-
-    /*
-     * ファイル選択
-     */
-    FileSelectDialog dlg = OpenFileSelectDialog(InitialDir[0]);
-    if (dlg.bResult != DLG_OK) {
-            return;
-    }
-    int           Drive = ((Disk *) data)->drive;
-
-    /*
-     * セット
-     */
-    LockVM();
-    fdc_setdisk(Drive, dlg.sFilename);
-    ResetSch();
-    UnlockVM();
-    p = strrchr(dlg.sFilename, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-	strcpy(InitialDir[0], dlg.sFilename);
-    }
-}
-
-
-    /*
-     *  両ドライブを開く
-     */
-void OnDiskBoth(GtkWidget * widget, gpointer data)
-{
-    char          *p;
-
-	/*
-	 * ファイル選択
-	 */
-	FileSelectDialog dlg = OpenFileSelectDialog(InitialDir[0]);
-    if (dlg.bResult != DLG_OK) {
-	return;
-    }
-
-	/*
-	 * セット
-	 */
-    LockVM();
-    fdc_setdisk(0, dlg.sFilename);
-    fdc_setdisk(1, NULL);
-    if ((fdc_ready[0] != FDC_TYPE_NOTREADY) && (fdc_medias[0] >= 2)) {
-	fdc_setdisk(1, dlg.sFilename);
-	fdc_setmedia(1, 1);
-    }
-    ResetSch();
-    UnlockVM();
-    p = strrchr(dlg.sFilename, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-	strcpy(InitialDir[0], dlg.sFilename);
-    }
-}
-
-
-/*
- * 「ファイル」メニューを作成
- */
-void CreateFileMenu(void)
-{
-        GtkWidget *w, *sub_item;
-        GSList *ModeGroup = NULL;
-        GtkWidget *file_menu, *file_item;
-        file_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file_1"));
-/*
- * NEW
- */
-
-        w = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file_new"));
-        gtk_signal_connect(GTK_OBJECT(w), "activate",
-                           GTK_SIGNAL_FUNC(OnSaveAs),
-                           wndMain);
-
-/*
- * Open
- */
-        w = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file_open"));
-        gtk_signal_connect(GTK_OBJECT(w), "activate",
-                           GTK_SIGNAL_FUNC(OnOpen),
-                           wndMain);
-
-/*
- * Open
- */
-        w = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file_save"));
-        gtk_signal_connect(GTK_OBJECT(w), "activate",
-                           GTK_SIGNAL_FUNC(OnSave),
-                           wndMain);
-
-/*
- * Reset
- */
-        w = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file_reset"));
-        gtk_signal_connect(GTK_OBJECT(w), "activate",
-                           GTK_SIGNAL_FUNC(OnReset),
-                           wndMain);
-
-/*
- * Hot Reset
- */
-        w = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file_hotreset"));
-        gtk_signal_connect(GTK_OBJECT(w), "activate",
-                           GTK_SIGNAL_FUNC(OnHotReset),
-                           wndMain);
-
-        /*********************************************************/
-
-        /* 「BASICモード」ボタンを作成 */
-        sub_item = gtk_radio_menu_item_new_with_label (ModeGroup, "BASICモード");
-        ModeGroup = gtk_radio_menu_item_group (GTK_RADIO_MENU_ITEM (sub_item));
-        gtk_menu_append (GTK_MENU(file_menu), sub_item);
-        gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
-                GTK_SIGNAL_FUNC (OnBasic), wndMain);
-        gtk_widget_show (sub_item);
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sub_item), TRUE);
-
-        /*********************************************************/
-
-        /* 「DOSモード」ボタンを作成 */
-        sub_item = gtk_radio_menu_item_new_with_label (ModeGroup, "DOSモード");
-        ModeGroup = gtk_radio_menu_item_group (GTK_RADIO_MENU_ITEM (sub_item));
-        gtk_menu_append (GTK_MENU(file_menu), sub_item);
-        gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
-                GTK_SIGNAL_FUNC (OnDos), wndMain);
-        gtk_widget_show (sub_item);
-
-        /*********************************************************/
-
-        /* セパレータを作成 */
-        sub_item = gtk_menu_item_new();
-        gtk_menu_append (GTK_MENU(file_menu), sub_item);
-        gtk_widget_show (sub_item);
-
-        /*********************************************************/
-
-        /* 「終了」ボタンを作成 */
-        sub_item = gtk_menu_item_new_with_label ("終了");
-        gtk_menu_append (GTK_MENU(file_menu), sub_item);
-        gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
-                GTK_SIGNAL_FUNC (OnExit), wndMain);
-        gtk_widget_show (sub_item);
-
-
-
-        /*ファイルメニューをのせるメニューアイテムの作成 */
-        file_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_file"));
-        gtk_widget_show (file_item);
-}
-#endif
-/*
- *  「ドライブ0」メニューを作成
- */
-static void CreateDiskMenu(AG_MenuItem *self, int Drive)
-{
-	int i;
-    if(midrive_open[Drive] != NULL) AG_MenuItemFree(midrive_open[Drive]);
-    if(midrive_openboth[Drive] != NULL) AG_MenuItemFree(midrive_openboth[Drive]);
-    if(midrive_eject[Drive] != NULL) AG_MenuItemFree(midrive_eject[Drive]);
-    if(midrive_teject[Drive] != NULL)AG_MenuItemFree(midrive_teject[Drive]);
-    if(midrive_writep[Drive] != NULL)AG_MenuItemFree(midrive_writep[Drive]);
-    for (i = 0; i < FDC_MEDIAS; i++) {
-    	if(midrive_medias[Drive][i] != NULL)AG_MenuItemFree(midrive_medias[Drive][i]);
-    }
-   midrive_open[Drive] = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
-   midrive_openboth[Drive] = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, "%i", Drive);
-	/*
-	 * ディスクが挿入されていなければ、ここまで
-	 */
-	if (fdc_ready[Drive] == FDC_TYPE_NOTREADY) {
-	return;
-    }
-
-	/*
-	 * イジェクト
-	 */
-	midrive_eject[Drive] = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, "%i", Drive);
-	/*
-	 * セパレータ挿入
-	 */
-	AG_MenuSeparator(self);
-
-	/*
-	 * 一時取り出し
-	 */
-	midrive_teject[Drive] = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, "%i,%i", Drive, fdc_teject[Drive]);
-	/*
-	 * ライトプロテクト
-	 */
-	midrive_writep[Drive] = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i,%i", Drive, !fdc_fwritep[Drive]);
-
-	/*
-	 * セパレータ挿入
-	 */
-	AG_MenuSeparator(self);
-
-}
-
-
-void CreateDiskMenu_0 (void)
-{
-    int            i;
-    AG_MenuItem *node;
-
-    node = Menu_Drive0;
-    /*
-     * Disk構造体の初期化
-     */
-    for (i = 0; i < FDC_MEDIAS; i++) {
-            disk[0][i].drive = 0;
-            disk[0][i].media = i;
-    }
-    CreateDiskMenu(node, 0);
-    return;
-}
-
-/*
- *  「ドライブ1」メニューを作成
- */
-void CreateDiskMenu_1 (void)
-{
-    int            i;
-    AG_MenuItem *node;
-
-    node = Menu_Drive1;
-
-    /*
-     * Disk構造体の初期化
-     */
-    for (i = 0; i < FDC_MEDIAS; i++) {
-            disk[1][i].drive = 1;
-            disk[1][i].media = i;
-    }
-    CreateDiskMenu(node, 1);
-    return;
-}
 
 
 /*-[ テープメニュー ]-------------------------------------------------------*/
@@ -1600,11 +1404,11 @@ void CreateMenu(void)
 /*
  * 「ドライブ0」メニューを作成する関数を呼び出す
  */
-    CreateDiskMenu_0();
+//    CreateDiskMenu_0();
 /*
  * 「ドライブ1」メニューを作成する関数を呼び出す
  */
-    CreateDiskMenu_1();
+//    CreateDiskMenu_1();
 /*
  * 「テープ」メニューを作成する関数を呼び出す
  */

@@ -9,7 +9,9 @@ XM7_VER		= 3
 OPTION		= -DMOUSE -DMR2 -DFDDSND
 OPTION          += -DUSE_OPENGL
 #OPTION		= -DMOUSE -DMR2
-OPTION		+= -DUSE_GTK
+#OPTION		+= -DUSE_GTKOPTION		+= -DUSE_GTKOPTION		+= -DUSE_GTKOPTION		+= -DUSE_GTK
+OPTION		+= -DUSE_AGAR
+
 INSTALL          = install -c 
 PREFIX           = /usr/local
 SHAREDIR         = $(PREFIX)/share/xm7/
@@ -58,7 +60,8 @@ COMMONSRC = \
 #        sdl_draw_640.c sdl_draw_400l.c sdl_draw_4096.c sdl_draw_256k.c
 
 VIDEODRVSRC = \
-	api_draw.cpp api_scaler.cpp
+	api_draw.cpp api_scaler.cpp \
+	agar_draw.cpp
 
 SNDDRVSRC = \
 	api_snd.cpp \
@@ -66,19 +69,34 @@ SNDDRVSRC = \
 
 INPUTSRC = \
 	api_kbd.cpp api_js.cpp api_mouse.cpp \
-	SDLJoyInterface.cpp SDLKbdInterface.cpp \
-	GtkKbdInterface.cpp \
+	AgarKbdInterface.cpp \
+	SDLKbdInterface.cpp \
+	SDLJoyInterface.cpp \
 	KbdInterface.cpp 
 
+
+
+#	GtkKbdInterface.cpp \
+#	KbdInterface.cpp 
+
 UISRC = \
-	sdl_gtkdlg.c \
-        gtk_prop2.c gtk_propkeyboard.c \
-        gtk_cfgdlg.c gtk_main.c gtk_toolbox.c
+	agar_guicore.cpp \
+	agar_toolbox.cpp
+
+#	sdl_gtkdlg.c \
+#        gtk_prop2.c gtk_propkeyboard.c \
+#        gtk_cfgdlg.c gtk_main.c gtk_toolbox.c
+
+#LOCALSRC = \
+#	sdl_cfg.c  sdl_inifile.c \
+#        sdl_cmd.c sdl_sch.c sdl_file.c \
+#	sdl_main.c \
+#	sdl_bar.c \
 
 LOCALSRC = \
-	sdl_cfg.c  sdl_inifile.c \
-        sdl_cmd.c sdl_sch.c sdl_file.c \
-	sdl_main.c \
+	agar_cfg.cpp  sdl_inifile.c \
+        agar_cmd.cpp agar_sch.cpp sdl_file.c \
+	agar_main.cpp agar_sdl.cpp \
 	sdl_bar.c \
 	util_ringbuffer.c \
 	$(VIDEODRVSRC) \
@@ -128,32 +146,44 @@ COMMONOBJ = \
 #        sdl_draw_640.o sdl_draw_400l.o sdl_draw_4096.o sdl_draw_256k.o
 
 VIDEODRVOBJ = \
-	api_draw.o api_scaler.o
-
-
+	api_draw.o api_scaler.o \
+	agar_draw.o
 
 SNDDRVOBJ = \
 	SndDrvTmpl.o SndDrvOpn.o SndDrvWav.o SndDrvBeep.o SndDrvCMT.o
 
 INPUTOBJ = \
-	SDLJoyInterface.o SDLKbdInterface.o \
-	GtkKbdInterface.o \
-	KbdInterface.o \
+	SDLJoyInterface.o \
+	AgarKbdInterface.o \
+	SDLKbdInterface.o \
+	KbdInterface.o 
+	
+#	SDLKbdInterface.o \
+#	GtkKbdInterface.o \
+#	KbdInterface.o \
 
 UIOBJ = \
-	sdl_gtkdlg.o \
-        gtk_prop2.o gtk_propkeyboard.o \
-        gtk_cfgdlg.o gtk_main.o gtk_toolbox.o
+	agar_guicore.o \
+	agar_toolbox.o
+
+#	agar_cfg.o  sdl_inifile.o \
+#        agar_cmd.o agar_sch.o sdl_file.o \
+#	agar_main.o agar_sdl.o \
+#	sdl_bar.o \
+	
+#	sdl_gtkdlg.o \
+#        gtk_prop2.o gtk_propkeyboard.o \
+#        gtk_cfgdlg.o gtk_main.o gtk_toolbox.o
 
 LOCALOBJ = \
-	sdl_cfg.o sdl_inifile.o  \
-	sdl_cmd.o sdl_sch.o sdl_file.o \
-	sdl_main.o \
+	agar_cfg.o  sdl_inifile.o \
+        agar_cmd.o agar_sch.o sdl_file.o \
+	agar_main.o agar_sdl.o \
 	sdl_bar.o \
 	util_ringbuffer.o \
 	api_kbd.o api_js.o api_mouse.o \
 	api_snd.o \
-	$(VIDEODRVOBJ) $(SCALEROBJ) $(GLSCALEROBJ) \
+	$(VIDEODRVOBJ)  \
 	$(SNDDRVOBJ) $(INPUTOBJ) $(UIOBJ)
 
 .SUFFIXES: .c .cpp .asm .o
@@ -173,6 +203,7 @@ CFLAGS +=        -DFUNC_FONT=\"$(UIFONT)\" -DSTAT_FONT=\"$(UIFONT)\"
 CFLAGS +=  -I. -I/usr/local/include -I/usr/local/include/libemugrph
 CFLAGS += `pkg-config --cflags sdl`
 CFLAGS += `pkg-config --cflags gtk+-x11-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
+CFLAGS += -I/usr/local/include/agar
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
 
@@ -184,7 +215,7 @@ LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
 LIBS += -lGL -lGLU
-LIBS += -lag_core -lag_gui -ljpeg
+LIBS += -lag_core -lag_gui -lag_dev -ljpeg
 #LIBS += -lmemwatch
 
 

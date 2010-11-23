@@ -13,6 +13,7 @@ extern "C" {
 #include <agar/gui/opengl.h>
 }
 #include "xm7.h"
+#include "fdc.h"
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
@@ -42,6 +43,7 @@ extern void OnHotReset(AG_Event *event);
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
 AG_GLView *DrawArea;
+AG_Box *OsdArea;
 }
 
 extern int DrawThreadMain(void *);
@@ -132,42 +134,7 @@ void ProcessKeyUp(AG_Event *event)
 }
 
 
-static void FileMenu_Reset(AG_Event *ev)
-{
-
-}
-
-static void FileMenu_HotReset(AG_Event *ev)
-{
-
-}
-
 static void FileMenu_BootMode(AG_Event *ev)
-{
-
-}
-
-static void FileMenu_QuickSave(AG_Event *ev)
-{
-
-}
-
-static void FileMenu_QuickLoad(AG_Event *ev)
-{
-
-}
-
-static void FileMenu_Load(AG_Event *ev)
-{
-
-}
-
-static void FileMenu_Save(AG_Event *ev)
-{
-
-}
-
-static void FileMenu_Quit(AG_Event *ev)
 {
 
 }
@@ -187,49 +154,58 @@ AG_MenuItem *Menu_About;
 
 void MainLoop(int argc, char *argv[])
 {
-	AG_Box *hb;
-	/*
-	 * エラーコード別
-	 */
-	switch (nErrorCode) {
-	/*
-	 * エラーなし
-	 */
+	int c;
+	char *drivers = NULL;
+	char *optArg;
 
-	case 0:
-		/*
-		 * 実行開始
-		 */
-		stopreq_flag = FALSE;
-		run_flag = TRUE;
-		/*
-		 * コマンドライン処理
-		 */
-		if (argc > 1) {
-//			OnCmdLine(argv[1]);
-		}
-		break;
-		/*
-		 * VM初期化エラー
-		 */
-	case 1:
-//		OpenErrorMessageDialog("XM7", "仮想マシンを初期化できません");
-		break;
-
-		/*
-		 * コンポーネント初期化エラー
-		 */
-	case 2:
-//		OpenErrorMessageDialog("XM7","コンポーネントを初期化できません");
-		break;
-	}
-//	AG_AtExitFunc(SDL_Quit);
+//	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
+	AG_InitCore("xm7", AG_VERBOSE);
+    while ((c = AG_Getopt(argc, argv, "?d:w:h:ft:T:c:", &optArg, NULL))
+          != -1) {
+              switch (c) {
+              case 'd':
+                      drivers = optArg;
+                      break;
+              case 'f':
+                      /* Force full screen */
+                      AG_SetBool(agConfig, "view.full-screen", 1);
+                      break;
+              case 'T':
+                      /* Set an alternate font directory */
+                      AG_SetString(agConfig, "font-path", optArg);
+                      break;
+              case 't':
+                  /* Change the default font */
+                  AG_TextParseFontSpec(optArg);
+                  break;
+          case '?':
+          default:
+                  printf("%s [-vgsDdfR] [-d driver] [-r fps] [-t fontspec] "
+                         "[-w width] [-h height] "
+                         "[-T font-path]\n",
+                         agProgName);
+                  exit(0);
+          }
+    }
+    stopreq_flag = FALSE;
+    run_flag = TRUE;
 	/*
 	 * Agar のメインループに入る
 	 */
-    AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
-	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
-			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
+    AG_SetString(agConfig, "font-path", "/usr/share/fonts/truetype/mona");
+    AG_SetString(agConfig, "font.face", "mona.ttf");
+    AG_SetInt(agConfig, "font.size", 20);
+//    AG_TextParseFontSpec("mona.ttf,16");
+
+    if(drivers == NULL)  {
+    	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
+    			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
+    } else {
+        if (AG_InitGraphics(drivers) == -1) {
+                fprintf(stderr, "%s\n", AG_GetError());
+                return;
+        }
+    }
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
 	bKeyboardSnooped = FALSE;
@@ -241,10 +217,6 @@ void MainLoop(int argc, char *argv[])
 void Create_Drive0Menu(void);
 void Create_Drive1Menu(void);
 
-static void Create_AGMainMenu(AG_Widget *parent)
-{
-
-}
 
 static void Create_AGMainBar(AG_Widget *Parent)
 {
@@ -252,7 +224,6 @@ static void Create_AGMainBar(AG_Widget *Parent)
 
 //	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
 	if(!MenuBar) return;
-#if 1
 	AG_LockVFS(AGOBJECT(MenuBar));
 	Menu_File = AG_MenuNode(MenuBar->root , "File", NULL);
 	Create_FileMenu();
@@ -268,7 +239,6 @@ static void Create_AGMainBar(AG_Widget *Parent)
  	Menu_Help = AG_MenuNode(MenuBar->root, "Help", NULL);
  	Menu_About = AG_MenuNode(MenuBar->root, "About", NULL);
 	AG_UnlockVFS(AGOBJECT(MenuBar));
-#endif
 }
 
 static  AG_MenuItem *Menu_File_QuickSave;
@@ -298,40 +268,44 @@ static void Create_FileMenu(void)
 
 extern void OnOpenDisk(AG_Event *event);
 extern void OnOpenDiskBoth(AG_Event *event);
-extern void OnEjectDisk(AG_Event *event);
-extern void OnEjectDiskTemp(AG_Event *event);
-extern void OnWriteProtectDisk(AG_Event *event);
-extern void OnSelectDiskMedia(AG_Event *event);
 
+extern "C" {
+extern void OnDiskEject(AG_Event *event);
+extern void OnDiskTemp(AG_Event *event);
+}
+
+extern void OnWriteProtectDisk(AG_Event *event);
+extern void DisplayWriteProtectDisk(AG_Event *event);
+extern void OnSelectDiskMedia(AG_Event *event);
+extern void OnSelectDiskImage(AG_Event *event);
+AG_MenuItem *Menu_DiskImages[FDC_DRIVES];
 
 
 void CreateDiskMenu(AG_MenuItem *self, int Drive)
 {
 	AG_MenuItem *item;
+	int i;
+	if((Drive >= FDC_DRIVES) || (Drive <0)) return;
 
 	item = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
 	item = AG_MenuAction(self, gettext("Open Both"), NULL, OnOpenDiskBoth, NULL);
 	AG_MenuSeparator(self);
-	item = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectDisk, "%i", Drive);
-	/*
-	 * セパレータ挿入
-	 */
+	item = AG_MenuAction(self, gettext("Eject"), NULL, OnDiskEject, "%i", Drive);
 	AG_MenuSeparator(self);
-
 	/*
 	 * 一時取り出し
 	 */
-//	item = AG_MenuDynamicItem(self, gettext("Eject Temp"), NULL, OnEjectDiskTemp, "%i,%i", Drive, fdc_teject[Drive]);
+	item = AG_MenuAction(self, gettext("Eject Temp"), NULL, OnDiskTemp, "%i", Drive);
 	/*
 	 * ライトプロテクト
 	 */
-//	item = AG_MenuDynamicItem(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i,%i", Drive, !fdc_fwritep[Drive]);
-
+	AG_MenuSeparator(self);
+	item = AG_MenuAction(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i", Drive);
 	/*
-	 * セパレータ挿入
+	 * ディスクイメージ選択
 	 */
 	AG_MenuSeparator(self);
-
+	Menu_DiskImages[Drive] = AG_MenuAction(self, gettext("Image Select"), NULL, OnSelectDiskMedia, "%i", Drive);
 }
 
 void Create_Drive0Menu(void)
@@ -409,9 +383,14 @@ void OnDestroy(AG_Event *event)
         AG_QuitGUI();
 }
 
+static void InitFont(void)
+{
+}
 void InitInstance(void)
 {
 	AG_Box *hb;
+	AG_Box *hb2;
+	InitFont();
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
 
@@ -425,7 +404,11 @@ void InitInstance(void)
 	AG_WidgetSetSize(MenuBar, 640, 32);
 	AG_WidgetEnable(AGWIDGET(MenuBar));
 
-	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
+    hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_EXPAND);
+    AG_WidgetSetSize(hb2, 640,400);
+	AG_WidgetEnable(hb2);
+
+	DrawArea = AG_GLViewNew(AGWIDGET(hb2) , AG_GLVIEW_EXPAND);
 	AG_WidgetEnable(DrawArea);
 	AG_GLViewSizeHint(DrawArea, 640, 400);
 	AG_WidgetSetPosition(DrawArea, 0, 32);
@@ -435,6 +418,10 @@ void InitInstance(void)
 
 	//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
 //	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
+	OsdArea = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
+    AG_WidgetSetSize(OsdArea, 640,32);
+	AG_WidgetEnable(OsdArea);
+
 	InitGL(640, 400);
 	AG_WindowShow(MainWindow);
 

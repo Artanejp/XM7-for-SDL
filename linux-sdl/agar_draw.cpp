@@ -17,6 +17,7 @@ extern "C" {
 extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
 extern AG_Menu  *MenuBar;
+extern AG_Box *OsdArea;
 }
 extern EmuAgarGL *scalerGL;
 extern Uint32 nDrawTick1;
@@ -134,6 +135,7 @@ void AGDrawTaskEvent(BOOL flag)
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
 				AG_WidgetDraw(DrawArea);
+				AG_WidgetDraw(OsdArea);
 				AG_WidgetDraw(MenuBar);
 				AG_FOREACH_WINDOW(win, agDriverSw) {
 						AG_ObjectLock(win);
