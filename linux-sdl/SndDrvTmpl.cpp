@@ -279,6 +279,7 @@ int SndDrvTmpl::Render(int start, int uSamples, int slot, BOOL clear)
 	samples = sSamples;
 	return 0;
 }
+
 void SndDrvTmpl::Play(int ch,  int slot)
 {
 	if(slot >= bufSlot) return;
@@ -292,3 +293,15 @@ void SndDrvTmpl::Play(int ch,  int slot)
 	SDL_SemPost(RenderSem);
 }
 
+void SndDrvTmpl::Play(int ch,  int slot, int samples)
+{
+	if(slot >= bufSlot) return;
+	if(chunk[slot].abuf == NULL) return;
+	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
+	//		if(!enable) return;
+	if(RenderSem == NULL) return;
+	SDL_SemWait(RenderSem);
+	if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);
+	chunk[slot].alen = 0;
+	SDL_SemPost(RenderSem);
+}

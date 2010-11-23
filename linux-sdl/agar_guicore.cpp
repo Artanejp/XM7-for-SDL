@@ -194,7 +194,7 @@ void MainLoop(int argc, char *argv[])
 	 */
     AG_SetString(agConfig, "font-path", "/usr/share/fonts/truetype/mona");
     AG_SetString(agConfig, "font.face", "mona.ttf");
-    AG_SetInt(agConfig, "font.size", 20);
+    AG_SetInt(agConfig, "font.size", 18);
 //    AG_TextParseFontSpec("mona.ttf,16");
 
     if(drivers == NULL)  {
@@ -221,7 +221,6 @@ void Create_Drive1Menu(void);
 static void Create_AGMainBar(AG_Widget *Parent)
 {
 	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
-
 //	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
 	if(!MenuBar) return;
 	AG_LockVFS(AGOBJECT(MenuBar));
@@ -253,19 +252,23 @@ static AG_MenuItem *Menu_File_Quit;
 
 static void Create_FileMenu(void)
 {
-	Menu_File_QuickSave = AG_MenuAction(Menu_File , "Quick Save", NULL, OnQuickSave, NULL);
-	Menu_File_QuickLoad = AG_MenuAction(Menu_File , "Quick Load", NULL, OnQuickLoad, NULL);
+	Menu_File_QuickSave = AG_MenuAction(Menu_File , gettext("Quick Save"), NULL, OnQuickSave, NULL);
+	Menu_File_QuickLoad = AG_MenuAction(Menu_File , gettext("Quick Load"), NULL, OnQuickLoad, NULL);
 	AG_MenuSeparator(Menu_File);
-	Menu_File_Save = AG_MenuAction(Menu_File , "Save As...", NULL, OnSaveAs, NULL);
-	Menu_File_Load = AG_MenuAction(Menu_File , "Load", NULL, OnLoadStatus, NULL);
+	Menu_File_Save = AG_MenuAction(Menu_File , gettext("Save As..."), NULL, OnSaveAs, NULL);
+	Menu_File_Load = AG_MenuAction(Menu_File , gettext("Load"), NULL, OnLoadStatus, NULL);
 	AG_MenuSeparator(Menu_File);
-	Menu_File_Reset = AG_MenuAction(Menu_File, "Cold Reset", NULL, OnReset, NULL);
-	Menu_File_HotReset = AG_MenuAction(Menu_File, "Hot Reset", NULL, OnHotReset, NULL);
-	AG_MenuSeparator(Menu_File);
-	Menu_File_Quit = AG_MenuAction(Menu_File , "Quit", NULL, OnDestroy, NULL);
+	Menu_File_Reset = AG_MenuAction(Menu_File, gettext("Cold Reset"), NULL, OnReset, NULL);
+	Menu_File_HotReset = AG_MenuAction(Menu_File, gettext("Hot Reset"), NULL, OnHotReset, NULL);
+	//Menu_File_BootMode = AG_MenuAction(Menu_File, gettext("Boot Mode"), NULL, OnBootMode, NULL);
+	//AG_MenuSeparator(Menu_File);
+	Menu_File_Quit = AG_MenuAction(Menu_File , gettext("Quit"), NULL, OnDestroy, NULL);
 
 }
 
+/*
+ * Drive 1/0 Menu
+ */
 extern void OnOpenDisk(AG_Event *event);
 extern void OnOpenDiskBoth(AG_Event *event);
 
@@ -318,9 +321,33 @@ void Create_Drive1Menu(void)
 	CreateDiskMenu(Menu_Drive1, 1);
 }
 
-void Create_TapeMenu(void)
+void Create_TapeMenu(AG_MenuItem *self)
 {
-
+	AG_MenuItem *item ;
+#if 0
+	item = AG_MenuAction(self, gettext("Open"), NULL, OnOpenTape,NULL);
+	AG_MenuSeparator(self);
+	item = AG_MenuAction(self, gettext("Eject"), NULL, OnEjectTape, NULL);
+	AG_MenuSeparator(self);
+	/*
+	 * 一時取り出し
+	 */
+	item = AG_MenuAction(self, gettext("Eject Temp"), NULL, OnTapeTemp, NULL);
+	/*
+	 * ライトプロテクト
+	 */
+	AG_MenuSeparator(self);
+	item = AG_MenuAction(self, gettext("Write Protect"), NULL, OnWriteProtectTape, NULL);
+	/*
+	 * 巻き戻し
+	 */
+	AG_MenuSeparator(self);
+	item = AG_MenuAction(self, gettext("Rewind"), NULL, OnRewindTape, NULL);
+	item = AG_MenuAction(self, gettext("Fast Forward"), NULL, OnFFTape, NULL);
+	item = AG_MenuAction(self, gettext("Tape Reset"), NULL, OnResetTape, NULL);
+	AG_MenuSeparator(self);
+	item = AG_MenuAction(self, gettext("Record Tape"), NULL, OnRecordTape, NULL);
+#endif
 }
 
 void Create_DebugMenu(void)

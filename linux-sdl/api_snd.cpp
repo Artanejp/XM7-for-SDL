@@ -1268,37 +1268,42 @@ static void RenderPlay(int samples, int slot, BOOL play)
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
 	DWORD *bank = NULL;
+	int playing = 0;
 
 	if(play) {
-		if(applySem == NULL) return;
-		SDL_SemWait(applySem);
+		//		if(applySem == NULL) return;
+		//		SDL_SemWait(applySem);
+		if(bPlayEnable) {
+//			do {
+//				playing = Mix_Playing(CH_SND_BEEP + slot);
+//				playing |= Mix_Playing(CH_SND_CMT + slot);
+//				playing |= Mix_Playing(CH_SND_OPN + slot);
+//				playing |= Mix_Playing(CH_SND_WHG + slot);
+//				playing |= Mix_Playing(CH_SND_THG + slot);
+//			} while(playing);
 
-		if(DrvBeep != NULL) {
-			if(bPlayEnable) DrvBeep->Play(CH_SND_BEEP + slot, slot);
-		}
+			if(DrvBeep != NULL) {
+				DrvBeep->Play(CH_SND_BEEP + slot, slot, samples);
+			}
+			if(DrvCMT != NULL) {
+				DrvCMT->Play(CH_SND_CMT + slot, slot, samples);
+			}
+			if(DrvOPN != NULL) {
+				DrvOPN->Play(CH_SND_OPN + slot , slot, samples);
+			}
 
-		if(DrvCMT != NULL) {
-			if(bPlayEnable) DrvCMT->Play(CH_SND_CMT + slot, slot);
-		}
-
-#if 1
-
-		if(DrvOPN != NULL) {
-			if(bPlayEnable) DrvOPN->Play(CH_SND_OPN + slot , slot, samples);
-		}
-
-		if(DrvWHG != NULL) {
-			if(whg_use) {
-				if(bPlayEnable) DrvWHG->Play(CH_SND_WHG + slot, slot, samples);
+			if(DrvWHG != NULL) {
+				if(whg_use) {
+					DrvWHG->Play(CH_SND_WHG + slot, slot, samples);
+				}
+			}
+			if(DrvTHG != NULL) {
+				if(thg_use) {
+					DrvTHG->Play(CH_SND_THG + slot , slot, samples);
+				}
 			}
 		}
-		if(DrvTHG != NULL) {
-			if(thg_use) {
-				if(bPlayEnable) DrvTHG->Play(CH_SND_THG + slot , slot, samples);
-			}
-		}
-#endif
-		SDL_SemPost(applySem);
+		//		SDL_SemPost(applySem);
 	}
 }
 

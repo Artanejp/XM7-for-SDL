@@ -215,7 +215,9 @@ LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
 LIBS += -lGL -lGLU
-LIBS += -lag_core -lag_gui -lag_dev -ljpeg
+#LIBS += -lag_core -lag_gui -lag_dev 
+LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
+LIBS += -ljpeg -lpng
 #LIBS += -lmemwatch
 
 

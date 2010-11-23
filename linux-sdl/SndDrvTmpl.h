@@ -41,6 +41,7 @@ public:
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void SetRenderVolume(int level);
 	void Play(int ch,  int slot);
+	void Play(int ch,  int slot, int samples);
 protected:
 	Uint8 *buf[DEFAULT_SLOT];
 	Mix_Chunk chunk[DEFAULT_SLOT];
