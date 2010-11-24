@@ -81,7 +81,12 @@ INPUTSRC = \
 
 UISRC = \
 	agar_guicore.cpp \
-	agar_toolbox.cpp
+	agar_toolbox.cpp \
+	agar_gui_menu.cpp \
+	agar_menu_disk.cpp \
+	agar_menu_tape.cpp \
+	agar_menu_tool.cpp \
+	agar_menu_about.cpp
 
 #	sdl_gtkdlg.c \
 #        gtk_prop2.c gtk_propkeyboard.c \
@@ -164,7 +169,13 @@ INPUTOBJ = \
 
 UIOBJ = \
 	agar_guicore.o \
-	agar_toolbox.o
+	agar_toolbox.o \
+	agar_gui_menu.o \
+	agar_menu_disk.o \
+	agar_menu_tape.o \
+	agar_menu_tool.o \
+	agar_menu_about.o
+
 
 #	agar_cfg.o  sdl_inifile.o \
 #        agar_cmd.o agar_sch.o sdl_file.o \
