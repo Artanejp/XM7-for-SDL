@@ -371,7 +371,7 @@ void LoadCfg(void)
        && (configdat.uHeight != 200)
        && (configdat.uHeight != 240)
        && (configdat.uHeight != 480)
-       && (configdat.uHeight != 960)
+       && (configdat.uHeight != 800)
        && (configdat.uHeight != 960)){
                 configdat.uHeight = 400;
     }

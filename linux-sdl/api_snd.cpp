@@ -999,6 +999,7 @@ tape_notify(BOOL flag)
 void        ProcessSnd(BOOL bZero)
 {
 	BOOL    bWrite;
+	int 	wbank;
 	/*
 	 * 初期化されていなければ、何もしない
 	 */
@@ -1059,7 +1060,6 @@ void        ProcessSnd(BOOL bZero)
 			SDL_SemPost(applySem);
 		   return;
 	  }
-
 	  /*
 	   * ここから演奏開始
 	   */
@@ -1068,6 +1068,9 @@ void        ProcessSnd(BOOL bZero)
 	  /*
 	   * 書き込みバンク(仮想)
 	   */
+      wbank = bNowBank?0:1;
+      RenderThreadBZero(0, uTick * uChannels * sizeof(Sint16), wbank);
+
 	  bNowBank = (!bNowBank);
 	SDL_SemPost(applySem);
 
@@ -1226,8 +1229,7 @@ RenderThreadSub(int start, int size, int slot)
 	return size;
 }
 
-static int
-RenderThreadBZero(int start,int size,int slot)
+static int RenderThreadBZero(int start,int size,int slot)
 {
 	int w;
 	DWORD *bank = NULL;
@@ -1286,7 +1288,7 @@ static void RenderPlay(int samples, int slot, BOOL play)
 				DrvBeep->Play(CH_SND_BEEP + slot, slot, samples);
 			}
 			if(DrvCMT != NULL) {
-				DrvCMT->Play(CH_SND_CMT + slot, slot, samples);
+				DrvCMT->Play(CH_SND_CMT + slot, slot);
 			}
 			if(DrvOPN != NULL) {
 				DrvOPN->Play(CH_SND_OPN + slot , slot, samples);

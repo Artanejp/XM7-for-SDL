@@ -433,7 +433,6 @@ int DrawThreadMain(void *p)
 		ResizeWindow(640,480);
 		InitGL(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
-		newResize = FALSE;
 		while(1) {
 			if(DrawMutex == NULL) {
 				SDL_Delay(1);
@@ -675,6 +674,7 @@ void	InitDraw(void)
 #endif
 		SetDrawFlag(FALSE);
 		nDrawTick1 = 0;
+		newResize = FALSE;
 
 
 #if XM7_VER >= 3
