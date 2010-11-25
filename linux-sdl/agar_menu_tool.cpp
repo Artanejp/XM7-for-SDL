@@ -43,6 +43,7 @@ extern "C" {
 #include "agar_toolbox.h"
 
 extern void OnPushCancel(AG_Event *event);
+extern void OnConfigMenu(AG_Event *event);
 extern void KeyBoardSnoop(BOOL t);
 
 static BOOL b2DD ;
@@ -379,5 +380,6 @@ void Create_ToolsMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent , gettext("Create Virtual Tape"), NULL, OnNewTape, NULL);
 
 	AG_MenuSeparator(parent);
+	item = AG_MenuAction(parent , gettext("Config..."), NULL, OnConfigMenu, NULL);
 
 }
