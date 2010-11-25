@@ -39,11 +39,13 @@ extern "C" {
 #include "sdl_snd.h"
 #include "sdl_inifile.h"
 #include "api_draw.h"
-//#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 
 extern void OnPushCancel(AG_Event *event);
-extern void OnConfigMenu(AG_Event *event);
+extern void OnConfigEmulationMenu(AG_Event *event);
+extern void OnConfigInputMenu(AG_Event *event);
+extern void OnConfigSoundMenu(AG_Event *event);
+
 extern void KeyBoardSnoop(BOOL t);
 
 static BOOL b2DD ;
@@ -380,6 +382,8 @@ void Create_ToolsMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent , gettext("Create Virtual Tape"), NULL, OnNewTape, NULL);
 
 	AG_MenuSeparator(parent);
-	item = AG_MenuAction(parent , gettext("Config..."), NULL, OnConfigMenu, NULL);
+	item = AG_MenuAction(parent , gettext("Configure Emulation"), NULL, OnConfigEmulationMenu, NULL);
+	item = AG_MenuAction(parent , gettext("Configure Inputs"), NULL, OnConfigInputMenu, NULL);
+	item = AG_MenuAction(parent , gettext("Configure Sound"), NULL, OnConfigSoundMenu, NULL);
 
 }

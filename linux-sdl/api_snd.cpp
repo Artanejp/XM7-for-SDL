@@ -1273,8 +1273,9 @@ static void RenderPlay(int samples, int slot, BOOL play)
 	int playing = 0;
 
 	if(play) {
-		//		if(applySem == NULL) return;
-		//		SDL_SemWait(applySem);
+		Mix_Volume(-1,iTotalVolume);
+				if(applySem == NULL) return;
+//				SDL_SemWait(applySem);
 		if(bPlayEnable) {
 //			do {
 //				playing = Mix_Playing(CH_SND_BEEP + slot);
@@ -1283,7 +1284,6 @@ static void RenderPlay(int samples, int slot, BOOL play)
 //				playing |= Mix_Playing(CH_SND_WHG + slot);
 //				playing |= Mix_Playing(CH_SND_THG + slot);
 //			} while(playing);
-
 			if(DrvBeep != NULL) {
 				DrvBeep->Play(CH_SND_BEEP + slot, slot, samples);
 			}
@@ -1305,7 +1305,7 @@ static void RenderPlay(int samples, int slot, BOOL play)
 				}
 			}
 		}
-		//		SDL_SemPost(applySem);
+//				SDL_SemPost(applySem);
 	}
 }
 

@@ -228,7 +228,6 @@ schedule_get_cycle(void)
 	    tmp = 1;
 	}
     }
-
     return tmp;
 }
 
