@@ -189,6 +189,8 @@ void MainLoop(int argc, char *argv[])
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	DrawThreadMain(NULL);
+//	AG_EventLoop();
+	AG_Destroy();
 }
 
 

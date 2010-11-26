@@ -98,6 +98,12 @@ static AG_Box *INSBox;
 static AG_Box *CAPSBox;
 static AG_Box *KANABox;
 
+static AG_Pixmap *FD1Pix;
+static AG_Pixmap *FD0Pix;
+static AG_Pixmap *CMTPix;
+static AG_Pixmap *INSPix;
+static AG_Pixmap *CAPSPix;
+static AG_Pixmap *KANAPix;
 
 
 /*-[ ステータスバー ]-------------------------------------------------------*/
@@ -111,6 +117,7 @@ void CreateStatus(void)
         AG_Color r, b, n , black;
         AG_Box *box;
         AG_Box *hbox;
+        AG_Surface *tmps;
         Uint32 rmask, gmask, bmask, amask;
         int i;
 
@@ -121,18 +128,22 @@ void CreateStatus(void)
         r.r = 255;
         r.g = 0;
         r.b = 0;
+        r.a = 255;
 
         b.r = 0;
         b.g = 0;
         b.b = 255;
+        b.a = 255;
 
         n.r = 255;
         n.g = 255;
         n.b = 255;
+        n.a = 255;
 
         black.r = 0;
         black.g = 0;
         black.b = 0;
+        black.a = 255;
 #if AG_BYTEORDER == AG_BIG_ENDIAN
         rmask = 0xff000000;
         gmask = 0x00ff0000;
@@ -146,25 +157,57 @@ void CreateStatus(void)
 #endif
 
         AG_PushTextState();
-        pStatusFont = AG_FetchFont("mona.ttf", 12, -1);
+        pStatusFont = AG_TextFontPts(11);
         if(pStatusFont == NULL) {
+            AG_PopTextState();
         	return;
         }
-        AG_PopTextState();
- //       BarWin = AG_WindowNew(AG_WINDOW_MODAL | AG_WINDOW_PLAIN);
-        BarWin = AG_WindowNew(0);
-
+//       BarWin = AG_WindowNew(AG_WINDOW_MODAL | AG_WINDOW_PLAIN);
+        BarWin = AG_WindowNew(AG_WINDOW_PLAIN);
+//        BarWin = AG_WindowNew(0);
+        AG_TextFontPts(11);
 #if 1
+
         AG_TextColor(black);
         AG_TextBGColor(r);
-        pInsOn = AG_TextRender("Ins");
-        pCapsOn = AG_TextRender("CAPS");
-        pKanaOn = AG_TextRender("かな");
-        AG_TextColor(black);
-        AG_TextBGColor(b);
-        pInsOff = AG_TextRender("Ins");
-        pCapsOff = AG_TextRender("CAPS");
-        pKanaOff = AG_TextRender("かな");
+        pInsOn = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        AG_FillRect(pInsOn, NULL, r);
+        tmps = AG_TextRender("Ins");
+        AG_SurfaceBlit(tmps, NULL, pInsOn, 4, 0);
+        AG_SurfaceFree(tmps);
+
+        pCapsOn = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        AG_FillRect(pCapsOn, NULL, r);
+        tmps = AG_TextRender("CAP");
+        AG_SurfaceBlit(tmps, NULL, pCapsOn, 2, 0);
+        AG_SurfaceFree(tmps);
+
+        pKanaOn = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        AG_FillRect(pKanaOn, NULL, r);
+        tmps = AG_TextRender("かな");
+        AG_SurfaceBlit(tmps, NULL, pKanaOn, 2, 0);
+        AG_SurfaceFree(tmps);
+
+        AG_TextColor(n);
+        AG_TextBGColor(black);
+
+        pInsOff = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        AG_FillRect(pInsOff, NULL, black);
+        tmps = AG_TextRender("Ins");
+        AG_SurfaceBlit(tmps, NULL, pInsOff, 4, 0);
+        AG_SurfaceFree(tmps);
+
+        pCapsOff = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        AG_FillRect(pCapsOff, NULL, black);
+        tmps = AG_TextRender("CAP");
+        AG_SurfaceBlit(tmps, NULL, pCapsOff, 2, 0);
+        AG_SurfaceFree(tmps);
+
+        pKanaOff = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        AG_FillRect(pKanaOff, NULL, black);
+        tmps = AG_TextRender("かな");
+        AG_SurfaceBlit(tmps, NULL, pKanaOff, 2, 0);
+        AG_SurfaceFree(tmps);
 
         /*
          * RECT Drive1
@@ -223,7 +266,7 @@ void CreateStatus(void)
         barrect.y = 20;
         barrect.h = 20;
         barrect.w = 260;
-        hbox = AG_BoxNewVert(AGWIDGET(box), 0);
+        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HOMOGENOUS);
         AG_WidgetSizeAlloc(AGWIDGET(hbox), &barrect);
 
         barrect.x = 0;
@@ -240,16 +283,16 @@ void CreateStatus(void)
         FD0Box = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
         AG_WidgetSizeAlloc(AGWIDGET(FD0Box), &barrect);
 
-        hbox = AG_BoxNewVert(AGWIDGET(box), 0);
+        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HOMOGENOUS);
         AG_WidgetSizeAlloc(AGWIDGET(hbox), &barrect);
 
         box = AG_BoxNewVert(AGWIDGET(OsdArea), AG_BOX_HFILL);
-        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HFILL);
+        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HOMOGENOUS);
         barrect.x = 0;
         barrect.y = 0;
         barrect.h = 20;
         barrect.w = 60;
-        hbox = AG_BoxNewVert(AGWIDGET(box), 0);
+        hbox = AG_BoxNewHoriz(AGWIDGET(box), 0);
         AG_WidgetSizeAlloc(AGWIDGET(hbox), &barrect);
 
         barrect.x = 0;
@@ -277,9 +320,18 @@ void CreateStatus(void)
         CMTBox = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
         AG_WidgetSetSize(AGWIDGET(CMTBox), 60, 20);
 #endif
+    	INSPix = AG_PixmapFromSurface(INSBox, AG_PIXMAP_RESCALE, pInsOn);
+    	KANAPix = AG_PixmapFromSurface(KANABox, AG_PIXMAP_RESCALE, pKanaOn);
+    	CAPSPix = AG_PixmapFromSurface(CAPSBox, AG_PIXMAP_RESCALE, pCapsOn);
+
+    	FD0Pix = AG_PixmapFromSurface(FD1Box, 0, pFDWrite[1]);
+    	FD0Pix = AG_PixmapFromSurface(FD0Box, 0, pFDRead[0]);
+    	CMTPix = AG_PixmapFromSurface(CMTBox, 0, pCMTWrite);
+
     	AG_WindowSetMinSize(BarWin, 320, 40);
-//        AG_WindowSetPosition(BarWin, AG_WINDOW_BL, 0);
+        AG_WindowSetPosition(BarWin, AG_WINDOW_BL, 0);
         AG_WindowShow(BarWin);
+        AG_PopTextState();
 }
 
 void
@@ -479,9 +531,9 @@ static void DrawCAP(void)
  */
         nCAP = num;
         if (nCAP) {
-        	AG_WidgetBlit(CAPSBox, pCapsOn, 0, 0);
+        	AG_PixmapReplaceCurrentSurface(CAPSPix, pCapsOn);
         } else {
-        	AG_WidgetBlit(CAPSBox, pCapsOff, 0, 0);
+        	AG_PixmapReplaceCurrentSurface(CAPSPix, pCapsOff);
         }
         AG_WidgetUpdate(CAPSBox);
         //SDL_Flip(p);
@@ -516,9 +568,9 @@ static void DrawKANA(void)
  */
         nKANA = num;
         if (nKANA) {
-        	AG_WidgetBlit(KANABox, pKanaOn, 0, 0);
+        	AG_PixmapReplaceCurrentSurface(KANAPix, pKanaOn);
         } else {
-        	AG_WidgetBlit(KANABox, pKanaOff, 0, 0);
+        	AG_PixmapReplaceCurrentSurface(KANAPix, pKanaOff);
         }
         AG_WidgetUpdate(KANABox);
 }
@@ -552,9 +604,9 @@ DrawINS(void)
  */
         nINS = num;
         if (nINS) {
-        	AG_WidgetBlit(INSBox, pInsOn, 0, 0);
+        	AG_PixmapReplaceCurrentSurface(INSPix, pInsOn);
         } else {
-        	AG_WidgetBlit(INSBox, pInsOff, 0, 0);
+        	AG_PixmapReplaceCurrentSurface(INSPix, pInsOff);
         }
         AG_WidgetUpdate(INSBox);
 
@@ -846,10 +898,10 @@ DrawStatus(void)
         nInitialDrawFlag = FALSE;
 #else
         if(BarWin == NULL) return;
-//        DrawCAP();
+//       DrawCAP();
 //        DrawKANA();
 //        DrawINS();
-//        nInitialDrawFlag = FALSE;
+        nInitialDrawFlag = FALSE;
 
 #endif
 }

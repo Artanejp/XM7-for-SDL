@@ -135,11 +135,10 @@ void AGDrawTaskEvent(BOOL flag)
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
 				AG_WidgetDraw(DrawArea);
-//				AG_WidgetDraw(OsdArea);
-				AG_WidgetDraw(MenuBar);
-				if(OsdArea != NULL) {
-					AG_WidgetDraw(OsdArea);
-				}
+//				AG_WidgetDraw(MenuBar);
+//				if(OsdArea != NULL) {
+//					AG_WidgetDraw(OsdArea);
+//				}
 				AG_FOREACH_WINDOW(win, agDriverSw) {
 						AG_ObjectLock(win);
 						AG_WindowDraw(win);
