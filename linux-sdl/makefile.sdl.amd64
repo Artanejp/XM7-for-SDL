@@ -103,7 +103,7 @@ LOCALSRC = \
 	agar_cfg.cpp  sdl_inifile.c \
         agar_cmd.cpp agar_sch.cpp sdl_file.c \
 	agar_main.cpp agar_sdl.cpp \
-	sdl_bar.c \
+	agar_osd.cpp \
 	util_ringbuffer.c \
 	$(VIDEODRVSRC) \
 	$(SNDDRVSRC) $(INPUTSRC) \
@@ -191,7 +191,7 @@ LOCALOBJ = \
 	agar_cfg.o  sdl_inifile.o \
         agar_cmd.o agar_sch.o sdl_file.o \
 	agar_main.o agar_sdl.o \
-	sdl_bar.o \
+	agar_osd.o \
 	util_ringbuffer.o \
 	api_kbd.o api_js.o api_mouse.o \
 	api_snd.o \

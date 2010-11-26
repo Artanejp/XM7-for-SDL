@@ -264,9 +264,9 @@ void InitInstance(void)
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
 
-    hb = AG_BoxNewHoriz(MainWindow, AG_BOX_EXPAND);
+    hb = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
     AG_WidgetSetSize(MainWindow, 640,480);
-    AG_WidgetSetSize(hb, 640, 32);
+//    AG_WidgetSetSize(hb, 640, 32);
 
     Create_AGMainBar(AGWIDGET(hb));
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
@@ -286,11 +286,7 @@ void InitInstance(void)
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
 //	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 
-	//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
-//	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
-//	OsdArea = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
-//    AG_WidgetSetSize(OsdArea, 640,32);
-//	AG_WidgetEnable(OsdArea);
+//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
 	CreateStatus();
 
 	InitGL(640, 480);
