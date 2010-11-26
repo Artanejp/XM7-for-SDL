@@ -45,6 +45,7 @@ extern AG_Box *OsdArea;
 }
 
 extern void Create_AGMainBar(AG_Widget *Parent);
+extern void CreateStatus(void);
 extern int DrawThreadMain(void *);
 extern void AGEventDrawGL(AG_Event *event);
 extern void AGEventScaleGL(AG_Event *event);
@@ -287,9 +288,10 @@ void InitInstance(void)
 
 	//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
 //	AG_SetEvent(DrawArea, "key-up" , ProcessKeyUp, NULL);
-	OsdArea = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
-    AG_WidgetSetSize(OsdArea, 640,32);
-	AG_WidgetEnable(OsdArea);
+//	OsdArea = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
+//    AG_WidgetSetSize(OsdArea, 640,32);
+//	AG_WidgetEnable(OsdArea);
+	CreateStatus();
 
 	InitGL(640, 480);
 	AG_WindowShow(MainWindow);

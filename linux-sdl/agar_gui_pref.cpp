@@ -400,6 +400,23 @@ static void InputMenuJS(AG_NotebookTab *parent)
 
 }
 
+void InputMenuKbd(AG_NotebookTab *parent)
+{
+	AG_Box *box;
+	AG_Checkbox *check;
+
+	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
+
+
+	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
+	{
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Bind multi-pressed cursor as oblique direction"), &localconfig.bArrow8Dir);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Bind Cursor as Ten-Key"), &localconfig.bTenCursor);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Pseudo Realtime Scan"), &localconfig.bKbdReal);
+	}
+
+}
+
 void OnConfigInputMenu(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
@@ -424,9 +441,11 @@ void OnConfigInputMenu(AG_Event *event)
     	 */
 
     	tab = AG_NotebookAddTab(note, gettext("Keyboard"), AG_BOX_HORIZ);
+    	InputMenuKbd(tab);
 
     	tab = AG_NotebookAddTab(note, gettext("Joystick"), AG_BOX_HORIZ);
     	InputMenuJS(tab);
+
     	tab = AG_NotebookAddTab(note, gettext("Misc"), AG_BOX_HORIZ);
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
@@ -476,6 +495,7 @@ static void SoundMenu(AG_NotebookTab *parent)
 	AG_Radio *radio;
 	AG_Checkbox *check;
 	AG_Numerical *num;
+	AG_Label *lbl;
 	AG_Box *box;
 	AG_Box *box2;
 	int i;
@@ -489,16 +509,33 @@ static void SoundMenu(AG_NotebookTab *parent)
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
 	{
+		lbl = AG_LabelNew(AGWIDGET(box), 0, "%s", gettext("Sample Rate"));
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, SampleRateName, OnChangeSampleRate, NULL);
 		AG_BindInt(radio, "value", &SampleRateNum);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("HQ Rendering"), &localconfig.bFMHQmode);
 	}
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
 	{
-		num = AG_NumericalNewInt(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Sound Buffer"), &localconfig.nSoundBuffer);
+		num = AG_NumericalNewInt(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Per Second") ,gettext("Sound Buffer"), &localconfig.nSoundBuffer);
 		AG_NumericalSetRangeInt(num, 30, 2000);
 		AG_NumericalSetIncrement(num, 10.0);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Force Stereo"), &localconfig.bForceStereo);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("FDD Seek & Motor"), &localconfig.bFddSound);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("CMT Monitor"), &localconfig.bTapeMon);
 	}
+}
+
+extern void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
+		int nBeep, int nCMT, int nWav);
+
+static void OnChangeVolume(AG_Event *event)
+{
+	AG_Slider *self = (AG_Slider *)AG_SELF();
+
+		SetSoundVolume2(localconfig.uChSeparation, localconfig.nFMVolume,
+				localconfig.nPSGVolume, localconfig.nBeepVolume,
+				localconfig.nCMTVolume, localconfig.nWaveVolume);
 }
 
 static void VolumeMenu(AG_NotebookTab *parent)
@@ -507,7 +544,6 @@ static void VolumeMenu(AG_NotebookTab *parent)
 	AG_Box *box;
 	AG_Box *vbox;
 	AG_Label *lbl;
-	int max,min;
 
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("Main Volume"));
 	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &iTotalVolume, 0, 128);
@@ -515,16 +551,34 @@ static void VolumeMenu(AG_NotebookTab *parent)
 	AG_WidgetSetSize(AGWIDGET(box), 320, 12);
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("PSG"));
 	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nPSGVolume, -35, 12);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
+
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("FM"));
 	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nFMVolume, -35, 12);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
+
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("BEEP"));
 	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nBeepVolume, -35, 12);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
+
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("CMT"));
 	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nCMTVolume, -35, 6);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
+
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("SFX"));
 	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nWaveVolume, -35, 12);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
+
+	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("Channel Separation"));
+	slider = AG_SliderNewUint32R(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.uChSeparation, 0, 16);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
 
 }
+static void SoundMiscMenu(AG_NotebookTab *parent)
+{
+
+}
+
 void OnConfigSoundMenu(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
@@ -550,8 +604,10 @@ void OnConfigSoundMenu(AG_Event *event)
 
     	tab = AG_NotebookAddTab(note, gettext("Volume"), AG_BOX_VERT);
     	VolumeMenu(tab);
-    	tab = AG_NotebookAddTab(note, gettext("Sound"), AG_BOX_HORIZ);
+    	tab = AG_NotebookAddTab(note, gettext("Rendering"), AG_BOX_HORIZ);
     	SoundMenu(tab);
+    	tab = AG_NotebookAddTab(note, gettext("Misc"), AG_BOX_HORIZ);
+
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
     AG_WidgetSetSize(AGWIDGET(box), 320, 24);

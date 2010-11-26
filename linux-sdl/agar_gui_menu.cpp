@@ -51,7 +51,6 @@ extern void OnHotReset(AG_Event *event);
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
 AG_GLView *DrawArea;
-AG_Box *OsdArea;
 }
 
 

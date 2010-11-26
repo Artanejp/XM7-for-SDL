@@ -105,7 +105,7 @@ void OnCreate(AG_Widget *parent)
         BOOL        flag;
 //    CreateMenu();
 //    CreateDrawAG(parent);
-    CreateStatus();
+//   CreateStatus();
 /*
  * ワークエリア初期化
  */
