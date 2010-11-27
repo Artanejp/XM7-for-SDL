@@ -64,7 +64,7 @@ static int     nINS;		/* INSキー */
 static int     nDrive[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
 static char    szOldDrive[2][16+1];       /* フロッピードライブ(過去) */
-
+static BOOL     old_writep[4];  /* 過去のライトプロテクトフラグ */
 static int     nTape;           /* テープ */
 static int     nOldTape;        /* テープ(過去) */
 static int     nInitialDrawFlag; /* 強制再表示フラグ */
@@ -297,7 +297,8 @@ void CreateStatus(void)
     	fmt.Ashift = 24;
     	fmt.palette = NULL;
 
-    	pStatusFont =  AG_FetchFont ("mona.ttf", 15, 0);
+    	pStatusFont =  AG_FetchFont ("ipagui.ttf", 15, 0);
+    	pVFDFont =  AG_FetchFont ("ipagui.ttf", 15, 0);
 
         AG_PushTextState();
         AG_TextFont(pStatusFont);
@@ -649,14 +650,15 @@ static void DrawDrive(int drive)
     char          *name;
     char          string[64];
     char          utf8[256];
+    char		outstr[300];
     char          *pIn, *pOut;
     iconv_t       hd;
     size_t        in, out;
-    AG_Font *f;
     AG_Surface *tmp;
     AG_Color r, b, white, black;
     memset(string, 0x00, sizeof(string));
     memset(utf8, 0x00, sizeof(utf8));
+    memset(outstr, 0x00, sizeof(outstr));
 
 
     ASSERT((drive >= 0) && (drive <= 1));
@@ -725,7 +727,8 @@ static void DrawDrive(int drive)
             strcpy(string, szDrive[drive]);
     }
 
-    if(strcmp(szDrive[drive], szOldDrive[drive]) != 0) {
+
+    if((strcmp(szDrive[drive], szOldDrive[drive]) != 0) || (old_writep[drive] != fdc_writep[drive])) {
             /*
              * 過去のファイルネームと違うのでフォントレンダリングする
              */
@@ -753,6 +756,7 @@ static void DrawDrive(int drive)
             pIn = string;
             pOut = utf8;
             in = strlen(pIn);
+
             out = 256;
             hd = iconv_open("utf8", "cp932");
             if(hd >= 0) {
@@ -761,27 +765,33 @@ static void DrawDrive(int drive)
                     }
                     iconv_close(hd);
             }
-
+            if(strlen(utf8) >0) {
+            	if(fdc_writep[drive]) {
+            		sprintf(outstr, "■ %s", utf8); // 書込み禁止
+            	} else {
+            		sprintf(outstr, "　 %s", utf8); // 書込み許可
+            	}
+            	old_writep[drive] = fdc_writep[drive];
+            }
             	AG_PushTextState();
-                AG_TextFont(pStatusFont);
-//            	AG_TextFontPts(12);
+                AG_TextFont(pVFDFont);
             	AG_TextColor(black);
             	AG_TextBGColor(r);
             	AG_FillRect(pFDRead[drive], NULL, r);
-                tmp = AG_TextRender(utf8);
+                tmp = AG_TextRender(outstr);
                 AG_SurfaceBlit(tmp, NULL, pFDRead[drive], 2, 0);
                 AG_SurfaceFree(tmp);
 
                	AG_TextBGColor(b);
                 AG_FillRect(pFDWrite[drive], NULL, b);
-                tmp = AG_TextRender(utf8);
+                tmp = AG_TextRender(outstr);
                 AG_SurfaceBlit(tmp, NULL, pFDWrite[drive], 2, 0);
                 AG_SurfaceFree(tmp);
 
                	AG_TextColor(white);
                	AG_TextBGColor(black);
                 AG_FillRect(pFDNorm[drive], NULL, black);
-                tmp = AG_TextRender(utf8);
+                tmp = AG_TextRender(outstr);
                 AG_SurfaceBlit(tmp, NULL, pFDNorm[drive], 2, 0);
                 AG_SurfaceFree(tmp);
             	AG_PopTextState();

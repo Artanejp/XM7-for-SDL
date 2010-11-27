@@ -172,8 +172,9 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
-    AG_SetString(agConfig, "font-path", "/usr/share/fonts/truetype/mona");
-    AG_SetString(agConfig, "font.face", "mona.ttf");
+    AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:/usr/local/share/xm7:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki:.:./.xm7",
+    		getenv("HOME"), getenv("HOME"));
+    AG_SetString(agConfig, "font.face", "ipagui.ttf");
     AG_SetInt(agConfig, "font.size", 18);
 //    AG_TextParseFontSpec("mona.ttf,16");
 

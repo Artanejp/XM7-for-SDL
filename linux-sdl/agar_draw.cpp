@@ -67,7 +67,8 @@ void AGEventScaleGL(AG_Event *event)
 	pixvram = scalerGL->GetVramSurface();
 	if(pixvram == NULL) return;
 	scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
-	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
+//	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, 24);
 	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
@@ -114,7 +115,7 @@ void AGEventDrawGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
 	scalerGL->SetDrawArea(wid, 0, 32, nDrawWidth, nDrawHeight);
-	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, 24);
 	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
