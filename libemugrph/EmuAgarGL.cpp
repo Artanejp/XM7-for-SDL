@@ -91,8 +91,8 @@ void EmuAgarGL::SetViewPort(int x, int y, int w, int h, int osd_w, int osd_h)
 	viewport_y = y;
 	viewport_h = h;
 	viewport_w = w;
-	minX = (float) x /  ((float)viewport_w + (float)osd_w);
-	minY = (float) y /  ((float)viewport_h + (float)osd_h);
+	minX = (float) 0 /  ((float)viewport_w + (float)osd_w);
+	minY = (float) 0 /  ((float)viewport_h + (float)osd_h);
 	maxX =  ((float)vramwidth * 8.0f) / ((float)viewport_w + (float)osd_w) ;
 	maxY = (float)vramheight / ((float)viewport_h + (float)osd_h);
 #if 0
