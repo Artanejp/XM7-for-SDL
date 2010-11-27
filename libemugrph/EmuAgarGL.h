@@ -35,6 +35,8 @@ public:
 	void Flip(void);
 	void SetViewPort(void);
 	void SetViewPort(AG_Widget *wid);
+    void SetViewPort(int x, int y, int w, int h);
+    void SetViewPort(int x, int y, int w, int h, int osd_w, int osd_h);
     void CalcPalette(Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
     void SetPaletteTable(Uint32 *p);
     void DiscardTexture(GLuint tid);
@@ -44,7 +46,6 @@ public:
     void SetTextureID(GLuint id);
     GLuint GetTextureID(void);
     AG_Surface *GetVramSurface(void);
-    void SetViewPort(int x, int y, int w, int h);
     void SetOffset(int x, int y);
 protected:
     void DiscardTexture(void);

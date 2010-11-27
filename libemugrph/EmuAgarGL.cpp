@@ -69,10 +69,32 @@ void EmuAgarGL::SetViewPort(int x, int y, int w, int h)
 	viewport_y = y;
 	viewport_h = h;
 	viewport_w = w;
-	minX = 0.0f;
-	minY = 0.0f;
+//	minX = 0.0f;
+//	minY = 0.0f;
+	minX = (float) x /  (float)viewport_w;
+	minY = (float) y /  (float)viewport_h;
 	maxX =  ((float)vramwidth * 8.0f) / (float)viewport_w ;
 	maxY = (float)vramheight / (float)viewport_h;
+#if 0
+	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
+			viewport_x, viewport_y, viewport_w, viewport_h,
+			minX, minY, maxX, maxY);
+#endif
+}
+
+/*
+ * 20101128追加:右下に表示部分を設定する場合
+ */
+void EmuAgarGL::SetViewPort(int x, int y, int w, int h, int osd_w, int osd_h)
+{
+	viewport_x = x;
+	viewport_y = y;
+	viewport_h = h;
+	viewport_w = w;
+	minX = (float) x /  ((float)viewport_w + (float)osd_w);
+	minY = (float) y /  ((float)viewport_h + (float)osd_h);
+	maxX =  ((float)vramwidth * 8.0f) / ((float)viewport_w + (float)osd_w) ;
+	maxY = (float)vramheight / ((float)viewport_h + (float)osd_h);
 #if 0
 	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
 			viewport_x, viewport_y, viewport_w, viewport_h,
