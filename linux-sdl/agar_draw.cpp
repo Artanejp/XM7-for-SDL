@@ -17,14 +17,21 @@ extern "C" {
 extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
 extern AG_Menu  *MenuBar;
-extern AG_Box *OsdArea;
+extern void DrawStatus(void);
 }
 extern EmuAgarGL *scalerGL;
 extern Uint32 nDrawTick1;
 extern void EventSDL(AG_Driver *drv);
 extern void EventGUI(AG_Driver *drv);
+extern void DrawOSDGL(AG_GLView *w);
 
-
+extern GLuint tid_ins;
+extern GLuint tid_kana;
+extern GLuint tid_caps;
+extern GLuint tid_fd0;
+extern GLuint tid_fd1;
+extern GLuint tid_cmt;
+extern GLuint tid_caption;
 
 void InitGUI(int w, int h)
 {
@@ -64,7 +71,11 @@ void AGEventScaleGL(AG_Event *event)
 	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
+	DrawOSDGL(DrawArea);
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
+
+//	DrawOsdGL(wid);
+
 //	AG_WidgetUpdate(wid);
 
 }
@@ -102,12 +113,14 @@ void AGEventDrawGL(AG_Event *event)
 #endif				/*  */
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
-	scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetDrawArea(wid, 0, 32, nDrawWidth, nDrawHeight);
 	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
 	scalerGL->SetOffset(0,32);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
+	DrawOSDGL(DrawArea);
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
+
 }
 
 
@@ -134,11 +147,6 @@ void AGDrawTaskEvent(BOOL flag)
 			if (agDriverSw) {
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
-				AG_WidgetDraw(DrawArea);
-//				AG_WidgetDraw(MenuBar);
-//				if(OsdArea != NULL) {
-//					AG_WidgetDraw(OsdArea);
-//				}
 				AG_FOREACH_WINDOW(win, agDriverSw) {
 						AG_ObjectLock(win);
 						AG_WindowDraw(win);

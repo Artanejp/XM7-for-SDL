@@ -87,23 +87,158 @@ static AG_Font         *pVFDFont;
 extern SDL_mutex        *DrawMutex;
 
 extern "C" {
-AG_Window *BarWin;
-AG_Box *OsdArea;
+extern AG_GLView *DrawArea;
+extern AG_Window *MainWindow;
+extern AG_Menu  *MenuBar;
 }
-static AG_Box *StatusBox;
-static AG_Box *FD1Box;
-static AG_Box *FD0Box;
-static AG_Box *CMTBox;
-static AG_Box *INSBox;
-static AG_Box *CAPSBox;
-static AG_Box *KANABox;
 
-static AG_Pixmap *FD1Pix;
-static AG_Pixmap *FD0Pix;
-static AG_Pixmap *CMTPix;
-static AG_Pixmap *INSPix;
-static AG_Pixmap *CAPSPix;
-static AG_Pixmap *KANAPix;
+GLuint tid_ins;
+GLuint tid_kana;
+GLuint tid_caps;
+GLuint tid_fd[4];
+GLuint tid_cmt;
+GLuint tid_caption;
+GLfloat LedAlpha;
+GLfloat FDDAlpha;
+
+
+static GLuint CreateTexture(AG_Surface *p)
+{
+	Uint8 *pix;
+	GLuint textureid;
+	int w;
+	int h;
+
+	if(agDriverOps == NULL) return 0;
+	if(p == NULL) return 0;
+	w = p->w;
+	h = p->h;
+	pix = (Uint8 *)p->pixels;
+
+    glGenTextures(1, &textureid);
+    glBindTexture(GL_TEXTURE_2D, textureid);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   	glEnable(GL_BLEND);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 w, h,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 pix);
+
+	return textureid;
+}
+
+static void DiscardTextures(int n, GLuint *id)
+{
+	if(agDriverOps == NULL) return;
+	glDeleteTextures(n, id);
+
+}
+
+static void DiscardTexture(GLuint tid)
+{
+	DiscardTextures(1, &tid);
+}
+
+void Enter2DMode(int x, int y, int w, int h)
+{
+
+	        /* Note, there may be other things you need to change,
+	           depending on how you have your OpenGL state set up.
+	        */
+	        glPushAttrib(GL_ENABLE_BIT);
+	        glDisable(GL_DEPTH_TEST);
+	        glDisable(GL_CULL_FACE);
+	        glEnable(GL_TEXTURE_2D);
+	        glPushMatrix();
+	        /* This allows alpha blending of 2D textures with the scene */
+	        glEnable(GL_BLEND);
+	        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        	glEnable(GL_BLEND);
+        	glPushMatrix();
+	        glLoadIdentity();
+	        /*
+	         * ビューポートは表示する画面の大きさ
+	         */
+	        glViewport(x, y , w + x,  h + y );
+	        /*
+	         * 座標系は(0,0)-(0,1)
+	         */
+	        glOrtho(0.0, 1.0 ,
+	        		1.0, 0.0,
+	        		0.0,  1.0);
+	//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
+	        glMatrixMode(GL_MODELVIEW);
+	        glPushMatrix();
+	        glLoadIdentity();
+	        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+}
+
+static void Leave2DMode()
+{
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glPopAttrib();
+}
+
+
+static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, int viewport_w, int viewport_h)
+{
+	float xbegin = 0.0f;
+	float xend = 1.0f;
+	float ybegin = 0.0f;
+	float yend = 1.0f;
+
+#if 1
+	if(viewport_w != 0) {
+		xbegin = (float)offset_x / (float)viewport_w;
+		xend = ((float)offset_x + (float)w) / (float)viewport_w;
+	} else {
+		xbegin = 0.0;
+		xend = 1.0;
+	}
+	if(viewport_h != 0) {
+		ybegin = (float)offset_y / (float)viewport_h;
+		yend =  ((float)offset_y + (float) h) / (float)viewport_h ;
+	} else {
+		xbegin = 0.0;
+		xend = 1.0;
+	}
+#endif
+
+	Enter2DMode(0, 0, viewport_w, viewport_h);
+    glBindTexture(GL_TEXTURE_2D, tid);
+    glBegin(GL_TRIANGLE_STRIP);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.5);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.5);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.5);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.5);
+ //   glViewport(0, 0 , viewport_w, viewport_h);
+    glEnd();
+    Leave2DMode();
+//	DiscardTexture(tid);
+}
+
+static void DrawCAP(void);
+static void DrawINS(void);
+static void DrawKANA(void);
+static void DrawDrive(int drive);
+
+void DrawOSDGL(AG_GLView *w)
+{
+    DrawCAP();
+    DrawKANA();
+    DrawINS();
+    DrawDrive(1);
+    DrawDrive(0);
+}
 
 
 /*-[ ステータスバー ]-------------------------------------------------------*/
@@ -118,21 +253,19 @@ void CreateStatus(void)
         AG_Box *box;
         AG_Box *hbox;
         AG_Surface *tmps;
+        AG_PixelFormat fmt;
         Uint32 rmask, gmask, bmask, amask;
         int i;
 
-        if(BarWin != NULL) {
-        	return;
-        }
 
-        r.r = 255;
-        r.g = 0;
-        r.b = 0;
-        r.a = 255;
+        r.r = 0; // r->g
+        r.g = 0; // g->b
+        r.b = 255;  // b->r
+        r.a = 255; // a->a
 
         b.r = 0;
-        b.g = 0;
-        b.b = 255;
+        b.g = 255;
+        b.b = 0;
         b.a = 255;
 
         n.r = 255;
@@ -144,68 +277,70 @@ void CreateStatus(void)
         black.g = 0;
         black.b = 0;
         black.a = 255;
-#if AG_BYTEORDER == AG_BIG_ENDIAN
-        rmask = 0xff000000;
-        gmask = 0x00ff0000;
-        bmask = 0x0000ff00;
-        amask = 0x000000ff;
+    	// Surfaceつくる
+    	fmt.BitsPerPixel = 32;
+    	fmt.BytesPerPixel = 4;
+#ifdef AG_BIG_ENDIAN
+    	fmt.Rmask = 0x0000ff00; // R
+    	fmt.Gmask = 0x00ff0000; // G
+    	fmt.Bmask = 0x000000ff; // B
+    	fmt.Amask = 0xff000000; // A
 #else
-        amask = 0xff000000;
-        rmask = 0x000000ff;
-        gmask = 0x0000ff00;
-        bmask = 0x00ff0000;
-#endif
+    	fmt.Rmask = 0x00ff0000; // R
+    	fmt.Gmask = 0x0000ff00; // G
+    	fmt.Bmask = 0xff000000; // B
+    	fmt.Amask = 0x000000ff; // A
+    #endif
+    	fmt.Rshift = 8;
+    	fmt.Gshift = 16;
+    	fmt.Bshift = 0;
+    	fmt.Ashift = 24;
+    	fmt.palette = NULL;
+
+    	pStatusFont =  AG_FetchFont ("mona.ttf", 15, 0);
 
         AG_PushTextState();
-        pStatusFont = AG_TextFontPts(11);
-        if(pStatusFont == NULL) {
-            AG_PopTextState();
-        	return;
-        }
-//       BarWin = AG_WindowNew(AG_WINDOW_MODAL | AG_WINDOW_PLAIN);
-        BarWin = AG_WindowNew(AG_WINDOW_PLAIN);
-//        BarWin = AG_WindowNew(0);
-        AG_TextFontPts(11);
+        AG_TextFont(pStatusFont);
+        //AG_TextFontPts(11);
 #if 1
-
         AG_TextColor(black);
         AG_TextBGColor(r);
-        pInsOn = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
         AG_FillRect(pInsOn, NULL, r);
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOn, 4, 0);
         AG_SurfaceFree(tmps);
 
-        pCapsOn = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOn, NULL, r);
         tmps = AG_TextRender("CAP");
         AG_SurfaceBlit(tmps, NULL, pCapsOn, 2, 0);
         AG_SurfaceFree(tmps);
 
-        pKanaOn = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOn, NULL, r);
-        tmps = AG_TextRender("かな");
+        tmps = AG_TextRender("カナ");
         AG_SurfaceBlit(tmps, NULL, pKanaOn, 2, 0);
         AG_SurfaceFree(tmps);
 
         AG_TextColor(n);
         AG_TextBGColor(black);
 
-        pInsOff = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
         AG_FillRect(pInsOff, NULL, black);
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOff, 4, 0);
         AG_SurfaceFree(tmps);
 
-        pCapsOff = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16,  &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOff, NULL, black);
         tmps = AG_TextRender("CAP");
         AG_SurfaceBlit(tmps, NULL, pCapsOff, 2, 0);
         AG_SurfaceFree(tmps);
 
-        pKanaOff = AG_SurfaceRGBA(24, 13, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOff, NULL, black);
-        tmps = AG_TextRender("かな");
+        tmps = AG_TextRender("カナ");
         AG_SurfaceBlit(tmps, NULL, pKanaOff, 2, 0);
         AG_SurfaceFree(tmps);
 
@@ -214,123 +349,28 @@ void CreateStatus(void)
          */
         rec.x = 0;
         rec.y = 0;
-        rec.w = 120;
-        rec.h = 20;
+        rec.w = 140;
+        rec.h = 18;
         for(i = 0 ; i < 2 ; i++) {
-                pFDRead[i] = AG_SurfaceRGBA(rec.w, rec.h, 32, AG_SRCALPHA,  rmask, gmask, bmask, amask);
-                pFDWrite[i] = AG_SurfaceRGBA(rec.w, rec.h, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
-                pFDNorm[i] = AG_SurfaceRGBA(rec.w, rec.h, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+                pFDRead[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
+                pFDWrite[i] =AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
+                pFDNorm[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
                 AG_FillRect(pFDRead[i], &rec, r);
                 AG_FillRect(pFDWrite[i], &rec, b);
-                AG_FillRect(pFDNorm[i], &rec, n);
+                AG_FillRect(pFDNorm[i], &rec, black);
         }
 
         /*
          * RECT Tape
          */
-        pCMTRead = AG_SurfaceRGBA(rec.w, rec.h, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
-        pCMTWrite = AG_SurfaceRGBA(rec.w, rec.h, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
-        pCMTNorm = AG_SurfaceRGBA(rec.w, rec.h, 32, AG_SRCALPHA, rmask, gmask, bmask, amask);
+        pCMTRead = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
+        pCMTWrite = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
+        pCMTNorm = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
 
         AG_FillRect(pCMTRead, &rec, r);
         AG_FillRect(pCMTWrite, &rec, b);
-        AG_FillRect(pCMTNorm, &rec, n);
-
-
-//        pCaption = SDL_CreateRGBSurface(SDL_SWSURFACE, 300, 20,
-//                                       32, rmask, gmask, bmask, amask);
-//        rec.x = 0;
-//        rec.y = 0;
-//        rec.h = 300;
-//        rec.w = 20;
-//        SDL_FillRect(pCaption, &rec, COL_BLACKMASK);
-
-        /*
-         * Draw
-         */
-        OsdArea = AG_BoxNewHoriz(AGWIDGET(BarWin), AG_BOX_EXPAND);
-        barrect.x = 0;
-        barrect.y = 0;
-        barrect.h = 40;
-        barrect.w = 260;
-        box = AG_BoxNewVert(AGWIDGET(OsdArea), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(box), &barrect);
-        barrect.x = 0;
-        barrect.y = 0;
-        barrect.h = 20;
-        barrect.w = 240;
-        StatusBox = AG_BoxNewHoriz(AGWIDGET(box), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(StatusBox), &barrect);
-
-        barrect.x = 0;
-        barrect.y = 20;
-        barrect.h = 20;
-        barrect.w = 260;
-        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HOMOGENOUS);
-        AG_WidgetSizeAlloc(AGWIDGET(hbox), &barrect);
-
-        barrect.x = 0;
-        barrect.y = 20;
-        barrect.h = 20;
-        barrect.w = 127;
-        FD1Box = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(FD1Box), &barrect);
-
-        barrect.x = 130;
-        barrect.y = 20;
-        barrect.h = 20;
-        barrect.w = 127;
-        FD0Box = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(FD0Box), &barrect);
-
-        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HOMOGENOUS);
-        AG_WidgetSizeAlloc(AGWIDGET(hbox), &barrect);
-
-        box = AG_BoxNewVert(AGWIDGET(OsdArea), AG_BOX_HFILL);
-        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HOMOGENOUS);
-        barrect.x = 0;
-        barrect.y = 0;
-        barrect.h = 20;
-        barrect.w = 60;
-        hbox = AG_BoxNewHoriz(AGWIDGET(box), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(hbox), &barrect);
-
-        barrect.x = 0;
-        barrect.y = 0;
-        barrect.h = 20;
-        barrect.w = 20;
-        INSBox = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(INSBox), &barrect);
-
-        barrect.x = 20;
-        barrect.y = 0;
-        barrect.h = 20;
-        barrect.w = 20;
-        CAPSBox = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(CAPSBox), &barrect);
-
-        barrect.x = 40;
-        barrect.y = 0;
-        barrect.h = 20;
-        barrect.w = 20;
-        KANABox = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
-        AG_WidgetSizeAlloc(AGWIDGET(CAPSBox), &barrect);
-
-        hbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HFILL);
-        CMTBox = AG_BoxNewHoriz(AGWIDGET(hbox), 0);
-        AG_WidgetSetSize(AGWIDGET(CMTBox), 60, 20);
+        AG_FillRect(pCMTNorm, &rec, black);
 #endif
-    	INSPix = AG_PixmapFromSurface(INSBox, AG_PIXMAP_RESCALE, pInsOn);
-    	KANAPix = AG_PixmapFromSurface(KANABox, AG_PIXMAP_RESCALE, pKanaOn);
-    	CAPSPix = AG_PixmapFromSurface(CAPSBox, AG_PIXMAP_RESCALE, pCapsOn);
-
-    	FD0Pix = AG_PixmapFromSurface(FD1Box, 0, pFDWrite[1]);
-    	FD0Pix = AG_PixmapFromSurface(FD0Box, 0, pFDRead[0]);
-    	CMTPix = AG_PixmapFromSurface(CMTBox, 0, pCMTWrite);
-
-    	AG_WindowSetMinSize(BarWin, 320, 40);
-        AG_WindowSetPosition(BarWin, AG_WINDOW_BL, 0);
-        AG_WindowShow(BarWin);
         AG_PopTextState();
 }
 
@@ -396,11 +436,15 @@ DestroyDraw(void)
         	AG_DestroyFont(pStatusFont);
                 pStatusFont = NULL;
         }
-
-        AG_WindowHide(BarWin);
-        AG_ObjectDetach(BarWin);
-
-
+        DiscardTexture(tid_ins);
+        DiscardTexture(tid_caps);
+        DiscardTexture(tid_kana);
+        DiscardTexture(tid_fd[0]);
+        DiscardTexture(tid_fd[1]);
+        DiscardTexture(tid_fd[2]);
+        DiscardTexture(tid_fd[3]);
+        DiscardTexture(tid_cmt);
+        DiscardTexture(tid_caption);
 
 }
     /*
@@ -514,29 +558,23 @@ static void DrawCAP(void)
         /*
          * 番号決定
          */
+        if((pCapsOff == NULL) || (pCapsOn == NULL)) return;
         if (caps_flag) {
                 num = 1;
         } else {
                 num = 0;
         }
-       /*
-        * 同じなら何もしない
-        */
-        if ((nCAP == num) && (nInitialDrawFlag != TRUE)) {
-                return;
-        }
-
 /*
  * 描画、ワーク更新
  */
         nCAP = num;
         if (nCAP) {
-        	AG_PixmapReplaceCurrentSurface(CAPSPix, pCapsOn);
+        	tid_caps = CreateTexture(pCapsOn);
         } else {
-        	AG_PixmapReplaceCurrentSurface(CAPSPix, pCapsOff);
+        	tid_caps = CreateTexture(pCapsOff);
         }
-        AG_WidgetUpdate(CAPSBox);
-        //SDL_Flip(p);
+        DrawTexture(tid_caps, nDrawWidth - pCapsOff->w * 2,  nDrawHeight , pCapsOff->w, pCapsOff->h, nDrawWidth, nDrawHeight + 16);
+        DiscardTexture(tid_caps);
 }
 
 
@@ -546,6 +584,7 @@ static void DrawCAP(void)
 static void DrawKANA(void)
 {
         int            num;
+        if((pKanaOff == NULL) || (pKanaOn == NULL)) return;
 
         /*
          * 番号決定
@@ -557,32 +596,28 @@ static void DrawKANA(void)
         }
 
 /*
- * 同じなら何もしない
- */
-        if ((nKANA == num) && (nInitialDrawFlag != TRUE)){
-                return;
-        }
-
-/*
  * 描画、ワーク更新
  */
+
         nKANA = num;
         if (nKANA) {
-        	AG_PixmapReplaceCurrentSurface(KANAPix, pKanaOn);
+        	tid_kana = CreateTexture(pKanaOn);
         } else {
-        	AG_PixmapReplaceCurrentSurface(KANAPix, pKanaOff);
+        	tid_kana = CreateTexture(pKanaOff);
         }
-        AG_WidgetUpdate(KANABox);
+        DrawTexture(tid_kana, nDrawWidth - pKanaOff->w,  nDrawHeight, pKanaOff->w, pKanaOff->h, nDrawWidth, nDrawHeight + 16);
+        DiscardTexture(tid_kana);
 }
 
 
     /*
      *  INSキー描画
      */
-static void
-DrawINS(void)
+static void DrawINS(void)
 {
         int            num;
+        if((pInsOff == NULL) || (pInsOn == NULL)) return;
+
         /*
          * 番号決定
          */
@@ -593,26 +628,18 @@ DrawINS(void)
         }
 
 /*
- * 同じなら何もしない
- */
-        if ((nINS == num) && (nInitialDrawFlag != TRUE)){
-                return;
-        }
-
-/*
  * 描画、ワーク更新
  */
         nINS = num;
         if (nINS) {
-        	AG_PixmapReplaceCurrentSurface(INSPix, pInsOn);
+        	tid_ins = CreateTexture(pInsOn);
         } else {
-        	AG_PixmapReplaceCurrentSurface(INSPix, pInsOff);
+        	tid_ins = CreateTexture(pInsOff);
         }
-        AG_WidgetUpdate(INSBox);
-
+        DrawTexture(tid_ins, nDrawWidth - pInsOff->w * 3,  nDrawHeight, pInsOff->w, pInsOff->h, nDrawWidth, nDrawHeight + 16);
+        DiscardTexture(tid_ins);
 }
 
-#if 0
     /*
      *  ドライブ描画
      */
@@ -625,10 +652,16 @@ static void DrawDrive(int drive)
     char          *pIn, *pOut;
     iconv_t       hd;
     size_t        in, out;
+    AG_Font *f;
+    AG_Surface *tmp;
+    AG_Color r, b, white, black;
+    memset(string, 0x00, sizeof(string));
+    memset(utf8, 0x00, sizeof(utf8));
 
 
     ASSERT((drive >= 0) && (drive <= 1));
 
+    if((pFDRead[drive] == NULL) || (pFDWrite[drive] == NULL) || (pFDNorm[drive] == NULL)) return;
 
     /*
      * 番号セット
@@ -665,12 +698,18 @@ static void DrawDrive(int drive)
                     if(strlen(szDrive[drive]) > 0) {
                     	//レンダリング
                     }
-                    szDrive[drive][0] = '\0';
-                    szOldDrive[drive][0] = '\0';
-                    return;
+                szDrive[drive][0] = '\0';
+                szOldDrive[drive][0] = '\0';
+//            	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
+//            	DrawTexture(tid_fd[drive], nDrawWidth - pFDNorm[0]->w * (drive + 2),  nDrawHeight - 16, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth, nDrawHeight + pInsOff->h + 2);
+//            	DiscardTexture(tid_fd[drive]);
+//            	return;
             }
             if (strcmp(szDrive[drive], name) == 0) {
-                    return;
+//            	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
+//            	DrawTexture(tid_fd[drive], nDrawWidth - pFDNorm[0]->w * (drive + 2),  nDrawHeight - 16, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth, nDrawHeight + pInsOff->h + 2);
+//            	DiscardTexture(tid_fd[drive]);
+//            	return;
             }
     }
 
@@ -691,17 +730,25 @@ static void DrawDrive(int drive)
              * 過去のファイルネームと違うのでフォントレンダリングする
              */
 
-            n.r = 255;
-            n.g = 255;
-            n.b = 255;
+            white.r = 255;
+            white.g = 255;
+            white.b = 255;
+            white.a = 255;
 
             black.r = 0;
             black.g = 0;
             black.b = 0;
-            drec.x = rec.x + 8;
-            drec.y = rec.y + 2;
-            drec.w  = rec.w - 8;
-            drec.h  = rec.h - 2;
+            black.a = 255;
+
+            r.r = 0; // r->g
+            r.g = 0; // g->b
+            r.b = 255;  // b->r
+            r.a = 255; // a->a
+
+            b.r = 0;
+            b.g = 255;
+            b.b = 0;
+            b.a = 255;
 
             pIn = string;
             pOut = utf8;
@@ -715,72 +762,68 @@ static void DrawDrive(int drive)
                     iconv_close(hd);
             }
 
-            f = pVFDFont;
-            SDL_FillRect(pFDRead[drive], &rec, COL_RED);
-            if(f != NULL) {
-                    tmp = TTF_RenderUTF8_Blended(f, utf8, n );
-                    SDL_BlitSurface(tmp, &rec, pFDRead[drive], &drec);
-                    SDL_FreeSurface(tmp);
-            }
-            SDL_FillRect(pFDWrite[drive], &rec, COL_BLUE);
-            if(f != NULL) {
-                    tmp = TTF_RenderUTF8_Blended(f, utf8, n );
-                    SDL_BlitSurface(tmp, &rec, pFDWrite[drive], &drec);
-                    SDL_FreeSurface(tmp);
-            }
+            	AG_PushTextState();
+                AG_TextFont(pStatusFont);
+//            	AG_TextFontPts(12);
+            	AG_TextColor(black);
+            	AG_TextBGColor(r);
+            	AG_FillRect(pFDRead[drive], NULL, r);
+                tmp = AG_TextRender(utf8);
+                AG_SurfaceBlit(tmp, NULL, pFDRead[drive], 2, 0);
+                AG_SurfaceFree(tmp);
 
-            SDL_FillRect(pFDNorm[drive], &rec, COL_NORM);
-            if(f != NULL) {
-                    tmp = TTF_RenderUTF8_Blended(f, utf8, black );
-                    SDL_BlitSurface(tmp, &rec, pFDNorm[drive], &drec);
-                    SDL_FreeSurface(tmp);
-            }
+               	AG_TextBGColor(b);
+                AG_FillRect(pFDWrite[drive], NULL, b);
+                tmp = AG_TextRender(utf8);
+                AG_SurfaceBlit(tmp, NULL, pFDWrite[drive], 2, 0);
+                AG_SurfaceFree(tmp);
+
+               	AG_TextColor(white);
+               	AG_TextBGColor(black);
+                AG_FillRect(pFDNorm[drive], NULL, black);
+                tmp = AG_TextRender(utf8);
+                AG_SurfaceBlit(tmp, NULL, pFDNorm[drive], 2, 0);
+                AG_SurfaceFree(tmp);
+            	AG_PopTextState();
             memset(szOldDrive[drive], 0, 16);
             strncpy(szOldDrive[drive], szDrive[drive], 16);
     }
 
-
-
-    p = SDL_GetVideoSurface();
-    drec.x = nDrawWidth - (160 * (drive + 2));
-    drec.y = nDrawHeight + 20;
-    drec.w = 160;
-    drec.h = 20;
-
-
     if (nDrive[drive] == FDC_ACCESS_READ) {
-            /*
-             * READ
-             */
-            SDL_BlitSurface(pFDRead[drive], &rec, p, &drec);
+    	tid_fd[drive] =  CreateTexture(pFDRead[drive]);
     } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-            SDL_BlitSurface(pFDWrite[drive], &rec, p, &drec);
+    	tid_fd[drive] =  CreateTexture(pFDWrite[drive]);
     } else {
-            SDL_BlitSurface(pFDNorm[drive], &rec, p, &drec);
+    	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
     }
-    SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
-
+    DrawTexture(tid_fd[drive], nDrawWidth - pFDNorm[0]->w * (drive + 2),  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth, nDrawHeight + 16);
+    DiscardTexture(tid_fd[drive]);
 }
 
+#if 0
 
     /*
      *  テープ描画
      */
-static void
-DrawTape(void)
+static void DrawTape(void)
 {
     int             num;
     char            string[128];
-    SDL_Surface     *p, *tmp;
-    SDL_Rect        rec,drec;
-    SDL_Color n , black;
-    TTF_Font *f;
+    char     protect[16];
+    AG_Surface     *p, *tmp;
+    AG_Rect        rec,drec;
+    AG_Color n, black, r, b;
 
     rec.x = 0;
     rec.y = 0;
     rec.w = 160;
     rec.h = 20;
 
+    if(tape_writep){
+    	strcpy(protect, "WP:");
+    } else {
+    	strcpy(protect, "  :");
+    }
     /*
      * ナンバー計算
      */
@@ -814,58 +857,66 @@ DrawTape(void)
             //strcpy(string, "OVER");
     }
     else {
-	sprintf(string, "%04d", nTape % 10000);
+	sprintf(string, "%s%04d", protect, nTape % 10000);
     }
     if(nOldTape != nTape) {
             /*
              * カウンタ番号レンダリング(仮)
              */
-            drec.x = rec.x + 32;
-            drec.y = rec.y + 2;
-            drec.w = rec.w - 32;
-            drec.h = rec.h - 2;
 
             n.r = 255;
             n.g = 255;
             n.b = 255;
+            n.a = 255;
 
             black.r = 0;
             black.g = 0;
             black.b = 0;
+            black.a = 255;
+
+            r.r = 255;
+            r.g = 0;
+            r.b = 0;
+            r.a = 255;
+
+            b.r = 0;
+            b.g = 0;
+            b.b = 255;
+            b.a = 255;
+
+            if(pStatusFont != NULL) {
+           	AG_PushTextState();
+            AG_FillRect(pCMTRead, NULL, r);
+            AG_TextFont(pStatusFont);
+            AG_TextColor(black);
+            AG_TextBGColor(r);
+           	tmp = AG_TextRender(string);
+           	AG_SurfaceBlit(tmp, NULL, pCMTRead, 2, 2);
+           	AG_FreeSurface(tmp);
+
+            AG_FillRect(pCMTWrite, NULL, b);
+            AG_TextFont(pStatusFont);
+            AG_TextColor(black);
+            AG_TextBGColor(b);
+           	tmp = AG_TextRender(string);
+           	AG_SurfaceBlit(tmp, NULL, pCMTWrite, 2, 2);
+           	AG_FreeSurface(tmp);
 
 
-            f = pVFDFont;
-
-            SDL_FillRect(pCMTRead, &rec, COL_RED);
-            if(f != NULL) {
-                    tmp = TTF_RenderUTF8_Blended(f, string, n );
-                    SDL_BlitSurface(tmp, &rec, pCMTRead, &drec);
-                    SDL_FreeSurface(tmp);
-            }
-            SDL_FillRect(pCMTWrite, &rec, COL_BLUE);
-            if(f != NULL) {
-                    tmp = TTF_RenderUTF8_Blended(f, string, n );
-                    SDL_BlitSurface(tmp, &rec, pCMTWrite, &drec);
-                    SDL_FreeSurface(tmp);
-            }
-
-            SDL_FillRect(pCMTNorm, &rec, COL_NORM);
-            if(f != NULL) {
-                    tmp = TTF_RenderUTF8_Blended(f, string, black );
-                    SDL_BlitSurface(tmp, &rec, pCMTNorm, &drec);
-                    SDL_FreeSurface(tmp);
+            AG_FillRect(pCMTNorm, NULL, black);
+            AG_TextFont(pStatusFont);
+            AG_TextColor(n);
+            AG_TextBGColor(black);
+           	tmp = AG_TextRender(string);
+           	AG_SurfaceBlit(tmp, NULL, pCMTNorm, 2, 2);
+           	AG_FreeSurface(tmp);
+           	AG_PopTextState();
             }
             nOldTape = nTape;
     }
 
-    drec.x = nDrawWidth - (160 * 1);
-    drec.y = nDrawHeight + 20;
-    drec.w = 160;
-    drec.h = 20;
+    if(DrawArea== NULL) return;
 
-
-    p = SDL_GetVideoSurface();
-    if(p == NULL) return;
 
     if ((nTape >= 10000) && (nTape < 30000)) {
             if (nTape >= 20000) {
@@ -884,8 +935,8 @@ DrawTape(void)
 /*
  *  描画
  */
-void
-DrawStatus(void)
+
+void DrawStatus(void)
 {
 #ifndef USE_OPENGL
         DrawMainCaption();
@@ -897,10 +948,6 @@ DrawStatus(void)
         DrawTape();
         nInitialDrawFlag = FALSE;
 #else
-        if(BarWin == NULL) return;
-//       DrawCAP();
-//        DrawKANA();
-//        DrawINS();
         nInitialDrawFlag = FALSE;
 
 #endif
@@ -914,6 +961,7 @@ void
 DrawStatusForce(void)
 {
         nInitialDrawFlag = TRUE;
+
         DrawStatus();
 }
 
@@ -946,5 +994,5 @@ PaintStatus(void)
         /*
          * 描画
          */
-        DrawStatus();
+  //      DrawStatus();
 }

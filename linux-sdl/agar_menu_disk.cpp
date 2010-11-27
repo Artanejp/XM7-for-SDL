@@ -331,19 +331,19 @@ static void OnSelectDiskMedia(AG_Event *event)
 	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s %d:", caption, Drive );
 	AG_LabelSizeHint (lbl, 2, caption);
 	{
-	 char utf8[256];
+	 char utf8[512];
 	 char          *pIn, *pOut;
 	 iconv_t       hd;
 	 size_t        in, out;
-
+	 memset(utf8, 0x00, sizeof(utf8));
 
 	 if(fdc_medias[Drive] <= 1) return;
 	 for(i = 0; i < fdc_medias[Drive]; i++) {
 		 box2 = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
-         pIn =  fdc_name[Drive][i];;
+         pIn =  fdc_name[Drive][i];
          pOut = utf8;
           in = strlen(pIn);
-          out = 256;
+          out = 512;
           hd = iconv_open("utf8", "cp932");
           if(hd >= 0) {
                   while(in>0) {

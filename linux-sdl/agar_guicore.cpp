@@ -77,6 +77,9 @@ void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	case AG_DRIVER_VIDEORESIZE:
 		newDrawWidth = ev->data.videoresize.w;
 		newDrawHeight = ev->data.videoresize.h;
+		if(newDrawHeight < 50) {
+			newDrawHeight = 50;
+		}
 		newResize = TRUE;
 		break;
 	default:
