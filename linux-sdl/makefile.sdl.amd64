@@ -231,19 +231,22 @@ LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
 LIBS += -lGL -lGLU
-LIBS += -lag_core -lag_gui -lag_dev 
-#LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
+#LIBS += -lag_core -lag_gui -lag_dev 
+LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
 LIBS += -ljpeg -lpng
 #LIBS += -lmemwatch
 
 
 
 
-all:	xm7.sdl
+all:	xm7 xm7.dbg
 
-xm7.sdl: ${OBJS}
-#	gcc -m32 ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+xm7: ${OBJS}
 	g++ ${LDFLAGS} -o xm7 ${OBJS} ${LIBS}
+	strip xm7
+
+xm7.dbg: ${OBJS}
+	g++ ${LDFLAGS} -o xm7.dbg ${OBJS} ${LIBS}
 
 
 .c.o:
@@ -256,7 +259,7 @@ xm7.sdl: ${OBJS}
 	nasm ${ASFLAGS} $<
 
 clean:
-	rm -f xm7 *.o *~
+	rm -f xm7.dbg xm7 *.o *~
 
 install: all
 	$(INSTALL)  -d $(SHAREDIR)
