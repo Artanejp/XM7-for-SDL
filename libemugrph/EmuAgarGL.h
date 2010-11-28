@@ -61,6 +61,8 @@ protected:
     SDL_semaphore *drawSem;
 	int offset_x;
 	int offset_y;
+	int osd_w;
+	int osd_h;
 
 private:
     BOOL  UseTexture;

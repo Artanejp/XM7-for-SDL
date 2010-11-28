@@ -85,16 +85,15 @@ void EmuAgarGL::SetViewPort(int x, int y, int w, int h)
 /*
  * 20101128追加:右下に表示部分を設定する場合
  */
-void EmuAgarGL::SetViewPort(int x, int y, int w, int h, int osd_w, int osd_h)
+void EmuAgarGL::SetViewPort(int x, int y, int w, int h, int osd_ww, int osd_hh)
 {
 	viewport_x = x;
 	viewport_y = y;
 	viewport_h = h;
 	viewport_w = w;
-	minX = (float) 0 /  ((float)viewport_w + (float)osd_w);
-	minY = (float) 0 /  ((float)viewport_h + (float)osd_h);
-	maxX =  ((float)vramwidth * 8.0f) / ((float)viewport_w + (float)osd_w) ;
-	maxY = (float)vramheight / ((float)viewport_h + (float)osd_h);
+	osd_w = osd_ww;
+	osd_h = osd_hh;
+
 #if 0
 	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
 			viewport_x, viewport_y, viewport_w, viewport_h,
@@ -335,8 +334,8 @@ void EmuAgarGL::Enter2DMode(void)
 {
 	int x = viewport_x;
 	int y = viewport_y;
-	int w = viewport_w;
-	int h = viewport_h;
+	int w = viewport_w + osd_w;
+	int h = viewport_h + osd_h;
 
 	        /* Note, there may be other things you need to change,
 	           depending on how you have your OpenGL state set up.
@@ -394,18 +393,14 @@ void EmuAgarGL::DrawTexture(GLuint tid)
 #if 1
 	if(viewport_w != 0) {
 		xbegin = (float)offset_x / (float)viewport_w;
-		xend = 1.0;
-//		viewport_x = -offset_x;
-//		viewport_w += offset_x;
+		xend = 0.5;
 	} else {
 		xbegin = 0.0;
 		xend = 1.0;
 	}
 	if(viewport_h != 0) {
-		ybegin = (float)offset_y / (float)viewport_h;
-		yend = 1.0;
-//		viewport_y = -offset_y;
-//		viewport_h += offset_y;
+		ybegin = (float)offset_y  / ((float)viewport_h + (float)osd_h );
+		yend = (float)viewport_h  / ((float)viewport_h + (float)osd_h );
 	} else {
 		xbegin = 0.0;
 		xend = 1.0;
