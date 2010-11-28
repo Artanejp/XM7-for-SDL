@@ -1,13 +1,13 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
-*  Version 0.1r151 (αレベル / OpenGL)
+*  Version 0.1r205 (αレベル / Agar / OpenGL)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2010.11.01 Artane.
+* 2010.11.28 Artane.
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
@@ -38,29 +38,29 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 　います。
 　messのライセンスについてはDoc/mess/license.txtに入れておきました
 ・OpenGLで描画しています（試験版）
+・GUIにAgar toolkit ( http://www.libagar.org/ )を使用しています。
 
 (*2) PC-88エミュレータであるQuasi88に同等の機能があったので…
 (*3) SDLMESS http://rbelmont.mameworld.info/?page_id=163
 
 3.ビルド
  以下の物が、必要です。
-・GTK2/GLIB2
-・GDK-PIXBUF 2.0
 ・SDL1.2以上
 ・U*ix系OSの場合にはX Window Systemと開発環境、FontConfigなどなど。
 ・GCC 4
 ・SDL_ttf
 ・SDL_mixer ( http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer )
-・IPA UIゴシック
+・AGAR ( http://www.libagar.org/ )
+・IPA ゴシック一式(ビルド時に変更可能)
 ・GNU MAKE
 ・PKGCONFIG
+・libtool
 などなど。
 
 以下は、デバッグ用に使っています。
-・libmemwatch (http://www.linkdata.se/sourcecode/memwatch )
 ・eclipse (統合開発環境/  http://www.eclipse.org/ )
 
-※r151あたりから、描画機能をlibemugrphに分離しています。
+※r151あたりから、描画機能をlibemugrphに分離しています。(ライセンスを別にしたいので）
 　仕様が未だ固まっていない状態ですが…
   以下のようにインストールしてください
   $ cd libemugrph
@@ -79,8 +79,6 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
 -- ここまで --
 
 
-libmemwatchはメモリリークをチェックする為の物なので…
-
 4.つかいかた
 a.xm7の実行型式があるディレクトリィに、以下の物を入れます。
 
@@ -91,12 +89,15 @@ b. usr.local.share.xm7 に移動して、
 $sudo install -m 0777 -d /usr/local/share/xm7/
 $sudo install -m 0644 ./* /usr/local/share/xm7/
 
-c. 以下のものを~/.xm7 に入れます。
+c. libagarのインストール。AMD64についてはコンパイル済みバイナリを
+   libagar/amd64以下に添付してあります
+
+d. 以下のものを~/.xm7 に入れます。
 ・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM
 ・FDDシークの為のWAV
 
 
-d. xm7を起動します（カレントディレクトリになくてもよいです。てか、カレントディレクトリから削除した方がいいかも)
+e. xm7を起動します（カレントディレクトリになくてもよいです。てか、カレントディレクトリから削除した方がいいかも)
 
 e.
  手持ちのFD・テープをD77・T77形式に変換した物を動かして見てください。
@@ -127,9 +128,14 @@ hogeはユーザ名など。
 c.WAVファイル、ROMファイルを~/.xm7/にコピーしたのに動かないときは、
 　これらファイルの大文字小文字を見直してください。
 
+d.Agar使用に伴い、フォントを検索します。が、IPAゴシックのipag*.ttfが必要なのは同じです＿|￣|●
+  かえる必要があるときはMakefileもしくはbuildconfig.hを弄ってください
+
+-- 過去の情報 ---
 d.r42から、UI定義をGTKBUILDERベースにしました。
 　/usr/local/share/xm7/gtk_prop.ui などがないと
 　動きませんΣ（￣□￣；）！！
 e.現状では、フォントを決め打ちしています。
   (/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf )
   かえる必要があるときは MakefileのUIFONT = の行、もしくはXM7.INIを弄ってください（Todo)
+--- 過去の情報 ---
