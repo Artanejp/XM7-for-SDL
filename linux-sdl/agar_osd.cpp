@@ -33,21 +33,6 @@
 
 #include <iconv.h>
 
-
-
-
-/* デフォルトフォントが設定されてないときはフォントとしてIPAゴシックを使う */
-#ifndef FUNC_FONT
-#define FUNC_FONT "ipagui.ttf"
-#endif
-
-#ifndef STAT_FONT
-#define STAT_FONT "ipagui.ttf"
-#endif
-
-#define FUNC_PT 16
-#define STAT_PT 16
-
 /*
  * Global変数
  */
@@ -84,7 +69,8 @@ static AG_Surface      *pCaption; /* Caption */
 static AG_Surface      *pStatusBar; /* ステータス表示バー */
 static AG_Font         *pStatusFont;
 static AG_Font         *pVFDFont;
-extern SDL_mutex        *DrawMutex;
+static AG_Font         *pCMTFont;
+static AG_Font         *pLEDFont;
 
 extern "C" {
 extern AG_GLView *DrawArea;
@@ -119,8 +105,6 @@ static GLuint CreateTexture(AG_Surface *p)
     glBindTexture(GL_TEXTURE_2D, textureid);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   	glEnable(GL_BLEND);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -147,36 +131,34 @@ static void DiscardTexture(GLuint tid)
 
 void Enter2DMode(int x, int y, int w, int h)
 {
-
-	        /* Note, there may be other things you need to change,
-	           depending on how you have your OpenGL state set up.
-	        */
-	        glPushAttrib(GL_ENABLE_BIT);
-	        glDisable(GL_DEPTH_TEST);
-	        glDisable(GL_CULL_FACE);
-	        glEnable(GL_TEXTURE_2D);
-	        glPushMatrix();
-	        /* This allows alpha blending of 2D textures with the scene */
-	        glEnable(GL_BLEND);
-	        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        	glEnable(GL_BLEND);
-        	glPushMatrix();
-	        glLoadIdentity();
-	        /*
-	         * ビューポートは表示する画面の大きさ
-	         */
-	        glViewport(x, y , w + x,  h + y );
-	        /*
-	         * 座標系は(0,0)-(0,1)
-	         */
-	        glOrtho(0.0, 1.0 ,
-	        		1.0, 0.0,
-	        		0.0,  1.0);
-	//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
-	        glMatrixMode(GL_MODELVIEW);
-	        glPushMatrix();
-	        glLoadIdentity();
-	        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    /* Note, there may be other things you need to change,
+       depending on how you have your OpenGL state set up.
+    */
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_2D);
+    glPushMatrix();
+    /* This allows alpha blending of 2D textures with the scene */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    /*
+     * ビューポートは表示する画面の大きさ
+     */
+    glViewport(x, y , w + x,  h + y );
+    /*
+     * 座標系は(0,0)-(0,1)
+     */
+    glOrtho(0.0, 1.0 ,
+    		1.0, 0.0,
+    		0.0,  1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 }
 
 static void Leave2DMode()
@@ -199,14 +181,14 @@ static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, in
 #if 1
 	if(viewport_w != 0) {
 		xbegin = (float)offset_x / (float)viewport_w;
-		xend = ((float)offset_x + (float)w) / (float)viewport_w;
+		xend = ((float)offset_x + (float)w)/ (float)viewport_w;
 	} else {
 		xbegin = 0.0;
 		xend = 1.0;
 	}
 	if(viewport_h != 0) {
 		ybegin = (float)offset_y / (float)viewport_h;
-		yend =  ((float)offset_y + (float) h) / (float)viewport_h ;
+		yend =   ((float)offset_y + (float) h) / (float)viewport_h;
 	} else {
 		xbegin = 0.0;
 		xend = 1.0;
@@ -220,24 +202,26 @@ static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, in
     glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.5);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.5);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.5);
- //   glViewport(0, 0 , viewport_w, viewport_h);
     glEnd();
     Leave2DMode();
-//	DiscardTexture(tid);
 }
 
 static void DrawCAP(void);
 static void DrawINS(void);
 static void DrawKANA(void);
+static void DrawMainCaption(void);
 static void DrawDrive(int drive);
+static void DrawTape(void);
 
 void DrawOSDGL(AG_GLView *w)
 {
+    DrawMainCaption();
     DrawCAP();
     DrawKANA();
     DrawINS();
     DrawDrive(1);
     DrawDrive(0);
+    DrawTape();
 }
 
 
@@ -248,13 +232,9 @@ void DrawOSDGL(AG_GLView *w)
 void CreateStatus(void)
 {
         AG_Rect rec;
-        AG_SizeAlloc barrect;
         AG_Color r, b, n , black;
-        AG_Box *box;
-        AG_Box *hbox;
         AG_Surface *tmps;
         AG_PixelFormat fmt;
-        Uint32 rmask, gmask, bmask, amask;
         int i;
 
 
@@ -295,30 +275,36 @@ void CreateStatus(void)
     	fmt.Gshift = 16;
     	fmt.Bshift = 0;
     	fmt.Ashift = 24;
+    	fmt.Rloss = 0;
+    	fmt.Gloss = 0;
+    	fmt.Bloss = 0;
+    	fmt.Aloss = 0;
     	fmt.palette = NULL;
 
-    	pStatusFont =  AG_FetchFont ("ipagui.ttf", 15, 0);
-    	pVFDFont =  AG_FetchFont ("ipagui.ttf", 15, 0);
+    	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT , 0);
+    	pVFDFont =  AG_FetchFont (VFD_FONT, VFD_PT, 0);
+    	pCMTFont = AG_FetchFont(CMT_FONT, CMT_PT, 0);
+    	pLEDFont = AG_FetchFont(VFD_FONT, STAT_PT, 0);
 
         AG_PushTextState();
-        AG_TextFont(pStatusFont);
+        AG_TextFont(pLEDFont);
         //AG_TextFontPts(11);
 #if 1
         AG_TextColor(black);
         AG_TextBGColor(r);
-        pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
+        pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pInsOn, NULL, r);
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOn, 4, 0);
         AG_SurfaceFree(tmps);
 
-        pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
+        pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOn, NULL, r);
         tmps = AG_TextRender("CAP");
         AG_SurfaceBlit(tmps, NULL, pCapsOn, 2, 0);
         AG_SurfaceFree(tmps);
 
-        pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
+        pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOn, NULL, r);
         tmps = AG_TextRender("カナ");
         AG_SurfaceBlit(tmps, NULL, pKanaOn, 2, 0);
@@ -327,19 +313,19 @@ void CreateStatus(void)
         AG_TextColor(n);
         AG_TextBGColor(black);
 
-        pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
+        pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pInsOff, NULL, black);
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOff, 4, 0);
         AG_SurfaceFree(tmps);
 
-        pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16,  &fmt, AG_SRCALPHA);
+        pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT,  &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOff, NULL, black);
         tmps = AG_TextRender("CAP");
         AG_SurfaceBlit(tmps, NULL, pCapsOff, 2, 0);
         AG_SurfaceFree(tmps);
 
-        pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , 36, 16, &fmt, AG_SRCALPHA);
+        pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOff, NULL, black);
         tmps = AG_TextRender("カナ");
         AG_SurfaceBlit(tmps, NULL, pKanaOff, 2, 0);
@@ -350,8 +336,8 @@ void CreateStatus(void)
          */
         rec.x = 0;
         rec.y = 0;
-        rec.w = 140;
-        rec.h = 18;
+        rec.w = VFD_WIDTH;
+        rec.h = VFD_HEIGHT;
         for(i = 0 ; i < 2 ; i++) {
                 pFDRead[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
                 pFDWrite[i] =AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
@@ -364,6 +350,10 @@ void CreateStatus(void)
         /*
          * RECT Tape
          */
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = CMT_WIDTH;
+        rec.h = CMT_HEIGHT;
         pCMTRead = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
         pCMTWrite = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
         pCMTNorm = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
@@ -371,12 +361,20 @@ void CreateStatus(void)
         AG_FillRect(pCMTRead, &rec, r);
         AG_FillRect(pCMTWrite, &rec, b);
         AG_FillRect(pCMTNorm, &rec, black);
+
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = STAT_WIDTH;
+        rec.h = STAT_HEIGHT;
+
+        pCaption = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
+        AG_FillRect(pCaption, NULL, black);
+
 #endif
         AG_PopTextState();
 }
 
-void
-DestroyDraw(void)
+void DestroyDraw(void)
 {
         int i;
         if(pInsOn !=NULL ) {
@@ -399,9 +397,13 @@ DestroyDraw(void)
             AG_SurfaceFree(pKanaOn);
                 pKanaOn = NULL;
         }
-        if(pKanaOff != NULL) {
+        if(pKanaOff !=NULL ) {
             AG_SurfaceFree(pKanaOff);
                 pKanaOff = NULL;
+        }
+        if(pCaption !=NULL ) {
+            AG_SurfaceFree(pCaption);
+                pCaption = NULL;
         }
         for(i = 0 ; i < 2 ; i++ ) {
                 if(pFDRead[i] != NULL) {
@@ -429,9 +431,17 @@ DestroyDraw(void)
         	AG_SurfaceFree(pCMTNorm);
                 pCMTNorm = NULL;
         }
+        if(pLEDFont != NULL) {
+        	AG_DestroyFont(pLEDFont);
+                pLEDFont = NULL;
+        }
         if(pVFDFont != NULL) {
         	AG_DestroyFont(pVFDFont);
                 pVFDFont = NULL;
+        }
+        if(pCMTFont != NULL) {
+        	AG_DestroyFont(pCMTFont);
+                pCMTFont = NULL;
         }
         if(pStatusFont != NULL) {
         	AG_DestroyFont(pStatusFont);
@@ -451,17 +461,16 @@ DestroyDraw(void)
     /*
      *  キャプション描画
      */
-static void
-DrawMainCaption(void)
+static void DrawMainCaption(void)
 {
     char           string[1024];
     char           tmp[128];
     char          *p;
-    AG_Surface   *pS, *tmpSurface;
-    AG_Color     n;
-    AG_Rect      rec,drec;
+    AG_Surface   *tmps;
+    AG_Color     white, black;
+//    AG_Rect      rec,drec;
 
-
+    if(pCaption == NULL) return;
     /*
      * 動作状況に応じて、コピー
      */
@@ -544,7 +553,31 @@ DrawMainCaption(void)
 
     strncpy(szCaption, string, 128);
     if((strncmp(szOldCaption, szCaption, 128) != 0) || (nInitialDrawFlag == TRUE)) {
+        black.r = 0;
+        black.g = 0;
+        black.b = 0;
+        black.a = 255;
+
+        white.r = 255;
+        white.g = 255;
+        white.b = 255;
+        white.a = 255;
+
+        AG_PushTextState();
+        AG_TextFont(pStatusFont);
+    	AG_TextColor(white);
+    	AG_TextBGColor(black);
+    	AG_FillRect(pCaption, NULL, black);
+        tmps = AG_TextRender(szCaption);
+        AG_SurfaceBlit(tmps, NULL, pCaption, 2, 0);
+        AG_SurfaceFree(tmps);
+        AG_PopTextState();
+        strcpy(szOldCaption, szCaption);
     }
+
+   	tid_caption =  CreateTexture(pCaption);
+    DrawTexture(tid_caption, 0,  nDrawHeight, pCaption->w, pCaption->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    DiscardTexture(tid_caption);
 
 
 }
@@ -574,8 +607,8 @@ static void DrawCAP(void)
         } else {
         	tid_caps = CreateTexture(pCapsOff);
         }
-        DrawTexture(tid_caps, nDrawWidth - pCapsOff->w * 2,  nDrawHeight , pCapsOff->w, pCapsOff->h, nDrawWidth, nDrawHeight + 16);
-        DiscardTexture(tid_caps);
+        DrawTexture(tid_caps, nDrawWidth - pCapsOff->w * 2,  nDrawHeight, pCapsOff->w, pInsOff->h, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+        DiscardTexture(tid_kana);
 }
 
 
@@ -606,7 +639,7 @@ static void DrawKANA(void)
         } else {
         	tid_kana = CreateTexture(pKanaOff);
         }
-        DrawTexture(tid_kana, nDrawWidth - pKanaOff->w,  nDrawHeight, pKanaOff->w, pKanaOff->h, nDrawWidth, nDrawHeight + 16);
+        DrawTexture(tid_kana, nDrawWidth - pKanaOff->w,  nDrawHeight, pKanaOff->w, pKanaOff->h, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         DiscardTexture(tid_kana);
 }
 
@@ -637,7 +670,7 @@ static void DrawINS(void)
         } else {
         	tid_ins = CreateTexture(pInsOff);
         }
-        DrawTexture(tid_ins, nDrawWidth - pInsOff->w * 3,  nDrawHeight, pInsOff->w, pInsOff->h, nDrawWidth, nDrawHeight + 16);
+        DrawTexture(tid_ins, nDrawWidth - pInsOff->w * 3,  nDrawHeight, pInsOff->w, pInsOff->h, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         DiscardTexture(tid_ins);
 }
 
@@ -702,15 +735,9 @@ static void DrawDrive(int drive)
                     }
                 szDrive[drive][0] = '\0';
                 szOldDrive[drive][0] = '\0';
-//            	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
-//            	DrawTexture(tid_fd[drive], nDrawWidth - pFDNorm[0]->w * (drive + 2),  nDrawHeight - 16, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth, nDrawHeight + pInsOff->h + 2);
-//            	DiscardTexture(tid_fd[drive]);
 //            	return;
             }
             if (strcmp(szDrive[drive], name) == 0) {
-//            	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
-//            	DrawTexture(tid_fd[drive], nDrawWidth - pFDNorm[0]->w * (drive + 2),  nDrawHeight - 16, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth, nDrawHeight + pInsOff->h + 2);
-//            	DiscardTexture(tid_fd[drive]);
 //            	return;
             }
     }
@@ -806,15 +833,14 @@ static void DrawDrive(int drive)
     } else {
     	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
     }
-    DrawTexture(tid_fd[drive], nDrawWidth - pFDNorm[0]->w * (drive + 2),  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth, nDrawHeight + 16);
+    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 1) - pCapsOff->w * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
     DiscardTexture(tid_fd[drive]);
 }
 
-#if 0
 
-    /*
-     *  テープ描画
-     */
+/*
+ *  テープ描画
+ */
 static void DrawTape(void)
 {
     int             num;
@@ -826,13 +852,12 @@ static void DrawTape(void)
 
     rec.x = 0;
     rec.y = 0;
-    rec.w = 160;
-    rec.h = 20;
-
+    rec.w = CMT_WIDTH;
+    rec.h = CMT_HEIGHT;
     if(tape_writep){
-    	strcpy(protect, "WP:");
+    	strcpy(protect, "■");
     } else {
-    	strcpy(protect, "  :");
+    	strcpy(protect, "　");
     }
     /*
      * ナンバー計算
@@ -884,33 +909,33 @@ static void DrawTape(void)
             black.b = 0;
             black.a = 255;
 
-            r.r = 255;
-            r.g = 0;
-            r.b = 0;
-            r.a = 255;
+            r.r = 0; // r->g
+            r.g = 0; // g->b
+            r.b = 255;  // b->r
+            r.a = 255; // a->a
 
             b.r = 0;
-            b.g = 0;
-            b.b = 255;
+            b.g = 255;
+            b.b = 0;
             b.a = 255;
 
             if(pStatusFont != NULL) {
            	AG_PushTextState();
             AG_FillRect(pCMTRead, NULL, r);
-            AG_TextFont(pStatusFont);
+            AG_TextFont(pCMTFont);
             AG_TextColor(black);
             AG_TextBGColor(r);
            	tmp = AG_TextRender(string);
-           	AG_SurfaceBlit(tmp, NULL, pCMTRead, 2, 2);
-           	AG_FreeSurface(tmp);
+           	AG_SurfaceBlit(tmp, NULL, pCMTRead, 4, 2);
+           	AG_SurfaceFree(tmp);
 
             AG_FillRect(pCMTWrite, NULL, b);
             AG_TextFont(pStatusFont);
             AG_TextColor(black);
             AG_TextBGColor(b);
            	tmp = AG_TextRender(string);
-           	AG_SurfaceBlit(tmp, NULL, pCMTWrite, 2, 2);
-           	AG_FreeSurface(tmp);
+           	AG_SurfaceBlit(tmp, NULL, pCMTWrite, 4, 2);
+           	AG_SurfaceFree(tmp);
 
 
             AG_FillRect(pCMTNorm, NULL, black);
@@ -918,8 +943,8 @@ static void DrawTape(void)
             AG_TextColor(n);
             AG_TextBGColor(black);
            	tmp = AG_TextRender(string);
-           	AG_SurfaceBlit(tmp, NULL, pCMTNorm, 2, 2);
-           	AG_FreeSurface(tmp);
+           	AG_SurfaceBlit(tmp, NULL, pCMTNorm, 4, 2);
+           	AG_SurfaceFree(tmp);
            	AG_PopTextState();
             }
             nOldTape = nTape;
@@ -930,18 +955,17 @@ static void DrawTape(void)
 
     if ((nTape >= 10000) && (nTape < 30000)) {
             if (nTape >= 20000) {
-                    SDL_BlitSurface(pCMTWrite, &rec, p, &drec);
+            	tid_cmt =  CreateTexture(pCMTWrite);
             }   else {
-                    SDL_BlitSurface(pCMTRead, &rec, p, &drec);
+            	tid_cmt =  CreateTexture(pCMTRead);
             }
     } else {
-                    SDL_BlitSurface(pCMTNorm, &rec, p, &drec);
+    	tid_cmt =  CreateTexture(pCMTNorm);
     }
-    SDL_UpdateRect(p, drec.x, drec.y, drec.w, drec.h);
+    DrawTexture(tid_cmt, nDrawWidth - pCMTNorm->w - pCapsOff->w * 3,  nDrawHeight, pCMTNorm->w, pCMTNorm->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    DiscardTexture(tid_cmt);
 
 }
-
-#endif
 /*
  *  描画
  */
@@ -959,7 +983,6 @@ void DrawStatus(void)
         nInitialDrawFlag = FALSE;
 #else
         nInitialDrawFlag = FALSE;
-
 #endif
 }
 

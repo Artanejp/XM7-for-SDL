@@ -66,10 +66,10 @@ void AGEventScaleGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
 	if(pixvram == NULL) return;
-	scalerGL->SetDrawArea(wid, 0, 0, nDrawWidth, nDrawHeight);
+	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, nDrawWidth, nDrawHeight);
 //	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
-	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, 24);
-	scalerGL->SetOffset(0,32);
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, OSD_HEIGHT);
+	scalerGL->SetOffset(0,DRAW_OFSET);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
 	DrawOSDGL(DrawArea);
@@ -114,14 +114,13 @@ void AGEventDrawGL(AG_Event *event)
 #endif				/*  */
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
-	scalerGL->SetDrawArea(wid, 0, 32, nDrawWidth, nDrawHeight);
-	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, 24);
-	scalerGL->SetOffset(0,32);
+	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, nDrawWidth, nDrawHeight);
+	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, OSD_HEIGHT);
+	scalerGL->SetOffset(0, DRAW_OFSET);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
 	DrawOSDGL(DrawArea);
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
-
 }
 
 

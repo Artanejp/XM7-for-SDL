@@ -29,6 +29,11 @@
 #include <SDL.h>
 #endif				/*  */
 
+/* デフォルトフォントが設定されてないときはフォントとしてIPAゴシックを使う */
+#ifndef FONTPATH
+
+#endif
+
 /*
  *  定数、型定義
  */

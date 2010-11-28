@@ -137,6 +137,7 @@ void MainLoop(int argc, char *argv[])
 	int c;
 	char *drivers = NULL;
 	char *optArg;
+	char fontpath[2048];
 
 //	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitCore("xm7", AG_VERBOSE);
@@ -172,11 +173,9 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
-    AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:/usr/local/share/xm7:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki:.:./.xm7",
-    		getenv("HOME"), getenv("HOME"));
-    AG_SetString(agConfig, "font.face", "ipagui.ttf");
-    AG_SetInt(agConfig, "font.size", 18);
-//    AG_TextParseFontSpec("mona.ttf,16");
+    AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s", getenv("HOME"), getenv("HOME"), FONTPATH);
+    AG_SetString(agConfig, "font.face", UI_FONT);
+    AG_SetInt(agConfig, "font.size", UI_PT);
 
     if(drivers == NULL)  {
     	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
