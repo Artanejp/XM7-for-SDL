@@ -374,7 +374,7 @@ void CreateStatus(void)
         AG_PopTextState();
 }
 
-void DestroyDraw(void)
+void DestroyStatus(void)
 {
         int i;
         if(pInsOn !=NULL ) {
@@ -833,7 +833,7 @@ static void DrawDrive(int drive)
     } else {
     	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
     }
-    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 1) - pCapsOff->w * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - pCapsOff->w * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
     DiscardTexture(tid_fd[drive]);
 }
 

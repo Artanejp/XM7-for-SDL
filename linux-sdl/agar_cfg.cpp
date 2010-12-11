@@ -37,10 +37,6 @@
 #include "api_mouse.h"
 #include "api_draw.h"
 
-/*
- *  設定データ定義 →sdl_cfg.h に。
- */
-
 configdat_t configdat;	/* コンフィグ用データ */
 /*
  *  スタティック ワーク

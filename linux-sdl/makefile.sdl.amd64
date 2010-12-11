@@ -211,8 +211,8 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 
 LDFLAGS = 
-CFLAGS = -g -O0 -export-dynamic
-#CFLAGS =  -O3 -export-dynamic
+#CFLAGS = -g -O0 -export-dynamic
+CFLAGS =  -O3 -export-dynamic
 CFLAGS += -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
@@ -231,8 +231,8 @@ LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
 LIBS += -lGL -lGLU
-#LIBS += -lag_core -lag_gui -lag_dev 
-LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
+LIBS += -lag_core -lag_gui -lag_dev 
+#LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
 LIBS += -ljpeg -lpng
 #LIBS += -lmemwatch
 

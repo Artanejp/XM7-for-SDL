@@ -41,7 +41,6 @@ extern void InitGL(int w, int h);
 extern AG_Window *MainWindow;
 extern AG_Menu *MenuBar;
 extern AG_GLView *DrawArea;
-extern AG_Box *OsdArea;
 }
 
 extern void Create_AGMainBar(AG_Widget *Parent);
@@ -50,6 +49,9 @@ extern int DrawThreadMain(void *);
 extern void AGEventDrawGL(AG_Event *event);
 extern void AGEventScaleGL(AG_Event *event);
 extern void AGEventOverlayGL(AG_Event *event);
+extern void DestroyStatus(void);
+
+
 static BOOL bKeyboardSnooped;
 
 
@@ -137,7 +139,6 @@ void MainLoop(int argc, char *argv[])
 	int c;
 	char *drivers = NULL;
 	char *optArg;
-	char fontpath[2048];
 
 //	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitCore("xm7", AG_VERBOSE);
@@ -192,7 +193,6 @@ void MainLoop(int argc, char *argv[])
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	DrawThreadMain(NULL);
-//	AG_EventLoop();
 	AG_Destroy();
 }
 
@@ -233,6 +233,8 @@ void OnDestroy2(void)
 {
 	OnDestroy(NULL);
 }
+
+
 void OnDestroy(AG_Event *event)
 {
 
@@ -249,6 +251,7 @@ void OnDestroy(AG_Event *event)
         CleanSch();
         CleanKbd();
         CleanSnd();
+        DestroyStatus();
         CleanDraw();
         SaveCfg();
         /*
