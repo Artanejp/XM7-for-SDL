@@ -508,6 +508,7 @@ static void *ThreadSch(void *param)
 		 * 終了を明示するため、要求フラグを降ろす
 		 */
 		bCloseReq = FALSE;
+		AG_QuitGUI();
 		retval = 0;
 		AG_ThreadExit((void *)&retval);
 }

@@ -92,6 +92,7 @@ void Create_AGMainBar(AG_Widget *Parent)
 	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
 //	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
 	if(!MenuBar) return;
+
 	AG_LockVFS(AGOBJECT(MenuBar));
 	item = AG_MenuNode(MenuBar->root , "File", NULL);
 	Create_FileMenu(item);

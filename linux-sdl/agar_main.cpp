@@ -89,7 +89,7 @@ UnlockVM(void)
 
 void CreateDraw(void)
 {
-    AG_Surface * ret;
+
 }
 
 
@@ -103,9 +103,6 @@ void CreateDraw(void)
 void OnCreate(AG_Widget *parent)
 {
         BOOL        flag;
-//    CreateMenu();
-//    CreateDrawAG(parent);
-//   CreateStatus();
 /*
  * ワークエリア初期化
  */
@@ -126,9 +123,6 @@ void OnCreate(AG_Widget *parent)
         InitJoy();
         InitSch();
 //        CreateStatus();
-//#ifdef FDDSND
-// InitFDDSnd();
-//#endif
 
 /*
  * 仮想マシン初期化
@@ -207,7 +201,6 @@ int main(int argc, char *argv[])
 /*
  * アプリケーション初期化
  */
-//        InitInstance();
         MainLoop(argc, argv);
         return nErrorCode;
 }

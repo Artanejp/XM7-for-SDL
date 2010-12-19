@@ -68,9 +68,6 @@ static AG_Surface      *pCMTNorm; /* Tape Normal */
 static AG_Surface      *pCaption; /* Caption */
 static AG_Surface      *pStatusBar; /* ステータス表示バー */
 static AG_Font         *pStatusFont;
-static AG_Font         *pVFDFont;
-static AG_Font         *pCMTFont;
-static AG_Font         *pLEDFont;
 
 extern "C" {
 extern AG_GLView *DrawArea;
@@ -78,9 +75,13 @@ extern AG_Window *MainWindow;
 extern AG_Menu  *MenuBar;
 }
 
-GLuint tid_ins;
-GLuint tid_kana;
-GLuint tid_caps;
+GLuint tid_ins_on;
+GLuint tid_kana_on;
+GLuint tid_caps_on;
+GLuint tid_ins_off;
+GLuint tid_kana_off;
+GLuint tid_caps_off;
+
 GLuint tid_fd[4];
 GLuint tid_cmt;
 GLuint tid_caption;
@@ -282,12 +283,9 @@ void CreateStatus(void)
     	fmt.palette = NULL;
 
     	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT , 0);
-    	pVFDFont =  AG_FetchFont (VFD_FONT, VFD_PT, 0);
-    	pCMTFont = AG_FetchFont(CMT_FONT, CMT_PT, 0);
-    	pLEDFont = AG_FetchFont(VFD_FONT, STAT_PT, 0);
 
         AG_PushTextState();
-        AG_TextFont(pLEDFont);
+        AG_TextFont(pStatusFont);
         //AG_TextFontPts(11);
 #if 1
         AG_TextColor(black);
@@ -297,18 +295,27 @@ void CreateStatus(void)
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOn, 4, 0);
         AG_SurfaceFree(tmps);
+    	tid_ins_on = CreateTexture(pInsOn);
+    	AG_SurfaceFree(pInsOn);
+    	pInsOn = NULL;
 
         pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOn, NULL, r);
         tmps = AG_TextRender("CAP");
         AG_SurfaceBlit(tmps, NULL, pCapsOn, 2, 0);
         AG_SurfaceFree(tmps);
+        tid_caps_on = CreateTexture(pCapsOn);
+        AG_SurfaceFree(pCapsOn);
+        pCapsOn = NULL;
 
         pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOn, NULL, r);
         tmps = AG_TextRender("カナ");
         AG_SurfaceBlit(tmps, NULL, pKanaOn, 2, 0);
         AG_SurfaceFree(tmps);
+    	tid_kana_on = CreateTexture(pKanaOn);
+    	AG_SurfaceFree(pKanaOn);
+    	pKanaOn = NULL;
 
         AG_TextColor(n);
         AG_TextBGColor(black);
@@ -318,18 +325,28 @@ void CreateStatus(void)
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOff, 4, 0);
         AG_SurfaceFree(tmps);
+    	tid_ins_off = CreateTexture(pInsOff);
+    	AG_SurfaceFree(pInsOff);
+    	pInsOff = NULL;
 
         pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT,  &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOff, NULL, black);
         tmps = AG_TextRender("CAP");
         AG_SurfaceBlit(tmps, NULL, pCapsOff, 2, 0);
         AG_SurfaceFree(tmps);
+        tid_caps_off = CreateTexture(pCapsOff);
+        AG_SurfaceFree(pCapsOff);
+        pCapsOff = NULL;
+
 
         pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOff, NULL, black);
         tmps = AG_TextRender("カナ");
         AG_SurfaceBlit(tmps, NULL, pKanaOff, 2, 0);
         AG_SurfaceFree(tmps);
+    	tid_kana_off = CreateTexture(pKanaOff);
+    	AG_SurfaceFree(pKanaOff);
+    	pKanaOff = NULL;
 
         /*
          * RECT Drive1
@@ -431,25 +448,16 @@ void DestroyStatus(void)
         	AG_SurfaceFree(pCMTNorm);
                 pCMTNorm = NULL;
         }
-        if(pLEDFont != NULL) {
-        	AG_DestroyFont(pLEDFont);
-                pLEDFont = NULL;
-        }
-        if(pVFDFont != NULL) {
-        	AG_DestroyFont(pVFDFont);
-                pVFDFont = NULL;
-        }
-        if(pCMTFont != NULL) {
-        	AG_DestroyFont(pCMTFont);
-                pCMTFont = NULL;
-        }
         if(pStatusFont != NULL) {
         	AG_DestroyFont(pStatusFont);
                 pStatusFont = NULL;
         }
-        DiscardTexture(tid_ins);
-        DiscardTexture(tid_caps);
-        DiscardTexture(tid_kana);
+        DiscardTexture(tid_ins_on);
+        DiscardTexture(tid_caps_on);
+        DiscardTexture(tid_kana_on);
+        DiscardTexture(tid_ins_off);
+        DiscardTexture(tid_caps_off);
+        DiscardTexture(tid_kana_off);
         DiscardTexture(tid_fd[0]);
         DiscardTexture(tid_fd[1]);
         DiscardTexture(tid_fd[2]);
@@ -578,8 +586,6 @@ static void DrawMainCaption(void)
    	tid_caption =  CreateTexture(pCaption);
     DrawTexture(tid_caption, 0,  nDrawHeight, pCaption->w, pCaption->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
     DiscardTexture(tid_caption);
-
-
 }
 
 
@@ -592,7 +598,7 @@ static void DrawCAP(void)
         /*
          * 番号決定
          */
-        if((pCapsOff == NULL) || (pCapsOn == NULL)) return;
+//        if((pCapsOff == NULL) || (pCapsOn == NULL)) return;
         if (caps_flag) {
                 num = 1;
         } else {
@@ -603,12 +609,10 @@ static void DrawCAP(void)
  */
         nCAP = num;
         if (nCAP) {
-        	tid_caps = CreateTexture(pCapsOn);
+            DrawTexture(tid_caps_on, nDrawWidth - LED_WIDTH * 2,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         } else {
-        	tid_caps = CreateTexture(pCapsOff);
+            DrawTexture(tid_caps_off, nDrawWidth - LED_WIDTH * 2,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         }
-        DrawTexture(tid_caps, nDrawWidth - pCapsOff->w * 2,  nDrawHeight, pCapsOff->w, pInsOff->h, nDrawWidth, nDrawHeight + OSD_HEIGHT);
-        DiscardTexture(tid_kana);
 }
 
 
@@ -618,7 +622,7 @@ static void DrawCAP(void)
 static void DrawKANA(void)
 {
         int            num;
-        if((pKanaOff == NULL) || (pKanaOn == NULL)) return;
+//        if((pKanaOff == NULL) || (pKanaOn == NULL)) return;
 
         /*
          * 番号決定
@@ -635,12 +639,10 @@ static void DrawKANA(void)
 
         nKANA = num;
         if (nKANA) {
-        	tid_kana = CreateTexture(pKanaOn);
+            DrawTexture(tid_kana_on, nDrawWidth - LED_WIDTH,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         } else {
-        	tid_kana = CreateTexture(pKanaOff);
+            DrawTexture(tid_kana_off, nDrawWidth - LED_WIDTH,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         }
-        DrawTexture(tid_kana, nDrawWidth - pKanaOff->w,  nDrawHeight, pKanaOff->w, pKanaOff->h, nDrawWidth, nDrawHeight + OSD_HEIGHT);
-        DiscardTexture(tid_kana);
 }
 
 
@@ -650,7 +652,7 @@ static void DrawKANA(void)
 static void DrawINS(void)
 {
         int            num;
-        if((pInsOff == NULL) || (pInsOn == NULL)) return;
+//        if((pInsOff == NULL) || (pInsOn == NULL)) return;
 
         /*
          * 番号決定
@@ -666,12 +668,10 @@ static void DrawINS(void)
  */
         nINS = num;
         if (nINS) {
-        	tid_ins = CreateTexture(pInsOn);
+            DrawTexture(tid_ins_on, nDrawWidth - LED_WIDTH * 3,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         } else {
-        	tid_ins = CreateTexture(pInsOff);
+            DrawTexture(tid_ins_off, nDrawWidth - LED_WIDTH * 3,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         }
-        DrawTexture(tid_ins, nDrawWidth - pInsOff->w * 3,  nDrawHeight, pInsOff->w, pInsOff->h, nDrawWidth, nDrawHeight + OSD_HEIGHT);
-        DiscardTexture(tid_ins);
 }
 
     /*
@@ -801,7 +801,7 @@ static void DrawDrive(int drive)
             	old_writep[drive] = fdc_writep[drive];
             }
             	AG_PushTextState();
-                AG_TextFont(pVFDFont);
+                AG_TextFont(pStatusFont);
             	AG_TextColor(black);
             	AG_TextBGColor(r);
             	AG_FillRect(pFDRead[drive], NULL, r);
@@ -833,7 +833,7 @@ static void DrawDrive(int drive)
     } else {
     	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
     }
-    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - pCapsOff->w * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - LED_WIDTH * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
     DiscardTexture(tid_fd[drive]);
 }
 
@@ -846,9 +846,10 @@ static void DrawTape(void)
     int             num;
     char            string[128];
     char     protect[16];
-    AG_Surface     *p, *tmp;
-    AG_Rect        rec,drec;
     AG_Color n, black, r, b;
+    AG_Rect rec;
+    AG_Surface *tmp;
+
 
     rec.x = 0;
     rec.y = 0;
@@ -922,7 +923,7 @@ static void DrawTape(void)
             if(pStatusFont != NULL) {
            	AG_PushTextState();
             AG_FillRect(pCMTRead, NULL, r);
-            AG_TextFont(pCMTFont);
+            AG_TextFont(pStatusFont);
             AG_TextColor(black);
             AG_TextBGColor(r);
            	tmp = AG_TextRender(string);
@@ -962,10 +963,10 @@ static void DrawTape(void)
     } else {
     	tid_cmt =  CreateTexture(pCMTNorm);
     }
-    DrawTexture(tid_cmt, nDrawWidth - pCMTNorm->w - pCapsOff->w * 3,  nDrawHeight, pCMTNorm->w, pCMTNorm->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    DrawTexture(tid_cmt, nDrawWidth - pCMTNorm->w - LED_WIDTH * 3,  nDrawHeight, pCMTNorm->w, pCMTNorm->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
     DiscardTexture(tid_cmt);
-
 }
+
 /*
  *  描画
  */
@@ -990,11 +991,9 @@ void DrawStatus(void)
 /*
  *  強制描画
  */
-void
-DrawStatusForce(void)
+void DrawStatusForce(void)
 {
         nInitialDrawFlag = TRUE;
-
         DrawStatus();
 }
 
@@ -1002,8 +1001,7 @@ DrawStatusForce(void)
 /*
  *  再描画
  */
-void
-PaintStatus(void)
+void PaintStatus(void)
 {
         AG_Surface *p;
 /*

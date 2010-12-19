@@ -105,10 +105,17 @@ static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
 static BOOL DrawINGFlag;
 static BOOL DrawSHUTDOWN;
 static BOOL DrawWaitFlag;
-static SDL_Thread *DrawThread;
 static WORD nDrawCount;
+
+#ifdef USE_AGAR
+AG_Cond DrawCond;
+AG_Mutex DrawMutex;
+#else
+static SDL_Thread *DrawThread;
 SDL_cond *DrawCond;
 SDL_mutex *DrawMutex;
+#endif
+
 int newDrawWidth;
 int newDrawHeight;
 BOOL newResize;
@@ -434,6 +441,7 @@ int DrawThreadMain(void *p)
 		InitGL(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		while(1) {
+#ifndef USE_AGAR
 			if(DrawMutex == NULL) {
 				SDL_Delay(1);
 				continue;
@@ -442,11 +450,13 @@ int DrawThreadMain(void *p)
 				SDL_Delay(1);
 				continue;
 			}
-#if 1
+#endif
+#ifdef USE_AGAR
+//			AG_MutexLock(&DrawMutex);
+			AG_CondWait(&DrawCond, &DrawMutex);
+#else
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);
-#else
-			SDL_Delay(33 - 1);
 #endif
 			if(DrawSHUTDOWN) {
 				detachsub();
@@ -459,7 +469,7 @@ int DrawThreadMain(void *p)
 #ifdef USE_AGAR
 			if(DrawArea == NULL) continue;
 #endif
-
+#ifndef USE_AGAR
 			if(nDrawCount > 0) {
 				nDrawCount --;
 #ifdef USE_AGAR
@@ -469,6 +479,7 @@ int DrawThreadMain(void *p)
 			} else {
 				nDrawCount = DrawCountSet(nDrawFPS);
 			}
+#endif
 			DrawWaitFlag = TRUE;
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
@@ -685,9 +696,11 @@ void	InitDraw(void)
 		nWindowDy2 = 0;
 #endif				/*  */
 		bDirectDraw = TRUE;
+#ifndef USE_AGAR
 		DrawCond = NULL;
 		DrawMutex = NULL;
 		DrawThread = NULL;
+#endif
 		DrawINGFlag = FALSE;
 		DrawSHUTDOWN = FALSE;
 		DrawWaitFlag = FALSE;
@@ -697,12 +710,18 @@ void	InitDraw(void)
 		 * 直接書き込み→間接書き込み
 		 */
 		realDrawArea = SDL_GetVideoSurface();
+#ifdef USE_AGAR
+		AG_MutexInit(&DrawMutex);
+		AG_CondInit(&DrawCond);
+
+#else
 		if(!DrawMutex) {
 			DrawMutex = SDL_CreateMutex();
 		}
 		if(!DrawCond) {
 			DrawCond = SDL_CreateCond();
 		}
+#endif
 #ifndef USE_AGAR
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
@@ -724,28 +743,35 @@ void	CleanDraw(void)
 		int reti;
 
 		DrawSHUTDOWN = TRUE;
+#ifdef USE_AGAR
+		AG_CondSignal(&DrawCond);
+		AG_MutexDestroy(&DrawMutex);
+		AG_CondDestroy(&DrawCond);
+
+#else
 		if(DrawCond != NULL) {
 			SDL_CondSignal(DrawCond);
 		}
-#ifndef USE_AGAR
 		if(DrawThread != NULL) {
 			//			SDL_KillThread(DrawThread);
 			SDL_WaitThread(DrawThread, &reti);
 			DrawThread = NULL;
 		}
-#endif
 		if(DrawCond != NULL) {
 			SDL_DestroyCond(DrawCond);
 			DrawCond = NULL;
 		}
+#endif
 		if(DrawInitSem != NULL) {
 			SDL_DestroySemaphore(DrawInitSem);
 		}
 
+#ifndef USE_AGAR
 		if(DrawMutex != NULL) {
 			SDL_DestroyMutex(DrawMutex);
 			DrawMutex = NULL;
 		}
+#endif
 		detachsub();
 }
 
@@ -946,13 +972,16 @@ BOOL SelectDraw(void)
 	 }
 #endif
 	 bOldFullScan = bFullScan;
+#ifdef USE_AGAR
+	 AG_MutexInit(&DrawMutex);
+	 AG_CondInit(&DrawCond);
+#else
 	 if(!DrawMutex) {
 		 DrawMutex = SDL_CreateMutex();
 	 }
 	 if(!DrawCond) {
 		 DrawCond = SDL_CreateCond();
 	 }
-#ifndef USE_AGAR
 	 if(!DrawThread) {
 		 DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
 		 SDL_mutexV(DrawMutex);
@@ -1242,7 +1271,11 @@ void OnDraw(void)
 	/*
 	 * 描画スレッドのKICKを1/60secごとにする。
 	 */
+#ifdef USE_AGAR
+	AG_CondSignal(&DrawCond);
+#else
 	if(DrawCond) SDL_CondSignal(DrawCond);
+#endif
 #endif
 }
 

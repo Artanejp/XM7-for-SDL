@@ -142,7 +142,13 @@ void MainLoop(int argc, char *argv[])
 
 //	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitCore("xm7", AG_VERBOSE);
-    while ((c = AG_Getopt(argc, argv, "?d:w:h:ft:T:c:", &optArg, NULL))
+
+	AG_ConfigLoad();
+    AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s:.", getenv("HOME"), getenv("HOME"), FONTPATH);
+    AG_SetString(agConfig, "font.face", UI_FONT);
+    AG_SetInt(agConfig, "font.size", UI_PT);
+
+    while ((c = AG_Getopt(argc, argv, "?d:w:h:ft:T:c:T:F:S:l:s:i:", &optArg, NULL))
           != -1) {
               switch (c) {
               case 'd':
@@ -156,6 +162,27 @@ void MainLoop(int argc, char *argv[])
                       /* Set an alternate font directory */
                       AG_SetString(agConfig, "font-path", optArg);
                       break;
+              case 'F':
+                      /* Set an alternate font face */
+                      AG_SetString(agConfig, "font.face", optArg);
+                      break;
+              case 'S':
+                  /* Set an alternate font face */
+                  AG_SetString(agConfig, "font.size", optArg);
+                  break;
+              case 'l':
+                  /* Set an alternate font face */
+                  AG_SetString(agConfig, "load-path", optArg);
+                  break;
+              case 's':
+                  /* Set an alternate font face */
+                  AG_SetString(agConfig, "save-path", optArg);
+                  break;
+              case 'i':
+                  /* Set an alternate font face */
+                  AG_SetString(agConfig, "save-path", optArg);
+                  AG_SetString(agConfig, "load-path", optArg);
+                  break;
               case 't':
                   /* Change the default font */
                   AG_TextParseFontSpec(optArg);
@@ -164,6 +191,7 @@ void MainLoop(int argc, char *argv[])
           default:
                   printf("%s [-vgsDdfR] [-d driver] [-r fps] [-t fontspec] "
                          "[-w width] [-h height] "
+                		  "[-F font.face] [-S font.size] "
                          "[-T font-path]\n",
                          agProgName);
                   exit(0);
@@ -174,9 +202,6 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
-    AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s", getenv("HOME"), getenv("HOME"), FONTPATH);
-    AG_SetString(agConfig, "font.face", UI_FONT);
-    AG_SetInt(agConfig, "font.size", UI_PT);
 
     if(drivers == NULL)  {
     	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
@@ -193,7 +218,6 @@ void MainLoop(int argc, char *argv[])
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	DrawThreadMain(NULL);
-	AG_Destroy();
 }
 
 
@@ -252,8 +276,11 @@ void OnDestroy(AG_Event *event)
         CleanKbd();
         CleanSnd();
         DestroyStatus();
+
         CleanDraw();
         SaveCfg();
+    	AG_ConfigSave();
+
         /*
          * 仮想マシン クリーンアップ
          */
@@ -274,7 +301,6 @@ void InitInstance(void)
 
     hb = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
     AG_WidgetSetSize(MainWindow, 640,480);
-//    AG_WidgetSetSize(hb, 640, 32);
 
     Create_AGMainBar(AGWIDGET(hb));
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
@@ -292,7 +318,6 @@ void InitInstance(void)
 	AG_WidgetSetPosition(DrawArea, 0, 32);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
-//	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 
 //	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
 	CreateStatus();

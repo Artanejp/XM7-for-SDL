@@ -82,6 +82,7 @@
 								<option id="gnu.cpp.link.option.flags.1168899226" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread" valueType="string"/>
 								<option id="gnu.cpp.link.option.libs.866274557" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="jpeg"/>
+									<listOptionValue builtIn="false" value="rt"/>
 									<listOptionValue builtIn="false" value="X11"/>
 									<listOptionValue builtIn="false" value="dl"/>
 									<listOptionValue builtIn="false" value="fontconfig"/>
