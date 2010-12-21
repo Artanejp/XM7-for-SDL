@@ -289,14 +289,14 @@ BOOL SelectDraw2(void)
 			 * すべてクリア
 			 */
 #ifdef USE_AGAR
-			AG_ObjectLock(DrawArea);
+//			AG_ObjectLock(DrawArea);
 			nullcolor.r = 0;
 			nullcolor.g = 0;
 			nullcolor.b = 0;
 			nullcolor.a = 255;
 
-			AG_FillRect(drv->sRef, &rect, nullcolor);
-			AG_ObjectUnlock(DrawArea);
+//			AG_FillRect(drv->sRef, &rect, nullcolor);
+//			AG_ObjectUnlock(DrawArea);
 #else
 			SDL_LockSurface(p);
 			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
@@ -453,7 +453,8 @@ int DrawThreadMain(void *p)
 #endif
 #ifdef USE_AGAR
 //			AG_MutexLock(&DrawMutex);
-			AG_CondWait(&DrawCond, &DrawMutex);
+//			AG_CondWait(&DrawCond, &DrawMutex);
+			AG_Delay(3);
 #else
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);

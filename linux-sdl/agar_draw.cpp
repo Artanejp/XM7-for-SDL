@@ -113,6 +113,7 @@ void AGEventDrawGL(AG_Event *event)
 	}
 #endif				/*  */
 	if(scalerGL == NULL) return;
+	SelectDraw2();
 	pixvram = scalerGL->GetVramSurface();
 	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, nDrawWidth, nDrawHeight);
 	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, OSD_HEIGHT);
@@ -175,7 +176,7 @@ void AGDrawTaskMain(void)
 			ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 			newResize = FALSE;
 		}
-		SelectDraw2();
+//		SelectDraw2();
 		/* Render the Agar windows */
 }
 
