@@ -28,10 +28,10 @@ extern          "C" {
 #define COFMGEN "FM Sound Generator. PSG Implementation\nTechnology from M88, 1998-2003 by cisc"
 #define COGIMO	"Copyright(C) 2004 GIMONS"
 #define HTGIMO	"http://www.geocities.jp/kugimoto0715/"
-#define COART   "Copyright(C) 2010 K.Ohta porting to SDL."
+#define COART   "Copyright(C) 2010 K.Ohta porting to SDL & AGAR."
 #define HTART   "http://sky.geocities.jp/artanejp/"
 #ifdef LOCALVER
-#define VERSTR "FM-7 EMULATOR XM7 For SDL\n"VERSION" "LEVEL"（"LOCALVER"/"DATE"）\n"
+#define VERSTR "For SDL/AGAR\n"VERSION" "LEVEL"\n（"LOCALVER"/"DATE"）\n"
 #else
 #define VERSTR "FM-7 EMULATOR XM7\n"VERSION" "LEVEL"（"DATE"）\n"
 #endif

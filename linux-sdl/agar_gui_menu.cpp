@@ -39,6 +39,7 @@ extern void Create_Drive0Menu(AG_MenuItem *self);
 extern void Create_Drive1Menu(AG_MenuItem *self);
 extern void Create_TapeMenu(AG_MenuItem *self);
 extern void Create_ToolsMenu(AG_MenuItem *parent);
+extern void Create_AboutMenu(AG_MenuItem *self);
 
 extern "C" {
 extern void InitInstance(void);
@@ -107,6 +108,7 @@ void Create_AGMainBar(AG_Widget *Parent)
  	Create_ToolsMenu(item);
  	item = AG_MenuNode(MenuBar->root, "Help", NULL);
  	item = AG_MenuNode(MenuBar->root, "About", NULL);
+ 	Create_AboutMenu(item);
 	AG_UnlockVFS(AGOBJECT(MenuBar));
 }
 

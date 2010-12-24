@@ -58,7 +58,7 @@ static char DiskTitle[128];
  */
 static void OnNewDiskCreate(AG_Event *event)
 {
-    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+    AG_Button *btn = (AG_Button *)AG_SELF();
 	char *title = DiskTitle;
 	char *filename = AG_STRING(1);
 	int err;
@@ -80,8 +80,7 @@ static void OnNewDiskCreate(AG_Event *event)
 		strcpy(InitialDir[0], filename);
 	}
     KeyBoardSnoop(FALSE);
-	AG_WindowHide(dlg->wid.window);
-	AG_ObjectDetach(dlg->wid.window);
+    //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 
 
@@ -131,7 +130,7 @@ static void OnNewDisk(AG_Event *event)
 
 static void OnNewTapeCreate(AG_Event *event)
 {
-    AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+    AG_Button *btn = (AG_Button *)AG_SELF();
 	char *filename = AG_STRING(1);
 	int err;
 	char *p;
@@ -150,8 +149,7 @@ static void OnNewTapeCreate(AG_Event *event)
 	}
 
     KeyBoardSnoop(FALSE);
-	AG_WindowHide(dlg->wid.window);
-	AG_ObjectDetach(dlg->wid.window);
+    //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 
 static void OnNewTape(AG_Event *event)
@@ -187,7 +185,7 @@ static void OnNewTape(AG_Event *event)
 static void ScreenCaptureSub(AG_Event *event)
 {
 	char *sFilename = AG_STRING(1);
-	AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+	AG_Button *btn = (AG_Button *)AG_SELF();
 	char *p;
 	/*
 	 * キャプチャ
@@ -205,9 +203,7 @@ static void ScreenCaptureSub(AG_Event *event)
 	strcpy(InitialDir[3], sFilename);
     }
     KeyBoardSnoop(FALSE);
-	AG_WindowHide(dlg->wid.window);
-	AG_ObjectDetach(dlg->wid.window);
-
+    //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 /*
  *  画面キャプチャ(C)
@@ -236,7 +232,7 @@ static void OnGrpCapture(AG_Event *event)
 
 static void ScreenCaptureSub2(AG_Event *event)
 {
-	AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+	AG_Button *btn = (AG_Button *)AG_SELF();
 	char *sFilename = AG_STRING(1);
 	char *p;
 	/*
@@ -255,8 +251,7 @@ static void ScreenCaptureSub2(AG_Event *event)
 		strcpy(InitialDir[3], sFilename);
     }
     KeyBoardSnoop(FALSE);
-	AG_WindowHide(dlg->wid.window);
-	AG_ObjectDetach(dlg->wid.window);
+    //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 /*
  *  画面キャプチャ2
@@ -283,7 +278,7 @@ static void OnGrpCapture2(AG_Event *event)
 
 static void OnWavCaptureSub(AG_Event *event)
 {
-	AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
+	AG_Button *btn = (AG_Button *)AG_SELF();
 	char *sFilename = AG_STRING(1);
 	char *p;
 
@@ -311,9 +306,7 @@ static void OnWavCaptureSub(AG_Event *event)
 	strcpy(InitialDir[4], sFilename);
     }
     KeyBoardSnoop(FALSE);
-	AG_WindowHide(dlg->wid.window);
-	AG_ObjectDetach(dlg->wid.window);
-
+    //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
     /*
      *  WAVキャプチャ(W)
@@ -345,7 +338,7 @@ static void OnWavCapture(AG_Event *event)
 	AG_FileDlgAddType(dlg, "WAV Sound file","*.wav,*.WAV", OnWavCaptureSub, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
     AG_WidgetFocus(dlg);
-	AG_WindowSetCaption(w, gettext("Capture to BMP 2"));
+	AG_WindowSetCaption(w, gettext("Capture Sound"));
 	AG_WindowShow(w);
 }
 

@@ -196,7 +196,8 @@ static void OnOpenDisk(AG_Event *event)
 	dlgWin = AG_WindowNew(0);
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+//    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	KeyBoardSnoop(TRUE);
