@@ -1079,8 +1079,7 @@ void        ProcessSnd(BOOL bZero)
 /*
  *  レベル取得
  */
-int
-GetLevelSnd(int ch)
+int GetLevelSnd(int ch)
 {
 	ASSERT((ch >= 0) && (ch < 18));
 
