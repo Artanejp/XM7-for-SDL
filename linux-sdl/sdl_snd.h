@@ -70,11 +70,6 @@ void        ProcessSnd(BOOL bZero);
 /*
  * バッファ充填定時処理 
  */            
-int         GetLevelSnd(int ch);
-                   
-/*
- * サウンドレベル取得 
- */            
 void        OpenCaptureSnd(char *fname);
                    
 /*

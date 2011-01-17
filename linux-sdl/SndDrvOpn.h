@@ -38,26 +38,23 @@ public:
 	void DeleteBuffer(int slot);
 	Uint8 *Setup(int tick);
 	Uint8 *Setup(int tick, int opno);
-	BYTE GetCh3Mode(void);
-	void SetCh3Mode(Uint8 dat);
+	BYTE GetCh3Mode(int opn);
+	void SetCh3Mode(int opn, Uint8 dat);
 	int GetBufSlots(void);
 
 	void SetRenderVolume(void);
-	void SetRenderVolume(int level);
-	void SetRenderVolume(int fm, int psg);
+	void SetRenderVolume(int ch, int level);
+	void SetRenderVolume(int ch, int fm, int psg);
 
 	void SetLRVolume(void);
 	int *GetLVolume(int num);
 	int *GetRVolume(int num);
 
-	BYTE GetReg(BYTE);
-	void SetReg(BYTE reg, BYTE dat);
-	void SetReg(BYTE *reg);
-	void SetOpNo(int num);
-
+	BYTE GetReg(int opn, BYTE);
+	void SetReg(int opn, BYTE reg, BYTE dat);
+	void SetReg(int opn, BYTE *reg);
 	int Render(int start, int uSamples,int slot,  BOOL clear);
 	int BZero(int start, int uSamples,int slot,  BOOL clear);
-	int GetLevelSnd(int ch);
 	void Play(int ch, int slot, int samples);
 private:
 	DWORD *GetBuf32(int slot);
@@ -65,11 +62,10 @@ private:
 	void InitOpn(void);
 	void DeleteOpn(void);
 	Uint32 *buf32[DEFAULT_SLOT];
-	int opn_number;
 	UINT counter;
 	int nScale; /* プリスケーラ */
 	UINT uChanSep;
-	BYTE uCh3Mode;
+	BYTE uCh3Mode[3];
 	FM::OPN *pOPN;
 	int bufSlot;
 };

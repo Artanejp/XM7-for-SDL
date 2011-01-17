@@ -47,9 +47,7 @@ enum {
 	CH_SND_BEEP = 0,
 	CH_SND_CMT = 2,
 	CH_SND_OPN = 4,
-	CH_SND_WHG = 6,
-	CH_SND_THG = 8,
-	CH_WAV_RELAY_ON = 10,
+	CH_WAV_RELAY_ON = 6,
 	CH_WAV_RELAY_OFF,
 	CH_WAV_FDDSEEK,
 	CH_WAV_RESERVE1,
@@ -60,8 +58,6 @@ enum {
 	GROUP_SND_BEEP = 0,
 	GROUP_SND_CMT ,
 	GROUP_SND_OPN ,
-	GROUP_SND_WHG ,
-	GROUP_SND_THG ,
 	GROUP_SND_SFX
 };
 
@@ -105,7 +101,6 @@ static UINT             uRate;          /* 合成レート */
 static UINT             uTick;          /* 半バッファサイズの長さ */
 static UINT             uStereo;        /* 出力モード */
 static UINT             uSample;        /* サンプルカウンタ */
-static UINT             uBeep;          /* BEEP波形カウンタ */
 static int              nFMVol;
 static int              nPSGVol;
 static int              nBeepVol;
@@ -114,25 +109,17 @@ static int              nWavVol;
 static UINT             uChanSep;
 
 static int              nScale[3];      /* OPNプリスケーラ */
-static BYTE             uCh3Mode[3];    /* OPN Ch.3モード */
 static WORD             *pWavCapture;   /* キャプチャバッファ(64KB) */
 static UINT             nWavCapture;    /* キャプチャバッファ実データ */
 static DWORD            dwWavCapture;   /* キャプチャファイルサイズ */
 static WORD             uChannels;      /* 出力チャンネル数 */
 static BOOL             bBeepFlag;      /* BEEP出力 */
-static BOOL             bPartMute[3][6];        /* パートミュートフラグ */
-static int              nBeepLevel;     /* BEEP音出力レベル */
-static int              nCMTLevel;      /* CMT音モニタ出力レベル */
-#ifdef FDDSND
-static int              nWaveLevel;     /* 各種効果音出力レベル */
-#endif
 
 static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
 static int bNowBank;
 static DWORD dwPlayC;
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
 //ここまで
-static Mix_Chunk *WavChunk[WAV_SLOT];
 static BOOL bMode;
 static DWORD uProcessCount;
 static SDL_sem *applySem;
@@ -159,8 +146,6 @@ static SndDrvBeep *DrvBeep;
 static SndDrvWav *DrvWav;
 static SndDrvOpn *DrvPSG;
 static SndDrvOpn *DrvOPN;
-static SndDrvOpn *DrvWHG;
-static SndDrvOpn *DrvTHG;
 static SndDrvCMT *DrvCMT;
 
 static SDL_Thread *snd_thread;
@@ -172,14 +157,9 @@ static void RenderPlay(int samples, int slot, BOOL play);
 static int RenderThreadBZero(int start,int size,int slot);
 static int RenderThreadSub(int start, int size, int slot);
 
-
-
-
 /*
  * 予めLoadしておいたWAVを演奏できるようにする
  */
-
-
 
 
 /*
@@ -216,8 +196,6 @@ InitSnd(void)
 	DrvBeep = NULL;
 	DrvOPN = NULL;
 	DrvPSG = NULL;
-	DrvWHG = NULL;
-	DrvTHG = NULL;
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = NULL;
@@ -311,14 +289,6 @@ CleanSnd(void)
 		delete DrvOPN;
 		DrvOPN = NULL;
 	}
-	if(DrvWHG)		{
-		delete DrvWHG;
-		DrvWHG = NULL;
-	}
-	if(DrvTHG)		{
-		delete DrvTHG;
-		DrvTHG = NULL;
-	}
 	if(DrvCMT) 		{
 		delete DrvCMT;
 		DrvCMT = NULL;
@@ -370,9 +340,6 @@ BOOL SelectSnd(void)
 	dwPlayC = 0;
 	bNowBank = 0;
 
-#ifdef FDDSND
-#endif				/* */
-
 /*
  * rate==0なら、何もしない
  */
@@ -415,8 +382,6 @@ BOOL SelectSnd(void)
 	Mix_GroupChannels(CH_SND_BEEP, CH_SND_BEEP + 1, GROUP_SND_BEEP);
 	Mix_GroupChannels(CH_SND_CMT, CH_SND_CMT + 1, GROUP_SND_CMT);
 	Mix_GroupChannels(CH_SND_OPN, CH_SND_OPN + 1, GROUP_SND_OPN);
-	Mix_GroupChannels(CH_SND_WHG, CH_SND_WHG + 1, GROUP_SND_WHG);
-	Mix_GroupChannels(CH_SND_THG, CH_SND_THG + 1, GROUP_SND_THG);
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
 	Mix_Volume(-1,iTotalVolume);
 
@@ -432,29 +397,9 @@ BOOL SelectSnd(void)
 	 */
 	DrvOPN= new SndDrvOpn ;
 	if(DrvOPN) {
-			DrvOPN->SetOpNo(OPN_STD);
 			DrvOPN->Setup(uTick);
 			DrvOPN->Enable(TRUE);
 	}
-	/*
-	 * OPNデバイス(WHG)を作成
-	 */
-	DrvWHG= new SndDrvOpn;
-	if(DrvWHG) {
-			DrvWHG->SetOpNo(OPN_WHG);
-			DrvWHG->Setup(uTick);
-			DrvWHG->Enable(TRUE);
-	}
-	/*
-	 * OPNデバイス(THG)を作成
-	 */
-	DrvTHG= new SndDrvOpn;
-	if(DrvTHG) {
-			DrvTHG->SetOpNo(OPN_THG);
-			DrvTHG->Setup(uTick);
-			DrvTHG->Enable(TRUE);
-	}
-
 	/*
 	 * CMT
 	 */
@@ -474,13 +419,9 @@ BOOL SelectSnd(void)
 	whg_notify(0x27, 0);
 	thg_notify(0x27, 0);
 	if(DrvOPN) {
-		DrvOPN->SetReg(opn_reg[OPN_STD]);
-	}
-	if(DrvWHG) {
-		DrvWHG->SetReg(opn_reg[OPN_WHG]);
-	}
-	if(DrvTHG) {
-		DrvTHG->SetReg(opn_reg[OPN_THG]);
+		DrvOPN->SetReg(OPN_STD, opn_reg[OPN_STD]);
+		DrvOPN->SetReg(OPN_WHG, opn_reg[OPN_WHG]);
+		DrvOPN->SetReg(OPN_THG, opn_reg[OPN_THG]);
 	}
 
 	/*
@@ -589,13 +530,9 @@ void SetSoundVolume(void)
 	SDL_SemWait(applySem);
 	/* FM音源/PSGボリューム設定 */
 	if(DrvOPN) {
-			DrvOPN->SetRenderVolume(nFMVolume, nPSGVolume);
-	}
-	if(DrvWHG) {
-			DrvWHG->SetRenderVolume(nFMVolume, nPSGVolume);
-	}
-	if(DrvTHG) {
-			DrvTHG->SetRenderVolume(nFMVolume, nPSGVolume);
+			DrvOPN->SetRenderVolume(OPN_STD, nFMVolume, nPSGVolume);
+			DrvOPN->SetRenderVolume(OPN_WHG, nFMVolume, nPSGVolume);
+			DrvOPN->SetRenderVolume(OPN_THG, nFMVolume, nPSGVolume);
 	}
 
 	/* BEEP音/CMT音/各種効果音ボリューム設定 */
@@ -611,8 +548,6 @@ void SetSoundVolume(void)
 			}
 	}
 	if(DrvOPN) DrvOPN->SetLRVolume();
-	if(DrvTHG) DrvTHG->SetLRVolume();
-	if(DrvWHG) DrvWHG->SetLRVolume();
 	SDL_SemPost(applySem);
 
 
@@ -639,7 +574,7 @@ void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
 	nWavVol = nWaveVolume;
 
 	/* 即時Apply出来るようにAssertではなくReturnする */
-	if((DrvOPN == NULL) || (DrvWHG == NULL) || (DrvTHG == NULL)) {
+	if(DrvOPN == NULL) {
 		return;
 	}
 	SetSoundVolume();
@@ -752,13 +687,13 @@ void opn_notify(BYTE reg, BYTE dat)
 		nScale[OPN_STD] = opn_scale[OPN_STD];
 		switch (opn_scale[OPN_STD]) {
 		case 2:
-			DrvOPN->SetReg(0x2f, 0);
+			DrvOPN->SetReg(OPN_STD, 0x2f, 0);
 			break;
 		case 3:
-            DrvOPN->SetReg(0x2e, 0);
+            DrvOPN->SetReg(OPN_STD, 0x2e, 0);
 			break;
 		case 6:
-            DrvOPN->SetReg(0x2d, 0);
+            DrvOPN->SetReg(OPN_STD, 0x2d, 0);
 			break;
 		}
 	}
@@ -767,10 +702,10 @@ void opn_notify(BYTE reg, BYTE dat)
 	 * Ch3動作モードチェック
 	 */
 	if (reg == 0x27) {
-		if (DrvOPN->GetCh3Mode() == dat) {
+		if (DrvOPN->GetCh3Mode(OPN_STD) == dat) {
 			return;
 		}
-		DrvOPN->SetCh3Mode(dat);
+		DrvOPN->SetCh3Mode(OPN_STD, dat);
 	}
 
 	/*
@@ -780,7 +715,7 @@ void opn_notify(BYTE reg, BYTE dat)
 		/*
 		 * スレッド間の逆方向チェックやるか？
 		 */
-		r = DrvOPN->GetReg(0x27);
+		r = DrvOPN->GetReg(OPN_STD, 0x27);
 		if ((r & 0xc0) != 0x80) {
 			return;
 		}
@@ -794,9 +729,7 @@ void opn_notify(BYTE reg, BYTE dat)
 	/*
 	 * 出力
 	 */
-	if(DrvOPN) {
-	    DrvOPN->SetReg((uint8) reg, (uint8) dat);
-	}
+	    DrvOPN->SetReg(OPN_STD, (uint8) reg, (uint8) dat);
 }
 
 
@@ -808,7 +741,7 @@ thg_notify(BYTE reg, BYTE dat)
 	/*
 	 * THGがなければ、何もしない
 	 */
-	if (!DrvTHG) {
+	if (!DrvOPN) {
 		return;
 	}
 
@@ -819,13 +752,13 @@ thg_notify(BYTE reg, BYTE dat)
 		nScale[OPN_THG] = opn_scale[OPN_THG];
 		switch (opn_scale[OPN_THG]) {
 		case 2:
-			DrvTHG->SetReg(0x2f, 0);
+			DrvOPN->SetReg(OPN_THG, 0x2f, 0);
 			break;
 		case 3:
-            DrvTHG->SetReg(0x2e, 0);
+            DrvOPN->SetReg(OPN_THG, 0x2e, 0);
 			break;
 		case 6:
-            DrvTHG->SetReg(0x2d, 0);
+            DrvOPN->SetReg(OPN_THG, 0x2d, 0);
 			break;
 		}
 	}
@@ -834,10 +767,10 @@ thg_notify(BYTE reg, BYTE dat)
 	 * Ch3動作モードチェック
 	 */
 	if (reg == 0x27) {
-		if (DrvTHG->GetCh3Mode() == dat) {
+		if (DrvOPN->GetCh3Mode(OPN_THG) == dat) {
 			return;
 		}
-		DrvTHG->SetCh3Mode(dat);
+		DrvOPN->SetCh3Mode(OPN_THG, dat);
 	}
 
 	/*
@@ -847,7 +780,7 @@ thg_notify(BYTE reg, BYTE dat)
 		/*
 		 * スレッド間の逆方向チェックやるか？
 		 */
-		r = DrvTHG->GetReg(0x27);
+		r = DrvOPN->GetReg(OPN_THG, 0x27);
 
 		 if ((r & 0xc0) != 0x80) {
 			 return;
@@ -862,9 +795,7 @@ thg_notify(BYTE reg, BYTE dat)
 	/*
 	 * 出力
 	 */
-	if(DrvTHG) {
-	    DrvTHG->SetReg((uint8) reg, (uint8) dat);
-	}
+	    DrvOPN->SetReg(OPN_THG, (uint8) reg, (uint8) dat);
 }
 
 void
@@ -874,7 +805,7 @@ whg_notify(BYTE reg, BYTE dat)
 	/*
 	 * THGがなければ、何もしない
 	 */
-	if (!DrvWHG) {
+	if (!DrvOPN) {
 		return;
 	}
 
@@ -885,13 +816,13 @@ whg_notify(BYTE reg, BYTE dat)
 		nScale[OPN_WHG] = opn_scale[OPN_WHG];
 		switch (opn_scale[OPN_THG]) {
 		case 2:
-			DrvWHG->SetReg(0x2f, 0);
+			DrvOPN->SetReg(OPN_WHG, 0x2f, 0);
 			break;
 		case 3:
-			DrvWHG->SetReg(0x2e, 0);
+			DrvOPN->SetReg(OPN_WHG, 0x2e, 0);
 			break;
 		case 6:
-			DrvWHG->SetReg(0x2d, 0);
+			DrvOPN->SetReg(OPN_WHG, 0x2d, 0);
 			break;
 		}
 	}
@@ -900,10 +831,10 @@ whg_notify(BYTE reg, BYTE dat)
 	 * Ch3動作モードチェック
 	 */
 	if (reg == 0x27) {
-		if (DrvWHG->GetCh3Mode() == dat) {
+		if (DrvOPN->GetCh3Mode(OPN_WHG) == dat) {
 			return;
 		}
-		DrvWHG->SetCh3Mode(dat);
+		DrvOPN->SetCh3Mode(OPN_WHG, dat);
 	}
 	/*
 	 * 0xffレジスタはチェック
@@ -912,7 +843,7 @@ whg_notify(BYTE reg, BYTE dat)
 		/*
 		 * スレッド間の逆方向チェックやるか？
 		 */
-		r = DrvWHG->GetReg(0x27);
+		r = DrvOPN->GetReg(OPN_WHG, 0x27);
 
 		 if ((r & 0xc0) != 0x80) {
 			 return;
@@ -925,17 +856,12 @@ whg_notify(BYTE reg, BYTE dat)
 	/*
 	 * 出力
 	 */
-	if(DrvWHG) {
-		DrvWHG->SetReg(reg, dat);
-	}
+		DrvOPN->SetReg(OPN_WHG, reg, dat);
 }
 
 
-void
-wav_notify(BYTE no)
+void wav_notify(BYTE no)
 {
-	int    i;
-	int    j;
    int ch;
 
    if(applySem == NULL) return;
@@ -952,8 +878,7 @@ wav_notify(BYTE no)
 	SDL_SemPost(applySem);
 }
 
-void
-beep_notify(void)
+void beep_notify(void)
 {
 
 	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
@@ -969,8 +894,7 @@ beep_notify(void)
 	if(DrvBeep)  DrvBeep->Enable(bBeepFlag);
 }
 
-void
-tape_notify(BOOL flag)
+void tape_notify(BOOL flag)
 {
 
 	if (bTapeFlag == flag) {
@@ -1072,76 +996,6 @@ void        ProcessSnd(BOOL bZero)
 
 }
 
-/*
- *  レベル取得
- */
-int
-GetLevelSnd(int ch)
-{
-	ASSERT((ch >= 0) && (ch < 18));
-
-	/*
-	 * OPN,WHGの区別
-	 */
-	if (ch < 6) {
-		if(DrvOPN) {
-			return DrvOPN->GetLevelSnd(ch);
-		} else {
-			return 0;
-		}
-	} else if ((ch >= 6) && (ch < 12)) {
-		if (!whg_enable || !whg_use) {
-			return 0;
-		}
-
-		if(DrvWHG) {
-			return DrvWHG->GetLevelSnd(ch-6);
-		} else {
-			return 0;
-		}
-		/*
-		 * WHGの場合、実際に使われていなければ0
-		 */
-	} else   if ((ch >= 12) && (ch < 18)) {
-		/*
-		 * THGの場合、実際に使われていなければ0
-		 */
-		if ((!thg_enable || !thg_use) && (fm7_ver != 1)) {
-			return 0;
-		}
-		if(DrvTHG) {
-			return DrvTHG->GetLevelSnd(ch-6);
-		} else {
-			return 0;
-		}
-	}
-}
-
-
-/*
- * サウンド合成
- */
-
-
-static void memcpy_add16(Uint8 *out,Uint8 *in,int  size)
-{
-	int16 *p = (int16 *)out;
-	int16 *q = (int16 *)in;
-	int i,j;
-	for(j = 0; j < (size - 8); j+=8){
-		*p++ += *q++;
-		*p++ += *q++;
-		*p++ += *q++;
-		*p++ += *q++;
-	}
-	for(i = j - 8; i < size; i++){
-		*p++ += *q++;
-	}
-
-}
-
-
-
 static int WavCaptureSub(Uint8 *out, int slot)
 {
 	int w,tmp;
@@ -1208,19 +1062,6 @@ RenderThreadSub(int start, int size, int slot)
 	if(DrvOPN != NULL) {
 		w =DrvOPN->Render(start, size, slot, TRUE);
 	}
-
-
-	if(whg_use) {
-		if(DrvWHG != NULL) {
-			w = DrvWHG->Render(start, size, slot, TRUE);
-		}
-	}
-	if(thg_use) {
-		if(DrvTHG != NULL) {
-			w = DrvTHG->Render(start, size, slot, TRUE);
-		}
-	}
-
 #endif
 	return size;
 }
@@ -1244,17 +1085,6 @@ RenderThreadBZero(int start,int size,int slot)
 
 	if(DrvOPN != NULL) {
 		w =DrvOPN->BZero(start, size, slot, TRUE);
-	}
-
-	if(whg_use) {
-		if(DrvWHG != NULL) {
-			w = DrvWHG->BZero(start, size, slot, TRUE);
-		}
-	}
-	if(thg_use) {
-		if(DrvTHG != NULL) {
-			w = DrvTHG->BZero(start, size, slot, TRUE);
-		}
 	}
 
 #endif
@@ -1286,16 +1116,6 @@ static void RenderPlay(int samples, int slot, BOOL play)
 			if(bPlayEnable) DrvOPN->Play(CH_SND_OPN + slot , slot, samples);
 		}
 
-		if(DrvWHG != NULL) {
-			if(whg_use) {
-				if(bPlayEnable) DrvWHG->Play(CH_SND_WHG + slot, slot, samples);
-			}
-		}
-		if(DrvTHG != NULL) {
-			if(thg_use) {
-				if(bPlayEnable) DrvTHG->Play(CH_SND_THG + slot , slot, samples);
-			}
-		}
 #endif
 		SDL_SemPost(applySem);
 	}

@@ -55,38 +55,45 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 
 void SndDrvOpn::InitOpn(void)
 {
+	int opn;
 	if(!pOPN) return;
-	pOPN->Reset();
-	pOPN->Init(OPN_CLOCK * 100, srate, bFMHQmode, NULL);
-    pOPN->SetReg(0x27, 0);
-    uCh3Mode = 0xff;
+	for(opn = 0; opn < 3 ; opn++) {
+		pOPN[opn].Reset();
+		pOPN[opn].Init(OPN_CLOCK * 100, srate, bFMHQmode, NULL);
+		pOPN[opn].SetReg(0x27, 0);
+		uCh3Mode[opn] = 0xff;
+	}
 }
 
-BYTE SndDrvOpn::GetCh3Mode(void)
+BYTE SndDrvOpn::GetCh3Mode(int opn)
 {
-	return uCh3Mode;
+	if((opn<0) || (opn>3)) return 0;
+	return uCh3Mode[opn];
 }
 
-void SndDrvOpn::SetCh3Mode(Uint8 dat)
+void SndDrvOpn::SetCh3Mode(int opn, Uint8 dat)
 {
-	uCh3Mode = dat;
+	if((opn<0) || (opn>3)) return;
+	uCh3Mode[opn] = dat;
 }
 
 
-void SndDrvOpn::SetReg(BYTE reg, BYTE dat)
+void SndDrvOpn::SetReg(int opn, BYTE reg, BYTE dat)
 {
-	pOPN->SetReg((uint) reg,(uint) dat);
+	if((opn<0) || (opn>3)) return;
+	pOPN[opn].SetReg((uint) reg,(uint) dat);
 }
 
-BYTE SndDrvOpn::GetReg(BYTE reg)
+BYTE SndDrvOpn::GetReg(int opn, BYTE reg)
 {
+	if((opn<0) || (opn>3)) return 0;
 
-	return 	opn_reg[opn_number][reg];
+	return 	opn_reg[opn][reg];
 
 }
 
 
-void SndDrvOpn::SetReg(BYTE *reg)
+void SndDrvOpn::SetReg(int opn, BYTE *reg)
 {
     int       i;
 
@@ -94,27 +101,27 @@ void SndDrvOpn::SetReg(BYTE *reg)
      * PSG
      */
     for (i = 0; i < 16; i++) {
-    	pOPN->SetReg((BYTE) i, reg[i]);
+    	pOPN[opn].SetReg((BYTE) i, reg[i]);
     }
 
     /*
      * FM音源キーオフ
      */
     for (i = 0; i < 3; i++) {
-    	pOPN->SetReg(0x28, (BYTE) i);
+    	pOPN[opn].SetReg(0x28, (BYTE) i);
     }
 
     /*
      * FM音源レジスタ
      */
     for (i = 0x30; i < 0xb4; i++) {
-    	pOPN->SetReg((BYTE) i, reg[i]);
+    	pOPN[opn].SetReg((BYTE) i, reg[i]);
     }
 
     /*
      * FM音源動作モード
      */
-    pOPN->SetReg(0x27, reg[0x27] & 0xc0);
+    pOPN[opn].SetReg(0x27, reg[0x27] & 0xc0);
 }
 
 
@@ -132,19 +139,21 @@ SndDrvOpn::SndDrvOpn(void) {
 	enable = TRUE;
 	counter = 0;
 	uChanSep = uChSeparation;
-	uCh3Mode = 0;
-	opn_number = 0;
+	for(i = 0; i<3; i++) {
+		uCh3Mode[i] = 0;
+	}
 	volume = MIX_MAX_VOLUME;
 	if(RenderSem == NULL) RenderSem = SDL_CreateSemaphore(1);
 	SDL_SemPost(RenderSem);
-	pOPN = new FM::OPN;
+	pOPN = new FM::OPN[3];
 	InitOpn();
 }
 
 void SndDrvOpn::DeleteOpn(void)
 {
-	delete pOPN;
+	delete [] pOPN;
 }
+
 SndDrvOpn::~SndDrvOpn() {
 	// TODO Auto-generated destructor stub
 	if(RenderSem) SDL_SemWait(RenderSem);
@@ -154,31 +163,31 @@ SndDrvOpn::~SndDrvOpn() {
 }
 
 
-void SndDrvOpn::SetOpNo(int num)
-{
-	opn_number = num;
-}
 
 /*
  * ボリューム設定: XM7/Win32 v3.4L30より
  */
 void SndDrvOpn::SetRenderVolume(void)
 {
-	SetRenderVolume((int)nFMVolume, (int)nPSGVolume);
+	int ch;
+	for(ch = 0; ch < 3; ch++) {
+		SetRenderVolume(ch, (int)nFMVolume, (int)nPSGVolume);
+	}
 }
 
-void SndDrvOpn::SetRenderVolume(int level)
+void SndDrvOpn::SetRenderVolume(int ch, int level)
 {
 	/* FM音源/PSGボリューム設定 */
-	SetRenderVolume(level, level);
+	SetRenderVolume(ch, level, level);
 }
 
-void SndDrvOpn::SetRenderVolume(int fm, int psg)
+void SndDrvOpn::SetRenderVolume(int ch, int fm, int psg)
 {
+	if((ch<0) || (ch>3)) return;
 	/* FM音源/PSGボリューム設定 */
-		if (pOPN) {
-			pOPN->SetVolumeFM(fm * 2);
-			pOPN->psg.SetVolume(psg * 2);
+		if (!pOPN) {
+			pOPN[ch].SetVolumeFM(fm * 2);
+			pOPN[ch].psg.SetVolume(psg * 2);
 		}
 		SetLRVolume();
 }
@@ -203,93 +212,6 @@ int *SndDrvOpn::GetRVolume(int num)
 	return r_vol[num];
 }
 
-int SndDrvOpn::GetLevelSnd(int ch)
-{
-	        FM::OPN *p;
-	        int     i;
-	        double  s;
-	        double  t;
-	        int     *buf;
-
-	        ASSERT((ch >= 0) && (ch < 18));
-
-	/*
-	 * OPN,WHGの区別
-	 */
-	        p = pOPN;
-
-	/*
-	 * 存在チェック
-	 */
-	        if (!p) {
-	                return 0;
-	        }
-
-	/*
-	 * FM,PSGの区別
-	 */
-	        if (ch < 3) {
-	                /*
-	                 * FM:512サンプルの2乗和を計算
-	                 */
-	                buf = p->rbuf[ch];
-	                s = 0;
-	                for (i = 0; i < 512; i++) {
-	                        t = (double) *buf++;
-	                        t *= t;
-	                        s += t;
-	                }
-	                s /= 512;
-
-	                /*
-	                 * ゼロチェック
-	                 */
-	                if (s == 0) {
-	                        return 0;
-	                }
-
-	                /*
-	                 * log10を取る
-	                 */
-	                s = log10(s);
-
-	                /*
-	                 * FM音源補正
-	                 */
-	                s *= 40.0;
-	        } else {
-
-	                /*
-	                 * PSG:512サンプルの2乗和を計算
-	                 */
-	                buf = p->psg.rbuf[ch - 3];
-	                s = 0;
-	                for (i = 0; i < 512; i++) {
-	                        t = (double) *buf++;
-	                        t*= t;
-	                        s += t;
-	                }
-	                s /= 512;
-
-	                /*
-	                 * ゼロチェック
-	                 */
-	                if (s == 0) {
-	                        return 0;
-	                }
-
-	                /*
-	                 * log10を取る
-	                 */
-	                s = log10(s);
-
-	                /*
-	                 * PSG音源補正
-	                 */
-	                s *= 60.0;
-	        }
-	        return (int) s;
-}
 Uint8 *SndDrvOpn::NewBuffer(void)
 {
 	int i;
@@ -374,23 +296,14 @@ void SndDrvOpn::DeleteBuffer(int slot)
 
 
 
-Uint8 *SndDrvOpn::Setup(int tick)
-{
-	int opno = opn_number;
-	return Setup(tick, opno);
-}
 
-Uint8  *SndDrvOpn::Setup(int tick, int opno)
+Uint8  *SndDrvOpn::Setup(int tick)
 {
 	UINT uChannels;
 	int i;
 
 	uStereo = nStereoOut %4;
-    if ((uStereo > 0) || bForceStereo) {
-    	uChannels = 2;
-    } else {
-    	uChannels = 1;
-    }
+	uChannels = 2;
     channels = uChannels;
 	   if(tick > 0) {
 		   ms = (UINT)tick;
@@ -401,7 +314,6 @@ Uint8  *SndDrvOpn::Setup(int tick, int opno)
 		bufSize = (ms * srate * channels * sizeof(Sint16)) / 1000 ;
 		uChanSep = uChSeparation;
 
-	   SetOpNo(opno);
 	   InitOpn();
 	   for(i = 0; i < bufSlot; i++) {
 		   if(buf[i] == NULL) {
@@ -472,6 +384,7 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	int sSamples = uSamples;
 	int s;
 	int ss,ss2;
+	int opn;
 	Uint32 *q;
 
 	s = (ms * srate)/1000;
@@ -495,80 +408,51 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	SDL_SemWait(RenderSem);
 	if(clear)         memset(q, 0, sizeof(DWORD) * ss2 * channels);
 	if(enable) {
-                if (channels == 1) {
-/* モノラル */
-#ifdef ROMEO
-                        if ((pOPN) && !bUseRomeo) {
-#else
-                                if (pOPN) {
-#endif
-                                        pOPN->Mix((int32*)q, ss2);
-                                }
-                                if ((!thg_use) && (fm7_ver == 1) && (opn_number == OPN_THG)) {
-                                        pOPN->psg.Mix((int32*)q, ss2);
-                                }
-                        }
-                        else {
-                                /* ステレオ */
-                                if (!whg_use && !thg_use) {
-                                        /* WHG/THGを使用していない(強制モノラル) */
-#ifdef ROMEO
-                                        if (!bUseRomeo) {
-                                                pOPN[OPN_STD]->Mix2((int32*)q, ss2, 16, 16);
-                                        }
-#else
-                                        if(opn_number == OPN_STD) {
-                                        	pOPN->Mix2((int32*)q, ss2, 16, 16);
-                                        }
-#endif
-                                        if ((fm7_ver == 1) && (opn_number == OPN_THG)) {
-                                                pOPN->psg.Mix2((int32*)q, ss2, 16, 16);
-                                        }
-                                }
-                                else {
-                                        /* WHGまたはTHGを使用中 */
-#ifdef ROMEO
-                                        if (!bUseRomeo) {
-                                                pOPN[OPN_STD]->Mix2((int32*)q, ss2,
-                                                                    l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
-                                        }
-#else
-                                        if(opn_number == OPN_STD) {
-                                        	pOPN->Mix2((int32*)q, ss2,
-                                        			l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
-                                        }
-#endif
-                                        if ((whg_use)  && (opn_number == OPN_WHG)){
-#ifdef ROMEO
-                                                if (bUseRomeo) {
-                                                        pOPN[OPN_WHG]->psg.Mix2((int32*)q, samples,
-                                                                                l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
-                                                }
-                                                else {
-                                                        pOPN[OPN_WHG]->Mix2((int32*)q, samples,
-                                                                            l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
-                                                }
-#else
-                                                pOPN->Mix2((int32*)q, ss2,
-                                                                    l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
-#endif
-                                        }
-                                        if ((thg_use) && (opn_number == OPN_THG)) {
-                                                pOPN->Mix2((int32*)q, ss2,
-                                                                    l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
-                                        }
-                                        else if ((fm7_ver == 1) && (opn_number == OPN_THG)){
-                                                pOPN->psg.Mix2((int32*)q, ss2, 16, 16);
-                                        }
-                                }
-                        }
+		if (channels == 1) {
+			/* モノラル */
+			pOPN[OPN_STD].Mix((int32*)q, ss2);
+			if (whg_use){
+				pOPN[OPN_WHG].Mix((int32*)q, ss2);
+			}
+			if (thg_use) {
+				pOPN[OPN_THG].Mix((int32*)q, ss2);
+			}
+			if ((!thg_use) && (fm7_ver == 1) ) {
+				pOPN[OPN_STD].psg.Mix((int32*)q, ss2);
+			}
+		} else {
+			/* ステレオ */
+			if (!whg_use && !thg_use) {
+				/* WHG/THGを使用していない(強制モノラル) */
+				pOPN[OPN_STD].Mix2((int32*)q, ss2, 16, 16);
+				if (fm7_ver == 1) {
+					pOPN[OPN_STD].psg.Mix2((int32*)q, ss2, 16, 16);
+				}
+			}
+			else {
+				/* WHGまたはTHGを使用中 */
+				pOPN[OPN_STD].Mix2((int32*)q, ss2,
+						l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
+				if (whg_use){
+					pOPN[OPN_WHG].Mix2((int32*)q, ss2,
+							l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
+				}
+				if (thg_use) {
+					pOPN[OPN_THG].Mix2((int32*)q, ss2,
+							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
+				}
+				else if (fm7_ver == 1){
+					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
+				}
+			}
+		}
 
-	/*
-	 * ここにレンダリング関数ハンドリング
-	 */
-    }
-   	SDL_SemPost(RenderSem);
-   	return ss2;
+		/*
+		 * ここにレンダリング関数ハンドリング
+		 */
+	}
+	SDL_SemPost(RenderSem);
+	return ss2;
 }
 
 void SndDrvOpn::Play(int ch,  int slot, int samples)
