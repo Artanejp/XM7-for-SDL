@@ -9,8 +9,8 @@
 
 #include "cisc.h"
 
-//#define PSG_SAMPLETYPE		int32		// int32 or int16
-#define PSG_SAMPLETYPE		int16		// int32 or int16
+#define PSG_SAMPLETYPE		int32		// int32 or int16
+//#define PSG_SAMPLETYPE		int16		// int32 or int16
 
 #define PSG_IPSCALE			16384
 #define PSG_INTERPOLATE(y, x)	\

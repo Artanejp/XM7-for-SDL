@@ -426,7 +426,6 @@ void OPN::Mix(Sample* buffer, int nsamples)
 void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 {
 	ISample x, y, z, s;
-	ISample b;
 
 	psg.Mix2(buffer, nsamples, vol_l, vol_r);
 
@@ -472,17 +471,8 @@ void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 					mb[3] = IStoSample(s);
 				}
 				s = INTERPOLATE(mb, delta);
-
-				b = (ISample)*buffer;
-				b += (s * vol_l) >> 4;
-				if(b >32767) b = 32767;
-				if(b < -32767) b = -32767;
-				*buffer++ = (Sample)b;
-				b = (ISample)*buffer;
-				b += (s * vol_r) >> 4;
-				if(b >32767) b = 32767;
-				if(b < -32767) b = -32767;
-				*buffer++ = (Sample)b;
+				*buffer++ += ((s * vol_l) >> 4);
+				*buffer++ += ((s * vol_r) >> 4);
 
 
 			}
@@ -503,18 +493,8 @@ void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 				rbuf[2][rcnt] = z << (FM_ISHIFT + 3);
 
 				s = IStoSample(s);
-//				*buffer++ += ((s * vol_l) >> 4);
-//				*buffer++ += ((s * vol_r) >> 4);
-				b = (ISample)*buffer;
-				b += (s * vol_l) >> 4;
-				if(b >32767) b = 32767;
-				if(b < -32767) b = -32767;
-				*buffer++ = (Sample)b;
-				b = (ISample)*buffer;
-				b += (s * vol_r) >> 4;
-				if(b >32767) b = 32767;
-				if(b < -32767) b = -32767;
-				*buffer++ = (Sample)b;
+				*buffer++ += ((s * vol_l) >> 4);
+				*buffer++ += ((s * vol_r) >> 4);
 			}
 		}
 	}

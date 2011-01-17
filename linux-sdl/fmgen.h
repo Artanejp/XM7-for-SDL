@@ -12,8 +12,8 @@
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
 //
-//#define FM_SAMPLETYPE	int32				// int16 or int32
-#define FM_SAMPLETYPE	int16				// int16 or int32
+#define FM_SAMPLETYPE	int32				// int16 or int32
+//#define FM_SAMPLETYPE	int16				// int16 or int32
 
 // ---------------------------------------------------------------------------
 //	定数その１

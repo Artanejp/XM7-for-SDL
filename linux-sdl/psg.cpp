@@ -524,11 +524,8 @@ void PSG::Mix2(Sample* dest, int nsamples, int vol_l, int vol_r)
 					if (interpolation)
 						sample = PSG_INTERPOLATE(mb, delta);
 
-//					*dest++ += ((sample * vol_l) >> 4);
-//					*dest++ += ((sample * vol_r) >> 4);
-					*dest++ = ((sample * vol_l) >> 4);
-					*dest++ = ((sample * vol_r) >> 4);
-
+					*dest++ += ((sample * vol_l) >> 4);
+					*dest++ += ((sample * vol_r) >> 4);
 				}
 			}
 			else
@@ -583,10 +580,8 @@ void PSG::Mix2(Sample* dest, int nsamples, int vol_l, int vol_r)
 					if (interpolation)
 						sample = PSG_INTERPOLATE(mb, delta);
 
-//					*dest++ += ((sample * vol_l) >> 4);
-//					*dest++ += ((sample * vol_r) >> 4);
-					*dest++ = ((sample * vol_l) >> 4);
-					*dest++ = ((sample * vol_r) >> 4);
+					*dest++ += ((sample * vol_l) >> 4);
+					*dest++ += ((sample * vol_r) >> 4);
 
 				}
 			}
@@ -655,10 +650,8 @@ void PSG::Mix2(Sample* dest, int nsamples, int vol_l, int vol_r)
 				}
 				if (interpolation)
 					sample = PSG_INTERPOLATE(mb, delta);
-//				*dest++ += ((sample * vol_l) >> 4);
-//				*dest++ += ((sample * vol_r) >> 4);
-				*dest++ = ((sample * vol_l) >> 4);
-				*dest++ = ((sample * vol_r) >> 4);
+				*dest++ += ((sample * vol_l) >> 4);
+				*dest++ += ((sample * vol_r) >> 4);
 
 				rcnt = (rcnt + 1) & 0x1ff;
 				rbuf[0][rcnt] = *p1;
