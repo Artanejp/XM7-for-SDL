@@ -22,6 +22,8 @@ static int r_vol[3][4] = {
 		{	16,	16,	16,	 9	},
 };
 
+
+
 void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 {
 	int         i,j;
@@ -126,9 +128,9 @@ void SndDrvOpn::SetReg(BYTE *reg)
 SndDrvOpn::SndDrvOpn(void) {
 	// TODO Auto-generated constructor stub
 	int i;
-	bufSlot = DEFAULT_SLOT;
-	bufSize = (ms * srate * channels *sizeof(Sint16)) / 1000;
-	buf32 = NULL;
+	bufSlot = OPN_SLOT;
+	bufSize = (ms * srate * channels *sizeof(FM::Sample)) / 1000;
+//	buf32 = NULL;
 	for(i = 0; i<bufSlot; i++) {
 		buf[i] = NULL;
 	}
@@ -153,7 +155,6 @@ SndDrvOpn::~SndDrvOpn() {
 	if(RenderSem) SDL_SemWait(RenderSem);
 	enable = FALSE;
 	DeleteOpn();
-
 }
 
 
@@ -212,22 +213,19 @@ int SndDrvOpn::GetLevelSnd(int ch)
 	int     i;
 	double  s;
 	double  t;
-	int     *buf;
+	int32   *buf;
 
 	ASSERT((ch >= 0) && (ch < 18));
-
 	/*
 	 * OPN,WHGの区別
 	 */
 	p = pOPN;
-
 	/*
 	 * 存在チェック
 	 */
 	if (!p) {
 		return 0;
 	}
-
 	/*
 	 * FM,PSGの区別
 	 */
@@ -243,25 +241,21 @@ int SndDrvOpn::GetLevelSnd(int ch)
 			s += t;
 		}
 		s /= 512;
-
 		/*
 		 * ゼロチェック
 		 */
 		if (s == 0) {
 			return 0;
 		}
-
 		/*
 		 * log10を取る
 		 */
 		s = log10(s);
-
 		/*
 		 * FM音源補正
 		 */
 		s *= 40.0;
 	} else {
-
 		/*
 		 * PSG:512サンプルの2乗和を計算
 		 */
@@ -273,19 +267,16 @@ int SndDrvOpn::GetLevelSnd(int ch)
 			s += t;
 		}
 		s /= 512;
-
 		/*
 		 * ゼロチェック
 		 */
 		if (s == 0) {
 			return 0;
 		}
-
 		/*
 		 * log10を取る
 		 */
 		s = log10(s);
-
 		/*
 		 * PSG音源補正
 		 */
@@ -293,6 +284,7 @@ int SndDrvOpn::GetLevelSnd(int ch)
 	}
 	return (int) s;
 }
+
 Uint8 *SndDrvOpn::NewBuffer(void)
 {
 	int i;
@@ -326,16 +318,16 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 
 	buf[slot] = (Uint8 *)malloc(bufSize);
 	if(buf[slot] == NULL) return NULL; /* バッファ取得に失敗 */
-	if(buf32 == NULL) {
-		buf32 = (Uint32 *)malloc(bufSize * 2);
-		if(buf32 == NULL) {
-			free(buf[slot]);
-			return NULL;
-		}
-		memset(buf32, 0x00, bufSize * 2); /* 初期化 */
-	}
+//	if(buf32 == NULL) {
+//		buf32 = (Uint32 *)malloc(bufSize * 2);
+//		if(buf32 == NULL) {
+//			free(buf[slot]);
+//			return NULL;
+//		}
+//		memset(buf32, 0x00, bufSize * 2); /* 初期化 */
+//	}
 	memset(buf[slot], 0x00, bufSize); /* 初期化 */
-	chunk[slot].abuf = buf[slot];
+	chunk[slot].abuf = (Uint8 *)buf[slot];
 	chunk[slot].alen = bufSize;
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume; /* 一応最大 */
@@ -362,8 +354,8 @@ void SndDrvOpn::DeleteBuffer(int slot)
 	SDL_SemWait(RenderSem);
 	if(buf[slot] != NULL) free(buf[slot]);
 	buf[slot] = NULL;
-	if(buf32 != NULL) free(buf32);
-	buf32 = NULL;
+//	if(buf32 != NULL) free(buf32);
+//	buf32 = NULL;
 
 	chunk[slot].abuf = NULL;
 	chunk[slot].alen = 0;
@@ -435,8 +427,8 @@ int SndDrvOpn::BZero(int start, int uSamples, int slot, BOOL clear)
 	int sSamples = uSamples;
 	int s;
 	int ss,ss2;
-	DWORD *q;
-	Sint16 *p;
+//	DWORD *q;
+	FM::Sample *q;
 
 	s = (ms * srate)/1000;
 	if(slot > bufSlot) return 0;
@@ -445,10 +437,10 @@ int SndDrvOpn::BZero(int start, int uSamples, int slot, BOOL clear)
 		return 0;
 	}
 	SDL_SemWait(RenderSem);
-	q = buf32;
+//	q = buf32;
+//	q = &q[start * channels];
+	q = (FM::Sample *)buf[slot];
 	q = &q[start * channels];
-	p = buf[slot];
-	p = &p[start * channels];
 
 	ss = sSamples + start;
 	if(ss > s) {
@@ -457,18 +449,18 @@ int SndDrvOpn::BZero(int start, int uSamples, int slot, BOOL clear)
 		ss2 = sSamples;
 	}
 	if(ss2 <= 0) return 0;
-	memset(q, 0, sizeof(DWORD) * ss2 * channels);
-	memset(p, 0, sizeof(WORD) * ss2 * channels);
+	memset(q, 0, sizeof(FM::Sample) * ss2 * channels);
+//	memset(p, 0, sizeof(WORD) * ss2 * channels);
 
 	SDL_SemPost(RenderSem);
 	return ss2;
 
 }
 
-DWORD *SndDrvOpn::GetBuf32(int slot)
-{
-	return (DWORD *)buf32;
-}
+//DWORD *SndDrvOpn::GetBuf32(int slot)
+//{
+//	return (DWORD *)buf32;
+//}
 
 
 /*
@@ -479,22 +471,19 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	int sSamples = uSamples;
 	int s;
 	int ss,ss2;
-	Uint32 *q;
-	Sint16 *p;
+	FM::Sample *q;
 
 	s = (ms * srate)/1000;
 	if(slot > bufSlot) return 0;
 	if(start > s) return 0; /* 開始点にデータなし */
 	if(sSamples > s) sSamples = s;
 
-	q = buf32;
+	q = (FM::Sample *)buf[slot];
 	q = &q[start * channels];
-	p = buf[slot];
-	p = &p[start * channels];
 
 	// start = 0 : 強制クリア（ゴミ出せないので)
 	if(start <= 0) {
-		memset(buf32, 0, sizeof(DWORD) * sSamples * channels);
+		memset(buf[slot], 0, sizeof(FM::Sample) * sSamples * channels);
 		clear = FALSE;
 	}
 	ss = sSamples + start;
@@ -508,42 +497,42 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 		return 0;
 	}
 	SDL_SemWait(RenderSem);
-	if(clear)         memset(q, 0, sizeof(DWORD) * ss2 * channels);
+	if(clear) memset(q, 0, sizeof(FM::Sample) * ss2 * channels);
 	if(enable) {
 		if (channels == 1) {
 			/* モノラル */
 			if (pOPN) {
-				pOPN->Mix((int32*)q, ss2);
+				pOPN->Mix(q, ss2);
 			}
 			if ((!thg_use) && (fm7_ver == 1) && (opn_number == OPN_THG)) {
-				pOPN->psg.Mix((int32*)q, ss2);
+				pOPN->psg.Mix(q, ss2);
 			}
 		} else {
 			/* ステレオ */
 			if (!whg_use && !thg_use) {
 				/* WHG/THGを使用していない(強制モノラル) */
 				if(opn_number == OPN_STD) {
-					pOPN->Mix2((int32*)q, ss2, 16, 16);
+					pOPN->Mix2(q, ss2, 16, 16);
 				}
 				if ((fm7_ver == 1) && (opn_number == OPN_THG)) {
-					pOPN->psg.Mix2((int32*)q, ss2, 16, 16);
+					pOPN->psg.Mix2(q, ss2, 16, 16);
 				}
 			} else {
 				/* WHGまたはTHGを使用中 */
 				if(opn_number == OPN_STD) {
-					pOPN->Mix2((int32*)q, ss2,
+					pOPN->Mix2(q, ss2,
 							l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
 				}
 				if ((whg_use)  && (opn_number == OPN_WHG)){
-					pOPN->Mix2((int32*)q, ss2,
+					pOPN->Mix2(q, ss2,
 							l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
 				}
 				if ((thg_use) && (opn_number == OPN_THG)) {
-					pOPN->Mix2((int32*)q, ss2,
+					pOPN->Mix2(q, ss2,
 							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
 				}
 				else if ((fm7_ver == 1) && (opn_number == OPN_THG)){
-					pOPN->psg.Mix2((int32*)q, ss2, 16, 16);
+					pOPN->psg.Mix2(q, ss2, 16, 16);
 				}
 			}
 		}
@@ -552,7 +541,7 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 		 * ここにレンダリング関数ハンドリング
 		 */
 	}
-	CopySoundBufferGeneric((DWORD *)q, (WORD *)p, ss2);
+//	CopySoundBufferGeneric((DWORD *)q, (WORD *)p, ss2);
 	SDL_SemPost(RenderSem);
 	return ss2;
 }
