@@ -309,11 +309,12 @@ Uint8 *SndDrvOpn::NewBuffer(int slot)
 	}
 
 	uStereo = nStereoOut %4;
-	if ((uStereo > 0) || bForceStereo) {
-		uChannels = 2;
-	} else {
-		uChannels = 1;
-	}
+//	if ((uStereo > 0) || bForceStereo) {
+//		uChannels = 2;
+//	} else {
+//		uChannels = 1;
+//	}
+	uChannels = 2; // FMGEN仕様変更による
 	if(RenderSem == NULL) {
 		return NULL;
 	}

@@ -60,11 +60,9 @@ public:
 	int GetLevelSnd(int ch);
 	void Play(int ch, int slot, int samples);
 private:
-//	DWORD *GetBuf32(int slot);
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
-//	Uint32 *buf32[OPN_SLOT];
 	int opn_number;
 	UINT counter;
 	int nScale; /* プリスケーラ */

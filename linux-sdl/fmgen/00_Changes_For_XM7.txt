@@ -1,6 +1,0 @@
-* Changes for XM-7/SDL 
-* 20110117 K.Ohta <whatisthis.sowhat@gmail.com>
-1.Windows依存をなくした
-2.文字コードをUTF-8に
-3.include pathの変更
-4.16bitエミュレーション

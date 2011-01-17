@@ -363,11 +363,12 @@ BOOL SelectSnd(void)
 	uChanSep = uChSeparation;
 	uStereo = nStereoOut %4;
 
-	if ((uStereo > 0) || bForceStereo) {
-		uChannels = 2;
-	} else {
-		uChannels = 1;
-	}
+//	if ((uStereo > 0) || bForceStereo) {
+//		uChannels = 2;
+//	} else {
+//		uChannels = 1;
+//	}
+	uChannels = 2;
 	dwPlayC = 0;
 	bNowBank = 0;
 
