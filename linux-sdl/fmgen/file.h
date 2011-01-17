@@ -1,9 +1,9 @@
 //	$Id: file.h,v 1.6 1999/11/26 10:14:09 cisc Exp $
 
-#if !defined(win32_file_h)
-#define win32_file_h
+//#if !defined(win32_file_h)
+//#define win32_file_h
 
-#include "types.h"
+#include "fmgen/types.h"
 
 // ---------------------------------------------------------------------------
 
@@ -51,11 +51,12 @@ public:
 	void SetLogicalOrigin(int32 origin) { lorigin = origin; }
 
 private:
-	HANDLE hfile;
+//	HANDLE hfile;
+
 	uint flags;
 	uint32 lorigin;
 	Error error;
-	char path[MAX_PATH];
+	char path[MAXPATHLEN];
 	
 	FileIO(const FileIO&);
 	const FileIO& operator=(const FileIO&);

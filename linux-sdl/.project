@@ -3,6 +3,7 @@
 	<name>xm7-sdl</name>
 	<comment></comment>
 	<projects>
+		<project>libemugrph</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -23,7 +24,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildArguments</key>
-					<value>-j4  -j2</value>
+					<value>-j2</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildCommand</key>
@@ -63,7 +64,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
-					<value>false</value>
+					<value>true</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>

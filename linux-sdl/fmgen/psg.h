@@ -7,7 +7,7 @@
 #ifndef PSG_H
 #define PSG_H
 
-#define PSG_SAMPLETYPE		int32		// int32 or int16
+#define PSG_SAMPLETYPE		int16		// int32 or int16
 
 // ---------------------------------------------------------------------------
 //	class PSG

@@ -7,12 +7,13 @@
 #ifndef FM_GEN_H
 #define FM_GEN_H
 
-//#include "types.h"
+#include "fmgen/types.h"
+#include "fmgen/psg.h"
 
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
 //
-#define FM_SAMPLETYPE	int32				// int16 or int32
+#define FM_SAMPLETYPE	int16				// int16 or int32
 
 // ---------------------------------------------------------------------------
 //	定数その１
@@ -181,7 +182,7 @@ namespace FM
 
 	//	friends --------------------------------------------------------------
 		friend class Channel4;
-		friend void __stdcall FM_NextPhase(Operator* op);
+		friend void  FM_NextPhase(Operator* op);
 
 	public:
 		int		dbgopout_;

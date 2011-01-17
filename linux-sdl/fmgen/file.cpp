@@ -1,7 +1,7 @@
 //	$Id: file.cpp,v 1.6 1999/12/28 11:14:05 cisc Exp $
 
-#include "headers.h"
-#include "File.h"
+#include "fmgen/headers.h"
+#include "fmgen/file.h"
 
 // ---------------------------------------------------------------------------
 //	構築/消滅

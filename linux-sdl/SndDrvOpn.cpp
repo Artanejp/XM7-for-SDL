@@ -182,7 +182,7 @@ void SndDrvOpn::SetRenderVolume(int fm, int psg)
 	/* FM音源/PSGボリューム設定 */
 	if (pOPN) {
 		pOPN->SetVolumeFM(fm * 2);
-		pOPN->psg.SetVolume(psg * 2);
+		pOPN->SetVolumePSG(psg * 2);
 	}
 	SetLRVolume();
 }
@@ -209,6 +209,7 @@ int *SndDrvOpn::GetRVolume(int num)
 
 int SndDrvOpn::GetLevelSnd(int ch)
 {
+#if 0
 	FM::OPN *p;
 	int     i;
 	double  s;
@@ -283,6 +284,9 @@ int SndDrvOpn::GetLevelSnd(int ch)
 		s *= 60.0;
 	}
 	return (int) s;
+#else
+	return 0;
+#endif
 }
 
 Uint8 *SndDrvOpn::NewBuffer(void)
@@ -504,36 +508,33 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 			if (pOPN) {
 				pOPN->Mix(q, ss2);
 			}
-			if ((!thg_use) && (fm7_ver == 1) && (opn_number == OPN_THG)) {
-				pOPN->psg.Mix(q, ss2);
-			}
+//			if ((!thg_use) && (fm7_ver == 1) && (opn_number == OPN_THG)) {
+//				pOPN->Mix(q, ss2);
+//			}
 		} else {
 			/* ステレオ */
 			if (!whg_use && !thg_use) {
 				/* WHG/THGを使用していない(強制モノラル) */
 				if(opn_number == OPN_STD) {
-					pOPN->Mix2(q, ss2, 16, 16);
+					pOPN->Mix(q, ss2);
 				}
-				if ((fm7_ver == 1) && (opn_number == OPN_THG)) {
-					pOPN->psg.Mix2(q, ss2, 16, 16);
-				}
+//				if ((fm7_ver == 1) && (opn_number == OPN_THG)) {
+//					pOPN->Mix(q, ss2);
+//				}
 			} else {
 				/* WHGまたはTHGを使用中 */
 				if(opn_number == OPN_STD) {
-					pOPN->Mix2(q, ss2,
-							l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
+					pOPN->Mix(q, ss2);
 				}
 				if ((whg_use)  && (opn_number == OPN_WHG)){
-					pOPN->Mix2(q, ss2,
-							l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
+					pOPN->Mix(q, ss2);
 				}
 				if ((thg_use) && (opn_number == OPN_THG)) {
-					pOPN->Mix2(q, ss2,
-							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
+					pOPN->Mix(q, ss2);
 				}
-				else if ((fm7_ver == 1) && (opn_number == OPN_THG)){
-					pOPN->psg.Mix2(q, ss2, 16, 16);
-				}
+//				else if ((fm7_ver == 1) && (opn_number == OPN_THG)){
+//					pOPN->Mix(q, ss2);
+//				}
 			}
 		}
 

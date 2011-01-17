@@ -11,13 +11,13 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 #include "xm7.h"
-#include "cisc.h"
-#include "opna.h"
+#include "fmgen/misc.h"
+#include "fmgen/opna.h"
 
-#include "fmgen.h"
-#include "fmgeninl.h"
+#include "fmgen/fmgen.h"
+#include "fmgen/fmgeninl.h"
 #include "opn.h"
-#include "psg.h"
+#include "fmgen/psg.h"
 #include "sdl.h"
 #include "sdl_sch.h"
 #include "sdl_snd.h"
