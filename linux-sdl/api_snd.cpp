@@ -10,7 +10,7 @@
 #else				/* */
 #include <linux/soundcard.h>
 #endif				/* */
-//#include <gtk/gtk.h>
+#include <gtk/gtk.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -26,10 +26,10 @@
 #include "mainetc.h"
 #include "opn.h"
 #include "tapelp.h"
-#include "fmgen/types.h"
-#include "fmgen/misc.h"
-#include "fmgen/opna.h"
-#include "fmgen/psg.h"
+#include "cisc.h"
+#include "opna.h"
+#include "psg.h"
+#include "opn.h"
 #include "sdl.h"
 #include "sdl_sch.h"
 #include "sdl_snd.h"
@@ -363,12 +363,11 @@ BOOL SelectSnd(void)
 	uChanSep = uChSeparation;
 	uStereo = nStereoOut %4;
 
-//	if ((uStereo > 0) || bForceStereo) {
-//		uChannels = 2;
-//	} else {
-//		uChannels = 1;
-//	}
-	uChannels = 2;
+	if ((uStereo > 0) || bForceStereo) {
+		uChannels = 2;
+	} else {
+		uChannels = 1;
+	}
 	dwPlayC = 0;
 	bNowBank = 0;
 
@@ -1000,7 +999,6 @@ tape_notify(BOOL flag)
 void        ProcessSnd(BOOL bZero)
 {
 	BOOL    bWrite;
-	int 	wbank;
 	/*
 	 * 初期化されていなければ、何もしない
 	 */
@@ -1061,6 +1059,7 @@ void        ProcessSnd(BOOL bZero)
 			SDL_SemPost(applySem);
 		   return;
 	  }
+
 	  /*
 	   * ここから演奏開始
 	   */
@@ -1069,9 +1068,6 @@ void        ProcessSnd(BOOL bZero)
 	  /*
 	   * 書き込みバンク(仮想)
 	   */
-      wbank = bNowBank?0:1;
-      RenderThreadBZero(0, uTick * uChannels * sizeof(Sint16), wbank);
-
 	  bNowBank = (!bNowBank);
 	SDL_SemPost(applySem);
 
@@ -1080,7 +1076,8 @@ void        ProcessSnd(BOOL bZero)
 /*
  *  レベル取得
  */
-int GetLevelSnd(int ch)
+int
+GetLevelSnd(int ch)
 {
 	ASSERT((ch >= 0) && (ch < 18));
 
@@ -1229,7 +1226,8 @@ RenderThreadSub(int start, int size, int slot)
 	return size;
 }
 
-static int RenderThreadBZero(int start,int size,int slot)
+static int
+RenderThreadBZero(int start,int size,int slot)
 {
 	int w;
 	DWORD *bank = NULL;
@@ -1270,42 +1268,37 @@ static void RenderPlay(int samples, int slot, BOOL play)
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
 	DWORD *bank = NULL;
-	int playing = 0;
 
 	if(play) {
-		Mix_Volume(-1,iTotalVolume);
-				if(applySem == NULL) return;
-//				SDL_SemWait(applySem);
-		if(bPlayEnable) {
-//			do {
-//				playing = Mix_Playing(CH_SND_BEEP + slot);
-//				playing |= Mix_Playing(CH_SND_CMT + slot);
-//				playing |= Mix_Playing(CH_SND_OPN + slot);
-//				playing |= Mix_Playing(CH_SND_WHG + slot);
-//				playing |= Mix_Playing(CH_SND_THG + slot);
-//			} while(playing);
-			if(DrvBeep != NULL) {
-				DrvBeep->Play(CH_SND_BEEP + slot, slot, samples);
-			}
-			if(DrvCMT != NULL) {
-				DrvCMT->Play(CH_SND_CMT + slot, slot);
-			}
-			if(DrvOPN != NULL) {
-				DrvOPN->Play(CH_SND_OPN + slot , slot, samples);
-			}
+		if(applySem == NULL) return;
+		SDL_SemWait(applySem);
 
-			if(DrvWHG != NULL) {
-				if(whg_use) {
-					DrvWHG->Play(CH_SND_WHG + slot, slot, samples);
-				}
-			}
-			if(DrvTHG != NULL) {
-				if(thg_use) {
-					DrvTHG->Play(CH_SND_THG + slot , slot, samples);
-				}
+		if(DrvBeep != NULL) {
+			if(bPlayEnable) DrvBeep->Play(CH_SND_BEEP + slot, slot);
+		}
+
+		if(DrvCMT != NULL) {
+			if(bPlayEnable) DrvCMT->Play(CH_SND_CMT + slot, slot);
+		}
+
+#if 1
+
+		if(DrvOPN != NULL) {
+			if(bPlayEnable) DrvOPN->Play(CH_SND_OPN + slot , slot, samples);
+		}
+
+		if(DrvWHG != NULL) {
+			if(whg_use) {
+				if(bPlayEnable) DrvWHG->Play(CH_SND_WHG + slot, slot, samples);
 			}
 		}
-//				SDL_SemPost(applySem);
+		if(DrvTHG != NULL) {
+			if(thg_use) {
+				if(bPlayEnable) DrvTHG->Play(CH_SND_THG + slot , slot, samples);
+			}
+		}
+#endif
+		SDL_SemPost(applySem);
 	}
 }
 

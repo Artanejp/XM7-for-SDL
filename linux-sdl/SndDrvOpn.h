@@ -11,13 +11,13 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 #include "xm7.h"
-#include "fmgen/misc.h"
-#include "fmgen/opna.h"
+#include "cisc.h"
+#include "opna.h"
 
-#include "fmgen/fmgen.h"
-#include "fmgen/fmgeninl.h"
+#include "fmgen.h"
+#include "fmgeninl.h"
 #include "opn.h"
-#include "fmgen/psg.h"
+#include "psg.h"
 #include "sdl.h"
 #include "sdl_sch.h"
 #include "sdl_snd.h"
@@ -60,9 +60,11 @@ public:
 	int GetLevelSnd(int ch);
 	void Play(int ch, int slot, int samples);
 private:
+	DWORD *GetBuf32(int slot);
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
+	Uint32 *buf32[DEFAULT_SLOT];
 	int opn_number;
 	UINT counter;
 	int nScale; /* プリスケーラ */
