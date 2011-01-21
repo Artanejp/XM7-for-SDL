@@ -11,6 +11,9 @@
 #ifdef USE_AGAR
 //#include <agar/core.h>
 //#include <agar/core/types.h>
+#ifdef USE_OPENGL
+#include "agar_gldraw.h"
+#endif
 #endif
 
 #include <SDL.h>
@@ -18,7 +21,7 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
-
+#ifndef USE_OPENGL
 EmuGrphScale1x1 *scaler1x1;
 EmuGrphScale1x2 *scaler1x2;
 EmuGrphScale1x2i *scaler1x2i;
@@ -28,11 +31,11 @@ EmuGrphScale2x4 *scaler2x4;
 EmuGrphScale2x4i *scaler2x4i;
 EmuGrphScale4x4 *scaler4x4;
 EmuGrphScale4x4i *scaler4x4i;
+#endif
 
 #ifdef USE_AGAR
-EmuAgarGL *scalerGL;
+//EmuAgarGL *scalerGL;
 extern AG_Window *MainWindow;
-extern AG_GLView *DrawArea;
 extern void GetVram_AGGL_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
 
 #else
@@ -81,13 +84,6 @@ void PutWordGL(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 		putdot((GLubyte *)&disp[7], cbuf[0]);
 }
 
-#if  0
-static inline void putdot8(GLubyte *addr, Uint32 c)
-{
-	Uint32 *addr32 = (Uint32 *)addr;
-	*addr32 = c;
-}
-#else
 static inline void putdot8(GLubyte *addr, Uint32 c)
 {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -102,7 +98,6 @@ static inline void putdot8(GLubyte *addr, Uint32 c)
     addr[0] = (c >> 16) & 0xff; /* G */
 #endif
 }
-#endif
 
 void PutWordGL8(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {
@@ -125,9 +120,12 @@ void PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 
 void PutWord2x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {
+#ifdef USE_OPENGL
+#else
 	if(scaler2x4 != NULL) {
 		scaler2x4->PutWord2x(disp, pixsize, cbuf);
 	}
+#endif
 }
 
 void PutWord_4096(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
@@ -146,13 +144,26 @@ void PutWord2x2(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 
 void PutWord4x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {
+#ifdef USE_OPENGL
+#else
 	if(scaler4x4 != NULL) {
 		scaler4x4->PutWord4x(disp, pixsize, cbuf);
 	}
+#endif
 }
 
 void SetVramReader_200l()
 {
+#ifdef USE_OPENGL
+#ifdef USE_AGAR
+	SetVramReader_AG_GL(VramReader, 80, 200);
+#else
+	if(scalerGL != NULL) {
+		scalerGL->SetVramReader(VramReader, 80, 200);
+		scalerGL->SetPutWord(PutWordGL8);
+	}
+#endif
+#else
 	if(scaler1x1 != NULL) {
 		scaler1x1->SetVramReader(VramReader, 80, 200);
 	}
@@ -184,10 +195,21 @@ void SetVramReader_200l()
 		scalerGL->SetVramReader(VramReader, 80, 200);
 		scalerGL->SetPutWord(PutWordGL8);
 	}
+#endif
 }
 
 void SetVramReader_400l()
 {
+#ifdef USE_OPENGL
+#ifdef USE_AGAR
+	SetVramReader_AG_GL(VramReader_400l, 80, 400);
+#else
+	if(scalerGL != NULL) {
+		scalerGL->SetVramReader(VramReader_400l, 80, 400);
+		scalerGL->SetPutWord(PutWordGL8);
+	}
+#endif
+#else
 	if(scaler1x1 != NULL) {
 		scaler1x1->SetVramReader(VramReader_400l, 80, 400);
 	}
@@ -219,10 +241,21 @@ void SetVramReader_400l()
 		scalerGL->SetVramReader(VramReader_400l, 80, 400);
 		scalerGL->SetPutWord(PutWordGL8);
 	}
+#endif
 }
 
 void SetVramReader_4096(void)
 {
+#ifdef USE_OPENGL
+#ifdef USE_AGAR
+	SetVramReader_AG_GL(VramReader_4096, 40, 200);
+#else
+	if(scalerGL != NULL) {
+		scalerGL->SetVramReader(VramReader_4096, 40, 200);
+		scalerGL->SetPutWord(PutWordGL);
+	}
+#endif
+#else
 	if(scaler2x2 != NULL) {
 		scaler2x2->SetVramReader(VramReader_4096, 40, 200);
 		scaler2x2->SetPutWord(PutWord2x2);
@@ -243,10 +276,21 @@ void SetVramReader_4096(void)
 		scalerGL->SetVramReader(VramReader_4096, 40, 200);
 		scalerGL->SetPutWord(PutWordGL);
 	}
+#endif
 }
 
 void SetVramReader_256k(void)
 {
+#ifdef USE_OPENGL
+#ifdef USE_AGAR
+	SetVramReader_AG_GL(VramReader_256k, 40, 200);
+#else
+	if(scalerGL != NULL) {
+		scalerGL->SetVramReader(VramReader_256k, 40, 200);
+		scalerGL->SetPutWord(PutWordGL);
+	}
+#endif
+#else
 	if(scaler2x2 != NULL) {
 		scaler2x2->SetVramReader(VramReader_256k, 40, 200);
 		scaler2x2->SetPutWord(PutWord2x);
@@ -267,6 +311,7 @@ void SetVramReader_256k(void)
 		scalerGL->SetVramReader(VramReader_256k, 40, 200);
 		scalerGL->SetPutWord(PutWordGL);
 	}
+#endif
 }
 
 
@@ -274,6 +319,10 @@ void SetVramReader_256k(void)
 
 void init_scaler(void)
 {
+#ifdef USE_AGAR
+//	InitGL_AG_GL(80 * 8, 200);
+	SetVramReader_AG_GL(VramReader, 80, 200);
+#else
 	if(scaler1x1 == NULL) {
 		scaler1x1 = new EmuGrphScale1x1;
 		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
@@ -339,11 +388,14 @@ void init_scaler(void)
 		scalerGL->SetVramReader(VramReader, 80, 400);
 		scalerGL->SetPutWord(PutWordGL8);
 	}
+#endif
 }
 
 void initsub_scaler()
 {
 	//	b256kFlag = FALSE;
+#ifdef USE_OPENGL
+#else
 	scaler1x1 = NULL;
 	scaler1x2 = NULL;
 	scaler1x2i = NULL;
@@ -354,11 +406,14 @@ void initsub_scaler()
 	scaler4x4 = NULL;
 	scaler4x4i = NULL;
 	scalerGL = NULL;
+#endif
 }
 
 
 void detachsub_scaler(void)
 {
+#ifdef USE_OPENGL
+#else
 	if(scaler1x1 != NULL) {
 		delete scaler1x1;
 		scaler1x1 = NULL;
@@ -413,14 +468,19 @@ void detachsub_scaler(void)
 		delete scalerGL;
 		scalerGL = NULL;
 	}
-
+#endif
 }
 
 void SetupGL(int w, int h)
 {
 #ifdef USE_OPENGL
 	SDL_SemWait(DrawInitSem);
+#ifdef USE_AGAR
+	InitGL_AG_GL(w, h);
+#else
 	scalerGL->InitGL(w, h);
+	SDL_SemPost(DrawInitSem);
+#endif
 	SDL_SemPost(DrawInitSem);
 #else
 #ifdef USE_AGAR
@@ -485,9 +545,10 @@ void InitGL(int w, int h)
 #else
 #ifdef USE_AGAR
     SDL_SemWait(DrawInitSem);
-   if(scalerGL) {
-    	scalerGL->InitGL(w, h);
-    }
+//   if(scalerGL) {
+//    	scalerGL->InitGL(w, h);
+//    }
+	InitGL_AG_GL(w, h);
     SDL_SemPost(DrawInitSem);
 #else
     SDL_SemWait(DrawInitSem);
@@ -509,16 +570,21 @@ void Flip(void)
 	if(!bUseOpenGL) {
 		SDL_Flip(p);
 	} else {
+#ifdef USE_AGAR
+		Flip_AG_GL();
+#else
 		if(scalerGL != NULL) {
 			scalerGL->Flip();
 		} else {
 			SDL_Flip(p);
 		}
+#endif
 	}
 	SDL_SemPost(DrawInitSem);
 }
 
-
+#ifdef USE_OPENGL
+#else
 void Scaler_1x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 	scaler1x2->PutVram(p, x, y, w, h, mpage);
@@ -537,24 +603,28 @@ void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 	scaler2x4i->PutVram(p, x, y, w, h, mpage);
 }
+#endif
 
 void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 #ifndef USE_AGAR
 	scalerGL->SetViewPort(0,0, w, h);
+    if(!bFullScan) {
+    	scalerGL->SetScanLine(TRUE);
+    } else {
+    	scalerGL->SetScanLine(FALSE);
+    }
+    scalerGL->PutVram(p, x, y, w, h, mpage);
 #else
-	scalerGL->SetDrawArea(DrawArea, 0, 0, w, h);
+    SetDrawArea_AG_GL(AGWIDGET(DrawArea), 0, 0, w, h);
+
+    PutVram_AG_GL((AG_Surface *)p, x, y, w, h, mpage);
 #endif
 //	scalerGL->SetViewPort();
-        if(!bFullScan) {
-	   scalerGL->SetScanLine(TRUE);
-	} else {
-	   scalerGL->SetScanLine(FALSE);
-	}
-	scalerGL->PutVram(p, x, y, w, h, mpage);
 }
 
-
+#ifdef USE_OPENGL
+#else
 void Scaler_1x1(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
 {
 	if(scaler1x1 == NULL) return;
@@ -583,7 +653,7 @@ void Scaler_4x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
 	if(scaler4x4 == NULL) return;
 	scaler4x4i->PutVram(p, x, y, w, h, multip );
 }
-
+#endif
 
 #ifdef __cplusplus
 }

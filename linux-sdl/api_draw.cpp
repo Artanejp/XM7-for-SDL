@@ -38,6 +38,9 @@
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
+#ifdef USE_OPENGL
+#include "agar_gldraw.h"
+#endif
 #else
 #include "sdl.h"
 #endif
@@ -47,7 +50,6 @@
 
 #ifdef USE_AGAR
 extern AG_Window *MainWindow;
-extern AG_GLView *DrawArea;
 #endif
 /*
  *  グローバル ワーク
@@ -1643,9 +1645,7 @@ void	OnWindowedScreen(void)
 static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 #ifdef USE_AGAR
-	if(scalerGL != NULL){
-		scalerGL->CalcPalette(i, r, g, b, a);
-	}
+	CalcPalette_AG_GL(rgbTTLGDI, i,  r, g, b, a);
 #else
 	SDL_Surface *p;
 #if 1
@@ -1688,11 +1688,6 @@ void Palet640(void)
 	if(vramhdr_400l != NULL) {
 		vramhdr_400l->SetPaletteTable((Uint32 *)rgbTTLGDI);
 	}
-#ifdef USE_AGAR
-	if(scalerGL != NULL){
-		scalerGL->SetPaletteTable((Uint32 *)rgbTTLGDI);
-	}
-#endif
 
 	for (i = 0; i < 8; i++) {
 		if (crt_flag) {
@@ -1724,9 +1719,7 @@ void Palet640(void)
 static inline void Palet320Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 #ifdef USE_AGAR
-	if(scalerGL != NULL){
-		scalerGL->CalcPalette(i, r, g, b, a);
-	}
+	CalcPalette_AG_GL(rgbAnalogGDI, i, r, g, b, a);
 #else
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
@@ -1754,11 +1747,6 @@ void Palet320(void)
 	 if(vramhdr != NULL) {
 		 vramhdr->SetPaletteTable((Uint32 *)rgbAnalogGDI);
 	 }
-#ifdef USE_AGAR
-	if(scalerGL != NULL){
-		scalerGL->SetPaletteTable((Uint32 *)rgbAnalogGDI);
-	}
-#endif
 	 amask = 0;
 	 if (!(multi_page & 0x10)) {
 		 amask |= 0x000f;
@@ -1815,13 +1803,7 @@ void Draw640All(void)
 
 #ifdef USE_AGAR
 	AG_Driver *drv;
-
 	if(agDriverOps == NULL) return;
-//	drv = AG_DriverOpen(agDriverOps);
-//	drv = agDriverSw;
-//	if(drv == NULL) return;
-//	p = (SDL_Surface *)(drv->sRef);
-
 #else
 	p = SDL_GetVideoSurface();
 #endif
@@ -1849,6 +1831,9 @@ void Draw640All(void)
 		AllClear();
 	}
 
+#ifdef USE_AGAR
+	PutVramFunc = &Scaler_GL;
+#else
 	if(!bUseOpenGL) {
 		if(bFullScan) {
 			switch(nDrawWidth) {
@@ -1884,6 +1869,7 @@ void Draw640All(void)
 			PutVramFunc = &Scaler_GL;
 		}
 	}
+#endif
 	/*
 	 * レンダリング
 	 */
@@ -1973,6 +1959,9 @@ void Draw400l(void)
 	 /*
 	  * レンダリング
 	  */
+#ifdef USE_AGAR
+		PutVramFunc = &Scaler_GL;
+#else
 	 if(!bUseOpenGL) {
 		 if(bFullScan) {
 			 switch(nDrawWidth) {
@@ -2008,6 +1997,7 @@ void Draw400l(void)
 			 PutVramFunc = &Scaler_GL;
 		 }
 	 }
+#endif
 	 if(PutVramFunc == NULL) return;
 	 if(vramhdr_400l == NULL) return;
 	 if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
@@ -2066,6 +2056,9 @@ void Draw320(void)
 	/*
 	 * パレット設定
 	 */
+#ifdef USE_AGAR
+		PutVramFunc = &Scaler_GL;
+#else
 	if(!bUseOpenGL) {
 		if(bFullScan) {
 			switch(nDrawWidth) {
@@ -2091,7 +2084,7 @@ void Draw320(void)
 	} else {
 		PutVramFunc = &Scaler_GL;
 	}
-
+#endif
 	//	if(bPaletFlag) {
 	Palet320();
 	SetVramReader_4096();
@@ -2163,6 +2156,9 @@ void Draw256k(void)
 
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
+#ifdef USE_AGAR
+		PutVramFunc = &Scaler_GL;
+#else
 	if(!bUseOpenGL) {
 		if(bFullScan) {
 			switch(nDrawWidth) {
@@ -2188,6 +2184,7 @@ void Draw256k(void)
 	} else {
 		PutVramFunc = &Scaler_GL;
 	}
+#endif
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;

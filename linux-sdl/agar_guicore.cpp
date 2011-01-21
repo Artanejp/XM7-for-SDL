@@ -332,9 +332,9 @@ void InitInstance(void)
 	AG_GLViewDrawFn (OsdArea, DrawOSDEv, NULL);
 	CreateStatus();
 	InitGL(640, 480);
-	if(MenuBar != NULL) {
-		AG_WidgetFocus(AGWIDGET(MenuBar));
-	}
+//	if(MenuBar != NULL) {
+//		AG_WidgetFocus(AGWIDGET(MenuBar));
+//	}
 	AG_WindowShow(MainWindow);
 }
 
@@ -345,11 +345,6 @@ void ui_update(void)
 {
 	AG_WindowUpdate(MainWindow);
 }
-
-
-
-
-
 
 #ifdef __cplusplus
 }

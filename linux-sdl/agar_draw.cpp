@@ -12,14 +12,8 @@
 #include <libemugrph/EmuAgarGL.h>
 #include "api_draw.h"
 #include "api_scaler.h"
+#include "agar_gldraw.h"
 
-extern "C" {
-extern AG_GLView *DrawArea;
-extern AG_Window *MainWindow;
-extern AG_Menu  *MenuBar;
-extern void DrawStatus(void);
-}
-extern EmuAgarGL *scalerGL;
 extern Uint32 nDrawTick1;
 extern void EventSDL(AG_Driver *drv);
 extern void EventGUI(AG_Driver *drv);
@@ -45,82 +39,6 @@ void ResizeWindow_Agar(int w, int h)
 static void ProcessGUI(void)
 {
 }
-
-void AGEventOverlayGL(AG_Event *event)
-{
-	AG_GLView *glv = (AG_GLView *)AG_SELF();
-	if(scalerGL == NULL) return;
-//	AG_WidgetBlit(glv, 0, 32);
-//	scalerGL->DiscardTexture(scalerGL->GetTextureID());
-	if(DrawArea == NULL) return;
-	DrawOSDGL(DrawArea);
-}
-
-
-void AGEventScaleGL(AG_Event *event)
-{
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
-	AG_Surface *pixvram ;
-
-	if(scalerGL == NULL) return;
-	pixvram = scalerGL->GetVramSurface();
-	if(pixvram == NULL) return;
-#if 0
-	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, nDrawWidth, nDrawHeight);
-//	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
-	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, OSD_HEIGHT);
-	scalerGL->SetOffset(0,DRAW_OFSET);
-	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
-	scalerGL->DrawTexture(scalerGL->GetTextureID());
-	DrawOSDGL(DrawArea);
-	scalerGL->DiscardTexture(scalerGL->GetTextureID());
-#endif
-}
-
-void AGEventDrawGL(AG_Event *event)
-{
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
-	AG_Surface *pixvram;
-
-#if XM7_VER >= 3
-	switch (bMode) {
-	case SCR_400LINE:
-		Draw400l();
-		break;
-	case SCR_262144:
-		Draw256k();
-		break;
-	case SCR_4096:
-		Draw320();
-		break;
-	case SCR_200LINE:
-		Draw640All();
-		break;
-	}
-#else				/*  */
-	/*
-	 * どちらかを使って描画
-	 */
-	if (bAnalog) {
-		Draw320All();
-	}
-	else {
-		Draw640All();
-	}
-#endif				/*  */
-	if(scalerGL == NULL) return;
-	SelectDraw2();
-	pixvram = scalerGL->GetVramSurface();
-	if(pixvram == NULL) return;
-	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, pixvram->w, pixvram->h);
-	scalerGL->SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, OSD_HEIGHT);
-	scalerGL->SetOffset(0, DRAW_OFSET);
-	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
-	scalerGL->DrawTexture(scalerGL->GetTextureID());
-	scalerGL->DiscardTexture(scalerGL->GetTextureID());
-}
-
-
 
 void AGDrawTaskEvent(BOOL flag)
 {
