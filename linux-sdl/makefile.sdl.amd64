@@ -64,7 +64,7 @@ COMMONSRC = \
 
 VIDEODRVSRC = \
 	api_draw.cpp api_scaler.cpp \
-	agar_draw.cpp
+	agar_draw.cpp agar_gldraw.cpp
 
 SNDDRVSRC = \
 	api_snd.cpp \
@@ -156,7 +156,7 @@ COMMONOBJ = \
 
 VIDEODRVOBJ = \
 	api_draw.o api_scaler.o \
-	agar_draw.o
+	agar_draw.o agar_gldraw.o
 
 SNDDRVOBJ = \
 	SndDrvTmpl.o SndDrvOpn.o SndDrvWav.o SndDrvBeep.o SndDrvCMT.o

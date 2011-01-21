@@ -394,36 +394,6 @@ void AGEventScaleGL(AG_Event *event)
 void AGEventDrawGL(AG_Event *event)
 {
 	AG_GLView *wid = (AG_GLView *)AG_SELF();
-
-#if 0
-#if XM7_VER >= 3
-	switch (bMode) {
-	case SCR_400LINE:
-		Draw400l();
-		break;
-	case SCR_262144:
-		Draw256k();
-		break;
-	case SCR_4096:
-		Draw320();
-		break;
-	case SCR_200LINE:
-		Draw640All();
-		break;
-	}
-#else				/*  */
-	/*
-	 * どちらかを使って描画
-	 */
-	if (bAnalog) {
-		Draw320All();
-	}
-	else {
-		Draw640All();
-	}
-#endif				/*  */
-	SelectDraw2();
-#endif
 //	pixvram = GetVramSurface();
 	if(pixvram == NULL) return;
 	SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, OSD_HEIGHT);
