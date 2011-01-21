@@ -39,7 +39,7 @@ static inline void putdot(Uint8 *addr, Uint32 c)
 }
 
 
-static void putword(Uint32 *disp, Uint32 *cbuf)
+static inline void putword(Uint32 *disp, Uint32 *cbuf)
 {
 		putdot((GLubyte *)&disp[0], cbuf[7]);
 		putdot((GLubyte *)&disp[1], cbuf[6]);
@@ -176,7 +176,7 @@ static GLuint CreateTexture(AG_Surface *p)
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  pix);
-    UnLockVram();
+   UnLockVram();
 	return textureid;
 }
 

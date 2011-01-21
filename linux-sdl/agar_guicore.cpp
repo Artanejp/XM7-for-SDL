@@ -230,7 +230,7 @@ void MainLoop(int argc, char *argv[])
 
 	nDrawTick1 = AG_GetTicks();
 	while(1) {
-	AG_Delay(5);
+	AG_Delay(10);
 	AGDrawTaskEvent(TRUE);
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
