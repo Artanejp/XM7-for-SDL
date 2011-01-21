@@ -25,10 +25,14 @@
  */
 #ifdef USE_AGAR
 #include "agar_xm7.h"
+//#include "agar_gldraw.h"
 #else
 #include "sdl.h"
 #endif
 #include "api_draw.h"
+
+extern void LockVram(void);
+extern void UnLockVram(void);
 
 /*
  *      グローバル ワーク
@@ -675,7 +679,9 @@ display_setpointer(BOOL redraw)
 	screen_mode = SCR_200LINE;
     }
 #endif
-
+#ifdef USE_AGAR
+    LockVram();
+#endif
 #if XM7_VER >= 2
     /*
      * アクティブポインタ・アクティブブロックポインタ 
@@ -748,6 +754,10 @@ display_setpointer(BOOL redraw)
     if (redraw) {
 	display_notify();
     }
+#ifdef USE_AGAR
+    UnLockVram();
+#endif
+
 }
 
 /*
@@ -826,6 +836,10 @@ vram_scroll_analog(WORD offset, DWORD addr)
     BYTE           *vram;
 
 #if XM7_VER >= 3
+#ifdef USE_AGAR
+    LockVram();
+#endif
+
     for (i = 0; i < 3; i++) {
 	vram = (BYTE *) ((vram_c + addr) + 0x8000 * i);
 
@@ -866,6 +880,10 @@ vram_scroll_analog(WORD offset, DWORD addr)
 	memcpy(vram + (0x2000 - offset), vram_buf, offset);
     }
 #endif
+#ifdef USE_AGAR
+    UnLockVram();
+#endif
+
 }
 #endif
 
@@ -909,6 +927,9 @@ vram_scroll(WORD offset)
 	 */
 	offset &= 0x3fff;
 	offset <<= 1;
+#ifdef USE_AGAR
+    LockVram();
+#endif
 
 	/*
 	 * ループ 
@@ -931,6 +952,10 @@ vram_scroll(WORD offset)
 	     */
 	    memcpy400l(vram + (0x8000 - offset), vram_buf, offset);
 	}
+#ifdef USE_AGAR
+    UnLockVram();
+#endif
+
 	return;
     }
 
@@ -1011,6 +1036,9 @@ vram_scroll(WORD offset)
 #else
 	vram = (BYTE *) (vram_c + 0x4000 * i);
 #endif
+#ifdef USE_AGAR
+    LockVram();
+#endif
 
 	/*
 	 * テンポラリバッファへコピー 
@@ -1026,6 +1054,9 @@ vram_scroll(WORD offset)
 	 * テンポラリバッファより復元 
 	 */
 	memcpy(vram + (0x4000 - offset), vram_buf, offset);
+#ifdef USE_AGAR
+    UnLockVram();
+#endif
     }
 }
 
@@ -1037,6 +1068,9 @@ BOOL            FASTCALL
 fix_vram_address(void)
 {
     DWORD           i;
+#ifdef USE_AGAR
+    LockVram();
+#endif
 
     for (i = 0; i < 0x30000; i += 0x18000) {
 	memcpy(&vram_buf[0x00000], &vram_c[0x04000 + i], 0x4000);
@@ -1046,6 +1080,9 @@ fix_vram_address(void)
 	memcpy(&vram_c[0x08000 + i], &vram_buf[0x04000], 0x4000);
 	memcpy(&vram_c[0x0c000 + i], &vram_buf[0x00000], 0x4000);
     }
+#ifdef USE_AGAR
+    UnLockVram();
+#endif
 
     return TRUE;
 }

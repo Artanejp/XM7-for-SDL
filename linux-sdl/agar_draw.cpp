@@ -82,8 +82,34 @@ void AGDrawTaskEvent(BOOL flag)
 void AGDrawTaskMain(void)
 {
 
-	AG_Window *win;
-	Uint32 *nDrawTick2;
+#if XM7_VER >= 3
+	switch (bMode) {
+	case SCR_400LINE:
+		Draw400l();
+		break;
+	case SCR_262144:
+		Draw256k();
+		break;
+	case SCR_4096:
+		Draw320();
+		break;
+	case SCR_200LINE:
+		Draw640All();
+		break;
+	}
+#else				/*  */
+	/*
+	 * どちらかを使って描画
+	 */
+	if (bAnalog) {
+		Draw320All();
+	}
+	else {
+		Draw640All();
+	}
+#endif				/*  */
+	SelectDraw2();
+#if 0
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
 			nDrawHeight = newDrawHeight;
@@ -94,7 +120,7 @@ void AGDrawTaskMain(void)
 				AG_WidgetSetSize(AGWIDGET(DrawArea), newDrawWidth, newDrawHeight);
 			}
 		}
-//		SelectDraw2();
+#endif
 		/* Render the Agar windows */
 }
 

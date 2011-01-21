@@ -6,7 +6,7 @@
  */
 
 //
-
+#include <SDL.h>
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
@@ -30,7 +30,7 @@ static int osd_h;
 static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo = FALSE;
-
+static SDL_semaphore *VramSem;
 
 static inline void putdot(Uint8 *addr, Uint32 c)
 {
@@ -122,10 +122,33 @@ void InitGL_AG_GL(int w, int h)
 	if((pixvram == NULL) &&(w != 0) &&(h != 0)) {
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)w, (Uint)h , &format, AG_SRCCOLORKEY);
 	}
+	if(VramSem == NULL) {
+		VramSem = SDL_CreateSemaphore(1);
+		if(VramSem) SDL_SemPost(VramSem);
+	}
 	return;
 }
 
+void Detach_AG_GL()
+{
+	if(VramSem != NULL) {
+		SDL_SemWait(VramSem);
+		SDL_DestroySemaphore(VramSem);
+		VramSem = NULL;
+	}
+}
 
+extern "C" {
+void LockVram(void)
+{
+	if(VramSem != NULL) SDL_SemWait(VramSem);
+}
+
+void UnLockVram(void)
+{
+	if(VramSem != NULL) SDL_SemPost(VramSem);
+}
+}
 
 static GLuint CreateTexture(AG_Surface *p)
 {
@@ -139,7 +162,8 @@ static GLuint CreateTexture(AG_Surface *p)
 	w = p->w;
 	h = p->h;
 	pix = (Uint8 *)p->pixels;
-
+	if(pix == NULL) return 0;
+	LockVram();
     glGenTextures(1, &textureid);
     glBindTexture(GL_TEXTURE_2D, textureid);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -152,7 +176,7 @@ static GLuint CreateTexture(AG_Surface *p)
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  pix);
-
+    UnLockVram();
 	return textureid;
 }
 
@@ -282,10 +306,6 @@ AG_Surface *GetVramSurface_AG_GL()
 
 void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h)
 {
-//	SDL_SemWait(drawSem);
-
-//	AG_WidgetMapSurface(drawarea, video);
-//	SDL_SemPost(drawSem);
 }
 
 void Flip_AG_GL(void)
@@ -337,6 +357,7 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	bitmap = (Uint8 *)pixvram->pixels;
 	if(bitmap == NULL) return;
 	ofset = 0;
+	LockVram();
 	for(yy = y; yy < hh; yy++) {
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * vramwidth + xx ;
@@ -346,6 +367,7 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 			addr++;
 			}
 	}
+	UnLockVram();
 	xratio = (float)pixvram->w / (float)AGWIDGET(DrawArea)->w;
 	yratio =  (float)pixvram->h / (float)AGWIDGET(DrawArea)->h ;
 }
@@ -373,6 +395,7 @@ void AGEventDrawGL(AG_Event *event)
 {
 	AG_GLView *wid = (AG_GLView *)AG_SELF();
 
+#if 0
 #if XM7_VER >= 3
 	switch (bMode) {
 	case SCR_400LINE:
@@ -400,6 +423,7 @@ void AGEventDrawGL(AG_Event *event)
 	}
 #endif				/*  */
 	SelectDraw2();
+#endif
 //	pixvram = GetVramSurface();
 	if(pixvram == NULL) return;
 	SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, OSD_HEIGHT);

@@ -30,6 +30,12 @@ extern void AGEventScaleGL(AG_Event *event);
 extern void AGEventDrawGL(AG_Event *event);
 extern void AGEventOverlayGL(AG_Event *event);
 extern void InitGL_AG_GL(int w, int h);
+extern void Detach_AG_GL();
+extern "C" {
+extern void LockVram(void);
+extern void UnLockVram(void);
+}
+
 extern void CalcPalette_AG_GL(Uint32 *palette, Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 extern void SetVramReader_AG_GL(void p(Uint32, Uint32 *, Uint32), int w, int h);

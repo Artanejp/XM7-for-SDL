@@ -413,6 +413,7 @@ void initsub_scaler()
 void detachsub_scaler(void)
 {
 #ifdef USE_OPENGL
+	Detach_AG_GL();
 #else
 	if(scaler1x1 != NULL) {
 		delete scaler1x1;

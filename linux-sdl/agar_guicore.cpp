@@ -136,6 +136,11 @@ void ProcessKeyUp(AG_Event *event)
 
 }
 
+extern void AG_initsub(void);
+extern void AG_detachsub(void);
+extern void ResizeWindow(int w, int h);
+extern Uint32 nDrawTick1;
+
 void MainLoop(int argc, char *argv[])
 {
 	int c;
@@ -219,7 +224,24 @@ void MainLoop(int argc, char *argv[])
 	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
-	DrawThreadMain(NULL);
+//	DrawThreadMain(NULL);
+	AG_initsub();
+	ResizeWindow(640,480);
+
+	nDrawTick1 = AG_GetTicks();
+	while(1) {
+	AG_Delay(10);
+	AGDrawTaskEvent(TRUE);
+		if(newResize) {
+			nDrawWidth = newDrawWidth;
+			nDrawHeight = newDrawHeight;
+			ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+			newResize = FALSE;
+			if(DrawArea) {
+				AG_WidgetSetSize(AGWIDGET(DrawArea), newDrawWidth, newDrawHeight);
+			}
+		}
+	}
 }
 
 

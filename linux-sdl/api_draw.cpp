@@ -112,6 +112,7 @@ static WORD nDrawCount;
 #ifdef USE_AGAR
 AG_Cond DrawCond;
 AG_Mutex DrawMutex;
+AG_Thread DrawThread;
 #else
 static SDL_Thread *DrawThread;
 SDL_cond *DrawCond;
@@ -352,7 +353,7 @@ BOOL SelectDraw2(void)
 extern GtkWidget       *gtkDrawArea;
 #endif
 
-static void ResizeWindow(int w, int h)
+void ResizeWindow(int w, int h)
 {
     char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
     SDL_SysWMinfo sdlinfo;
@@ -431,16 +432,30 @@ static int DrawTaskMain(void *arg)
 static void initsub(void);
 static void detachsub(void);
 
+#ifdef USE_AGAR
+void AG_initsub(void)
+{
+	initsub();
+}
+void AG_detachsub(void)
+{
+	detachsub();
+}
+#endif
+
+#ifdef USE_AGAR
+void *DrawThreadMain(void *p)
+#else
 int DrawThreadMain(void *p)
+#endif
 {
 #ifdef USE_AGAR
 		Uint32 nDrawTick2;
-
 		nDrawTick1 = AG_GetTicks();
 #endif
-		initsub();
-		ResizeWindow(640,480);
-		InitGL(640,480);
+//		initsub();
+//		ResizeWindow(640,480);
+//		InitGL(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		while(1) {
 #ifndef USE_AGAR
@@ -455,8 +470,7 @@ int DrawThreadMain(void *p)
 #endif
 #ifdef USE_AGAR
 //			AG_MutexLock(&DrawMutex);
-//			AG_CondWait(&DrawCond, &DrawMutex);
-			AG_Delay(3);
+			AG_CondWait(&DrawCond, &DrawMutex);
 #else
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);
@@ -487,7 +501,6 @@ int DrawThreadMain(void *p)
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
 			AGDrawTaskMain();
-			AGDrawTaskEvent(TRUE);
 #else
 			DrawTaskMain(NULL);
 #endif
@@ -725,7 +738,9 @@ void	InitDraw(void)
 			DrawCond = SDL_CreateCond();
 		}
 #endif
-#ifndef USE_AGAR
+#ifdef USE_AGAR
+		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
+#else
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
 			SDL_mutexV(DrawMutex);
@@ -748,6 +763,7 @@ void	CleanDraw(void)
 		DrawSHUTDOWN = TRUE;
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
+		AG_ThreadJoin(DrawThread, NULL);
 		AG_MutexDestroy(&DrawMutex);
 		AG_CondDestroy(&DrawCond);
 
@@ -1263,22 +1279,19 @@ void RenderSetOddLine(void)
  */
 void OnDraw(void)
 {
-#if 0
+	/*
+	 * 描画スレッドのKICKを1/60secごとにする。
+	 */
 	if(nDrawCount > 0) {
 		nDrawCount --;
 	} else {
 		nDrawCount = DrawCountSet(nDrawFPS);
-		if(DrawCond) SDL_CondSignal(DrawCond);
-	}
-#else
-	/*
-	 * 描画スレッドのKICKを1/60secごとにする。
-	 */
 #ifdef USE_AGAR
-	AG_CondSignal(&DrawCond);
+		AG_CondSignal(&DrawCond);
 #else
-	if(DrawCond) SDL_CondSignal(DrawCond);
+		if(DrawCond) SDL_CondSignal(DrawCond);
 #endif
+	}
 #endif
 }
 
@@ -1774,7 +1787,6 @@ void Palet320(void)
 		  }
 		  Palet320Sub(i, r, g, b, 255);
 	 }
-#endif
 }
 
 
