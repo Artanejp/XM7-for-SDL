@@ -586,7 +586,7 @@ void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
 void
 PlaySnd()
 {
-
+   return;
 	/*
 	 * サンプルカウンタ、サウンド時間をクリア
 	 */
@@ -620,6 +620,7 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
 	samples = (uBufSize >>2) / uChannels;
+//	samples = ((uTick  * uRate) / 2) / 1000;  
 	samples -= uSample;
 	/*
 	 * 時間経過から求めた理論サンプル数
@@ -649,20 +650,27 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 			samples = i;
 		}
 	}
+
 	wbank = bNowBank?0:1;
-	if(!bZero) {
-		RenderThreadSub(uSample,samples,wbank);
-	} else {
-		RenderThreadBZero(uSample,samples,wbank);
+        if(samples>0) {
+	   if(!bZero) {
+	      RenderThreadSub(uSample,samples,wbank);
+	   } else {
+	      RenderThreadBZero(uSample,samples,wbank);
+	   }
 	}
 
 	if(bfill) {
-		uSample += samples;
-		RenderPlay(uSample, wbank, bPlayEnable);
-		dwSoundTotal = 0;
-		uSample = 0;
+	        if(samples > 0) {
+		   uSample += samples;
+		}
+	   	RenderPlay(uSample, wbank, bPlayEnable);
+	uSample = 0;
+	dwSoundTotal = 0;
 	} else {
+      if(samples > 0) {
 		uSample += samples;
+	}
 	}
 }
 
@@ -936,7 +944,8 @@ void        ProcessSnd(BOOL bZero)
 	 * 書き込み位置とバンクから、必要性を判断
 	 */
 	bWrite = FALSE;
-	if (bNowBank) {
+#if 0
+   if (bNowBank) {
 		if (dwPlayC >= (uTick / 2) ) {
 			bWrite = TRUE;
 		}
@@ -949,6 +958,19 @@ void        ProcessSnd(BOOL bZero)
 		dwPlayC = 0;
 	}
 	dwPlayC++;
+ #else
+       if (dwPlayC >= (uTick / 2) ) {
+		bWrite = TRUE;
+	        dwPlayC = 0;
+	}  else {
+	        dwPlayC++;
+	}
+   
+	if (dwPlayC >= uTick) {
+		dwPlayC = 0;
+	}
+
+#endif   
 
 	/*
 	 * サウンドデータの生成
@@ -977,21 +999,22 @@ void        ProcessSnd(BOOL bZero)
 		    * どちらかがONなら、バッファ充填
 		    */
 		   if (bWrite) {
-               AddSnd(FALSE, bZero);
+		      AddSnd(FALSE, bZero);
 		   }
-			SDL_SemPost(applySem);
+	           SDL_SemPost(applySem);
 		   return;
 	  }
 
 	  /*
 	   * ここから演奏開始
 	   */
-      AddSnd(TRUE, bZero);
+   AddSnd(TRUE, bZero);
 
 	  /*
 	   * 書き込みバンク(仮想)
 	   */
 	  bNowBank = (!bNowBank);
+        dwPlayC = 0;
 	SDL_SemPost(applySem);
 
 }
@@ -1103,11 +1126,11 @@ static void RenderPlay(int samples, int slot, BOOL play)
 		SDL_SemWait(applySem);
 
 		if(DrvBeep != NULL) {
-			if(bPlayEnable) DrvBeep->Play(CH_SND_BEEP + slot, slot);
+			if(bPlayEnable) DrvBeep->Play(CH_SND_BEEP + slot, slot, samples);
 		}
 
 		if(DrvCMT != NULL) {
-			if(bPlayEnable) DrvCMT->Play(CH_SND_CMT + slot, slot);
+			if(bPlayEnable) DrvCMT->Play(CH_SND_CMT + slot, slot, samples);
 		}
 
 #if 1

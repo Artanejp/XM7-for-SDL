@@ -32,7 +32,6 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
                 return;
         }
         i = (size / 4) * 4;
-#if 1
         for (j = 0; j < i; j += 4) {
                 tmp1 = p[j];
                 t[j] = (Sint16) tmp1 ;
@@ -43,13 +42,12 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
                 tmp1 = p[j + 3];
                 t[j + 3] = (Sint16) tmp1;
         }
-       i = size - i;
-        i = size;
+       i = size % 4;
+//        i = size;
         for (j = 0; j < i; j++) {
                 tmp1 = p[j];
                 t[j] = (int16)tmp1;
         }
-#endif
 }
 
 
@@ -386,6 +384,7 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	int ss,ss2;
 	int opn;
 	Uint32 *q;
+        Uint16 *p;
 
 	s = (ms * srate)/1000;
 	if(slot > bufSlot) return 0;
@@ -394,6 +393,8 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 
 	q = buf32[slot];
 	q = &q[start * channels];
+        p = (Uint16 *)buf[slot];
+        p = &p[start * channels];
 
 	ss = sSamples + start;
 	if(ss > s) {
@@ -446,7 +447,7 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 				}
 			}
 		}
-
+//      	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
 		/*
 		 * ここにレンダリング関数ハンドリング
 		 */
@@ -459,7 +460,7 @@ void SndDrvOpn::Play(int ch,  int slot, int samples)
 {
 		if(slot >= bufSlot) return;
 		if(chunk[slot].abuf == NULL) return;
-		if(chunk[slot].alen <= 0) return;
+		//if(chunk[slot].alen <= 0) return;
 		if(!enable) return;
 		if(RenderSem == NULL) return;
 		SDL_SemWait(RenderSem);
