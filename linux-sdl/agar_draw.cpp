@@ -40,9 +40,6 @@ void InitGUI(int w, int h)
 void ResizeWindow_Agar(int w, int h)
 {
 	AG_ResizeDisplay(w, h);
-	if(AGWIDGET(MenuBar)) {
-		AG_WidgetSetSize(AGWIDGET(MenuBar),24, newDrawWidth);
-	}
 }
 
 static void ProcessGUI(void)
@@ -55,6 +52,8 @@ void AGEventOverlayGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 //	AG_WidgetBlit(glv, 0, 32);
 //	scalerGL->DiscardTexture(scalerGL->GetTextureID());
+	if(DrawArea == NULL) return;
+	DrawOSDGL(DrawArea);
 }
 
 
@@ -66,6 +65,7 @@ void AGEventScaleGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 	pixvram = scalerGL->GetVramSurface();
 	if(pixvram == NULL) return;
+#if 0
 	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, nDrawWidth, nDrawHeight);
 //	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight);
 	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, OSD_HEIGHT);
@@ -74,11 +74,7 @@ void AGEventScaleGL(AG_Event *event)
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
 	DrawOSDGL(DrawArea);
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
-
-//	DrawOsdGL(wid);
-
-//	AG_WidgetUpdate(wid);
-
+#endif
 }
 
 void AGEventDrawGL(AG_Event *event)
@@ -115,12 +111,12 @@ void AGEventDrawGL(AG_Event *event)
 	if(scalerGL == NULL) return;
 	SelectDraw2();
 	pixvram = scalerGL->GetVramSurface();
-	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, nDrawWidth, nDrawHeight);
-	scalerGL->SetViewPort(0, 0, nDrawWidth, nDrawHeight , nDrawWidth, OSD_HEIGHT);
+	if(pixvram == NULL) return;
+	scalerGL->SetDrawArea(wid, 0, DRAW_OFSET, pixvram->w, pixvram->h);
+	scalerGL->SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, OSD_HEIGHT);
 	scalerGL->SetOffset(0, DRAW_OFSET);
 	scalerGL->SetTextureID(scalerGL->CreateTexture(pixvram));
 	scalerGL->DrawTexture(scalerGL->GetTextureID());
-	DrawOSDGL(DrawArea);
 	scalerGL->DiscardTexture(scalerGL->GetTextureID());
 }
 
@@ -175,6 +171,10 @@ void AGDrawTaskMain(void)
 			nDrawHeight = newDrawHeight;
 			ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 			newResize = FALSE;
+			if(DrawArea) {
+//				AG_SizeAlloc r;
+				AG_WidgetSetSize(AGWIDGET(DrawArea), newDrawWidth, newDrawHeight);
+			}
 		}
 //		SelectDraw2();
 		/* Render the Agar windows */

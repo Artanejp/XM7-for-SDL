@@ -73,6 +73,7 @@ extern "C" {
 extern AG_GLView *DrawArea;
 extern AG_Window *MainWindow;
 extern AG_Menu  *MenuBar;
+AG_GLView *OsdArea;
 }
 
 GLuint tid_ins_on;
@@ -217,6 +218,19 @@ static void DrawTape(void);
 void DrawOSDGL(AG_GLView *w)
 {
     DrawMainCaption();
+    DrawCAP();
+    DrawKANA();
+    DrawINS();
+    DrawDrive(1);
+    DrawDrive(0);
+    DrawTape();
+}
+
+void DrawOSDEv(AG_Event *event)
+{
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
+
+	DrawMainCaption();
     DrawCAP();
     DrawKANA();
     DrawINS();
@@ -951,7 +965,7 @@ static void DrawTape(void)
             nOldTape = nTape;
     }
 
-    if(DrawArea== NULL) return;
+    if(OsdArea== NULL) return;
 
 
     if ((nTape >= 10000) && (nTape < 30000)) {

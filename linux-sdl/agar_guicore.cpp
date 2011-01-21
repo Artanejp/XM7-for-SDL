@@ -41,6 +41,7 @@ extern void InitGL(int w, int h);
 extern AG_Window *MainWindow;
 extern AG_Menu *MenuBar;
 extern AG_GLView *DrawArea;
+extern AG_GLView *OsdArea;
 }
 
 extern void Create_AGMainBar(AG_Widget *Parent);
@@ -51,6 +52,7 @@ extern void AGEventScaleGL(AG_Event *event);
 extern void AGEventOverlayGL(AG_Event *event);
 extern void DestroyStatus(void);
 
+extern void DrawOSDEv(AG_Event *e);
 
 static BOOL bKeyboardSnooped;
 
@@ -291,6 +293,7 @@ void OnDestroy(AG_Event *event)
 static void InitFont(void)
 {
 }
+
 void InitInstance(void)
 {
 	AG_Box *hb;
@@ -308,7 +311,7 @@ void InitInstance(void)
 	AG_WidgetSetSize(MenuBar, 640, 32);
 	AG_WidgetEnable(AGWIDGET(MenuBar));
 
-    hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_EXPAND);
+    hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
     AG_WidgetSetSize(hb2, 640,400);
 	AG_WidgetEnable(hb2);
 
@@ -318,11 +321,20 @@ void InitInstance(void)
 	AG_WidgetSetPosition(DrawArea, 0, 32);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
-
 //	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
+    hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
+    AG_WidgetSetSize(hb2, 640,40);
+	AG_WidgetEnable(hb2);
+	OsdArea = AG_GLViewNew(AGWIDGET(hb2) , AG_GLVIEW_EXPAND);
+	AG_WidgetEnable(OsdArea);
+	AG_GLViewSizeHint(OsdArea, 640, 40);
+	AG_WidgetSetPosition(OsdArea, 0, 0);
+	AG_GLViewDrawFn (OsdArea, DrawOSDEv, NULL);
 	CreateStatus();
-
 	InitGL(640, 480);
+	if(MenuBar != NULL) {
+		AG_WidgetFocus(AGWIDGET(MenuBar));
+	}
 	AG_WindowShow(MainWindow);
 }
 
