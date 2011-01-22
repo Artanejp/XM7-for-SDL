@@ -16,17 +16,18 @@ SndDrvTmpl::SndDrvTmpl() {
 	// TODO Auto-generated constructor stub
 	int i;
 	uStereo = nStereoOut %4;
-	if ((uStereo > 0) || bForceStereo) {
-		channels = 2;
-	} else {
-		channels = 1;
-	}
+//	if ((uStereo > 0) || bForceStereo) {
+//		channels = 2;
+//	} else {
+//		channels = 1;
+//	}
+	channels = 2;
 	ms = nSoundBuffer;
 	srate = nSampleRate;
 	bufSlot = DEFAULT_SLOT;
 	srate = nSampleRate;
-	bufSize = (ms * srate * channels *sizeof(Sint16)) / 1000;
 	for(i = 0; i<bufSlot; i++) {
+		bufSize[i] = (ms * srate * channels *sizeof(Sint16)) / 1000;
 		buf[i] = NULL;
 		chunk[i].abuf = NULL;
 		chunk[i].alen = 0;
@@ -74,10 +75,10 @@ Uint8 *SndDrvTmpl::NewBuffer(int slot)
 		return NULL; /* バッファがあるよ？Deleteしましょう */
 	}
 
-	buf[slot] = (Uint8 *)malloc(bufSize);
+	buf[slot] = (Uint8 *)malloc((ms * srate * channels *sizeof(Sint16)) / 1000);
 	if(buf[slot] == NULL) return NULL; /* バッファ取得に失敗 */
 
-	memset(buf[slot], 0x00, bufSize); /* 初期化 */
+	memset(buf[slot], 0x00, (ms * srate * channels *sizeof(Sint16)) / 1000); /* 初期化 */
 	return buf[slot];
 }
 
@@ -124,20 +125,21 @@ Uint8  *SndDrvTmpl::Setup(int tick)
 	UINT uChannels;
 	int i;
 	uStereo = nStereoOut %4;
-	if ((uStereo > 0) || bForceStereo) {
-		uChannels = 2;
-	} else {
-		uChannels = 1;
-	}
+//	if ((uStereo > 0) || bForceStereo) {
+//		uChannels = 2;
+//	} else {
+//		uChannels = 1;
+//	}
+	uChannels = 2;
 	//	if((nSampleRate == srate) && (channels == uChannels)
 	//			&& (tick == ms)) return buf[0];
 	channels = uChannels;
 	ms = tick;
 	srate = nSampleRate;
-	bufSize = (ms * srate * channels *sizeof(Sint16)) / 1000;
 
 	for(i = 0; i < bufSlot; i++) {
 		if(buf[i] == NULL) {
+			bufSize[i] = (ms * srate * channels *sizeof(Sint16)) / 1000;
 			/*
 			 * バッファが取られてない == 初期状態
 			 */
@@ -150,7 +152,7 @@ Uint8  *SndDrvTmpl::Setup(int tick)
 			buf[i] = NewBuffer(i);
 		}
 		chunk[i].abuf = buf[i];
-		chunk[i].alen = bufSize;
+		chunk[i].alen = bufSize[i];
 		chunk[i].allocated = 1; /* アロケートされてる */
 		chunk[i].volume = 128; /* 一応最大 */
 	}
@@ -221,9 +223,9 @@ int SndDrvTmpl::BZero(int start, int uSamples, int slot, BOOL clear)
 	memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
 	SDL_SemPost(RenderSem);
 
-	bufSize = ss2 * channels * sizeof(Sint16);
+	bufSize[slot] = ss2 * channels * sizeof(Sint16);
 	chunk[slot].abuf = buf[slot];
-	chunk[slot].alen = bufSize;
+	chunk[slot].alen = bufSize[slot];
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume; /* 一応最大 */
 	enable = TRUE;
@@ -269,9 +271,9 @@ int SndDrvTmpl::Render(int start, int uSamples, int slot, BOOL clear)
 	 * ここではヌルレンダラ
 	 */
 	SDL_SemPost(RenderSem);
-	bufSize = ss2 * channels * sizeof(Sint16);
+	bufSize[slot] = ss2 * channels * sizeof(Sint16);
 	chunk[slot].abuf = buf[slot];
-	chunk[slot].alen = bufSize;
+	chunk[slot].alen = bufSize[slot];
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume; /* 一応最大 */
 	enable = TRUE;
@@ -284,12 +286,17 @@ void SndDrvTmpl::Play(int ch,  int slot)
 {
 	if(slot >= bufSlot) return;
 	if(chunk[slot].abuf == NULL) return;
-	if(chunk[slot].alen <= 0) return;
+//	if(chunk[slot].alen <= 0) return;
 	//		if(!enable) return;
 	if(RenderSem == NULL) return;
+	chunk[slot].abuf = buf[slot];
+	chunk[slot].alen = bufSize[slot];
+	chunk[slot].allocated = 1; /* アロケートされてる */
+	chunk[slot].volume = volume;
+
 	SDL_SemWait(RenderSem);
 	if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);
-	chunk[slot].alen = 0;
+//	chunk[slot].alen = 0;
 	SDL_SemPost(RenderSem);
 }
 
@@ -297,11 +304,15 @@ void SndDrvTmpl::Play(int ch,  int slot, int samples)
 {
 	if(slot >= bufSlot) return;
 	if(chunk[slot].abuf == NULL) return;
-	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
+//	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
+	chunk[slot].abuf = buf[slot];
+	chunk[slot].alen = bufSize[slot];
+	chunk[slot].allocated = 1; /* アロケートされてる */
+	chunk[slot].volume = volume;
 	//		if(!enable) return;
 	if(RenderSem == NULL) return;
 	SDL_SemWait(RenderSem);
 	if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);
-	chunk[slot].alen = 0;
+//	chunk[slot].alen = 0;
 	SDL_SemPost(RenderSem);
 }

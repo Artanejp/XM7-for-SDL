@@ -47,7 +47,7 @@ public:
 protected:
 	Uint8 *buf[DEFAULT_SLOT];
 	Mix_Chunk chunk[DEFAULT_SLOT];
-	int bufSize;
+	int bufSize[DEFAULT_SLOT];
 	int samples;
 	UINT channels;
 	UINT srate;

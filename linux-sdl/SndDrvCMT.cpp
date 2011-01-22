@@ -68,6 +68,9 @@ int SndDrvCMT::BZero(int start, int uSamples, int slot, BOOL clear)
 	if(buf[slot] == NULL) return 0;
 	if(start > s) return 0; /* 開始点にデータなし */
 	if(sSamples > s) sSamples = s;
+    if((start <= 0) && (clear != TRUE)) {
+    	memset(buf[slot], 0x00, (ms * srate * channels *sizeof(Sint16)) / 1000 - sizeof(Sint16));
+    }
 
 	ss = sSamples + start;
 	if(ss > s) {
@@ -83,10 +86,9 @@ int SndDrvCMT::BZero(int start, int uSamples, int slot, BOOL clear)
 	wbuf = &wbuf[start * channels];
 	memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
 	//	if(!enable) return 0;
-
-	bufSize = (start + ss2) * channels * sizeof(Sint16);
+	bufSize[slot] = (start + ss2) * channels * sizeof(Sint16);
+	chunk[slot].alen= (start + ss2) * channels * sizeof(Sint16);
 	chunk[slot].abuf = buf[slot];
-	chunk[slot].alen = (ss2 + start) * channels * sizeof(Sint16);
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = 128; /* 一応最大 */
 	SDL_SemPost(RenderSem);
@@ -122,6 +124,9 @@ int SndDrvCMT::Render(int start, int uSamples, int slot, BOOL clear)
 	wbuf = (Sint16 *)buf[slot];
 	wbuf = &wbuf[start * channels];
     level = nLevel;
+    if((start <= 0) && (clear != TRUE)) {
+    	memset(buf[slot], 0x00, s * channels * sizeof(Sint16));
+    }
 	/*
 	 * テープ出力チェック
 	 */
@@ -201,9 +206,9 @@ int SndDrvCMT::Render(int start, int uSamples, int slot, BOOL clear)
 	 * 現在のテープ出力状態を保存
 	 */
 	bTapeFlag2 = bTapeFlag;
-	bufSize = (start + ss2) * channels * sizeof(Sint16);
+	bufSize[slot] = (start + ss2) * channels * sizeof(Sint16);
+	chunk[slot].alen = (start + ss2) * channels * sizeof(Sint16);
 	chunk[slot].abuf = buf[slot];
-	chunk[slot].alen = bufSize;
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume; /* 一応最大 */
 	samples = sSamples;

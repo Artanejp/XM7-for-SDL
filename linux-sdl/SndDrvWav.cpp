@@ -44,12 +44,12 @@ Uint8 *SndDrvWav::NewBuffer(int slot)
     if(RenderSem == NULL) return NULL;
     SDL_SemWait(RenderSem);
 //    bufSize = (chunkP->alen > ((ms * srate * channels) / 1000))?chunkP->alen:(ms * srate * channels) / 1000;
-	bufSize = chunkP->alen;
-	buf[0] = (Uint8 *)malloc(bufSize);
+	bufSize[0] = chunkP->alen;
+	buf[0] = (Uint8 *)malloc(bufSize[0]);
 	if(buf[0] == NULL) return NULL; /* バッファ取得に失敗 */
-	memset(buf[0], 0x00, bufSize); /* 初期化 */
+	memset(buf[0], 0x00, bufSize[0]); /* 初期化 */
 	chunk[0].abuf = buf[0];
-	chunk[0].alen = bufSize;
+	chunk[0].alen = bufSize[0];
 	chunk[0].allocated = 1; /* アロケートされてる */
 	chunk[0].volume = MIX_MAX_VOLUME; /* 一応最大 */
 	SDL_SemPost(RenderSem);
@@ -192,7 +192,7 @@ int SndDrvWav::Render(int start, int uSamples, int slot, BOOL clear)
 		SDL_SemPost(RenderSem);
 	}
 	chunk[0].abuf = buf[0];
-	chunk[0].alen = bufSize;
+	chunk[0].alen = bufSize[0];
 	chunk[0].allocated = 1; /* アロケートされてる */
 	chunk[0].volume = volume; /* 一応最大 */
 	return s;

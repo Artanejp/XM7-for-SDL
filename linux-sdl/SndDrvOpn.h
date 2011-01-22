@@ -26,7 +26,7 @@
 #include <vector>
 #include "SndDrvTmpl.h"
 
-#define OPN_SLOT 2
+#define OPN_SLOT 4
 
 class SndDrvOpn: public SndDrvTmpl {
 public:
