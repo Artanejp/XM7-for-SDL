@@ -357,19 +357,19 @@ void LoadCfg(void)
     configdat.bFullScan = LoadCfgBool("FullScan", FALSE);
 
     configdat.uWidth = LoadCfgInt("DrawWidth", 640);
-    if((configdat.uWidth != 640)
-       && (configdat.uWidth != 1280)
-       && (configdat.uWidth != 320)) {
-            configdat.uWidth = 640;
+    if(configdat.uWidth < 320) {
+    	configdat.uWidth = 320;
     }
+    if(configdat.uWidth > 1280) {
+    	configdat.uWidth = 1280;
+    }
+
     configdat.uHeight = LoadCfgInt("DrawHeight", 400);
-    if((configdat.uHeight != 400)
-       && (configdat.uHeight != 200)
-       && (configdat.uHeight != 240)
-       && (configdat.uHeight != 480)
-       && (configdat.uHeight != 800)
-       && (configdat.uHeight != 960)){
-                configdat.uHeight = 400;
+    if(configdat.uHeight < 200){
+    	configdat.uHeight = 200;
+    }
+    if(configdat.uHeight > 960){
+    	configdat.uHeight = 960;
     }
     /*
      * FPS追加 20101018

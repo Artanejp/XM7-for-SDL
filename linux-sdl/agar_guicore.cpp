@@ -31,6 +31,7 @@ extern "C" {
 #include "api_draw.h"
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
+#include "agar_gldraw.h"
 
 extern "C" {
 void InitInstance(void);
@@ -47,9 +48,6 @@ extern AG_GLView *OsdArea;
 extern void Create_AGMainBar(AG_Widget *Parent);
 extern void CreateStatus(void);
 extern int DrawThreadMain(void *);
-extern void AGEventDrawGL(AG_Event *event);
-extern void AGEventScaleGL(AG_Event *event);
-extern void AGEventOverlayGL(AG_Event *event);
 extern void DestroyStatus(void);
 
 extern void DrawOSDEv(AG_Event *e);
@@ -67,6 +65,7 @@ void KeyBoardSnoop(BOOL Flag)
 
 void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
+	if(ev == NULL) return;
 	switch (ev->type) {
 	case AG_DRIVER_KEY_UP:
 		if(	!bKeyboardSnooped) {
@@ -89,7 +88,8 @@ void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	default:
 		break;
 	}
-
+//	if(drv == NULL) return;
+	if(ev->type == AG_DRIVER_CLOSE) return;
 	/* Forward the event to Agar. */
 	if (AG_ProcessEvent(drv, ev) == -1)
 		return;
@@ -141,11 +141,14 @@ extern void AG_detachsub(void);
 extern void ResizeWindow(int w, int h);
 extern Uint32 nDrawTick1;
 
+int  RootVideoWidth;
+int  RootVideoHeight;
 void MainLoop(int argc, char *argv[])
 {
 	int c;
 	char *drivers = NULL;
 	char *optArg;
+	const SDL_VideoInfo *inf;
 
 //	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitCore("xm7", AG_VERBOSE);
@@ -209,6 +212,10 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
+    SDL_Init(SDL_INIT_VIDEO);
+	inf = SDL_GetVideoInfo();
+	RootVideoWidth = inf->current_w;
+	RootVideoHeight = inf->current_h;
 
     if(drivers == NULL)  {
     	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
@@ -226,7 +233,8 @@ void MainLoop(int argc, char *argv[])
 	run_flag = TRUE;
 //	DrawThreadMain(NULL);
 	AG_initsub();
-	ResizeWindow(640,480);
+	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+	newResize = FALSE;
 
 	nDrawTick1 = AG_GetTicks();
 	while(1) {
@@ -343,6 +351,11 @@ void InitInstance(void)
 	AG_WidgetSetPosition(DrawArea, 0, 32);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
+	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
+//	AG_GLViewKeydownFn(DrawArea, AGEventKeyPress_AG_GL, NULL);
+//	AG_GLViewKeyupFn(DrawArea, AGEventKeyRelease_AG_GL, NULL);
+
+
 //	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
     hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
     AG_WidgetSetSize(hb2, 640,40);

@@ -977,7 +977,9 @@ static void DrawTape(void)
     } else {
     	tid_cmt =  CreateTexture(pCMTNorm);
     }
-    DrawTexture(tid_cmt, nDrawWidth - pCMTNorm->w - LED_WIDTH * 3,  nDrawHeight, pCMTNorm->w, pCMTNorm->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    if(pCMTNorm) {
+    	DrawTexture(tid_cmt, nDrawWidth - pCMTNorm->w - LED_WIDTH * 3,  nDrawHeight, pCMTNorm->w, pCMTNorm->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    }
     DiscardTexture(tid_cmt);
 }
 

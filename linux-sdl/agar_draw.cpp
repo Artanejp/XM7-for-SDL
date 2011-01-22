@@ -13,19 +13,17 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 #include "agar_gldraw.h"
+#include <SDL.h>
 
 extern Uint32 nDrawTick1;
 extern void EventSDL(AG_Driver *drv);
 extern void EventGUI(AG_Driver *drv);
 extern void DrawOSDGL(AG_GLView *w);
-
-extern GLuint tid_ins;
-extern GLuint tid_kana;
-extern GLuint tid_caps;
-extern GLuint tid_fd0;
-extern GLuint tid_fd1;
-extern GLuint tid_cmt;
-extern GLuint tid_caption;
+extern "C" {
+extern AG_GLView *OsdArea;
+}
+extern int  RootVideoWidth;
+extern int  RootVideoHeight;
 
 void InitGUI(int w, int h)
 {
@@ -33,7 +31,33 @@ void InitGUI(int w, int h)
 
 void ResizeWindow_Agar(int w, int h)
 {
-	AG_ResizeDisplay(w, h);
+	int hh;
+	int ww;
+	int sh = RootVideoHeight - 10;
+	int sw = RootVideoWidth - 10;
+//	AG_ResizeDisplay(w, h);
+	if(DrawArea == NULL) return;
+	if(w > sw) w = sw;
+	if(h > sh) h = sh;
+
+	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	if(OsdArea != NULL){
+		ww = w>OsdArea->wid.w?w:OsdArea->wid.w;
+		hh = h + OsdArea->wid.h;
+	} else{
+		ww = w;
+		hh = h;
+	}
+	if(MenuBar != NULL) {
+		hh += MenuBar->wid.h;
+		ww = ww>MenuBar->wid.w?ww:ww>MenuBar->wid.w;
+	}
+	sh = RootVideoHeight;
+	sw = RootVideoWidth;
+	if(ww > sw) ww = sw;
+	if(hh > sh) hh = sh;
+
+	AG_ResizeDisplay(ww, hh);
 }
 
 static void ProcessGUI(void)
@@ -109,18 +133,6 @@ void AGDrawTaskMain(void)
 	}
 #endif				/*  */
 	SelectDraw2();
-#if 0
-		if(newResize) {
-			nDrawWidth = newDrawWidth;
-			nDrawHeight = newDrawHeight;
-			ResizeWindow_Agar(nDrawWidth, nDrawHeight);
-			newResize = FALSE;
-			if(DrawArea) {
-//				AG_SizeAlloc r;
-				AG_WidgetSetSize(AGWIDGET(DrawArea), newDrawWidth, newDrawHeight);
-			}
-		}
-#endif
 		/* Render the Agar windows */
 }
 

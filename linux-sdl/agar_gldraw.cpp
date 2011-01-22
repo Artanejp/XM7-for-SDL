@@ -403,3 +403,35 @@ void AGEventDrawGL(AG_Event *event)
 	DiscardTexture(textureid);
 }
 
+void AGEventMouseMove_AG_GL(AG_Event *event)
+{
+	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	int x = AG_INT(1);
+	int y = AG_INT(2);
+	int xrel = AG_INT(3);
+	int yrel = AG_INT(4);
+	int buttons = AG_INT(5);
+		//int x, int y, int xRel, int yRel, int buttons
+	printf("Mouse-Motion (%d,%d) (%d,%d) %08x\n", x, y, yrel, yrel, buttons);
+}
+
+void AGEventKeyPress_AG_GL(AG_Event *event)
+{
+	//int key, int mod, Ulong unicode
+	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	int key = AG_INT(1);
+	int mod = AG_INT(2);
+	int unicode = AG_INT(3);
+	printf("Key Press %d %04x %08x\n", key, mod, unicode);
+}
+
+void AGEventKeyRelease_AG_GL(AG_Event *event)
+{
+	//int key, int mod, Ulong unicode
+	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	int key = AG_INT(1);
+	int mod = AG_INT(2);
+	int unicode = AG_INT(3);
+	printf("Key Release %d %04x %08x\n", key, mod, unicode);
+}
+
