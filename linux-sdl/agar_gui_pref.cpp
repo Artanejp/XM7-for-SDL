@@ -11,6 +11,7 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
+#include <SDL.h>
 
 #include "xm7.h"
 #include "device.h"
@@ -23,6 +24,12 @@
 #include "mmr.h"
 #include "mouse.h"
 #include "aluline.h"
+#include "multipag.h"
+#include "ttlpalet.h"
+#include "apalet.h"
+#include "subctrl.h"
+#include "display.h"
+#include "device.h"
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
@@ -35,8 +42,9 @@
 #include "sdl_sch.h"
 #include "sdl_snd.h"
 #include "sdl_bar.h"
-
-
+#include "xm7.h"
+#include "api_draw.h"
+#include "api_scaler.h"
 
 extern "C" {
 static configdat_t localconfig;
@@ -53,6 +61,7 @@ static int EmuVMTypeSelected;
 static int EmuCyclestealMode;
 
 static int ScreenResoSelected;
+static int ScreenAspectSelected;
 
 static void OnConfigApply(AG_Event *event)
 {
@@ -262,6 +271,13 @@ static const WORD ScreenSizeHeight[] = {
 		800,
 		960
 };
+static const char *ScreenAspectName[] =
+{
+		"1:1",
+		"4:3",
+		"Free",
+		NULL
+};
 
 static void OnChangeScreenReso(AG_Event *event)
 {
@@ -269,10 +285,39 @@ static void OnChangeScreenReso(AG_Event *event)
 	ScreenResoSelected = number;
 	localconfig.uWidth = ScreenSizeWidth[number];
 	localconfig.uHeight = ScreenSizeHeight[number];
-	ResizeGL(ScreenSizeWidth[number], ScreenSizeHeight[number]);
+	ResizeWindow_Agar(ScreenSizeWidth[number], ScreenSizeHeight[number]);
 	if(localconfig.nDrawFPS <= 1) {
 		localconfig.nDrawFPS = 2;
 	}
+}
+
+static void OnChangeScreenAspect(AG_Event *event)
+{
+	int number = AG_INT(1);
+	ScreenAspectSelected = number;
+	if(ScreenAspectSelected < 0) {
+		ScreenAspectSelected = 0;
+	}
+	if(ScreenAspectSelected > nAspectFree) {
+		ScreenAspectSelected = nAspectFree;
+	}
+	switch(ScreenAspectSelected){
+	case nAspect11:
+		if(localconfig.uWidth > localconfig.uHeight) {
+			localconfig.uHeight = (localconfig.uWidth * 5) / 8;
+		} else {
+			localconfig.uWidth = (localconfig.uHeight * 8) / 5;
+		}
+		break;
+	case nAspect43:
+		if(localconfig.uWidth > localconfig.uHeight) {
+			localconfig.uHeight = (localconfig.uWidth * 6) / 8;
+		} else {
+			localconfig.uWidth = (localconfig.uHeight * 8) / 6;
+		}
+		break;
+	}
+	ResizeWindow_Agar(localconfig.uWidth, localconfig.uHeight);
 }
 
 void OnConfigMenuScreen(AG_NotebookTab *parent)
@@ -296,12 +341,17 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_VFILL);
 	{
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenSizeName, OnChangeScreenReso, NULL);
+		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenAspectName, OnChangeScreenAspect, NULL);
 		AG_BindInt(radio, "value",&ScreenResoSelected);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
 		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Frame rate"), &localconfig.nDrawFPS);
 		AG_NumericalSetRangeInt(fps, 2, 75);
+		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Emulation rate"), &localconfig.nEmuFPS);
+		AG_NumericalSetRangeInt(fps, 2, 75);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
+		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Sync to VSYNC"), &localconfig.bSyncToVSYNC);
 	}
 }
 

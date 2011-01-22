@@ -72,6 +72,10 @@ BOOL            bPaletFlag;		/* パレット変更フラグ */
 BOOL            bClearFlag;
 int             nOldVideoMode;
 WORD			nDrawFPS;   /* FPS値 20100913 */
+WORD 			nEmuFPS; /* エミュレーションFPS値 20110123 */
+WORD 			nAspect;  /* アスペクト比 20110123 */
+BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
+
 BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 SDL_semaphore *DrawInitSem;
 
@@ -690,7 +694,11 @@ void	InitDraw(void)
 		nDrawHeight = 480;
 		nDrawWidth = 640;
 		nDrawFPS = 25;
+		nEmuFPS = 20;
+		nAspect = nAspectFree;
+		bSyncToVSYNC = TRUE;
 		nDrawCount = DrawCountSet(nDrawFPS);
+
 		nOldVideoMode =
 				bOldFullScan = TRUE;
 		bPaletFlag = FALSE;

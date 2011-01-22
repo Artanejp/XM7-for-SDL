@@ -13,6 +13,7 @@
 #include <agar/gui/opengl.h>
 #include "api_draw.h"
 #include "api_scaler.h"
+#include "agar_xm7.h"
 #include "agar_gldraw.h"
 
 static AG_Surface *pixvram;
@@ -31,6 +32,7 @@ static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo = FALSE;
 static SDL_semaphore *VramSem;
+extern AG_GLView *OsdArea;
 
 static inline void putdot(Uint8 *addr, Uint32 c)
 {
@@ -78,7 +80,7 @@ void InitGL_AG_GL(int w, int h)
 	int rgb_size[3];
 
 	flags = SDL_OPENGL | SDL_RESIZABLE;
-#if 1
+	pixvram = NULL;
     switch (bpp) {
          case 8:
              rgb_size[0] = 3;
@@ -97,7 +99,6 @@ void InitGL_AG_GL(int w, int h)
              rgb_size[2] = 8;
              break;
      }
-#endif
 
 	// Surfaceつくる
 	format.BitsPerPixel = 32;
@@ -152,17 +153,10 @@ void UnLockVram(void)
 
 static GLuint CreateTexture(AG_Surface *p)
 {
-	Uint8 *pix;
-	int w;
-	int h;
 	GLuint textureid;
 
 	if(agDriverOps == NULL) return 0;
 	if(p == NULL) return 0;
-	w = p->w;
-	h = p->h;
-	pix = (Uint8 *)p->pixels;
-	if(pix == NULL) return 0;
 	LockVram();
     glGenTextures(1, &textureid);
     glBindTexture(GL_TEXTURE_2D, textureid);
@@ -171,11 +165,11 @@ static GLuint CreateTexture(AG_Surface *p)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
-                 w, h,
+                 pixvram->w, pixvram->h,
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
-                 pix);
+                 pixvram->pixels);
    UnLockVram();
 	return textureid;
 }
@@ -199,8 +193,10 @@ static void Enter2DMode(void)
 {
 	int x = viewport_x;
 	int y = viewport_y;
-	int w = viewport_w + osd_w;
-	int h = viewport_h + osd_h;
+//	int w = viewport_w + osd_w;
+//	int h = viewport_h + osd_h;
+	int w = viewport_w;
+	int h = viewport_h;
 
 	        /* Note, there may be other things you need to change,
 	           depending on how you have your OpenGL state set up.
@@ -219,7 +215,8 @@ static void Enter2DMode(void)
 	        /*
 	         * ビューポートは表示する画面の大きさ
 	         */
-	        glViewport(x, y , w + x,  h + y );
+//	        glViewport(x, y , w + x,  h + y );
+	        glViewport(x, y , w,  h);
 	        /*
 	         * 座標系は(0,0)-(0,1)
 	         */
@@ -250,24 +247,26 @@ static void DrawTexture(GLuint tid)
 	float xend = 1.0f;
 	float ybegin = 0.0f;
 	float yend = 1.0f;
-
+	float multiply;
+	if(pixvram == NULL) return;
+//	multiply =  ((float)pixvram->h * 3.0f)/ (float)viewport_h ;
+	multiply = 1.0f;
 #if 1
 	if(viewport_w != 0) {
-		xbegin = (float)offset_x / (float)viewport_w;
-		xend = 0.5;
+		xbegin = (float)offset_x   / ((float)viewport_w + (float)osd_w + (float)offset_x  );
+		xend = ((float)viewport_w + (float)offset_x)  / ((float)viewport_w + (float)offset_x);
 	} else {
 		xbegin = 0.0;
 		xend = 1.0;
 	}
 	if(viewport_h != 0) {
-		ybegin = (float)offset_y  / ((float)viewport_h + (float)osd_h );
-		yend = (float)viewport_h  / ((float)viewport_h + (float)osd_h );
+		ybegin = (float)offset_y  * multiply  / ((float)viewport_h + (float)osd_h + (float)offset_y  );
+		yend = ((float)viewport_h + (float)offset_y)  / ((float)viewport_h + (float)osd_h + (float)offset_y);
 	} else {
-		xbegin = 0.0;
-		xend = 1.0;
+		ybegin = 0.0;
+		yend = 1.0;
 	}
 #endif
-
 	Enter2DMode();
     glBindTexture(GL_TEXTURE_2D, tid);
     glBegin(GL_TRIANGLE_STRIP);
@@ -341,6 +340,7 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	}
 	if(drv == NULL) return;
 	if((vramwidth <= 0) || (vramheight <=0)) return;
+	LockVram();
 
 	size = vramwidth * vramheight * 8 * 4;
 	if((pixvram == NULL) &&(vramwidth != 0) &&(vramheight != 0)) {
@@ -355,9 +355,11 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	ww = (w>>3) + (x>>3);
 	hh = h + y;
 	bitmap = (Uint8 *)pixvram->pixels;
-	if(bitmap == NULL) return;
+	if(bitmap == NULL) {
+		UnLockVram();
+		return;
+	}
 	ofset = 0;
-	LockVram();
 	for(yy = y; yy < hh; yy++) {
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * vramwidth + xx ;
@@ -394,10 +396,25 @@ void AGEventScaleGL(AG_Event *event)
 void AGEventDrawGL(AG_Event *event)
 {
 	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	int offset;
+	int osd;
+
 //	pixvram = GetVramSurface();
 	if(pixvram == NULL) return;
-	SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, OSD_HEIGHT);
-	SetOffset(0, DRAW_OFSET);
+	if(MenuBar != NULL) {
+		offset = MenuBar->wid.h;
+	} else {
+		offset = 40;
+	}
+	if(OsdArea != NULL) {
+		osd = OsdArea->wid.h;
+	} else {
+		osd = OSD_HEIGHT;
+	}
+	SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, osd);
+//	SetViewPort(wid->wid.x, wid->wid.y, wid->wid.w, wid->wid.h, wid->wid.w, osd);
+
+	SetOffset(0, offset);
 	textureid = CreateTexture(pixvram);
 	DrawTexture(textureid);
 	DiscardTexture(textureid);

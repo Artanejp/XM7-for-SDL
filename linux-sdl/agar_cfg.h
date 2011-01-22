@@ -62,7 +62,10 @@ typedef struct {
 	BOOL bFullScanFS;
 	WORD uWidth;	/* 表示サイズ(横) */
 	WORD uHeight;	/* 表示サイズ(縦) */
-	WORD nDrawFPS;
+	WORD nDrawFPS; /* 描画FPS */
+	WORD nEmuFPS;    /* エミュレーションFPS */
+	WORD nAspect; /* アスペクト比 */
+	BOOL bSyncToVSYNC; /* VSYNCに同期 (GLのみ有）*/
 	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;	/* WHG有効フラグ */
 	BOOL bTHGEnable;	/* THG有効フラグ */
@@ -82,11 +85,11 @@ typedef struct {
 	BOOL bFddSound;	/* FDDシークサウンド */
 
 #endif
-	int nFMVolume;                                          /* FM音源ボリューム */
-	int nPSGVolume;                                         /* PSGボリューム */
-	int nBeepVolume;                                        /* BEEP音ボリューム */
-	int nCMTVolume;                                         /* CMT音モニタボリューム */
-	int nWaveVolume;                                        /* 各種効果音ボリューム */
+	int nFMVolume;  /* FM音源ボリューム */
+	int nPSGVolume; /* PSGボリューム */
+	int nBeepVolume;/* BEEP音ボリューム */
+	int nCMTVolume; /* CMT音モニタボリューム */
+	int nWaveVolume; /* 各種効果音ボリューム */
 	UINT uChSeparation;
 } configdat_t;
 

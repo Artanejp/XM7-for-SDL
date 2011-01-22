@@ -71,12 +71,14 @@ static BOOL bCursorGrabbed;
 /*
  * ドライバクラス
  */
-static SDLKbdInterface *SDLDrv;
 #ifdef USE_GTK
 static GtkKbdInterface *GTKDrv;
 #endif
 #ifdef USE_AGAR
 static AgarKbdInterface *AGARDrv;
+#endif
+#ifndef USE_AGAR
+static SDLKbdInterface *SDLDrv;
 #endif
 
 
@@ -116,12 +118,14 @@ InitKbd(void)
 	/*
 	 * ここにドライバー作成する
 	 */
-	SDLDrv = new SDLKbdInterface();
 #ifdef USE_GTK
 	GTKDrv = new GtkKbdInterface();
 #endif
 #ifdef USE_AGAR
 	AGARDrv = new AgarKbdInterface();
+#endif
+#ifndef USE_AGAR
+	SDLDrv = new SDLKbdInterface();
 #endif
 	/*
 	 * ワークエリア初期化(キーボード NT/PC-9801対策)
@@ -175,12 +179,14 @@ InitKbd(void)
 void            FASTCALL
 CleanKbd(void)
 {
-	if(SDLDrv != NULL) delete SDLDrv;
 #ifdef USE_GTK
 	if(GTKDrv != NULL) delete GTKDrv;
 #endif
 #ifdef USE_AGAR
 	if(AGARDrv != NULL) delete AGARDrv;
+#endif
+#ifndef USE_AGAR
+	if(SDLDrv != NULL) delete SDLDrv;
 #endif
 	if(KeySem != NULL){
 		SDL_DestroySemaphore(KeySem);
@@ -694,15 +700,20 @@ gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
  */
 BOOL OnKeyPress(SDL_Event *event)
 {
+#ifndef USE_AGAR
 	if(SDLDrv == NULL) return FALSE;
 	SDLDrv->OnPress((void *)event);
+#endif
 	return TRUE;
+
 }
 
 BOOL OnKeyRelease(SDL_Event *event)
 {
+#ifndef USE_AGAR
 	if(SDLDrv == NULL) return FALSE;
 	SDLDrv->OnRelease((void *)event);
+#endif
 	return TRUE;
 }
 

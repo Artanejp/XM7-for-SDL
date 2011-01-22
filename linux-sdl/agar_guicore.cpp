@@ -45,6 +45,8 @@ extern AG_GLView *DrawArea;
 extern AG_GLView *OsdArea;
 }
 
+extern Uint32 nDrawTick1;
+
 extern void Create_AGMainBar(AG_Widget *Parent);
 extern void CreateStatus(void);
 extern int DrawThreadMain(void *);
@@ -63,56 +65,105 @@ void KeyBoardSnoop(BOOL Flag)
 	bKeyboardSnooped = Flag;
 }
 
-void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
+BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
-	if(ev == NULL) return;
-	switch (ev->type) {
-	case AG_DRIVER_KEY_UP:
-		if(	!bKeyboardSnooped) {
-			OnKeyReleaseAG(ev->data.key.ks, 0, ev->data.key.ucs);
+		/* Retrieve the next queued event. */
+			switch (ev->type) {
+			case AG_DRIVER_KEY_UP:
+				if(	!bKeyboardSnooped) {
+					OnKeyReleaseAG(ev->data.key.ks, 0, ev->data.key.ucs);
+				}
+				break;
+			case AG_DRIVER_KEY_DOWN:
+				if(!bKeyboardSnooped) {
+					OnKeyPressAG(ev->data.key.ks, 0, ev->data.key.ucs);
+				}
+				break;
+			case AG_DRIVER_VIDEORESIZE:
+				newDrawWidth = ev->data.videoresize.w;
+				newDrawHeight = ev->data.videoresize.h;
+				if(newDrawHeight < 50) {
+					newDrawHeight = 50;
+				}
+				newResize = TRUE;
+				ResizeWindow_Agar(newDrawWidth, newDrawHeight);
+				nDrawWidth = newDrawWidth;
+				nDrawHeight = newDrawHeight;
+				newResize = FALSE;
+				break;
+			default:
+				break;
+			}
+			if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
+		//	if(drv == NULL) return;
+		/* Forward the event to Agar. */
+		return TRUE;
+}
+
+BOOL EventGUI(AG_Driver *drv)
+{
+	AG_DriverEvent dev;
+	BOOL r;
+	do {
+		if (AG_GetNextEvent(drv, &dev) == 1) {
+            r = EventGuiSingle(drv, &dev);
+    		if(!r) return FALSE;
 		}
-		break;
-	case AG_DRIVER_KEY_DOWN:
-		if(!bKeyboardSnooped) {
-			OnKeyPressAG(ev->data.key.ks, 0, ev->data.key.ucs);
+	} while (AG_PendingEvents(drv) > 0);
+	return TRUE;
+}
+
+void AGDrawTaskEvent(BOOL flag)
+{
+	Uint32 nDrawTick2;
+	AG_Window *win;
+	AG_Driver *drv;
+	AG_DriverEvent dev;
+	AG_Surface *pixvram;
+	Uint32 fps;
+	nDrawTick1 = AG_GetTicks();
+
+	for(;;) {
+		if(nDrawFPS > 2) {
+			fps = 1000 / nDrawFPS;
+		} else {
+			fps = 500;
 		}
-		break;
-	case AG_DRIVER_VIDEORESIZE:
-		newDrawWidth = ev->data.videoresize.w;
-		newDrawHeight = ev->data.videoresize.h;
-		if(newDrawHeight < 50) {
-			newDrawHeight = 50;
+		if(agDriverSw) {
+			drv = &agDriverSw->_inherit;
 		}
-		newResize = TRUE;
-		break;
-	default:
-		break;
+		if(drv == NULL) {
+			AG_Delay(10);
+			continue;
+		}
+
+		nDrawTick2 = AG_GetTicks();
+		if(nDrawTick2 < nDrawTick1) nDrawTick1 = 0; // オーバーフロー対策
+		if((nDrawTick2 - nDrawTick1) > fps) {
+			// ここにGUIの処理入れる
+			AG_LockVFS(&agDrivers);
+			if (agDriverSw) {
+				/* With single-window drivers (e.g., sdlfb). */
+				AG_BeginRendering(agDriverSw);
+				AG_FOREACH_WINDOW(win, agDriverSw) {
+					AG_ObjectLock(win);
+					AG_WindowDraw(win);
+					AG_ObjectUnlock(win);
+				}
+				nDrawTick1 = nDrawTick2;
+				AG_EndRendering(agDriverSw);
+			}
+			AG_UnlockVFS(&agDrivers);
+		}	else if (AG_PendingEvents(drv) > 0){
+			if(EventSDL(drv) == FALSE) return;
+			if(EventGUI(drv) == FALSE) return;
+		}
+		AG_Delay(1);
 	}
-//	if(drv == NULL) return;
-	if(ev->type == AG_DRIVER_CLOSE) return;
-	/* Forward the event to Agar. */
-	if (AG_ProcessEvent(drv, ev) == -1)
-		return;
-
 }
 
-void EventGUI(AG_Driver *drv)
-{
-	AG_DriverEvent ev;
 
-	if(drv == NULL) return;
-	 if (AG_PendingEvents(drv) > 0) {
-				/*
-				 * Case 2: There are events waiting to be processed.
-				 */
-				do {
-					/* Retrieve the next queued event. */
-					if (AG_GetNextEvent(drv, &ev) == 1) {
-						EventGuiSingle(drv, &ev);
-					}
-				} while (AG_PendingEvents(drv) > 0);
-	 }
-}
+
 
 
 void ProcessKeyDown(AG_Event *event)
@@ -141,8 +192,11 @@ extern void AG_detachsub(void);
 extern void ResizeWindow(int w, int h);
 extern Uint32 nDrawTick1;
 
+extern "C" {
 int  RootVideoWidth;
 int  RootVideoHeight;
+}
+
 void MainLoop(int argc, char *argv[])
 {
 	int c;
@@ -235,21 +289,10 @@ void MainLoop(int argc, char *argv[])
 	AG_initsub();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
-
 	nDrawTick1 = AG_GetTicks();
-	while(1) {
-	AG_Delay(10);
+	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	AGDrawTaskEvent(TRUE);
-		if(newResize) {
-			nDrawWidth = newDrawWidth;
-			nDrawHeight = newDrawHeight;
-			ResizeWindow_Agar(nDrawWidth, nDrawHeight);
-			newResize = FALSE;
-			if(DrawArea) {
-				AG_WidgetSetSize(AGWIDGET(DrawArea), newDrawWidth, newDrawHeight);
-			}
-		}
-	}
+//	AG_Quit();
 }
 
 
@@ -335,10 +378,10 @@ void InitInstance(void)
     hb = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
     AG_WidgetSetSize(MainWindow, 640,480);
 
-    Create_AGMainBar(AGWIDGET(hb));
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-    AG_AtExitFunc(OnDestroy2);
-	AG_WidgetSetSize(MenuBar, 640, 32);
+	AG_WidgetSetSize(hb, 640, 32);
+	AG_WidgetSetPosition(hb, 0, 0);
+    Create_AGMainBar(AGWIDGET(hb));
 	AG_WidgetEnable(AGWIDGET(MenuBar));
 
     hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
@@ -348,10 +391,10 @@ void InitInstance(void)
 	DrawArea = AG_GLViewNew(AGWIDGET(hb2) , AG_GLVIEW_EXPAND);
 	AG_WidgetEnable(DrawArea);
 	AG_GLViewSizeHint(DrawArea, 640, 480);
-	AG_WidgetSetPosition(DrawArea, 0, 32);
+	AG_WidgetSetPosition(DrawArea, 0, MenuBar->wid.h);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
-	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
+//	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
 //	AG_GLViewKeydownFn(DrawArea, AGEventKeyPress_AG_GL, NULL);
 //	AG_GLViewKeyupFn(DrawArea, AGEventKeyRelease_AG_GL, NULL);
 

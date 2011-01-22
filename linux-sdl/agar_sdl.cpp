@@ -17,7 +17,7 @@
 #include "api_js.h"
 #include "SDLJoyInterface.h"
 
-extern void EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev);
+extern BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev);
 
 void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 {
@@ -98,7 +98,7 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 
 
 
-void EventSDL(AG_Driver *drv)
+BOOL EventSDL(AG_Driver *drv)
 {
 	SDL_Surface *p;
 	SDL_Event eventQueue;
@@ -110,7 +110,7 @@ void EventSDL(AG_Driver *drv)
 
 	if(SDL_WasInit(SDL_INIT_VIDEO) != 0) {
 		p = SDL_GetVideoSurface();
-		if(p == NULL) return;
+		if(p == NULL) return TRUE;
 		while (SDL_PollEvent(&eventQueue))
 		{
 			switch (eventQueue.type)
@@ -126,11 +126,12 @@ void EventSDL(AG_Driver *drv)
 				break;
 			default:
 				ConvertSDLEvent(drv, &eventQueue, &event);
-				EventGuiSingle(drv, &event);
+				if(!EventGuiSingle(drv, &event)) return FALSE;
 				break;
 			}
 		}
 	}
+	return TRUE;
 }
 
 

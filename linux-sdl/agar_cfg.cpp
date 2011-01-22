@@ -375,6 +375,80 @@ void LoadCfg(void)
      * FPS追加 20101018
      */
     configdat.nDrawFPS = LoadCfgInt("DrawFPS", 25);
+    if(configdat.nDrawFPS > 78) {
+    	configdat.nDrawFPS = 78;
+    }
+    if(configdat.nDrawFPS < 2) {
+    	configdat.nDrawFPS = 2;
+    }
+    /*
+     * Emu FPS追加 20110123
+     *
+     */
+    configdat.nEmuFPS = LoadCfgInt("EmuFPS", 20);
+    if(configdat.nEmuFPS > 78) {
+    	configdat.nEmuFPS = 78;
+    }
+    if(configdat.nEmuFPS < 2) {
+    	configdat.nEmuFPS = 2;
+    }
+    /*
+    * ASPECT比追加
+    */
+    configdat.nAspect = LoadCfgInt("Aspect", nAspect43);
+    if(nAspect < 0) {
+    	nAspect = 0;
+    }
+    if(nAspect > nAspectFree) {
+    	nAspect = nAspectFree;
+    }
+    /*
+     * ここで、縦横比率からASPECT比割り出す
+     */
+    switch(configdat.uWidth){
+    case 320:
+    	if(configdat.uHeight == 200) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 240) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 640:
+    	if(configdat.uHeight == 400) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 480) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 800:
+    	if(configdat.uHeight == 500) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 600) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 1024:
+    	if(configdat.uHeight == 640) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 768) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 1280:
+    	if(configdat.uHeight == 800) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 960) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    }
+    configdat.bSyncToVSYNC = LoadCfgBool("SYNCTOVSYNC", 1);
+
 /*
  * Optionセクション
  */
@@ -539,6 +613,61 @@ void SaveCfg(void)
     SaveCfgInt("DrawWidth", configdat.uWidth);
     SaveCfgInt("DrawHeight", configdat.uHeight);
     SaveCfgInt("DrawFPS", configdat.nDrawFPS); // 20101018
+    /*
+     * Emu FPS追加 20110123
+     *
+     */
+    SaveCfgInt("EmuFPS", configdat.nEmuFPS);
+    /*
+    * ASPECT比追加
+    */
+    /*
+     * ここで、縦横比率からASPECT比割り出す
+     */
+    switch(configdat.uWidth){
+    case 320:
+    	if(configdat.uHeight == 200) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 240) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 640:
+    	if(configdat.uHeight == 400) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 480) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 800:
+    	if(configdat.uHeight == 500) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 600) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 1024:
+    	if(configdat.uHeight == 640) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 768) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 1280:
+    	if(configdat.uHeight == 800) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 960) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    }
+    SaveCfgInt("Aspect", configdat.nAspect);
+    SaveCfgBool("SYNCTOVSYNC", configdat.bSyncToVSYNC);
 /*
  * Optionセクション
  */
@@ -654,8 +783,12 @@ void ApplyCfg(void)
     nDrawHeight = configdat.uHeight;
     nDrawWidth = configdat.uWidth;
     nDrawFPS = configdat.nDrawFPS;
+    nEmuFPS = configdat.nEmuFPS;
+    nAspect = configdat.nAspect;
+    bSyncToVSYNC = configdat.bSyncToVSYNC;
+
     display_notify();
-	ResizeGL(nDrawWidth, nDrawHeight);
+//	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 
 
 /*

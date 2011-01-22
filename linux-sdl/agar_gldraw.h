@@ -22,8 +22,8 @@ extern AG_Window *MainWindow;
 extern AG_Menu  *MenuBar;
 extern void DrawStatus(void);
 }
-extern void EventSDL(AG_Driver *drv);
-extern void EventGUI(AG_Driver *drv);
+extern BOOL EventSDL(AG_Driver *drv);
+extern BOOL EventGUI(AG_Driver *drv);
 extern void DrawOSDGL(AG_GLView *w);
 
 extern void AGEventScaleGL(AG_Event *event);
