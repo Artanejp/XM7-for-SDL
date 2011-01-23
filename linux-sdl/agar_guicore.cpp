@@ -45,7 +45,8 @@ extern AG_GLView *DrawArea;
 extern AG_GLView *OsdArea;
 }
 
-extern Uint32 nDrawTick1;
+Uint32 nDrawTick1D;
+extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
 extern void CreateStatus(void);
@@ -80,16 +81,12 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 				}
 				break;
 			case AG_DRIVER_VIDEORESIZE:
-				newDrawWidth = ev->data.videoresize.w;
-				newDrawHeight = ev->data.videoresize.h;
-				if(newDrawHeight < 50) {
-					newDrawHeight = 50;
+				nDrawWidth = ev->data.videoresize.w;
+				nDrawHeight = ev->data.videoresize.h;
+				if(nDrawHeight < 50) {
+					nDrawHeight = 50;
 				}
-				newResize = TRUE;
-				ResizeWindow_Agar(newDrawWidth, newDrawHeight);
-				nDrawWidth = newDrawWidth;
-				nDrawHeight = newDrawHeight;
-				newResize = FALSE;
+				ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 				break;
 			default:
 				break;
@@ -115,13 +112,10 @@ BOOL EventGUI(AG_Driver *drv)
 
 void AGDrawTaskEvent(BOOL flag)
 {
-	Uint32 nDrawTick2;
+	Uint32 nDrawTick2D;
 	AG_Window *win;
 	AG_Driver *drv;
-	AG_DriverEvent dev;
-	AG_Surface *pixvram;
 	Uint32 fps;
-	nDrawTick1 = AG_GetTicks();
 
 	for(;;) {
 		if(nDrawFPS > 2) {
@@ -137,20 +131,23 @@ void AGDrawTaskEvent(BOOL flag)
 			continue;
 		}
 
-		nDrawTick2 = AG_GetTicks();
-		if(nDrawTick2 < nDrawTick1) nDrawTick1 = 0; // オーバーフロー対策
-		if((nDrawTick2 - nDrawTick1) > fps) {
+		nDrawTick2D = AG_GetTicks();
+		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
+		if((nDrawTick2D - nDrawTick1D) > fps) {
 			// ここにGUIの処理入れる
 			AG_LockVFS(&agDrivers);
 			if (agDriverSw) {
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
+				if(MenuBar) {
+					AG_WidgetDraw(AGWIDGET(MenuBar));
+				}
 				AG_FOREACH_WINDOW(win, agDriverSw) {
 					AG_ObjectLock(win);
 					AG_WindowDraw(win);
 					AG_ObjectUnlock(win);
 				}
-				nDrawTick1 = nDrawTick2;
+				nDrawTick1D = nDrawTick2D;
 				AG_EndRendering(agDriverSw);
 			}
 			AG_UnlockVFS(&agDrivers);
@@ -289,7 +286,8 @@ void MainLoop(int argc, char *argv[])
 	AG_initsub();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
-	nDrawTick1 = AG_GetTicks();
+	nDrawTick1D = AG_GetTicks();
+	nDrawTick1E = AG_GetTicks();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	AGDrawTaskEvent(TRUE);
 //	AG_Quit();
@@ -372,25 +370,26 @@ void InitInstance(void)
 	AG_Box *hb;
 	AG_Box *hb2;
 	InitFont();
+	InitGL(640, 480);
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
 
-    hb = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
-    AG_WidgetSetSize(MainWindow, 640,480);
+    hb = AG_BoxNewVert(MainWindow, AG_BOX_HFILL);
+//    AG_WidgetSetSize(MainWindow, 640,480);
 
     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-	AG_WidgetSetSize(hb, 640, 32);
+	AG_WidgetSetSize(hb, 640, 40);
 	AG_WidgetSetPosition(hb, 0, 0);
     Create_AGMainBar(AGWIDGET(hb));
-	AG_WidgetEnable(AGWIDGET(MenuBar));
+//	AG_WidgetEnable(AGWIDGET(MenuBar));
 
-    hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
-    AG_WidgetSetSize(hb2, 640,400);
-	AG_WidgetEnable(hb2);
+    hb = AG_BoxNewVert(MainWindow, AG_BOX_HFILL);
+//	AG_WidgetEnable(hb2);
 
-	DrawArea = AG_GLViewNew(AGWIDGET(hb2) , AG_GLVIEW_EXPAND);
-	AG_WidgetEnable(DrawArea);
-	AG_GLViewSizeHint(DrawArea, 640, 480);
+	DrawArea = AG_GLViewNew(AGWIDGET(hb) , AG_GLVIEW_EXPAND);
+//	AG_WidgetEnable(DrawArea);
+    AG_WidgetSetSize(DrawArea, 640,400);
+	AG_GLViewSizeHint(DrawArea, 640, 400);
 	AG_WidgetSetPosition(DrawArea, 0, MenuBar->wid.h);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
@@ -400,16 +399,15 @@ void InitInstance(void)
 
 
 //	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
-    hb2 = AG_BoxNewHoriz(MainWindow, AG_BOX_HFILL);
-    AG_WidgetSetSize(hb2, 640,40);
-	AG_WidgetEnable(hb2);
+    hb2 = AG_BoxNewVert(MainWindow, AG_BOX_HFILL);
+//	AG_WidgetEnable(hb2);
 	OsdArea = AG_GLViewNew(AGWIDGET(hb2) , AG_GLVIEW_EXPAND);
-	AG_WidgetEnable(OsdArea);
+    AG_WidgetSetSize(OsdArea, 640,40);
+//	AG_WidgetEnable(OsdArea);
 	AG_GLViewSizeHint(OsdArea, 640, 40);
-	AG_WidgetSetPosition(OsdArea, 0, 0);
+//	AG_WidgetSetPosition(OsdArea, 0, 0);
 	AG_GLViewDrawFn (OsdArea, DrawOSDEv, NULL);
 	CreateStatus();
-	InitGL(640, 480);
 //	if(MenuBar != NULL) {
 //		AG_WidgetFocus(AGWIDGET(MenuBar));
 //	}

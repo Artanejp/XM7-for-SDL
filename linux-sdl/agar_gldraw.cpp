@@ -30,7 +30,7 @@ static int osd_w;
 static int osd_h;
 static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
-static BOOL InitVideo = FALSE;
+static BOOL InitVideo;
 static SDL_semaphore *VramSem;
 extern AG_GLView *OsdArea;
 
@@ -79,8 +79,9 @@ void InitGL_AG_GL(int w, int h)
 	int bpp = 32;
 	int rgb_size[3];
 
+	if(InitVideo) return;
+    InitVideo = TRUE;
 	flags = SDL_OPENGL | SDL_RESIZABLE;
-	pixvram = NULL;
     switch (bpp) {
          case 8:
              rgb_size[0] = 3;
@@ -119,7 +120,6 @@ void InitGL_AG_GL(int w, int h)
 	format.Bshift = 0;
 	format.Ashift = 24;
 	format.palette = NULL;
-    InitVideo = TRUE;
 	if((pixvram == NULL) &&(w != 0) &&(h != 0)) {
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)w, (Uint)h , &format, AG_SRCCOLORKEY);
 	}
@@ -160,8 +160,13 @@ static GLuint CreateTexture(AG_Surface *p)
 	LockVram();
     glGenTextures(1, &textureid);
     glBindTexture(GL_TEXTURE_2D, textureid);
+#if 1
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+#else
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#endif
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -170,7 +175,7 @@ static GLuint CreateTexture(AG_Surface *p)
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  pixvram->pixels);
-   UnLockVram();
+    UnLockVram();
 	return textureid;
 }
 
@@ -187,97 +192,6 @@ static void DiscardTextures(int n, GLuint *id)
 static void DiscardTexture(GLuint tid)
 {
 	DiscardTextures(1, &tid);
-}
-
-static void Enter2DMode(void)
-{
-	int x = viewport_x;
-	int y = viewport_y;
-//	int w = viewport_w + osd_w;
-//	int h = viewport_h + osd_h;
-	int w = viewport_w;
-	int h = viewport_h;
-
-	        /* Note, there may be other things you need to change,
-	           depending on how you have your OpenGL state set up.
-	        */
-	        glPushAttrib(GL_ENABLE_BIT);
-	        glDisable(GL_DEPTH_TEST);
-	        glDisable(GL_CULL_FACE);
-	        glEnable(GL_TEXTURE_2D);
-	        glPushMatrix();
-	        /* This allows alpha blending of 2D textures with the scene */
-	        glEnable(GL_BLEND);
-	        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	        glMatrixMode(GL_PROJECTION);
-	        glPushMatrix();
-	        glLoadIdentity();
-	        /*
-	         * ビューポートは表示する画面の大きさ
-	         */
-//	        glViewport(x, y , w + x,  h + y );
-	        glViewport(x, y , w,  h);
-	        /*
-	         * 座標系は(0,0)-(0,1)
-	         */
-	        glOrtho(0.0, 1.0 ,
-	        		1.0, 0.0,
-	        		0.0,  1.0);
-	//        glOrtho(0.0, (GLdouble)w, (GLdouble)h, 0.0, 0.0, 2.0);
-	        glMatrixMode(GL_MODELVIEW);
-	        glPushMatrix();
-	        glLoadIdentity();
-	        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-}
-
-static void Leave2DMode()
-{
-        glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glPopAttrib();
-}
-
-
-
-static void DrawTexture(GLuint tid)
-{
-	float xbegin = 0.0f;
-	float xend = 1.0f;
-	float ybegin = 0.0f;
-	float yend = 1.0f;
-	float multiply;
-	if(pixvram == NULL) return;
-//	multiply =  ((float)pixvram->h * 3.0f)/ (float)viewport_h ;
-	multiply = 1.0f;
-#if 1
-	if(viewport_w != 0) {
-		xbegin = (float)offset_x   / ((float)viewport_w + (float)osd_w + (float)offset_x  );
-		xend = ((float)viewport_w + (float)offset_x)  / ((float)viewport_w + (float)offset_x);
-	} else {
-		xbegin = 0.0;
-		xend = 1.0;
-	}
-	if(viewport_h != 0) {
-		ybegin = (float)offset_y  * multiply  / ((float)viewport_h + (float)osd_h + (float)offset_y  );
-		yend = ((float)viewport_h + (float)offset_y)  / ((float)viewport_h + (float)osd_h + (float)offset_y);
-	} else {
-		ybegin = 0.0;
-		yend = 1.0;
-	}
-#endif
-	Enter2DMode();
-    glBindTexture(GL_TEXTURE_2D, tid);
-    glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -1.0);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
- //   glViewport(0, 0 , viewport_w, viewport_h);
-    glEnd();
-    Leave2DMode();
-	DiscardTexture(tid);
 }
 
 static void SetViewPort(int x, int y, int w, int h, int ow, int oh)
@@ -396,27 +310,59 @@ void AGEventScaleGL(AG_Event *event)
 void AGEventDrawGL(AG_Event *event)
 {
 	AG_GLView *wid = (AG_GLView *)AG_SELF();
-	int offset;
-	int osd;
+	float xbegin;
+	float xend;
+	float ybegin;
+	float yend;
+	float aspect;
 
 //	pixvram = GetVramSurface();
 	if(pixvram == NULL) return;
-	if(MenuBar != NULL) {
-		offset = MenuBar->wid.h;
-	} else {
-		offset = 40;
-	}
-	if(OsdArea != NULL) {
-		osd = OsdArea->wid.h;
-	} else {
-		osd = OSD_HEIGHT;
-	}
-	SetViewPort(wid->wid.x, wid->wid.y, nDrawWidth, nDrawHeight, nDrawWidth, osd);
-//	SetViewPort(wid->wid.x, wid->wid.y, wid->wid.w, wid->wid.h, wid->wid.w, osd);
+	AGDrawTaskMain();
+//	SetViewPort(wid->wid.x, wid->wid.y, wid->wPre, wid->hPre, wid->wPre, osd);
+//	SetOffset(0, offset);
+	aspect =  (float)nDrawHeight / (float)nDrawWidth;
+	xbegin = -1.0;
+	xend = 1.0;
+	ybegin = 1.0;
+	yend = -0.87;
 
-	SetOffset(0, offset);
 	textureid = CreateTexture(pixvram);
-	DrawTexture(textureid);
+    glPushAttrib(GL_ENABLE_BIT);
+    glEnable(GL_TEXTURE_2D);
+    glPushMatrix();
+    /* This allows alpha blending of 2D textures with the scene */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+
+//    glViewport(0, viewport_y, viewport_w,  viewport_h + viewport_y);
+    glViewport(0, 0, wid->wPre,  wid->hPre);
+
+    /*
+     * 座標系は(0,0)-(0,1)
+     */
+//    glOrtho(0.0, 1.0 ,
+//   		1.0, 0.0,
+//    		0.0,  1.0);
+
+    glBindTexture(GL_TEXTURE_2D, textureid);
+    glBegin(GL_TRIANGLE_STRIP);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -1.0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
+    glEnd();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glPopAttrib();
 	DiscardTexture(textureid);
 }
 

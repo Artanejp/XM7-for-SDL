@@ -126,8 +126,8 @@ SDL_mutex *DrawMutex;
 int newDrawWidth;
 int newDrawHeight;
 BOOL newResize;
-Uint32 nDrawTick1;
-
+extern Uint32 nDrawTick1D;
+extern Uint32 nDrawTick1E;
 
 
 /*
@@ -455,7 +455,7 @@ int DrawThreadMain(void *p)
 {
 #ifdef USE_AGAR
 		Uint32 nDrawTick2;
-		nDrawTick1 = AG_GetTicks();
+		nDrawTick1D = AG_GetTicks();
 #endif
 //		initsub();
 //		ResizeWindow(640,480);
@@ -504,7 +504,7 @@ int DrawThreadMain(void *p)
 			DrawWaitFlag = TRUE;
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
-			AGDrawTaskMain();
+//			AGDrawTaskMain();
 #else
 			DrawTaskMain(NULL);
 #endif
@@ -708,7 +708,8 @@ void	InitDraw(void)
 		nOldVideoMode = FALSE;
 #endif
 		SetDrawFlag(FALSE);
-		nDrawTick1 = 0;
+		nDrawTick1D = 0;
+		nDrawTick1E = 0;
 		newResize = FALSE;
 
 
@@ -735,8 +736,8 @@ void	InitDraw(void)
 		 */
 		realDrawArea = SDL_GetVideoSurface();
 #ifdef USE_AGAR
-		AG_MutexInit(&DrawMutex);
-		AG_CondInit(&DrawCond);
+//		AG_MutexInit(&DrawMutex);
+//		AG_CondInit(&DrawCond);
 
 #else
 		if(!DrawMutex) {
@@ -747,7 +748,7 @@ void	InitDraw(void)
 		}
 #endif
 #ifdef USE_AGAR
-		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
+//		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
 #else
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
@@ -771,7 +772,7 @@ void	CleanDraw(void)
 		DrawSHUTDOWN = TRUE;
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
-		AG_ThreadJoin(DrawThread, NULL);
+//		AG_ThreadJoin(DrawThread, NULL);
 		AG_MutexDestroy(&DrawMutex);
 		AG_CondDestroy(&DrawCond);
 
@@ -1290,16 +1291,16 @@ void OnDraw(void)
 	/*
 	 * 描画スレッドのKICKを1/60secごとにする。
 	 */
-	if(nDrawCount > 0) {
-		nDrawCount --;
-	} else {
-		nDrawCount = DrawCountSet(nDrawFPS);
+//	if(nDrawCount > 0) {
+//		nDrawCount --;
+//	} else {
+//		nDrawCount = DrawCountSet(nDrawFPS);
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
 #else
 		if(DrawCond) SDL_CondSignal(DrawCond);
 #endif
-	}
+//	}
 #endif
 }
 
