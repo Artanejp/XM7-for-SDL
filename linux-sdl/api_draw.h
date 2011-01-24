@@ -91,8 +91,9 @@ extern int             nOldVideoMode;
 extern WORD			nDrawFPS;   /* FPS値 20100913 */
 extern WORD        nEmuFPS; /* エミュレーションFPS 20110123 */
 extern WORD        nAspect; /* ASPECT比 20110123 */
-extern BOOL  bUseOpenGL; /* OPENGLを描画に使う */
-extern BOOL 		bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
+extern BOOL bUseOpenGL; /* OPENGLを描画に使う */
+extern BOOL bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
+extern 	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */
 
 extern int newDrawWidth;
 extern int newDrawHeight;
@@ -171,6 +172,7 @@ extern void ResizeGL(int w, int h);
 #endif
 #ifdef USE_AGAR
 extern void ResizeWindow_Agar(int w, int h);
+extern void ResizeWindow_Agar2(int w, int h);
 extern void AGDrawTaskEvent(BOOL Flag);
 extern void AGDrawTaskMain(void);
 

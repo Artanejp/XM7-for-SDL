@@ -160,13 +160,13 @@ static GLuint CreateTexture(AG_Surface *p)
 	LockVram();
     glGenTextures(1, &textureid);
     glBindTexture(GL_TEXTURE_2D, textureid);
-#if 1
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-#else
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-#endif
+    if(!bSmoosing) {
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    } else {
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -316,16 +316,15 @@ void AGEventDrawGL(AG_Event *event)
 	float yend;
 	float aspect;
 
-//	pixvram = GetVramSurface();
 	if(pixvram == NULL) return;
-	AGDrawTaskMain();
-//	SetViewPort(wid->wid.x, wid->wid.y, wid->wPre, wid->hPre, wid->wPre, osd);
-//	SetOffset(0, offset);
 	aspect =  (float)nDrawHeight / (float)nDrawWidth;
-	xbegin = -1.0;
-	xend = 1.0;
-	ybegin = 1.0;
-	yend = -0.87;
+	/*
+	 * 開始座標系はVRAMに合わせる。但し、Paddingする
+	 */
+	xbegin = (float)0.0;
+	xend = (float) pixvram->w - 2.0;
+	ybegin = (float)0.0;
+	yend = (float) pixvram->h - 10.0;
 
 	textureid = CreateTexture(pixvram);
     glPushAttrib(GL_ENABLE_BIT);
@@ -341,21 +340,21 @@ void AGEventDrawGL(AG_Event *event)
     glLoadIdentity();
 
 //    glViewport(0, viewport_y, viewport_w,  viewport_h + viewport_y);
-    glViewport(0, 0, wid->wPre,  wid->hPre);
+    glViewport(0, 0, nDrawWidth, nDrawHeight);
 
     /*
-     * 座標系は(0,0)-(0,1)
+     * 座標系はディスプレイに合わせる
      */
-//    glOrtho(0.0, 1.0 ,
-//   		1.0, 0.0,
-//    		0.0,  1.0);
+    glOrtho(0.0, pixvram->w ,
+   		pixvram->h, 0.0,
+    		0.0,  1.0);
 
     glBindTexture(GL_TEXTURE_2D, textureid);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -1.0);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, 0.0);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, 0.0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, 0.0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, 0.0);
     glEnd();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();

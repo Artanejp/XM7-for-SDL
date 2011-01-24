@@ -68,14 +68,15 @@ void ResizeWindow_Agar(int w, int h)
 
 	if(OsdArea != NULL){
 		ww = w>OsdArea->wid.w?w:OsdArea->wid.w;
-		hh = h + OsdArea->wid.h;
+//		hh = h + OsdArea->wid.h;
+		hh = h;
 	} else{
 		ww = w;
 		hh = h;
 	}
 	if(MenuBar != NULL) {
 		hh += MenuBar->wid.h;
-		ww = ww>MenuBar->wid.w?ww:ww>MenuBar->wid.w;
+		ww = ww>MenuBar->wid.w?ww:MenuBar->wid.w;
 	}
 	sh = RootVideoHeight;
 	sw = RootVideoWidth;
@@ -87,6 +88,46 @@ void ResizeWindow_Agar(int w, int h)
 	}
 }
 
+void ResizeWindow_Agar2(int w, int h)
+{
+	int hh;
+	int ww;
+	int sh;
+	int sw;
+	sh = RootVideoHeight-(MainWindow->tPad + MainWindow->bPad);
+	sw = RootVideoWidth-(MainWindow->rPad + MainWindow->lPad);
+//	AG_ResizeDisplay(w, h);
+	if(DrawArea == NULL) return;
+	if(w > sw) w = sw;
+	if(h > sh) h = sh;
+	switch(nAspect) {
+	case nAspect11:
+		if(w>h) {
+			h = (w * 5) / 8;
+		} else {
+			w = (h * 8) / 5;
+		}
+		break;
+	case nAspect43:
+		if(w>h) {
+			h = (w * 6) / 8;
+		} else {
+			w = (h * 8) / 6;
+		}
+		break;
+	}
+	if(w > sw) w = sw;
+	if(h > sh) h = sh;
+
+	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	if(MenuBar) {
+		AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h);
+	}
+	AG_GLViewSizeHint(DrawArea, w, h);
+	nDrawWidth = w;
+	nDrawHeight = h;
+
+}
 
 
 void AGDrawTaskMain(void)

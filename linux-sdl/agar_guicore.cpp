@@ -86,7 +86,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 				if(nDrawHeight < 50) {
 					nDrawHeight = 50;
 				}
-				ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+				ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
 				break;
 			default:
 				break;
@@ -134,14 +134,12 @@ void AGDrawTaskEvent(BOOL flag)
 		nDrawTick2D = AG_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
+			AGDrawTaskMain();
 			// ここにGUIの処理入れる
 			AG_LockVFS(&agDrivers);
 			if (agDriverSw) {
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
-				if(MenuBar) {
-					AG_WidgetDraw(AGWIDGET(MenuBar));
-				}
 				AG_FOREACH_WINDOW(win, agDriverSw) {
 					AG_ObjectLock(win);
 					AG_WindowDraw(win);
@@ -152,6 +150,7 @@ void AGDrawTaskEvent(BOOL flag)
 			}
 			AG_UnlockVFS(&agDrivers);
 		}	else if (AG_PendingEvents(drv) > 0){
+			AGDrawTaskMain();
 			if(EventSDL(drv) == FALSE) return;
 			if(EventGUI(drv) == FALSE) return;
 		}
@@ -367,30 +366,19 @@ static void InitFont(void)
 
 void InitInstance(void)
 {
-	AG_Box *hb;
-	AG_Box *hb2;
 	InitFont();
-	InitGL(640, 480);
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
 
-    hb = AG_BoxNewVert(MainWindow, AG_BOX_HFILL);
-//    AG_WidgetSetSize(MainWindow, 640,480);
+	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+    Create_AGMainBar(AGWIDGET(MainWindow));
+	AG_WidgetSetPosition(MenuBar, 0, 0);
+	InitGL(640, 400);
 
-    AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-	AG_WidgetSetSize(hb, 640, 40);
-	AG_WidgetSetPosition(hb, 0, 0);
-    Create_AGMainBar(AGWIDGET(hb));
-//	AG_WidgetEnable(AGWIDGET(MenuBar));
-
-    hb = AG_BoxNewVert(MainWindow, AG_BOX_HFILL);
-//	AG_WidgetEnable(hb2);
-
-	DrawArea = AG_GLViewNew(AGWIDGET(hb) , AG_GLVIEW_EXPAND);
-//	AG_WidgetEnable(DrawArea);
+	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
     AG_WidgetSetSize(DrawArea, 640,400);
 	AG_GLViewSizeHint(DrawArea, 640, 400);
-	AG_WidgetSetPosition(DrawArea, 0, MenuBar->wid.h);
+	AG_WidgetSetPosition(DrawArea, 0, 46);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
 //	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
@@ -399,13 +387,12 @@ void InitInstance(void)
 
 
 //	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
-    hb2 = AG_BoxNewVert(MainWindow, AG_BOX_HFILL);
-//	AG_WidgetEnable(hb2);
-	OsdArea = AG_GLViewNew(AGWIDGET(hb2) , AG_GLVIEW_EXPAND);
-    AG_WidgetSetSize(OsdArea, 640,40);
-//	AG_WidgetEnable(OsdArea);
+	OsdArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
+    AG_WidgetSetSize(OsdArea, 640,35);
+	AG_WidgetSetPosition(OsdArea, 0, 445);
+	AG_WidgetSetPosition(OsdArea, 0, DrawArea->wid.h + DrawArea->wid.y);
+
 	AG_GLViewSizeHint(OsdArea, 640, 40);
-//	AG_WidgetSetPosition(OsdArea, 0, 0);
 	AG_GLViewDrawFn (OsdArea, DrawOSDEv, NULL);
 	CreateStatus();
 //	if(MenuBar != NULL) {

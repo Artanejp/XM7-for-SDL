@@ -448,6 +448,7 @@ void LoadCfg(void)
     	break;
     }
     configdat.bSyncToVSYNC = LoadCfgBool("SYNCTOVSYNC", 1);
+    configdat.bSmoosing = LoadCfgBool("SMOOSING", 1);
 
 /*
  * Optionセクション
@@ -668,6 +669,8 @@ void SaveCfg(void)
     }
     SaveCfgInt("Aspect", configdat.nAspect);
     SaveCfgBool("SYNCTOVSYNC", configdat.bSyncToVSYNC);
+    SaveCfgBool("SMOOSING", configdat.bSmoosing);
+
 /*
  * Optionセクション
  */
@@ -786,6 +789,7 @@ void ApplyCfg(void)
     nEmuFPS = configdat.nEmuFPS;
     nAspect = configdat.nAspect;
     bSyncToVSYNC = configdat.bSyncToVSYNC;
+    bSmoosing = configdat.bSmoosing;
 
     display_notify();
 //	ResizeWindow_Agar(nDrawWidth, nDrawHeight);

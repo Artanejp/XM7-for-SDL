@@ -66,6 +66,7 @@ typedef struct {
 	WORD nEmuFPS;    /* エミュレーションFPS */
 	WORD nAspect; /* アスペクト比 */
 	BOOL bSyncToVSYNC; /* VSYNCに同期 (GLのみ有）*/
+	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */
 	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;	/* WHG有効フラグ */
 	BOOL bTHGEnable;	/* THG有効フラグ */

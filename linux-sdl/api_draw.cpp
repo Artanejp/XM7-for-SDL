@@ -75,6 +75,7 @@ WORD			nDrawFPS;   /* FPS値 20100913 */
 WORD 			nEmuFPS; /* エミュレーションFPS値 20110123 */
 WORD 			nAspect;  /* アスペクト比 20110123 */
 BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
+BOOL 			bSmoosing; /* スムージング処理する(GLのみ?) */
 
 BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 SDL_semaphore *DrawInitSem;
@@ -697,6 +698,7 @@ void	InitDraw(void)
 		nEmuFPS = 20;
 		nAspect = nAspectFree;
 		bSyncToVSYNC = TRUE;
+		bSmoosing = FALSE;
 		nDrawCount = DrawCountSet(nDrawFPS);
 
 		nOldVideoMode =

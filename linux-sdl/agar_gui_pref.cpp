@@ -344,7 +344,7 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenAspectName, OnChangeScreenAspect, NULL);
 		AG_BindInt(radio, "value",&ScreenResoSelected);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
-		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Frame rate"), &localconfig.nDrawFPS);
+		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Display rate"), &localconfig.nDrawFPS);
 		AG_NumericalSetRangeInt(fps, 2, 75);
 		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Emulation rate"), &localconfig.nEmuFPS);
 		AG_NumericalSetRangeInt(fps, 2, 75);
@@ -352,6 +352,8 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Sync to VSYNC"), &localconfig.bSyncToVSYNC);
+		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("SMOOSING"), &localconfig.bSmoosing);
 	}
 }
 
