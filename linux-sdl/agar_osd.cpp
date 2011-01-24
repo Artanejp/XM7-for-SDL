@@ -21,6 +21,7 @@
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
+#include "agar_gldraw.h"
 #else
 #include "sdl.h"
 #endif
@@ -131,73 +132,44 @@ static void DiscardTexture(GLuint tid)
 	DiscardTextures(1, &tid);
 }
 
-void Enter2DMode(int x, int y, int w, int h)
-{
-    /* Note, there may be other things you need to change,
-       depending on how you have your OpenGL state set up.
-    */
-    glPushAttrib(GL_ENABLE_BIT);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_TEXTURE_2D);
-    glPushMatrix();
-    /* This allows alpha blending of 2D textures with the scene */
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    /*
-     * ビューポートは表示する画面の大きさ
-     */
-    glViewport(x, y , w + x,  h + y );
-    /*
-     * 座標系は(0,0)-(0,1)
-     */
-    glOrtho(0.0, 1.0 ,
-    		1.0, 0.0,
-    		0.0,  1.0);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-}
-
-static void Leave2DMode()
-{
-        glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
-        glPopAttrib();
-}
-
-
 static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, int viewport_w, int viewport_h)
 {
 	float xbegin = 0.0f;
 	float xend = 1.0f;
 	float ybegin = 0.0f;
 	float yend = 1.0f;
+	AG_Surface *pixvram = GetVramSurface_AG_GL();
+	if(pixvram == NULL) return;
+	/*
+	 * 開始座標系はVRAMに合わせる。但し、Paddingする
+	 */
+	xbegin = (float)offset_x;
+	xend = (float) offset_x + w;
+	ybegin = (float)offset_y;
+	yend = (float) offset_y + h;
 
-#if 1
-	if(viewport_w != 0) {
-		xbegin = (float)offset_x / (float)viewport_w;
-		xend = ((float)offset_x + (float)w)/ (float)viewport_w;
-	} else {
-		xbegin = 0.0;
-		xend = 1.0;
-	}
-	if(viewport_h != 0) {
-		ybegin = (float)offset_y / (float)viewport_h;
-		yend =   ((float)offset_y + (float) h) / (float)viewport_h;
-	} else {
-		xbegin = 0.0;
-		xend = 1.0;
-	}
-#endif
+    glPushAttrib(GL_ENABLE_BIT);
+    glEnable(GL_TEXTURE_2D);
+    glPushMatrix();
+    /* This allows alpha blending of 2D textures with the scene */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
 
-	Enter2DMode(0, 0, viewport_w, viewport_h);
+//    glViewport(0, viewport_y, viewport_w,  viewport_h + viewport_y);
+    glViewport(0, 0, nDrawWidth, nDrawHeight);
+
+    /*
+     * 座標系はVRAMに合わせる
+     */
+    glOrtho(0.0, pixvram->w ,
+   		pixvram->h, 0.0,
+    		0.0,  1.0);
+
     glBindTexture(GL_TEXTURE_2D, tid);
     glBegin(GL_TRIANGLE_STRIP);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.5);
@@ -205,38 +177,44 @@ static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, in
     glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.5);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.5);
     glEnd();
-    Leave2DMode();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glPopAttrib();
+
 }
 
 static void DrawCAP(void);
 static void DrawINS(void);
 static void DrawKANA(void);
 static void DrawMainCaption(void);
-static void DrawDrive(int drive);
+static void DrawDrive(AG_Widget *w, int drive);
 static void DrawTape(void);
 
 void DrawOSDGL(AG_GLView *w)
 {
-    DrawMainCaption();
-    DrawCAP();
-    DrawKANA();
-    DrawINS();
-    DrawDrive(1);
-    DrawDrive(0);
-    DrawTape();
+//    DrawMainCaption();
+//   DrawCAP();
+//    DrawKANA();
+//    DrawINS();
+    DrawDrive(AGWIDGET(w), 1);
+    DrawDrive(AGWIDGET(w), 0);
+//    DrawTape();
 }
 
 void DrawOSDEv(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
 
-	DrawMainCaption();
-    DrawCAP();
-    DrawKANA();
-    DrawINS();
-    DrawDrive(1);
-    DrawDrive(0);
-    DrawTape();
+//	DrawMainCaption();
+//    DrawCAP();
+//    DrawKANA();
+//    DrawINS();
+    DrawDrive(AGWIDGET(glv), 1);
+    DrawDrive(AGWIDGET(glv), 0);
+//    DrawTape();
 }
 
 
@@ -686,12 +664,13 @@ static void DrawINS(void)
         } else {
             DrawTexture(tid_ins_off, nDrawWidth - LED_WIDTH * 3,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
         }
+//    	AG_WidgetBlit(DrawArea, pFDRead[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - LED_WIDTH * 3,  nDrawHeight);
 }
 
     /*
      *  ドライブ描画
      */
-static void DrawDrive(int drive)
+static void DrawDrive(AG_Widget *w, int drive)
 {
     int            num;
     char          *name;
@@ -782,16 +761,16 @@ static void DrawDrive(int drive)
             black.r = 0;
             black.g = 0;
             black.b = 0;
-            black.a = 255;
+            black.a = 250;
 
-            r.r = 0; // r->g
+            r.r = 255; // r->g
             r.g = 0; // g->b
-            r.b = 255;  // b->r
+            r.b = 0;  // b->r
             r.a = 255; // a->a
 
             b.r = 0;
-            b.g = 255;
-            b.b = 0;
+            b.g = 0;
+            b.b = 255;
             b.a = 255;
 
             pIn = string;
@@ -840,15 +819,16 @@ static void DrawDrive(int drive)
             strncpy(szOldDrive[drive], szDrive[drive], 16);
     }
 
+    if(w == NULL) return;
     if (nDrive[drive] == FDC_ACCESS_READ) {
-    	tid_fd[drive] =  CreateTexture(pFDRead[drive]);
+    	AG_WidgetBlit(w, pFDRead[drive], w->w -  pFDNorm[0]->w * (drive + 1) - LED_WIDTH * 3,  w->h - 20);
     } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-    	tid_fd[drive] =  CreateTexture(pFDWrite[drive]);
+    	AG_WidgetBlit(w, pFDWrite[drive], w->w -pFDNorm[0]->w * (drive + 1) - LED_WIDTH * 3,  w->h - 20);
     } else {
-    	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
+    	AG_WidgetBlit(w, pFDNorm[drive], w->w - pFDNorm[0]->w * (drive + 1) - LED_WIDTH * 3,  w->h - 20);
     }
-    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - LED_WIDTH * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
-    DiscardTexture(tid_fd[drive]);
+//    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - LED_WIDTH * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+//    DiscardTexture(tid_fd[drive]);
 }
 
 
@@ -965,8 +945,8 @@ static void DrawTape(void)
             nOldTape = nTape;
     }
 
-    if(OsdArea== NULL) return;
-
+//    if(OsdArea== NULL) return;
+    if(DrawArea == NULL) return;
 
     if ((nTape >= 10000) && (nTape < 30000)) {
             if (nTape >= 20000) {

@@ -15,7 +15,6 @@
 #include "agar_gldraw.h"
 #include <SDL.h>
 
-extern void DrawOSDGL(AG_GLView *w);
 extern BYTE bMode;
 extern "C" {
 extern AG_GLView *OsdArea;

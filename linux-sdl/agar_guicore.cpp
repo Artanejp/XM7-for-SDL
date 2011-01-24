@@ -366,6 +366,7 @@ static void InitFont(void)
 
 void InitInstance(void)
 {
+	AG_Box *hb;
 	InitFont();
 	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
@@ -381,22 +382,26 @@ void InitInstance(void)
 	AG_WidgetSetPosition(DrawArea, 0, 46);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
+	AG_GLViewOverlayFn (DrawArea, AGEventOverlayGL, NULL);
 //	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
 //	AG_GLViewKeydownFn(DrawArea, AGEventKeyPress_AG_GL, NULL);
 //	AG_GLViewKeyupFn(DrawArea, AGEventKeyRelease_AG_GL, NULL);
+	//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
+	CreateStatus();
 
 
-//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
+#if 0
 	OsdArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
     AG_WidgetSetSize(OsdArea, 640,35);
 	AG_WidgetSetPosition(OsdArea, 0, 445);
 	AG_WidgetSetPosition(OsdArea, 0, DrawArea->wid.h + DrawArea->wid.y);
 
 	AG_GLViewSizeHint(OsdArea, 640, 40);
-	AG_GLViewDrawFn (OsdArea, DrawOSDEv, NULL);
+	AG_GLViewOverlayFn (OsdArea, DrawOSDEv, NULL);
 	CreateStatus();
+#endif
 //	if(MenuBar != NULL) {
-//		AG_WidgetFocus(AGWIDGET(MenuBar));
+	AG_WidgetFocus(AGWIDGET(DrawArea));
 //	}
 	AG_WindowShow(MainWindow);
 }

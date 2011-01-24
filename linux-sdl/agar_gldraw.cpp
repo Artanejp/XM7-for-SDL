@@ -32,7 +32,8 @@ static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
 static SDL_semaphore *VramSem;
-extern AG_GLView *OsdArea;
+extern void DrawOSDGL(AG_GLView *w);
+
 
 static inline void putdot(Uint8 *addr, Uint32 c)
 {
@@ -142,12 +143,12 @@ void Detach_AG_GL()
 extern "C" {
 void LockVram(void)
 {
-	if(VramSem != NULL) SDL_SemWait(VramSem);
+//	if(VramSem != NULL) SDL_SemWait(VramSem);
 }
 
 void UnLockVram(void)
 {
-	if(VramSem != NULL) SDL_SemPost(VramSem);
+//	if(VramSem != NULL) SDL_SemPost(VramSem);
 }
 }
 
@@ -295,6 +296,8 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 void AGEventOverlayGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
+    if(glv == NULL) return;
+    DrawOSDGL(glv);
 }
 
 
@@ -319,15 +322,22 @@ void AGEventDrawGL(AG_Event *event)
 	if(pixvram == NULL) return;
 	aspect =  (float)nDrawHeight / (float)nDrawWidth;
 	/*
-	 * 開始座標系はVRAMに合わせる。但し、Paddingする
+	 * 開始座標系はVRAM(400line)に合わせる。但し、Paddingする
 	 */
+#if 0
+	xbegin = (float)2.0;
+	xend = 640.0 - 2.0;
+	ybegin = (float)4.0;
+	yend = 400.0 - 12.0;
+#else
 	xbegin = (float)0.0;
-	xend = (float) pixvram->w - 2.0;
+	xend = 640.0;
 	ybegin = (float)0.0;
-	yend = (float) pixvram->h - 10.0;
-
+	yend = 400.0;
+#endif
 	textureid = CreateTexture(pixvram);
-    glPushAttrib(GL_ENABLE_BIT);
+
+	glPushAttrib(GL_ENABLE_BIT);
     glEnable(GL_TEXTURE_2D);
     glPushMatrix();
     /* This allows alpha blending of 2D textures with the scene */
@@ -343,12 +353,13 @@ void AGEventDrawGL(AG_Event *event)
     glViewport(0, 0, nDrawWidth, nDrawHeight);
 
     /*
-     * 座標系はディスプレイに合わせる
+     * 座標系はVRAM(400line)に合わせる
      */
-    glOrtho(0.0, pixvram->w ,
-   		pixvram->h, 0.0,
-    		0.0,  1.0);
+    glOrtho(0.0, 640,	400, 0.0, 0.0,  1.0);
 
+    /*
+     * VRAMの表示:テクスチャ貼った四角形
+     */
     glBindTexture(GL_TEXTURE_2D, textureid);
     glBegin(GL_TRIANGLE_STRIP);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
@@ -356,12 +367,17 @@ void AGEventDrawGL(AG_Event *event)
     glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
     glEnd();
+/*
+ * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
+ */
+
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glPopAttrib();
+    // テクスチャ棄てるのはなるべく最後にしよう
 	DiscardTexture(textureid);
 }
 
