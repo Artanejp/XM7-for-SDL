@@ -351,10 +351,10 @@ void AGEventDrawGL(AG_Event *event)
 
     glBindTexture(GL_TEXTURE_2D, textureid);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, 0.0);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, 0.0);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, 0.0);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, 0.0);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -1.0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
     glEnd();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
