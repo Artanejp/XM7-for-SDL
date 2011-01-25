@@ -912,8 +912,8 @@ void tape_notify(BOOL flag)
 	if (bTapeFlag == flag) {
 		return;
 	}
-	DrvCMT->SetState((BOOL)bTapeFlag);
 	if(!DrvCMT) return;
+	DrvCMT->SetState((BOOL)bTapeFlag);
 	if (bTapeMon) {
 		DrvCMT->Enable(TRUE);
 		AddSnd(FALSE, FALSE);

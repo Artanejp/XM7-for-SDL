@@ -287,7 +287,7 @@ void SndDrvTmpl::Play(int ch,  int slot)
 	if(slot >= bufSlot) return;
 	if(chunk[slot].abuf == NULL) return;
 //	if(chunk[slot].alen <= 0) return;
-	//		if(!enable) return;
+	if(!enable) return;
 	if(RenderSem == NULL) return;
 	chunk[slot].abuf = buf[slot];
 	chunk[slot].alen = bufSize[slot];
@@ -309,7 +309,7 @@ void SndDrvTmpl::Play(int ch,  int slot, int samples)
 	chunk[slot].alen = bufSize[slot];
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume;
-	//		if(!enable) return;
+	if(!enable) return;
 	if(RenderSem == NULL) return;
 	SDL_SemWait(RenderSem);
 	if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);

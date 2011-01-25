@@ -80,7 +80,7 @@ int SndDrvCMT::BZero(int start, int uSamples, int slot, BOOL clear)
 	}
 	if(ss2 <= 0) return 0;
 	if(RenderSem == NULL) return 0;
-	if(!enable) return 0;
+//	if(!enable) return 0;
 	SDL_SemWait(RenderSem);
 	wbuf = (Sint16 *)buf[slot];
 	wbuf = &wbuf[start * channels];
@@ -111,7 +111,7 @@ int SndDrvCMT::Render(int start, int uSamples, int slot, BOOL clear)
 
 	if(slot > bufSlot) return 0;
 	if(buf[slot] == NULL) return -1;
-	if(!enable) return 0;
+//	if(!enable) return 0;
 	s = (ms * srate) / 1000;
 	if(sSamples > s) sSamples = s;
 	ss = sSamples + start;
@@ -125,12 +125,13 @@ int SndDrvCMT::Render(int start, int uSamples, int slot, BOOL clear)
 	wbuf = &wbuf[start * channels];
     level = nLevel;
     if((start <= 0) && (clear != TRUE)) {
-    	memset(buf[slot], 0x00, s * channels * sizeof(Sint16));
+    	memset(buf[slot], 0x00, sizeof(buf[slot]));
     }
 	/*
 	 * テープ出力チェック
 	 */
 	if (!tape_motor || !enable) {
+    	memset(wbuf, 0x00, sizeof(Sint16) * ss2 * channels);
 		return 0;
 	}
 	/*
