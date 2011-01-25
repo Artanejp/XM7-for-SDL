@@ -33,7 +33,21 @@ static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
 static SDL_semaphore *VramSem;
 extern void DrawOSDGL(AG_GLView *w);
+/*
+ * OSD
+ */
+extern GLuint tid_ins_on;
+extern GLuint tid_kana_on;
+extern GLuint tid_caps_on;
+extern GLuint tid_ins_off;
+extern GLuint tid_kana_off;
+extern GLuint tid_caps_off;
 
+extern GLuint tid_fd[4];
+extern GLuint tid_cmt;
+extern GLuint tid_caption;
+extern GLfloat LedAlpha;
+extern GLfloat FDDAlpha;
 
 static inline void putdot(Uint8 *addr, Uint32 c)
 {
@@ -297,7 +311,7 @@ void AGEventOverlayGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
     if(glv == NULL) return;
-    DrawOSDGL(glv);
+//    DrawOSDGL(glv);
 }
 
 
@@ -318,23 +332,17 @@ void AGEventDrawGL(AG_Event *event)
 	float ybegin;
 	float yend;
 	float aspect;
+	int i;
 
 	if(pixvram == NULL) return;
 	aspect =  (float)nDrawHeight / (float)nDrawWidth;
 	/*
-	 * 開始座標系はVRAM(400line)に合わせる。但し、Paddingする
+	 * 開始座標系はVRAM(400line)の倍角に合わせる。但し、Paddingする
 	 */
-#if 0
-	xbegin = (float)2.0;
-	xend = 640.0 - 2.0;
-	ybegin = (float)4.0;
-	yend = 400.0 - 12.0;
-#else
 	xbegin = (float)0.0;
-	xend = 640.0;
+	xend = 1280.0;
 	ybegin = (float)0.0;
-	yend = 400.0;
-#endif
+	yend = 800.0;
 	textureid = CreateTexture(pixvram);
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -353,9 +361,9 @@ void AGEventDrawGL(AG_Event *event)
     glViewport(0, 0, nDrawWidth, nDrawHeight);
 
     /*
-     * 座標系はVRAM(400line)に合わせる
+     * 座標系はVRAM(400line)の倍角に合わせる
      */
-    glOrtho(0.0, 640,	400, 0.0, 0.0,  1.0);
+    glOrtho(0.0, 1280,	800, 0.0, 0.0,  1.0);
 
     /*
      * VRAMの表示:テクスチャ貼った四角形
@@ -370,7 +378,7 @@ void AGEventDrawGL(AG_Event *event)
 /*
  * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
  */
-
+    DrawOSDGL(DrawArea);
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glPopMatrix();
@@ -379,6 +387,11 @@ void AGEventDrawGL(AG_Event *event)
     glPopAttrib();
     // テクスチャ棄てるのはなるべく最後にしよう
 	DiscardTexture(textureid);
+    DiscardTexture(tid_caption);
+    for(i = 0; i < 4 ; i++) {
+    	DiscardTexture(tid_fd[i]);
+    }
+    DiscardTexture(tid_cmt);
 }
 
 void AGEventMouseMove_AG_GL(AG_Event *event)

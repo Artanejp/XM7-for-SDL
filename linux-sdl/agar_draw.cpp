@@ -34,7 +34,6 @@ void ResizeWindow_Agar(int w, int h)
 	int sw;
 	sh = RootVideoHeight-(MainWindow->tPad + MainWindow->bPad);
 	sw = RootVideoWidth-(MainWindow->rPad + MainWindow->lPad);
-//	AG_ResizeDisplay(w, h);
 	if(DrawArea == NULL) return;
 	if(w > sw) w = sw;
 	if(h > sh) h = sh;
@@ -58,16 +57,15 @@ void ResizeWindow_Agar(int w, int h)
 	if(h > sh) h = sh;
 
 	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	AG_GLViewSizeHint(DrawArea, w, h);
 	if(MenuBar) {
 		AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h);
 	}
-	AG_GLViewSizeHint(DrawArea, w, h);
 	nDrawWidth = w;
 	nDrawHeight = h;
 
 	if(OsdArea != NULL){
 		ww = w>OsdArea->wid.w?w:OsdArea->wid.w;
-//		hh = h + OsdArea->wid.h;
 		hh = h;
 	} else{
 		ww = w;

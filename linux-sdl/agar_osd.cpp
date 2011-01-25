@@ -67,8 +67,13 @@ static AG_Surface      *pCMTRead; /* Tape Read */
 static AG_Surface      *pCMTWrite; /* Tape Write */
 static AG_Surface      *pCMTNorm; /* Tape Normal */
 static AG_Surface      *pCaption; /* Caption */
-static AG_Surface      *pStatusBar; /* ステータス表示バー */
 static AG_Font         *pStatusFont;
+static AG_Color			r;
+static AG_Color 		b;
+static AG_Color			n;
+static AG_Color 		black;
+static AG_Color			alpha;
+
 
 extern "C" {
 extern AG_GLView *DrawArea;
@@ -106,8 +111,11 @@ static GLuint CreateTexture(AG_Surface *p)
 
     glGenTextures(1, &textureid);
     glBindTexture(GL_TEXTURE_2D, textureid);
+    /*
+     * 文字はスムージングしようよ(´・ω・｀)
+     */
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -132,7 +140,7 @@ static void DiscardTexture(GLuint tid)
 	DiscardTextures(1, &tid);
 }
 
-static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, int viewport_w, int viewport_h)
+static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h)
 {
 	float xbegin = 0.0f;
 	float xend = 1.0f;
@@ -141,34 +149,16 @@ static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, in
 	AG_Surface *pixvram = GetVramSurface_AG_GL();
 	if(pixvram == NULL) return;
 	/*
-	 * 開始座標系はVRAMに合わせる。但し、Paddingする
+	 * 開始座標系はVRAMに合わせる。する
 	 */
 	xbegin = (float)offset_x;
 	xend = (float) offset_x + w;
 	ybegin = (float)offset_y;
 	yend = (float) offset_y + h;
 
-    glPushAttrib(GL_ENABLE_BIT);
-    glEnable(GL_TEXTURE_2D);
-    glPushMatrix();
-    /* This allows alpha blending of 2D textures with the scene */
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-
-//    glViewport(0, viewport_y, viewport_w,  viewport_h + viewport_y);
-    glViewport(0, 0, nDrawWidth, nDrawHeight);
-
-    /*
-     * 座標系はVRAMに合わせる
-     */
-    glOrtho(0.0, pixvram->w ,
-   		pixvram->h, 0.0,
-    		0.0,  1.0);
+	/*
+	 * GL初期設定はagar_gldraw.cppの物を使う(と言うかオブジェクトならべる感覚で)
+	 */
 
     glBindTexture(GL_TEXTURE_2D, tid);
     glBegin(GL_TRIANGLE_STRIP);
@@ -177,12 +167,6 @@ static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h, in
     glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.5);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.5);
     glEnd();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glPopAttrib();
 
 }
 
@@ -195,13 +179,13 @@ static void DrawTape(void);
 
 void DrawOSDGL(AG_GLView *w)
 {
-//    DrawMainCaption();
-//   DrawCAP();
-//    DrawKANA();
-//    DrawINS();
+    DrawCAP();
+    DrawKANA();
+    DrawINS();
     DrawDrive(AGWIDGET(w), 1);
     DrawDrive(AGWIDGET(w), 0);
-//    DrawTape();
+    DrawTape();
+    DrawMainCaption();
 }
 
 void DrawOSDEv(AG_Event *event)
@@ -225,7 +209,6 @@ void DrawOSDEv(AG_Event *event)
 void CreateStatus(void)
 {
         AG_Rect rec;
-        AG_Color r, b, n , black;
         AG_Surface *tmps;
         AG_PixelFormat fmt;
         int i;
@@ -237,8 +220,8 @@ void CreateStatus(void)
         r.a = 255; // a->a
 
         b.r = 0;
-        b.g = 255;
-        b.b = 0;
+        b.g = 0;
+        b.b = 255;
         b.a = 255;
 
         n.r = 255;
@@ -249,7 +232,13 @@ void CreateStatus(void)
         black.r = 0;
         black.g = 0;
         black.b = 0;
-        black.a = 255;
+        black.a = 255; //
+        // アルファチャンネル
+        alpha.r = 1;
+        alpha.g = 1;
+        alpha.b = 1;
+        alpha.a = 180; //
+
     	// Surfaceつくる
     	fmt.BitsPerPixel = 32;
     	fmt.BytesPerPixel = 4;
@@ -274,15 +263,14 @@ void CreateStatus(void)
     	fmt.Aloss = 0;
     	fmt.palette = NULL;
 
-    	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT , 0);
-
+    	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT, 0);
         AG_PushTextState();
         AG_TextFont(pStatusFont);
         //AG_TextFontPts(11);
 #if 1
         AG_TextColor(black);
         AG_TextBGColor(r);
-        pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
+        pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
         AG_FillRect(pInsOn, NULL, r);
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOn, 4, 0);
@@ -291,29 +279,29 @@ void CreateStatus(void)
     	AG_SurfaceFree(pInsOn);
     	pInsOn = NULL;
 
-        pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
+        pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
         AG_FillRect(pCapsOn, NULL, r);
         tmps = AG_TextRender("CAP");
-        AG_SurfaceBlit(tmps, NULL, pCapsOn, 2, 0);
+        AG_SurfaceBlit(tmps, NULL, pCapsOn, 1, 0);
         AG_SurfaceFree(tmps);
         tid_caps_on = CreateTexture(pCapsOn);
         AG_SurfaceFree(pCapsOn);
         pCapsOn = NULL;
 
-        pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
+        pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
         AG_FillRect(pKanaOn, NULL, r);
         tmps = AG_TextRender("カナ");
-        AG_SurfaceBlit(tmps, NULL, pKanaOn, 2, 0);
+        AG_SurfaceBlit(tmps, NULL, pKanaOn, 8, 0);
         AG_SurfaceFree(tmps);
     	tid_kana_on = CreateTexture(pKanaOn);
     	AG_SurfaceFree(pKanaOn);
     	pKanaOn = NULL;
 
         AG_TextColor(n);
-        AG_TextBGColor(black);
+        AG_TextBGColor(alpha);
 
-        pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
-        AG_FillRect(pInsOff, NULL, black);
+        pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
+        AG_FillRect(pInsOff, NULL, alpha);
         tmps = AG_TextRender("Ins");
         AG_SurfaceBlit(tmps, NULL, pInsOff, 4, 0);
         AG_SurfaceFree(tmps);
@@ -321,39 +309,43 @@ void CreateStatus(void)
     	AG_SurfaceFree(pInsOff);
     	pInsOff = NULL;
 
-        pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT,  &fmt, AG_SRCALPHA);
-        AG_FillRect(pCapsOff, NULL, black);
+        pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2,  &fmt, AG_SRCALPHA);
+        AG_FillRect(pCapsOff, NULL, alpha);
         tmps = AG_TextRender("CAP");
-        AG_SurfaceBlit(tmps, NULL, pCapsOff, 2, 0);
+        AG_SurfaceBlit(tmps, NULL, pCapsOff, 1, 0);
         AG_SurfaceFree(tmps);
         tid_caps_off = CreateTexture(pCapsOff);
         AG_SurfaceFree(pCapsOff);
         pCapsOff = NULL;
 
 
-        pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
-        AG_FillRect(pKanaOff, NULL, black);
+        pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH *2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
+        AG_FillRect(pKanaOff, NULL, alpha);
         tmps = AG_TextRender("カナ");
-        AG_SurfaceBlit(tmps, NULL, pKanaOff, 2, 0);
+        AG_SurfaceBlit(tmps, NULL, pKanaOff, 8, 0);
         AG_SurfaceFree(tmps);
     	tid_kana_off = CreateTexture(pKanaOff);
     	AG_SurfaceFree(pKanaOff);
     	pKanaOff = NULL;
+    	AG_PopTextState();
+
+        AG_PushTextState();
+        AG_TextFont(pStatusFont);
 
         /*
          * RECT Drive1
          */
         rec.x = 0;
         rec.y = 0;
-        rec.w = VFD_WIDTH;
-        rec.h = VFD_HEIGHT;
+        rec.w = VFD_WIDTH * 2;
+        rec.h = VFD_HEIGHT * 2;
         for(i = 0 ; i < 2 ; i++) {
                 pFDRead[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
                 pFDWrite[i] =AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
                 pFDNorm[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
                 AG_FillRect(pFDRead[i], &rec, r);
                 AG_FillRect(pFDWrite[i], &rec, b);
-                AG_FillRect(pFDNorm[i], &rec, black);
+                AG_FillRect(pFDNorm[i], &rec, alpha);
         }
 
         /*
@@ -361,23 +353,23 @@ void CreateStatus(void)
          */
         rec.x = 0;
         rec.y = 0;
-        rec.w = CMT_WIDTH;
-        rec.h = CMT_HEIGHT;
+        rec.w = CMT_WIDTH * 2;
+        rec.h = CMT_HEIGHT * 2;
         pCMTRead = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
         pCMTWrite = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
         pCMTNorm = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
 
         AG_FillRect(pCMTRead, &rec, r);
         AG_FillRect(pCMTWrite, &rec, b);
-        AG_FillRect(pCMTNorm, &rec, black);
+        AG_FillRect(pCMTNorm, &rec, alpha);
 
         rec.x = 0;
         rec.y = 0;
-        rec.w = STAT_WIDTH;
-        rec.h = STAT_HEIGHT;
+        rec.w = STAT_WIDTH * 2;
+        rec.h = STAT_HEIGHT * 2;
 
-        pCaption = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH, LED_HEIGHT, &fmt, AG_SRCALPHA);
-        AG_FillRect(pCaption, NULL, black);
+        pCaption = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
+        AG_FillRect(pCaption, &rec,  alpha);
 
 #endif
         AG_PopTextState();
@@ -467,8 +459,8 @@ static void DrawMainCaption(void)
     char           tmp[128];
     char          *p;
     AG_Surface   *tmps;
-    AG_Color     white, black;
-//    AG_Rect      rec,drec;
+    AG_Rect rect;
+    AG_Font *fp;
 
     if(pCaption == NULL) return;
     /*
@@ -553,31 +545,23 @@ static void DrawMainCaption(void)
 
     strncpy(szCaption, string, 128);
     if((strncmp(szOldCaption, szCaption, 128) != 0) || (nInitialDrawFlag == TRUE)) {
-        black.r = 0;
-        black.g = 0;
-        black.b = 0;
-        black.a = 255;
-
-        white.r = 255;
-        white.g = 255;
-        white.b = 255;
-        white.a = 255;
-
         AG_PushTextState();
         AG_TextFont(pStatusFont);
-    	AG_TextColor(white);
-    	AG_TextBGColor(black);
-    	AG_FillRect(pCaption, NULL, black);
+    	AG_TextColor(n);
+    	AG_TextBGColor(alpha);
+    	AG_FillRect(pCaption, NULL, alpha);
         tmps = AG_TextRender(szCaption);
-        AG_SurfaceBlit(tmps, NULL, pCaption, 2, 0);
+        rect.x = 0;
+        rect.y = 0;
+        rect.h = STAT_HEIGHT * 2;
+        rect.w = STAT_WIDTH * 2;
+        AG_SurfaceBlit(tmps, &rect, pCaption, 2, 0);
         AG_SurfaceFree(tmps);
         AG_PopTextState();
         strcpy(szOldCaption, szCaption);
     }
-
    	tid_caption =  CreateTexture(pCaption);
-    DrawTexture(tid_caption, 0,  nDrawHeight, pCaption->w, pCaption->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
-    DiscardTexture(tid_caption);
+    DrawTexture(tid_caption, 8 ,  800 - STAT_HEIGHT *2 - 4, STAT_WIDTH*2, STAT_HEIGHT*2);
 }
 
 
@@ -601,9 +585,9 @@ static void DrawCAP(void)
  */
         nCAP = num;
         if (nCAP) {
-            DrawTexture(tid_caps_on, nDrawWidth - LED_WIDTH * 2,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+            DrawTexture(tid_caps_on, 1280 - 4 - LED_WIDTH * 4,  800 - LED_HEIGHT*2 - 4, LED_WIDTH * 2, LED_HEIGHT * 2);
         } else {
-            DrawTexture(tid_caps_off, nDrawWidth - LED_WIDTH * 2,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+            DrawTexture(tid_caps_off, 1280 - 4 - LED_WIDTH * 4,  800 - LED_HEIGHT*2 - 4, LED_WIDTH * 2, LED_HEIGHT * 2);
         }
 }
 
@@ -631,9 +615,9 @@ static void DrawKANA(void)
 
         nKANA = num;
         if (nKANA) {
-            DrawTexture(tid_kana_on, nDrawWidth - LED_WIDTH,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+            DrawTexture(tid_kana_on, 1280 - LED_WIDTH*2 - 4,  800 - LED_HEIGHT*2 - 4 , LED_WIDTH*2, LED_HEIGHT*2);
         } else {
-            DrawTexture(tid_kana_off, nDrawWidth - LED_WIDTH,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+            DrawTexture(tid_kana_off, 1280 - LED_WIDTH*2 - 4,  800 - LED_HEIGHT*2 - 4, LED_WIDTH*2, LED_HEIGHT*2);
         }
 }
 
@@ -660,11 +644,10 @@ static void DrawINS(void)
  */
         nINS = num;
         if (nINS) {
-            DrawTexture(tid_ins_on, nDrawWidth - LED_WIDTH * 3,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+            DrawTexture(tid_ins_on, 1280 - LED_WIDTH * 6 - 4,  800 - LED_HEIGHT*2- 4, LED_WIDTH*2, LED_HEIGHT*2);
         } else {
-            DrawTexture(tid_ins_off, nDrawWidth - LED_WIDTH * 3,  nDrawHeight, LED_WIDTH, LED_HEIGHT, nDrawWidth, nDrawHeight + OSD_HEIGHT);
+            DrawTexture(tid_ins_off, 1280 - LED_WIDTH * 6 - 4,  800 - LED_HEIGHT*2 - 4, LED_WIDTH*2, LED_HEIGHT*2);
         }
-//    	AG_WidgetBlit(DrawArea, pFDRead[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - LED_WIDTH * 3,  nDrawHeight);
 }
 
     /*
@@ -681,7 +664,7 @@ static void DrawDrive(AG_Widget *w, int drive)
     iconv_t       hd;
     size_t        in, out;
     AG_Surface *tmp;
-    AG_Color r, b, white, black;
+    AG_Rect		rect;
     memset(string, 0x00, sizeof(string));
     memset(utf8, 0x00, sizeof(utf8));
     memset(outstr, 0x00, sizeof(outstr));
@@ -752,27 +735,6 @@ static void DrawDrive(AG_Widget *w, int drive)
             /*
              * 過去のファイルネームと違うのでフォントレンダリングする
              */
-
-            white.r = 255;
-            white.g = 255;
-            white.b = 255;
-            white.a = 255;
-
-            black.r = 0;
-            black.g = 0;
-            black.b = 0;
-            black.a = 250;
-
-            r.r = 255; // r->g
-            r.g = 0; // g->b
-            r.b = 0;  // b->r
-            r.a = 255; // a->a
-
-            b.r = 0;
-            b.g = 0;
-            b.b = 255;
-            b.a = 255;
-
             pIn = string;
             pOut = utf8;
             in = strlen(pIn);
@@ -795,40 +757,43 @@ static void DrawDrive(AG_Widget *w, int drive)
             }
             	AG_PushTextState();
                 AG_TextFont(pStatusFont);
-            	AG_TextColor(black);
+            	AG_TextColor(alpha);
             	AG_TextBGColor(r);
+                rect.x = 0;
+                rect.y = 0;
+                rect.h = VFD_HEIGHT * 2;
+                rect.w = VFD_WIDTH * 2;
             	AG_FillRect(pFDRead[drive], NULL, r);
                 tmp = AG_TextRender(outstr);
-                AG_SurfaceBlit(tmp, NULL, pFDRead[drive], 2, 0);
+                AG_SurfaceBlit(tmp, &rect, pFDRead[drive], 0, 0);
                 AG_SurfaceFree(tmp);
 
                	AG_TextBGColor(b);
                 AG_FillRect(pFDWrite[drive], NULL, b);
                 tmp = AG_TextRender(outstr);
-                AG_SurfaceBlit(tmp, NULL, pFDWrite[drive], 2, 0);
+                AG_SurfaceBlit(tmp, &rect, pFDWrite[drive], 0, 0);
                 AG_SurfaceFree(tmp);
 
-               	AG_TextColor(white);
-               	AG_TextBGColor(black);
-                AG_FillRect(pFDNorm[drive], NULL, black);
+               	AG_TextColor(n);
+               	AG_TextBGColor(alpha);
+                AG_FillRect(pFDNorm[drive], NULL, alpha);
                 tmp = AG_TextRender(outstr);
-                AG_SurfaceBlit(tmp, NULL, pFDNorm[drive], 2, 0);
+                AG_SurfaceBlit(tmp, &rect, pFDNorm[drive], 0, 0);
                 AG_SurfaceFree(tmp);
             	AG_PopTextState();
             memset(szOldDrive[drive], 0, 16);
             strncpy(szOldDrive[drive], szDrive[drive], 16);
     }
 
-    if(w == NULL) return;
     if (nDrive[drive] == FDC_ACCESS_READ) {
-    	AG_WidgetBlit(w, pFDRead[drive], w->w -  pFDNorm[0]->w * (drive + 1) - LED_WIDTH * 3,  w->h - 20);
+    	tid_fd[drive] =  CreateTexture(pFDRead[drive]);
     } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-    	AG_WidgetBlit(w, pFDWrite[drive], w->w -pFDNorm[0]->w * (drive + 1) - LED_WIDTH * 3,  w->h - 20);
+    	tid_fd[drive] =  CreateTexture(pFDWrite[drive]);
     } else {
-    	AG_WidgetBlit(w, pFDNorm[drive], w->w - pFDNorm[0]->w * (drive + 1) - LED_WIDTH * 3,  w->h - 20);
+    	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
     }
-//    DrawTexture(tid_fd[drive], nDrawWidth - pCMTNorm->h - pFDNorm[0]->w * (drive + 2) - LED_WIDTH * 3,  nDrawHeight, pFDNorm[0]->w, pFDNorm[0]->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
 //    DiscardTexture(tid_fd[drive]);
+    DrawTexture(tid_fd[drive], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
 }
 
 
@@ -840,15 +805,10 @@ static void DrawTape(void)
     int             num;
     char            string[128];
     char     protect[16];
-    AG_Color n, black, r, b;
-    AG_Rect rec;
+    AG_Rect rect;
     AG_Surface *tmp;
 
 
-    rec.x = 0;
-    rec.y = 0;
-    rec.w = CMT_WIDTH;
-    rec.h = CMT_HEIGHT;
     if(tape_writep){
     	strcpy(protect, "■");
     } else {
@@ -894,51 +854,35 @@ static void DrawTape(void)
              * カウンタ番号レンダリング(仮)
              */
 
-            n.r = 255;
-            n.g = 255;
-            n.b = 255;
-            n.a = 255;
-
-            black.r = 0;
-            black.g = 0;
-            black.b = 0;
-            black.a = 255;
-
-            r.r = 0; // r->g
-            r.g = 0; // g->b
-            r.b = 255;  // b->r
-            r.a = 255; // a->a
-
-            b.r = 0;
-            b.g = 255;
-            b.b = 0;
-            b.a = 255;
-
             if(pStatusFont != NULL) {
            	AG_PushTextState();
-            AG_FillRect(pCMTRead, NULL, r);
+            AG_FillRect(pCMTRead, &rect, r);
+            rect.x = 0;
+            rect.y = 0;
+            rect.h = CMT_HEIGHT * 2;
+            rect.w = CMT_WIDTH * 2;
             AG_TextFont(pStatusFont);
             AG_TextColor(black);
             AG_TextBGColor(r);
            	tmp = AG_TextRender(string);
-           	AG_SurfaceBlit(tmp, NULL, pCMTRead, 4, 2);
+           	AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
            	AG_SurfaceFree(tmp);
 
-            AG_FillRect(pCMTWrite, NULL, b);
+            AG_FillRect(pCMTWrite, &rect, b);
             AG_TextFont(pStatusFont);
             AG_TextColor(black);
             AG_TextBGColor(b);
            	tmp = AG_TextRender(string);
-           	AG_SurfaceBlit(tmp, NULL, pCMTWrite, 4, 2);
+           	AG_SurfaceBlit(tmp, &rect, pCMTWrite, 0, 0);
            	AG_SurfaceFree(tmp);
 
 
-            AG_FillRect(pCMTNorm, NULL, black);
+            AG_FillRect(pCMTNorm, &rect, alpha);
             AG_TextFont(pStatusFont);
             AG_TextColor(n);
-            AG_TextBGColor(black);
+            AG_TextBGColor(alpha);
            	tmp = AG_TextRender(string);
-           	AG_SurfaceBlit(tmp, NULL, pCMTNorm, 4, 2);
+           	AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
            	AG_SurfaceFree(tmp);
            	AG_PopTextState();
             }
@@ -958,9 +902,9 @@ static void DrawTape(void)
     	tid_cmt =  CreateTexture(pCMTNorm);
     }
     if(pCMTNorm) {
-    	DrawTexture(tid_cmt, nDrawWidth - pCMTNorm->w - LED_WIDTH * 3,  nDrawHeight, pCMTNorm->w, pCMTNorm->h , nDrawWidth , nDrawHeight + OSD_HEIGHT);
+    	DrawTexture(tid_cmt, 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
     }
-    DiscardTexture(tid_cmt);
+//    DiscardTexture(tid_cmt);
 }
 
 /*

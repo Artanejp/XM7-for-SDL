@@ -43,10 +43,7 @@
 #define UI_FONT "ipagui.ttf"
 #endif
 
-#define FUNC_PT 15
-#define VFD_PT  15
-#define CMT_PT 15
-#define STAT_PT 15
+#define STAT_PT 24
 #define UI_PT  18
 
 /*
@@ -58,22 +55,17 @@
 /*
  * Embedの場合にはサイズと表示レイアウトを変更する必要がある？
  */
-#define LED_WIDTH 36
-#define LED_HEIGHT 18
+#define LED_WIDTH 26
+#define LED_HEIGHT 14
 
-#define VFD_WIDTH 160
-#define VFD_HEIGHT 18
+#define VFD_WIDTH 120
+#define VFD_HEIGHT 14
 
-#define CMT_WIDTH 80
-#define CMT_HEIGHT 18
+#define CMT_WIDTH 44
+#define CMT_HEIGHT 14
 
-#define STAT_WIDTH 320
-#define STAT_HEIGHT 18
-
-
-
-
-
+#define STAT_WIDTH 260
+#define STAT_HEIGHT 14
 
 #ifndef SHAREDIR
 #define SHAREDIR "/usr/local/share/xm7/"
