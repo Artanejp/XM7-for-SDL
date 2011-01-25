@@ -45,8 +45,8 @@ extern GLuint tid_ins_off;
 extern GLuint tid_kana_off;
 extern GLuint tid_caps_off;
 
-extern GLuint tid_fd[4];
-extern GLuint tid_cmt;
+extern GLuint tid_fd[4][3];
+extern GLuint tid_cmt[3];
 extern GLuint tid_caption;
 extern GLfloat LedAlpha;
 extern GLfloat FDDAlpha;
@@ -280,6 +280,7 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 		AG_SurfaceFree(pixvram);
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
 	}
+//    DiscardTexture(textureid);
 
 //	glClearColor(0, 0, 0, 0);
 	ww = (w>>3) + (x>>3);
@@ -300,8 +301,9 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 			}
 	}
 	UnLockVram();
-	xratio = (float)pixvram->w / (float)AGWIDGET(DrawArea)->w;
-	yratio =  (float)pixvram->h / (float)AGWIDGET(DrawArea)->h ;
+//	textureid = CreateTexture(pixvram);
+//	xratio = (float)pixvram->w / (float)AGWIDGET(DrawArea)->w;
+//	yratio =  (float)pixvram->h / (float)AGWIDGET(DrawArea)->h ;
 }
 
 /*
@@ -391,15 +393,15 @@ void AGEventDrawGL(AG_Event *event)
     	pwidth = (float)pixvram->h / 800.0f;
     	pofset = 1.0f - pwidth;
     	width = 2.0f * pwidth;
+        glBegin(GL_LINES);
+        glLineWidth(width);
     	for(i = 0; i < (pixvram->h - 1); i++) {
     		ybegin = (float)i * 800.0f / (float)pixvram->h + pwidth;
     		yend = ((float)i  + 1.0f) * 800.0f / (float)pixvram->h;
-            glBegin(GL_LINES);
-            glLineWidth(width);
             glVertex3f(xbegin, ybegin, -0.9);
             glVertex3f(xend, ybegin, -0.9);
-            glEnd();
     	}
+        glEnd();
 #if 0 // 縦線はさすがにやり過ぎだった
     	pwidth = (float)pixvram->w / 1280.0f;
     	pofset = 1.0f - pwidth;
@@ -414,7 +416,7 @@ void AGEventDrawGL(AG_Event *event)
     	}
 #endif
     }
-    glFlush();
+//    glFlush();
 //    DrawOSDGL(DrawArea);
 /*
  * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
@@ -428,12 +430,12 @@ void AGEventDrawGL(AG_Event *event)
     // テクスチャ棄てるのはなるべく最後にしよう
 	DiscardTexture(textureid);
     DiscardTexture(tid_caption);
-    for(i = 0; i < 4 ; i++) {
-    	DiscardTexture(tid_fd[i]);
-    }
-    DiscardTexture(tid_cmt);
-    DiscardTexture(dummytexid);
-    glFlush();
+//    for(i = 0; i < 4 ; i++) {
+//    	DiscardTexture(tid_fd[i]);
+//    }
+//    DiscardTexture(tid_cmt);
+//    DiscardTexture(dummytexid);
+//    glFlush();
 }
 
 void AGEventMouseMove_AG_GL(AG_Event *event)

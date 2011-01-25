@@ -48,6 +48,7 @@ static int     nCAP;		/* CAPキー */
 static int     nKANA;		/* かなキー */
 static int     nINS;		/* INSキー */
 static int     nDrive[2];	/* フロッピードライブ */
+static int     nDriveOld[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
 static char    szOldDrive[2][16+1];       /* フロッピードライブ(過去) */
 static BOOL     old_writep[4];  /* 過去のライトプロテクトフラグ */
@@ -89,8 +90,8 @@ GLuint tid_ins_off;
 GLuint tid_kana_off;
 GLuint tid_caps_off;
 
-GLuint tid_fd[4];
-GLuint tid_cmt;
+GLuint tid_fd[4][3];
+GLuint tid_cmt[3];
 GLuint tid_caption;
 GLfloat LedAlpha;
 GLfloat FDDAlpha;
@@ -214,9 +215,9 @@ void CreateStatus(void)
         int i;
 
 
-        r.r = 0; // r->g
+        r.r = 255; // r->g
         r.g = 0; // g->b
-        r.b = 255;  // b->r
+        r.b = 0;  // b->r
         r.a = 255; // a->a
 
         b.r = 0;
@@ -243,9 +244,9 @@ void CreateStatus(void)
     	fmt.BitsPerPixel = 32;
     	fmt.BytesPerPixel = 4;
 #ifdef AG_BIG_ENDIAN
-    	fmt.Rmask = 0x0000ff00; // R
-    	fmt.Gmask = 0x00ff0000; // G
-    	fmt.Bmask = 0x000000ff; // B
+    	fmt.Rmask = 0x000000ff; // R
+    	fmt.Gmask = 0x0000ff00; // G
+    	fmt.Bmask = 0x00ff0000; // B
     	fmt.Amask = 0xff000000; // A
 #else
     	fmt.Rmask = 0x00ff0000; // R
@@ -253,9 +254,9 @@ void CreateStatus(void)
     	fmt.Bmask = 0xff000000; // B
     	fmt.Amask = 0x000000ff; // A
     #endif
-    	fmt.Rshift = 8;
-    	fmt.Gshift = 16;
-    	fmt.Bshift = 0;
+    	fmt.Rshift = 0;
+    	fmt.Gshift = 8;
+    	fmt.Bshift = 16;
     	fmt.Ashift = 24;
     	fmt.Rloss = 0;
     	fmt.Gloss = 0;
@@ -377,7 +378,7 @@ void CreateStatus(void)
 
 void DestroyStatus(void)
 {
-        int i;
+        int i, j;
         if(pInsOn !=NULL ) {
                 AG_SurfaceFree(pInsOn);
                 pInsOn = NULL;
@@ -442,11 +443,14 @@ void DestroyStatus(void)
         DiscardTexture(tid_ins_off);
         DiscardTexture(tid_caps_off);
         DiscardTexture(tid_kana_off);
-        DiscardTexture(tid_fd[0]);
-        DiscardTexture(tid_fd[1]);
-        DiscardTexture(tid_fd[2]);
-        DiscardTexture(tid_fd[3]);
-        DiscardTexture(tid_cmt);
+        for(i = 0; i < 4; i++) {
+        	for(j = 0; j < 3; j++){
+                DiscardTexture(tid_fd[i][j]);
+        	}
+        }
+        for(i = 0; i < 3 ; i++) {
+        	DiscardTexture(tid_cmt[i]);
+        }
         DiscardTexture(tid_caption);
 
 }
@@ -559,9 +563,10 @@ static void DrawMainCaption(void)
         AG_SurfaceFree(tmps);
         AG_PopTextState();
         strcpy(szOldCaption, szCaption);
+//        DiscardTexture(tid_caption);
+       	tid_caption =  CreateTexture(pCaption);
+        DrawTexture(tid_caption, 8 ,  800 - STAT_HEIGHT *2 - 4, STAT_WIDTH*2, STAT_HEIGHT*2);
     }
-   	tid_caption =  CreateTexture(pCaption);
-    DrawTexture(tid_caption, 8 ,  800 - STAT_HEIGHT *2 - 4, STAT_WIDTH*2, STAT_HEIGHT*2);
 }
 
 
@@ -656,6 +661,7 @@ static void DrawINS(void)
 static void DrawDrive(AG_Widget *w, int drive)
 {
     int            num;
+    int i;
     char          *name;
     char          string[64];
     char          utf8[256];
@@ -665,6 +671,7 @@ static void DrawDrive(AG_Widget *w, int drive)
     size_t        in, out;
     AG_Surface *tmp;
     AG_Rect		rect;
+
     memset(string, 0x00, sizeof(string));
     memset(utf8, 0x00, sizeof(utf8));
     memset(outstr, 0x00, sizeof(outstr));
@@ -695,25 +702,31 @@ static void DrawDrive(AG_Widget *w, int drive)
             name = fdc_name[drive][fdc_media[drive]];
     }
     if (fdc_ready[drive] == FDC_TYPE_2D) {
-	name = "2D DISK";
+    	name = "2D DISK";
     }
     if (fdc_ready[drive] == FDC_TYPE_VFD) {
-	name = "VFD DISK";
+    	name = "VFD DISK";
     }
 
     /*
      * 番号比較
      */
-    if ((nDrive[drive] == num) && (nInitialDrawFlag != TRUE)) {
+    if (nDrive[drive] == num) {
             if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
                     if(strlen(szDrive[drive]) > 0) {
                     	//レンダリング
                     }
                 szDrive[drive][0] = '\0';
                 szOldDrive[drive][0] = '\0';
-//            	return;
+                /*
+                 * テクスチャ破棄必要か？
+                 */
+            	return;
             }
             if (strcmp(szDrive[drive], name) == 0) {
+//            	for(i = 0; i < 3 ; i++) {
+//            		DiscardTexture(tid_fd[drive][i]);
+//            	}
 //            	return;
             }
     }
@@ -755,6 +768,12 @@ static void DrawDrive(AG_Widget *w, int drive)
             	}
             	old_writep[drive] = fdc_writep[drive];
             }
+            /*
+             * 旧いテクスチャを破棄
+             */
+            for(i = 0; i < 3 ; i++) {
+        		DiscardTexture(tid_fd[drive][i]);
+        	}
             	AG_PushTextState();
                 AG_TextFont(pStatusFont);
             	AG_TextColor(alpha);
@@ -763,37 +782,40 @@ static void DrawDrive(AG_Widget *w, int drive)
                 rect.y = 0;
                 rect.h = VFD_HEIGHT * 2;
                 rect.w = VFD_WIDTH * 2;
-            	AG_FillRect(pFDRead[drive], NULL, r);
+            	AG_FillRect(pFDRead[drive], &rect, r);
                 tmp = AG_TextRender(outstr);
                 AG_SurfaceBlit(tmp, &rect, pFDRead[drive], 0, 0);
                 AG_SurfaceFree(tmp);
+        		tid_fd[drive][1] =  CreateTexture(pFDRead[drive]);
 
                	AG_TextBGColor(b);
-                AG_FillRect(pFDWrite[drive], NULL, b);
+                AG_FillRect(pFDWrite[drive], &rect, b);
                 tmp = AG_TextRender(outstr);
                 AG_SurfaceBlit(tmp, &rect, pFDWrite[drive], 0, 0);
                 AG_SurfaceFree(tmp);
+        		tid_fd[drive][2] =  CreateTexture(pFDWrite[drive]);
 
                	AG_TextColor(n);
                	AG_TextBGColor(alpha);
-                AG_FillRect(pFDNorm[drive], NULL, alpha);
+                AG_FillRect(pFDNorm[drive], &rect, alpha);
                 tmp = AG_TextRender(outstr);
                 AG_SurfaceBlit(tmp, &rect, pFDNorm[drive], 0, 0);
                 AG_SurfaceFree(tmp);
-            	AG_PopTextState();
+        		tid_fd[drive][0] =  CreateTexture(pFDNorm[drive]);
+
+        		AG_PopTextState();
+
             memset(szOldDrive[drive], 0, 16);
             strncpy(szOldDrive[drive], szDrive[drive], 16);
     }
 
-    if (nDrive[drive] == FDC_ACCESS_READ) {
-    	tid_fd[drive] =  CreateTexture(pFDRead[drive]);
-    } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-    	tid_fd[drive] =  CreateTexture(pFDWrite[drive]);
-    } else {
-    	tid_fd[drive] =  CreateTexture(pFDNorm[drive]);
-    }
-//    DiscardTexture(tid_fd[drive]);
-    DrawTexture(tid_fd[drive], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
+    	if (nDrive[drive] == FDC_ACCESS_READ) {
+    	    DrawTexture(tid_fd[drive][1], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
+    	} else if (nDrive[drive] == FDC_ACCESS_WRITE) {
+    	    DrawTexture(tid_fd[drive][2], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
+    	} else {
+    	    DrawTexture(tid_fd[drive][0], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
+    	}
 }
 
 
@@ -802,6 +824,7 @@ static void DrawDrive(AG_Widget *w, int drive)
  */
 static void DrawTape(void)
 {
+	int 		i;
     int             num;
     char            string[128];
     char     protect[16];
@@ -847,13 +870,15 @@ static void DrawTape(void)
             //strcpy(string, "OVER");
     }
     else {
-	sprintf(string, "%s%04d", protect, nTape % 10000);
+    	sprintf(string, "%s%04d", protect, nTape % 10000);
     }
     if(nOldTape != nTape) {
             /*
              * カウンタ番号レンダリング(仮)
              */
-
+    		for(i = 0; i < 3 ; i++) {
+    			DiscardTexture(tid_cmt[i]);
+    		}
             if(pStatusFont != NULL) {
            	AG_PushTextState();
             AG_FillRect(pCMTRead, &rect, r);
@@ -867,6 +892,8 @@ static void DrawTape(void)
            	tmp = AG_TextRender(string);
            	AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
            	AG_SurfaceFree(tmp);
+        	tid_cmt[1] =  CreateTexture(pCMTRead);
+
 
             AG_FillRect(pCMTWrite, &rect, b);
             AG_TextFont(pStatusFont);
@@ -875,6 +902,7 @@ static void DrawTape(void)
            	tmp = AG_TextRender(string);
            	AG_SurfaceBlit(tmp, &rect, pCMTWrite, 0, 0);
            	AG_SurfaceFree(tmp);
+        	tid_cmt[2] =  CreateTexture(pCMTWrite);
 
 
             AG_FillRect(pCMTNorm, &rect, alpha);
@@ -884,27 +912,23 @@ static void DrawTape(void)
            	tmp = AG_TextRender(string);
            	AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
            	AG_SurfaceFree(tmp);
+        	tid_cmt[0] =  CreateTexture(pCMTNorm);
+
            	AG_PopTextState();
             }
             nOldTape = nTape;
     }
 
-//    if(OsdArea== NULL) return;
-    if(DrawArea == NULL) return;
 
     if ((nTape >= 10000) && (nTape < 30000)) {
             if (nTape >= 20000) {
-            	tid_cmt =  CreateTexture(pCMTWrite);
+            	DrawTexture(tid_cmt[2], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
             }   else {
-            	tid_cmt =  CreateTexture(pCMTRead);
+            	DrawTexture(tid_cmt[1], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
             }
     } else {
-    	tid_cmt =  CreateTexture(pCMTNorm);
+    	DrawTexture(tid_cmt[0], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
     }
-    if(pCMTNorm) {
-    	DrawTexture(tid_cmt, 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
-    }
-//    DiscardTexture(tid_cmt);
 }
 
 /*
@@ -955,6 +979,8 @@ void PaintStatus(void)
         nINS = -1;
         nDrive[0] = -1;
         nDrive[1] = -1;
+        nDriveOld[0] = -1;
+        nDriveOld[1] = -1;
         szDrive[0][0] = '\0';
         szDrive[1][0] = '\0';
         szOldDrive[0][0] = '\0';
