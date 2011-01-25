@@ -916,19 +916,19 @@ static void DrawTape(void)
 
            	AG_PopTextState();
             }
+            if ((nTape >= 10000) && (nTape < 30000)) {
+                    if (nTape >= 20000) {
+                    	DrawTexture(tid_cmt[2], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+                    }   else {
+                    	DrawTexture(tid_cmt[1], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+                    }
+            } else {
+            	DrawTexture(tid_cmt[0], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+            }
             nOldTape = nTape;
     }
 
 
-    if ((nTape >= 10000) && (nTape < 30000)) {
-            if (nTape >= 20000) {
-            	DrawTexture(tid_cmt[2], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
-            }   else {
-            	DrawTexture(tid_cmt[1], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
-            }
-    } else {
-    	DrawTexture(tid_cmt[0], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
-    }
 }
 
 /*
