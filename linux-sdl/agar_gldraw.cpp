@@ -20,6 +20,7 @@ static AG_Surface *pixvram;
 static Uint32 vramwidth;
 static Uint32 vramheight;
 static GLuint textureid;
+static GLuint dummytexid;
 static 	int viewport_x;
 static int viewport_y;
 static int viewport_h;
@@ -32,6 +33,7 @@ static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
 static SDL_semaphore *VramSem;
+static AG_Surface *dummytex;
 extern void DrawOSDGL(AG_GLView *w);
 /*
  * OSD
@@ -152,6 +154,14 @@ void Detach_AG_GL()
 		SDL_DestroySemaphore(VramSem);
 		VramSem = NULL;
 	}
+	if(dummytex){
+		AG_SurfaceFree(dummytex);
+		dummytex = NULL;
+	}
+	if(pixvram){
+		AG_SurfaceFree(pixvram);
+		pixvram = NULL;
+	}
 }
 
 extern "C" {
@@ -168,13 +178,13 @@ void UnLockVram(void)
 
 static GLuint CreateTexture(AG_Surface *p)
 {
-	GLuint textureid;
+	GLuint tid;
 
 	if(agDriverOps == NULL) return 0;
 	if(p == NULL) return 0;
 	LockVram();
-    glGenTextures(1, &textureid);
-    glBindTexture(GL_TEXTURE_2D, textureid);
+    glGenTextures(1, &tid);
+    glBindTexture(GL_TEXTURE_2D, tid);
     if(!bSmoosing) {
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -191,7 +201,7 @@ static GLuint CreateTexture(AG_Surface *p)
                  GL_UNSIGNED_BYTE,
                  pixvram->pixels);
     UnLockVram();
-	return textureid;
+	return tid;
 }
 
 
@@ -209,15 +219,6 @@ static void DiscardTexture(GLuint tid)
 	DiscardTextures(1, &tid);
 }
 
-static void SetViewPort(int x, int y, int w, int h, int ow, int oh)
-{
-	viewport_x = x;
-	viewport_y = y;
-	viewport_h = h;
-	viewport_w = w;
-	osd_w = ow;
-	osd_h = oh;
-}
 
 
 void SetVramReader_AG_GL(void p(Uint32, Uint32 *, Uint32), int w, int h)
@@ -327,6 +328,9 @@ void AGEventScaleGL(AG_Event *event)
 void AGEventDrawGL(AG_Event *event)
 {
 	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	float width;
+	float pwidth;
+	float pofset;
 	float xbegin;
 	float xend;
 	float ybegin;
@@ -345,7 +349,7 @@ void AGEventDrawGL(AG_Event *event)
 	yend = 800.0;
 	textureid = CreateTexture(pixvram);
 
-	glPushAttrib(GL_ENABLE_BIT);
+	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_TEXTURE_2D);
     glPushMatrix();
     /* This allows alpha blending of 2D textures with the scene */
@@ -358,7 +362,7 @@ void AGEventDrawGL(AG_Event *event)
     glLoadIdentity();
 
 //    glViewport(0, viewport_y, viewport_w,  viewport_h + viewport_y);
-    glViewport(0, 0, nDrawWidth, nDrawHeight);
+    glViewport(0, 0, nDrawWidth , nDrawHeight);
 
     /*
      * 座標系はVRAM(400line)の倍角に合わせる
@@ -375,10 +379,46 @@ void AGEventDrawGL(AG_Event *event)
     glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
     glEnd();
+
+    DrawOSDGL(DrawArea);
+
+    /*
+     * スキャンライン
+     */
+    if(!bFullScan) {
+    	xbegin = 0.0f;
+    	xend = 1280.0f;
+    	pwidth = (float)pixvram->h / 800.0f;
+    	pofset = 1.0f - pwidth;
+    	width = 2.0f * pwidth;
+    	for(i = 0; i < (pixvram->h - 1); i++) {
+    		ybegin = (float)i * 800.0f / (float)pixvram->h + pwidth;
+    		yend = ((float)i  + 1.0f) * 800.0f / (float)pixvram->h;
+            glBegin(GL_LINES);
+            glLineWidth(width);
+            glVertex3f(xbegin, ybegin, -0.9);
+            glVertex3f(xend, ybegin, -0.9);
+            glEnd();
+    	}
+#if 0 // 縦線はさすがにやり過ぎだった
+    	pwidth = (float)pixvram->w / 1280.0f;
+    	pofset = 1.0f - pwidth;
+    	width = 2.0f * pwidth;
+    	for(i = 0; i < pixvram->w; i++) {
+    		xbegin = (float)i * 1280.0 / (float)pixvram->w + pwidth;
+    		xend = xbegin;
+    		ybegin = 0.0f;
+    		yend = 800.0f;
+    		glVertex3f(xbegin, ybegin, -0.9);
+    		glVertex3f(xend , yend, -0.9);
+    	}
+#endif
+    }
+    glFlush();
+//    DrawOSDGL(DrawArea);
 /*
  * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
  */
-    DrawOSDGL(DrawArea);
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
     glPopMatrix();
@@ -392,6 +432,8 @@ void AGEventDrawGL(AG_Event *event)
     	DiscardTexture(tid_fd[i]);
     }
     DiscardTexture(tid_cmt);
+    DiscardTexture(dummytexid);
+    glFlush();
 }
 
 void AGEventMouseMove_AG_GL(AG_Event *event)
