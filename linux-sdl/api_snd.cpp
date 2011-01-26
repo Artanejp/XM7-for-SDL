@@ -124,6 +124,7 @@ static BOOL bMode;
 static DWORD uProcessCount;
 static SDL_sem *applySem;
 static BOOL bPlayEnable;
+static BOOL bSndDataEnable[4]; // 4ch
 
 
 static char     *WavName[] = {
@@ -211,6 +212,9 @@ InitSnd(void)
 	/*
 	 * WAVよむ
 	 */
+	for(i = 0; i < 4 ; i++) {
+		bSndDataEnable[i] = FALSE; // 4ch
+	}
 
 }
 
@@ -367,22 +371,22 @@ BOOL SelectSnd(void)
 	dwSoundTotal = 0;
 	uClipCount = 0;
 
+	for(i = 0; i < 4 ; i++) {
+		bSndDataEnable[i] = FALSE; // 4ch
+	}
 	if(applySem == NULL) {
 		applySem = SDL_CreateSemaphore(1);
 		SDL_SemPost(applySem);
 	}
-//	if (Mix_OpenAudio(uRate, AUDIO_S16SYS, uChannels, uBufSize / (4 *  sizeof(Sint16) * uChannels)) == -1) {
 	if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 16 ) < 0) {
+//		if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, 256 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 		return FALSE;
 	}
-	Mix_AllocateChannels(CH_CHANNELS - 1);
+	Mix_AllocateChannels(CH_CHANNELS);
 	/*
 	 *
 	 */
-//	Mix_GroupChannels(CH_SND_BEEP, CH_SND_BEEP + 3, GROUP_SND_BEEP);
-//	Mix_GroupChannels(CH_SND_CMT, CH_SND_CMT + 3, GROUP_SND_CMT);
-//	Mix_GroupChannels(CH_SND_OPN, CH_SND_OPN + 3, GROUP_SND_OPN);
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
 	Mix_Volume(-1,iTotalVolume);
 
@@ -391,6 +395,7 @@ BOOL SelectSnd(void)
 	if(DrvBeep) {
 			DrvBeep->Setup(uTick);
 	}
+
 
 
 	/*
@@ -451,6 +456,7 @@ BOOL SelectSnd(void)
 	 * サウンドスタート
 	 */
 	PlaySnd();
+
 	/* ボリューム設定 */
 	SetSoundVolume();
 	return TRUE;
@@ -498,7 +504,10 @@ ApplySnd(void)
 	 */
 	SelectSnd();
 	    SDL_SemPost(applySem);
-
+		// BEEPについて、SelectSnd()し直しても音声継続するようにする
+		bBeepFlag = !bBeepFlag;
+		beep_notify();
+		tape_notify(!bTapeFlag);
 }
 
 
@@ -1123,18 +1132,12 @@ static void RenderPlay(int samples, int slot, BOOL play)
 	DWORD *bank = NULL;
 	int slot2 = slot - 1;
 	BOOL playing;
+	int i;
 
 	if(slot2 < 0) slot2 = 3;
+	bSndDataEnable[slot] = TRUE;
 
 	if(play) {
-//		do {
-//			playing = FALSE;
-//			if(Mix_Playing(CH_SND_BEEP + slot2) != 0) playing = TRUE;
-//			if(Mix_Playing(CH_SND_CMT + slot2) != 0) playing = TRUE;
-//			if(Mix_Playing(CH_SND_OPN + slot2) != 0) playing = TRUE;
-//			if(!playing) break;
-//			SDL_Delay(12);
-//		} while (playing);
 		if(applySem == NULL) return;
 		SDL_SemWait(applySem);
 
