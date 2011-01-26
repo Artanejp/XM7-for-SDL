@@ -19,7 +19,9 @@ public:
 	int BZero(int start, int uSamples, int slot, BOOL clear);
 	int Render(int start, int uSamples, int slot, BOOL clear);
 	void SetRenderVolume(int level);
+	void Play(int ch,  int slot, int samples);
 private:
+
 };
 
 #endif /* SNDDRVBEEP_H_ */

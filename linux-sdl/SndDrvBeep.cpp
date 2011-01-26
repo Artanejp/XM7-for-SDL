@@ -116,7 +116,7 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
         	memset(buf[slot], 0x00, s * channels * sizeof(Sint16));
      }
 
-	if(clear)  memset(wbuf, 0x00, ss * channels * sizeof(Sint16));
+	if(clear || (!enable))  memset(wbuf, 0x00, ss * channels * sizeof(Sint16));
     //    memset(wbuf, 0x00, ss * channels * sizeof(Sint16));
 	if(enable) {
 
@@ -178,3 +178,19 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 	return ss;
 }
 
+void SndDrvBeep::Play(int ch,  int slot, int samples)
+{
+	if(slot >= bufSlot) return;
+	if(chunk[slot].abuf == NULL) return;
+//	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
+	chunk[slot].abuf = buf[slot];
+	chunk[slot].alen = bufSize[slot];
+	chunk[slot].allocated = 1; /* アロケートされてる */
+	chunk[slot].volume = volume;
+//	if(!enable) return;
+	if(RenderSem == NULL) return;
+	SDL_SemWait(RenderSem);
+	if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);
+//	chunk[slot].alen = 0;
+	SDL_SemPost(RenderSem);
+}
