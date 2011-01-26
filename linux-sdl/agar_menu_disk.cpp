@@ -39,7 +39,6 @@ extern void OnPushCancel(AG_Event *event);
 extern void KeyBoardSnoop(BOOL t);
 
 
-extern void OnSelectDiskImage(AG_Event *event);
 AG_MenuItem *Menu_DiskImages[FDC_DRIVES];
 
 /*-[ ディスクメニュー ]-----------------------------------------------------*/

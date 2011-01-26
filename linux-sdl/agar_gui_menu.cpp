@@ -20,6 +20,7 @@ extern "C" {
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #include "agar_cfg.h"
+#include "agar_cmd.h"
 #else
 #include "sdl.h"
 #include "sdl_cfg.h"
@@ -40,15 +41,14 @@ extern void Create_Drive1Menu(AG_MenuItem *self);
 extern void Create_TapeMenu(AG_MenuItem *self);
 extern void Create_ToolsMenu(AG_MenuItem *parent);
 extern void Create_AboutMenu(AG_MenuItem *self);
+extern void OnPushCancel(AG_Event *event);
+extern void KeyBoardSnoop(BOOL t);
 
 extern "C" {
 extern void InitInstance(void);
 extern void OnDestroy(AG_Event *event);
 extern void OnDestroy2(void);
 extern void InitGL(int w, int h);
-extern void OnReset(AG_Event *event);
-extern void OnHotReset(AG_Event *event);
-
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
 AG_GLView *DrawArea;
@@ -61,8 +61,51 @@ void AgarGuiMenuInit(AG_Widget *Parent)
 
 }
 
-static void FileMenu_BootMode(AG_Event *ev)
+static void SetBootMode(AG_Event *event)
 {
+	AG_Button *self = (AG_Button *)AG_SELF();
+	int DosMode = AG_INT(1);
+
+	if(DosMode) {
+		// DOSモード
+		OnDos(event);
+	} else {
+		OnBasic(event);
+	}
+	AG_WindowHide(self->wid.window);
+	AG_ObjectDetach(self->wid.window);
+}
+
+static void FileMenu_BootMode(AG_Event *event)
+{
+	AG_Menu *self = (AG_Menu *)AG_SELF();
+	AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+	AG_Window *w;
+	AG_Button   *btn[3];
+	AG_Box *box;
+	AG_Box *box2;
+	char *label;
+	AG_Label *lbl;
+
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	AG_WindowSetMinSize(w, 230, 80);
+	label = gettext("Select mode (Notice: If select , reboot.)");
+	AG_WindowSetMinSize(w, 230, 80);
+	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
+	AG_WidgetSetSize(box, 230, 32);
+	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s", label);
+	box = AG_BoxNewVert(w, AG_BOX_HFILL);
+	AG_WidgetSetSize(box, 230, 32);
+
+	box2 = AG_BoxNewHoriz(box, 0);
+	btn[0] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("BASIC"), SetBootMode, "%i", FALSE);
+	box2 = AG_BoxNewVert(box, 0);
+	btn[1] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("DOS"), SetBootMode, "%i", TRUE);
+	box2 = AG_BoxNewVert(box, 0);
+	btn[2] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
+
+	AG_WindowSetCaption(w, gettext("Boot Mode"));
+	AG_WindowShow(w);
 
 }
 
@@ -78,8 +121,9 @@ void Create_FileMenu(AG_MenuItem *parent)
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Cold Reset"), NULL, OnReset, NULL);
 	item = AG_MenuAction(parent, gettext("Hot Reset"), NULL, OnHotReset, NULL);
-	//Menu_File_BootMode = AG_MenuAction(Menu_File, gettext("Boot Mode"), NULL, OnBootMode, NULL);
-	//AG_MenuSeparator(Menu_File);
+	AG_MenuSeparator(parent);
+	item = AG_MenuAction(parent, gettext("Boot Mode"), NULL, FileMenu_BootMode, NULL);
+	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent , gettext("Quit"), NULL, OnDestroy, NULL);
 }
 
