@@ -180,6 +180,7 @@ static void DrawTape(void);
 
 void DrawOSDGL(AG_GLView *w)
 {
+
     DrawCAP();
     DrawKANA();
     DrawINS();
@@ -187,6 +188,7 @@ void DrawOSDGL(AG_GLView *w)
     DrawDrive(AGWIDGET(w), 0);
     DrawTape();
     DrawMainCaption();
+
 }
 
 void DrawOSDEv(AG_Event *event)

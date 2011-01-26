@@ -35,6 +35,10 @@ static BOOL InitVideo;
 static SDL_semaphore *VramSem;
 static AG_Surface *dummytex;
 extern void DrawOSDGL(AG_GLView *w);
+
+static void DiscardTexture(GLuint tid);
+
+
 /*
  * OSD
  */
@@ -93,6 +97,7 @@ void CalcPalette_AG_GL(Uint32 *palette, Uint32 src, Uint8 r, Uint8 g, Uint8 b, U
 void InitGL_AG_GL(int w, int h)
 {
 	Uint32 flags;
+	AG_TexCoord *tc;
 	int bpp = 32;
 	int rgb_size[3];
 
@@ -162,6 +167,7 @@ void Detach_AG_GL()
 		AG_SurfaceFree(pixvram);
 		pixvram = NULL;
 	}
+	DiscardTexture(textureid);
 }
 
 extern "C" {
@@ -185,13 +191,6 @@ static GLuint CreateTexture(AG_Surface *p)
 	LockVram();
     glGenTextures(1, &tid);
     glBindTexture(GL_TEXTURE_2D, tid);
-    if(!bSmoosing) {
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    } else {
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    }
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -258,6 +257,7 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	AG_Driver *drv;
 	float xratio;
 	float yratio;
+	AG_TexCoord *tc;
 
 //	if(!InitVideo) return;
 	if(DrawArea == NULL) return;
@@ -301,7 +301,6 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 			}
 	}
 	UnLockVram();
-//	textureid = CreateTexture(pixvram);
 //	xratio = (float)pixvram->w / (float)AGWIDGET(DrawArea)->w;
 //	yratio =  (float)pixvram->h / (float)AGWIDGET(DrawArea)->h ;
 }
@@ -313,8 +312,8 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 void AGEventOverlayGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
-    if(glv == NULL) return;
-//    DrawOSDGL(glv);
+//  DrawOSDGL(glv);
+//  DiscardTexture(tid_caption);
 }
 
 
@@ -351,19 +350,16 @@ void AGEventDrawGL(AG_Event *event)
 	yend = 800.0;
 	textureid = CreateTexture(pixvram);
 
-	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
     glEnable(GL_TEXTURE_2D);
-    glPushMatrix();
+//  glPushMatrix();
     /* This allows alpha blending of 2D textures with the scene */
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
     glLoadIdentity();
 
-//    glViewport(0, viewport_y, viewport_w,  viewport_h + viewport_y);
     glViewport(0, 0, nDrawWidth , nDrawHeight);
 
     /*
@@ -371,22 +367,33 @@ void AGEventDrawGL(AG_Event *event)
      */
     glOrtho(0.0, 1280,	800, 0.0, 0.0,  1.0);
 
+    glEnable(GL_DEPTH_TEST);
+
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
     glBindTexture(GL_TEXTURE_2D, textureid);
+    if(!bSmoosing) {
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    } else {
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -1.0);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -1.0);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -1.0);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -1.0);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.95);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.95);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.95);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.95);
     glEnd();
+//    glEnable(GL_DEPTH_TEST);
 
     DrawOSDGL(DrawArea);
 
     /*
      * スキャンライン
      */
+#if 1
     if(!bFullScan) {
     	xbegin = 0.0f;
     	xend = 1280.0f;
@@ -416,26 +423,17 @@ void AGEventDrawGL(AG_Event *event)
     	}
 #endif
     }
-//    glFlush();
-//    DrawOSDGL(DrawArea);
+#endif
 /*
  * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
  */
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
+    glDisable(GL_DEPTH_TEST);
     glPopMatrix();
     glPopAttrib();
     // テクスチャ棄てるのはなるべく最後にしよう
 	DiscardTexture(textureid);
-    DiscardTexture(tid_caption);
-//    for(i = 0; i < 4 ; i++) {
-//    	DiscardTexture(tid_fd[i]);
-//    }
-//    DiscardTexture(tid_cmt);
-//    DiscardTexture(dummytexid);
-//    glFlush();
+	DiscardTexture(tid_caption);
+
 }
 
 void AGEventMouseMove_AG_GL(AG_Event *event)
