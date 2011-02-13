@@ -75,8 +75,8 @@ INPUTSRC = \
 	AgarKbdInterface.cpp \
 	SDLKbdInterface.cpp \
 	SDLJoyInterface.cpp \
-	KbdInterface.cpp 
-
+	KbdInterface.cpp \
+	agar_ui_vkey.cpp
 
 
 #	GtkKbdInterface.cpp \
@@ -165,7 +165,8 @@ INPUTOBJ = \
 	SDLJoyInterface.o \
 	AgarKbdInterface.o \
 	SDLKbdInterface.o \
-	KbdInterface.o 
+	KbdInterface.o \
+	agar_ui_vkey.o
 	
 #	SDLKbdInterface.o \
 #	GtkKbdInterface.o \

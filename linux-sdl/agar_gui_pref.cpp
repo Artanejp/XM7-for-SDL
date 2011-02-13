@@ -452,10 +452,15 @@ static void InputMenuJS(AG_NotebookTab *parent)
 
 }
 
+extern void BuildVkeyBoard(AG_Event *event);
+
+
 void InputMenuKbd(AG_NotebookTab *parent)
 {
 	AG_Box *box;
 	AG_Checkbox *check;
+	AG_Box *vbox;
+	AG_Button *btn;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
 
@@ -465,6 +470,7 @@ void InputMenuKbd(AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Bind multi-pressed cursor as oblique direction"), &localconfig.bArrow8Dir);
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Bind Cursor as Ten-Key"), &localconfig.bTenCursor);
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Pseudo Realtime Scan"), &localconfig.bKbdReal);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Virtual Keyboard"), BuildVkeyBoard, NULL);
 	}
 
 }
