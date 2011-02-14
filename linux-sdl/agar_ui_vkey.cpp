@@ -75,7 +75,7 @@ const struct KeyCode_Vkey VKeyTableAG_1[] = {
 		{"PF5", 0x61}, /* PF5 */
 };
 const struct KeyCode_Vkey VKeyTableAG_2[] = {
-		{"BREAK", 0x5c},	/* BREAK(ESC) */
+		{"BRK", 0x5c},	/* BREAK(ESC) */
 		{"PF6", 0x62}, /* PF6 */
 		{"PF7", 0x63}, /* PF7 */
 		{"PF8", 0x64}, /* PF8 */
@@ -153,42 +153,66 @@ const struct KeyCode_Vkey VKeyTableAG_8[] = {
 		{"無変換", 0x56}, /* WIN(無変換) for 109 */
 		{"変換", 0x57}, /* 左SPACE(変換) for 109 */
 		{"カナ", 0x58}, /* 中SPACE(カタカナ) */
-		{" ", 0x35}, /* 右SPACE(SPACE) */
+		{"SPACE", 0x35}, /* 右SPACE(SPACE) */
 	    {"かな", 0x5a}, /* かな(右Ctrl) for 109 */
 };
 const struct KeyCode_Vkey VKeyTableAG_9[] = {
 		{"INS", 0x48}, /* INS(Insert) */
 		{"↑", 0x4d}, /* ↑ */
-		{"DELETE", 0x4b}, /* DEL(Delete) */
+		{"DEL", 0x4b}, /* DEL(Delete) */
 };
 const struct KeyCode_Vkey VKeyTableAG_10[] = {
 		{"←", 0x4f}, /* ← */
 		{"↓", 0x50}, /* ↓ */
 		{"→", 0x51}, /* → */
 };
-const struct KeyCode_Vkey VKeyTableAG_11[] = {
 
+const struct KeyCode_Vkey VKeyTableAG_11_1[] = {
 		{"EL", 0x49}, /* EL(Home) */
 		{"CLS", 0x4a}, /* CLS(Page Up) */
+};
+const struct KeyCode_Vkey VKeyTableAG_11_2[] = {
 		{"DUP", 0x4c}, /* DUP(End) */
 		{"HOME", 0x4e}, /* HOME(Page Down) */
+};
+const struct KeyCode_Vkey VKeyTableAG_12[] = {
 		{"*", 0x36}, /* Tenkey * */
 		{"/", 0x37}, /* Tenkey / */
 		{"+", 0x38}, /* Tenkey + */
 		{"-", 0x39}, /* Tenkey - */
+};
+const struct KeyCode_Vkey VKeyTableAG_13[] = {
 		{"7", 0x3a}, /* Tenkey 7 */
 		{"8", 0x3b}, /* Tenkey 8 */
 		{"9", 0x3c}, /* Tenkey 9 */
+};
+const struct KeyCode_Vkey VKeyTableAG_14[] = {
 		{"4", 0x3e}, /* Tenkey 4 */
 		{"5", 0x3f}, /* Tenkey 5 */
 		{"6", 0x40}, /* Tenkey 6 */
+};
+const struct KeyCode_Vkey VKeyTableAG_15[] = {
 		{"1", 0x42}, /* Tenkey 1 */
 		{"2", 0x43}, /* Tenkey 2 */
 		{"3", 0x44}, /* Tenkey 3 */
+};
+const struct KeyCode_Vkey VKeyTableAG_16[] = {
 		{"0", 0x46}, /* Tenkey 0 */
 		{".", 0x47}, /* Tenkey . */
 		{"RET", 0x45}, /* Tenkey CR */
 };
+
+extern void PushKeyData(Uint8, Uint8); /* Make */
+
+static void OnPressVkey(AG_Event *event)
+{
+	AG_Button *button = (AG_Button *)AG_SELF();
+	Uint code = AG_INT(1);
+	PushKeyData(code, 0x80); /* Make */
+	AG_Delay(100);
+	PushKeyData(code, 0x00); /* Break */
+}
+
 
 void BuildVkeyBoard(AG_Event *event)
 {
@@ -204,37 +228,43 @@ void BuildVkeyBoard(AG_Event *event)
 		vbox2 = AG_BoxNewVert(vbox, 0);
 		box = AG_BoxNewHoriz(vbox2, 0);
 		{
-			hbox = AG_BoxNewVert(box, 0);
-			AG_WidgetSetSize(hbox, 100, 10);
+			p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "       ");
+			AG_WidgetDisable(p);
 			i = sizeof(VKeyTableAG_1) / sizeof(struct KeyCode_Vkey);
 			for(j = 0; j < i ; j++) {
-				p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_1[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+				p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_1[j].KeyName, OnPressVkey, "%i", VKeyTableAG_1[j].KeyCode);
 			}
-			hbox = AG_BoxNewVert(box, 0);
-			AG_WidgetSetSize(hbox, 100, 10);
+			p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "      ");
+			AG_WidgetDisable(p);
+			i = sizeof(VKeyTableAG_11_1) / sizeof(struct KeyCode_Vkey);
+			for(j = 0; j < i ; j++) {
+				p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_11_1[j].KeyName, OnPressVkey, "%i", VKeyTableAG_11_1[j].KeyCode);
+			}
+			p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "      ");
+			AG_WidgetDisable(p);
 			i = sizeof(VKeyTableAG_9) / sizeof(struct KeyCode_Vkey);
 			for(j = 0; j < i ; j++) {
-				p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_9[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+				p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_9[j].KeyName, OnPressVkey, "%i", VKeyTableAG_9[j].KeyCode);
 			}
 		}
 		box = AG_BoxNewHoriz(vbox2, 0);
 		{
 			i = sizeof(VKeyTableAG_2) / sizeof(struct KeyCode_Vkey);
 			for(j = 0; j < i ; j++) {
-				p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_2[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+				p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_2[j].KeyName, OnPressVkey, "%i", VKeyTableAG_2[j].KeyCode);
 			}
+			p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "    ");
+			AG_WidgetDisable(p);
+			i = sizeof(VKeyTableAG_11_2) / sizeof(struct KeyCode_Vkey);
+			for(j = 0; j < i ; j++) {
+				p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_11_2[j].KeyName, OnPressVkey, "%i", VKeyTableAG_11_2[j].KeyCode);
+			}
+			p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "  ");
+			AG_WidgetDisable(p);
 
 			i = sizeof(VKeyTableAG_10) / sizeof(struct KeyCode_Vkey);
 			for(j = 0; j < i ; j++) {
-				p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_10[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+				p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_10[j].KeyName, OnPressVkey, "%i", VKeyTableAG_10[j].KeyCode);
 			}
 
 		}
@@ -244,62 +274,86 @@ void BuildVkeyBoard(AG_Event *event)
 	{
 		i = sizeof(VKeyTableAG_3) / sizeof(struct KeyCode_Vkey);
 		for(j = 0; j < i ; j++) {
-//				hbox = AG_BoxNewHoriz(box, AG_HBOX_VFILL);
-			p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_3[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_3[j].KeyName, OnPressVkey, "%i", VKeyTableAG_3[j].KeyCode);
 		}
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "         ");
+		AG_WidgetDisable(p);
+		i = sizeof(VKeyTableAG_12) / sizeof(struct KeyCode_Vkey);
+		for(j = 0; j < i ; j++) {
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_12[j].KeyName, OnPressVkey, "%i", VKeyTableAG_12[j].KeyCode);
+		}
+
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
 	{
 		i = sizeof(VKeyTableAG_4) / sizeof(struct KeyCode_Vkey);
 		for(j = 0; j < i ; j++) {
-//				hbox = AG_BoxNewHoriz(box, AG_HBOX_VFILL);
-			p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_4[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_4[j].KeyName, OnPressVkey, "%i", VKeyTableAG_4[j].KeyCode);
+		}
+		i = sizeof(VKeyTableAG_5) / sizeof(struct KeyCode_Vkey);
+		for(j = 0; j < i ; j++) {
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_5[j].KeyName, OnPressVkey, "%i", VKeyTableAG_5[j].KeyCode);
+		}
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "            ");
+		AG_WidgetDisable(p);
+		i = sizeof(VKeyTableAG_13) / sizeof(struct KeyCode_Vkey);
+		for(j = 0; j < i ; j++) {
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_13[j].KeyName, OnPressVkey, "%i", VKeyTableAG_13[j].KeyCode);
 		}
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
 	{
-		p = AG_ButtonNew(box, 0, "%s", " ");
-		p = AG_ButtonNew(box, 0, "%s", " ");
-
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "         ");
+		AG_WidgetDisable(p);
 		i = sizeof(VKeyTableAG_6) / sizeof(struct KeyCode_Vkey);
 		for(j = 0; j < i ; j++) {
-//				hbox = AG_BoxNewHoriz(box, AG_HBOX_VFILL);
-			p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_6[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_6[j].KeyName, OnPressVkey, "%i", VKeyTableAG_6[j].KeyCode);
 		}
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "                        ");
+		AG_WidgetDisable(p);
+		i = sizeof(VKeyTableAG_14) / sizeof(struct KeyCode_Vkey);
+		for(j = 0; j < i ; j++) {
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_14[j].KeyName, OnPressVkey, "%i", VKeyTableAG_14[j].KeyCode);
+		}
+
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
 	{
-		p = AG_ButtonNew(box, 0, "%s", " ");
-		p = AG_ButtonNew(box, 0, "%s", " ");
-
 		i = sizeof(VKeyTableAG_7) / sizeof(struct KeyCode_Vkey);
 		for(j = 0; j < i ; j++) {
 //				hbox = AG_BoxNewHoriz(box, AG_HBOX_VFILL);
-			p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_7[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_7[j].KeyName, OnPressVkey, "%i", VKeyTableAG_7[j].KeyCode);
 		}
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "         ");
+		AG_WidgetDisable(p);
+		i = sizeof(VKeyTableAG_15) / sizeof(struct KeyCode_Vkey);
+		for(j = 0; j < i ; j++) {
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_15[j].KeyName, OnPressVkey, "%i", VKeyTableAG_15[j].KeyCode);
+		}
+
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
 	{
-		p = AG_ButtonNew(box, 0, "%s", " ");
-		p = AG_ButtonNew(box, 0, "%s", " ");
-
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "  ");
+		AG_WidgetDisable(p);
 		i = sizeof(VKeyTableAG_8) / sizeof(struct KeyCode_Vkey);
 		for(j = 0; j < i ; j++) {
-//				hbox = AG_BoxNewHoriz(box, AG_HBOX_VFILL);
-			p = AG_ButtonNew(box, 0, "%s", VKeyTableAG_8[j].KeyName);
-//				KeyDesc_1[j] = new VirtualKey();
-//				KeyDesc_1[j]->SetKeyCode(VKeyTableAG_1[j].KeyCode);
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_8[j].KeyName, OnPressVkey, "%i", VKeyTableAG_8[j].KeyCode);
 		}
+		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s", "        ");
+		AG_WidgetDisable(p);
+		i = sizeof(VKeyTableAG_16) / sizeof(struct KeyCode_Vkey);
+		for(j = 0; j < i ; j++) {
+			p = AG_ButtonNewFn(box, AG_BUTTON_REPEAT, VKeyTableAG_16[j].KeyName, OnPressVkey, "%i", VKeyTableAG_16[j].KeyCode);
+		}
+
 	}
 
 	AG_WindowSetCaption(w, gettext("Virtual Keyboard"));
 	AG_WindowShow(w);
+}
+
+void VkeyBoard(AG_Event *event)
+{
+
 }

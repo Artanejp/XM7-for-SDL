@@ -208,7 +208,7 @@ InitSnd(void)
 	uClipCount = 0;
 	//	bInitFlag = FALSE;
 	//    InitFDDSnd();
-	SDL_InitSubSystem(SDL_INIT_AUDIO);
+	//SDL_InitSubSystem(SDL_INIT_AUDIO);
 	/*
 	 * WAVよむ
 	 */
@@ -379,7 +379,7 @@ BOOL SelectSnd(void)
 		SDL_SemPost(applySem);
 	}
 	if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 16 ) < 0) {
-//		if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, 256 ) < 0) {
+//		if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, 512 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 		return FALSE;
 	}
