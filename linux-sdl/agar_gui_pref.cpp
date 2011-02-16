@@ -191,6 +191,10 @@ static void OnResetCycles(AG_Event *event)
 	AG_NumericalSetValue(NumSub, (double)SUBCYCLES);
 	AG_NumericalSetValue(NumMainMMR, (double)MAINCYCLES_MMR);
 	AG_NumericalSetValue(NumMainFMMR, (double)MAINCYCLES_FMMR);
+	localconfig.main_speed = MAINCYCLES;
+	localconfig.sub_speed = SUBCYCLES;
+	localconfig.mmr_speed = MAINCYCLES_MMR;
+	localconfig.fmmr_speed = MAINCYCLES_FMMR;
 }
 
 void ConfigMenuVMSpeed(AG_NotebookTab *parent)
@@ -202,18 +206,22 @@ void ConfigMenuVMSpeed(AG_NotebookTab *parent)
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
 	NumMain = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Main CPU"));
 	AG_NumericalSetRangeInt(NumMain, 2, 9999);
+	AG_NumericalSetIncrement(NumMain, 1);
 	AG_BindUint32(NumMain, "value", &localconfig.main_speed);
 
 	NumSub = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Sub CPU") );
 	AG_NumericalSetRangeInt(NumSub, 2, 9999);
+	AG_NumericalSetIncrement(NumSub, 1);
 	AG_BindUint32(NumSub, "value", &localconfig.sub_speed);
 
 	NumMainMMR = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Main CPU MMR"));
 	AG_NumericalSetRangeInt(NumMainMMR, 2, 9999);
+	AG_NumericalSetIncrement(NumMainMMR, 1);
 	AG_BindUint32(NumMainMMR, "value", &localconfig.mmr_speed);
 
 	NumMainFMMR = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Main CPU Fast MMR"));
 	AG_NumericalSetRangeInt(NumMainFMMR, 2, 9999);
+	AG_NumericalSetIncrement(NumMainFMMR, 1);
 	AG_BindUint32(NumMainFMMR, "value", &localconfig.fmmr_speed);
 
 	btn = AG_ButtonNew(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, NULL);
@@ -344,10 +352,18 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenAspectName, OnChangeScreenAspect, NULL);
 		AG_BindInt(radio, "value",&ScreenResoSelected);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
-		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Display rate"), &localconfig.nDrawFPS);
+//		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Display rate"), &localconfig.nDrawFPS);
+		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Display rate"));
+		AG_BindUint16(fps, "value", &localconfig.nDrawFPS);
 		AG_NumericalSetRangeInt(fps, 2, 75);
-		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Emulation rate"), &localconfig.nEmuFPS);
+		AG_NumericalSetIncrement(fps, 1);
+
+//		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Emulation rate"), &localconfig.nEmuFPS);
+		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Emulation rate"));
+		AG_BindUint16(fps, "value", &localconfig.nEmuFPS);
 		AG_NumericalSetRangeInt(fps, 2, 75);
+		AG_NumericalSetIncrement(fps, 1);
+
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
