@@ -86,6 +86,7 @@ typedef struct {
 	BOOL bFddSound;	/* FDDシークサウンド */
 
 #endif
+	int iTotalVolume;
 	int nFMVolume;  /* FM音源ボリューム */
 	int nPSGVolume; /* PSGボリューム */
 	int nBeepVolume;/* BEEP音ボリューム */

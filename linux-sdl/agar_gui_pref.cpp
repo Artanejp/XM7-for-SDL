@@ -12,6 +12,7 @@
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #include <SDL.h>
+#include <SDL/SDL_mixer.h>
 
 #include "xm7.h"
 #include "device.h"
@@ -612,6 +613,14 @@ static void OnChangeVolume(AG_Event *event)
 				localconfig.nCMTVolume, localconfig.nWaveVolume);
 }
 
+static void OnChangeTotalVolume(AG_Event *event)
+{
+	AG_Slider *self = (AG_Slider *)AG_SELF();
+	iTotalVolume = localconfig.iTotalVolume;
+	Mix_Volume(-1, localconfig.iTotalVolume);
+}
+
+
 static void VolumeMenu(AG_NotebookTab *parent)
 {
 	AG_Slider *slider;
@@ -620,7 +629,9 @@ static void VolumeMenu(AG_NotebookTab *parent)
 	AG_Label *lbl;
 
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("Main Volume"));
-	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &iTotalVolume, 0, 128);
+	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.iTotalVolume, 0, 128);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeTotalVolume, NULL);
+
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_HFILL);
 	AG_WidgetSetSize(AGWIDGET(box), 320, 12);
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("PSG"));

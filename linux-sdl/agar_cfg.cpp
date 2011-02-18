@@ -255,6 +255,11 @@ void LoadCfg(void)
     configdat.bTapeMon = LoadCfgBool("TapeMon", FALSE);
     configdat.bForceStereo = LoadCfgInt("ForceStereoOutput", FALSE);
 
+    configdat.iTotalVolume = LoadCfgInt("TotalVolume", SDL_MIX_MAXVOLUME - 1);
+    if ((configdat.iTotalVolume < 0) || (configdat.iTotalVolume >= SDL_MIX_MAXVOLUME)) {
+            configdat.nFMVolume = SDL_MIX_MAXVOLUME;
+    }
+
     configdat.nFMVolume = LoadCfgInt("FMVolume", FMVOLUME_DEFAULT);
     if ((configdat.nFMVolume < -96) || (configdat.nFMVolume > 10)) {
             configdat.nFMVolume = FMVOLUME_DEFAULT;
@@ -572,6 +577,7 @@ void SaveCfg(void)
     SaveCfgBool("FDDSound", configdat.bFddSound);
 #endif			/**/
     SaveCfgInt("ChannelSeparation", configdat.uChSeparation);
+    SaveCfgInt("TotalVolume", configdat.iTotalVolume);
     SaveCfgInt("FMVolume", configdat.nFMVolume);
     SaveCfgInt("PSGVolume", configdat.nPSGVolume);
     SaveCfgInt("BeepVolume", configdat.nBeepVolume);
@@ -753,7 +759,7 @@ void ApplyCfg(void)
     tape_sound = configdat.bFddSound;
 #endif
     /* 音量設定 */
-    uChSeparation = configdat.uChSeparation;
+    iTotalVolume = configdat.iTotalVolume;
     nFMVolume = configdat.nFMVolume;
     nPSGVolume = configdat.nPSGVolume;
     nBeepVolume = configdat.nBeepVolume;

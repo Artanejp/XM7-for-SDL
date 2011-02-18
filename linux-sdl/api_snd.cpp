@@ -185,7 +185,7 @@ InitSnd(void)
 	bBeepFlag = FALSE;      /* BEEP出力 */
 	bTapeFlag = TRUE;
 
-	iTotalVolume = SDL_MIX_MAXVOLUME;
+	iTotalVolume = SDL_MIX_MAXVOLUME - 1;
 	snd_thread = NULL;
 	SndMutex = NULL;
 	SndCond = NULL;
@@ -605,8 +605,6 @@ PlaySnd()
 	uClipCount = 0;
 	dwPlayC = 0;
 	uProcessCount = 0;
-	iTotalVolume = SDL_MIX_MAXVOLUME - 1;	/* ここで音量設定する必要があるか?
-	 */
 
 	/*
 	 * 変換できたので読み込む
@@ -1140,7 +1138,7 @@ static void RenderPlay(int samples, int slot, BOOL play)
 	if(play) {
 		if(applySem == NULL) return;
 		SDL_SemWait(applySem);
-
+		Mix_Volume(-1,iTotalVolume);
 		if(DrvBeep != NULL) {
 			DrvBeep->Play(CH_SND_BEEP , slot, samples);
 		}
