@@ -540,6 +540,8 @@ void OnConfigInputMenu(AG_Event *event)
 
 static int SampleRateNum;
 extern int iTotalVolume;   /* 全体ボリューム */
+extern void  SetSoundVolume2(UINT uSp, int nFM, int nPSG, int nBeep, int nCMT, int nWav);
+extern void SetTotalVolume(int vol);
 
 
 static const char *SampleRateName[] = {
@@ -601,9 +603,6 @@ static void SoundMenu(AG_NotebookTab *parent)
 	}
 }
 
-extern void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
-		int nBeep, int nCMT, int nWav);
-
 static void OnChangeVolume(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
@@ -616,8 +615,8 @@ static void OnChangeVolume(AG_Event *event)
 static void OnChangeTotalVolume(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
-	iTotalVolume = localconfig.iTotalVolume;
-	Mix_Volume(-1, localconfig.iTotalVolume);
+	SetTotalVolume(localconfig.iTotalVolume);
+
 }
 
 

@@ -590,11 +590,17 @@ void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
 	SetSoundVolume();
 }
 
+void SetTotalVolume(int vol)
+{
+	iTotalVolume = vol;
+	Mix_Volume(-1, vol);
+}
+
+
 /*
  *  演奏開始
  */
-void
-PlaySnd()
+void PlaySnd()
 {
    return;
 	/*
