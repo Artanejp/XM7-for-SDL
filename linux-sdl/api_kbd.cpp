@@ -204,8 +204,7 @@ SelectKbd(void)
 }
 
 
-void
-PushKeyData(Uint8 code,Uint8 MakeBreak)
+void PushKeyData(Uint8 code,Uint8 MakeBreak)
 {
 	if(KeySem == NULL) return; // セマフォなければ何もしない
 	SDL_SemWait(KeySem);
@@ -224,8 +223,7 @@ PushKeyData(Uint8 code,Uint8 MakeBreak)
 /*
  *  キーボード 内部キーバッファ登録
  */
-static void
-PushKeyCode(BYTE code)
+static void PushKeyCode(BYTE code)
 {
 	int            i;
 	if (nKeyWritePtr < KEYBUFFER_SIZE) {
@@ -735,4 +733,36 @@ BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode)
 	AGARDrv->OnRelease(sym, mod, unicode);
 	return TRUE;
 }
+
+void SetKeyCodeAG(Uint8 code, int sym, int mod)
+{
+	if(AGARDrv == NULL) return;
+	AGARDrv->SetKeyCode(code, (Uint32)sym, (Uint32)mod);
+}
+
+void GetKeyCodeAG(Uint8 code, void *p)
+{
+	if(AGARDrv == NULL) return;
+	AGARDrv->GetKeyCode(code, (XM7KeyCode *)p);
+	return;
+}
+
+void LoadKeyMapAG(struct XM7KeyCode *pMap)
+{
+	if(AGARDrv == NULL) return;
+	AGARDrv->LoadKeyTable((void *)pMap);
+}
+
+void InitKeyMapAG(void)
+{
+	if(AGARDrv == NULL) return;
+	AGARDrv->InitKeyTable();
+}
+
+void GetDefMapAG(struct XM7KeyCode *pMap)
+{
+	if(AGARDrv == NULL) return;
+	AGARDrv->SaveKeyTable((void *)pMap);
+}
+
 #endif

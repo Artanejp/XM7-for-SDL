@@ -28,6 +28,9 @@ public:
 	void InitKeyTable(void);
 	void ResetKeyMap(void);
 	void LoadKeyTable(void *pMap);
+	void SaveKeyTable(void *pMap);
+	void GetKeyCode(Uint8 code, XM7KeyCode *p);
+	void SetKeyCode(Uint8 code, Uint32 sym, Uint32 mod);
 private:
 	struct XM7KeyCode KeyCodeTable2[256];
 	void InitLocalVar(void);

@@ -470,7 +470,7 @@ static void InputMenuJS(AG_NotebookTab *parent)
 }
 
 extern void BuildVkeyBoard(AG_Event *event);
-
+extern void SetKeyTable(AG_Event *event);
 
 void InputMenuKbd(AG_NotebookTab *parent)
 {
@@ -488,6 +488,7 @@ void InputMenuKbd(AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Bind Cursor as Ten-Key"), &localconfig.bTenCursor);
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Pseudo Realtime Scan"), &localconfig.bKbdReal);
     	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Virtual Keyboard"), BuildVkeyBoard, NULL);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Assign Keyboard"), SetKeyTable, NULL);
 	}
 
 }
@@ -497,10 +498,8 @@ void OnConfigInputMenu(AG_Event *event)
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	AG_Window *win;
 	AG_Notebook *note;
-	AG_Notebook *note2;
 
 	AG_NotebookTab *tab;
-	AG_NotebookTab *tab2;
 	AG_Box *box;
 	AG_Button *btn;
 

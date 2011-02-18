@@ -42,6 +42,12 @@ configdat_t configdat;	/* コンフィグ用データ */
  *  スタティック ワーク
  */
 static char   *pszSection;	/* セクション名 */
+extern void SetKeyCodeAG(Uint8 code, int sym, int mod);
+extern void GetKeyCodeAG(Uint8 code, void *p);
+
+extern void LoadKeyMapAG(struct XM7KeyCode *pMap);
+extern void InitKeyMapAG(void);
+extern void GetDefMapAG(struct XM7KeyCode *pMap);
 
 /*
  *  パス保存用キー名
@@ -138,8 +144,9 @@ void LoadCfg(void)
     char           dir[MAXPATHLEN];
     char           InitDir[MAXPATHLEN];
     BOOL flag;
+
     static const int JoyTable[] =
-	{ 0x70, 0x71, 0x72, 0x73, 0, 0x74, 0x75
+		{ 0x70, 0x71, 0x72, 0x73, 0, 0x74, 0x75
     };
     SetCfgFile();
     LoadCfgFile();
@@ -300,23 +307,22 @@ void LoadCfg(void)
     configdat.bArrow8Dir = LoadCfgBool("Arrow8Dir", TRUE);
     flag = FALSE;
 
-// /* キーマップ読み込み */
-// for (i=0; i<256; i++) {
-// sprintf(string, "Key%d", i);
-// j = i;
-// configdat.KeyMap[j] = (BYTE)LoadCfgInt(string, 0);
-//
-// if (configdat.KeyMap[j] != 0) {
-// flag = TRUE;
-// }
-// }
-// /*
-// キーマップ設定なき時はデフォルトキーマップ。
-//
-// */
-// if (!flag) {
-// GetDefMapKbd(configdat.KeyMap, 0);
-// }
+ /* キーマップ読み込み */
+    for (i=0; i<256; i++) {
+    		sprintf(string, "Key%d", i);
+    		j = i;
+    		configdat.KeyMap[j].code = (BYTE)LoadCfgInt(string, 0);
+
+    		if (configdat.KeyMap[j].code != 0) {
+    			flag = TRUE;
+    		}
+    }
+ /*
+ キーマップ設定なき時はデフォルトキーマップ。
+ */
+    if (!flag) {
+    	GetDefMapAG(configdat.KeyMap);
+    }
 /*
  * JoyStickセクション
  */
@@ -531,6 +537,8 @@ void SaveCfg(void)
     int            i;
     int            j;
     char           string[128];
+    XM7KeyCode p;
+
     SetCfgFile();
 
 	/*
@@ -595,6 +603,12 @@ void SaveCfg(void)
     SaveCfgBool("UseArrowFor10Key", configdat.bTenCursor);
     SaveCfgBool("Arrow8Dir", configdat.bArrow8Dir);
 
+    for (i=0; i<256; i++) {
+    		GetKeyCodeAG(i, (void *)&p);
+       		sprintf(string, "Key%d", p.pushCode);
+       		SaveCfgInt(string, p.code);
+    }
+
 /*
  * JoyStickセクション
  */
@@ -611,6 +625,8 @@ void SaveCfg(void)
                     SaveCfgInt(string, configdat.nJoyCode[i][j]);
             }
     }
+
+
 
 /*
  * Screenセクション
@@ -716,7 +732,7 @@ extern void 	ResizeGL(int w, int h);
      */
 void ApplyCfg(void)
 {
-
+	int i;
 /*
  * Generalセクション
  */
@@ -777,6 +793,10 @@ void ApplyCfg(void)
     bKbdReal = configdat.bKbdReal;
     bTenCursor = configdat.bTenCursor;
     bArrow8Dir = configdat.bArrow8Dir;
+    for (i=0; i<256; i++) {
+    	if(configdat.KeyMap[i].pushCode == 0) continue;
+            SetKeyCodeAG(configdat.KeyMap[i].pushCode ,configdat.KeyMap[i].code, configdat.KeyMap[i].mod);
+    }
 
 /*
  * JoyStickセクション

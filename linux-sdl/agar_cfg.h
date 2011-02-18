@@ -7,6 +7,7 @@
 
 #ifndef AGAR_CFG_H_
 #define AGAR_CFG_H_
+#include "KbdInterface.h"
 
 #ifdef __cplusplus
 extern          "C" {
@@ -44,7 +45,7 @@ typedef struct {
 	BOOL bForceStereo;	/* 強制ステレオ出力 */
 	BOOL bTapeMon;	/* テープ音モニタ */
 
-	// BYTE KeyMap[256]; /* キーマップ */
+	XM7KeyCode KeyMap[256]; /* キーマップ */
 	BOOL bKbdReal;	/* 擬似リアルタイムキースキャン */
 	BOOL bTenCursor;	/* 方向キーをテンキーに対応
 	 */

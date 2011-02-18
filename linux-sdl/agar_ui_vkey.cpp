@@ -18,43 +18,6 @@ extern "C" {
 #include "fdc.h"
 #include "AgarKbdInterface.h"
 
-class VirtualKey {
-	Uint8 keyCode;
-	char *name;
-	char *keytop;
-	BOOL Enabled;
-	void OnPress(AG_Event *event);
-	void (* pressed)(Uint8 code);
-	void SetPushedFunc(void( func)(Uint8));
-	void SetKeyCode(Uint8 code);
-	VirtualKey();
-	~VirtualKey();
-	AG_Button *btn;
-};
-
-void VirtualKey::OnPress(AG_Event *event) {
-	AG_Button *button = (AG_Button *) AG_SELF();
-	Uint code = AG_INT(1);
-	if (pressed == NULL)
-		return;
-	VirtualKey::pressed(code);
-
-}
-
-VirtualKey::VirtualKey() {
-}
-
-VirtualKey::~VirtualKey() {
-
-}
-
-void VirtualKey::SetPushedFunc(void( func)(Uint8)) {
-	this->pressed = func;
-}
-
-void VirtualKey::SetKeyCode(Uint8 code) {
-	this->keyCode = code;
-}
 
 struct KeyCode_Vkey {
 	const char *KeyName;
@@ -182,6 +145,8 @@ const struct KeyCode_Vkey VKeyTableAG_16[] = { { "0", 0x46 }, /* Tenkey 0 */
 };
 
 extern void PushKeyData(Uint8, Uint8); /* Make */
+extern void KeyBoardSnoop(BOOL flag);
+extern void OnPushCancel(AG_Event *event);
 
 static void OnPressVkey(AG_Event *event) {
 	AG_Button *button = (AG_Button *) AG_SELF();
@@ -203,7 +168,7 @@ static void OnPressVModkey(AG_Event *event) {
 }
 
 
-void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey)(AG_Event *))
+void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey)(AG_Event *), BOOL vkey, char *caption)
 {
 	AG_Button *p;
 	AG_Window *w;
@@ -354,7 +319,9 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			case 0x54:
 			case 0x56:
 				AG_SetEvent(AGWIDGET(p), "button-pushed", func_modkey, "%i", VKeyTableAG_7[j].KeyCode);
-				AG_ButtonSetSticky(p, 0x01);
+				if(vkey) {
+					AG_ButtonSetSticky(p, 0x01);
+				}
 				break;
 			default:
 				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_7[j].KeyCode);
@@ -387,7 +354,9 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			case 0x54:
 			case 0x56:
 				AG_SetEvent(AGWIDGET(p), "button-pushed", func_modkey, "%i", VKeyTableAG_8[j].KeyCode);
-				AG_ButtonSetSticky(p, 0x01);
+				if(vkey) {
+					AG_ButtonSetSticky(p, 0x01);
+				}
 				break;
 			default:
 				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_8[j].KeyCode);
@@ -407,12 +376,63 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 		}
 
 	}
+	box = AG_BoxNewHoriz(vbox, 0);
+	p = AG_ButtonNewFn(box, 0, gettext("Cancel"), OnPushCancel, NULL);
 
-	AG_WindowSetCaption(w, gettext("Virtual Keyboard"));
+	AG_WindowSetCaption(w, caption);
 	AG_WindowShow(w);
 }
 
-
+/*
+ * 仮想キーボード
+ */
 void BuildVkeyBoard(AG_Event *event) {
-	VkeyBoard(event, OnPressVkey, OnPressVModkey);
+	VkeyBoard(event, OnPressVkey, OnPressVModkey, TRUE, gettext("Virtual Keyboard"));
+}
+
+
+/*
+ * キーコードアサイン
+ */
+static void OnPressSetKey(AG_Event *event)
+{
+	AG_Window *w = (AG_Window *)AG_SELF();
+	Uint keySym = AG_INT(2);
+	Uint keyMod = AG_INT(3);
+	Uint8 pushCode = AG_INT(1);
+
+//	printf("Pressed %02x %02x", keySym, pushCode);
+	SetKeyCodeAG((Uint8) pushCode, keySym, keyMod);
+	OnPushCancel(event);
+}
+
+static void OnSetVkey(AG_Event *event)
+{
+	AG_Button *button = (AG_Button *) AG_SELF();
+	Uint pushCode = AG_INT(1);
+	AG_Window *w;
+	AG_Box *box;
+	AG_Box *box2;
+	AG_Button *cbutton;
+	XM7KeyCode p ;
+	AG_Label *lbl;
+
+	w = AG_WindowNew(0);
+	AG_WindowSetCaption(w, "Assign Key as %s (%02x)", button->lbl->text, pushCode);
+	KeyBoardSnoop(TRUE);
+	box = AG_BoxNewVert(w, 0);
+	box2 = AG_BoxNewHoriz(box, 0);
+	lbl = AG_LabelNew(box2, 0, "%s", gettext("Press Key"));
+	box2 = AG_BoxNewHoriz(box, 0);
+	GetKeyCodeAG(pushCode, (void *)&p);
+	lbl = AG_LabelNew(box2, 0, "%s (%04x)", button->lbl->text, p.code);
+	box2 = AG_BoxNewHoriz(box, 0);
+	cbutton = AG_ButtonNewFn(box2, 0, gettext("Cancel"), OnPushCancel, NULL);
+	AG_SetEvent(AGOBJECT(w), "key-up", OnPressSetKey, "%i", pushCode);
+	AG_WindowShow(w);
+}
+
+void SetKeyTable(AG_Event *event)
+{
+	VkeyBoard(event, OnSetVkey, OnSetVkey, FALSE, gettext("Assign Keycode"));
 }

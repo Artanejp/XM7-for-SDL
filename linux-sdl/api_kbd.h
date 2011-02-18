@@ -84,6 +84,8 @@ extern          "C" {
 #ifdef USE_AGAR
     BOOL OnKeyPressAG(int sym, int mod, Uint32 unicode);
     BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode);
+    void SetKeyCodeAG(Uint8 code, int sym, int mod);
+    void GetKeyCodeAG(Uint8 code, void *p);
 #endif
 
 
