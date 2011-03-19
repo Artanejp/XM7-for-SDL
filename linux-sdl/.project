@@ -4,6 +4,8 @@
 	<comment></comment>
 	<projects>
 		<project>libemugrph</project>
+		<project>EmuGRPHTest</project>
+		<project>xm7-sdl</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
