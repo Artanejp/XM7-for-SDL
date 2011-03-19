@@ -192,7 +192,9 @@ SRCS =	${COMMONSRC} ${LOCALSRC}
 OBJS =	${COMMONOBJ} ${LOCALOBJ}
 
 LIBS += -L/usr/local/lib
-LIBS += -lemugrph
+#LIBS += -lemugrph
+#LIBS += ../libemugrph/Debug/liblibemugrph.a
+LIBS += ../libemugrph/Release/liblibemugrph.a
 LIBS += `pkg-config --libs sdl`
 LIBS += `pkg-config --libs gtk+-x11-2.0` `pkg-config --libs gdk-pixbuf-2.0`
 LIBS +=  \

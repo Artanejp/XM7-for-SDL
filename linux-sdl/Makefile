@@ -1,1 +1,1 @@
-makefile.sdl.amd64
+makefile
