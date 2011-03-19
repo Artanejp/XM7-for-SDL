@@ -15,25 +15,25 @@ Sorry, under construction and Japanese only,Yet...<BR>
 <BR>
 <BR>
 <B>現在のリリースは、<BR>
-*  Version 0.1r205 (OpenGL+Agar仕様  / αレベル) Nov 28,2010<BR>
+*  Version 0.1r254 (OpenGL+Agar仕様  / αレベル) Mar 20,2011<BR>
 *  Version 0.1r129 (αレベル) Oct 26,2010<BR>
 です。</B><BR>
 解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
 <BR>
 ・ダウンロード：<BR>
 <A
-HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r205.7z">
-ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r205 極めてUnstableだがたぶんうごくはずだ)</A><BR>
+HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r254.7z">
+ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r254 極めてUnstableだがたぶんうごくはずだ)</A><BR>
 <BR>
 <A
 HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
 ソースコード+GNU/Linux amd64バイナリ(r128 Unstableだがたぶんうごくはずだ)</A><BR>
 <BR>
 <H2>変更点:</H2>
-- 描画処理を別スレッドにした（現状はFPS固定)<BR>
+- 描画処理を別スレッドにした<del>（現状はFPS固定)</del><BR>
 &nbsp;&nbsp;26万色・400lineが復活しました<BR>
 - 音声出力を大幅にSDL_mixer依存にした<BR>
-- スクリーン内表示にSDL_ttfを使用（追々OSDに移行するかもしないかも)<BR>
+- スクリーン内表示に<del>SDL_ttf</del>AGARを使用（追々OSDに移行するかもしないかも)<BR>
 - Eclipseでのビルドに移行開始(Makefileでもビルド出来ます)<BR>
 - 全部C/C++ソースコード化<BR>
 - M6809コアを <A HREF="http://rbelmont.mameworld.info/?page_id=163">SDLMESS 0.136</A>ベースのCコードにした（ソースツリーにアセンブラコードも残してあります）<BR>
@@ -44,13 +44,15 @@ HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
 - OpenGLレンダラ（やってみたが胡散臭いヽ(°▽、°)ﾉ）<BR>
 - GTKを捨てて、AGAR GUIツールキット ( <A HREF="http://www.libagar.org/"
 target="_blank">http://www.libagar.org/</A>)に置き換えた(NEW!)<BR>
+- 仮想キーボードの追加<BR>
+- DOSブートモードの復活(あれ？)<BR>
 etc...<BR>
 <BR>
 <H2>TODO:</H2>
 - GUIの完全移植<BR>
 - 要らないソースコードの整理<BR>
 - モジュール化の推進（部品の再利用や改良を促進する）とライブラリへの分離<BR>
-- 縮小表示レンダラの作成(OpenGLに任せる！)<BR>
+- 縮小表示レンダラの作成(OpenGLに任せる?！)<BR>
 - タイミングの不確定要素の排除<BR>
 - デバッガの作成<BR>
 - ARM対応（？？）<BR>
@@ -58,6 +60,10 @@ etc...<BR>
 etc...<BR>
 <BR>
 <H2>インストール:</H2>
+- <A
+HREF="http://www.libagar.org/"target="_blank">AGAR</A>1.4.1以降とOpenGL,SDL,SDL_Mixerが実行に必要です。(XM7バイナリにはAgar
+バイナリを添付してあります。)自前でビルドする場合<A
+HREF="http://sky.geocities.jp/artanejp/agar-svn-head.r8929.7z">1.4.1SVN8929以降を推奨します(r8929のソースコード)</A><BR>
 - <B><A HREF="http://ossipedia.ipa.go.jp/ipafont/index.html"
 target="_blank">IPA Gothic(V3)</A>が必要です。</B>システムにないときは$HOMEかカレントディレクトリィに置いてください(NEW!)<BR>
 - usr.local.bin/xm7 と usr.local.bin/xm7.debug  を/usr/local/bin などにinstall<BR>
@@ -67,6 +73,9 @@ target="_blank">IPA Gothic(V3)</A>が必要です。</B>システムにないと
 <HR>
 <H2>旧版:</H2>
 <BR>
+<H5>Version 0.1r205 Nov 28,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r205.7z">
+ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r205 極めてUnstableだがたぶんうごくはずだ)</A><BR>
 <H5>0.1r151 Nov 01,2010</H5>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux.0.1r151.7z">
 ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 極めてUnstableだがたぶんうごくはずだ)</A><BR>
