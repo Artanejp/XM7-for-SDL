@@ -1,13 +1,13 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
-*  Version 0.1r205 (αレベル / Agar / OpenGL)
+*  Version 0.1r254 (αレベル / Agar / OpenGL)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2010.11.28 Artane.
+* 2011.03.20 Artane.
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
@@ -39,6 +39,7 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 　messのライセンスについてはDoc/mess/license.txtに入れておきました
 ・OpenGLで描画しています（試験版）
 ・GUIにAgar toolkit ( http://www.libagar.org/ )を使用しています。
+・仮想キーボードがつきます(r254以降)
 
 (*2) PC-88エミュレータであるQuasi88に同等の機能があったので…
 (*3) SDLMESS http://rbelmont.mameworld.info/?page_id=163
@@ -62,13 +63,7 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 
 ※r151あたりから、描画機能をlibemugrphに分離しています。(ライセンスを別にしたいので）
 　仕様が未だ固まっていない状態ですが…
-  以下のようにインストールしてください
-  $ cd libemugrph
-  $ make
-  $ sudo make install
-  
-  $ sudo install libemugrph.so /usr/local/lib
-  $ sudo ldconfig
+　r254から、libemugrphをstatic linkするようにしています。
   
 -- 以下、過去の話 --
 現状では6809エミュレーションをXM7添付のアセンブラコアで
