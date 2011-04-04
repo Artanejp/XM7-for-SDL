@@ -7,10 +7,10 @@
 XM7_VER		= 3
 include ../xm7-sdl/config.mak
 
+#CFLAGS += -I../xm7-sdl/
 
 VIDEODRVSRC = \
 	agar_draw.cpp agar_gldraw.cpp
-
 
 INPUTSRC = \
 	AgarKbdInterface.cpp \
@@ -35,111 +35,145 @@ LOCALSRC = \
 	$(INPUTSRC) \
 	$(UISRC)
 
-
-VIDEODRVOBJ = \
-	agar_draw.o agar_gldraw.o
-
-INPUTOBJ = \
-	AgarKbdInterface.o \
-	agar_ui_vkey.o
-	
-UIOBJ = \
-	agar_guicore.o \
-	agar_toolbox.o \
-	agar_gui_menu.o \
-	agar_menu_disk.o \
-	agar_menu_tape.o \
-	agar_menu_tool.o \
-	agar_menu_about.o \
-	agar_gui_pref.o 
-
-LOCALOBJS = \
-	agar_cfg.o \
-        agar_cmd.o agar_sch.o \
-	agar_main.o agar_sdl.o \
-	agar_osd.o \
-	$(VIDEODRVOBJ)  \
-	$(INPUTOBJ) \
-	$(UIOBJ)
-
-
-VIDEODRVSHOBJ = \
-	agar_draw.lo agar_gldraw.lo
-
-INPUTSHOBJ = \
-	AgarKbdInterface.lo \
-	agar_ui_vkey.lo
-	
-UISHOBJ = \
-	agar_guicore.lo \
-	agar_toolbox.lo \
-	agar_gui_menu.lo \
-	agar_menu_disk.lo \
-	agar_menu_tape.lo \
-	agar_menu_tool.lo \
-	agar_menu_about.lo \
-	agar_gui_pref.lo 
-
-SHOBJS = \
-	agar_cfg.lo \
-        agar_cmd.lo agar_sch.lo \
-	agar_main.lo agar_sdl.lo \
-	agar_osd.lo \
-	$(VIDEODRVSHOBJ)  \
-	$(INPUTSHOBJ) \
-	$(UISHOBJ)
-
-
-
-
 SRCS =	${LOCALSRC}
-OBJS =	 ${LOCALOBJS}
+CSRCS =	$(filter %.c, $(SRCS))
+CXXSRCS = $(filter %.cpp, $(SRCS))
 
-LIBS += -L/usr/local/lib
+OBJS = $(patsubst %.c,%.o,$(CSRCS))
+OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
+OBJS_RELEASE = $(addprefix Release/, $(OBJS))
+OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
-LIBS += `pkg-config --libs sdl`
-LIBS +=  -lSDL_ttf
 
-LIBS += -lGL -lGLU
-LIBS += -lag_core -lag_gui -lag_dev 
-LIBS += -ljpeg -lpng
-#LIBS += -lmemwatch
-CFLAGS += -I../xm7-sdl/
+
 
 
 .SUFFIXES: .o .c .cc .cpp 
-all:	libxm7-ui-agar.a 
+all:	Debug/libxm7-ui-agar.a  Release/libxm7-ui-agar.a
 
-libxm7-ui-agar.a: ${LOCALOBJS}
-	ar crv $@ ${LOCALOBJS}
+Debug/libxm7-ui-agar.a: ${OBJS_DEBUG}
+	ar crv $@ ${OBJS_DEBUG}
 
-#libxm7-ui-agar.la: ${SHOBJS}
-#	${LIBTOOL}  --mode=link ${CXX} -version-info 0 -rpath ${PREFIX}/lib -o $@ ${SHOBJS} ${LIBS}
+Release/libxm7-ui-agar.a: ${OBJS_RELEASE}
+	ar crv $@ ${OBJS_RELEASE}
 
-.c.o:
-	${LIBTOOL} --mode=compile ${CC} ${LIBTOOLFLAGS} ${CFLAGS} ${CPPFLAGS} -o $@ -c $<
+Release/agar_draw.o: agar_draw.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/agar_gldraw.o: agar_gldraw.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/AgarKbdInterface.o: AgarKbdInterface.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
-.c.lo: ${LIBTOOL}
-	${LIBTOOL} --mode=compile ${CC} ${LIBTOOLFLAGS} ${CFLAGS} ${CPPFLAGS} -o $@ -c $<
-
-.c.po:
-	${CC} -pg -DPROF ${CFLAGS} ${CPPFLAGS} -o $@ -c $<
-
-.cpp.o:
-	${LIBTOOL} --mode=compile ${CXX} ${LIBTOOLFLAGS} ${CFLAGS} ${CPPFLAGS} -o $@ -c $<
+Release/agar_ui_vkey.o: agar_ui_vkey.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
-.cpp.lo: ${LIBTOOL}
-	${LIBTOOL} --mode=compile ${CXX} ${LIBTOOLFLAGS}  ${CFLAGS} ${CPPFLAGS} -o $@ -c $<
+Release/agar_guicore.o: agar_guicore.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_toolbox.o: agar_toolbox.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_gui_menu.o: agar_gui_menu.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_menu_disk.o: agar_menu_disk.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_menu_tape.o: agar_menu_tape.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_menu_tool.o: agar_menu_tool.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_menu_about.o: agar_menu_about.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_gui_pref.o: agar_gui_pref.cpp 
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_cfg.o: agar_cfg.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_cmd.o: agar_cmd.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_sch.o: agar_sch.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-.cpp.po:
-	${CXX} -pg -DPROF ${CFLAGS} ${CPPFLAGS} -o $@ -c $<
+Release/agar_main.o: agar_main.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_sdl.o: agar_sdl.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	
+Release/agar_osd.o: agar_osd.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+#########
+Debug/agar_draw.o: agar_draw.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_gldraw.o: agar_gldraw.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/AgarKbdInterface.o: AgarKbdInterface.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_ui_vkey.o: agar_ui_vkey.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_guicore.o: agar_guicore.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_toolbox.o: agar_toolbox.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_gui_menu.o: agar_gui_menu.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_menu_disk.o: agar_menu_disk.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_menu_tape.o: agar_menu_tape.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_menu_tool.o: agar_menu_tool.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_menu_about.o: agar_menu_about.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_gui_pref.o: agar_gui_pref.cpp 
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_cfg.o: agar_cfg.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_cmd.o: agar_cmd.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_sch.o: agar_sch.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_main.o: agar_main.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_sdl.o: agar_sdl.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	
+Debug/agar_osd.o: agar_osd.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 
-.asm.o:
-	nasm ${ASFLAGS} $<
+#.asm.o:
+#	nasm ${ASFLAGS} $<
 
 
-
+.PHONY: clean
 clean:
-	rm -f libxm7-ui-agar.a libxm7-ui-agar.la *.o *.lo *~
+	rm -f *.la *.a *.o *.lo *~
+	rm -f Release/*.o Release/*.lo Release/*.a Release/*.la
+	rm -f Debug/*.la Debug/*.a Debug/*.o Debug/*.lo *~
 
