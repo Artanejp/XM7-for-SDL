@@ -101,6 +101,77 @@ int WriteRingBuffer(struct RingBufferDesc *q, void *p)
 	return 0; /* 書けませんでした */
 }
 
+static inline void Copy32to16(Uint32 *from, Uint16 *to, int size)
+{
+        int         i, j, k;
+        Sint32       *p = (Sint32 *) from;
+        Sint16       *t = (Sint16 *) to;
+        Sint32       tmp1;
+
+        if (p == NULL) {
+                return;
+        }
+        if (t == NULL) {
+                return;
+        }
+        i = (size / 4) * 4;
+        for (j = 0; j < i; j += 4) {
+                tmp1 = p[j];
+                t[j] = (Sint16) tmp1 ;
+                tmp1 = p[j + 1];
+                t[j + 1] = (Sint16) tmp1;
+                tmp1 = p[j + 2];
+                t[j + 2] = (Sint16) tmp1 ;
+                tmp1 = p[j + 3];
+                t[j + 3] = (Sint16) tmp1;
+        }
+        k = size % 4;
+        if(k == 0) return; // 剰余数なし
+        i = size - k;
+        for (j = 0; j < k; j++, i++) {
+                tmp1 = p[i];
+                t[i] = (Sint16)tmp1;
+        }
+}
+
+
+/*
+ * 32bitデータを16bitにして書き込む(Soundなど)
+ */
+int WriteRingBuffer32to16(struct RingBufferDesc *q, void *p)
+{
+	int i;
+	int chunks;
+
+	if(q == NULL) return -1;
+	if(q->index == NULL) return -1;
+	chunks = q->chunks;
+	SDL_SemWait(q->sem);
+
+	for(i = 0; i <chunks; i++) {
+		if(q->index != NULL) {
+			if((!q->index[i].use) && (q->index[i].buffer != NULL)) {
+				/*
+				 *
+				 */
+				Copy32to16((Uint32 *)p, (Uint16 *)q->index[i].buffer, q->chunkSize);
+				q->index[i].use = TRUE;
+				SDL_SemPost(q->sem);
+				return q->chunkSize;
+			}
+		} else {
+			SDL_SemPost(q->sem);
+			return -1;
+		}
+	}
+	/*
+	 * キューが一杯なので
+	 */
+	SDL_SemPost(q->sem);
+	return 0; /* 書けませんでした */
+}
+
+
 int ReadRingBuffer(struct RingBufferDesc *q, void *p)
 {
 	int i;

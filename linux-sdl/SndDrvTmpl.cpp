@@ -13,14 +13,8 @@
 
 
 SndDrvTmpl::SndDrvTmpl() {
-	// TODO Auto-generated constructor stub
 	int i;
 	uStereo = nStereoOut %4;
-//	if ((uStereo > 0) || bForceStereo) {
-//		channels = 2;
-//	} else {
-//		channels = 1;
-//	}
 	channels = 2;
 	ms = nSoundBuffer;
 	srate = nSampleRate;
@@ -125,14 +119,7 @@ Uint8  *SndDrvTmpl::Setup(int tick)
 	UINT uChannels;
 	int i;
 	uStereo = nStereoOut %4;
-//	if ((uStereo > 0) || bForceStereo) {
-//		uChannels = 2;
-//	} else {
-//		uChannels = 1;
-//	}
 	uChannels = 2;
-	//	if((nSampleRate == srate) && (channels == uChannels)
-	//			&& (tick == ms)) return buf[0];
 	channels = uChannels;
 	ms = tick;
 	srate = nSampleRate;
@@ -303,16 +290,16 @@ void SndDrvTmpl::Play(int ch,  int slot)
 void SndDrvTmpl::Play(int ch,  int slot, int samples)
 {
 	if(slot >= bufSlot) return;
-	if(chunk[slot].abuf == NULL) return;
+//	if(chunk[slot].abuf == NULL) return;
 //	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
 	chunk[slot].abuf = buf[slot];
 	chunk[slot].alen = bufSize[slot];
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume;
 	if(!enable) return;
-	if(RenderSem == NULL) return;
-	SDL_SemWait(RenderSem);
+//	if(RenderSem == NULL) return;
+//	SDL_SemWait(RenderSem);
 	if(chunk[slot].abuf) Mix_PlayChannel(ch, &chunk[slot], 0);
 //	chunk[slot].alen = 0;
-	SDL_SemPost(RenderSem);
+//	SDL_SemPost(RenderSem);
 }

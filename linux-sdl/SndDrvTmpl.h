@@ -17,8 +17,7 @@
 #include "sdl_snd.h"
 #include <vector>
 
-//#define DEFAULT_SLOT 2
-#define DEFAULT_SLOT 4
+#define DEFAULT_SLOT 8
 
 
 class SndDrvTmpl {

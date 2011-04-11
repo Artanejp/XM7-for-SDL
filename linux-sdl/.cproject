@@ -11,16 +11,14 @@
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="xm7.debug" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GmakeErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.961384292" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+				<configuration artifactName="xm7.debug" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.961384292" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292." name="/" resourcePath="">
-						<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.815272066" name="Linux GCC" nonInternalBuilderId="cdt.managedbuild.target.gnu.builder.exe.debug" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+						<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.815272066" name="Linux GCC" nonInternalBuilderId="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1584692943" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
-							<builder buildPath="${workspace_loc:/xm7-sdl/Debug}" id="cdt.managedbuild.target.gnu.builder.base.552562216" keepEnvironmentInBuildfile="false" name="Gnu Make ビルダー" parallelBuildOn="true" parallelizationNumber="4" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder arguments="-j4" buildPath="${workspace_loc:/xm7-sdl/Debug}" command="make" id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder.1646658723" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.787897938" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool commandLinePattern="${COMMAND} ${FLAGS} -c ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.748947827" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1265607884" name="最適化レベル" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
@@ -37,14 +35,13 @@
 									<listOptionValue builtIn="false" value="XM7_VER=3"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1777167180" name="インクルード・パス (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/agar"/>
-									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
-									<listOptionValue builtIn="false" value="/usr/include/gtk-2.0"/>
-									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.verbose.1336784101" name="詳細 (-v)" superClass="gnu.cpp.compiler.option.other.verbose" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.warnings.pedantic.248553153" name="ペダンティック (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="false" valueType="boolean"/>
@@ -65,14 +62,13 @@
 									<listOptionValue builtIn="false" value="XM7_VER=3"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1470335925" name="インクルード・パス (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/agar"/>
-									<listOptionValue builtIn="false" value="/usr/include/gtk-2.0"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
-									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.warnings.pedantic.857767500" name="ペダンティック (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic" value="false" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.misc.verbose.1470891731" name="詳細 (-v)" superClass="gnu.c.compiler.option.misc.verbose" value="true" valueType="boolean"/>
@@ -90,6 +86,7 @@
 									<listOptionValue builtIn="false" value="ag_math"/>
 									<listOptionValue builtIn="false" value="ag_vg"/>
 									<listOptionValue builtIn="false" value="ag_rg"/>
+									<listOptionValue builtIn="false" value="xm7-ui-agar"/>
 									<listOptionValue builtIn="false" value="rt"/>
 									<listOptionValue builtIn="false" value="X11"/>
 									<listOptionValue builtIn="false" value="dl"/>
@@ -106,6 +103,7 @@
 								<option id="gnu.cpp.link.option.paths.405175491" name="ライブラリー検索パス (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 									<listOptionValue builtIn="false" value="/usr/lib"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar/Debug}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.userobjs.1931205500" name="その他のオブジェクト" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph/Debug/liblibemugrph.a}&quot;"/>
@@ -120,6 +118,14 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.1341126547" name="api_kbd.h" rcbsApplicability="disable" resourcePath="api_kbd.h" toolsToInvoke="">
+						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1752780083" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1535407396" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths=""/>
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.774623357" name="Resource Custom Build Step Output Type"/>
+						</tool>
+					</fileInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.478411111" name="sdl_kbd.h" rcbsApplicability="disable" resourcePath="sdl_kbd.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="fmgen|fmgen/file.h|fmgen/file.cpp|fmgen/opm.h|fmgen/opm.cpp|api_snd2.cpp|sdl_bar.c|sdl_cmd.c|sdl_cfg.c|sdl_main.c|sdl_sch.c|GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|sdl_snd_mt.cpp|sdl_kbd.h|sdl_kbd.cpp|gtk_kbd.cpp|cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
@@ -483,7 +489,7 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.2111862290." name="/" resourcePath="">
 						<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.release.1958920472" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.exe.release.1860837733" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>
-							<builder buildPath="${workspace_loc:/xm7-sdl/Release}" errorParsers="org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.CWDLocator" id="cdt.managedbuild.target.gnu.builder.exe.release.258099031" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make ビルダー" superClass="cdt.managedbuild.target.gnu.builder.exe.release"/>
+							<builder arguments="-j4" buildPath="${workspace_loc:/xm7-sdl/Release}" command="make" id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder.729263272" keepEnvironmentInBuildfile="false" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.208433631" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} -c ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1374938458" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release">
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.2040233375" name="最適化レベル" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
@@ -499,14 +505,13 @@
 									<listOptionValue builtIn="false" value="_GNU_SOURCE=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1130635047" name="インクルード・パス (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/agar"/>
-									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
-									<listOptionValue builtIn="false" value="/usr/include/gtk-2.0"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.verbose.1796475061" name="詳細 (-v)" superClass="gnu.cpp.compiler.option.other.verbose" value="true" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.188776085" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -525,10 +530,9 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1805320550" name="インクルード・パス (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
-									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
-									<listOptionValue builtIn="false" value="/usr/include/gtk-2.0"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/agar"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
@@ -549,6 +553,7 @@
 									<listOptionValue builtIn="false" value="ag_rg"/>
 									<listOptionValue builtIn="false" value="freetype"/>
 									<listOptionValue builtIn="false" value="m"/>
+									<listOptionValue builtIn="false" value="xm7-ui-agar"/>
 									<listOptionValue builtIn="false" value="SDL"/>
 									<listOptionValue builtIn="false" value="png"/>
 									<listOptionValue builtIn="false" value="jpeg"/>
@@ -562,6 +567,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.2087083855" name="ライブラリー検索パス (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar/Release}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.1383396015" name="リンカー・フラグ" superClass="gnu.cpp.link.option.flags" value="-pthread" valueType="string"/>

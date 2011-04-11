@@ -36,7 +36,7 @@
 #endif
 #include "sdl_sch.h"
 //#include "sdl_kbd.h"
-#include "gtk_propkeyboard.h"
+//#include "gtk_propkeyboard.h"
 
 
 

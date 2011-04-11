@@ -21,7 +21,6 @@ class SndDrvCMT: public SndDrvTmpl {
 public:
 	SndDrvCMT();
 	virtual ~SndDrvCMT();
-
 	void SetRenderVolume(int level);
 	void SetVolume(Uint8 level);
 	void SetState(BOOL state);
