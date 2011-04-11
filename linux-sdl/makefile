@@ -81,11 +81,11 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 LIBS += -L/usr/local/lib
 
 LIBS += `pkg-config --libs sdl`
-LIBS += `pkg-config --libs gtk+-x11-2.0` `pkg-config --libs gdk-pixbuf-2.0`
+#LIBS += `pkg-config --libs gtk+-x11-2.0` `pkg-config --libs gdk-pixbuf-2.0`
 LIBS +=  \
         -lSDL_mixer -lSDL_ttf
 
-LIBS += -lGL -lGLU
+LIBS += -lGL -lGLU -lpthread
 LIBS += -lag_core -lag_gui -lag_dev 
 #LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
 LIBS += -ljpeg -lpng
