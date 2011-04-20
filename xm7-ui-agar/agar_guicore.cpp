@@ -282,7 +282,6 @@ void MainLoop(int argc, char *argv[])
 	 */
 //    SDL_Init(SDL_INIT_VIDEO);
 
-#if 0
     if(drivers == NULL)  {
     	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
     			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
@@ -292,25 +291,18 @@ void MainLoop(int argc, char *argv[])
                 return;
         }
     }
-#else
-    if (AG_InitGraphics("sdlgl") == -1) {
-            fprintf(stderr, "%s\n", AG_GetError());
-            return;
-    }
-
-#endif
 	InitGL(640, 400);
-//	s = SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
-//	AG_InitVideoSDL(s, AG_VIDEO_OPENGL);
    OnCreate((AG_Widget *)NULL);
 	InitInstance();
 	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	AG_initsub();
+   
 	inf = SDL_GetVideoInfo();
 	RootVideoWidth = inf->current_w;
 	RootVideoHeight = inf->current_h;
+   
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();
@@ -398,14 +390,20 @@ void InitInstance(void)
 	AG_Window *win;
 
 	InitFont();
-//	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
-//	Create_AGMainBar(AGWIDGET(MainWindow));
-    MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
-	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
+	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
+	Create_AGMainBar(AGWIDGET(NULL));
+//        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
+        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS );
+	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 440);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+   
+//   	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
+//	Create_AGMainBar(AGWIDGET(MainWindow));
+//	AG_WidgetSetPosition(MenuBar, 0, 0);
+
 	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
-    AG_WidgetSetSize(DrawArea, 640,400);
-	AG_GLViewSizeHint(DrawArea, 320, 200);
+        AG_WidgetSetSize(DrawArea, 640,440);
+	AG_GLViewSizeHint(DrawArea, 640, 440);
 	AG_WidgetSetPosition(DrawArea, 0, 0);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
@@ -418,9 +416,6 @@ void InitInstance(void)
 
 //	win = AG_GuiDebugger();
 //    AG_WindowShow(win);
-
-	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
-	Create_AGMainBar(AGWIDGET(MenuBar));
 	AG_WidgetShow(AGWIDGET(MenuBar));
 	AG_WidgetFocus(AGWIDGET(MenuBar));
 }
