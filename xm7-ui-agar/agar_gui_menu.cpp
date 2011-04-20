@@ -48,7 +48,6 @@ extern "C" {
 extern void InitInstance(void);
 extern void OnDestroy(AG_Event *event);
 extern void OnDestroy2(void);
-extern void InitGL(int w, int h);
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
 AG_GLView *DrawArea;
@@ -134,7 +133,7 @@ void Create_AGMainBar(AG_Widget *Parent)
 {
 	AG_MenuItem *item;
 
-	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
+//	MenuBar = AG_MenuNew(Parent, AG_MENU_HFILL);
 //	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
 	if(!MenuBar) return;
 

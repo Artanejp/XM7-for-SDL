@@ -97,12 +97,12 @@ void CalcPalette_AG_GL(Uint32 *palette, Uint32 src, Uint8 r, Uint8 g, Uint8 b, U
 void InitGL_AG_GL(int w, int h)
 {
 	Uint32 flags;
-	AG_TexCoord *tc;
 	int bpp = 32;
 	int rgb_size[3];
 
 	if(InitVideo) return;
     InitVideo = TRUE;
+
 	flags = SDL_OPENGL | SDL_RESIZABLE;
     switch (bpp) {
          case 8:
@@ -336,18 +336,30 @@ void AGEventDrawGL(AG_Event *event)
 	float xend;
 	float ybegin;
 	float yend;
-	float aspect;
+	float xbegin_s;
+	float xend_s;
+	float ybegin_s;
+	float yend_s;
+
 	int i;
 
 	if(pixvram == NULL) return;
-	aspect =  (float)nDrawHeight / (float)nDrawWidth;
+	if(wid == NULL) return;
 	/*
 	 * 開始座標系はVRAM(400line)の倍角に合わせる。但し、Paddingする
 	 */
+#if 0
 	xbegin = (float)0.0;
 	xend = 1280.0;
 	ybegin = (float)0.0;
 	yend = 800.0;
+#else
+	xbegin = (float)wid->wid.x  / (float)(wid->wid.w + wid->wid.x) * 1280.0;
+	xend = 1280.0;
+//	ybegin = (float)wid->wid.y / (float)(wid->wid.h + wid->wid.y) * 800.0;
+	ybegin = (float)MenuBar->wid.h / (float)(wid->wid.h + MenuBar->wid.h) * 800.0;
+	yend = 800.0;
+#endif
 	textureid = CreateTexture(pixvram);
 
 	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
@@ -361,6 +373,7 @@ void AGEventDrawGL(AG_Event *event)
     glLoadIdentity();
 
     glViewport(0, 0, nDrawWidth , nDrawHeight);
+//    glViewport(wid->wid.x, wid->wid.y, wid->wid.w, wid->wid.h);
 
     /*
      * 座標系はVRAM(400line)の倍角に合わせる
@@ -381,10 +394,10 @@ void AGEventDrawGL(AG_Event *event)
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.95);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.95);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.95);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.95);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.99);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.99);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.99);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.99);
     glEnd();
 //    glEnable(GL_DEPTH_TEST);
 
@@ -395,18 +408,21 @@ void AGEventDrawGL(AG_Event *event)
      */
 #if 1
     if(!bFullScan) {
-    	xbegin = 0.0f;
-    	xend = 1280.0f;
+    	xbegin_s = 0.0f + xbegin;
+    	xend_s = 1280.0f;
     	pwidth = (float)pixvram->h / 800.0f;
     	pofset = 1.0f - pwidth;
     	width = 2.0f * pwidth;
-        glBegin(GL_LINES);
+//        glBegin(GL_LINES);
+        glBegin(GL_TRIANGLE_STRIP);
         glLineWidth(width);
     	for(i = 0; i < (pixvram->h - 1); i++) {
-    		ybegin = (float)i * 800.0f / (float)pixvram->h + pwidth;
-    		yend = ((float)i  + 1.0f) * 800.0f / (float)pixvram->h;
-            glVertex3f(xbegin, ybegin, -0.9);
-            glVertex3f(xend, ybegin, -0.9);
+    		ybegin_s = (float)i * 800.0f / (float)pixvram->h + pwidth + ybegin;
+    		yend_s = ((float)i  + 1.0f) * 800.0f / (float)pixvram->h + ybegin;
+    	    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin_s, ybegin_s, -0.99);
+    	    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin_s, yend_s, -0.99);
+    	    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend_s, ybegin_s, -0.99);
+    	    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend_s, yend_s, -0.99);
     	}
         glEnd();
 #if 0 // 縦線はさすがにやり過ぎだった

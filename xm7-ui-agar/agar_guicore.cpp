@@ -147,8 +147,25 @@ void AGDrawTaskEvent(BOOL flag)
 				}
 				nDrawTick1D = nDrawTick2D;
 				AG_EndRendering(agDriverSw);
-			}
-			AG_UnlockVFS(&agDrivers);
+			} else  {
+			/* With multiple-window drivers (e.g., glx). */
+			AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver)
+			  {
+			     if (!AGDRIVER_MULTIPLE(drv)) {
+				  continue;
+			       }
+			     
+			     win = AGDRIVER_MW(drv)->win;
+			     if (win->visible) {
+				  AG_BeginRendering(drv);
+				  AG_ObjectLock(win);
+				  AG_WindowDraw(win);
+				  AG_ObjectUnlock(win);
+				  AG_EndRendering(drv);
+			       }			     
+			  }			
+		     }
+		   AG_UnlockVFS(&agDrivers);
 		}	else if (AG_PendingEvents(drv) > 0){
 			AGDrawTaskMain();
 			if(EventSDL(drv) == FALSE) return;
@@ -199,6 +216,7 @@ void MainLoop(int argc, char *argv[])
 	char *drivers = NULL;
 	char *optArg;
 	const SDL_VideoInfo *inf;
+	SDL_Surface *s;
 
 //	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitCore("xm7", AG_VERBOSE);
@@ -262,11 +280,9 @@ void MainLoop(int argc, char *argv[])
 	/*
 	 * Agar のメインループに入る
 	 */
-    SDL_Init(SDL_INIT_VIDEO);
-	inf = SDL_GetVideoInfo();
-	RootVideoWidth = inf->current_w;
-	RootVideoHeight = inf->current_h;
+//    SDL_Init(SDL_INIT_VIDEO);
 
+#if 0
     if(drivers == NULL)  {
     	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
     			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
@@ -276,13 +292,25 @@ void MainLoop(int argc, char *argv[])
                 return;
         }
     }
-    OnCreate((AG_Widget *)NULL);
+#else
+    if (AG_InitGraphics("sdlgl") == -1) {
+            fprintf(stderr, "%s\n", AG_GetError());
+            return;
+    }
+
+#endif
+	InitGL(640, 400);
+//	s = SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
+//	AG_InitVideoSDL(s, AG_VIDEO_OPENGL);
+   OnCreate((AG_Widget *)NULL);
 	InitInstance();
 	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
-//	DrawThreadMain(NULL);
 	AG_initsub();
+	inf = SDL_GetVideoInfo();
+	RootVideoWidth = inf->current_w;
+	RootVideoHeight = inf->current_h;
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();
@@ -367,43 +395,34 @@ static void InitFont(void)
 void InitInstance(void)
 {
 	AG_Box *hb;
+	AG_Window *win;
+
 	InitFont();
-	MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
+//	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
+//	Create_AGMainBar(AGWIDGET(MainWindow));
+    MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 480);
-
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-    Create_AGMainBar(AGWIDGET(MainWindow));
-	AG_WidgetSetPosition(MenuBar, 0, 0);
-	InitGL(640, 400);
-
-	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
+	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
     AG_WidgetSetSize(DrawArea, 640,400);
-	AG_GLViewSizeHint(DrawArea, 640, 400);
-	AG_WidgetSetPosition(DrawArea, 0, 46);
+	AG_GLViewSizeHint(DrawArea, 320, 200);
+	AG_WidgetSetPosition(DrawArea, 0, 0);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
 	AG_GLViewOverlayFn (DrawArea, AGEventOverlayGL, NULL);
 //	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
-//	AG_GLViewKeydownFn(DrawArea, AGEventKeyPress_AG_GL, NULL);
-//	AG_GLViewKeyupFn(DrawArea, AGEventKeyRelease_AG_GL, NULL);
-	//	AG_SetEvent(DrawArea, "key-down" , ProcessKeyDown, NULL);
 	CreateStatus();
-
-
-#if 0
-	OsdArea = AG_GLViewNew(AGWIDGET(MainWindow) , AG_GLVIEW_EXPAND);
-    AG_WidgetSetSize(OsdArea, 640,35);
-	AG_WidgetSetPosition(OsdArea, 0, 445);
-	AG_WidgetSetPosition(OsdArea, 0, DrawArea->wid.h + DrawArea->wid.y);
-
-	AG_GLViewSizeHint(OsdArea, 640, 40);
-	AG_GLViewOverlayFn (OsdArea, DrawOSDEv, NULL);
-	CreateStatus();
-#endif
-//	if(MenuBar != NULL) {
-	AG_WidgetFocus(AGWIDGET(DrawArea));
-//	}
+//	AG_WidgetDisable(AGWIDGET(DrawArea));
+	AG_WidgetShow(DrawArea);
 	AG_WindowShow(MainWindow);
+
+//	win = AG_GuiDebugger();
+//    AG_WindowShow(win);
+
+	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
+	Create_AGMainBar(AGWIDGET(MenuBar));
+	AG_WidgetShow(AGWIDGET(MenuBar));
+	AG_WidgetFocus(AGWIDGET(MenuBar));
 }
 
 /*
