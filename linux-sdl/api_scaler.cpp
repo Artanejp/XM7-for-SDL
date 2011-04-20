@@ -495,60 +495,8 @@ void SetupGL(int w, int h)
 
 void InitGL(int w, int h)
 {
-#if 0
-        int rgb_size[4];
-        int flags;
-        BOOL accel = TRUE;
-        BOOL sync = TRUE;
-
-    if(SDL_WasInit(SDL_INIT_VIDEO) == 0) return;
-    //if(!bUseOpenGL) return;
-    SDL_SemWait(InitSem);
-    rgb_size[0] = 8;
-    rgb_size[1] = 8;
-    rgb_size[2] = 8;
-	flags = SDL_OPENGL | SDL_RESIZABLE;
-
-    SDL_GL_SetAttribute( SDL_GL_RED_SIZE, rgb_size[0] );
-    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb_size[1] );
-    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, rgb_size[2] );
-    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 32 );
-    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-//     if ( fsaa ) {
-//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-//              SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
-//      }
-     if ( accel ) {
-             SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
-     }
-     if ( sync ) {
-             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
-     } else {
-             SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
-     }
-// 	if(SDL_SetVideoMode(w, h, 32, flags) == 0)
-// 	{
-// 		return ;
-// 	}
-
-     printf("Screen BPP: %d\n", SDL_GetVideoSurface()->format->BitsPerPixel);
-     printf("\n");
-     printf( "Vendor     : %s\n", glGetString( GL_VENDOR ) );
-     printf( "Renderer   : %s\n", glGetString( GL_RENDERER ) );
-     printf( "Version    : %s\n", glGetString( GL_VERSION ) );
-     printf( "Extensions : %s\n", glGetString( GL_EXTENSIONS ) );
-     printf("\n");
-   if(scalerGL) {
-    	scalerGL->InitGL(w, h);
-    }
-    SDL_SemPost(InitSem);
-
-#else
 #ifdef USE_AGAR
     SDL_SemWait(DrawInitSem);
-//   if(scalerGL) {
-//    	scalerGL->InitGL(w, h);
-//    }
 	InitGL_AG_GL(w, h);
     SDL_SemPost(DrawInitSem);
 #else
@@ -557,7 +505,6 @@ void InitGL(int w, int h)
     	scalerGL->InitGL(w, h);
     }
     SDL_SemPost(DrawInitSem);
-#endif
 #endif
 }
 
