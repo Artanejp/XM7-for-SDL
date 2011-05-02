@@ -392,8 +392,8 @@ void InitInstance(void)
 	InitFont();
 	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
 	Create_AGMainBar(AGWIDGET(NULL));
-//        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
-        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS );
+        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
+//        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS );
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 440);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    

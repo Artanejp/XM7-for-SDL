@@ -16,11 +16,12 @@
 #include "agar_xm7.h"
 #include "agar_gldraw.h"
 
+
 static AG_Surface *pixvram;
 static Uint32 vramwidth;
 static Uint32 vramheight;
 static GLuint textureid;
-static GLuint dummytexid;
+static GLuint blanktextureid;
 static 	int viewport_x;
 static int viewport_y;
 static int viewport_h;
@@ -33,7 +34,6 @@ static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
 static SDL_semaphore *VramSem;
-static AG_Surface *dummytex;
 extern void DrawOSDGL(AG_GLView *w);
 
 static void DiscardTexture(GLuint tid);
@@ -80,6 +80,24 @@ static void SetOffset(int x, int y)
 	offset_x = x;
 	offset_y = y;
 }
+
+static void InitBlankLine()
+{
+
+   Uint32 blank = 0x0000;
+   glGenTextures(1, &blanktextureid);
+   glBindTexture(GL_TEXTURE_2D, blanktextureid);
+   glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 1, 1,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 &blank);
+
+}
+
 
 void CalcPalette_AG_GL(Uint32 *palette, Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
@@ -149,6 +167,7 @@ void InitGL_AG_GL(int w, int h)
 		VramSem = SDL_CreateSemaphore(1);
 		if(VramSem) SDL_SemPost(VramSem);
 	}
+//        InitBlankLine();
 	return;
 }
 
@@ -159,15 +178,12 @@ void Detach_AG_GL()
 		SDL_DestroySemaphore(VramSem);
 		VramSem = NULL;
 	}
-	if(dummytex){
-		AG_SurfaceFree(dummytex);
-		dummytex = NULL;
-	}
 	if(pixvram){
 		AG_SurfaceFree(pixvram);
 		pixvram = NULL;
 	}
 	DiscardTexture(textureid);
+//        DiscardTexture(blanktextureid);
 }
 
 extern "C" {
@@ -186,10 +202,13 @@ static GLuint CreateTexture(AG_Surface *p)
 {
 	GLuint tid;
 
+
 	if(agDriverOps == NULL) return 0;
 	if(p == NULL) return 0;
-	LockVram();
-    glGenTextures(1, &tid);
+
+   LockVram();
+
+   glGenTextures(1, &tid);
     glBindTexture(GL_TEXTURE_2D, tid);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
@@ -199,8 +218,8 @@ static GLuint CreateTexture(AG_Surface *p)
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  pixvram->pixels);
-    UnLockVram();
-	return tid;
+   UnLockVram();
+   return tid;
 }
 
 
@@ -255,11 +274,9 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	Uint8 *bitmap;
 	Uint8 *disp;
 	AG_Driver *drv;
-	float xratio;
-	float yratio;
-	AG_TexCoord *tc;
+        BOOL newFlag = FALSE;
+   
 
-//	if(!InitVideo) return;
 	if(DrawArea == NULL) return;
 	// Test
 	if(agDriverOps == NULL) return;
@@ -275,14 +292,13 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	size = vramwidth * vramheight * 8 * 4;
 	if((pixvram == NULL) &&(vramwidth != 0) &&(vramheight != 0)) {
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
+	        newFlag = TRUE;
 	}
 	if((pixvram->w != ((Uint)vramwidth * 8)) || (pixvram->h != (Uint)vramheight)){
 		AG_SurfaceFree(pixvram);
 		pixvram = AG_SurfaceNew(AG_SURFACE_PACKED, (Uint)vramwidth * 8, (Uint)vramheight , &format, AG_SRCCOLORKEY);
+	        newFlag = TRUE;
 	}
-//    DiscardTexture(textureid);
-
-//	glClearColor(0, 0, 0, 0);
 	ww = (w>>3) + (x>>3);
 	hh = h + y;
 	bitmap = (Uint8 *)pixvram->pixels;
@@ -300,6 +316,12 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 			addr++;
 			}
 	}
+//        if(newFlag) {
+	   DiscardTexture(textureid);
+	   textureid = CreateTexture(pixvram);
+//	}
+   
+	
 	UnLockVram();
 //	xratio = (float)pixvram->w / (float)AGWIDGET(DrawArea)->w;
 //	yratio =  (float)pixvram->h / (float)AGWIDGET(DrawArea)->h ;
@@ -343,6 +365,7 @@ void AGEventDrawGL(AG_Event *event)
 
 	int i;
 
+        if(!InitVideo) return;
 	if(pixvram == NULL) return;
 	if(wid == NULL) return;
 	/*
@@ -360,9 +383,9 @@ void AGEventDrawGL(AG_Event *event)
 	ybegin = (float)MenuBar->wid.h / (float)(wid->wid.h + MenuBar->wid.h) * 800.0;
 	yend = 800.0;
 #endif
-	textureid = CreateTexture(pixvram);
-
-	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
+//   textureid = CreateTexture(pixvram);
+   
+    glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
     glEnable(GL_TEXTURE_2D);
 //  glPushMatrix();
     /* This allows alpha blending of 2D textures with the scene */
@@ -373,7 +396,7 @@ void AGEventDrawGL(AG_Event *event)
     glLoadIdentity();
 
     glViewport(0, 0, nDrawWidth , nDrawHeight);
-//    glViewport(wid->wid.x, wid->wid.y, wid->wid.w, wid->wid.h);
+//    glViewport(wid->wid.x, wid->wid.y, wid->wid.w + wid->wid.x, wid->wid.h + wid->wid.y);
 
     /*
      * 座標系はVRAM(400line)の倍角に合わせる
@@ -381,7 +404,6 @@ void AGEventDrawGL(AG_Event *event)
     glOrtho(0.0, 1280,	800, 0.0, 0.0,  1.0);
 
     glEnable(GL_DEPTH_TEST);
-
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
@@ -408,23 +430,22 @@ void AGEventDrawGL(AG_Event *event)
      */
 #if 1
     if(!bFullScan) {
+//       glBindTexture(GL_TEXTURE_2D, blanktextureid);
     	xbegin_s = 0.0f + xbegin;
     	xend_s = 1280.0f;
     	pwidth = (float)pixvram->h / 800.0f;
     	pofset = 1.0f - pwidth;
     	width = 2.0f * pwidth;
-//        glBegin(GL_LINES);
-        glBegin(GL_TRIANGLE_STRIP);
+        glBegin(GL_LINES);
+//        glBegin(GL_TRIANGLE_STRIP);
         glLineWidth(width);
     	for(i = 0; i < (pixvram->h - 1); i++) {
     		ybegin_s = (float)i * 800.0f / (float)pixvram->h + pwidth + ybegin;
-    		yend_s = ((float)i  + 1.0f) * 800.0f / (float)pixvram->h + ybegin;
-    	    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin_s, ybegin_s, -0.99);
-    	    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin_s, yend_s, -0.99);
-    	    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend_s, ybegin_s, -0.99);
-    	    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend_s, yend_s, -0.99);
+	        glVertex3f(xbegin_s, ybegin_s, -0.9);
+    		glVertex3f(xend_s , ybegin_s, -0.9);
     	}
         glEnd();
+        glFlush();
 #if 0 // 縦線はさすがにやり過ぎだった
     	pwidth = (float)pixvram->w / 1280.0f;
     	pofset = 1.0f - pwidth;
@@ -438,7 +459,10 @@ void AGEventDrawGL(AG_Event *event)
     		glVertex3f(xend , yend, -0.9);
     	}
 #endif
+    } else {
+	glFlush();
     }
+   
 #endif
 /*
  * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
@@ -447,7 +471,7 @@ void AGEventDrawGL(AG_Event *event)
     glPopMatrix();
     glPopAttrib();
     // テクスチャ棄てるのはなるべく最後にしよう
-	DiscardTexture(textureid);
+//	DiscardTexture(textureid);
 	DiscardTexture(tid_caption);
 
 }
