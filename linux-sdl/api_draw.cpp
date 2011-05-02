@@ -460,7 +460,7 @@ int DrawThreadMain(void *p)
 #endif
 //		initsub();
 //		ResizeWindow(640,480);
-//		InitGL(640,480);
+		InitGL(640,480);
 		nDrawCount = DrawCountSet(nDrawFPS);
 		while(1) {
 #ifndef USE_AGAR
