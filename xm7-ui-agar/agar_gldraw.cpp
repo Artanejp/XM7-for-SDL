@@ -371,11 +371,12 @@ void AGEventDrawGL(AG_Event *event)
 	/*
 	 * 開始座標系はVRAM(400line)の倍角に合わせる。但し、Paddingする
 	 */
-#if 0
+#if  0
 	xbegin = (float)0.0;
 	xend = 1280.0;
 	ybegin = (float)0.0;
 	yend = 800.0;
+
 #else
 	xbegin = (float)wid->wid.x  / (float)(wid->wid.w + wid->wid.x) * 1280.0;
 	xend = 1280.0;
@@ -395,9 +396,11 @@ void AGEventDrawGL(AG_Event *event)
     glPushMatrix();
     glLoadIdentity();
 
-    glViewport(0, 0, nDrawWidth , nDrawHeight);
+//    glViewport(0, 0, 1280 , 800);
 //    glViewport(wid->wid.x, wid->wid.y, wid->wid.w + wid->wid.x, wid->wid.h + wid->wid.y);
-
+//    glViewport(wid->wid.x, wid->wid.y, wid->wid.w, wid->wid.h);
+   //    glViewport(0, 0, wid->wid.w, wid->wid.h);
+       glViewport(0, 0, nDrawWidth , nDrawHeight);
     /*
      * 座標系はVRAM(400line)の倍角に合わせる
      */

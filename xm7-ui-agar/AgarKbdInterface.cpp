@@ -91,7 +91,7 @@ const struct KeyCode2_AG KeyTableAG[] = {
 		{AG_KEY_UNDERSCORE, 0x34}, /* _ */
 		{AG_KEY_RSHIFT, 0x54}, /* 右SHIFT */
 		{AG_KEY_LALT, 0x55}, /* CAP(左ALT) */
-		{AG_KEY_LSUPER, 0x56}, /* WIN(無変換) for 109 */
+		{AG_KEY_MENU, 0x56}, /* WIN(無変換) for 109 */
 		{AG_KEY_RSUPER, 0x57}, /* 左SPACE(変換) for 109 */
 		{AG_KEY_RALT, 0x58}, /* 中SPACE(カタカナ) */
 		{AG_KEY_SPACE, 0x35}, /* 右SPACE(SPACE) */

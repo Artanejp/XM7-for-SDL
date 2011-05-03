@@ -390,16 +390,11 @@ void InitInstance(void)
 	AG_Window *win;
 
 	InitFont();
-	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
-	Create_AGMainBar(AGWIDGET(NULL));
         MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
 //        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS );
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 440);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    
-//   	MenuBar = AG_MenuNewGlobal(AG_MENU_HFILL);
-//	Create_AGMainBar(AGWIDGET(MainWindow));
-//	AG_WidgetSetPosition(MenuBar, 0, 0);
 
 	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
         AG_WidgetSetSize(DrawArea, 640,440);
@@ -414,8 +409,12 @@ void InitInstance(void)
 	AG_WidgetShow(DrawArea);
 	AG_WindowShow(MainWindow);
 
+        MenuBar = AG_MenuNewGlobal(0);
+	Create_AGMainBar(AGWIDGET(NULL));
+   	AG_WidgetSetPosition(MenuBar, 0, 0);
+
 //	win = AG_GuiDebugger();
-//    AG_WindowShow(win);
+//        AG_WindowShow(win);
 	AG_WidgetShow(AGWIDGET(MenuBar));
 	AG_WidgetFocus(AGWIDGET(MenuBar));
 }
