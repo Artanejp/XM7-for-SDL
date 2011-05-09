@@ -28,6 +28,7 @@ extern void DrawOSDGL(AG_GLView *w);
 
 extern void AGEventScaleGL(AG_Event *event);
 extern void AGEventDrawGL(AG_Event *event);
+
 extern void AGEventOverlayGL(AG_Event *event);
 extern void AGEventMouseMove_AG_GL(AG_Event *event);
 extern void AGEventKeyRelease_AG_GL(AG_Event *event);

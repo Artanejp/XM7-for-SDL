@@ -1,5 +1,4 @@
-/*
- * agar_gldraw.cpp
+/* agar_gldraw.cpp
  *
  *  Created on: 2011/01/21
  *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
@@ -334,79 +333,41 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 void AGEventOverlayGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
-//  DrawOSDGL(glv);
-//  DiscardTexture(tid_caption);
 }
 
 
 void AGEventScaleGL(AG_Event *event)
 {
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
-	AG_Surface *pixvram ;
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
 
-	pixvram = GetVramSurface_AG_GL();
-	if(pixvram == NULL) return;
+	glViewport(glv->wid.rView.x1, glv->wid.rView.y1, glv->wid.rView.w, glv->wid.rView.h );
+    glLoadIdentity();
+    glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
+
 }
 
 void AGEventDrawGL(AG_Event *event)
 {
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
-	float width;
-	float pwidth;
-	float pofset;
-	float xbegin;
-	float xend;
-	float ybegin;
-	float yend;
-	float xbegin_s;
-	float xend_s;
-	float ybegin_s;
-	float yend_s;
-
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
+	AG_Surface *pixvram ;
+	int h;
+	int w;
 	int i;
+	float width;
+	float ybegin;
 
-        if(!InitVideo) return;
-	if(pixvram == NULL) return;
-	if(wid == NULL) return;
-	/*
-	 * 開始座標系はVRAM(400line)の倍角に合わせる。但し、Paddingする
-	 */
-#if  0
-	xbegin = (float)0.0;
-	xend = 1280.0;
-	ybegin = (float)0.0;
-	yend = 800.0;
 
-#else
-	xbegin = (float)wid->wid.x  / (float)(wid->wid.w + wid->wid.x) * 1280.0;
-	xend = 1280.0;
-//	ybegin = (float)wid->wid.y / (float)(wid->wid.h + wid->wid.y) * 800.0;
-	ybegin = (float)MenuBar->wid.h / (float)(wid->wid.h + MenuBar->wid.h) * 800.0;
-	yend = 800.0;
-#endif
-//   textureid = CreateTexture(pixvram);
-   
-    glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
+	pixvram = GetVramSurface_AG_GL();
+	glFlush();
+
+//	glClear(GL_COLOR_BUFFER_BIT);
+	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
     glEnable(GL_TEXTURE_2D);
-//  glPushMatrix();
-    /* This allows alpha blending of 2D textures with the scene */
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadIdentity();
-
-//    glViewport(0, 0, 1280 , 800);
-//    glViewport(wid->wid.x, wid->wid.y, wid->wid.w + wid->wid.x, wid->wid.h + wid->wid.y);
-//    glViewport(wid->wid.x, wid->wid.y, wid->wid.w, wid->wid.h);
-   //    glViewport(0, 0, wid->wid.w, wid->wid.h);
-       glViewport(0, 0, nDrawWidth , nDrawHeight);
-    /*
-     * 座標系はVRAM(400line)の倍角に合わせる
-     */
-    glOrtho(0.0, 1280,	800, 0.0, 0.0,  1.0);
-
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
@@ -418,65 +379,43 @@ void AGEventDrawGL(AG_Event *event)
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+	glLoadIdentity();
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.99);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.99);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.99);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.99);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -0.99);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -0.99);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -0.99);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -0.99);
     glEnd();
-//    glEnable(GL_DEPTH_TEST);
 
-    DrawOSDGL(DrawArea);
-
-    /*
-     * スキャンライン
-     */
-#if 1
+	if(pixvram){
+		h = pixvram->h;
+		w = pixvram->w;
+	} else {
+		h = 200;
+		w = 640;
+	}
     if(!bFullScan) {
 //       glBindTexture(GL_TEXTURE_2D, blanktextureid);
-    	xbegin_s = 0.0f + xbegin;
-    	xend_s = 1280.0f;
-    	pwidth = (float)pixvram->h / 800.0f;
-    	pofset = 1.0f - pwidth;
-    	width = 2.0f * pwidth;
+
+    	width = h / (float)glv->wid.rView.h;
+    	width = 2.0f * width;
         glBegin(GL_LINES);
-//        glBegin(GL_TRIANGLE_STRIP);
-        glLineWidth(width);
-    	for(i = 0; i < (pixvram->h - 1); i++) {
-    		ybegin_s = (float)i * 800.0f / (float)pixvram->h + pwidth + ybegin;
-	        glVertex3f(xbegin_s, ybegin_s, -0.9);
-    		glVertex3f(xend_s , ybegin_s, -0.9);
+        glLineWidth(2.0f);
+        glColor3f(0.0f, 0.0f, 0.0f);
+    	for(i = 0; i < (h - 1); i++) {
+    		ybegin = (float)i  / (float)h * 2.0f - 1.0f;
+	        glVertex3f(-1.0f, ybegin, -0.98);
+    		glVertex3f(1.0f , ybegin, -0.98);
     	}
         glEnd();
-        glFlush();
-#if 0 // 縦線はさすがにやり過ぎだった
-    	pwidth = (float)pixvram->w / 1280.0f;
-    	pofset = 1.0f - pwidth;
-    	width = 2.0f * pwidth;
-    	for(i = 0; i < pixvram->w; i++) {
-    		xbegin = (float)i * 1280.0 / (float)pixvram->w + pwidth;
-    		xend = xbegin;
-    		ybegin = 0.0f;
-    		yend = 800.0f;
-    		glVertex3f(xbegin, ybegin, -0.9);
-    		glVertex3f(xend , yend, -0.9);
-    	}
-#endif
-    } else {
-	glFlush();
     }
-   
-#endif
-/*
- * ToDO: OSDフィーチャーをここに移動する(モジュラー化も含めて)
- */
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    DrawOSDGL(glv);
+
+    glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glPopAttrib();
-    // テクスチャ棄てるのはなるべく最後にしよう
-//	DiscardTexture(textureid);
-	DiscardTexture(tid_caption);
-
 }
 
 void AGEventMouseMove_AG_GL(AG_Event *event)

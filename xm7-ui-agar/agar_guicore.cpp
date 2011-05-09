@@ -402,8 +402,9 @@ void InitInstance(void)
 	AG_WidgetSetPosition(DrawArea, 0, 0);
 	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
 	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
-	AG_GLViewOverlayFn (DrawArea, AGEventOverlayGL, NULL);
-//	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
+	//AG_GLViewOverlayFn (DrawArea, AGEventOverlayGL, NULL);
+
+	//	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
 	CreateStatus();
 //	AG_WidgetDisable(AGWIDGET(DrawArea));
 	AG_WidgetShow(DrawArea);
