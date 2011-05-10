@@ -21,20 +21,12 @@ static Uint32 vramwidth;
 static Uint32 vramheight;
 static GLuint textureid;
 static GLuint blanktextureid;
-static 	int viewport_x;
-static int viewport_y;
-static int viewport_h;
-static int viewport_w;
-static int offset_x;
-static int offset_y;
-static int osd_w;
-static int osd_h;
 static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
 static SDL_semaphore *VramSem;
-extern void DrawOSDGL(AG_GLView *w);
 
+extern void DrawOSDGL(AG_GLView *w);
 static void DiscardTexture(GLuint tid);
 
 
@@ -74,11 +66,6 @@ static inline void putword(Uint32 *disp, Uint32 *cbuf)
 }
 
 
-static void SetOffset(int x, int y)
-{
-	offset_x = x;
-	offset_y = y;
-}
 
 static void InitBlankLine()
 {
@@ -267,13 +254,13 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	int xx, yy;
 	int hh, ww;
 	int addr;
-	int size;
 	int ofset;
+	int size;
 	Uint32 c[8];
 	Uint8 *bitmap;
 	Uint8 *disp;
 	AG_Driver *drv;
-        BOOL newFlag = FALSE;
+    BOOL newFlag = FALSE;
    
 
 	if(DrawArea == NULL) return;
@@ -340,7 +327,7 @@ void AGEventScaleGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
 
-	glViewport(glv->wid.rView.x1, glv->wid.rView.y1, glv->wid.rView.w, glv->wid.rView.h );
+	glViewport(glv->wid.rView.x1, glv->wid.rView.y1 , glv->wid.rView.w, glv->wid.rView.h );
     glLoadIdentity();
     glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
 
@@ -351,10 +338,10 @@ void AGEventDrawGL(AG_Event *event)
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
 	AG_Surface *pixvram ;
 	int h;
-	int w;
 	int i;
 	float width;
 	float ybegin;
+	float yend;
 
 
 	pixvram = GetVramSurface_AG_GL();
@@ -366,7 +353,8 @@ void AGEventDrawGL(AG_Event *event)
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /*
      * VRAMの表示:テクスチャ貼った四角形
@@ -389,29 +377,26 @@ void AGEventDrawGL(AG_Event *event)
 
 	if(pixvram){
 		h = pixvram->h;
-		w = pixvram->w;
 	} else {
 		h = 200;
-		w = 640;
 	}
+#if 1
     if(!bFullScan) {
 //       glBindTexture(GL_TEXTURE_2D, blanktextureid);
 
-    	width = h / (float)glv->wid.rView.h;
-    	width = 2.0f * width;
-        glBegin(GL_LINES);
-        glLineWidth(2.0f);
+    	width = 1.0f;
+        glLineWidth(width);
         glColor3f(0.0f, 0.0f, 0.0f);
+        glBegin(GL_LINES);
     	for(i = 0; i < (h - 1); i++) {
-    		ybegin = (float)i  / (float)h * 2.0f - 1.0f;
+    		ybegin = ((float)i  + 1.0f) * 2.0f / (float)h - 1.0f;
 	        glVertex3f(-1.0f, ybegin, -0.98);
     		glVertex3f(1.0f , ybegin, -0.98);
     	}
         glEnd();
     }
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    DrawOSDGL(glv);
+#endif
+//    DrawOSDGL(glv);
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -420,7 +405,7 @@ void AGEventDrawGL(AG_Event *event)
 
 void AGEventMouseMove_AG_GL(AG_Event *event)
 {
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
 	int x = AG_INT(1);
 	int y = AG_INT(2);
 	int xrel = AG_INT(3);
@@ -433,7 +418,7 @@ void AGEventMouseMove_AG_GL(AG_Event *event)
 void AGEventKeyPress_AG_GL(AG_Event *event)
 {
 	//int key, int mod, Ulong unicode
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
 	int key = AG_INT(1);
 	int mod = AG_INT(2);
 	int unicode = AG_INT(3);
@@ -443,7 +428,7 @@ void AGEventKeyPress_AG_GL(AG_Event *event)
 void AGEventKeyRelease_AG_GL(AG_Event *event)
 {
 	//int key, int mod, Ulong unicode
-	AG_GLView *wid = (AG_GLView *)AG_SELF();
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
 	int key = AG_INT(1);
 	int mod = AG_INT(2);
 	int unicode = AG_INT(3);

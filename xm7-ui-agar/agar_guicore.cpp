@@ -68,6 +68,8 @@ void KeyBoardSnoop(BOOL Flag)
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
+	int w;
+	int h;
 		/* Retrieve the next queued event. */
 			switch (ev->type) {
 			case AG_DRIVER_KEY_UP:
@@ -81,12 +83,9 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 				}
 				break;
 			case AG_DRIVER_VIDEORESIZE:
-				nDrawWidth = ev->data.videoresize.w;
-				nDrawHeight = ev->data.videoresize.h;
-				if(nDrawHeight < 50) {
-					nDrawHeight = 50;
-				}
-				ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
+				w = ev->data.videoresize.w;
+				h = ev->data.videoresize.h;
+				ResizeWindow_Agar2(w, h);
 				break;
 			default:
 				break;
