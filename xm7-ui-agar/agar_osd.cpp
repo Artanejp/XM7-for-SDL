@@ -143,30 +143,21 @@ static void DiscardTexture(GLuint tid)
 
 static void DrawTexture(GLuint tid, int offset_x, int offset_y, int w, int h)
 {
-	float xbegin = 0.0f;
-	float xend = 1.0f;
-	float ybegin = 0.0f;
-	float yend = 1.0f;
+	float xend = (float)offset_x / 640.0f - 1.0f;
+	float xbegin = (float)(offset_x + w) / 640.0f - 1.0f;
+	float ybegin = (float) (h  + offset_y) / 400.0f - 1.0f;
+	float yend = (float)offset_y / 400.0f - 1.0f;
 	AG_Surface *pixvram = GetVramSurface_AG_GL();
 	if(pixvram == NULL) return;
-	/*
-	 * 開始座標系はVRAMに合わせる。する
-	 */
-	xbegin = (float)offset_x * 2.0f / 1280.0f - 1.0f;
-	xend = (float)(offset_x + w) * 2.0f / 1280.0f - 1.0f;
-	ybegin = (float)offset_y * 2.0f / 800.0f - 0.94f;
-	yend = (float)(offset_y + h) * 2.0f / 800.0f - 0.94f;
-
-	/*
-	 * GL初期設定はagar_gldraw.cppの物を使う(と言うかオブジェクトならべる感覚で)
-	 */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glBindTexture(GL_TEXTURE_2D, tid);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.5);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.5);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.5);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.5);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(xend, yend, -0.95);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(xend, ybegin, -0.95);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(xbegin, yend, -0.95);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(xbegin, ybegin, -0.95);
     glEnd();
 
 }

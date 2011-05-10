@@ -33,19 +33,6 @@ static void DiscardTexture(GLuint tid);
 /*
  * OSD
  */
-extern GLuint tid_ins_on;
-extern GLuint tid_kana_on;
-extern GLuint tid_caps_on;
-extern GLuint tid_ins_off;
-extern GLuint tid_kana_off;
-extern GLuint tid_caps_off;
-
-extern GLuint tid_fd[4][3];
-extern GLuint tid_cmt[3];
-extern GLuint tid_caption;
-extern GLfloat LedAlpha;
-extern GLfloat FDDAlpha;
-
 static inline void putdot(Uint8 *addr, Uint32 c)
 {
 	Uint32 *addr32 = (Uint32 *)addr;
@@ -70,7 +57,7 @@ static inline void putword(Uint32 *disp, Uint32 *cbuf)
 static void InitBlankLine()
 {
 
-   Uint32 blank = 0x0000;
+   Uint32 blank = 0x00000000;
    glGenTextures(1, &blanktextureid);
    glBindTexture(GL_TEXTURE_2D, blanktextureid);
    glTexImage2D(GL_TEXTURE_2D,
@@ -153,7 +140,7 @@ void InitGL_AG_GL(int w, int h)
 		VramSem = SDL_CreateSemaphore(1);
 		if(VramSem) SDL_SemPost(VramSem);
 	}
-//        InitBlankLine();
+        InitBlankLine();
 	return;
 }
 
@@ -345,7 +332,7 @@ void AGEventDrawGL(AG_Event *event)
 
 
 	pixvram = GetVramSurface_AG_GL();
-	glFlush();
+//	glFlush();
 
 //	glClear(GL_COLOR_BUFFER_BIT);
 	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
@@ -353,8 +340,8 @@ void AGEventDrawGL(AG_Event *event)
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /*
      * VRAMの表示:テクスチャ貼った四角形
@@ -367,12 +354,11 @@ void AGEventDrawGL(AG_Event *event)
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
-	glLoadIdentity();
-    glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -0.99);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -0.99);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -0.99);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -0.99);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -0.99);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, -1.0f, -0.99);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, -0.99);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -0.99);
     glEnd();
 
 	if(pixvram){
@@ -382,7 +368,7 @@ void AGEventDrawGL(AG_Event *event)
 	}
 #if 1
     if(!bFullScan) {
-//       glBindTexture(GL_TEXTURE_2D, blanktextureid);
+       glBindTexture(GL_TEXTURE_2D, blanktextureid);
 
     	width = 1.0f;
         glLineWidth(width);
@@ -396,7 +382,7 @@ void AGEventDrawGL(AG_Event *event)
         glEnd();
     }
 #endif
-//    DrawOSDGL(glv);
+    DrawOSDGL(glv);
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
