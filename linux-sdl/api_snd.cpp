@@ -45,9 +45,9 @@
 
 enum {
 	CH_SND_BEEP = 0,
-	CH_SND_CMT = 1,
-	CH_SND_OPN = 2,
-	CH_WAV_RELAY_ON = 3,
+	CH_SND_CMT = 4,
+	CH_SND_OPN = 8,
+	CH_WAV_RELAY_ON = 12,
 	CH_WAV_RELAY_OFF,
 	CH_WAV_FDDSEEK,
 	CH_WAV_RESERVE1,
@@ -156,7 +156,7 @@ static SndDrvCMT *DrvCMT;
 static SDL_Thread *snd_thread;
 static struct RingBufferDesc *CmdRing;
 
-static void RenderPlay(int samples, int slot, BOOL play);
+static void RenderPlay(int slot, BOOL play);
 static int RenderThreadBZero(int start,int size,int slot);
 static int RenderThreadSub(int start, int size, int slot);
 static int PlayThread(void *arg);
@@ -241,8 +241,9 @@ CleanSnd(void)
 	/*
 	 * スレッド停止
 	 */
-	SDL_SemWait(applySem);
+        SDL_SemWait(applySem);
 	SDL_DestroySemaphore(applySem);
+   
 	applySem = NULL;
 	/*
 	 * スレッド資源解放待ち
@@ -257,6 +258,8 @@ CleanSnd(void)
 		bPlaying = FALSE;
 		SDL_WaitThread(snd_thread, &thread_arg);
 		snd_thread = NULL;
+        Mix_HaltChannel(-1);
+	Mix_CloseAudio();
 	}
 
 #if 1				/* WAVキャプチャは後で作る */
@@ -359,7 +362,7 @@ BOOL SelectSnd(void)
     bytes &= (DWORD) 0xfffffff8;        /* 8バイト境界 */
     uBufSize = bytes;
 
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 16 ) < 0) {
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 6) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
@@ -391,6 +394,7 @@ BOOL SelectSnd(void)
 	bPlaying = TRUE;
 	DrvBeep= new SndDrvBeep;
 	if(DrvBeep) {
+	   	       DrvBeep->SetRate(uRate);
 			DrvBeep->Setup(uTick);
 	}
 
@@ -401,15 +405,17 @@ BOOL SelectSnd(void)
 	 */
 	DrvOPN= new SndDrvOpn ;
 	if(DrvOPN) {
-			DrvOPN->Setup(uTick);
-			DrvOPN->Enable(TRUE);
+	        DrvOPN->SetRate(uRate);
+	        DrvOPN->Setup(uTick);
+	        DrvOPN->Enable(TRUE);
 	}
 	/*
 	 * CMT
 	 */
 	DrvCMT = new SndDrvCMT;
 	if(DrvCMT) {
-		DrvCMT->Setup(uTick);
+	        DrvCMT->SetRate(uRate);
+	        DrvCMT->Setup(uTick);
 		DrvCMT->Enable(TRUE);
 		DrvCMT->SetState(FALSE);
 	}
@@ -438,7 +444,7 @@ BOOL SelectSnd(void)
 	ASSERT(!bWavCapture);
 
 	/*
-	 * SDL用に仕様変更…出来ればInitSnd()でやったら後はOpen/Closeしたくないんぼだけれどー。
+	 * SDL用に仕様変更…出来ればInitSnd()でやったら後はOpen/Closeしたくないんだけれどー。
 	 */
 
 	bPlayEnable = TRUE;
@@ -449,6 +455,7 @@ BOOL SelectSnd(void)
 	for(i = 0; i < WAV_SLOT; i++) {
 		   strcpy(prefix, ModuleDir);
 	       strcat(prefix, WavName[i]);
+//	       DrvWav[i].SetRate(uRate);
 	       DrvWav[i].Setup(prefix);
 	}
 	/*
@@ -493,15 +500,14 @@ void ApplySnd(void)
 	 * 既に準備ができているなら、解放
 	 */
 	if (uRate != 0) {
-		Mix_HaltChannel(-1);
-		CleanSnd();
+	   CleanSnd();
 	}
 
 	/*
 	 * 再セレクト
 	 */
 	SelectSnd();
-    SDL_SemPost(applySem);
+        SDL_SemPost(applySem);
 	// BEEPについて、SelectSnd()し直しても音声継続するようにする
 	bBeepFlag = !bBeepFlag;
 	beep_notify();
@@ -617,7 +623,7 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 	/*
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
-	samples = ((uTick  * uRate) / 2) / 1000;
+	samples = ((uTick  * uRate) / 1) / 1000;
 	samples -= uSample;
 	/*
 	 * 時間経過から求めた理論サンプル数
@@ -654,72 +660,19 @@ static void AddSnd(BOOL bfill, BOOL bZero)
 	}
 
 	if(bfill) {
-	  if(samples > 0) {
-		   uSample += samples;
-	  }
-	  bSndBZero[bNowBank] = bZero;
-	  if(!bSndDataEnable[bNowBank]) {
-		  nSndSamples[bNowBank] = uSample;
-		  bSndDataEnable[bNowBank] = TRUE;
-	  }
-	  bNowBank++;
-	  if(bNowBank >= 8) bNowBank = 0;
-	  uSample = 0;
+	   uSample += samples;
+
+//	  bSndBZero[bNowBank] = bZero;
+//	  if(!bSndDataEnable[bNowBank]) {
+//		  nSndSamples[bNowBank] = uSample;
+//		  bSndDataEnable[bNowBank] = TRUE;
+//	  }
+//	  uSample = 0;
    	  dwSoundTotal = 0;
 	} else {
-      if(samples > 0) {
 		uSample += samples;
-      }
 	}
 
-#if 0
-	if(!bfill) {
-		i = (uRate / 25);
-		i *= dwSoundTotal;
-		i /= 40000;
-		/*
-		 * uSampleと比較、一致していれば何もしない
-		 */
-		if (i <= (int) uSample) {
-			return;
-		}
-		/*
-		 * uSampleとの差が今回生成するサンプル数
-		 */
-		i -= (int)uSample;
-		/*
-		 * samplesよりも小さければ合格
-		 */
-		if (i <= samples) {
-			samples = i;
-		}
-	}
-
-	wbank = bNowBank;
-	   if(!bZero) {
-	      RenderThreadSub(uSample,samples,wbank);
-	   } else {
-	      RenderThreadBZero(uSample,samples,wbank);
-	   }
-
-	if(bfill) {
-	  if(samples > 0) {
-		   uSample += samples;
-	  }
-	  if(nSndSamples[wbank] == 0) {
-		  nSndSamples[wbank] = uSample;
-		  bSndDataEnable[wbank] = TRUE;
-	  }
-   	bNowBank++;
-   	if(bNowBank >= 8) bNowBank = 0;
-   	uSample = 0;
-   	dwSoundTotal = 0;
-	} else {
-      if(samples > 0) {
-		uSample += samples;
-      }
-	}
-#endif
 }
 
 #ifdef __cplusplus
@@ -921,7 +874,7 @@ void wav_notify(BYTE no)
    int ch;
 
    if(applySem == NULL) return;
-   SDL_SemWait(applySem);
+//   SDL_SemWait(applySem);
 
 	if(no == SOUND_STOP){
 		Mix_HaltGroup(GROUP_SND_SFX);
@@ -932,7 +885,7 @@ void wav_notify(BYTE no)
 		  DrvWav[no].Play(ch, 0);
 		}
 	}
-	SDL_SemPost(applySem);
+//	SDL_SemPost(applySem);
 }
 
 void beep_notify(void)
@@ -941,7 +894,7 @@ void beep_notify(void)
 	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
 		return;
 	}
-    AddSnd(FALSE, FALSE);
+        AddSnd(FALSE, FALSE);
 
 	if (beep_flag && speaker_flag) {
 		bBeepFlag = TRUE;
@@ -979,43 +932,28 @@ void tape_notify(BOOL flag)
 void        ProcessSnd(BOOL bZero)
 {
 	BOOL    bWrite;
+        int slot;
 	/*
 	 * 初期化されていなければ、何もしない
 	 */
 	if (!DrvOPN) {
 		return;
 	}
-	SDL_SemWait(applySem);
+//	SDL_SemWait(applySem);
 	/*
 	 * 書き込み位置とバンクから、必要性を判断
 	 */
 	bWrite = FALSE;
-#if 0
-   if (bNowBank) {
-		if (dwPlayC >= (uTick / 2) ) {
-			bWrite = TRUE;
-		}
-	} else {
-		if (dwPlayC < (uTick / 2)) {
-			bWrite = TRUE;
-		}
-	}
-	if (dwPlayC >= uTick) {
-		dwPlayC = 0;
-	}
-	dwPlayC++;
- #else
-       if (dwPlayC >= (uTick / 2 )) {
+       if (dwPlayC >= (uTick / 4 )) {
 		bWrite = TRUE;
 		dwPlayC++;
 	}  else {
-        dwPlayC++;
+	   dwPlayC++;
 	}
    
-	if (dwPlayC >= uTick) {
+	if (dwPlayC >= uTick ) {
 		dwPlayC = 0;
 	}
-#endif   
 	/*
 	 * サウンドデータの生成
 	 */
@@ -1043,20 +981,29 @@ void        ProcessSnd(BOOL bZero)
 		   if (bWrite) {
 		      AddSnd(FALSE, bZero);
 		   }
-	       SDL_SemPost(applySem);
 		   return;
 	  }
 	  /*
 	   * ここから演奏開始
 	   */
-   AddSnd(TRUE, bZero);
+         AddSnd(TRUE, bZero);
 
 	  /*
 	   * 書き込みバンク(仮想)
 	   */
-//	  bNowBank = (!bNowBank);
-    dwPlayC = 0;
-	SDL_SemPost(applySem);
+   
+	  bSndBZero[bNowBank] = bZero;
+	  if(!bSndDataEnable[bNowBank]) {
+		  nSndSamples[bNowBank] = uSample;
+		  bSndDataEnable[bNowBank] = TRUE;
+	  }
+   
+//   RenderPlay(bNowBank, TRUE);
+   bNowBank++;
+   if(bNowBank >= 8) bNowBank = 0;
+   uSample = 0;
+   dwPlayC = 0;
+//	SDL_SemPost(applySem);
 
 }
 
@@ -1130,7 +1077,7 @@ static int RenderThreadBZero(int start,int size,int slot)
 	/* レンダリング */
 	/* BEEP */
 	if(DrvBeep != NULL) {
-		w = DrvBeep->BZero(start, size, slot, TRUE);
+		w = DrvBeep->BZero(start, size, slot, FALSE);
 	}
 	if(DrvCMT != NULL) {
 		w =DrvCMT->BZero(start, size, slot, TRUE);
@@ -1144,32 +1091,30 @@ static int RenderThreadBZero(int start,int size,int slot)
 
 
 
-static void RenderPlay(int samples, int slot, BOOL play)
+static void RenderPlay(int slot, BOOL play)
 {
 	/*
 	 * レンダリング: bFill = TRUEで音声出力
 	 */
 	DWORD *bank = NULL;
-	int slot2 = slot - 1;
 	BOOL playing;
 	int i;
 
-	if(slot2 < 0) slot2 = 3;
 	bSndDataEnable[slot] = TRUE;
 	if(play) {
 		if(applySem == NULL) return;
-		SDL_SemWait(applySem);
+//		SDL_SemWait(applySem);
 		Mix_Volume(-1,iTotalVolume);
 		if(DrvBeep != NULL) {
-			DrvBeep->Play(CH_SND_BEEP , slot, samples);
+			DrvBeep->Play(CH_SND_BEEP , slot);
 		}
 		if(DrvCMT != NULL) {
-			DrvCMT->Play(CH_SND_CMT , slot, samples);
+			DrvCMT->Play(CH_SND_CMT , slot);
 		}
 		if(DrvOPN != NULL) {
-			DrvOPN->Play(CH_SND_OPN , slot, samples);
+			DrvOPN->Play(CH_SND_OPN , slot);
 		}
-		SDL_SemPost(applySem);
+//		SDL_SemPost(applySem);
 	}
 }
 
@@ -1181,46 +1126,47 @@ static int PlayThread(void *arg)
 	int samples;
 	int ticks;
 	int w;
+        int m;
 
 	while(bPlaying)
 	{
 		bWavFlag = TRUE;
-		SDL_Delay(uTick / 8);
-		if(bPlayEnable) {
+		SDL_Delay(10);
+//		if(bPlayEnable) {
 			if(!bSndDataEnable[slot]) continue;
-			if(applySem == NULL) continue;
-			SDL_SemWait(applySem);
+		   if(applySem == NULL) continue;
+
 			Mix_Volume(-1,iTotalVolume);
 			samples = nSndSamples[slot];
 			ticks = ((uTick  * uRate) / 2) / 1000;
-#if 0
-			if(samples < ticks ) {
-				if(	bSndBZero[slot]){
-					RenderThreadBZero(samples, ticks - samples, slot);
-				} else {
-					RenderThreadSub(samples, ticks - samples, slot);
-				}
-				samples = ticks;
-			}
+		   if((DrvBeep == NULL) || (DrvOPN == NULL) || (DrvCMT == NULL)) {
+		      continue;
+		   }
+			SDL_SemWait(applySem);		   
+#if 0		      
+	   i = (Mix_Playing(CH_SND_BEEP)==1) |
+		         (Mix_Playing(CH_SND_CMT)==1) |
+		         (Mix_Playing(CH_SND_OPN)==1);
+
+		   while(i != 0) {
+		      i = (Mix_Playing(CH_SND_BEEP)==1) |
+		         (Mix_Playing(CH_SND_CMT)==1) |
+		         (Mix_Playing(CH_SND_OPN)==1);
+		      SDL_Delay(1);
+		   }
 #endif
-			if(DrvBeep != NULL) {
-				DrvBeep->Play(CH_SND_BEEP , slot, samples);
-			}
-			if(DrvCMT != NULL) {
-				DrvCMT->Play(CH_SND_CMT , slot, samples);
-			}
-			if(DrvOPN != NULL) {
-				DrvOPN->Play(CH_SND_OPN , slot, samples);
-			}
+		         DrvBeep->Play(CH_SND_BEEP + slot % 4 , slot);
+		         DrvCMT->Play(CH_SND_CMT + slot % 4, slot);
+		         DrvOPN->Play(CH_SND_OPN + slot % 4, slot);
+
 			nSndSamples[slot] = 0;
 			bSndDataEnable[slot] = FALSE;
 			slot++;
 			if(slot >= 8) slot = 0;
 			SDL_SemPost(applySem);
-		}
+//		}
 
 	}
 	bWavFlag = FALSE;
-	Mix_CloseAudio();
 	return 0;
 }

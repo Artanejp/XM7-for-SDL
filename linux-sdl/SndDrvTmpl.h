@@ -43,6 +43,8 @@ public:
 	void SetRenderVolume(int level);
 	void Play(int ch,  int slot);
 	void Play(int ch,  int slot, int samples);
+        Uint8 *GetBuf(int slot);
+        int GetBufSize(int slot);
 protected:
 	Uint8 *buf[DEFAULT_SLOT];
 	Mix_Chunk chunk[DEFAULT_SLOT];

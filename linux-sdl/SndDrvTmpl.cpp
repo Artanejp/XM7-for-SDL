@@ -17,11 +17,10 @@ SndDrvTmpl::SndDrvTmpl() {
 	uStereo = nStereoOut %4;
 	channels = 2;
 	ms = nSoundBuffer;
-	srate = nSampleRate;
+        srate = nSampleRate;
 	bufSlot = DEFAULT_SLOT;
-	srate = nSampleRate;
 	for(i = 0; i<bufSlot; i++) {
-		bufSize[i] = (ms * srate * channels *sizeof(Sint16)) / 1000;
+		bufSize[i] = 0;
 		buf[i] = NULL;
 		chunk[i].abuf = NULL;
 		chunk[i].alen = 0;
@@ -122,7 +121,7 @@ Uint8  *SndDrvTmpl::Setup(int tick)
 	uChannels = 2;
 	channels = uChannels;
 	ms = tick;
-	srate = nSampleRate;
+//	srate = rate;
 
 	for(i = 0; i < bufSlot; i++) {
 		if(buf[i] == NULL) {
@@ -287,13 +286,25 @@ void SndDrvTmpl::Play(int ch,  int slot)
 	SDL_SemPost(RenderSem);
 }
 
+Uint8 *SndDrvTmpl::GetBuf(int slot)
+{
+   return buf[slot];
+}
+
+int SndDrvTmpl::GetBufSize(int slot)
+{
+   return bufSize[slot];
+}
+
+   
+
 void SndDrvTmpl::Play(int ch,  int slot, int samples)
 {
 	if(slot >= bufSlot) return;
 //	if(chunk[slot].abuf == NULL) return;
-//	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
+	chunk[slot].alen = (Uint32)(sizeof(Sint16) * samples * channels);
 	chunk[slot].abuf = buf[slot];
-	chunk[slot].alen = bufSize[slot];
+//	chunk[slot].alen = bufSize[slot];
 	chunk[slot].allocated = 1; /* アロケートされてる */
 	chunk[slot].volume = volume;
 	if(!enable) return;

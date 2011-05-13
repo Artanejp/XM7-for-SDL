@@ -70,7 +70,7 @@ int SndDrvBeep::BZero(int start, int uSamples, int slot, BOOL clear)
 	}
 	if(ss2 <= 0) return 0;
 	if(RenderSem == NULL) return 0;
-	if(!enable) return 0;
+//	if(!enable) return 0;
 	SDL_SemWait(RenderSem);
 	wbuf = (Sint16 *)buf[slot];
 	wbuf = &wbuf[start * channels];
