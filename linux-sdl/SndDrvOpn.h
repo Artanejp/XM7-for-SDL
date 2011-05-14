@@ -55,8 +55,9 @@ public:
 	void SetReg(int opn, BYTE *reg);
 	int Render(int start, int uSamples,int slot,  BOOL clear);
 	int BZero(int start, int uSamples,int slot,  BOOL clear);
-//	void Play(int ch, int slot, int samples);
-//   	void Play(int ch, int slot);
+	int Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero);
+	void Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples);
+
 private:
 	DWORD *GetBuf32(int slot);
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);

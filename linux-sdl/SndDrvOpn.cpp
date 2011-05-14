@@ -324,6 +324,7 @@ Uint8  *SndDrvOpn::Setup(int tick)
 		uChanSep = uChSeparation;
 
 	   InitOpn();
+#if 0
 	   for(i = 0; i < bufSlot; i++) {
 		   if(buf[i] == NULL) {
 		      bufSize[i] = 0;
@@ -340,6 +341,8 @@ Uint8  *SndDrvOpn::Setup(int tick)
 		   }
 	   }
 	   return buf[0];
+#endif
+	   return NULL;
 }
 
 
@@ -416,7 +419,7 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	if(start > s) return 0; /* 開始点にデータなし */
 	if(sSamples > s) sSamples = s;
 
-        p = (Sint16 *)buf[slot];
+    p = (Sint16 *)buf[slot];
 	p = &p[start * channels];
 
 	q = buf32[slot];
@@ -498,3 +501,107 @@ int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
 	return ss2;
 }
 
+
+int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+
+	int s;
+	int ss;
+	int ss2;
+
+	Uint32 *q;
+
+	s = (ms * srate)/1000;
+	if(start > s) return 0; /* 開始点にデータなし */
+
+	q = (Uint32 *)pBuf32;
+	q = &q[start * channels];
+	if((start <= 0) && (clear!=TRUE)){
+		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000 - sizeof(Sint32));
+	}
+
+	ss = sSamples + start;
+	if(ss > s) {
+		ss2 = s - start;
+	} else {
+		ss2 = sSamples;
+	}
+	if(ss2 <= 0) return 0;
+	if(RenderSem == NULL) {
+		return 0;
+	}
+	SDL_SemWait(RenderSem);
+	if(clear)  {
+	   memset(q, 0, sizeof(DWORD) * ss2 * channels);
+	}
+
+	if(enable) {
+		if(bZero) {
+			memset(q, 0, sizeof(DWORD) * ss2 * channels);
+			SDL_SemPost(RenderSem);
+			return ss2;
+		}
+
+		if (channels == 1) {
+			/* モノラル */
+			pOPN[OPN_STD].Mix((int32*)q, ss2);
+			if (whg_use){
+				pOPN[OPN_WHG].Mix((int32*)q, ss2);
+			}
+			if (thg_use) {
+				pOPN[OPN_THG].Mix((int32*)q, ss2);
+			}
+			if ((!thg_use) && (fm7_ver == 1) ) {
+				pOPN[OPN_STD].psg.Mix((int32*)q, ss2);
+			}
+		} else {
+			/* ステレオ */
+			if (!whg_use && !thg_use) {
+				/* WHG/THGを使用していない(強制モノラル) */
+				pOPN[OPN_STD].Mix2((int32*)q, ss2, 16, 16);
+				if (fm7_ver == 1) {
+					pOPN[OPN_STD].psg.Mix2((int32*)q, ss2, 16, 16);
+				}
+			}
+			else {
+				/* WHGまたはTHGを使用中 */
+				pOPN[OPN_STD].Mix2((int32*)q, ss2,
+						l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
+				if (whg_use){
+					pOPN[OPN_WHG].Mix2((int32*)q, ss2,
+							l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
+				}
+				if (thg_use) {
+					pOPN[OPN_THG].Mix2((int32*)q, ss2,
+							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
+				}
+				else if (fm7_ver == 1){
+					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
+				}
+			}
+		}
+//      	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
+		/*
+		 * ここにレンダリング関数ハンドリング
+		 */
+	}
+	SDL_SemPost(RenderSem);
+	return ss2;
+
+}
+
+void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
+{
+	DWORD *p;
+	WORD *q;
+
+	if((samples <= 0) || (ofset <= 0))return;
+
+	p = (DWORD *)src;
+	p = &p[ofset * channels];
+
+	q = (WORD *)dst;
+	q = &q[ofset * channels];
+	CopySoundBufferGeneric(p, q, (int)(samples * channels));
+
+}

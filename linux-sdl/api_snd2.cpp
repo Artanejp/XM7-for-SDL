@@ -68,10 +68,12 @@ int                     iTotalVolume;   /* 全体ボリューム */
 UINT                    uChSeparation;
 UINT                    uStereoOut;     /* 出力モード */
 
+
 /*
  * 定数など
  */
 #define CHUNKS 8
+#define WAV_CHANNELS 5
 
 enum {
 	CH_SND_BEEP = 0,
@@ -91,7 +93,7 @@ enum {
 	GROUP_SND_SFX
 };
 
-typedef struct {
+struct SndBufType {
 	Sint32 *pBuf32;
 	Sint16 *pBuf;
 	Uint32 nSize;
@@ -99,9 +101,11 @@ typedef struct {
 	Uint32 nWritePTR;
 	int nHeadChunk;
 	int nLastChunk;
+	DWORD nLastTime;
 	int nChunks;
+	int nChunkNo;
 	Mix_Chunk **mChunk; /* Chunkの配列へのポインタ */
-} SndBufType;
+} ;
 
 
 /*
@@ -121,6 +125,16 @@ static struct SndBufType *pCMTBuf;
 static struct SndBufType *pCaptureBuf;
 static struct SndBufType *pSndBuf;
 
+/*
+ * OPN内部変数
+ */
+static int           nScale[3];      /* OPNプリスケーラ */
+
+static BOOL bSndEnable;
+static DWORD dwCount; // ms単位のカウンター
+static DWORD uTick;   // バッファサイズ(時間)
+static DWORD uRate;   // サンプリングレート
+static DWORD uBufSize; // バッファサイズ(バイト数)
 
 static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
@@ -154,16 +168,16 @@ static char     *WavName[] = {
 static struct SndBufType *InitBufferDesc(void)
 {
 	struct SndBufType *p;
-	Mix_Chunk **cp;
+	void *cp;
 
-	p = malloc(sizeof(struct SndBufType));
+	p = (struct SndBufType *)malloc(sizeof(struct SndBufType));
 	if(p){
 		memset(p, 0x00, sizeof(struct SndBufType));
-		cp = (Mix_Chunk **)malloc(sizeof(Mix_Chunk) * CHUNKS);
+		cp = malloc(sizeof(Mix_Chunk) * CHUNKS);
 		if(cp) {
-			memset(cp, 0x00, sizeof(Mix_Chunk * CHUNKS));
+			memset(cp, 0x00, sizeof(Mix_Chunk) * CHUNKS);
 		}
-		p->mChunk = cp;
+		p->mChunk = (Mix_Chunk **)cp;
 		p->nChunks = CHUNKS;
 		p->nHeadChunk = 0;
 		p->nLastChunk = 0;
@@ -199,14 +213,14 @@ static void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL fla
 	if(p == NULL) return;
 	if(flag16) {
 		size = members * sizeof(Sint16);
-		p->pBuf = malloc(size);
+		p->pBuf = (Sint16 *)malloc(size);
 		if(p->pBuf) {
 			memset(p->pBuf, 0x00, size);
 		}
 	}
 	if(flag32) {
 		size = members * sizeof(Sint32);
-		p->pBuf32 = malloc(size);
+		p->pBuf32 = (Sint32 *)malloc(size);
 		if(p->pBuf32) {
 			memset(p->pBuf32, 0x00, size);
 		}
@@ -250,7 +264,7 @@ void InitSnd(void)
 
 	iTotalVolume = SDL_MIX_MAXVOLUME - 1;
 
-
+	bSndEnable = FALSE;
 	bWavFlag = FALSE;
 	DrvBeep = NULL;
 	DrvOPN = NULL;
@@ -258,8 +272,11 @@ void InitSnd(void)
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = NULL;
-	bPlayEnable = FALSE;
-	bPlaying = FALSE;
+
+	uTick = 0;   // バッファサイズ(時間)
+	uRate = 0;   // サンプリングレート
+	uBufSize = 0; // バッファサイズ(バイト数)
+
 
 	/*
 	 * ボリューム初期化
@@ -270,7 +287,9 @@ void InitSnd(void)
 	nCMTVol = 0;
 	nWavVol = 0;
 	uChanSep = 0;
+	iTotalVolume = 127;
 	bBeepFlag = 0;      /* BEEP出力 */
+
 	/*
 	 * バッファ(概要)初期化
 	 */
@@ -279,8 +298,6 @@ void InitSnd(void)
 	pCMTBuf = InitBufferDesc();
 	pSndBuf = InitBufferDesc();
 	pCaptureBuf = InitBufferDesc();
-
-
 }
 
 /*
@@ -294,12 +311,122 @@ void CleanFDDSnd(void)
 
 void CleanSnd(void)
 {
+	DetachBufferDesc(pOpnBuf);
+	DetachBufferDesc(pBeepBuf);
+	DetachBufferDesc(pCMTBuf);
+	DetachBufferDesc(pCaptureBuf);
+//	DetachBufferDesc(pSndBuf);
+
+	/*
+	 * ドライバの抹消(念の為)
+	 */
+	if(DrvOPN) {
+		delete DrvOPN;
+		DrvOPN = NULL;
+	}
+	if(DrvCMT) {
+		delete DrvCMT;
+		DrvCMT = NULL;
+	}
+	if(DrvBeep) {
+		delete DrvBeep;
+		DrvBeep = NULL;
+	}
+	if(DrvPSG) {
+		delete DrvPSG;
+		DrvPSG = NULL;
+	}
+	if(DrvWav) {
+		delete[] DrvWav;
+		DrvWav = NULL;
+	}
+
 
 }
 
+/*
+ * バッファ関連の消去(Apply向け)
+ */
+static void CloseSnd(void)
+{
+	if(bSndEnable) {
+		Mix_CloseAudio();
+		DetachBuffer(pBeepBuf);
+		DetachBuffer(pCMTBuf);
+		DetachBuffer(pOpnBuf);
+		DetachBuffer(pCaptureBuf);
+		//	DetachBuffer(pSndBuf);
+		bSndEnable = FALSE;
+	}
+	/*
+	 * ドライバの抹消
+	 */
+	if(DrvOPN) {
+		delete DrvOPN;
+		DrvOPN = NULL;
+	}
+	if(DrvCMT) {
+		delete DrvCMT;
+		DrvCMT = NULL;
+	}
+	if(DrvBeep) {
+		delete DrvBeep;
+		DrvBeep = NULL;
+	}
+	if(DrvPSG) {
+		delete DrvPSG;
+		DrvPSG = NULL;
+	}
+	if(DrvWav) {
+		delete[] DrvWav;
+		DrvWav = NULL;
+	}
+
+}
 
 BOOL SelectSnd(void)
 {
+
+	int members;
+	int wavlength;
+/*
+ * バッファの初期化
+ */
+	dwCount = 0;
+	uTick = nSoundBuffer;
+	uRate = nSampleRate;
+	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 6) < 0) {
+	   printf("Warning: Audio can't initialize!\n");
+	   return -1;
+	}
+	Mix_AllocateChannels(CH_CHANNELS);
+	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
+	Mix_Volume(-1,iTotalVolume);
+
+
+    bSndEnable = TRUE;
+	uTick = nSoundBuffer;
+	members = (nSampleRate * nSoundBuffer) / 1000 * 2;
+	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
+	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
+	SetupBuffer(pOpnBuf, members, TRUE, TRUE);
+
+	wavlength = (nSampleRate * 2000) / 1000 * 2; // キャプチャバッファは二秒
+	SetupBuffer(pCaptureBuf, members, TRUE, FALSE);
+
+	/*
+	 * レンダリングドライバの設定
+	 */
+	DrvOPN = new SndDrvOpn ;
+	DrvBeep = new SndDrvBeep ;
+	DrvWav = new SndDrvWav[WAV_CHANNELS] ;
+	DrvCMT= new SndDrvCMT ;
+
+
+	if(DrvOPN) {
+		DrvOPN->Setup(uTick);
+	}
 }
 
 /*
@@ -307,6 +434,10 @@ BOOL SelectSnd(void)
  */
 void ApplySnd(void)
 {
+
+	CloseSnd();
+	SelectSnd();
+
 }
 
 /*
@@ -402,30 +533,319 @@ void StopSnd(void)
 }
 
 /*
+ * サウンドレンダリング本体
+ * レンダラは上書きしていく(!)
+ */
+
+static DWORD RenderOpnSub(DWORD time, int samples, BOOL bZero)
+{
+	struct SndBufType *p = pOpnBuf;
+	DWORD delta_us;
+	DWORD us;
+	int i = samples;
+
+	if(samples <= 0) return 0;
+	delta_us = (i * 1000000) / nSampleRate;
+	us = time + delta_us;
+
+	if(p->nSize < (samples + p->nWritePTR)){
+		// バッファオーバフローの時は分割する
+		int j;
+		j = samples + p->nWritePTR - p->nSize;
+		if(j > 0) {
+			DrvOPN->Render32(p->pBuf32, p->nWritePTR, j,  TRUE, bZero);
+			DrvOPN->Copy32(p->pBuf32, p->pBuf, p->nWritePTR, j);
+			p->nWritePTR = 0;
+			j = samples -j;
+			if(j > 0) {
+				DrvOPN->Render32(p->pBuf32, 0, j, TRUE, bZero);
+				DrvOPN->Copy32(p->pBuf32, p->pBuf,0,  j);
+				p->nWritePTR = j;
+			}
+		}
+	} else {
+		samples = DrvOPN->Render32(p->pBuf32, p->nWritePTR, samples,  TRUE, bZero);
+		DrvOPN->Copy32(p->pBuf32, p->pBuf, p->nWritePTR, samples);
+		p->nWritePTR += samples;
+	}
+	p->nLastTime = us;
+	return us;
+}
+
+/*
+ * バッファを一定時間の所まで埋める
+ * TRUE : 埋めた
+ * FALSE : 埋める必要がなかった
+ */
+static BOOL FlushOpnSub(DWORD time, BOOL bZero)
+{
+	struct SndBufType *p;
+	uint64_t time2;
+	uint64_t lasttime;
+
+	lasttime = (uint64_t)p->nLastTime;
+	time2 = (uint64_t) time;
+	p = pOpnBuf;
+
+	/*
+	 * オーバーフロー対策込
+	 */
+	if(time2 < lasttime) {
+		uint64_t diff = lasttime - time2;
+		if(diff > ((uint64_t)nSampleRate * 1000)) { // オーバーフロー
+			int samples = (int)(time2 + (uint64_t)0x100000000 - lasttime);
+			if(samples<0) return FALSE;
+			RenderOpnSub(time, samples, bZero);
+		}
+		// 既に埋まってる
+		return FALSE;
+	} else {
+		uint64_t diff = time2 - lasttime;
+		int samples = (int)((diff * 1000) / (uint64_t)uRate);
+
+		RenderOpnSub(time, samples, bZero);
+		return TRUE;
+	}
+}
+
+/*
+ * ChunkをSetする
+ */
+static void SetChunkSub(Mix_Chunk *p, Sint16 *buf, Uint32 len, int volume)
+{
+	p->abuf = (Uint8 *)buf;
+	p->alen = len;
+	p->allocated = 1;
+	p->volume = (Uint8)volume;
+}
+
+/*
  * XXX Notify系関数…VM上の仮想デバイスに変化があったとき呼び出される
  */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+static int CalcSamples(DWORD time)
+{
+	uint64_t time2;
+	uint64_t last;
+	uint64_t diff;
+	int samples;
+
+	time2 =(uint64_t) time;
+	last = (uint64_t) pOpnBuf->nLastTime;
+
+	if(time2 < last) {
+		diff = time2 + 0x100000000 - last;
+	} else {
+		diff = time2 - last;
+	}
+	samples = (int)((diff * 1000000) / (uint64_t)uRate);
+
+	if(samples <= 0) samples = 0;
+	return samples;
+}
+
 void opn_notify(BYTE reg, BYTE dat)
 {
+	DWORD time = dwSoundTotal;
+	int samples = CalcSamples(time);
+	BYTE r;
+
+	/*
+	 * OPNがなければ、何もしない
+	 */
+	if (!DrvOPN) {
+		return;
+	}
+	/*
+	 * プリスケーラを調整
+	 */
+	if (opn_scale[OPN_STD] != nScale[OPN_STD]) {
+		nScale[OPN_STD] = opn_scale[OPN_STD];
+		switch (opn_scale[OPN_STD]) {
+		case 2:
+			DrvOPN->SetReg(OPN_STD, 0x2f, 0);
+			break;
+		case 3:
+            DrvOPN->SetReg(OPN_STD, 0x2e, 0);
+			break;
+		case 6:
+            DrvOPN->SetReg(OPN_STD, 0x2d, 0);
+			break;
+		}
+	}
+
+	/*
+	 * Ch3動作モードチェック
+	 */
+	if (reg == 0x27) {
+		if (DrvOPN->GetCh3Mode(OPN_STD) == dat) {
+			return;
+		}
+		DrvOPN->SetCh3Mode(OPN_STD, dat);
+	}
+
+	/*
+	 * 0xffレジスタはチェック
+	 */
+	if (reg == 0xff) {
+		/*
+		 * スレッド間の逆方向チェックやるか？
+		 */
+		r = DrvOPN->GetReg(OPN_STD, 0x27);
+		if ((r & 0xc0) != 0x80) {
+			return;
+		}
+	}
+
+	/*
+	 * サウンド合成
+	 */
+//	 AddSnd(FALSE, FALSE);
+	 RenderOpnSub(time, samples, FALSE);
+
+	/*
+	 * 出力
+	 */
+    DrvOPN->SetReg(OPN_STD, (uint8) reg, (uint8) dat);
+
 }
 
 void thg_notify(BYTE reg, BYTE dat)
 {
+	DWORD time = dwSoundTotal;
+	int samples = CalcSamples(time);
+	BYTE r;
+	/*
+	 * THGがなければ、何もしない
+	 */
+	if (!DrvOPN) {
+		return;
+	}
+
+	/*
+	 * プリスケーラを調整
+	 */
+	if (opn_scale[OPN_THG] != nScale[OPN_THG]) {
+		nScale[OPN_THG] = opn_scale[OPN_THG];
+		switch (opn_scale[OPN_THG]) {
+		case 2:
+			DrvOPN->SetReg(OPN_THG, 0x2f, 0);
+			break;
+		case 3:
+            DrvOPN->SetReg(OPN_THG, 0x2e, 0);
+			break;
+		case 6:
+            DrvOPN->SetReg(OPN_THG, 0x2d, 0);
+			break;
+		}
+	}
+
+	/*
+	 * Ch3動作モードチェック
+	 */
+	if (reg == 0x27) {
+		if (DrvOPN->GetCh3Mode(OPN_THG) == dat) {
+			return;
+		}
+		DrvOPN->SetCh3Mode(OPN_THG, dat);
+	}
+
+	/*
+	 * 0xffレジスタはチェック
+	 */
+	if (reg == 0xff) {
+		/*
+		 * スレッド間の逆方向チェックやるか？
+		 */
+		r = DrvOPN->GetReg(OPN_THG, 0x27);
+
+		 if ((r & 0xc0) != 0x80) {
+			 return;
+		 }
+	}
+
+
+	/*
+	 * サウンド合成
+	 */
+//    AddSnd(FALSE, FALSE);
+	 RenderOpnSub(time, samples, FALSE);
+	/*
+	 * 出力
+	 */
+	    DrvOPN->SetReg(OPN_THG, (uint8) reg, (uint8) dat);
 
 }
 
 void whg_notify(BYTE reg, BYTE dat)
 {
+	DWORD time = dwSoundTotal;
+	int samples = CalcSamples(time);
+	BYTE r;
+	/*
+	 * WHGがなければ、何もしない
+	 */
+	if (!DrvOPN) {
+		return;
+	}
+
+	/*
+	 * プリスケーラを調整
+	 */
+	if (opn_scale[OPN_WHG] != nScale[OPN_WHG]) {
+		nScale[OPN_WHG] = opn_scale[OPN_WHG];
+		switch (opn_scale[OPN_THG]) {
+		case 2:
+			DrvOPN->SetReg(OPN_WHG, 0x2f, 0);
+			break;
+		case 3:
+			DrvOPN->SetReg(OPN_WHG, 0x2e, 0);
+			break;
+		case 6:
+			DrvOPN->SetReg(OPN_WHG, 0x2d, 0);
+			break;
+		}
+	}
+
+	/*
+	 * Ch3動作モードチェック
+	 */
+	if (reg == 0x27) {
+		if (DrvOPN->GetCh3Mode(OPN_WHG) == dat) {
+			return;
+		}
+		DrvOPN->SetCh3Mode(OPN_WHG, dat);
+	}
+	/*
+	 * 0xffレジスタはチェック
+	 */
+	if (reg == 0xff) {
+		/*
+		 * スレッド間の逆方向チェックやるか？
+		 */
+		r = DrvOPN->GetReg(OPN_WHG, 0x27);
+
+		 if ((r & 0xc0) != 0x80) {
+			 return;
+		 }
+	}
+	/*
+	 * サウンド合成
+	 */
+//	AddSnd(FALSE, FALSE);
+	 RenderOpnSub(time, samples, FALSE);
+
+	 /*
+	 * 出力
+	 */
+		DrvOPN->SetReg(OPN_WHG, reg, dat);
+
 
 }
 
-void beep_notify(BYTE reg, BYTE dat)
-{
-
-}
 
 void wav_notify(BYTE no)
 {
@@ -446,8 +866,96 @@ void tape_notify(BOOL flag)
 }
 #endif
 
+static int SetChunk(struct SndBufType *p, int ch)
+{
+	DWORD samples;
+	int i = p->nChunkNo;
+
+	if(p->nReadPTR > p->nWritePTR) { // オーバフローしてる
+		samples = p->nSize - p->nReadPTR;
+		SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * 2 * sizeof(Sint16)], samples, 127);
+		Mix_PlayChannel(ch, p->mChunk[i], 0);
+		i++;
+		p->nReadPTR += samples;
+		if(i > p->nChunks) {
+			i = 0;
+			p->nReadPTR = 0;
+		}
+		/*
+		 *
+		 */
+		samples = p->nWritePTR;
+		SetChunkSub(p->mChunk[i], p->pBuf, samples, 127);
+		Mix_PlayChannel(ch, p->mChunk[i], 0);
+		p->nReadPTR += samples;
+		i++;
+		if(i > p->nChunks) {
+			i = 0;
+		}
+	} else {
+		samples = p->nWritePTR - p->nReadPTR;
+		if(samples == 0) return -1;
+		SetChunkSub(p->mChunk[i], p->pBuf, samples, 127);
+		Mix_PlayChannel(ch, p->mChunk[i], 0);
+		p->nReadPTR += samples;
+		i++;
+		if(i > p->nChunks) {
+			i = 0;
+			p->nReadPTR -= p->nSize;
+		}
+	}
+	p->nChunkNo = i;
+	return i;
+}
+
+/*
+ * 1msごとにスケジューラから呼び出されるhook
+ */
+
 void ProcessSnd(BOOL bZero)
 {
+	DWORD time;
+	BOOL bWrite = FALSE;
+	time = dwSoundTotal;
 
+	dwCount++;
+	if(dwCount >= (uTick / CHUNKS)) {
+		bWrite = TRUE;
+		dwCount = 0;
+	}
+
+	if (!bWrite) {
+		  /*
+		   * テープ
+		   */
+		   if (tape_motor && bTapeMon) {
+			   bWrite = TRUE;
+		   }
+		   /*
+		    * BEEP
+		    */
+		   if (beep_flag && speaker_flag) {
+			   bWrite = TRUE;
+		   }
+		   /*
+		    * どちらかがONなら、バッファ充填
+		    */
+		   if (bWrite) {
+			   FlushOpnSub(time, bZero);
+		   }
+		   return;
+	  }
+
+	if(bWrite) {
+		// フラッシュする
+		FlushOpnSub(time, bZero);
+
+		/*
+		 * 演奏本体
+		 */
+		SetChunk(pOpnBuf , CH_SND_OPN);
+		dwCount = 0;
+		dwSoundTotal = 0;
+	}
 }
 
