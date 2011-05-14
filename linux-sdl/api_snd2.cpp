@@ -122,6 +122,7 @@ static UINT             uChanSep;
 static UINT             uStereo;     /* 出力モード */
 static BOOL             bBeepFlag;      /* BEEP出力 */
 static BOOL					bMode; /* HQモード */
+
 static struct SndBufType *pOpnBuf;
 static struct SndBufType *pBeepBuf;
 static struct SndBufType *pCMTBuf;
@@ -440,7 +441,7 @@ BOOL SelectSnd(void)
  */
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 6 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
@@ -718,7 +719,7 @@ static BOOL FlushBeepSub(DWORD time,  BOOL bZero)
 	int i;
 	int chunksize = ((uTick * uRate) / 1000) / CHUNKS;
 
-	p = pOpnBuf;
+	p = pBeepBuf;
 
 	if(chunksize<0) return FALSE;
 	i = chunksize - (p->nWritePTR % chunksize);
@@ -1042,8 +1043,8 @@ static int SetChunk(struct SndBufType *p, int samples, int ch)
 	j += k;
 #else
 	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR], samples, 127);
-	Mix_PlayChannel(ch , p->mChunk[i], 0);
 	p->nReadPTR += samples;
+	Mix_PlayChannel(ch , p->mChunk[i], 0);
 	if(p->nReadPTR > p->nSize) p->nReadPTR -= p->nSize;
 	i++;
 	if(i >= p->nChunks) i = 0;
