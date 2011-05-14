@@ -1,9 +1,48 @@
 /*
- * api_snd2.cpp
  *
- *  Created on: 2010/12/26
+ */
+
+/*
+ * snd_api.cpp
+ *
+ *  Created on: 2010/09/26
  *      Author: whatisthis
  */
+
+#ifdef __FreeBSD__
+#include <machine/soundcard.h>
+#else				/* */
+#include <linux/soundcard.h>
+#endif				/* */
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <errno.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
+#include <math.h>
+
+#include "xm7.h"
+#include "device.h"
+#include "mainetc.h"
+#include "opn.h"
+#include "tapelp.h"
+#include "cisc.h"
+#include "opna.h"
+#include "psg.h"
+#include "opn.h"
+#include "sdl.h"
+#include "sdl_sch.h"
+#include "sdl_snd.h"
+
+#include "SndDrvBeep.h"
+#include "SndDrvWav.h"
+#include "SndDrvOpn.h"
+#include "SndDrvCMT.h"
+#include "util_ringbuffer.h"
+
 
 
 /*
@@ -29,36 +68,75 @@ int                     iTotalVolume;   /* 全体ボリューム */
 UINT                    uChSeparation;
 UINT                    uStereoOut;     /* 出力モード */
 
-static UINT             uBufSize;       /* サウンドバッファサイズ */
-static UINT             uRate;          /* 合成レート */
-static UINT             uTick;          /* 半バッファサイズの長さ */
-static UINT             uStereo;        /* 出力モード */
-static UINT             uSample;        /* サンプルカウンタ */
-static UINT             uBeep;          /* BEEP波形カウンタ */
+/*
+ * 定数など
+ */
+#define CHUNKS 8
+
+enum {
+	CH_SND_BEEP = 0,
+	CH_SND_CMT = 4,
+	CH_SND_OPN = 8,
+	CH_WAV_RELAY_ON = 12,
+	CH_WAV_RELAY_OFF,
+	CH_WAV_FDDSEEK,
+	CH_WAV_RESERVE1,
+	CH_WAV_RESERVE2,
+	CH_CHANNELS
+};
+enum {
+	GROUP_SND_BEEP = 0,
+	GROUP_SND_CMT ,
+	GROUP_SND_OPN ,
+	GROUP_SND_SFX
+};
+
+typedef struct {
+	Sint32 *pBuf32;
+	Sint16 *pBuf;
+	Uint32 nSize;
+	Uint32 nReadPTR;
+	Uint32 nWritePTR;
+	int nHeadChunk;
+	int nLastChunk;
+	int nChunks;
+	Mix_Chunk **mChunk; /* Chunkの配列へのポインタ */
+} SndBufType;
+
+
+/*
+ * 内部変数
+ */
+
 static int              nFMVol;
 static int              nPSGVol;
 static int              nBeepVol;
 static int              nCMTVol;
 static int              nWavVol;
 static UINT             uChanSep;
-
-static int              nScale[3];      /* OPNプリスケーラ */
-static BYTE             uCh3Mode[3];    /* OPN Ch.3モード */
-static WORD             uChannels;      /* 出力チャンネル数 */
 static BOOL             bBeepFlag;      /* BEEP出力 */
-static BOOL             bPartMute[3][6];        /* パートミュートフラグ */
-static int              nBeepLevel;     /* BEEP音出力レベル */
-static int              nCMTLevel;      /* CMT音モニタ出力レベル */
-#ifdef FDDSND
-static int              nWaveLevel;     /* 各種効果音出力レベル */
-#endif
+static struct SndBufType *pOpnBuf;
+static struct SndBufType *pBeepBuf;
+static struct SndBufType *pCMTBuf;
+static struct SndBufType *pCaptureBuf;
+static struct SndBufType *pSndBuf;
+
+
 static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
-
+static SDL_sem 			*applySem;
 
 /*
- *
+ * サウンドレンダリングドライバ
  */
+static SndDrvBeep *DrvBeep;
+static SndDrvWav *DrvWav;
+static SndDrvOpn *DrvPSG;
+static SndDrvOpn *DrvOPN;
+static SndDrvCMT *DrvCMT;
+static struct RingBufferDesc *CmdRing;
+
+
 static char     *WavName[] = {
 		/* WAVファイル名 */
 		"RELAY_ON.WAV",
@@ -70,31 +148,91 @@ static char     *WavName[] = {
 #endif  /* */
 };
 
+/*
+ * サウンドバッファの概要を初期化する
+ */
+static struct SndBufType *InitBufferDesc(void)
+{
+	struct SndBufType *p;
+	Mix_Chunk **cp;
+
+	p = malloc(sizeof(struct SndBufType));
+	if(p){
+		memset(p, 0x00, sizeof(struct SndBufType));
+		cp = (Mix_Chunk **)malloc(sizeof(Mix_Chunk) * CHUNKS);
+		if(cp) {
+			memset(cp, 0x00, sizeof(Mix_Chunk * CHUNKS));
+		}
+		p->mChunk = cp;
+		p->nChunks = CHUNKS;
+		p->nHeadChunk = 0;
+		p->nLastChunk = 0;
+	}
+	return p;
+}
 
 /*
- * Sound routine New Make
+ * サウンドバッファの概要を消す
  */
-enum {
-	SND_OPN = 0,
-	SND_WHG,
-	SND_THG,
-	SND_PSG,
-	SND_BEEP,
-	SND_CMT
-};
-static DWORD oldTime[SND_CMT+1]; // 前回の時間
+static void DetachBufferDesc(struct SndBufType *p)
+{
+	Mix_Chunk **cp;
+	if(p){
+		if(cp) {
+			free(cp);
+			cp = NULL;
+		}
+		free(p);
+		p = NULL;
+	}
+	return;
+}
+
 
 /*
- * Sound Drivers
+ * 実バッファのALLOCATE
  */
-static SndDrvBeep *DrvBeep;
-static SndDrvWav *DrvWav;
-static SndDrvOpn *DrvPSG;
-static SndDrvOpn *DrvOPN[3];
-static SndDrvCMT *DrvCMT;
+static void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32)
+{
+    int size;
 
+	if(p == NULL) return;
+	if(flag16) {
+		size = members * sizeof(Sint16);
+		p->pBuf = malloc(size);
+		if(p->pBuf) {
+			memset(p->pBuf, 0x00, size);
+		}
+	}
+	if(flag32) {
+		size = members * sizeof(Sint32);
+		p->pBuf32 = malloc(size);
+		if(p->pBuf32) {
+			memset(p->pBuf32, 0x00, size);
+		}
+	}
+
+}
+
+static void DetachBuffer(struct SndBufType *p)
+{
+	if(p == NULL) return;
+	if(p->pBuf) {
+		free(p->pBuf);
+		p->pBuf = NULL;
+	}
+	if(p->pBuf32) {
+		free(p->pBuf32);
+		p->pBuf32 = NULL;
+	}
+}
+
+/*
+ *  初期化
+ */
 void InitSnd(void)
 {
+
 	/*
 	 * ワークエリア初期化
 	 */
@@ -110,577 +248,206 @@ void InitSnd(void)
 	bBeepFlag = FALSE;      /* BEEP出力 */
 	bTapeFlag = TRUE;
 
-	iTotalVolume = SDL_MIX_MAXVOLUME;
-	snd_thread = NULL;
-	SndMutex = NULL;
-	SndCond = NULL;
-	bMode = FALSE;
-	bNowBank = 0;
-	dwPlayC = 0;
+	iTotalVolume = SDL_MIX_MAXVOLUME - 1;
+
 
 	bWavFlag = FALSE;
 	DrvBeep = NULL;
 	DrvOPN = NULL;
 	DrvPSG = NULL;
-	DrvWHG = NULL;
-	DrvTHG = NULL;
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = NULL;
 	bPlayEnable = FALSE;
+	bPlaying = FALSE;
 
-	snd_thread = NULL;
-	CmdRing = NULL;
-
-	uClipCount = 0;
-	//	bInitFlag = FALSE;
-	//    InitFDDSnd();
-	SDL_InitSubSystem(SDL_INIT_AUDIO);
 	/*
-	 * WAVよむ
+	 * ボリューム初期化
 	 */
+	nFMVol = 0;
+	nPSGVol = 0;
+	nBeepVol = 0;
+	nCMTVol = 0;
+	nWavVol = 0;
+	uChanSep = 0;
+	bBeepFlag = 0;      /* BEEP出力 */
+	/*
+	 * バッファ(概要)初期化
+	 */
+	pOpnBuf = InitBufferDesc();
+	pBeepBuf = InitBufferDesc();
+	pCMTBuf = InitBufferDesc();
+	pSndBuf = InitBufferDesc();
+	pCaptureBuf = InitBufferDesc();
+
+
 }
 
-
-void
-CleanFDDSnd(void)
+/*
+ *  クリーンアップ
+ */
+void CleanFDDSnd(void)
 {
 
 }
 
-void
-CleanSnd(void)
+
+void CleanSnd(void)
 {
-	/*
-	 * サウンド停止
-	 */
-	StopSnd();
-	/*
-	 * スレッド停止
-	 */
-	SDL_SemWait(applySem);
-	SDL_DestroySemaphore(applySem);
-	applySem = NULL;
-	/*
-	 * スレッド資源解放待ち
-	 */
-	/*
-	 * OPNを解放
-	 */
-	/*
-	 * サウンド作成バッファを解放
-	 */
-#if 0
-	if(snd_thread != NULL) {
-		SDL_WaitThread(snd_thread, &i);
-		snd_thread = NULL;
-	}
 
-//	Mix_CloseAudio();
-	if(SndCond != NULL) {
-		SDL_DestroyCond(SndCond);
-		SndCond = NULL;
-	}
-	if(SndMutex != NULL) {
-		SDL_DestroyMutex(SndMutex);
-		SndMutex = NULL;
-	}
-#endif
-#if 1				/* WAVキャプチャは後で作る */
-	/*
-	 * キャプチャ関連
-	 */
-	if (hWavCapture >= 0) {
-		CloseCaptureSnd();
-	}
-	//	if (pWavCapture) {
-	//		free(pWavCapture);
-	//		pWavCapture = NULL;
-	//	}
-	hWavCapture = -1;
-	bWavCapture = FALSE;
-#endif				/* */
-
-	if(DrvBeep) 	{
-		delete DrvBeep;
-		DrvBeep = NULL;
-	}
-
-	if(DrvWav) {
-			delete [] DrvWav;
-			DrvWav = NULL;
-	}
-	if(DrvOPN)		{
-		delete DrvOPN;
-		DrvOPN = NULL;
-	}
-	if(DrvWHG)		{
-		delete DrvWHG;
-		DrvWHG = NULL;
-	}
-	if(DrvTHG)		{
-		delete DrvTHG;
-		DrvTHG = NULL;
-	}
-	if(DrvCMT) 		{
-		delete DrvCMT;
-		DrvCMT = NULL;
-	}
-
-	bWavFlag = FALSE;
-	bPlayEnable = FALSE;
-	Mix_CloseAudio();
-
-//	DeleteCommandBuffer();
-	/*
-	 * uRateをクリア
-	 */
-	uRate = 0;
 }
 
-//static int RenderThread(void *arg);
 
 BOOL SelectSnd(void)
 {
-	int                 i,j;
-	char prefix[MAXPATHLEN];
-	int bytes;
-	int ch;
-
-	/*
-	 * 起動フラグ立てる
-	 */
-	bInitFlag = TRUE;
-
-	/*
-	 * パラメータを設定
-	 */
-	uRate = nSampleRate;
-	uTick = nSoundBuffer;
-	bMode = bFMHQmode;
-	nFMVol = nFMVolume;
-	nPSGVol = nPSGVolume;
-	nCMTVol = nCMTVolume;
-	nBeepVol = nBeepVolume;
-	nWavVol = nWaveVolume;
-	uChanSep = uChSeparation;
-	uStereo = nStereoOut %4;
-
-	if ((uStereo > 0) || bForceStereo) {
-		uChannels = 2;
-	} else {
-		uChannels = 1;
-	}
-	dwPlayC = 0;
-	bNowBank = 0;
-
-
-/*
- * rate==0なら、何もしない
- */
-	if (uRate == 0) {
-		return TRUE;
-	}
-
-	/*
-	 * SDL用変数領域の設定
-	 */
-
-	/*
-	 * サウンドバッファを作成(DSP用バッファの半分の時間で、DWORD)
-	 */
-    bytes = (uRate * sizeof(WORD) * uChannels * uTick) / 1000;
-    bytes += (DWORD) 7;
-    bytes &= (DWORD) 0xfffffff8;        /* 8バイト境界 */
-    uBufSize = bytes;
-
-	/*
-	 * サンプルカウンタ、サウンド時間をクリア
-	 */
-	uSample = 0;
-	dwSoundTotal = 0;
-	uClipCount = 0;
-
-	if(applySem == NULL) {
-		applySem = SDL_CreateSemaphore(1);
-		SDL_SemPost(applySem);
-	}
-	if (Mix_OpenAudio
-			(uRate, AUDIO_S16SYS, uChannels, uBufSize / (2 * sizeof(Sint16) * uChannels)) == -1) {
-		printf("Warning: Audio can't initialize!\n");
-		return FALSE;
-	}
-	Mix_AllocateChannels(CH_CHANNELS - 1);
-	/*
-	 *
-	 */
-	Mix_GroupChannels(CH_SND_BEEP, CH_SND_BEEP + 1, GROUP_SND_BEEP);
-	Mix_GroupChannels(CH_SND_CMT, CH_SND_CMT + 1, GROUP_SND_CMT);
-	Mix_GroupChannels(CH_SND_OPN, CH_SND_OPN + 1, GROUP_SND_OPN);
-	Mix_GroupChannels(CH_SND_WHG, CH_SND_WHG + 1, GROUP_SND_WHG);
-	Mix_GroupChannels(CH_SND_THG, CH_SND_THG + 1, GROUP_SND_THG);
-	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
-	Mix_Volume(-1,iTotalVolume);
-	DrvBeep= new SndDrvBeep;
-	if(DrvBeep) {
-			DrvBeep->Setup(uTick);
-	}
-	/*
-	 * OPNデバイス(標準 / WHG / THG)を作成
-	 */
-	for(ch = 0; ch <= SND_THG; ch ++) {
-		DrvOPN[ch]= new SndDrvOpn ;
-		if(DrvOPN[ch]) {
-				DrvOPN[ch]->SetOpNo(OPN_STD);
-				DrvOPN[ch]->Setup(uTick);
-				DrvOPN[ch]->Enable(TRUE);
-		}
-	}
-	/*
-	 * CMT
-	 */
-	DrvCMT = new SndDrvCMT;
-	if(DrvCMT) {
-		DrvCMT->Setup(uTick);
-		DrvCMT->Enable(TRUE);
-		DrvCMT->SetState(FALSE);
-	}
-	/*
-	 * 再セレクトに備え、レジスタ設定
-	 */
-	nScale[0] = 0;
-	nScale[1] = 0;
-	nScale[2] = 0;
-	opn_notify(0x27, 0);
-	whg_notify(0x27, 0);
-	thg_notify(0x27, 0);
-	if(DrvOPN[SND_OPN]) {
-		DrvOPN[SND_OPN]->SetReg(opn_reg[OPN_STD]);
-	}
-	if(DrvOPN[SND_WHG]) {
-		DrvOPN[SND_WHG]->SetReg(opn_reg[OPN_WHG]);
-	}
-	if(DrvOPN[SND_THG]) {
-		DrvOPN[SND_THG]->SetReg(opn_reg[OPN_THG]);
-	}
-
-	/*
-	 * キャプチャ関連
-	 */
-	if (!pWavCapture) {
-		pWavCapture = (WORD *) malloc(sizeof(WORD) * 0x8000);
-	}
-//	ASSERT(hWavCapture == -1);
-//	ASSERT(!bWavCapture);
-
-	/*
-	 * SDL用に仕様変更…出来ればInitSnd()でやったら後はOpen/Closeしたくないんだけれどー。
-	 */
-
-	bPlayEnable = TRUE;
-    DrvWav = new SndDrvWav[3];
-    if(!DrvWav) return FALSE;
-	for(i = 0; i < WAV_SLOT; i++) {
-		   strcpy(prefix, ModuleDir);
-	       strcat(prefix, WavName[i]);
-	       DrvWav[i].Setup(prefix);
-	}
-	/*
-	 * サウンドスタート
-	 */
-	PlaySnd();
-	/* ボリューム設定 */
-	SetSoundVolume();
-	return TRUE;
 }
 
+/*
+ *  適用
+ */
+void ApplySnd(void)
+{
+}
 
+/*
+ *  WAVキャプチャ開始
+ */
+void OpenCaptureSnd(char *fname)
+{
+
+}
+
+void CloseCaptureSnd(void)
+{
+
+}
+
+/*
+ * ボリューム設定: XM7/Win32 v3.4L30より
+ */
+void SetSoundVolume(void)
+{
+	int i;
+	int j;
+
+	SDL_SemWait(applySem);
+	/* FM音源/PSGボリューム設定 */
+	if(DrvOPN) {
+			DrvOPN->SetRenderVolume(OPN_STD, nFMVolume, nPSGVolume);
+			DrvOPN->SetRenderVolume(OPN_WHG, nFMVolume, nPSGVolume);
+			DrvOPN->SetRenderVolume(OPN_THG, nFMVolume, nPSGVolume);
+	}
+
+	/* BEEP音/CMT音/各種効果音ボリューム設定 */
+	if(DrvBeep) {
+			DrvBeep->SetRenderVolume(nBeepVolume);
+	}
+	if(DrvCMT) {
+			DrvCMT->SetRenderVolume(nCMTVolume);
+	}
+	if(DrvWav) {
+		for(i = 0; i < 3; i++) {
+				DrvWav[i].SetRenderVolume(nWaveVolume);
+			}
+	}
+	if(DrvOPN) DrvOPN->SetLRVolume();
+	SDL_SemPost(applySem);
+}
+
+/*
+ *	ボリューム設定2(設定ダイアログ用)
+ */
+void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
+		int nBeep, int nCMT, int nWav)
+{
+
+	uChSeparation = uSp;
+	uChanSep = uChSeparation;
+	nFMVolume = nFM;
+	nFMVol = nFMVolume;
+	nPSGVolume = nPSG;
+	nPSGVol = nPSGVolume;
+	nBeepVolume = nBeep;
+	nBeepVol = nBeepVolume;
+	nCMTVolume = nCMT;
+	nCMTVol = nCMTVolume;
+	nWaveVolume = nWav;
+	nWavVol = nWaveVolume;
+
+	/* 即時Apply出来るようにAssertではなくReturnする */
+	if(DrvOPN == NULL) {
+		return;
+	}
+	SetSoundVolume();
+}
+
+void SetTotalVolume(int vol)
+{
+
+}
 
 /*
  *  演奏開始
  */
 void PlaySnd()
 {
-	/*
-	 * サンプルカウンタ、サウンド時間をクリア
-	 */
-	uSample = 0;
-	dwSoundTotal = 0;
-	uClipCount = 0;
-	dwPlayC = 0;
-	uProcessCount = 0;
-//	iTotalVolume = SDL_MIX_MAXVOLUME - 1;	/* ここで音量設定する必要があるか? */
-	/*
-	 * 変換できたので読み込む
-	 */
+   return;
 }
 /*
  *  演奏停止
  */
 void StopSnd(void)
 {
+
 }
-
-
 
 /*
- *  OpnSet
+ * XXX Notify系関数…VM上の仮想デバイスに変化があったとき呼び出される
  */
-static void AddOpnSnd(int ch, BOOL bFill, BOOL bZero, DWORD time)
-{
-	DWORD diff;
-	int count;
-	int samples;
-
-	if(time == uOldOpnTime[ch]) return; // 時間経ってないので終わる
-	if(time > uOldTOpnime[ch]) {
-		diff = time - uOldOpnTime[ch];
-	} else {
-		diff = time + 0xffffffff - uOldOpnTime[ch] + 1;
-	}
-
-	if(!bFill) { // 途中までレンダリング
-		samples = (uRate / 25) * (int)diff;
-		if(samples < 40000) {
-			return;
-		}
-		samples = samples / 40000;
-	} else { // バッファ最大までレンダリング
-		samples = ((nSoundBuffer / 2) * uRate) / 1000 -  nOpnSamples[ch];
-	}
-	if(bZreo) {
-		DrvOpn[ch]->BZero(nOpnSamples[ch], samples, nRenderBank, TRUE);
-	} else {
-		DrvOpn[ch]->Render(nOpnSamples[ch], samples, nRenderBank, FALSE);
-	}
-	nOpnSamples[ch] += samples;
-	uOldOpnTime[ch] = time;
-}
-
-static void AddBeepSnd(BOOL bFill, BOOL bZero, DWORD time)
-{
-	DWORD diff;
-	int count;
-	int samples;
-
-	if(time == uOldBeepTime) return; // 時間経ってないので終わる
-	if(time > uOldBeepTime) {
-		diff = time - uOldBeepTime;
-	} else {
-		diff = time + 0xffffffff - uOldBeepTime + 1;
-	}
-
-	if(!bFill) { // 途中までレンダリング
-		samples = (uRate / 25) * (int)diff;
-		if(samples < 40000) {
-			return;
-		}
-		samples = samples / 40000;
-	} else { // バッファ最大までレンダリング
-		samples = ((nSoundBuffer / 2) * uRate) / 1000 -  nBeepSamples;
-	}
-	if(bZreo) {
-		DrvBeep->BZero(nOpnSamples[ch], samples, nRenderBank, TRUE);
-	} else {
-		DrvBeep->Render(nOpnSamples[ch], samples, nRenderBank, FALSE);
-	}
-	nBeepSamples += samples;
-}
-
-static void opn_notify_internal(int ch, BYTE reg, BYTE dat)
-{
-	BYTE r;
-	if((ch < 0) || (ch > SND_THG)) return;
-
-	/*
-	 * OPNがなければ、何もしない
-	 */
-	if (DrvOPN[ch] == NULL) {
-		return;
-	}
-	/*
-	 * プリスケーラを調整
-	 */
-	if (opn_scale[ch] != nScale[ch]) {
-		nScale[ch] = opn_scale[ch];
-		switch (opn_scale[ch]) {
-		case 2:
-			DrvOPN[ch]->SetReg(0x2f, 0);
-			break;
-		case 3:
-            DrvOPN[ch]->SetReg(0x2e, 0);
-			break;
-		case 6:
-            DrvOPN[ch]->SetReg(0x2d, 0);
-			break;
-		}
-	}
-
-	/*
-	 * Ch3動作モードチェック
-	 */
-	if (reg == 0x27) {
-		if (DrvOPN[ch]->GetCh3Mode() == dat) {
-			return;
-		}
-		DrvOPN[ch]->SetCh3Mode(dat);
-	}
-
-	/*
-	 * 0xffレジスタはチェック
-	 */
-	if (reg == 0xff) {
-		/*
-		 * スレッド間の逆方向チェックやるか？
-		 */
-		r = DrvOPN[ch]->GetReg(0x27);
-		if ((r & 0xc0) != 0x80) {
-			return;
-		}
-	}
-
-	/*
-	 * レジスタ変更直前までサウンド合成
-	 */
-	 AddOpnSnd(ch, FALSE, FALSE, dwSoundTotal);
-
-	/*
-	 * 出力
-	 */
-    DrvOPN[ch]->SetReg((uint8) reg, (uint8) dat);
-}
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void opn_notify(BYTE reg, BYTE dat)
 {
-	opn_notify_internal(SND_OPN, reg, dat);
 }
-
-
 
 void thg_notify(BYTE reg, BYTE dat)
 {
-	opn_notify_internal(SND_THG, reg, dat);
+
 }
 
 void whg_notify(BYTE reg, BYTE dat)
 {
-	opn_notify_internal(SND_WHG, reg, dat);
+
 }
 
-/*
- * SFX出力
- */
+void beep_notify(BYTE reg, BYTE dat)
+{
+
+}
+
 void wav_notify(BYTE no)
 {
-	int    i;
-	int    j;
-   int ch;
 
-   if(applySem == NULL) return;
-   SDL_SemWait(applySem);
-
-	if(no == SOUND_STOP){
-		Mix_HaltGroup(GROUP_SND_SFX);
-	} else {
-		if(DrvWav != NULL) {
-		  ch = CH_WAV_RELAY_ON + no;
-			DrvWav[no].Play(ch, 0);
-		}
-	}
-	SDL_SemPost(applySem);
 }
 
 void beep_notify(void)
 {
 
-	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
-		return;
-	}
-	 AddBeepSnd(FALSE, FALSE, dwSoundTotal);
-
-	if (beep_flag && speaker_flag) {
-		bBeepFlag = TRUE;
-	} else {
-		bBeepFlag = FALSE;
-	}
-	if(DrvBeep)  DrvBeep->Enable(bBeepFlag);
 }
 
-/*
- * CMT Notify:
- *
- */
 void tape_notify(BOOL flag)
 {
 
-	if (bTapeFlag == flag) {
-		return;
-	}
-	DrvCMT->SetState((BOOL)bTapeFlag);
-	if(!DrvCMT) return;
-	DrvCMT->Enable(bTapeMON);
-	AddCmtSnd(FALSE, FALSE, dwSoundTotal);
-	bTapeFlag = flag;
 }
 
 #ifdef __cplusplus
 }
 #endif
 
-
-/*
- * サウンドエミュレーション、本体（と言うかなんというか）
- */
-void        ProcessSnd(BOOL bZero)
+void ProcessSnd(BOOL bZero)
 {
 
-}
-
-/*
- *  レベル取得
- */
-int GetLevelSnd(int ch)
-{
-	ASSERT((ch >= 0) && (ch < 18));
-
-	/*
-	 * OPN,WHGの区別
-	 */
-	if (ch < 6) {
-		if(DrvOPN) {
-			return DrvOPN->GetLevelSnd(ch);
-		} else {
-			return 0;
-		}
-	} else if ((ch >= 6) && (ch < 12)) {
-		if (!whg_enable || !whg_use) {
-			return 0;
-		}
-
-		if(DrvWHG) {
-			return DrvWHG->GetLevelSnd(ch-6);
-		} else {
-			return 0;
-		}
-		/*
-		 * WHGの場合、実際に使われていなければ0
-		 */
-	} else   if ((ch >= 12) && (ch < 18)) {
-		/*
-		 * THGの場合、実際に使われていなければ0
-		 */
-		if ((!thg_enable || !thg_use) && (fm7_ver != 1)) {
-			return 0;
-		}
-		if(DrvTHG) {
-			return DrvTHG->GetLevelSnd(ch-6);
-		} else {
-			return 0;
-		}
-	}
 }
 
