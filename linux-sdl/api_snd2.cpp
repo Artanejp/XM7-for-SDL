@@ -12,6 +12,7 @@
 #ifdef __FreeBSD__
 #include <machine/soundcard.h>
 #else				/* */
+
 #include <linux/soundcard.h>
 #endif				/* */
 #include <stdlib.h>
@@ -72,7 +73,7 @@ UINT                    uStereoOut;     /* 出力モード */
 /*
  * 定数など
  */
-#define CHUNKS 8
+#define CHUNKS 2
 #define WAV_CHANNELS 5
 
 enum {
@@ -118,7 +119,9 @@ static int              nBeepVol;
 static int              nCMTVol;
 static int              nWavVol;
 static UINT             uChanSep;
+static UINT             uStereo;     /* 出力モード */
 static BOOL             bBeepFlag;      /* BEEP出力 */
+static BOOL					bMode; /* HQモード */
 static struct SndBufType *pOpnBuf;
 static struct SndBufType *pBeepBuf;
 static struct SndBufType *pCMTBuf;
@@ -131,7 +134,7 @@ static struct SndBufType *pSndBuf;
 static int           nScale[3];      /* OPNプリスケーラ */
 
 static BOOL bSndEnable;
-static DWORD dwCount; // ms単位のカウンター
+static DWORD dwSndCount;
 static DWORD uTick;   // バッファサイズ(時間)
 static DWORD uRate;   // サンプリングレート
 static DWORD uBufSize; // バッファサイズ(バイト数)
@@ -169,33 +172,48 @@ static struct SndBufType *InitBufferDesc(void)
 {
 	struct SndBufType *p;
 	void *cp;
+	int i;
 
 	p = (struct SndBufType *)malloc(sizeof(struct SndBufType));
 	if(p){
 		memset(p, 0x00, sizeof(struct SndBufType));
-		cp = malloc(sizeof(Mix_Chunk) * CHUNKS);
+		cp = malloc(sizeof(Mix_Chunk *) * CHUNKS);
 		if(cp) {
-			memset(cp, 0x00, sizeof(Mix_Chunk) * CHUNKS);
+			memset(cp, 0x00, sizeof(Mix_Chunk *) * CHUNKS);
 		}
 		p->mChunk = (Mix_Chunk **)cp;
+		for(i = 0; i < CHUNKS ; i++) {
+			p->mChunk[i] = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
+			if(p->mChunk[i]) {
+				memset((void *)p->mChunk[i], 0x00, sizeof(Mix_Chunk));
+			}
+		}
 		p->nChunks = CHUNKS;
+		p->nChunkNo = 0;
 		p->nHeadChunk = 0;
 		p->nLastChunk = 0;
 	}
 	return p;
 }
 
+static void DetachBuffer(struct SndBufType *p);
+
 /*
  * サウンドバッファの概要を消す
  */
 static void DetachBufferDesc(struct SndBufType *p)
 {
-	Mix_Chunk **cp;
+	int i;
+
 	if(p){
-		if(cp) {
-			free(cp);
-			cp = NULL;
+		DetachBuffer(p);
+		for(i = 0; i < p->nChunks ; i++) {
+			if(p->mChunk[i]) {
+				free(p->mChunk[i]);
+				p->mChunk[i] = NULL;
+			}
 		}
+		p->nChunks = 0;
 		free(p);
 		p = NULL;
 	}
@@ -209,22 +227,27 @@ static void DetachBufferDesc(struct SndBufType *p)
 static void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32)
 {
     int size;
+    int channels = 2;
 
 	if(p == NULL) return;
 	if(flag16) {
-		size = members * sizeof(Sint16);
+		size = members * sizeof(Sint16) * channels;
 		p->pBuf = (Sint16 *)malloc(size);
 		if(p->pBuf) {
 			memset(p->pBuf, 0x00, size);
+			p->nSize = members;
 		}
 	}
 	if(flag32) {
-		size = members * sizeof(Sint32);
+		size = members * sizeof(Sint32) * channels;
 		p->pBuf32 = (Sint32 *)malloc(size);
 		if(p->pBuf32) {
 			memset(p->pBuf32, 0x00, size);
+			p->nSize = members;
 		}
 	}
+	p->nReadPTR = 0;
+	p->nWritePTR = 0;
 
 }
 
@@ -261,6 +284,7 @@ void InitSnd(void)
 	uChanSep = uChSeparation;
 	bBeepFlag = FALSE;      /* BEEP出力 */
 	bTapeFlag = TRUE;
+	bMode = FALSE;
 
 	iTotalVolume = SDL_MIX_MAXVOLUME - 1;
 
@@ -288,7 +312,7 @@ void InitSnd(void)
 	nWavVol = 0;
 	uChanSep = 0;
 	iTotalVolume = 127;
-	bBeepFlag = 0;      /* BEEP出力 */
+	bBeepFlag = FALSE;      /* BEEP出力 */
 
 	/*
 	 * バッファ(概要)初期化
@@ -312,9 +336,16 @@ void CleanFDDSnd(void)
 void CleanSnd(void)
 {
 	DetachBufferDesc(pOpnBuf);
+	pOpnBuf = NULL;
+
 	DetachBufferDesc(pBeepBuf);
+	pBeepBuf = NULL;
+
 	DetachBufferDesc(pCMTBuf);
+	pCMTBuf = NULL;
+
 	DetachBufferDesc(pCaptureBuf);
+	pCaptureBuf = NULL;
 //	DetachBufferDesc(pSndBuf);
 
 	/*
@@ -389,30 +420,44 @@ BOOL SelectSnd(void)
 
 	int members;
 	int wavlength;
+
+	/*
+	 * パラメータを設定
+	 */
+	uRate = nSampleRate;
+	uTick = nSoundBuffer;
+	bMode = bFMHQmode;
+	nFMVol = nFMVolume;
+	nPSGVol = nPSGVolume;
+	nCMTVol = nCMTVolume;
+	nBeepVol = nBeepVolume;
+	nWavVol = nWaveVolume;
+	uChanSep = uChSeparation;
+	uStereo = nStereoOut %4;
+
 /*
  * バッファの初期化
  */
-	dwCount = 0;
-	uTick = nSoundBuffer;
-	uRate = nSampleRate;
+	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 6) < 0) {
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
 	Mix_AllocateChannels(CH_CHANNELS);
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
-	Mix_Volume(-1,iTotalVolume);
+//	Mix_Volume(-1,iTotalVolume);
+	Mix_Volume(-1,127);
 
 
     bSndEnable = TRUE;
 	uTick = nSoundBuffer;
-	members = (nSampleRate * nSoundBuffer) / 1000 * 2;
+	members = (nSampleRate * nSoundBuffer) / 1000;
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
 	SetupBuffer(pOpnBuf, members, TRUE, TRUE);
 
-	wavlength = (nSampleRate * 2000) / 1000 * 2; // キャプチャバッファは二秒
+	wavlength = (nSampleRate * 2000) / 1000 ; // キャプチャバッファは二秒
 	SetupBuffer(pCaptureBuf, members, TRUE, FALSE);
 
 	/*
@@ -425,8 +470,16 @@ BOOL SelectSnd(void)
 
 
 	if(DrvOPN) {
+		DrvOPN->SetRate(uRate);
 		DrvOPN->Setup(uTick);
+		DrvOPN->Enable(TRUE);
 	}
+	if(DrvOPN) {
+		DrvBeep->SetRate(uRate);
+		DrvBeep->Setup(uTick);
+		DrvBeep->Enable(FALSE);
+	}
+
 }
 
 /*
@@ -434,10 +487,35 @@ BOOL SelectSnd(void)
  */
 void ApplySnd(void)
 {
+	/*
+	 * パラメータ一致チェック
+	 */
 
-	CloseSnd();
+	if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
+			(bMode == bFMHQmode) && (uStereo == nStereoOut) &&
+			(nFMVol == nFMVolume) && (nPSGVol == nPSGVolume) &&
+			(nBeepVol == nBeepVolume) && (nCMTVol == nCMTVolume) &&
+			(nWavVol == nWaveVolume) && (uChanSep == uChSeparation)) {
+		return;
+	}
+	/* 音声プロパティとOPNが衝突しないようにするためのセマフォ初期化 */
+	    SDL_SemWait(applySem);
+	/*
+	 * 既に準備ができているなら、解放
+	 */
+	if (uRate != 0) {
+	   CloseSnd();
+	}
+
+	/*
+	 * 再セレクト
+	 */
 	SelectSnd();
-
+    //    SDL_SemPost(applySem);
+	// BEEPについて、SelectSnd()し直しても音声継続するようにする
+	bBeepFlag = !bBeepFlag;
+	beep_notify();
+	tape_notify(!bTapeFlag);
 }
 
 /*
@@ -540,36 +618,37 @@ void StopSnd(void)
 static DWORD RenderOpnSub(DWORD time, int samples, BOOL bZero)
 {
 	struct SndBufType *p = pOpnBuf;
-	DWORD delta_us;
-	DWORD us;
-	int i = samples;
+	int j;
 
 	if(samples <= 0) return 0;
-	delta_us = (i * 1000000) / nSampleRate;
-	us = time + delta_us;
+	j = samples;
 
-	if(p->nSize < (samples + p->nWritePTR)){
+	if((j + p->nWritePTR) > p->nSize){
 		// バッファオーバフローの時は分割する
-		int j;
-		j = samples + p->nWritePTR - p->nSize;
+		int k;
+
+		k = p->nSize - p->nWritePTR;
+		if(k > 0) {
+			DrvOPN->Render32(p->pBuf32, p->nWritePTR, k,  TRUE, bZero);
+			DrvOPN->Copy32(p->pBuf32, p->pBuf, p->nWritePTR, k);
+			j = j - k;
+		}
+		p->nWritePTR = 0;
+		if(j > 0) {
+			DrvOPN->Render32(p->pBuf32, 0, j, TRUE, bZero);
+			DrvOPN->Copy32(p->pBuf32, p->pBuf,0,  j);
+			p->nWritePTR = j;
+		}
+	} else {
 		if(j > 0) {
 			DrvOPN->Render32(p->pBuf32, p->nWritePTR, j,  TRUE, bZero);
 			DrvOPN->Copy32(p->pBuf32, p->pBuf, p->nWritePTR, j);
-			p->nWritePTR = 0;
-			j = samples -j;
-			if(j > 0) {
-				DrvOPN->Render32(p->pBuf32, 0, j, TRUE, bZero);
-				DrvOPN->Copy32(p->pBuf32, p->pBuf,0,  j);
-				p->nWritePTR = j;
-			}
+			p->nWritePTR += j;
+			if(p->nWritePTR > p->nSize) p->nWritePTR -= p->nSize;
 		}
-	} else {
-		samples = DrvOPN->Render32(p->pBuf32, p->nWritePTR, samples,  TRUE, bZero);
-		DrvOPN->Copy32(p->pBuf32, p->pBuf, p->nWritePTR, samples);
-		p->nWritePTR += samples;
 	}
-	p->nLastTime = us;
-	return us;
+	p->nLastTime = time;
+	return j;
 }
 
 /*
@@ -577,44 +656,89 @@ static DWORD RenderOpnSub(DWORD time, int samples, BOOL bZero)
  * TRUE : 埋めた
  * FALSE : 埋める必要がなかった
  */
-static BOOL FlushOpnSub(DWORD time, BOOL bZero)
+static BOOL FlushOpnSub(DWORD time,  BOOL bZero)
 {
 	struct SndBufType *p;
-	uint64_t time2;
-	uint64_t lasttime;
+	int i;
+	int chunksize = ((uTick * uRate) / 1000) / CHUNKS;
 
-	lasttime = (uint64_t)p->nLastTime;
-	time2 = (uint64_t) time;
 	p = pOpnBuf;
 
+	if(chunksize<0) return FALSE;
+	i = chunksize - (p->nWritePTR % chunksize);
 	/*
 	 * オーバーフロー対策込
 	 */
-	if(time2 < lasttime) {
-		uint64_t diff = lasttime - time2;
-		if(diff > ((uint64_t)nSampleRate * 1000)) { // オーバーフロー
-			int samples = (int)(time2 + (uint64_t)0x100000000 - lasttime);
-			if(samples<0) return FALSE;
-			RenderOpnSub(time, samples, bZero);
-		}
-		// 既に埋まってる
-		return FALSE;
-	} else {
-		uint64_t diff = time2 - lasttime;
-		int samples = (int)((diff * 1000) / (uint64_t)uRate);
-
-		RenderOpnSub(time, samples, bZero);
-		return TRUE;
-	}
+	RenderOpnSub(time,  i, bZero);
+	return TRUE;
 }
+
+
+static DWORD RenderBeepSub(DWORD time, int samples, BOOL bZero)
+{
+	struct SndBufType *p = pBeepBuf;
+	int j;
+
+	if(samples <= 0) return 0;
+	j = samples;
+
+	if((j + p->nWritePTR) > p->nSize){
+		// バッファオーバフローの時は分割する
+		int k;
+
+		k = p->nSize - p->nWritePTR;
+		if(k > 0) {
+			DrvBeep->Render32(p->pBuf, p->nWritePTR, k,  TRUE, bZero);
+			j = j - k;
+		}
+		p->nWritePTR = 0;
+		if(j > 0) {
+			DrvBeep->Render32(p->pBuf, 0, j, TRUE, bZero);
+			p->nWritePTR = j;
+		}
+	} else {
+		if(j > 0) {
+			DrvBeep->Render32(p->pBuf, p->nWritePTR, j,  TRUE, bZero);
+			p->nWritePTR += j;
+			if(p->nWritePTR > p->nSize) p->nWritePTR -= p->nSize;
+		}
+	}
+	p->nLastTime = time;
+	return j;
+}
+
+/*
+ * バッファを一定時間の所まで埋める
+ * TRUE : 埋めた
+ * FALSE : 埋める必要がなかった
+ */
+static BOOL FlushBeepSub(DWORD time,  BOOL bZero)
+{
+	struct SndBufType *p;
+	int i;
+	int chunksize = ((uTick * uRate) / 1000) / CHUNKS;
+
+	p = pOpnBuf;
+
+	if(chunksize<0) return FALSE;
+	i = chunksize - (p->nWritePTR % chunksize);
+	/*
+	 * オーバーフロー対策込
+	 */
+	RenderBeepSub(time,  i, bZero);
+	return TRUE;
+}
+
 
 /*
  * ChunkをSetする
  */
 static void SetChunkSub(Mix_Chunk *p, Sint16 *buf, Uint32 len, int volume)
 {
+	int channels = 2;
+
 	p->abuf = (Uint8 *)buf;
-	p->alen = len;
+	p->alen = len * sizeof(Sint16) * channels;
 	p->allocated = 1;
 	p->volume = (Uint8)volume;
 }
@@ -637,11 +761,11 @@ static int CalcSamples(DWORD time)
 	last = (uint64_t) pOpnBuf->nLastTime;
 
 	if(time2 < last) {
-		diff = time2 + 0x100000000 - last;
+		diff = 0x100000000 + time2 - last;
 	} else {
 		diff = time2 - last;
 	}
-	samples = (int)((diff * 1000000) / (uint64_t)uRate);
+	samples = (int)((diff * uRate) / 1000000);
 
 	if(samples <= 0) samples = 0;
 	return samples;
@@ -854,6 +978,22 @@ void wav_notify(BYTE no)
 
 void beep_notify(void)
 {
+	DWORD time = dwSoundTotal;
+	int samples = CalcSamples(time);
+	BYTE r;
+
+	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
+		return;
+	}
+//        AddSnd(FALSE, FALSE);
+   	 RenderBeepSub(time, samples, FALSE);
+
+	if (beep_flag && speaker_flag) {
+		bBeepFlag = TRUE;
+	} else {
+		bBeepFlag = FALSE;
+	}
+	if(DrvBeep)  DrvBeep->Enable(bBeepFlag);
 
 }
 
@@ -866,44 +1006,48 @@ void tape_notify(BOOL flag)
 }
 #endif
 
-static int SetChunk(struct SndBufType *p, int ch)
+static int SetChunk(struct SndBufType *p, int samples, int ch)
 {
-	DWORD samples;
 	int i = p->nChunkNo;
+	int j;
+	int k;
+	int channels = 2;
 
-	if(p->nReadPTR > p->nWritePTR) { // オーバフローしてる
-		samples = p->nSize - p->nReadPTR;
-		SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * 2 * sizeof(Sint16)], samples, 127);
-		Mix_PlayChannel(ch, p->mChunk[i], 0);
-		i++;
-		p->nReadPTR += samples;
-		if(i > p->nChunks) {
-			i = 0;
-			p->nReadPTR = 0;
-		}
-		/*
-		 *
-		 */
-		samples = p->nWritePTR;
-		SetChunkSub(p->mChunk[i], p->pBuf, samples, 127);
-		Mix_PlayChannel(ch, p->mChunk[i], 0);
-		p->nReadPTR += samples;
-		i++;
-		if(i > p->nChunks) {
-			i = 0;
+	if(p->nReadPTR > p->nWritePTR) {
+		j = p->nSize - p->nReadPTR;
+		if((p->nReadPTR + samples) > p->nSize) {
+			k = samples -j;
+		} else {
+			k = p->nWritePTR;
 		}
 	} else {
-		samples = p->nWritePTR - p->nReadPTR;
-		if(samples == 0) return -1;
-		SetChunkSub(p->mChunk[i], p->pBuf, samples, 127);
-		Mix_PlayChannel(ch, p->mChunk[i], 0);
-		p->nReadPTR += samples;
-		i++;
-		if(i > p->nChunks) {
-			i = 0;
-			p->nReadPTR -= p->nSize;
-		}
+		j = p->nWritePTR - p->nReadPTR;
+		k = 0;
 	}
+
+#if 0
+	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR], j, 127);
+	Mix_PlayChannel(ch , p->mChunk[i], 0);
+	p->nReadPTR += j;
+	if(p->nReadPTR >= p->nSize) p->nReadPTR = 0;
+	i++;
+	if(i >= p->nChunks) i = 0;
+	if(k > 0) {
+		SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR], k, 127);
+		Mix_PlayChannel(ch , p->mChunk[i], 0);
+		p->nReadPTR += k;
+		i++;
+		if(i >= p->nChunks) i = 0;
+	}
+	j += k;
+#else
+	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR], samples, 127);
+	Mix_PlayChannel(ch , p->mChunk[i], 0);
+	p->nReadPTR += samples;
+	if(p->nReadPTR > p->nSize) p->nReadPTR -= p->nSize;
+	i++;
+	if(i >= p->nChunks) i = 0;
+#endif
 	p->nChunkNo = i;
 	return i;
 }
@@ -914,14 +1058,17 @@ static int SetChunk(struct SndBufType *p, int ch)
 
 void ProcessSnd(BOOL bZero)
 {
-	DWORD time;
+	DWORD time = dwSoundTotal;
+	int samples = CalcSamples(time);
+	int chunksize;
 	BOOL bWrite = FALSE;
-	time = dwSoundTotal;
 
-	dwCount++;
-	if(dwCount >= (uTick / CHUNKS)) {
+	chunksize = ((uTick * uRate) / 1000) / CHUNKS;
+
+	dwSndCount++;
+	if(dwSndCount >= (uTick / CHUNKS)) {
 		bWrite = TRUE;
-		dwCount = 0;
+		dwSndCount = 0;
 	}
 
 	if (!bWrite) {
@@ -941,7 +1088,8 @@ void ProcessSnd(BOOL bZero)
 		    * どちらかがONなら、バッファ充填
 		    */
 		   if (bWrite) {
-			   FlushOpnSub(time, bZero);
+			   RenderOpnSub(time, samples, bZero);
+			   RenderBeepSub(time, samples, bZero);
 		   }
 		   return;
 	  }
@@ -949,12 +1097,14 @@ void ProcessSnd(BOOL bZero)
 	if(bWrite) {
 		// フラッシュする
 		FlushOpnSub(time, bZero);
+		FlushBeepSub(time, bZero);
 
 		/*
 		 * 演奏本体
 		 */
-		SetChunk(pOpnBuf , CH_SND_OPN);
-		dwCount = 0;
+		SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
+		SetChunk(pBeepBuf , chunksize, CH_SND_BEEP);
+		dwSndCount = 0;
 		dwSoundTotal = 0;
 	}
 }

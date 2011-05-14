@@ -517,7 +517,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 	q = (Uint32 *)pBuf32;
 	q = &q[start * channels];
 	if((start <= 0) && (clear!=TRUE)){
-		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000 - sizeof(Sint32));
+		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000);
 	}
 
 	ss = sSamples + start;
@@ -602,6 +602,11 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 
 	q = (WORD *)dst;
 	q = &q[ofset * channels];
+	if(ofset <= 0){
+		memset(dst, 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000);
+	}
+
+	memset(q, 0x00 , samples * channels * sizeof(Sint16));
 	CopySoundBufferGeneric(p, q, (int)(samples * channels));
 
 }

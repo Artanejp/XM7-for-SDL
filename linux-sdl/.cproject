@@ -80,6 +80,7 @@
 								<option id="gnu.cpp.link.option.flags.1168899226" name="リンカー・フラグ" superClass="gnu.cpp.link.option.flags" value="-pthread" valueType="string"/>
 								<option id="gnu.cpp.link.option.libs.866274557" name="ライブラリー (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="xm7-ui-agar"/>
+									<listOptionValue builtIn="false" value="emugrph"/>
 									<listOptionValue builtIn="false" value="ag_core"/>
 									<listOptionValue builtIn="false" value="jpeg"/>
 									<listOptionValue builtIn="false" value="ag_dev"/>
@@ -102,12 +103,11 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.405175491" name="ライブラリー検索パス (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/xm7-ui-agar/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 									<listOptionValue builtIn="false" value="/usr/lib"/>
 								</option>
-								<option id="gnu.cpp.link.option.userobjs.1931205500" name="その他のオブジェクト" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libemugrph/Debug/liblibemugrph.a}&quot;"/>
-								</option>
+								<option id="gnu.cpp.link.option.userobjs.1931205500" name="その他のオブジェクト" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.963292490" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -130,9 +130,6 @@
 						</tool>
 					</fileInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.478411111" name="sdl_kbd.h" rcbsApplicability="disable" resourcePath="sdl_kbd.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.961384292.1236818105" name="api_snd2.cpp" rcbsApplicability="disable" resourcePath="api_snd2.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.748947827.16423231">
-						<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} -c ${INPUTS}" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.748947827.16423231" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.748947827"/>
-					</fileInfo>
 					<sourceEntries>
 						<entry excluding="api_snd.cpp|fmgen|fmgen/file.h|fmgen/file.cpp|fmgen/opm.h|fmgen/opm.cpp|sdl_bar.c|sdl_cmd.c|sdl_cfg.c|sdl_main.c|sdl_sch.c|GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|sdl_snd_mt.cpp|sdl_kbd.h|sdl_kbd.cpp|gtk_kbd.cpp|cpu_x86.asm|gtk_bar.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -234,7 +231,7 @@
 						<parser enabled="true"/>
 					</scannerInfoProvider>
 				</profile>
-				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.2111862290;cdt.managedbuild.config.gnu.exe.release.2111862290.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.1059588435;cdt.managedbuild.tool.gnu.c.compiler.input.946714281">
+				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.961384292;cdt.managedbuild.config.gnu.exe.debug.961384292.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191;cdt.managedbuild.tool.gnu.c.compiler.input.1478266708">
 					<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 					<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 						<buildOutputProvider>
@@ -317,7 +314,7 @@
 						</scannerInfoProvider>
 					</profile>
 				</scannerConfigBuildInfo>
-				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.961384292;cdt.managedbuild.config.gnu.exe.debug.961384292.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191;cdt.managedbuild.tool.gnu.c.compiler.input.1478266708">
+				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.2111862290;cdt.managedbuild.config.gnu.exe.release.2111862290.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.1059588435;cdt.managedbuild.tool.gnu.c.compiler.input.946714281">
 					<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 					<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 						<buildOutputProvider>
@@ -769,9 +766,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.2111862290.1094317612" name="api_snd2.cpp" rcbsApplicability="disable" resourcePath="api_snd2.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1374938458.570882775">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1374938458.570882775" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1374938458"/>
-					</fileInfo>
 					<sourceEntries>
 						<entry excluding="api_snd.cpp|fmgen|fmgen/file.h|fmgen/file.cpp|fmgen/opm.h|fmgen/opm.cpp|sdl_bar.c|sdl_cmd.c|sdl_cfg.c|sdl_main.c|sdl_sch.c|GtkKbdInterface.h|GtkKbdInterface.cpp|gtk_toolbox.h|gtk_toolbox.c|gtk_propkeyboard.h|gtk_propkeyboard.c|gtk_prop2.c|gtk_main.c|gtk_cfgdlg.c|sdl_gtkdlg.h|sdl_gtkdlg.c|api_draw_640.cpp|api_draw_4096.cpp|sdl_draw.c|EmuGrphScale4x4i.h|EmuGrphScale4x4i.cpp|EmuGrphScale4x4.h|EmuGrphScale4x4.cpp|EmuGrphScale2x4i.h|EmuGrphScale2x4i.cpp|EmuGrphScale2x4.h|EmuGrphScale2x4.cpp|EmuGrphScale2x2i.h|EmuGrphScale2x2i.cpp|EmuGrphScale2x2.h|EmuGrphScale2x2.cpp|EmuGrphScale1x2i.h|EmuGrphScale1x2i.cpp|EmuGrphScale1x2.h|EmuGrphScale1x2.cpp|EmuGrphScale1x1.h|EmuGrphScale1x1.cpp|EmuGrphLib.h|EmuGrphLib.cpp|EmuGrph4096c.h|EmuGrph4096c.cpp|EmuGrph400l.h|EmuGrph400l.cpp|EmuGrph256kc.h|EmuGrph256kc.cpp|EmuGLUtils.h|EmuGLUtils.cpp|sdl_draw_400l.c|sdl_draw_640.c|sdl_draw_4096.c|sdl_draw_256k.c|gtk_prop.c|cpu_x86.asm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -878,7 +872,7 @@
 						<parser enabled="true"/>
 					</scannerInfoProvider>
 				</profile>
-				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.2111862290;cdt.managedbuild.config.gnu.exe.release.2111862290.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.1059588435;cdt.managedbuild.tool.gnu.c.compiler.input.946714281">
+				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.961384292;cdt.managedbuild.config.gnu.exe.debug.961384292.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191;cdt.managedbuild.tool.gnu.c.compiler.input.1478266708">
 					<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 					<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 						<buildOutputProvider>
@@ -961,7 +955,7 @@
 						</scannerInfoProvider>
 					</profile>
 				</scannerConfigBuildInfo>
-				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.961384292;cdt.managedbuild.config.gnu.exe.debug.961384292.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.832396191;cdt.managedbuild.tool.gnu.c.compiler.input.1478266708">
+				<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.2111862290;cdt.managedbuild.config.gnu.exe.release.2111862290.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.1059588435;cdt.managedbuild.tool.gnu.c.compiler.input.946714281">
 					<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 					<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 						<buildOutputProvider>

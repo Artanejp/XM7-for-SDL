@@ -164,3 +164,88 @@ int SndDrvBeep::Render(int start, int uSamples, int slot, BOOL clear)
 	return ss2;
 }
 
+int SndDrvBeep::Render32(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+	int i;
+	int s;
+	int ss2;
+
+	Sint16          *wbuf;
+	int sf;
+	Sint16 level;
+
+	s = (ms * srate)/1000;
+
+	if(pBuf == NULL) return 0;
+	if(start > s) return 0; /* 開始点にデータなし */
+	if((sSamples + start) >s) {
+		ss2 = s - start;
+	} else {
+		ss2 = sSamples;
+	}
+	if(ss2 <= 0) return 0;
+	if(RenderSem == NULL) return 0;
+	SDL_SemWait(RenderSem);
+	wbuf = pBuf;
+	wbuf = &wbuf[start * channels];
+
+    level = nLevel >>2;
+    if((start <= 0) && (clear != TRUE)) {
+        	memset(pBuf, 0x00, s * channels * sizeof(Sint16));
+     }
+	if(clear || (!enable))  memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
+	if(enable) {
+		if(bZero) {
+			memset(wbuf, 0, sizeof(Sint16) * ss2 * channels);
+			SDL_SemPost(RenderSem);
+			return ss2;
+		}
+
+		/*
+		 * ここにレンダリング関数ハンドリング
+		 */
+
+		/*
+		 * サンプル書き込み
+		 */
+		for (i = 0; i < ss2; i++) {
+			/*
+			 * 矩形波を作成
+			 */
+			sf = (int) (counter * nBeepFreq * 2);
+			sf /= (int) srate;
+			/*
+			 * 偶・奇に応じてサンプル書き込み
+			 */
+			if (channels == 1) {
+				if (sf & 1) {
+					*wbuf++ = level;
+				}
+				else {
+					*wbuf++ = -level;
+				}
+			}
+
+			else {
+				if (sf & 1) {
+					*wbuf++ = level;
+					*wbuf++ = level;
+				} else {
+					*wbuf++ = -level;
+					*wbuf++ = -level;
+				}
+			}
+
+			/*
+			 * カウンタアップ
+			 */
+			counter+=1;
+			if (counter >= srate) {
+				counter = 0;
+			}
+		}
+	}
+	SDL_SemPost(RenderSem);
+	return ss2;
+}
+

@@ -6,7 +6,6 @@
 		<project>libemugrph</project>
 		<project>xm7-sdl</project>
 		<project>xm7-ui-agar</project>
-		<project>EmuGRPHTest</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
