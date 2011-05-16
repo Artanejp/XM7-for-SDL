@@ -99,319 +99,319 @@ LIBS_DEBUG += ../xm7-ui-agar/Debug/libxm7-ui-agar.a
 all:	xm7 xm7.debug
 
 xm7: ${OBJS_RELEASE} ${LIBS_RELEASE}
-	g++ ${LDFLAGS} -o xm7 $^ ${LIBS}
+	$(CXX) ${LDFLAGS} -o xm7 $^ ${LIBS}
 	strip xm7
 
 xm7.debug: ${OBJS_DEBUG} ${LIBS_DEBUG}
-	g++ -g ${LDFLAGS} -o xm7.debug $^ ${LIBS}
+	$(CXX) -g ${LDFLAGS} -o xm7.debug $^ ${LIBS}
 
 
 Release/aluline.o: aluline.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/apalet.o: apalet.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/disasm.o: disasm.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/display.o: display.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/dmac.o: dmac.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/fdc.o: fdc.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/jcard.o: jcard.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/jsubsys.o: jsubsys.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/kanji.o: kanji.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/keyboard.o: keyboard.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/maincpu.o: maincpu.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/mainetc.o: mainetc.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/mainmem.o: mainmem.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/midi.o: midi.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/mmr.o: mmr.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/mouse.o: mouse.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/multipag.o: multipag.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/opn.o: opn.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/rtc.o: rtc.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/schedule.o: schedule.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/subcpu.o: subcpu.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/subctrl.o: subctrl.c 
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/submem.o: submem.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/system.o: system.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/tapelp.o: tapelp.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/tools.o: tools.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/ttlpalet.o: ttlpalet.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/vm_sub.o: vm_sub.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/m6809.o: m6809.c m6809ops.h m6809tbl.h
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/sdl_inifile.o: sdl_inifile.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/sdl_file.o: sdl_file.c
-	gcc ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 
 Release/opna.o: opna.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/psg.o: psg.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/fmgen.o: fmgen.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/juliet.o: juliet.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_draw.o: api_draw.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/api_scaler.o: api_scaler.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_snd2.o: api_snd2.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_wavwriter.o: api_wavwriter.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/SndDrvTmpl.o: SndDrvTmpl.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvOpn.o: SndDrvOpn.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvWav.o: SndDrvWav.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvBeep.o: SndDrvBeep.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvCMT.o: SndDrvCMT.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 Release/api_kbd.o: api_kbd.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/api_js.o: api_js.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/api_mouse.o: api_mouse.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SDLKbdInterface.o: SDLKbdInterface.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SDLJoyInterface.o: SDLJoyInterface.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/KbdInterface.o: KbdInterface.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 
 Debug/aluline.o: aluline.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/apalet.o: apalet.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/disasm.o: disasm.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/display.o: display.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/dmac.o: dmac.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/fdc.o: fdc.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/jcard.o: jcard.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/jsubsys.o: jsubsys.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/kanji.o: kanji.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/keyboard.o: keyboard.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/maincpu.o: maincpu.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/mainetc.o: mainetc.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/mainmem.o: mainmem.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/midi.o: midi.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/mmr.o: mmr.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/mouse.o: mouse.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/multipag.o: multipag.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/opn.o: opn.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/rtc.o: rtc.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/schedule.o: schedule.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/subcpu.o: subcpu.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/subctrl.o: subctrl.c 
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 
 Debug/submem.o: submem.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/system.o: system.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 	
 Debug/tapelp.o: tapelp.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 	
 Debug/tools.o: tools.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 	
 Debug/ttlpalet.o: ttlpalet.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 	
 Debug/vm_sub.o: vm_sub.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/m6809.o: m6809.c m6809ops.h m6809tbl.h
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/sdl_inifile.o: sdl_inifile.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 	
 Debug/sdl_file.o: sdl_file.c
-	gcc ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 
 Debug/opna.o: opna.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/psg.o: psg.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/fmgen.o: fmgen.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/juliet.o: juliet.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/api_draw.o: api_draw.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/api_scaler.o: api_scaler.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/api_snd2.o: api_snd2.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/api_wavwriter.o: api_wavwriter.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SndDrvTmpl.o: SndDrvTmpl.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SndDrvOpn.o: SndDrvOpn.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SndDrvWav.o: SndDrvWav.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SndDrvBeep.o: SndDrvBeep.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SndDrvCMT.o: SndDrvCMT.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 
 Debug/api_kbd.o: api_kbd.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/api_js.o: api_js.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/api_mouse.o: api_mouse.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SDLKbdInterface.o: SDLKbdInterface.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SDLJoyInterface.o: SDLJoyInterface.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/KbdInterface.o: KbdInterface.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 
 .asm.o:

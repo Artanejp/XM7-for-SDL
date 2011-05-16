@@ -352,8 +352,8 @@ void CleanSnd(void)
 	 */
 	if(bWavCapture) {
 		CloseCaptureSnd();
-		bWavCapture = FALSE;
 	}
+        bWavCapture = FALSE;
 	DetachBufferDesc(pCaptureBuf);
 	pCMTBuf = NULL;
 
@@ -398,8 +398,8 @@ static void CloseSnd(void)
 		 */
 		if(bWavCapture) {
 			CloseCaptureSnd();
-			bWavCapture = FALSE;
 		}
+	        bWavCapture = FALSE;
 		DetachBuffer(pBeepBuf);
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
@@ -457,8 +457,8 @@ BOOL SelectSnd(void)
 	 */
 	if(bWavCapture) {
 		CloseCaptureSnd();
-		bWavCapture = FALSE;
 	}
+	bWavCapture = FALSE;
 
 
 /*
@@ -466,8 +466,9 @@ BOOL SelectSnd(void)
  */
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 12 ) < 0) {
-	   printf("Warning: Audio can't initialize!\n");
+//    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+       printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
 	Mix_AllocateChannels(CH_CHANNELS);
@@ -584,7 +585,7 @@ static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
 	if(p) {
 		WriteWavDataSint16(desc, p , chunksize * channels);
 	}
-
+   return p;
 }
 /*
  * ボリューム設定: XM7/Win32 v3.4L30より
@@ -1191,7 +1192,7 @@ static int SetChunk(struct SndBufType *p, int samples, int ch)
 	j = samples - j;
 	if(j > 0) {
 		SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
-		Mix_PlayChannel(ch , p->mChunk[i], 0);
+		Mix_PlayChannel(ch + p->nChunkNo % 2, p->mChunk[i], 0);
 		p->nReadPTR += j;
 		i++;
 		if(i >= p->nChunks) i = 0;
@@ -1221,7 +1222,7 @@ void ProcessSnd(BOOL bZero)
 	chunksize = ((uTick* uRate) / 1000) / CHUNKS;
 
 	dwSndCount++;
-	if(dwSndCount > (uTick / CHUNKS)) {
+	if(dwSndCount >= (uTick / CHUNKS)) {
 		bWrite = TRUE;
 		dwSndCount = 0;
 	}
@@ -1239,23 +1240,14 @@ void ProcessSnd(BOOL bZero)
 		    * BEEP
 		    */
 		   if (beep_flag && speaker_flag) {
-//			   BOOL btmp;
-//			   btmp = beep_flag & speaker_flag;
-//			   samples = CalcSamples(pBeepBuf, time);
-//			   RenderBeepSub(time, samples, bZero);
-//			   DrvBeep->Enable(btmp);
-//			   if((bBeepFlag == TRUE) && (btmp == FALSE)) {
-//				   DrvBeep->ResetCounter(TRUE);
-//			   }
-//			   bBeepFlag = btmp;
 			   bWrite = TRUE;
 		   }
 		   /*
 		    * どちらかがONなら、バッファ充填
 		    */
 		   if (bWrite) {
-			   //samples = CalcSamples(pOpnBuf, time);
-			   //RenderOpnSub(time, samples, bZero);
+			   samples = CalcSamples(pOpnBuf, time);
+			   RenderOpnSub(time, samples, bZero);
 		   }
 		   return;
 	  }
@@ -1277,9 +1269,10 @@ void ProcessSnd(BOOL bZero)
 		if(applySem) {
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
 			SDL_SemWait(applySem);
-		        if(bWavCapture) {
+		        if(bWavCapture == TRUE) {
 			   Sint16 *p;
 			   p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
+//			   printf("Wrote: %d bytes \n", chunksize * channels * sizeof(Sint16));
 			   if(p == NULL) {
 				CloseCaptureSnd();
 				bWavCapture = FALSE;
