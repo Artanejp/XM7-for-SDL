@@ -46,7 +46,7 @@ VIDEODRVSRC = \
 	api_draw.cpp api_scaler.cpp 
 
 SNDDRVSRC = \
-	api_snd.cpp \
+	api_snd2.cpp api_wavwriter.cpp \
 	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
 
 INPUTSRC = \
@@ -218,9 +218,12 @@ Release/api_draw.o: api_draw.cpp
 Release/api_scaler.o: api_scaler.cpp
 	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-Release/api_snd.o: api_snd.cpp
+Release/api_snd2.o: api_snd2.cpp
 	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-	
+
+Release/api_wavwriter.o: api_wavwriter.cpp
+	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
 Release/SndDrvTmpl.o: SndDrvTmpl.cpp
 	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
@@ -370,7 +373,10 @@ Debug/api_draw.o: api_draw.cpp
 Debug/api_scaler.o: api_scaler.cpp
 	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
-Debug/api_snd.o: api_snd.cpp
+Debug/api_snd2.o: api_snd2.cpp
+	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/api_wavwriter.o: api_wavwriter.cpp
 	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/SndDrvTmpl.o: SndDrvTmpl.cpp

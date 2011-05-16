@@ -1,12 +1,8 @@
 /*
+ * snd_api2.cpp
  *
- */
-
-/*
- * snd_api.cpp
- *
- *  Created on: 2010/09/26
- *      Author: whatisthis
+ *  Created on: 2010/09/26-> 2011/05/14
+ *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
 #ifdef __FreeBSD__
@@ -47,11 +43,6 @@
 #include "SndDrvCMT.h"
 #include "util_ringbuffer.h"
 
-#define SND_WRITE_TEST // Debug終わったらUndefすること
-
-#ifdef SND_WRITE_TEST
-#define BEEP_DEBUGNAME "./beep_debug.wav"
-#endif
 
 
 /*
@@ -159,7 +150,6 @@ static SndDrvWav *DrvWav;
 static SndDrvOpn *DrvPSG;
 static SndDrvOpn *DrvOPN;
 static SndDrvCMT *DrvCMT;
-static struct RingBufferDesc *CmdRing;
 
 
 static char     *WavName[] = {
@@ -292,6 +282,9 @@ void InitSnd(void)
 	uChanSep = uChSeparation;
 	bBeepFlag = FALSE;      /* BEEP出力 */
 	bTapeFlag = TRUE;
+	bWavCapture = FALSE;
+        hWavCapture = 0;
+
 	bMode = FALSE;
 
 	iTotalVolume = SDL_MIX_MAXVOLUME - 1;
@@ -303,7 +296,7 @@ void InitSnd(void)
 	DrvPSG = NULL;
 	DrvWav = NULL;
 	DrvCMT = NULL;
-	applySem = NULL;
+	applySem = SDL_CreateSemaphore(1);
 
 	uTick = 0;   // バッファサイズ(時間)
 	uRate = 0;   // サンプリングレート
@@ -338,9 +331,6 @@ void CleanFDDSnd(void)
 {
 
 }
-#ifdef SND_WRITE_TEST // BEEP書き込みテスト
-	static WavDesc *WavDescBeep;
-#endif
 
 void CleanSnd(void)
 {
@@ -353,6 +343,17 @@ void CleanSnd(void)
 	DetachBufferDesc(pCMTBuf);
 	pCMTBuf = NULL;
 
+	if(applySem) {
+		SDL_DestroySemaphore(applySem);
+		applySem = NULL;
+	}
+	/*
+	 * もしもWAV取り込んでいたら、強制終了
+	 */
+	if(bWavCapture) {
+		CloseCaptureSnd();
+		bWavCapture = FALSE;
+	}
 	DetachBufferDesc(pCaptureBuf);
 	pCMTBuf = NULL;
 
@@ -391,10 +392,14 @@ void CleanSnd(void)
 static void CloseSnd(void)
 {
 	if(bSndEnable) {
-#ifdef SND_WRITE_TEST
-		EndWriteWavData(WavDescBeep);
-#endif
 		Mix_CloseAudio();
+		/*
+		 * もしもWAV取り込んでいたら、強制終了
+		 */
+		if(bWavCapture) {
+			CloseCaptureSnd();
+			bWavCapture = FALSE;
+		}
 		DetachBuffer(pBeepBuf);
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
@@ -447,23 +452,28 @@ BOOL SelectSnd(void)
 	uChanSep = uChSeparation;
 	uStereo = nStereoOut %4;
 
+	/*
+	 * もしもWAV取り込んでいたら、強制終了
+	 */
+	if(bWavCapture) {
+		CloseCaptureSnd();
+		bWavCapture = FALSE;
+	}
+
+
 /*
  * バッファの初期化
  */
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 12 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
 	Mix_AllocateChannels(CH_CHANNELS);
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
-//	Mix_Volume(-1,iTotalVolume);
-	Mix_Volume(-1,127);
+	Mix_Volume(-1,iTotalVolume);
 
-#ifdef SND_WRITE_TEST // BEEP書き込みテスト
-		WavDescBeep = StartWavWrite(BEEP_DEBUGNAME, nSampleRate);
-#endif
     bSndEnable = TRUE;
 	uTick = nSoundBuffer;
 	members = (nSampleRate * nSoundBuffer) / 1000;
@@ -527,26 +537,55 @@ void ApplySnd(void)
 	 * 再セレクト
 	 */
 	SelectSnd();
-    //    SDL_SemPost(applySem);
+    SDL_SemPost(applySem);
 	// BEEPについて、SelectSnd()し直しても音声継続するようにする
 	bBeepFlag = !bBeepFlag;
 	beep_notify();
 	tape_notify(!bTapeFlag);
 }
 
+static struct WavDesc *WavDescCapture; // 取り込みバッファ
 /*
  *  WAVキャプチャ開始
  */
 void OpenCaptureSnd(char *fname)
 {
+   	if(bWavCapture) {
+		CloseCaptureSnd();
+	}
+
+	WavDescCapture = StartWavWrite(fname, nSampleRate);
+	if(WavDescCapture == NULL) printf("Error opening WAV\n");
+	bWavCapture = TRUE;    /* WAVキャプチャ開始 */
 
 }
 
 void CloseCaptureSnd(void)
 {
-
+	EndWriteWavData(WavDescCapture);
+	bWavCapture = FALSE;
 }
 
+static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
+{
+	Sint16 *p;
+	int channels = 2;
+	Sint16 *DataPtr[4];
+
+	if(buf == NULL) return NULL;
+	if(desc == NULL) return NULL;
+
+	DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
+	DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
+	DataPtr[2] = &(pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels]);
+	DataPtr[3] = NULL;
+	memset(buf, 0x00, chunksize * channels * sizeof(Sint16));
+	p = WavMix(DataPtr, buf , 3, chunksize * channels);
+	if(p) {
+		WriteWavDataSint16(desc, p , chunksize * channels);
+	}
+
+}
 /*
  * ボリューム設定: XM7/Win32 v3.4L30より
  */
@@ -648,17 +687,17 @@ static DWORD RenderOpnSub(DWORD time, int samples, BOOL bZero)
 
 		k = p->nSize - p->nWritePTR;
 		if(k > 0) {
-			DrvOPN->Render(p->pBuf32, p->pBuf, p->nWritePTR , k,  TRUE, bZero);
+			DrvOPN->Render(p->pBuf32, p->pBuf, p->nWritePTR , k,  FALSE, bZero);
 			j = j - k;
 		}
 		p->nWritePTR = 0;
 		if(j > 0) {
-			DrvOPN->Render(p->pBuf32, p->pBuf, 0, j, TRUE, bZero);
+			DrvOPN->Render(p->pBuf32, p->pBuf, 0, j, FALSE, bZero);
 			p->nWritePTR = j;
 		}
 	} else {
 		if(j > 0) {
-			DrvOPN->Render(p->pBuf32, p->pBuf, p->nWritePTR, j,  TRUE, bZero);
+			DrvOPN->Render(p->pBuf32, p->pBuf, p->nWritePTR, j,  FALSE, bZero);
 			p->nWritePTR += j;
 			if(p->nWritePTR >= p->nSize) p->nWritePTR -= p->nSize;
 		}
@@ -746,7 +785,7 @@ static BOOL FlushBeepSub(DWORD time,  BOOL bZero, int maxchunk)
 	if(p->nWritePTR >= p->nSize) return FALSE;
 
 	chunksize = chunksize - (p->nWritePTR % chunksize);
-	printf("Chunk: Add: %d to %d\n",p->nWritePTR, chunksize);
+//	printf("Chunk: Add: %d to %d\n",p->nWritePTR, chunksize);
 	/*
 	 * オーバーフロー対策込
 	 */
@@ -900,7 +939,13 @@ void opn_notify(BYTE reg, BYTE dat)
 	 * サウンド合成
 	 */
 //	 AddSnd(FALSE, FALSE);
-	 RenderOpnSub(time, samples, FALSE);
+	if(samples > 0) {
+		if(applySem) {
+			SDL_SemWait(applySem);
+			RenderOpnSub(time, samples, FALSE);
+			SDL_SemPost(applySem);
+		}
+	}
 
 	/*
 	 * 出力
@@ -967,8 +1012,13 @@ void thg_notify(BYTE reg, BYTE dat)
 	/*
 	 * サウンド合成
 	 */
-//    AddSnd(FALSE, FALSE);
-	 RenderOpnSub(time, samples, FALSE);
+	if(samples > 0) {
+		if(applySem) {
+			SDL_SemWait(applySem);
+			RenderOpnSub(time, samples, FALSE);
+			SDL_SemPost(applySem);
+		}
+	}
 	/*
 	 * 出力
 	 */
@@ -1033,7 +1083,11 @@ void whg_notify(BYTE reg, BYTE dat)
 	 */
 //	AddSnd(FALSE, FALSE);
 	if(samples > 0) {
-		RenderOpnSub(time, samples, FALSE);
+		if(applySem) {
+			SDL_SemWait(applySem);
+			RenderOpnSub(time, samples, FALSE);
+			SDL_SemPost(applySem);
+		}
 	}
 	 /*
 	 * 出力
@@ -1058,9 +1112,14 @@ void beep_notify(void)
 	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
 		return;
 	}
+
 	samples  = CalcSamples(pBeepBuf, time);
 	if(samples > 0){
-		RenderBeepSub(time, samples, FALSE);
+		if(applySem) {
+			SDL_SemWait(applySem);
+			RenderBeepSub(time, samples, FALSE);
+			SDL_SemPost(applySem);
+		}
 	}
 	if(DrvBeep) {
 		DrvBeep->ResetCounter(!bBeepFlag);
@@ -1084,7 +1143,11 @@ void tape_notify(BOOL flag)
 	DrvCMT->Enable(bTapeMon);
 	samples  = CalcSamples(pCMTBuf, t);
 	if(samples <= 0)return ;
-	RenderCMTSub(t, samples, FALSE);
+	if(applySem) {
+		SDL_SemWait(applySem);
+		RenderCMTSub(t, samples, FALSE);
+		SDL_SemPost(applySem);
+	}
 	bTapeFlag = flag;
 }
 
@@ -1102,7 +1165,7 @@ static void SetChunkSub(Mix_Chunk *p, Sint16 *buf, Uint32 len, int volume)
 	p->alen = len * sizeof(Sint16) * channels;
 	p->allocated = 1;
 	p->volume = (Uint8)volume;
-	printf("Play: buf=%08x len=%d\n", p->abuf, p->alen);
+//	printf("Play: buf=%08x len=%d\n", p->abuf, p->alen);
 }
 
 
@@ -1211,22 +1274,22 @@ void ProcessSnd(BOOL bZero)
 		 * 演奏本体
 		 */
 		SDL_LockAudio();
-		// WAV取り込み
-#ifdef SND_WRITE_TEST
-		{
-			Sint16 *p;
-			DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
-			DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
-			DataPtr[2] = &(pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels]);
-			DataPtr[3] = NULL;
-			p = WavMix(DataPtr, pCaptureBuf->pBuf , 3, chunksize * channels);
-			if(p) WriteWavDataSint16(WavDescBeep, p , chunksize * channels);
+		if(applySem) {
+//		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
+			SDL_SemWait(applySem);
+		        if(bWavCapture) {
+			   Sint16 *p;
+			   p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
+			   if(p == NULL) {
+				CloseCaptureSnd();
+				bWavCapture = FALSE;
+			   }
+			}
+			SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
+			SetChunk(pBeepBuf , chunksize, CH_SND_BEEP);
+			SetChunk(pCMTBuf , chunksize, CH_SND_CMT);
+			SDL_SemPost(applySem);
 		}
-#endif
-		SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
-		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
-		SetChunk(pBeepBuf , chunksize, CH_SND_BEEP);
-		SetChunk(pCMTBuf , chunksize, CH_SND_CMT);
 		SDL_UnlockAudio();
 		dwSndCount = 0;
 //		dwSoundTotal = 0;

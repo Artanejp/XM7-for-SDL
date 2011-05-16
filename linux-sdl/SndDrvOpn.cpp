@@ -249,7 +249,6 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 	Uint32 *q;
 
 	s = (ms * srate)/1000;
-	if(start > s) return 0; /* 開始点にデータなし */
 	if(pBuf32 == NULL) return 0;
 
 	q = (Uint32 *)pBuf32;
@@ -269,16 +268,16 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 		return 0;
 	}
 	SDL_SemWait(RenderSem);
-	if((start <= 0) && (clear!=TRUE)){
-		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000);
-	}
-	if(clear)  {
-	   memset(q, 0, sizeof(DWORD) * ss2 * channels);
-	}
+//	if((start <= 0) && (clear!=TRUE)){
+//		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000);
+//	}
+//	if(clear)  {
+	   memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
+//	}
 
 	if(enable) {
 		if(bZero) {
-			memset(q, 0, sizeof(DWORD) * ss2 * channels);
+			memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
 			SDL_SemPost(RenderSem);
 			return ss2;
 		}
@@ -364,16 +363,16 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 	DWORD *p;
 	WORD *q;
 
-	if((samples <= 0) || (ofset <= 0))return;
+	if((samples <= 0) || (ofset < 0))return;
 
 	p = (DWORD *)src;
-	p = &p[ofset * channels];
+	p = &(p[ofset * channels]);
 
 	q = (WORD *)dst;
-	q = &q[ofset * channels];
-	if(ofset <= 0){
-		memset(dst, 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000);
-	}
+	q = &(q[ofset * channels]);
+//	if(ofset <= 0){
+//		memset(dst, 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000);
+//	}
 
 	memset(q, 0x00 , samples * channels * sizeof(Sint16));
 	CopySoundBufferGeneric(p, q, (int)(samples * channels));

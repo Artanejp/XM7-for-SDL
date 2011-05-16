@@ -83,7 +83,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 //    if((start <= 0) && (clear != TRUE)) {
 //        	memset(pBuf, 0x00, s * channels * sizeof(Sint16));
 //     }
-	printf("Beep Called: @%08d bufsize=%d start=%d rend.size=%d enable=%d bzero=%d clear=%d\n", dwSoundTotal,  s, start, ss2, enable, bZero, clear);
+//	printf("Beep Called: @%08d bufsize=%d start=%d rend.size=%d enable=%d bzero=%d clear=%d\n", dwSoundTotal,  s, start, ss2, enable, bZero, clear);
 
 	if(clear)  memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16)); // 全消去
 	if(!enable)  {
