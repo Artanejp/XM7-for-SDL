@@ -5,6 +5,7 @@
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
+
 include ../xm7-sdl/config.mak
 
 #CFLAGS += -I../xm7-sdl/
@@ -45,9 +46,6 @@ OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
 
-
-
-
 .SUFFIXES: .o .c .cc .cpp 
 all:	Debug/libxm7-ui-agar.a  Release/libxm7-ui-agar.a
 
@@ -58,113 +56,113 @@ Release/libxm7-ui-agar.a: ${OBJS_RELEASE}
 	ar crv $@ ${OBJS_RELEASE}
 
 Release/agar_draw.o: agar_draw.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/agar_gldraw.o: agar_gldraw.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/AgarKbdInterface.o: AgarKbdInterface.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_ui_vkey.o: agar_ui_vkey.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_guicore.o: agar_guicore.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_toolbox.o: agar_toolbox.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_gui_menu.o: agar_gui_menu.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_menu_disk.o: agar_menu_disk.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_menu_tape.o: agar_menu_tape.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_menu_tool.o: agar_menu_tool.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_menu_about.o: agar_menu_about.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_gui_pref.o: agar_gui_pref.cpp 
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_cfg.o: agar_cfg.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_cmd.o: agar_cmd.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_sch.o: agar_sch.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/agar_main.o: agar_main.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_sdl.o: agar_sdl.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/agar_osd.o: agar_osd.cpp
-	g++ ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 #########
 Debug/agar_draw.o: agar_draw.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_gldraw.o: agar_gldraw.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/AgarKbdInterface.o: AgarKbdInterface.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_ui_vkey.o: agar_ui_vkey.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_guicore.o: agar_guicore.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_toolbox.o: agar_toolbox.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_gui_menu.o: agar_gui_menu.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_menu_disk.o: agar_menu_disk.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_menu_tape.o: agar_menu_tape.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_menu_tool.o: agar_menu_tool.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_menu_about.o: agar_menu_about.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_gui_pref.o: agar_gui_pref.cpp 
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_cfg.o: agar_cfg.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_cmd.o: agar_cmd.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_sch.o: agar_sch.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_main.o: agar_main.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_sdl.o: agar_sdl.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/agar_osd.o: agar_osd.cpp
-	g++ ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 
 #.asm.o:
