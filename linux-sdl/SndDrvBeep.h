@@ -14,14 +14,13 @@ class SndDrvBeep: public SndDrvTmpl {
 public:
 	SndDrvBeep();
 	virtual ~SndDrvBeep();
-
-	void SetVolume(Uint8 vol);
-	int BZero(int start, int uSamples, int slot, BOOL clear);
-	int Render(int start, int uSamples, int slot, BOOL clear);
 	void SetRenderVolume(int level);
-	int Render32(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero);
-private:
+	int Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero);
+	void ResetCounter(BOOL flag);
+	void SetFreq(int f);
 
+private:
+	int freq;
 };
 
 #endif /* SNDDRVBEEP_H_ */

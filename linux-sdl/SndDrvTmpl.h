@@ -2,7 +2,9 @@
  * SndDrvTmpl.h
  *
  *  Created on: 2010/09/25
- *      Author: whatisthis
+ *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
+ *  Changelog:
+ *     05/16/2011 レンダラのみに特化、バッファ操作を排除
  */
 
 #ifndef SNDDRVTMPL_H_
@@ -24,39 +26,18 @@ class SndDrvTmpl {
 public:
 	SndDrvTmpl();
 	virtual ~SndDrvTmpl();
-
-	Uint8 *NewBuffer(int slot);
-	Uint8 *NewBuffer(void);
-	void DeleteBuffer(void);
-	void DeleteBuffer(int slot);
-
-	Uint8  *Setup(int tick);
-	Mix_Chunk *GetChunk(void);
-	Mix_Chunk *GetChunk(int slot);
-	int GetBufSlots(void);
+	void Setup(int tick);
 	void Enable(BOOL flag);
+	void SetChannels(int c);
 	void SetRate(int rate);
-	void SetVolume(Uint8 level);
-	void SetLRVolume(void);
-	int Render(int start, int uSamples, int slot, BOOL clear);
-	int BZero(int start, int uSamples, int slot, BOOL clear);
 	void SetRenderVolume(int level);
-	void Play(int ch,  int slot);
-	void Play(int ch,  int slot, int samples);
-        Uint8 *GetBuf(int slot);
-        int GetBufSize(int slot);
+    int Render(Sint16 *pBuf, int start, int samples,  BOOL clear, BOOL bZero);
 protected:
-	Uint8 *buf[DEFAULT_SLOT];
-	Mix_Chunk chunk[DEFAULT_SLOT];
-	int bufSize[DEFAULT_SLOT];
-	int samples;
 	UINT channels;
 	UINT srate;
 	UINT ms;
 	UINT uStereo;
-	int bufSlot;
 	int nLevel; /* レンダリングの音量 */
-	Uint8 volume; /* 出力する音量 */
 	BOOL enable;
 	UINT counter;
 	SDL_sem *RenderSem;

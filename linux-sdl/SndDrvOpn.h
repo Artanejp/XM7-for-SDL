@@ -32,15 +32,10 @@ class SndDrvOpn: public SndDrvTmpl {
 public:
 	SndDrvOpn();
 	virtual ~SndDrvOpn();
-	Uint8 *NewBuffer(void);
-	Uint8 *NewBuffer(int slot);
-	void DeleteBuffer(void);
-	void DeleteBuffer(int slot);
-	Uint8 *Setup(int tick);
-	Uint8 *Setup(int tick, int opno);
+	void Setup(int tick);
+	void Setup(int tick, int opno);
 	BYTE GetCh3Mode(int opn);
 	void SetCh3Mode(int opn, Uint8 dat);
-	int GetBufSlots(void);
 
 	void SetRenderVolume(void);
 	void SetRenderVolume(int ch, int level);
@@ -53,23 +48,20 @@ public:
 	BYTE GetReg(int opn, BYTE);
 	void SetReg(int opn, BYTE reg, BYTE dat);
 	void SetReg(int opn, BYTE *reg);
-	int Render(int start, int uSamples,int slot,  BOOL clear);
-	int BZero(int start, int uSamples,int slot,  BOOL clear);
+	int Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero);
+	int Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero);
 	int Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero);
 	void Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples);
 
 private:
-	DWORD *GetBuf32(int slot);
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
-	Uint32 *buf32[DEFAULT_SLOT];
 	UINT counter;
 	int nScale; /* プリスケーラ */
 	UINT uChanSep;
 	BYTE uCh3Mode[3];
 	FM::OPN *pOPN;
-	int bufSlot;
 };
 
 #endif /* SNDDRVOPN_H_ */

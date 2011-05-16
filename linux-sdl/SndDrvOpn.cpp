@@ -134,22 +134,14 @@ void SndDrvOpn::SetReg(int opn, BYTE *reg)
 SndDrvOpn::SndDrvOpn(void) {
 	// TODO Auto-generated constructor stub
 	int i;
-	bufSlot = DEFAULT_SLOT;
         channels = 2;
         
-	for(i = 0; i<bufSlot; i++) {
-		bufSize[i] = 0;
-		buf32[i] = NULL;
-	}
-
-
 	enable = TRUE;
 	counter = 0;
 	uChanSep = uChSeparation;
 	for(i = 0; i<3; i++) {
 		uCh3Mode[i] = 0;
 	}
-	volume = MIX_MAX_VOLUME;
 	if(RenderSem == NULL) RenderSem = SDL_CreateSemaphore(1);
 	SDL_SemPost(RenderSem);
 	pOPN = new FM::OPN[3];
@@ -163,10 +155,13 @@ void SndDrvOpn::DeleteOpn(void)
 
 SndDrvOpn::~SndDrvOpn() {
 	// TODO Auto-generated destructor stub
-	if(RenderSem) SDL_SemWait(RenderSem);
+	if(RenderSem) {
+		SDL_SemWait(RenderSem);
+		SDL_DestroySemaphore(RenderSem);
+		RenderSem = NULL;
+	}
 	enable = FALSE;
 	DeleteOpn();
-
 }
 
 
@@ -219,95 +214,7 @@ int *SndDrvOpn::GetRVolume(int num)
 	return r_vol[num];
 }
 
-Uint8 *SndDrvOpn::NewBuffer(void)
-{
-	int i;
-	for(i = 0; i< bufSlot; i++) {
-		NewBuffer(i);
-	}
-	return buf[0];
-}
-
-Uint8 *SndDrvOpn::NewBuffer(int slot)
-{
-	int uChannels;
-        int len;
-
-	if(slot >= bufSlot) return NULL;
-
-    if(buf[slot] != NULL) {
-    	return NULL; /* バッファがあるよ？Deleteしましょう */
-    }
-    if(buf32[slot] != NULL) {
-    	return NULL; /* バッファがあるよ？Deleteしましょう */
-    }
-
-
-
-	uStereo = nStereoOut %4;
-//    if ((uStereo > 0) || bForceStereo) {
-//    	uChannels = 2;
-//   } else {
-//    	uChannels = 1;
-//    }
-	uChannels = 2;
-	if(RenderSem == NULL) {
-		return NULL;
-	}
-	SDL_SemWait(RenderSem);
-    channels = uChannels;
-
-        len = (ms * srate * channels *sizeof(Sint16)) / 1000;
-	buf[slot] = (Uint8 *)malloc((ms * srate * channels *sizeof(Sint16)) / 1000);
-	if(buf[slot] == NULL) return NULL; /* バッファ取得に失敗 */
-	buf32[slot] = (Uint32 *)malloc((ms * srate * channels *sizeof(Sint32)) / 1000);
-	if(buf32[slot] == NULL) {
-		free(buf[slot]);
-		return NULL;
-	}
-	memset(buf[slot], 0x00, len); /* 初期化 */
-	memset(buf32[slot], 0x00, len * 2); /* 初期化 */
-	chunk[slot].abuf = buf[slot];
-	chunk[slot].alen = len;
-	chunk[slot].allocated = 1; /* アロケートされてる */
-	chunk[slot].volume = volume; /* 一応最大 */
-	enable = TRUE;
-	counter = 0;
-	SDL_SemPost(RenderSem);
-	return buf[slot];
-}
-
-void SndDrvOpn::DeleteBuffer(void)
-{
-	int i;
-	for(i = 0; i <bufSlot ; i++)
-	{
-		DeleteBuffer(i);
-	}
-}
-
-void SndDrvOpn::DeleteBuffer(int slot)
-{
-	enable = FALSE;
-	if(slot > bufSlot) return;
-	if(RenderSem == NULL) return;
-	SDL_SemWait(RenderSem);
-	if(buf[slot] != NULL) free(buf[slot]);
-	buf[slot] = NULL;
-	if(buf32[slot] != NULL) free(buf32[slot]);
-	buf32[slot] = NULL;
-
-	chunk[slot].abuf = NULL;
-	chunk[slot].alen = 0;
-	chunk[slot].allocated = 0; /* アロケートされてる */
-	chunk[slot].volume = 0;
-	SDL_SemPost(RenderSem);
-}
-
-
-
-
-Uint8  *SndDrvOpn::Setup(int tick)
+void SndDrvOpn::Setup(int tick)
 {
 	UINT uChannels;
 	int i;
@@ -320,187 +227,18 @@ Uint8  *SndDrvOpn::Setup(int tick)
 	   } else {
 		   ms = nSoundBuffer;
 	   }
-//	   srate = nSampleRate;
 		uChanSep = uChSeparation;
 
 	   InitOpn();
-#if 0
-	   for(i = 0; i < bufSlot; i++) {
-		   if(buf[i] == NULL) {
-		      bufSize[i] = 0;
-		   /*
-		    * バッファが取られてない == 初期状態
-		    */
-			   buf[i] = NewBuffer(i);
-		   } else {
-			   /*
-			    * バッファが取られてる == 初期状態ではない
-			    */
-			   DeleteBuffer(i); /* 演奏終了後バッファを潰す */
-			   buf[i] = NewBuffer(i);
-		   }
-	   }
-	   return buf[0];
-#endif
-	   return NULL;
+	   return;
 }
 
 
-int SndDrvOpn::GetBufSlots(void)
-{
-	return bufSlot;
-}
 
 
 /*
- * BZERO : 指定領域を0x00で埋める
+ * レンダラ(32bitバッファ)
  */
-int SndDrvOpn::BZero(int start, int uSamples, int slot, BOOL clear)
-{
-	int sSamples = uSamples;
-	int s;
-	int ss,ss2;
-	DWORD *q;
-	Sint16 *p;
-
-	s = (ms * srate)/1000;
-	if(slot > bufSlot) return 0;
-	if(start <= 0) bufSize[slot] = 0;
-	if(start > s) return 0; /* 開始点にデータなし */
-	if(RenderSem == NULL) {
-		return 0;
-	}
-	SDL_SemWait(RenderSem);
-	q = buf32[slot];
-	q = &q[start * channels];
-	p = (Sint16 *)buf[slot];
-	p = &p[start * channels];
-
-	if((start <= 0) &&  (clear != TRUE)){
-		memset(buf32[slot], 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000 - sizeof(Sint32));
-		memset(buf[slot], 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000 - sizeof(Sint16));
-	}
-	ss = sSamples + start;
-	if(ss > s) {
-		ss2 = s - start;
-	} else {
-		ss2 = sSamples;
-	}
-	if(ss2 <= 0) return 0;
-	bufSize[slot] += ss2 * channels * sizeof(Sint16);
-	memset(q, 0, sizeof(DWORD) * ss2 * channels);
-	memset(p, 0, sizeof(Sint16) * ss2 * channels);
-	SDL_SemPost(RenderSem);
-	return ss2;
-
-}
-
-DWORD *SndDrvOpn::GetBuf32(int slot)
-{
-	return (DWORD *)buf32[slot];
-}
-
-
-/*
- * レンダリング
- */
-int SndDrvOpn::Render(int start, int uSamples, int slot, BOOL clear)
-{
-	int sSamples = uSamples;
-	int s;
-	int ss,ss2;
-	int opn;
-	Uint32 *q;
-	Sint16 *p;
-
-	s = (ms * srate)/1000;
-	if(slot > bufSlot) return 0;
-	if(start <= 0) bufSize[slot] = 0;
-	if(start > s) return 0; /* 開始点にデータなし */
-	if(sSamples > s) sSamples = s;
-
-    p = (Sint16 *)buf[slot];
-	p = &p[start * channels];
-
-	q = buf32[slot];
-	q = &q[start * channels];
-	if((start <= 0) && (clear!=TRUE)){
-		memset(buf32[slot], 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000 - sizeof(Sint32));
-		memset(buf[slot], 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000 - sizeof(Sint16));
-	}
-
-	ss = sSamples + start;
-	if(ss > s) {
-		ss2 = s - start;
-	} else {
-		ss2 = sSamples;
-	}
-	if(ss2 <= 0) return 0;
-	if(RenderSem == NULL) {
-		return 0;
-	}
-	SDL_SemWait(RenderSem);
-	if(clear)  {
-	   memset(q, 0, sizeof(DWORD) * ss2 * channels);
-	   memset(p, 0, sizeof(Sint16) * ss2 * channels);
-	}
-   
-	if(enable) {
-		if (channels == 1) {
-			/* モノラル */
-			pOPN[OPN_STD].Mix((int32*)q, ss2);
-			if (whg_use){
-				pOPN[OPN_WHG].Mix((int32*)q, ss2);
-			}
-			if (thg_use) {
-				pOPN[OPN_THG].Mix((int32*)q, ss2);
-			}
-			if ((!thg_use) && (fm7_ver == 1) ) {
-				pOPN[OPN_STD].psg.Mix((int32*)q, ss2);
-			}
-		} else {
-			/* ステレオ */
-			if (!whg_use && !thg_use) {
-				/* WHG/THGを使用していない(強制モノラル) */
-				pOPN[OPN_STD].Mix2((int32*)q, ss2, 16, 16);
-				if (fm7_ver == 1) {
-					pOPN[OPN_STD].psg.Mix2((int32*)q, ss2, 16, 16);
-				}
-			}
-			else {
-				/* WHGまたはTHGを使用中 */
-				pOPN[OPN_STD].Mix2((int32*)q, ss2,
-						l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
-				if (whg_use){
-					pOPN[OPN_WHG].Mix2((int32*)q, ss2,
-							l_vol[OPN_WHG][uStereo], r_vol[OPN_WHG][uStereo]);
-				}
-				if (thg_use) {
-					pOPN[OPN_THG].Mix2((int32*)q, ss2,
-							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
-				}
-				else if (fm7_ver == 1){
-					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
-				}
-			}
-		}
-//      	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
-		/*
-		 * ここにレンダリング関数ハンドリング
-		 */
-	}
-	q = buf32[slot];
-	q = &q[start * channels];
-	p = (Sint16 *)buf[slot];
-	p = &p[start * channels];
-
-	CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
-
-	bufSize[slot] += ss2 * channels * sizeof(Sint16);
-	SDL_SemPost(RenderSem);
-	return ss2;
-}
-
 
 int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero)
 {
@@ -508,29 +246,32 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 	int s;
 	int ss;
 	int ss2;
-
 	Uint32 *q;
 
 	s = (ms * srate)/1000;
 	if(start > s) return 0; /* 開始点にデータなし */
+	if(pBuf32 == NULL) return 0;
 
 	q = (Uint32 *)pBuf32;
 	q = &q[start * channels];
-	if((start <= 0) && (clear!=TRUE)){
-		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000);
-	}
-
+#if 0
 	ss = sSamples + start;
 	if(ss > s) {
 		ss2 = s - start;
 	} else {
 		ss2 = sSamples;
 	}
+#else
+	ss2 = sSamples;
+#endif
 	if(ss2 <= 0) return 0;
 	if(RenderSem == NULL) {
 		return 0;
 	}
 	SDL_SemWait(RenderSem);
+	if((start <= 0) && (clear!=TRUE)){
+		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000);
+	}
 	if(clear)  {
 	   memset(q, 0, sizeof(DWORD) * ss2 * channels);
 	}
@@ -587,7 +328,35 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 	}
 	SDL_SemPost(RenderSem);
 	return ss2;
+}
 
+int SndDrvOpn::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+	int r;
+	Sint32 *pBuf32;
+
+	if(pBuf == NULL) return 0;
+	pBuf32 =(Sint32 *)malloc(sSamples * channels * sizeof(Sint32));
+	if(pBuf32 == NULL) return 0;
+	r = Render32(pBuf32, start, sSamples, clear, bZero);
+	if(r> 0){
+		Copy32(pBuf32, pBuf, start, r);
+	} else {
+		r = 0;
+	}
+
+	free(pBuf32);
+	return r;
+}
+
+int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+	int r;
+	if(pBuf32 == NULL) return 0;
+	if(pBuf == NULL) return 0;
+	r = Render32(pBuf32, start, sSamples, clear, bZero);
+	if(r > 0) Copy32(pBuf32, pBuf, start, sSamples);
+	return r;
 }
 
 void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)

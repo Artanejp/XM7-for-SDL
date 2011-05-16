@@ -24,9 +24,7 @@ public:
 	void SetRenderVolume(int level);
 	void SetVolume(Uint8 level);
 	void SetState(BOOL state);
-	int BZero(int start, int uSamples, int slot, BOOL clear);
-	int Render(int start, int uSamples, int slot, BOOL clear);
+	int Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL bZero);
 };
-
 
 #endif /* SNDDRVCMT_H_ */
