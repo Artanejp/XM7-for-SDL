@@ -102,7 +102,7 @@ static void FileMenu_BootMode(AG_Event *event)
 	btn[1] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("DOS"), SetBootMode, "%i", TRUE);
 	box2 = AG_BoxNewVert(box, 0);
 	btn[2] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
-
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
 	AG_WindowSetCaption(w, gettext("Boot Mode"));
 	AG_WindowShow(w);
 

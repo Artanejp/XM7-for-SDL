@@ -164,10 +164,10 @@ static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset
 
 		glBindTexture(GL_TEXTURE_2D, tid);
 		glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(xend, yend, -0.95);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(xend, ybegin, -0.95);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(xbegin, yend, -0.95);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(xbegin, ybegin, -0.95);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(xend, yend, -0.95f);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(xend, ybegin, -0.95f);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(xbegin, yend, -0.95f);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(xbegin, ybegin, -0.95f);
 		glEnd();
 	} else {
 		AG_Rect rec;

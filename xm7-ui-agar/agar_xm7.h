@@ -10,7 +10,7 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-#include "xm7.h"
+#include "../xm7-sdl/xm7.h"
 
 #ifndef __STDLIB_H
 #include <stdlib.h>

@@ -96,6 +96,9 @@ static void OnNewDisk(AG_Event *event)
 
 
     KeyBoardSnoop(TRUE);
+	if((InitialDir[0] == NULL) || strlen(InitialDir[0]) <= 0) {
+		strcpy(InitialDir[0], "./");
+	}
 
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
 	AG_WindowSetMinSize(w, 280, 120);
@@ -122,6 +125,8 @@ static void OnNewDisk(AG_Event *event)
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	AG_FileDlgAddType(dlg, "D77 Image File", "*.d77,*.D77", OnNewDiskCreate, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
 
 	AG_WindowSetCaption(w, gettext("Create Disk "));
 	AG_WindowShow(w);
@@ -161,6 +166,9 @@ static void OnNewTape(AG_Event *event)
 
 
     KeyBoardSnoop(TRUE);
+	if((InitialDir[1] == NULL) || strlen(InitialDir[1]) <= 0) {
+		strcpy(InitialDir[1], "./");
+	}
 
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
 	AG_WindowSetMinSize(w, 280, 120);
@@ -176,6 +184,8 @@ static void OnNewTape(AG_Event *event)
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[1]);
 	AG_FileDlgAddType(dlg, "T77 Image File", "*.t77,*.T77", OnNewTapeCreate, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WidgetFocus(dlg);
 	AG_WindowSetCaption(w, gettext("Create Tape"));
 	AG_WindowShow(w);
@@ -216,6 +226,10 @@ static void OnGrpCapture(AG_Event *event)
 	/*
 	 * ファイル選択
 	 */
+	if((InitialDir[3] == NULL) || strlen(InitialDir[3]) <= 0) {
+		strcpy(InitialDir[3], "./");
+	}
+
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
 	AG_WindowSetMinSize(w, 280, 120);
     KeyBoardSnoop(TRUE);
@@ -223,6 +237,8 @@ static void OnGrpCapture(AG_Event *event)
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[3]);
 	AG_FileDlgAddType(dlg, "BMP file","*.bmp,*.BMP", ScreenCaptureSub, NULL);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WidgetFocus(dlg);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
 	AG_WindowSetCaption(w, gettext("Capture to BMP"));
@@ -264,6 +280,10 @@ static void OnGrpCapture2(AG_Event *event)
 	/*
 	 * ファイル選択
 	 */
+	if((InitialDir[3] == NULL) || strlen(InitialDir[3]) <= 0) {
+		strcpy(InitialDir[3], "./");
+	}
+
     KeyBoardSnoop(TRUE);
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
 	AG_WindowSetMinSize(w, 280, 120);
@@ -271,6 +291,8 @@ static void OnGrpCapture2(AG_Event *event)
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[3]);
 	AG_FileDlgAddType(dlg, "BMP file","*.bmp,*.BMP", ScreenCaptureSub2, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WidgetFocus(dlg);
 	AG_WindowSetCaption(w, gettext("Capture to BMP 2"));
 	AG_WindowShow(w);
@@ -284,21 +306,15 @@ static void OnWavCaptureSub(AG_Event *event)
 
 	if((sFilename == NULL) || (strlen(sFilename) <= 0)) return;
 	/*
-	 * キャプチャ
+	 * WAV取り込みはCapture中に新しいファイルを作らない
 	 */
-	LockVM();
-    OpenCaptureSnd(sFilename);
-    UnlockVM();
-
-	/*
-	 * 条件判定
-	 */
-	if (hWavCapture < 0) {
-	LockVM();
-	StopSnd();
-	PlaySnd();
-	ResetSch();
-	UnlockVM();
+    if (!bWavCapture) {
+		LockVM();
+		StopSnd();
+	    OpenCaptureSnd(sFilename);
+		PlaySnd();
+		ResetSch();
+		UnlockVM();
     }
     p = strrchr(sFilename, '/');
     if (p != NULL) {
@@ -320,23 +336,29 @@ static void OnWavCapture(AG_Event *event)
 	/*
 	 * 既にキャプチャ中なら、クローズ
 	 */
-	if (hWavCapture >= 0) {
-	LockVM();
-	CloseCaptureSnd();
-	UnlockVM();
-	return;
-    }
+	if(bWavCapture) {
+		LockVM();
+		CloseCaptureSnd();
+		UnlockVM();
+		// ダイアログ表示入れる？
+		return;
+	}
 
 	/*
 	 * ファイル選択
 	 */
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
-	AG_WindowSetMinSize(w, 280, 120);
 	KeyBoardSnoop(TRUE);
-	dlg = AG_FileDlgNew(parent, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+	if((InitialDir[4] == NULL) || strlen(InitialDir[4]) <= 0) {
+		strcpy(InitialDir[4], "./");
+	}
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE );
+	AG_WindowSetMinSize(w, 280, 120);
+	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[4]);
-	AG_FileDlgAddType(dlg, "WAV Sound file","*.wav,*.WAV", OnWavCaptureSub, NULL);
+	AG_FileDlgAddType(dlg, "Wav Sound","*.wav,*.WAV", OnWavCaptureSub, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WidgetFocus(dlg);
 	AG_WindowSetCaption(w, gettext("Capture Sound"));
 	AG_WindowShow(w);
@@ -367,7 +389,7 @@ void Create_ToolsMenu(AG_MenuItem *parent)
 
 	item = AG_MenuAction(parent , gettext("Capture Screen "), NULL, OnGrpCapture, NULL);
 	item = AG_MenuAction(parent , gettext("Capture Screen (Non-Scaled)"), NULL, OnGrpCapture2, NULL);
-	item = AG_MenuAction(parent , gettext("Capture Sound"), NULL, OnWavCapture, NULL);
+	item = AG_MenuAction(parent , gettext("Capture WAV"), NULL, OnWavCapture, NULL);
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent , gettext("Adjust Clock"), NULL, OnTimeAdjust, NULL);
 	AG_MenuSeparator(parent);

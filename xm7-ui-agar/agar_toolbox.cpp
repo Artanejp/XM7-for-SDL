@@ -157,6 +157,8 @@ void OnLoadStatus(AG_Event *event)
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
     AG_WidgetFocus(dlg);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+    AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WindowShow(dlgWin);
 }
 
@@ -178,6 +180,7 @@ void OnQuickLoad(AG_Event *event)
 static void OnSaveStatusSub(char *filename)
 {
     char          *p;
+    KeyBoardSnoop(FALSE);
     if(filename == NULL) return;
 	/*
 	 * ファイル選択
@@ -188,10 +191,9 @@ static void OnSaveStatusSub(char *filename)
      */
     LockVM();
     StopSnd();
-    SDL_Delay(100);		/* テスト */
     if (!system_save(filename)) {
     } else {
-	strcpy(StatePath, filename);
+    	strcpy(StatePath, filename);
     }
     PlaySnd();
     ResetSch();
@@ -228,6 +230,8 @@ void OnSaveAs(AG_Event *event)
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+    AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WidgetFocus(dlg);
     AG_WindowShow(dlgWin);
 }
@@ -257,139 +261,6 @@ void OnQuickSave(AG_Event *event)
 /*-[ ヘルプメニュー ]-----------------------------------------------------*/
 
 #if 0
-/*
-    *  バージョン情報
-     */
-void
-OnVersion(GtkWidget * widget, gpointer data)
-{
-    GtkWidget * dlgVersion;
-    GtkWidget * dialog_vbox;
-    GtkWidget * hbox;
-    GtkWidget * image;
-    GtkWidget * textviewProduct;
-    GtkWidget * textviewAuthor;
-    GtkWidget * dialog_action_area;
-    GtkWidget * okbutton;
-    char           icon_path[MAXPATHLEN];
-    dlgVersion = gtk_dialog_new();
-    gtk_widget_set_usize(dlgVersion, 300, 320);
-    gtk_window_set_resizable(GTK_WINDOW(dlgVersion), FALSE);
-    gtk_window_set_title(GTK_WINDOW(dlgVersion),
-			  "XM7バージョン情報");
-    gtk_window_set_modal(GTK_WINDOW(dlgVersion), TRUE);
-    dialog_vbox = GTK_DIALOG(dlgVersion)->vbox;
-    gtk_widget_show(dialog_vbox);
-    hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_show(hbox);
-    gtk_box_pack_start(GTK_BOX(dialog_vbox), hbox, FALSE, FALSE, 0);
-#ifdef RSSDIR
-    strcpy(icon_path, RSSDIR);
-#else
-    strcpy(icon_path, ModuleDir);
-#endif
-    switch (fm7_ver) {
-    case 1:
-	strcat(icon_path, "tamori.ico");
-	break;
-    case 2:
-	strcat(icon_path, "app_av.ico");
-	break;
-    case 3:
-	strcat(icon_path, "app_ex.ico");
-	break;
-    default:
-	icon_path[0] = '\0';
-    }
-#ifdef RSSDIR
-    if (icon_path[0] != '\0' && strcmp(icon_path, RSSDIR) != 0) {
-	image = gtk_image_new_from_file(icon_path);
-    } else {
-	image =
-	    gtk_image_new_from_stock("gtk-dialog-info",
-				     GTK_ICON_SIZE_DIALOG);
-    }
-#else
-    if (icon_path[0] != '\0' && strcmp(icon_path, ModuleDir) != 0) {
-	image = gtk_image_new_from_file(icon_path);
-    } else {
-	image =
-	    gtk_image_new_from_stock("gtk-dialog-info",
-				     GTK_ICON_SIZE_DIALOG);
-    }
-#endif
-    gtk_widget_show(image);
-    gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
-    textviewProduct = gtk_text_view_new();
-    gtk_widget_show(textviewProduct);
-    gtk_box_pack_start(GTK_BOX(hbox), textviewProduct, TRUE, TRUE, 0);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(textviewProduct), FALSE);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textviewProduct),
-				      FALSE);
-    gtk_text_view_set_justification(GTK_TEXT_VIEW(textviewProduct),
-				     GTK_JUSTIFY_CENTER);
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textviewProduct),
-				 GTK_WRAP_WORD);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textviewProduct),
-				      FALSE);
-    gtk_text_buffer_set_text(gtk_text_view_get_buffer
-			      (GTK_TEXT_VIEW(textviewProduct)), VERSTR,
-			      -1 );
-    textviewAuthor = gtk_text_view_new();
-    gtk_widget_show(textviewAuthor);
-    gtk_box_pack_start(GTK_BOX(dialog_vbox), textviewAuthor, TRUE, TRUE,
-			0);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(textviewAuthor), FALSE);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textviewAuthor),
-				      FALSE);
-    gtk_text_view_set_justification(GTK_TEXT_VIEW(textviewAuthor),
-				     GTK_JUSTIFY_CENTER);
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textviewAuthor),
-				 GTK_WRAP_WORD);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textviewAuthor),
-				      FALSE);
-    gtk_text_buffer_set_text(gtk_text_view_get_buffer
-			      (GTK_TEXT_VIEW(textviewAuthor)), AUTSTR,
-			      -1 );
-    dialog_action_area = GTK_DIALOG(dlgVersion)->action_area;
-    gtk_widget_show(dialog_action_area);
-    okbutton = gtk_button_new_from_stock("gtk-ok");
-    gtk_widget_show(okbutton);
-    gtk_dialog_add_action_widget(GTK_DIALOG(dlgVersion), okbutton,
-				  GTK_RESPONSE_OK);
-    GTK_WIDGET_SET_FLAGS(okbutton, GTK_CAN_DEFAULT);
-    gtk_signal_connect_object(GTK_OBJECT(okbutton), "clicked",
-				GTK_SIGNAL_FUNC(gtk_widget_destroy),
-				dlgVersion);
-    gtk_widget_show(dlgVersion);
-}
-
-
-    /*
-     *  「ヘルプ」メニューを作成
-     */
-void
-CreateHelpMenu(GtkBuilder *gbuilder)
-{
-    GtkWidget * sub_item;
-
-/*
- * ヘルプメニューの作成
- */
-	help_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Help"));
-
-	/*********************************************************/
-
-	/*
-	 * 「バージョン情報」ボタンを作成
-	 */
-    sub_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Help_About"));
-    gtk_signal_connect(GTK_OBJECT(sub_item), "activate",
-			GTK_SIGNAL_FUNC(OnVersion), NULL);
-    gtk_widget_show(sub_item);
-
-    return;
-}
 
 
 /*-[ デバッグメニュー ]-----------------------------------------------------*/
@@ -438,104 +309,6 @@ OnSubDisAsmPopup(GtkWidget * widget, gpointer data)
 	}
 }
 
-
-
-/*
- *  「デバッグ」メニューを作成
- */
-void
-CreateDebugMenu (GtkBuilder *gbuilder)
-{
-
-    GtkWidget *sub_item;
-    GSList *ModeGroup = NULL;
-    GtkWidget *debug_menu, *file_item;
-    debug_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu5"));
-
-
-	/*
-	 * デバッグメニューの作成
-	 */
-    /*
-     * 停止
-     */
-    debug_stop = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Debug_STOP"));
-    gtk_signal_connect(GTK_OBJECT(debug_stop), "activate",
-			GTK_SIGNAL_FUNC(OnBreak),
-                       NULL);
-
-    gtk_widget_show (debug_stop);
-/*
- * 再開
- */
-    debug_restart = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Debug_Restart"));
-    gtk_signal_connect(GTK_OBJECT(debug_restart), "activate",
-			GTK_SIGNAL_FUNC(OnExec),
-                       NULL);
-
-    gtk_widget_show (debug_restart);
-	/*********************************************************/
-    /* 「逆アセンブル」ボタンを作成 */
-    sub_item = gtk_radio_menu_item_new_with_label (ModeGroup, "逆アセンブル - メイン");
-
-    gtk_menu_append (GTK_MENU(debug_menu), sub_item);
-    gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
-            GTK_SIGNAL_FUNC (OnMainDisAsmPopup), wndMain);
-    gtk_widget_show (sub_item);
-//    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sub_item), TRUE);
-
-	/*********************************************************/
-    /* 「逆アセンブル」ボタンを作成 */
-    sub_item = gtk_radio_menu_item_new_with_label (ModeGroup, "逆アセンブル - サブ");
-
-    gtk_menu_append (GTK_MENU(debug_menu), sub_item);
-    gtk_signal_connect (GTK_OBJECT(sub_item), "activate",
-            GTK_SIGNAL_FUNC (OnSubDisAsmPopup), wndMain);
-    gtk_widget_show (sub_item);
-//    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sub_item), TRUE);
-
-	/*********************************************************/
-    gtk_signal_connect (GTK_OBJECT(debug_menu), "activate",
-                        GTK_SIGNAL_FUNC (OnDebugPopup), NULL);
-
-
-
-	return;
-}
-
-
-    /*
-     *  新規テープ作成(T)
-     */
-static void
-OnNewTape(GtkWidget * widget, gpointer data)
-{
-    char          *p;
-
-	/*
-	 * ファイル選択
-	 */
-	FileSelectDialog dlg = OpenFileSelectDialog(InitialDir[1]);
-    if (dlg.bResult != DLG_OK) {
-	return;
-    }
-
-	/*
-	 * 作成
-	 */
-	LockVM();
-    StopSnd();
-    if (make_new_t77(dlg.sFilename)) {
-    }
-    PlaySnd();
-    ResetSch();
-    UnlockVM();
-    p = strrchr(dlg.sFilename, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-	strcpy(InitialDir[1], dlg.sFilename);
-    }
-}
 
 
     /*
@@ -702,185 +475,7 @@ OnVTP2T77(GtkWidget * widget, gpointer data)
 
 /*-[ ツールメニュー ]-------------------------------------------------------*/
 
-    /*
-     *  ツールメニュー更新
-     */
-void
-OnToolPopup(GtkWidget * widget, gpointer data)
-{
 
-#ifdef MOUSE
-	gtk_signal_handler_block(GTK_OBJECT(miMouseCapture),
-				 hidMouseCapture);
-    if (mos_capture) {
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM
-					(miMouseCapture), TRUE);
-    } else {
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM
-					(miMouseCapture), FALSE);
-    }
-    gtk_signal_handler_unblock(GTK_OBJECT(miMouseCapture),
-				hidMouseCapture);
-
-#endif				/*  */
-}
-
-
-/*
- *  「ツール」メニューを作成
- */
-static void
-CreateToolMenu(GtkBuilder *gbuilder)
-{
-    GtkWidget * sub_item;
-
-    /*
-     * ヘルプメニューの作成
-     */
-    tool_menu = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tool"));
-
-/*********************************************************/
-
-/*
- * 「設定」ボタンを作成
- */
-    sub_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_properties"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-                       GTK_SIGNAL_FUNC(OnConfig), NULL);
-    gtk_widget_show(sub_item);
-    sub_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "button_BAR_Options"));
-    g_signal_connect(G_OBJECT(sub_item), "clicked",
-                       GTK_SIGNAL_FUNC(OnConfig), NULL);
-
-
-	/*********************************************************/
-#ifdef MOUSE
-/*
- * 「マウスモード」ボタンを作成
- */
-    miMouseCapture = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_mouse"));
-    //gtk_menu_append(GTK_MENU(tool_menu), miMouseCapture);
-    hidMouseCapture =
-	g_signal_connect(GTK_OBJECT(miMouseCapture), "activate",
-			   GTK_SIGNAL_FUNC(OnMouseMode), NULL);
-    //gtk_widget_show(miMouseCapture);
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(miMouseCapture),
-                                   FALSE);
-
-#endif				/*  */
-    /*********************************************************/
-
-    /*
-     * 「時刻アジャスト」ボタンを作成
-     */
-    sub_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_adjust"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-                       GTK_SIGNAL_FUNC(OnTimeAdjust), NULL);
-    /*********************************************************/
-
-    /*
-     * 「画面キャプチャ」ボタンを作成
-     */
-    sub_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_Capture"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-			GTK_SIGNAL_FUNC(OnGrpCapture), NULL);
-
-
-/*********************************************************/
-
-/*
- * 「縮小画像キャプチャ」ボタンを作成
- */
-    sub_item = GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_Capturemini"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-			GTK_SIGNAL_FUNC(OnGrpCapture2), NULL);
-
-
-    /*********************************************************/
-
-    /*
-     * 「WAVキャプチャ」ボタンを作成
-     */
-    miWavCapture =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_WAVCapture"));
-    hidWavCapture =
-            g_signal_connect(GTK_OBJECT(miWavCapture), "activate",
-                               GTK_SIGNAL_FUNC(OnWavCapture), NULL);
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(miWavCapture),
-                                   FALSE);
-
-    /*********************************************************/
-
-    /*
-     * 「新規ディスク作成」ボタンを作成
-     */
-    sub_item =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_NewD77"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-			GTK_SIGNAL_FUNC(OnNewDisk), NULL);
-
-    /*********************************************************/
-
-    /*
-     * 「新規テープ作成」ボタンを作成
-     */
-    sub_item =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_NewTape"));
-
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-			GTK_SIGNAL_FUNC(OnNewTape), NULL);
-
-    /*********************************************************/
-
-    /*
-     * 「VFD→D77変換」ボタンを作成
-     */
-    sub_item =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_CVTVFD"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-                       GTK_SIGNAL_FUNC(OnVFD2D77), NULL);
-
-	/*********************************************************/
-
-	/*
-	 * 「2D→D77変換」ボタンを作成
-	 */
-    sub_item =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_CVT2D"));
-
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-                       GTK_SIGNAL_FUNC(On2D2D77), NULL);
-
-
-    /*********************************************************/
-
-    /*
-     * 「VTP→T77変換」ボタンを作成
-     */
-    sub_item =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tools_CVTVTP"));
-    g_signal_connect(GTK_OBJECT(sub_item), "activate",
-                       GTK_SIGNAL_FUNC(OnVTP2T77), NULL);
-
-
-    /*********************************************************/
-    /*********************************************************/
-
-    /*
-     * ツールメニューをのせるメニューアイテムの作成
-     */
-    tool_item =
-            GTK_WIDGET(gtk_builder_get_object(gbuilder, "menu_Tool"));
-    //  gtk_widget_show(tool_item);
-
-    g_signal_connect(GTK_OBJECT(tool_item), "activate",
-                       GTK_SIGNAL_FUNC(OnToolPopup), NULL);
-
-    /*********************************************************/
-    return;
-}
-
-/*-[ メニューバー ]-----------------------------------------------------*/
 #endif
 /*
  *  メニューバーの生成

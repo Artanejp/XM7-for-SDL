@@ -332,14 +332,12 @@ void AGEventDrawGL(AG_Event *event)
 
 
 	pixvram = GetVramSurface_AG_GL();
-//	glFlush();
 
-//	glClear(GL_COLOR_BUFFER_BIT);
-	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT);
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
     glEnable(GL_TEXTURE_2D);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glEnable(GL_DEPTH_TEST);
+ //   glMatrixMode(GL_PROJECTION);
+ //   glPushMatrix();
+//    glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -384,8 +382,8 @@ void AGEventDrawGL(AG_Event *event)
 #endif
     DrawOSDGL(glv);
 
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
+//    glMatrixMode(GL_PROJECTION);
+//    glPopMatrix();
     glPopAttrib();
 }
 
