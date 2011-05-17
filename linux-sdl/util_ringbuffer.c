@@ -101,6 +101,47 @@ int WriteRingBuffer(struct RingBufferDesc *q, void *p)
 	return 0; /* 書けませんでした */
 }
 
+int WriteRingBufferLimited(struct RingBufferDesc *q, void *p, int len)
+{
+	int i;
+	int chunks;
+	int len2;
+
+	if(q == NULL) return -1;
+	if(q->index == NULL) return -1;
+	chunks = q->chunks;
+	SDL_SemWait(q->sem);
+	len2 = q->chunkSize;
+	if(len2 > len) {
+		len2 = len;
+	}
+
+	for(i = 0; i <chunks; i++) {
+		if(q->index != NULL) {
+			if((!q->index[i].use) && (q->index[i].buffer != NULL)) {
+				memcpy(q->index[i].buffer, (Uint8 *)p, len2);
+				if(len2 < q->chunkSize) {
+					Uint8 *pp = (Uint8 *)p;
+					pp = &pp[len2];
+					memset(pp, 0x00, q->chunkSize - len2); // NULLで埋める
+				}
+				q->index[i].use = TRUE;
+				SDL_SemPost(q->sem);
+				return len2;
+			}
+		} else {
+			SDL_SemPost(q->sem);
+			return -1;
+		}
+	}
+	/*
+	 * キューが一杯なので
+	 */
+	SDL_SemPost(q->sem);
+	return 0; /* 書けませんでした */
+}
+
+
 static inline void Copy32to16(Uint32 *from, Uint16 *to, int size)
 {
         int         i, j, k;
@@ -199,6 +240,41 @@ int ReadRingBuffer(struct RingBufferDesc *q, void *p)
 	SDL_SemPost(q->sem);
 	return 0;
 }
+
+/*
+ * Read only len Bytes
+ */
+int ReadRingBufferLimited(struct RingBufferDesc *q, void *p, int len)
+{
+	int i;
+	int len2;
+
+	if(q == NULL) return -1;
+	if(q->index == NULL) return -1;
+	SDL_SemWait(q->sem);
+
+	for(i = 0; i <q->chunks; i++) {
+		if(q->index != NULL) {
+			if(q->index[i].use && (q->index[i].buffer != NULL)) {
+				len2 = q->chunkSize;
+				if(len < len2) len2 = len;
+				memcpy((Uint8 *)p, q->index[i].buffer,  len2);
+				q->index[i].use = FALSE;
+				SDL_SemPost(q->sem);
+				return len2;
+			}
+		} else {
+			SDL_SemPost(q->sem);
+			return -1;
+		}
+	}
+	/*
+	 * キューが空でした
+	 */
+	SDL_SemPost(q->sem);
+	return 0;
+}
+
 
 #ifdef __cplusplus
 }

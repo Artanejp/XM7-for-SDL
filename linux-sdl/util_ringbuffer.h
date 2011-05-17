@@ -46,7 +46,11 @@ struct RingBufferDesc {
 extern struct RingBufferDesc *CreateRingBuffer(int chunkSize, int chunks);
 extern void DeleteRingBuffer(struct RingBufferDesc *q);
 extern int WriteRingBuffer(struct RingBufferDesc *q, void *p);
+extern int WriteRingBufferLimited(struct RingBufferDesc *q, void *p, int len);
+
 extern int ReadRingBuffer(struct RingBufferDesc *q, void *p);
+extern int ReadRingBufferLimited(struct RingBufferDesc *q, void *p, int len);
+
 extern int WriteRingBuffer32to16(struct RingBufferDesc *q, void *p);
 
 #ifdef __cplusplus
