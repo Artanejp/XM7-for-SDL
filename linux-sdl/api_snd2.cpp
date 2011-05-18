@@ -43,7 +43,8 @@
 #include "SndDrvCMT.h"
 #include "util_ringbuffer.h"
 
-
+#include "AudioSDL.h"
+#define USE_NEWAUDIODRIVER
 
 /*
  *  グローバル ワーク
@@ -126,7 +127,18 @@ static struct SndBufType *pOpnBuf;
 static struct SndBufType *pBeepBuf;
 static struct SndBufType *pCMTBuf;
 static struct SndBufType *pCaptureBuf;
-
+#ifdef USE_NEWAUDIODRIVER
+static class AudioSDL *AudioSDLDRV;
+static int nChunkSamples;
+enum {
+	CH_NEWSND_BEEP = 0,
+	CH_NEWSND_CMT,
+	CH_NEWSND_OPN,
+	CH_NEWSND_WAV,
+	CH_NEWSND_END
+};
+static Sint16 *pSounds[CH_NEWSND_END];
+#endif
 /*
  * OPN内部変数
  */
@@ -301,7 +313,10 @@ void InitSnd(void)
 	uTick = 0;   // バッファサイズ(時間)
 	uRate = 0;   // サンプリングレート
 	uBufSize = 0; // バッファサイズ(バイト数)
-
+#ifdef USE_NEWAUDIODRIVER
+	AudioSDLDRV = new AudioSDL;
+	nChunkSamples = 0;
+#endif
 
 	/*
 	 * ボリューム初期化
@@ -382,8 +397,13 @@ void CleanSnd(void)
 		delete[] DrvWav;
 		DrvWav = NULL;
 	}
-
-
+#ifdef USE_NEWAUDIODRIVER
+	if(AudioSDLDRV) {
+		delete AudioSDLDRV;
+		AudioSDLDRV = NULL;
+	}
+	nChunkSamples = 0;
+#endif
 }
 
 /*
@@ -392,14 +412,23 @@ void CleanSnd(void)
 static void CloseSnd(void)
 {
 	if(bSndEnable) {
-		Mix_CloseAudio();
-		/*
-		 * もしもWAV取り込んでいたら、強制終了
-		 */
+#ifdef USE_NEWAUDIODRIVER
 		if(bWavCapture) {
 			CloseCaptureSnd();
 		}
-	        bWavCapture = FALSE;
+		if(AudioSDLDRV) {
+			AudioSDLDRV->Close();
+		}
+#else
+		Mix_CloseAudio();
+		if(bWavCapture) {
+			CloseCaptureSnd();
+		}
+#endif
+		/*
+		 * もしもWAV取り込んでいたら、強制終了
+		 */
+        bWavCapture = FALSE;
 		DetachBuffer(pBeepBuf);
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
@@ -467,6 +496,7 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
 //    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+#ifndef USE_NEWAUDIODRIVER
     if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
        printf("Warning: Audio can't initialize!\n");
 	   return -1;
@@ -474,10 +504,24 @@ BOOL SelectSnd(void)
 	Mix_AllocateChannels(CH_CHANNELS);
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
 	Mix_Volume(-1,iTotalVolume);
+#else
+	if(AudioSDLDRV){
+		nChunkSamples = AudioSDLDRV->Open(nSampleRate, 2, (nSampleRate * nSoundBuffer) / 1000 , CHUNKS);
+		if(nChunkSamples <= 0) {
+			printf("Warning: Audio can't initialize!\n");
+			return -1;
+		}
+	}
 
+#endif
     bSndEnable = TRUE;
 	uTick = nSoundBuffer;
+
+#ifdef USE_NEWAUDIODRIVER
+	members = nChunkSamples;
+#else
 	members = (nSampleRate * nSoundBuffer) / 1000;
+#endif
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
 	SetupBuffer(pOpnBuf, members, TRUE, TRUE);
@@ -1265,7 +1309,7 @@ void ProcessSnd(BOOL bZero)
 		/*
 		 * 演奏本体
 		 */
-		SDL_LockAudio();
+//		SDL_LockAudio();
 		if(applySem) {
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
 			SDL_SemWait(applySem);
@@ -1278,12 +1322,29 @@ void ProcessSnd(BOOL bZero)
 				bWavCapture = FALSE;
 			   }
 			}
-			SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
+#ifdef USE_NEWAUDIODRIVER
+		    pSounds[0] = &pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels];
+		    pSounds[1] = &pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels];
+		    pSounds[2] = &pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels];
+		    if(AudioSDLDRV){
+		    	AudioSDLDRV->Lock();
+//		    	AudioSDLDRV->RegSound16(pSounds, 3);
+//		    	AudioSDLDRV->MixSounds(pCaptureBuf->pBuf, chunksize, TRUE);
+//		    	AudioSDLDRV->PutSound(pCaptureBuf->pBuf, chunksize);
+		    	AudioSDLDRV->RegMetaBuf(&(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]));
+       		    	AudioSDLDRV->Kick(TRUE);
+		       AudioSDLDRV->Unlock();
+
+
+		    }
+#else
+		    SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
 			SetChunk(pBeepBuf , chunksize, CH_SND_BEEP);
 			SetChunk(pCMTBuf , chunksize, CH_SND_CMT);
+#endif
 			SDL_SemPost(applySem);
 		}
-		SDL_UnlockAudio();
+//		SDL_UnlockAudio();
 		dwSndCount = 0;
 //		dwSoundTotal = 0;
 	}

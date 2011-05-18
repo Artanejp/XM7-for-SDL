@@ -39,7 +39,7 @@ struct RingBufferIndex {
 struct RingBufferDesc {
 	int chunks;
 	int chunkSize;
-	struct RingBufferIndex *index;
+	struct RingBufferIndex **index;
 	SDL_sem *sem;
 };
 

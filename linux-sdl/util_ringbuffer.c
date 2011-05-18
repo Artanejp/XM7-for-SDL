@@ -16,7 +16,8 @@ struct RingBufferDesc *CreateRingBuffer(int chunkSize, int chunks)
 {
 	int size;
 	int i;
-	struct RingBufferIndex *p;
+	struct RingBufferIndex **p;
+	struct RingBufferIndex *pp;
 	struct RingBufferDesc *q;
 	q = malloc(sizeof(struct RingBufferDesc));
 	if(q == NULL) return NULL;
@@ -24,22 +25,33 @@ struct RingBufferDesc *CreateRingBuffer(int chunkSize, int chunks)
 	q->chunkSize = chunkSize;
 	q->sem = SDL_CreateSemaphore(1);
 
-	size = (chunks * (sizeof(struct RingBufferIndex))/8 + 1)* 8;
-	p = malloc(size);
-	if(p != NULL) {
-		memset(p, 0, size);
+	size = chunks * sizeof(struct RingBufferIndex *);
+	p = (struct RingBufferIndex *)malloc(size);
+	if(p == NULL) {
+		free(q);
+		return NULL;
+	}
+	memset(p, 0, size);
+	q->index = p;
 		for(i = 0; i< chunks; i++) {
-			p[i].num = i;
-			p[i].use = FALSE;
-			p[i].buffer = malloc(chunkSize);
-			if(p[i].buffer == NULL) {
-				p[i].num = -1;
+			size = chunks * sizeof(struct RingBufferIndex);
+			pp = malloc(size);
+			if(pp == NULL) {
+				free(p);
+				free(q);
+				return NULL;
+			}
+			memset(pp, 0x00, size);
+			p[i] = pp;
+			pp->num = i;
+			pp->use = FALSE;
+			pp->buffer = malloc(chunkSize);
+			if(pp->buffer == NULL) {
+				pp->num = -1;
 				continue;
 			}
-			memset(p[i].buffer, 0x00, chunkSize);
+			memset(pp->buffer, 0x00, chunkSize);
 		}
-	}
-	q->index = p;
 	return q;
 }
 
@@ -47,7 +59,8 @@ void DeleteRingBuffer(struct RingBufferDesc *q)
 {
 	int i;
 	int chunks;
-	struct RingBufferIndex *p;
+	struct RingBufferIndex **p;
+	struct RingBufferIndex *pp;
 
 	if(q == NULL) return;
 	if(q->index == NULL) return;
@@ -57,9 +70,14 @@ void DeleteRingBuffer(struct RingBufferDesc *q)
 	}
 	chunks = q->chunks;
 	for(i = 0; i < chunks; i++) {
-		if(p[i].buffer != NULL) {
-			free(p[i].buffer);
-			p[i].buffer = NULL;
+		pp = p[i];
+		if(pp != NULL) {
+			if(pp->buffer != NULL) {
+				free(pp->buffer);
+				pp->buffer = NULL;
+			}
+			free(pp);
+			pp = NULL;
 		}
 	}
 	free(p);
@@ -76,16 +94,19 @@ int WriteRingBuffer(struct RingBufferDesc *q, void *p)
 	int i;
 	int chunks;
 
+
 	if(q == NULL) return -1;
 	if(q->index == NULL) return -1;
 	chunks = q->chunks;
+	if(q->sem == NULL) return -1;
+
 	SDL_SemWait(q->sem);
 
 	for(i = 0; i <chunks; i++) {
-		if(q->index != NULL) {
-			if((!q->index[i].use) && (q->index[i].buffer != NULL)) {
-				memcpy(q->index[i].buffer, (Uint8 *)p, q->chunkSize);
-				q->index[i].use = TRUE;
+		if(q->index[i] != NULL) {
+			if((!q->index[i]->use) && (q->index[i]->buffer != NULL)) {
+				memcpy(q->index[i]->buffer, (Uint8 *)p, q->chunkSize);
+				q->index[i]->use = TRUE;
 				SDL_SemPost(q->sem);
 				return q->chunkSize;
 			}
@@ -109,6 +130,8 @@ int WriteRingBufferLimited(struct RingBufferDesc *q, void *p, int len)
 
 	if(q == NULL) return -1;
 	if(q->index == NULL) return -1;
+	if(q->sem == NULL) return -1;
+
 	chunks = q->chunks;
 	SDL_SemWait(q->sem);
 	len2 = q->chunkSize;
@@ -118,14 +141,14 @@ int WriteRingBufferLimited(struct RingBufferDesc *q, void *p, int len)
 
 	for(i = 0; i <chunks; i++) {
 		if(q->index != NULL) {
-			if((!q->index[i].use) && (q->index[i].buffer != NULL)) {
-				memcpy(q->index[i].buffer, (Uint8 *)p, len2);
+			if((!q->index[i]->use) && (q->index[i]->buffer != NULL)) {
+				memcpy(q->index[i]->buffer, (Uint8 *)p, len2);
 				if(len2 < q->chunkSize) {
 					Uint8 *pp = (Uint8 *)p;
 					pp = &pp[len2];
 					memset(pp, 0x00, q->chunkSize - len2); // NULLで埋める
 				}
-				q->index[i].use = TRUE;
+				q->index[i]->use = TRUE;
 				SDL_SemPost(q->sem);
 				return len2;
 			}
@@ -186,17 +209,19 @@ int WriteRingBuffer32to16(struct RingBufferDesc *q, void *p)
 
 	if(q == NULL) return -1;
 	if(q->index == NULL) return -1;
+	if(q->sem == NULL) return -1;
+
 	chunks = q->chunks;
 	SDL_SemWait(q->sem);
 
 	for(i = 0; i <chunks; i++) {
 		if(q->index != NULL) {
-			if((!q->index[i].use) && (q->index[i].buffer != NULL)) {
+			if((!q->index[i]->use) && (q->index[i]->buffer != NULL)) {
 				/*
 				 *
 				 */
-				Copy32to16((Uint32 *)p, (Uint16 *)q->index[i].buffer, q->chunkSize);
-				q->index[i].use = TRUE;
+				Copy32to16((Uint32 *)p, (Uint16 *)q->index[i]->buffer, q->chunkSize);
+				q->index[i]->use = TRUE;
 				SDL_SemPost(q->sem);
 				return q->chunkSize;
 			}
@@ -219,13 +244,15 @@ int ReadRingBuffer(struct RingBufferDesc *q, void *p)
 
 	if(q == NULL) return -1;
 	if(q->index == NULL) return -1;
+	if(q->sem == NULL) return -1;
+
 	SDL_SemWait(q->sem);
 
 	for(i = 0; i <q->chunks; i++) {
 		if(q->index != NULL) {
-			if(q->index[i].use && (q->index[i].buffer != NULL)) {
-				memcpy((Uint8 *)p, q->index[i].buffer,  q->chunkSize);
-				q->index[i].use = FALSE;
+			if(q->index[i]->use && (q->index[i]->buffer != NULL)) {
+				memcpy((Uint8 *)p, q->index[i]->buffer,  q->chunkSize);
+				q->index[i]->use = FALSE;
 				SDL_SemPost(q->sem);
 				return q->chunkSize;
 			}
@@ -251,15 +278,17 @@ int ReadRingBufferLimited(struct RingBufferDesc *q, void *p, int len)
 
 	if(q == NULL) return -1;
 	if(q->index == NULL) return -1;
+	if(q->sem == NULL) return -1;
+
 	SDL_SemWait(q->sem);
 
 	for(i = 0; i <q->chunks; i++) {
 		if(q->index != NULL) {
-			if(q->index[i].use && (q->index[i].buffer != NULL)) {
+			if(q->index[i]->use && (q->index[i]->buffer != NULL)) {
 				len2 = q->chunkSize;
 				if(len < len2) len2 = len;
-				memcpy((Uint8 *)p, q->index[i].buffer,  len2);
-				q->index[i].use = FALSE;
+				memcpy((Uint8 *)p, q->index[i]->buffer,  len2);
+				q->index[i]->use = FALSE;
 				SDL_SemPost(q->sem);
 				return len2;
 			}
