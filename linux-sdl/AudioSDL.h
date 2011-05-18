@@ -39,23 +39,31 @@ public:
 	void Unlock();
 	void Lock(void);
 	void Kick(BOOL sw);
-	void PutSound(Sint16 *src, int len);
+	int PutSound(Sint16 *src, int len);
 
 	Sint16 *MixSounds(Sint16 *dst, int len, BOOL clear);
+	int MixSounds(int len, BOOL clear);
+
 	void SampleCallback(void* userdata, Uint8* stream, int len);
 	void RegSound16(Sint16 **p, int members);
 	void RegSound32(Sint32 **p, int members);
+	void *GetAudioSpec(void);
 
 	void SetVolume(WORD vol);
 	WORD GetVolume(void);
+/*
+ * Buffer Primitives
+ */
+	int GetLeft();
+	int DummyRead(int r);
+	int DummyWrite(int w);
+	Sint16 *GetReadBuf(void);
+	Sint16 *GetWriteBuf(void);
+	int GetBufSize(void);
 
+	BOOL LockBuf(void);
+	BOOL UnlockBuf(void);
 
-	Sint16 *IntBuf;
-	int BufSize;
-	int BufRptr;
-	int BufWptr;
-	int BufLeft;
-	SDL_semaphore *BufSem;
 
 protected:
 	void (* callbackfunc)(void *, Uint8 *, int);
@@ -71,6 +79,14 @@ protected:
 	int Channels;
 	int Samples;
 	int Format;
+
+	Sint16 *IntBuf;
+	int BufSize;
+	int BufRptr;
+	int BufWptr;
+	int BufLeft;
+	SDL_semaphore *BufSem;
+
 };
 
 #endif /* AUDIOSDL_H_ */

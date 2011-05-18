@@ -138,6 +138,7 @@ enum {
 	CH_NEWSND_END
 };
 static Sint16 *pSounds[CH_NEWSND_END];
+static Sint32 *pSounds32[CH_NEWSND_END];
 #endif
 /*
  * OPN内部変数
@@ -152,8 +153,11 @@ static DWORD uBufSize; // バッファサイズ(バイト数)
 
 static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
-static SDL_sem 			*applySem;
-
+static SDL_sem 			*applySem; /* マルチスレッド排他用セマフォ:Agarはマルチスレッドで動く */
+static BOOL bSndStopFlag; /* 音声スレッド停止フラグ */
+static SDL_Thread *pSoundThread;
+static int SoundThread(void *p);
+static int nDataLen;
 /*
  * サウンドレンダリングドライバ
  */
@@ -295,7 +299,7 @@ void InitSnd(void)
 	bBeepFlag = FALSE;      /* BEEP出力 */
 	bTapeFlag = TRUE;
 	bWavCapture = FALSE;
-        hWavCapture = 0;
+    hWavCapture = 0;
 
 	bMode = FALSE;
 
@@ -309,13 +313,17 @@ void InitSnd(void)
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = SDL_CreateSemaphore(1);
+	bSndStopFlag = FALSE;
+	pSoundThread = NULL;
 
 	uTick = 0;   // バッファサイズ(時間)
 	uRate = 0;   // サンプリングレート
 	uBufSize = 0; // バッファサイズ(バイト数)
+	nDataLen = 0;
 #ifdef USE_NEWAUDIODRIVER
 	AudioSDLDrv = new AudioSDL;
 	nChunkSamples = 0;
+
 #endif
 
 	/*
@@ -349,6 +357,12 @@ void CleanFDDSnd(void)
 
 void CleanSnd(void)
 {
+	if(pSoundThread) {
+		int rep;
+		bSndStopFlag = TRUE;
+		SDL_WaitThread(pSoundThread, &rep);
+		pSoundThread = NULL;
+	}
 	DetachBufferDesc(pOpnBuf);
 	pOpnBuf = NULL;
 
@@ -404,6 +418,7 @@ void CleanSnd(void)
 	}
 	nChunkSamples = 0;
 #endif
+	nDataLen = 0;
 }
 
 /*
@@ -411,6 +426,12 @@ void CleanSnd(void)
  */
 static void CloseSnd(void)
 {
+	if(pSoundThread) {
+		int rep;
+		bSndStopFlag = TRUE;
+		SDL_WaitThread(pSoundThread, &rep);
+		pSoundThread = NULL;
+	}
 	if(bSndEnable) {
 #ifdef USE_NEWAUDIODRIVER
 		if(bWavCapture) {
@@ -458,49 +479,36 @@ static void CloseSnd(void)
 		delete[] DrvWav;
 		DrvWav = NULL;
 	}
-
+	nDataLen = 0;
 }
+
 
 static void AudioCallbackSDL(void* userdata, Uint8* stream, int len)
 {
 
 	int len2 = len / sizeof(Sint16);
 	int len3;
+	int left;
+	int r;
+	int size;
 	Sint16 *p;
 
 
-	if(AudioSDLDrv->IntBuf == NULL) return;
-	if(AudioSDLDrv->BufSem == NULL) return;
-    if((AudioSDLDrv->BufRptr < 0) || (AudioSDLDrv->BufRptr >= AudioSDLDrv->BufSize)) return;
-    if(AudioSDLDrv->BufLeft <= 0) {
-    	AudioSDLDrv->BufLeft = 0;
-    }
-    if(AudioSDLDrv->BufLeft > AudioSDLDrv->BufSize){
-    	// Buffer Under Flow
-    	// Nullサウンド出すべき？
-    	return;
-    }
+	size = AudioSDLDrv->GetBufSize();
+	left = AudioSDLDrv->GetLeft();
+	if(len2 > size) len2 = size;
+	if(len2 <= 0) return;
 
-	SDL_SemWait(AudioSDLDrv->BufSem);
-	if(len2 > AudioSDLDrv->BufLeft) len2 = AudioSDLDrv->BufLeft;
-	p = &(AudioSDLDrv->IntBuf[AudioSDLDrv->BufRptr]);
-	len3 = (AudioSDLDrv->BufSize - AudioSDLDrv->BufRptr);
-	if(len3 > len2) len3 = len2;
-	SDL_MixAudio(stream,(Uint8 *)p, len3 * sizeof(Sint16), AudioSDLDrv->GetVolume());
-	len2 -= len3;
-	AudioSDLDrv->BufLeft +=  len3;
-	AudioSDLDrv->BufRptr += len3;
-	if(AudioSDLDrv->BufRptr >= AudioSDLDrv->BufSize) {
-		AudioSDLDrv->BufRptr = 0;
-	}
-
-	if((AudioSDLDrv->BufLeft <= AudioSDLDrv->BufSize) && (len2 > 0)) {
-		p = &(AudioSDLDrv->IntBuf[AudioSDLDrv->BufRptr]);
-		SDL_MixAudio(stream, (Uint8 *)p, len2 * sizeof(Sint16), AudioSDLDrv->GetVolume());
-		AudioSDLDrv->BufRptr += len2;
-		AudioSDLDrv->BufLeft += len2;
-	}
-	SDL_SemPost(AudioSDLDrv->BufSem);
+	printf("SND: SDL Callback:Time: %08d UserData = %08x Stream = %08x len = %d reallen = %d\n", dwSoundTotal, userdata, stream, len, len2);
+//	if(!AudioSDLDrv->LockBuf()) return;
+//	while(len2 > 0) {
+		p = AudioSDLDrv->GetReadBuf();
+		r = AudioSDLDrv->DummyRead(len2);
+		if(r < 0) return;
+		SDL_MixAudio(stream,(Uint8 *)p, r * sizeof(Sint16), AudioSDLDrv->GetVolume());
+		len2 = len2 - r;
+//	}
+//	AudioSDLDrv->UnlockBuf();
 }
 
 
@@ -538,6 +546,7 @@ BOOL SelectSnd(void)
  */
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
+	nDataLen = 0;
 //    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
 #ifndef USE_NEWAUDIODRIVER
     if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
@@ -595,6 +604,9 @@ BOOL SelectSnd(void)
 		DrvCMT->SetRate(uRate);
 		DrvCMT->Setup(uTick);
 		DrvCMT->Enable(TRUE);
+	}
+	if(pSoundThread == NULL) {
+		pSoundThread = SDL_CreateThread(SoundThread, NULL);
 	}
 }
 
@@ -1293,6 +1305,81 @@ static int SetChunk(struct SndBufType *p, int samples, int ch)
 	return i;
 }
 
+static void IncReadBuf(struct SndBufType *p, int r)
+{
+	if(p == NULL) return;
+	p->nReadPTR += (r * sizeof(Sint16));
+	if(p->nReadPTR >= p->nSize) p->nReadPTR -= p->nSize;
+	if(p->nReadPTR < 0) p->nReadPTR = 0;
+
+}
+
+static Sint16 SndTapCaptureWav(Sint16 *p, int len)
+{
+    if(bWavCapture == TRUE) {
+    	p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, len);
+    	if(p == NULL) {
+    		CloseCaptureSnd();
+    		bWavCapture = FALSE;
+    	}
+    }
+
+}
+
+/*
+ * 実際にサウンドを出力するスレッド
+ */
+static int SoundThread(void *p)
+{
+
+	int channels = 2;
+	int chunksize;
+	int result;
+
+	do {
+		SDL_Delay(10);
+	} while (AudioSDLDrv == NULL);
+
+	while(1)
+	{
+		SDL_Delay(uTick / CHUNKS);
+		if(bSndStopFlag == TRUE) return 0;
+#if 0
+		if(nDataLen <= 0) continue;
+		chunksize = (uTick * uRate) / 1000 / CHUNKS;
+		if(applySem) {
+		        // TODO 真面目に全てのバッファの大きさを見ないと駄目なようだ
+				SDL_SemWait(applySem);
+		        pSounds[0] = &pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels];
+		        pSounds[1] = &pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels];
+		        pSounds32[0] = &pOpnBuf->pBuf32[pOpnBuf->nReadPTR * channels];
+		        result = 0;
+		        if(AudioSDLDrv){
+		        	AudioSDLDrv->Lock();
+		        	AudioSDLDrv->SetVolume(iTotalVolume);
+		        	AudioSDLDrv->RegSound16(pSounds, 3);
+		        	AudioSDLDrv->RegSound32(pSounds32, 1);
+		        	// SndTapCaptureWav(&AudioSDLDrv->IntBuf[AudioSDLDrv->ReadPTR],len);
+	        		result = AudioSDLDrv->MixSounds(chunksize * channels, TRUE);
+		        	AudioSDLDrv->Unlock();
+		        	AudioSDLDrv->Kick(TRUE);
+		        }
+		        if(result < 0) result = 0;
+		        IncReadBuf(pBeepBuf, chunksize);
+		        IncReadBuf(pCMTBuf, chunksize);
+		        IncReadBuf(pOpnBuf, chunksize);
+//				nDataLen -= chunksize;
+		        nDataLen = 0;
+				if(nDataLen < 0) nDataLen = 0;
+		        SDL_SemPost(applySem);
+	    }
+#else
+    	AudioSDLDrv->Kick(TRUE);
+#endif
+	}
+	return 0;
+}
+
 /*
  * 1msごとにスケジューラから呼び出されるhook
  */
@@ -1304,11 +1391,10 @@ void ProcessSnd(BOOL bZero)
 	int chunksize;
 	int channels = 2;
 	BOOL bWrite = FALSE;
-	Sint16 *DataPtr[4];
-	int i;
+	int result;
 
 
-	chunksize = ((uTick* uRate) / 1000) / CHUNKS;
+	chunksize = ((uTick* uRate) / 1000) / (CHUNKS * 4);
 
 	dwSndCount++;
 	if(dwSndCount >= (uTick / CHUNKS)) {
@@ -1348,46 +1434,39 @@ void ProcessSnd(BOOL bZero)
 		FlushCMTSub(time, bZero, chunksize);
 		DrvBeep->Enable(beep_flag & speaker_flag);
 		bBeepFlag = beep_flag & speaker_flag;
-
-		for(i = 0; i < 4; i++) DataPtr[i] = NULL;
-
 		/*
 		 * 演奏本体
 		 */
-//		SDL_LockAudio();
 		if(applySem) {
-//		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
 			SDL_SemWait(applySem);
-		        if(bWavCapture == TRUE) {
-			   Sint16 *p;
-			   p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
-//			   printf("Wrote: %d bytes \n", chunksize * channels * sizeof(Sint16));
-			   if(p == NULL) {
-				CloseCaptureSnd();
-				bWavCapture = FALSE;
-			   }
-			}
 #ifdef USE_NEWAUDIODRIVER
-		    pSounds[0] = &pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels];
-		    pSounds[1] = &pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels];
-		    pSounds[2] = &pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels];
-		    if(AudioSDLDrv){
-		    	AudioSDLDrv->Lock();
-		    	AudioSDLDrv->SetVolume(iTotalVolume);
-//		    	AudioSDLDrv->RegSound16(pSounds, 3);
-//		    	AudioSDLDrv->MixSounds(pCaptureBuf->pBuf, chunksize, TRUE);
-//		    	AudioSDLDrv->PutSound(pCaptureBuf->pBuf, chunksize);
-		    	AudioSDLDrv->PutSound(&(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]), chunksize);
-		       AudioSDLDrv->Unlock();
-  		    	AudioSDLDrv->Kick(TRUE);
-
-
-		    }
+			chunksize = (uTick * uRate) / 1000 / CHUNKS;
+			        pSounds[0] = &pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels];
+			        pSounds[1] = &pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels];
+			        pSounds32[0] = &pOpnBuf->pBuf32[pOpnBuf->nReadPTR * channels];
+			        result = 0;
+			        if(AudioSDLDrv){
+			        	AudioSDLDrv->Lock();
+			        	AudioSDLDrv->SetVolume(iTotalVolume);
+			        	AudioSDLDrv->RegSound16(pSounds, 2);
+//			        	AudioSDLDrv->RegSound16(NULL, 0);
+			        	AudioSDLDrv->RegSound32(pSounds32, 1);
+			        	// SndTapCaptureWav(&AudioSDLDrv->IntBuf[AudioSDLDrv->ReadPTR],len);
+		        		result = AudioSDLDrv->MixSounds(chunksize * channels, TRUE);
+		        		printf("SND: Push:Time: %08d addr = %08x chunksize = %d reallen = %d\n", dwSoundTotal, pSounds[1], chunksize * channels, result);
+			        	AudioSDLDrv->Unlock();
+//			        	AudioSDLDrv->Kick(TRUE);
+			        }
+			        if(result < 0) result = 0;
+			        IncReadBuf(pBeepBuf, result / channels);
+			        IncReadBuf(pCMTBuf, result / channels);
+			        IncReadBuf(pOpnBuf, result / channels);
 #else
 		    SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
 			SetChunk(pBeepBuf , chunksize, CH_SND_BEEP);
 			SetChunk(pCMTBuf , chunksize, CH_SND_CMT);
 #endif
+			nDataLen += (chunksize * channels);
 			SDL_SemPost(applySem);
 		}
 //		SDL_UnlockAudio();

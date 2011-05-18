@@ -15,44 +15,11 @@
 
 void AudioSDL::SampleCallback(void* userdata, Uint8* stream, int len)
 {
-
 	int len2 = len / sizeof(Sint16);
 	int len3;
 	Sint16 *p;
 
 
-	if(IntBuf == NULL) return;
-	if(BufSem == NULL) return;
-    if((BufRptr < 0) || (BufRptr >= BufSize)) return;
-    if(BufLeft <= 0) {
-    	BufLeft = 0;
-    }
-    if(BufLeft > BufSize){
-    	// Buffer Under Flow
-    	// Nullサウンド出すべき？
-    	return;
-    }
-
-	SDL_SemWait(BufSem);
-	if(len2 > BufLeft) len2 = BufLeft;
-	p = &(IntBuf[BufRptr]);
-	len3 = (BufSize - BufRptr);
-	if(len3 > len2) len3 = len2;
-	SDL_MixAudio(stream,(Uint8 *)p, len3 * sizeof(Sint16), volume);
-	len2 -= len3;
-	BufLeft +=  len3;
-	BufRptr += len3;
-	if(BufRptr >= BufSize) {
-		BufRptr = 0;
-	}
-
-	if((BufLeft <= BufSize) && (len2 > 0)) {
-		p = &(IntBuf[BufRptr]);
-		SDL_MixAudio(stream, (Uint8 *)p, len2 * sizeof(Sint16), volume);
-		BufRptr += len2;
-		BufLeft += len2;
-	}
-	SDL_SemPost(BufSem);
 }
 
 AudioSDL::AudioSDL() {
@@ -79,8 +46,10 @@ AudioSDL::AudioSDL() {
 	if(BufSem == NULL) {
 		return;
 	}
-//	RegCallback((void (*)(void *, Uint8 *, int))&AudioSDL::SampleCallback);
-
+	SDL_SemPost(BufSem);
+	if(SDL_WasInit(SDL_INIT_AUDIO) == 0) {
+		SDL_InitSubSystem(SDL_INIT_AUDIO);
+	}
 
 }
 
@@ -116,7 +85,7 @@ void AudioSDL::RegCallback(void (* RealCallBack)(void *, Uint8 *, int))
 }
 
 
-void AudioSDL::PutSound(Sint16 *src, int len)
+int AudioSDL::PutSound(Sint16 *src, int len)
 {
    int len2;
    int len3 = len;
@@ -124,15 +93,23 @@ void AudioSDL::PutSound(Sint16 *src, int len)
    Sint16 *p;
    Sint16 *q;
 
-   if(len <= 0) return;
-   if(src == NULL) return;
-   if(BufSem == NULL) return;
-   if(IntBuf == NULL) return;
-   if((BufWptr < 0) || (BufWptr >= BufSize)) return;
-   if(BufLeft <= 0) return;
+   if(len <= 0) return 0;
+   if(src == NULL) return 0;
+   if(BufSem == NULL) return 0;
+   if(IntBuf == NULL) return 0;
+   if((BufWptr < 0) || (BufWptr >= BufSize)){
+	   BufWptr = 0;
+   }
+//   if(BufLeft <= 0) return;
+   if(BufLeft <= 0) {
+	   BufLeft = 0;
+   }
+   if(BufLeft >= BufSize){
+	   BufLeft = BufSize;
+   }
 
    SDL_SemWait(BufSem);
-   len2 = BufSize - BufRptr;
+   len2 = BufSize - BufWptr;
    if(len2 < len3) {
 	   p = &(IntBuf[BufWptr]);
 	   memcpy((void *)p, (void *)src, len2 * sizeof(Sint16));
@@ -142,7 +119,7 @@ void AudioSDL::PutSound(Sint16 *src, int len)
 	   BufLeft -= len2;
 	   if(BufLeft <= 0) {
 		   SDL_SemPost(BufSem);
-		   return;
+		   return len2;
 	   }
    }
    p = &(IntBuf[BufWptr]);
@@ -150,9 +127,163 @@ void AudioSDL::PutSound(Sint16 *src, int len)
    memcpy((void *)p, (void *)q, len3 * sizeof(Sint16));
    BufWptr += len3;
    BufLeft -= len3;
+
+   if((BufWptr < 0) || (BufWptr >= BufSize)){
+	   BufWptr = 0;
+   }
+//   if(BufLeft <= 0) return;
+   if(BufLeft <= 0) {
+	   BufLeft = 0;
+   }
+   if(BufLeft >= BufSize){
+	   BufLeft = BufSize;
+   }
    SDL_SemPost(BufSem);
-   return;
+   return len2 + len3;
 }
+
+/*
+ * Primitives
+ */
+int AudioSDL::GetLeft()
+{
+	return BufLeft;
+}
+
+int AudioSDL::GetBufSize(void)
+{
+	return BufSize;
+}
+
+
+int AudioSDL::DummyRead(int r)
+{
+	int len2 = 0;
+	int len3 = r;
+
+	   if(r <= 0) return 0;
+	   if(BufSem == NULL) return -1;
+	   if(IntBuf == NULL) return -1;
+	   if((BufRptr < 0) || (BufRptr >= BufSize)){
+		   BufRptr = 0;
+	   }
+	   if(BufLeft <= 0) {
+		   BufLeft = 0;
+	   }
+	   if(BufLeft >= BufSize){
+		   BufLeft = BufSize;
+	   }
+	   if(len3 > BufSize) len3 = BufSize;
+
+	   if((BufSize - BufRptr) < len3) {
+		   len2 = BufSize - BufRptr;
+		   BufRptr = 0;
+		   BufLeft += len2;
+		   if((BufRptr < 0) || (BufRptr >= BufSize)){
+			   BufRptr = 0;
+		   }
+		//   if(BufLeft <= 0) return;
+		   if(BufLeft <= 0) {
+			   BufLeft = 0;
+		   }
+		   if(BufLeft >= BufSize){
+			   BufLeft = BufSize;
+		   }
+		   return len2;
+	   }
+	   BufRptr += len3;
+	   BufLeft += len3;
+	   if((BufRptr < 0) || (BufRptr >= BufSize)){
+		   BufRptr = 0;
+	   }
+
+	   if(BufLeft <= 0) {
+		   BufLeft = 0;
+	   }
+	   if(BufLeft >= BufSize){
+		   BufLeft = BufSize;
+	   }
+	   return len3;
+}
+
+
+int AudioSDL::DummyWrite(int w)
+{
+	int len2 = 0;
+	int len3 = w;
+
+	   if(w <= 0) return 0;
+	   if(BufSem == NULL) return -1;
+	   if(IntBuf == NULL) return -1;
+	   if((BufWptr < 0) || (BufWptr >= BufSize)){
+		   BufWptr = 0;
+	   }
+	   if(BufLeft <= 0) {
+		   BufLeft = 0;
+	   }
+	   if(BufLeft >= BufSize){
+		   BufLeft = BufSize;
+	   }
+	   if(len3 > BufSize) len3 = BufSize;
+
+	   if((BufSize - BufWptr) < len3) {
+		   len2 = BufSize - BufWptr;
+		   BufWptr = 0;
+		   BufLeft -= len2;
+		   if((BufWptr < 0) || (BufWptr >= BufSize)){
+			   BufWptr = 0;
+		   }
+		//   if(BufLeft <= 0) return;
+		   if(BufLeft <= 0) {
+			   BufLeft = 0;
+		   }
+		   if(BufLeft >= BufSize){
+			   BufLeft = BufSize;
+		   }
+		   return len2;
+	   }
+	   BufWptr += len3;
+	   BufLeft -= len3;
+	   if((BufWptr < 0) || (BufWptr >= BufSize)){
+		   BufWptr = 0;
+	   }
+	//   if(BufLeft <= 0) return;
+	   if(BufLeft <= 0) {
+		   BufLeft = 0;
+	   }
+	   if(BufLeft >= BufSize){
+		   BufLeft = BufSize;
+	   }
+	   return len3;
+}
+
+Sint16 *AudioSDL::GetReadBuf(void)
+{
+	if(BufRptr >= BufSize) BufRptr = 0;
+	if(BufRptr < 0) BufRptr = 0;
+	return &IntBuf[BufRptr];
+}
+
+Sint16 *AudioSDL::GetWriteBuf(void)
+{
+	if(BufWptr >= BufSize) BufWptr = 0;
+	if(BufWptr < 0) BufWptr = 0;
+	return &IntBuf[BufWptr];
+}
+
+BOOL AudioSDL::LockBuf(void)
+{
+	if(BufSem == NULL) return FALSE;
+	SDL_SemWait(BufSem);
+}
+
+BOOL AudioSDL::UnlockBuf(void)
+{
+	if(BufSem == NULL) return FALSE;
+	SDL_SemPost(BufSem);
+}
+
+
 
 void AudioSDL::RegSound16(Sint16 **p, int members)
 {
@@ -164,6 +295,64 @@ void AudioSDL::RegSound32(Sint32 **p, int members)
 {
 	Sounds32 = p;
 	Members32 = members;
+}
+
+
+void *AudioSDL::GetAudioSpec(void)
+{
+	return (void *)RealAudioSpec;
+}
+
+
+int AudioSDL::MixSounds(int len, BOOL clear)
+{
+	int len2 = 0;
+	int len3 = len;
+	Sint16 *p;
+
+	   if(len <= 0) return 0;
+	   if(BufSem == NULL) return 0;
+	   if(IntBuf == NULL) return 0;
+	   if((BufWptr < 0) || (BufWptr >= BufSize)){
+		   BufWptr = 0;
+	   }
+	//   if(BufLeft <= 0) return;
+	   if(BufLeft <= 0) {
+		   BufLeft = 0;
+	   }
+	   if(BufLeft >= BufSize){
+		   BufLeft = BufSize;
+	   }
+
+	   SDL_SemWait(BufSem);
+	   if((BufSize - BufWptr) < len3) {
+		   len2 = BufSize - BufWptr;
+			p = MixSounds(&IntBuf[BufWptr], len2, clear);
+		   len3 -= len2;
+		   BufWptr = 0;
+		   BufLeft -= len2;
+		   if(BufLeft <= 0) {
+			   SDL_SemPost(BufSem);
+			   return len2;
+		   }
+	   }
+       p = MixSounds(&IntBuf[BufWptr], len3, clear);
+	   BufWptr += len3;
+	   BufLeft -= len3;
+
+	   if((BufWptr < 0) || (BufWptr >= BufSize)){
+		   BufWptr = 0;
+	   }
+	//   if(BufLeft <= 0) return;
+	   if(BufLeft <= 0) {
+		   BufLeft = 0;
+	   }
+	   if(BufLeft >= BufSize){
+		   BufLeft = BufSize;
+	   }
+	   SDL_SemPost(BufSem);
+	   return len2 + len3;
+
 }
 
 Sint16 *AudioSDL::MixSounds(Sint16 *dst, int len, BOOL clear)
@@ -197,7 +386,7 @@ Sint16 *AudioSDL::MixSounds(Sint16 *dst, int len, BOOL clear)
 				} else 	if(tmp32 < -32767) {
 					tmp = -32767;
 				} else {
-					tmp = (Sint16) tmp;
+					tmp = (Sint16) tmp32;
 				}
 				dst[i] = tmp;
 			}
@@ -225,7 +414,7 @@ Sint16 *AudioSDL::MixSounds(Sint16 *dst, int len, BOOL clear)
 			} else 	if(tmp32 < -32767) {
 				tmp = -32767;
 			} else {
-				tmp = (Sint16) tmp;
+				tmp = (Sint16) tmp32;
 			}
 			dst[i] = tmp;
 		}
@@ -287,7 +476,7 @@ int AudioSDL::Open(int rate, int ch, int spl)
 	ReqAudioSpec.channels = Channels;
 	ReqAudioSpec.samples = Samples;
 	ReqAudioSpec.callback = callbackfunc;
-   	ReqAudioSpec.userdata = NULL;
+	SDL_CloseAudio();
 	r = SDL_OpenAudio(&ReqAudioSpec, RealAudioSpec);
 	if ( r < 0) {
 		free(RealAudioSpec);
