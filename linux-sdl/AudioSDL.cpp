@@ -6,39 +6,53 @@
  *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
-#include "util_ringbuffer.h"
 #include "AudioSDL.h"
+
 
 /*
  *  Audio Call back for SDL; for example
  */
+
 void AudioSDL::SampleCallback(void* userdata, Uint8* stream, int len)
 {
 
-//	struct RingBufferDesc *queue = (struct RingBufferDesc *)userdata;
-	struct RingBufferDesc *queue = ring;
-	int result = 0;
-	int len2 = len;
-	Uint8 *p;
-   
-       p =(Uint8 *) malloc(len);
-//        p = MetaBuf;
-//	if(queue == NULL) return;
-	if(p == NULL) return;
+	int len2 = len / sizeof(Sint16);
+	int len3;
+	Sint16 *p;
 
-#if 1
-	while(queue->chunkSize < len2) {
-		result = ReadRingBuffer(queue, (void *)p);
-		if(result <= 0) return; // Queue Empty
-		p += result;
-		len2 -= result;
+
+	if(IntBuf == NULL) return;
+	if(BufSem == NULL) return;
+    if((BufRptr < 0) || (BufRptr >= BufSize)) return;
+    if(BufLeft <= 0) {
+    	BufLeft = 0;
+    }
+    if(BufLeft > BufSize){
+    	// Buffer Under Flow
+    	// Nullサウンド出すべき？
+    	return;
+    }
+
+	SDL_SemWait(BufSem);
+	if(len2 > BufLeft) len2 = BufLeft;
+	p = &(IntBuf[BufRptr]);
+	len3 = (BufSize - BufRptr);
+	if(len3 > len2) len3 = len2;
+	SDL_MixAudio(stream,(Uint8 *)p, len3 * sizeof(Sint16), volume);
+	len2 -= len3;
+	BufLeft +=  len3;
+	BufRptr += len3;
+	if(BufRptr >= BufSize) {
+		BufRptr = 0;
 	}
-	if(len2 > 0){
-		ReadRingBufferLimited(queue, (void *)p, len2);
+
+	if((BufLeft <= BufSize) && (len2 > 0)) {
+		p = &(IntBuf[BufRptr]);
+		SDL_MixAudio(stream, (Uint8 *)p, len2 * sizeof(Sint16), volume);
+		BufRptr += len2;
+		BufLeft += len2;
 	}
-#endif   
-        SDL_MixAudio(stream, p, len, SDL_MIX_MAXVOLUME);
-        free(p);
+	SDL_SemPost(BufSem);
 }
 
 AudioSDL::AudioSDL() {
@@ -46,22 +60,36 @@ AudioSDL::AudioSDL() {
 	SampleRate = 0;
 	Channels = 0;
 	Samples = 0;
+	callbackfunc = NULL;
 
-	ring = NULL;
 	RealAudioSpec = NULL;
+	volume = 0;
 
 	Sounds16 = NULL;
 	Members16 = 0;
 	Sounds32 = NULL;
 	Members32 = 0;
-        MetaBuf = NULL;
-	RegCallback((void (*)(void *, Uint8 *, int))&AudioSDL::SampleCallback);
-//	RegCallback(SampleCallback);
+
+	BufSize = 0;
+	BufLeft = 0;
+	BufRptr = 0;
+	BufWptr = 0;
+	IntBuf = NULL;
+	BufSem = SDL_CreateSemaphore(1);
+	if(BufSem == NULL) {
+		return;
+	}
+//	RegCallback((void (*)(void *, Uint8 *, int))&AudioSDL::SampleCallback);
+
+
 }
 
 AudioSDL::~AudioSDL() {
-	if(ring) {
-		DeleteRingBuffer(ring);
+	if(IntBuf) {
+		free(IntBuf);
+	}
+	if(BufSem){
+		SDL_DestroySemaphore(BufSem);
 	}
 
 	SDL_CloseAudio();
@@ -71,43 +99,59 @@ AudioSDL::~AudioSDL() {
 	}
 }
 
+void AudioSDL::SetVolume(WORD vol)
+{
+	volume = vol;
+}
+
+WORD AudioSDL::GetVolume(void)
+{
+	return volume ;
+}
+
+
 void AudioSDL::RegCallback(void (* RealCallBack)(void *, Uint8 *, int))
 {
 	callbackfunc = RealCallBack;
 }
 
-void AudioSDL::RegMetaBuf(Sint16 *p)
-{
-	MetaBuf = (Uint8 *)p;
-}
 
 void AudioSDL::PutSound(Sint16 *src, int len)
 {
    int len2;
-   int result;
-   Uint8 *p;
-   struct RingBufferDesc *dst = ring;
+   int len3 = len;
+   int ofset = 0;
+   Sint16 *p;
+   Sint16 *q;
 
    if(len <= 0) return;
    if(src == NULL) return;
-   if(dst == NULL) return;
+   if(BufSem == NULL) return;
+   if(IntBuf == NULL) return;
+   if((BufWptr < 0) || (BufWptr >= BufSize)) return;
+   if(BufLeft <= 0) return;
 
-   len2 = len * sizeof(Sint16);
-   p = (Uint8 *)src;
-
-   while(len2 > dst->chunkSize) {
-	   result = WriteRingBuffer(dst, (void *)p);
-	   if(result <= 0) return;
-	   p += result;
-	   len2 -= result;
-   }
-   if(len2 > 0) {
-	   result = WriteRingBufferLimited(dst, (void *)p, len2);
-	   if(result > 0){
-		   p += result;
-		   len2 -= result;
+   SDL_SemWait(BufSem);
+   len2 = BufSize - BufRptr;
+   if(len2 < len3) {
+	   p = &(IntBuf[BufWptr]);
+	   memcpy((void *)p, (void *)src, len2 * sizeof(Sint16));
+	   len3 -= len2;
+	   ofset += len2;
+	   BufWptr = 0;
+	   BufLeft -= len2;
+	   if(BufLeft <= 0) {
+		   SDL_SemPost(BufSem);
+		   return;
 	   }
    }
+   p = &(IntBuf[BufWptr]);
+   q = &(src[ofset]);
+   memcpy((void *)p, (void *)q, len3 * sizeof(Sint16));
+   BufWptr += len3;
+   BufLeft -= len3;
+   SDL_SemPost(BufSem);
+   return;
 }
 
 void AudioSDL::RegSound16(Sint16 **p, int members)
@@ -208,61 +252,62 @@ void AudioSDL::Kick(BOOL sw)
 	}
 }
 
-int AudioSDL::Open(int rate, int ch, int spl, int chunks)
+int AudioSDL::Open(int rate, int ch, int spl)
 {
 	int chunksize;
-	SDL_AudioSpec *ReqAudioSpec;
+	SDL_AudioSpec ReqAudioSpec;
 	int r;
 
-	if(ring) {
-		// Destroy Ring BUffer
-		DeleteRingBuffer(ring);
+	if(BufSem == NULL) return -1;
+	SDL_SemWait(BufSem);
+	if(IntBuf) {
+		free(IntBuf);
 	}
-
 
 	Channels = ch;
 	Samples = spl;
 	SampleRate = rate;
 
-	ReqAudioSpec = (SDL_AudioSpec *)malloc(sizeof(SDL_AudioSpec));
-	if(ReqAudioSpec == NULL) return -1;
-
 	RealAudioSpec = (SDL_AudioSpec *)malloc(sizeof(SDL_AudioSpec));
 	if(RealAudioSpec == NULL) {
-		free(ReqAudioSpec);
+		SDL_SemPost(BufSem);
 		return -1;
 	}
 	chunksize = Samples * Channels * sizeof(Sint16);
-	ring = CreateRingBuffer(chunksize, chunks);
-	if(ring == NULL) {
-		Close();
-		return 0;
-	}
-        
-	ReqAudioSpec->freq = SampleRate;
-	ReqAudioSpec->format = AUDIO_S16SYS;
-	ReqAudioSpec->channels = Channels;
-	ReqAudioSpec->samples = Samples;
-	ReqAudioSpec->callback = callbackfunc;
-   	ReqAudioSpec->userdata = (void *)ring;
-	r = SDL_OpenAudio(ReqAudioSpec, RealAudioSpec);
-	if ( r < 0) {
-		free(ReqAudioSpec);
+	IntBuf = (Sint16 *)malloc(chunksize);
+	if(IntBuf == NULL) {
 		free(RealAudioSpec);
 		RealAudioSpec = NULL;
-	        DeleteRingBuffer(ring);
+		SDL_SemPost(BufSem);
 		return -1;
 	}
-	free(ReqAudioSpec);
+        
+	ReqAudioSpec.freq = SampleRate;
+	ReqAudioSpec.format = AUDIO_S16SYS;
+	ReqAudioSpec.channels = Channels;
+	ReqAudioSpec.samples = Samples;
+	ReqAudioSpec.callback = callbackfunc;
+   	ReqAudioSpec.userdata = NULL;
+	r = SDL_OpenAudio(&ReqAudioSpec, RealAudioSpec);
+	if ( r < 0) {
+		free(RealAudioSpec);
+		RealAudioSpec = NULL;
+		free(IntBuf);
+		IntBuf = NULL;
+		SDL_SemPost(BufSem);
+		return -1;
+	}
+	BufSize = Samples * Channels;
+	BufRptr = 0;
+	BufWptr = 0;
+	BufLeft = BufSize;
 
 	SampleRate = RealAudioSpec->freq;
 	Channels = RealAudioSpec->channels;
 	Samples = RealAudioSpec->samples;
 	Format = RealAudioSpec->format;
 	callbackfunc = RealAudioSpec->callback;
-	Chunks = chunks;
-
-
+	SDL_SemPost(BufSem);
 	return chunksize;
 }
 
@@ -275,10 +320,14 @@ void AudioSDL::Close()
 		RealAudioSpec = NULL;
 	}
 
-	if(ring) {
+	if(IntBuf) {
 		// Destroy Ring BUffer
-		DeleteRingBuffer(ring);
-		ring = NULL;
+		free(IntBuf);
+		IntBuf = NULL;
 	}
+	BufRptr = 0;
+	BufWptr = 0;
+	BufLeft = 0;
+	BufSize = 0;
 }
 

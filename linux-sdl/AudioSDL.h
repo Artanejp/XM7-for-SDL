@@ -8,8 +8,25 @@
 #ifndef AUDIOSDL_H_
 #define AUDIOSDL_H_
 
-#include "util_ringbuffer.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
 #include <SDL/SDL.h>
+
+typedef uint8_t BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef int     BOOL;
+
+#ifndef FALSE
+#define FALSE 0
+#endif /* FALSE */
+
+#ifndef TRUE
+#define TRUE (!FALSE)
+#endif /* TRUE */
+
 
 class AudioSDL {
 public:
@@ -17,7 +34,7 @@ public:
 	virtual ~AudioSDL();
 	void RegCallback(void (* RealCallBack)(void *, Uint8 *, int));
 
-	int Open(int rate, int ch, int spl, int chunks);
+	int Open(int rate, int ch, int spl);
 	void Close(void);
 	void Unlock();
 	void Lock(void);
@@ -28,10 +45,22 @@ public:
 	void SampleCallback(void* userdata, Uint8* stream, int len);
 	void RegSound16(Sint16 **p, int members);
 	void RegSound32(Sint32 **p, int members);
-        void RegMetaBuf(Sint16 *p);
+
+	void SetVolume(WORD vol);
+	WORD GetVolume(void);
+
+
+	Sint16 *IntBuf;
+	int BufSize;
+	int BufRptr;
+	int BufWptr;
+	int BufLeft;
+	SDL_semaphore *BufSem;
+
 protected:
 	void (* callbackfunc)(void *, Uint8 *, int);
-	struct RingBufferDesc *ring;
+	Uint8 volume;
+
 	Sint16 **Sounds16;
 	int Members16;
 	Sint32 **Sounds32;
@@ -42,8 +71,6 @@ protected:
 	int Channels;
 	int Samples;
 	int Format;
-	int Chunks;
-        Uint8 *MetaBuf;
 };
 
 #endif /* AUDIOSDL_H_ */

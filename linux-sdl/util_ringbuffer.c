@@ -24,6 +24,11 @@ struct RingBufferDesc *CreateRingBuffer(int chunkSize, int chunks)
 	q->chunks = chunks;
 	q->chunkSize = chunkSize;
 	q->sem = SDL_CreateSemaphore(1);
+	if(q->sem == NULL) {
+		free(q);
+		return NULL;
+	}
+	SDL_SemPost(q->sem);
 
 	size = chunks * sizeof(struct RingBufferIndex *);
 	p = (struct RingBufferIndex *)malloc(size);
