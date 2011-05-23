@@ -46,7 +46,7 @@ VIDEODRVSRC = \
 	api_draw.cpp api_scaler.cpp 
 
 SNDDRVSRC = \
-	api_snd2.cpp api_wavwriter.cpp AudioSDL.cpp \
+	api_snd2.cpp api_wavwriter.cpp  \
 	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
 
 INPUTSRC = \
@@ -59,7 +59,7 @@ UISRC =
 
 LOCALSRC = \
 	sdl_inifile.c \
-        sdl_file.c util_ringbuffer.c \
+        sdl_file.c \
 	$(VIDEODRVSRC) \
 	$(SNDDRVSRC) $(INPUTSRC) \
 	$(UISRC)
@@ -224,9 +224,6 @@ Release/api_snd2.o: api_snd2.cpp
 Release/api_wavwriter.o: api_wavwriter.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-Release/AudioSDL.o: AudioSDL.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-
 Release/SndDrvTmpl.o: SndDrvTmpl.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
@@ -261,8 +258,6 @@ Release/SDLJoyInterface.o: SDLJoyInterface.cpp
 Release/KbdInterface.o: KbdInterface.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-Release/util_ringbuffer.o: util_ringbuffer.c
-	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 Debug/aluline.o: aluline.c
@@ -381,8 +376,6 @@ Debug/api_scaler.o: api_scaler.cpp
 Debug/api_snd2.o: api_snd2.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
-Debug/AudioSDL.o: AudioSDL.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/api_wavwriter.o: api_wavwriter.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
@@ -421,8 +414,6 @@ Debug/SDLJoyInterface.o: SDLJoyInterface.cpp
 Debug/KbdInterface.o: KbdInterface.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
-Debug/util_ringbuffer.o: util_ringbuffer.c
-	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 .asm.o:
 	nasm ${ASFLAGS} $<
