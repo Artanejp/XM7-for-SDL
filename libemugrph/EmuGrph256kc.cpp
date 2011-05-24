@@ -150,7 +150,11 @@ void EmuGrph256kc::PutVram(BOOL interlace)
 	pixsize = p->format->BytesPerPixel;
 	w = p->w;
 	h = p->h;
-	nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , p->format->alpha );
+#if SDL_VERSION_ATLEAST(1,3,0)
+      nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , 0 );
+#else   
+   nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , p->format->alpha );
+#endif
 	for(y = 0; y < vram_h; y++) {
 		if(y >= h) break;
 		ofset = y * vram_w;

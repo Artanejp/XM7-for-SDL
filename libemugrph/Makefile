@@ -9,6 +9,7 @@ INSTALL          = install -c
 PREFIX           = /usr/local
 CC           = gcc
 CXX           = g++
+#include ../xm7-sdl/config.mak
 LIBTOOL           = libtool
 LIB           = emugrph
 
@@ -74,15 +75,17 @@ OBJS =	${COMMONOBJ} ${LOCALOBJ}
 SHOBJS =	${COMMONSHOBJ} ${LOCALSHOBJ}
 
 LDFLAGS = 
-#CFLAGS =        -g -O0 -export-dynamic
-CFLAGS =        -O3 -export-dynamic
+CFLAGS =        -g -O0 -export-dynamic
+#CFLAGS =        -O3 -export-dynamic
 #CFLAGS += -fPIC
 
 CFLAGS +=  -I. -I/usr/local/include 
 CFLAGS += -I/usr/local/include/agar
 CFLAGS += `pkg-config --cflags sdl`
-CFLAGS += `pkg-config --cflags gtk+-x11-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
+#CFLAGS += -I/usr/local/include/SDL
+#CFLAGS += `pkg-config --cflags gtk+-x11-2.0` `pkg-config --cflags gdk-pixbuf-2.0`
 LIBS += -lag_core -lag_gui -lfreetype -lpng -ljpeg
+#LIBS += -L/usr/local/lib/ -lSDL
 
 LIBS += `pkg-config --libs sdl`
 LIBS += -lGL -lGLU

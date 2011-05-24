@@ -70,13 +70,21 @@ int EmuGLUtils::InitGL(int w, int h)
       if ( accel ) {
               SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
       }
+#if SDL_VERSION_ATLEAST(1,3,0)
+   // ここに、SYNCTOVSYNC設定入れる
+#else
       if ( sync ) {
               SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
       } else {
               SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
       }
+#endif   
 #endif
+#if SDL_VERSION_ATLEAST(1,3,0)
+   // ここに、SYNCTOVSYNC設定入れる
+#else
       SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
+#endif   
   	if(SDL_SetVideoMode(w, h, 32, flags) == 0)
   	{
   		return -1;

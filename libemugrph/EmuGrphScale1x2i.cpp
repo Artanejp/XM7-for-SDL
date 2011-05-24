@@ -39,7 +39,11 @@ void EmuGrphScale1x2i::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint3
 	if(putword == NULL) return;
 	if(getvram == NULL) return;
 	SDL_LockSurface(p);
-	nullline = SDL_MapRGBA(p->format, 0, 0, 0, p->format->alpha);
+#if SDL_VERSION_ATLEAST(1,3,0)
+      nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , 0 );
+#else   
+   nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , p->format->alpha );
+#endif
 	for(yy = y; yy < hh ; yy++) {
 		if(yy >= vramheight) break;
 		addr = yy * vramwidth + x / 8;
