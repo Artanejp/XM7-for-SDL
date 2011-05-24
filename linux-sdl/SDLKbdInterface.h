@@ -10,6 +10,9 @@
 
 #include "KbdInterface.h"
 
+#ifndef SDLK_FIRST
+#define SDLK_FIRST SDLK_0
+#endif
 
 class SDLKbdInterface: public KbdInterface {
 public:

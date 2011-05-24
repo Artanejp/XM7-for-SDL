@@ -81,19 +81,21 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 LIBS += -L/usr/local/lib
 
 LIBS += `pkg-config --libs sdl`
-#LIBS += `pkg-config --libs gtk+-x11-2.0` `pkg-config --libs gdk-pixbuf-2.0`
-LIBS +=  \
-        -lSDL_mixer -lSDL_ttf
+#LIBS += -lSDL  -lXinerama -ldl -lrt
+LIBS +=  -lSDL_mixer -lSDL_ttf
+#LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
 
 LIBS += -lGL -lGLU -lpthread
-LIBS += -lag_core -lag_gui -lag_dev 
+LIBS += -lag_core -lag_gui -lag_dev -lXinerama 
 #LIBS += -ldl /usr/local/lib/libag_core.a  /usr/local/lib/libag_gui.a 
-LIBS += -ljpeg -lpng
+LIBS += -ljpeg -lpng -lfreetype
 
-LIBS_RELEASE = ../libemugrph/Release/liblibemugrph.a
+#LIBS_RELEASE = ../libemugrph/Release/liblibemugrph.a
+LIBS_RELEASE = ../libemugrph/libemugrph.a
 LIBS_RELEASE += ../xm7-ui-agar/Release/libxm7-ui-agar.a
 
-LIBS_DEBUG = ../libemugrph/Debug/liblibemugrph.a
+#LIBS_DEBUG = ../libemugrph/Debug/liblibemugrph.a
+LIBS_DEBUG = ../libemugrph/libemugrph.a
 LIBS_DEBUG += ../xm7-ui-agar/Debug/libxm7-ui-agar.a
 
 all:	xm7 xm7.debug

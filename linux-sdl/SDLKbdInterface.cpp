@@ -15,7 +15,6 @@
  * キーコードテーブル
  */
 
-
 //struct SpecialKey MouseCapture;
 //struct SpecialKey ResetKey;
 //struct XM7KeyCode KeyCodeTable2[256];
@@ -191,7 +190,7 @@ void SDLKbdInterface::OnPress(void *eventh)
 {
     int            i = 0;
     SDL_Event *event = (SDL_Event *)eventh;
-    SDLMod modifier = event->key.keysym.mod;
+    SDLMod modifier = (SDLMod) event->key.keysym.mod;
     SDLKey code = event->key.keysym.sym;
 //    Uint8 scan = event->key.keysym.scancode;
     struct XM7KeyCode  *p = KeyCodeTable2;
