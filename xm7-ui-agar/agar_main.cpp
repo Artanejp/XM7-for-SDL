@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
  */
         char    *p;
 
-        p = getenv("HOME");
+       p = getenv("HOME");
         if(p == NULL) {
                 perror("Warning : Can't get HOME directory...Making ./.xm7/ .");
                 strcpy(ModuleDir, "./.xm7/");
