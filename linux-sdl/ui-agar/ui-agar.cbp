@@ -17,12 +17,6 @@
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-g" />
-					<Add option="-DUSE_OPENGL" />
-					<Add option="-DUSE_AGAR" />
-					<Add option="-DMOUSE" />
-					<Add option="-DMR2" />
-					<Add option="-DFDDSND" />
-					<Add option="-D_XWIN" />
 					<Add directory="." />
 					<Add directory=".." />
 					<Add directory="../vm" />
@@ -43,14 +37,8 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
 					<Add option="-Wall" />
-					<Add option="-DUSE_OPENGL" />
-					<Add option="-DUSE_AGAR" />
-					<Add option="-DMOUSE" />
-					<Add option="-DMR2" />
-					<Add option="-DFDDSND" />
-					<Add option="-D_XWIN" />
 					<Add directory="." />
 					<Add directory=".." />
 					<Add directory="../vm" />
@@ -64,18 +52,18 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-DFDDSND" />
-			<Add option="-DMR2" />
-			<Add option="-DMOUSE" />
-			<Add option="-D_XWIN" />
-			<Add option="-DUSE_AGAR" />
-			<Add option="-DUSE_SDL" />
+			<Add option="`pkg-config --cflags sdl`" />
+			<Add option="-DXM7_VER=3" />
 			<Add option="-DUSE_OPENGL" />
+			<Add option="-DUSE_AGAR" />
+			<Add option="-DMOUSE" />
+			<Add option="-DMR2" />
+			<Add option="-DFDDSND" />
+			<Add option="-D_XWIN" />
 			<Add directory="." />
 			<Add directory=".." />
 			<Add directory="../vm" />
 			<Add directory="/usr/local/include/agar/" />
-			<Add directory="/usr/include/SDL" />
 			<Add directory="../libemugrph" />
 			<Add directory="../sdl" />
 		</Compiler>

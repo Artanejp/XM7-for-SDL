@@ -7,7 +7,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="libemugrph" prefix_auto="1" extension_auto="1" />
+				<Option output="obj/Debug/libemugrph" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj/Debug/" />
 				<Option type="2" />
@@ -19,7 +19,7 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="libemugrph" prefix_auto="1" extension_auto="1" />
+				<Option output="obj/Release/libemugrph" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj/Release/" />
 				<Option type="2" />
@@ -34,9 +34,50 @@
 				</Linker>
 			</Target>
 		</Build>
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
+		<Compiler>
+			<Add option="`pkg-config --cflags sdl`" />
+			<Add option="-DXM7_VER=3" />
+			<Add option="-DUSE_OPENGL" />
+			<Add option="-DUSE_AGAR" />
+			<Add option="-DMOUSE" />
+			<Add option="-DMR2" />
+			<Add option="-DFDDSND" />
+			<Add option="-D_XWIN" />
+			<Add directory="../ui-agar/" />
+			<Add directory="../sdl/" />
+			<Add directory="../vm/" />
+			<Add directory="/usr/local/include/agar" />
+		</Compiler>
+		<Unit filename="EmuAgarGL.cpp" />
+		<Unit filename="EmuAgarGL.h" />
+		<Unit filename="EmuGLUtils.cpp" />
+		<Unit filename="EmuGLUtils.h" />
+		<Unit filename="EmuGrph256kc.cpp" />
+		<Unit filename="EmuGrph256kc.h" />
+		<Unit filename="EmuGrph400l.cpp" />
+		<Unit filename="EmuGrph400l.h" />
+		<Unit filename="EmuGrph4096c.cpp" />
+		<Unit filename="EmuGrph4096c.h" />
+		<Unit filename="EmuGrphLib.cpp" />
+		<Unit filename="EmuGrphLib.h" />
+		<Unit filename="EmuGrphScale1x1.cpp" />
+		<Unit filename="EmuGrphScale1x1.h" />
+		<Unit filename="EmuGrphScale1x2.cpp" />
+		<Unit filename="EmuGrphScale1x2.h" />
+		<Unit filename="EmuGrphScale1x2i.cpp" />
+		<Unit filename="EmuGrphScale1x2i.h" />
+		<Unit filename="EmuGrphScale2x2.cpp" />
+		<Unit filename="EmuGrphScale2x2.h" />
+		<Unit filename="EmuGrphScale2x2i.cpp" />
+		<Unit filename="EmuGrphScale2x2i.h" />
+		<Unit filename="EmuGrphScale2x4.cpp" />
+		<Unit filename="EmuGrphScale2x4.h" />
+		<Unit filename="EmuGrphScale2x4i.cpp" />
+		<Unit filename="EmuGrphScale2x4i.h" />
+		<Unit filename="EmuGrphScale4x4.cpp" />
+		<Unit filename="EmuGrphScale4x4.h" />
+		<Unit filename="EmuGrphScale4x4i.cpp" />
+		<Unit filename="EmuGrphScale4x4i.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />

@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Debug" />
+	<ActiveTarget name="Release" />
+	<File name="GtkKbdInterface.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="109" topLine="0" />
+	</File>
+	<File name="SndDrvWav.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="1541" topLine="59" />
+	</File>
+	<File name="api_snd2.cpp" open="1" top="0" tabpos="6">
+		<Cursor position="646" topLine="25" />
+	</File>
+	<File name="build_config.h" open="1" top="0" tabpos="1">
+		<Cursor position="1512" topLine="85" />
+	</File>
 </CodeBlocks_layout_file>

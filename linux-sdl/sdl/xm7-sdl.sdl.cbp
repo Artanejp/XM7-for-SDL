@@ -55,10 +55,12 @@
 		</Compiler>
 		<Linker>
 			<Add option="`sdl-config --libs`" />
-			<Add library="ag_core" />
-			<Add library="ag_gui" />
-			<Add library="ag_dev" />
-			<Add library="ag_math" />
+			<Add option="`agar-config --libs`" />
+			<Add library="pthread" />
+			<Add library="dl" />
+			<Add library="rt" />
+			<Add library="SDL_mixer" />
+			<Add library="SDL_ttf" />
 		</Linker>
 		<Unit filename="GtkKbdInterface.cpp" />
 		<Unit filename="GtkKbdInterface.h" />
@@ -110,7 +112,11 @@
 			<envvars />
 			<code_completion />
 			<lib_finder disable_auto="1" />
-			<debugger />
+			<debugger>
+				<search_path add="../ui-agar" />
+				<search_path add="../libemugrph" />
+				<search_path add="../vm" />
+			</debugger>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

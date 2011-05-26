@@ -296,7 +296,7 @@ void InitSnd(void)
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = SDL_CreateSemaphore(1);
-   
+
 	uTick = 0;   // バッファサイズ(時間)
 	uRate = 0;   // サンプリングレート
 	uBufSize = 0; // バッファサイズ(バイト数)
@@ -400,7 +400,7 @@ static void CloseSnd(void)
 			CloseCaptureSnd();
 		}
 	        bWavCapture = FALSE;
-	        bSndExit = FALSE;	   
+	        bSndExit = FALSE;
 		DetachBuffer(pBeepBuf);
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
@@ -1251,13 +1251,16 @@ void ProcessSnd(BOOL bZero)
 		    */
 		   if (beep_flag && speaker_flag) {
 			   bWrite = TRUE;
+			   samples = CalcSamples(pBeepBuf, time);
+			   RenderBeepSub(time, samples, bZero);
 		   }
 		   /*
 		    * どちらかがONなら、バッファ充填
 		    */
 		   if (bWrite) {
-			   samples = CalcSamples(pOpnBuf, time);
-			   RenderOpnSub(time, samples, bZero);
+		       // OPNについては不要か？必要か？
+			   //samples = CalcSamples(pOpnBuf, time);
+			   //RenderOpnSub(time, samples, bZero);
 		   }
 		   return;
 	  }

@@ -2277,7 +2277,7 @@
 
 1302468234 /usr/include/gtk-2.0/gdk/gdkkeysyms-compat.h
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//xm7.h
+1306446973 /home/whatisthis/codeblocks/xm7-sdl/vm//xm7.h
 	<stdio.h>
 	"build_config.h"
 	<agar/core.h>
@@ -3295,7 +3295,7 @@
 	"begin_code.h"
 	"close_code.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//mainetc.h
+1306445686 /home/whatisthis/codeblocks/xm7-sdl/vm//mainetc.h
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//keyboard.h
 
@@ -3303,7 +3303,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//mouse.h
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//event.h
+1306448865 /home/whatisthis/codeblocks/xm7-sdl/vm//event.h
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl.h
 	<stdlib.h>
@@ -3437,7 +3437,7 @@
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_snd.h
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.cpp
+1306450870 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.cpp
 	"SndDrvCMT.h"
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.h
@@ -3449,7 +3449,7 @@
 	"sdl_sch.h"
 	"SndDrvTmpl.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//tapelp.h
+1306446803 /home/whatisthis/codeblocks/xm7-sdl/vm//tapelp.h
 
 1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
 	"SndDrvOpn.h"
@@ -3474,19 +3474,19 @@
 	<math.h>
 	<string.h>
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//opna.h
+1306449095 /home/whatisthis/codeblocks/xm7-sdl/vm//opna.h
 	"fmgen.h"
 	"psg.h"
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//fmgen.h
 	"cisc.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//psg.h
+1306449086 /home/whatisthis/codeblocks/xm7-sdl/vm//psg.h
 	"cisc.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//fmgeninl.h
+1306449120 /home/whatisthis/codeblocks/xm7-sdl/vm//fmgeninl.h
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//opn.h
+1306445600 /home/whatisthis/codeblocks/xm7-sdl/vm//opn.h
 
 1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvTmpl.cpp
 	<SDL/SDL.h>
@@ -3805,7 +3805,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
+1306450562 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
 	<machine/soundcard.h>
 	<linux/soundcard.h>
 	<stdlib.h>

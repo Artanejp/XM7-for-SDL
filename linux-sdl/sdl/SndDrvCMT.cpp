@@ -73,9 +73,9 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	wbuf = pBuf;
 	wbuf = &wbuf[start * channels];
     level = nLevel;
-    if((start <= 0) && (clear != TRUE)) {
-    	memset(pBuf, 0x00, s * channels * sizeof(Sint16));
-    }
+//    if((start <= 0) && (clear != TRUE)) {
+//    	memset(pBuf, 0x00, s * channels * sizeof(Sint16));
+//    }
 	/*
 	 * テープ出力チェック
 	 */

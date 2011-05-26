@@ -48,7 +48,6 @@
 			<Add directory="../libemugrph/" />
 			<Add directory="../ui-agar/" />
 			<Add directory="/usr/local/include/agar" />
-			<Add directory="/usr/include/SDL" />
 		</Compiler>
 		<Unit filename="aluline.c">
 			<Option compilerVar="CC" />

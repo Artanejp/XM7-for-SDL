@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
+	<File name="AgarKbdInterface.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="5972" topLine="220" />
+	</File>
 	<File name="AgarKbdInterface.h" open="1" top="0" tabpos="1">
 		<Cursor position="144" topLine="0" />
 	</File>
 	<File name="agar_cfg.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="20319" topLine="761" />
+		<Cursor position="2086" topLine="91" />
+	</File>
+	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="13">
+		<Cursor position="6621" topLine="302" />
+	</File>
+	<File name="agar_main.cpp" open="1" top="0" tabpos="11">
+		<Cursor position="3648" topLine="164" />
+	</File>
+	<File name="agar_ui_vkey.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="4839" topLine="163" />
 	</File>
 	<File name="agar_xm7.h" open="1" top="0" tabpos="3">
-		<Cursor position="203" topLine="1" />
+		<Cursor position="2" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>
