@@ -1,9 +1,9 @@
 # depslib dependency file v1.0
-1304369869 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.cpp
 	"AgarKbdInterface.h"
 
-1306426642 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
-	"../SDLKbdInterface.h"
+1306429058 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
+	"SDLKbdInterface.h"
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1058,15 +1058,15 @@
 	"sdl.h"
 	"sdl_sch.h"
 
-1281428053 /home/whatisthis/codeblocks/xm7-sdl/vm/mainetc.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/mainetc.h
 
-1281428051 /home/whatisthis/codeblocks/xm7-sdl/vm/keyboard.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/keyboard.h
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/device.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/device.h
 
-1281428053 /home/whatisthis/codeblocks/xm7-sdl/vm/mouse.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/mouse.h
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/event.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/event.h
 
 1306271026 /usr/include/SDL/SDL_syswm.h
 	"SDL_stdinc.h"
@@ -1081,11 +1081,11 @@
 	<Ph.h>
 	"close_code.h"
 
-1305560694 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_xm7.h
+1306429762 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_xm7.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
-	"../xm7-sdl/xm7.h"
+	"xm7.h"
 	<stdlib.h>
 	<sys/param.h>
 	<gtk/gtk.h>
@@ -1104,7 +1104,7 @@
 
 1289309236 /home/whatisthis/codeblocks/xm7-sdl/api_mouse.h
 
-1304356099 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cfg.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cfg.cpp
 	"xm7.h"
 	"device.h"
 	"fdc.h"
@@ -1127,19 +1127,19 @@
 	"api_mouse.h"
 	"api_draw.h"
 
-1281428053 /home/whatisthis/codeblocks/xm7-sdl/vm/fdc.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/fdc.h
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/tapelp.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/tapelp.h
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/opn.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/opn.h
 
-1281428051 /home/whatisthis/codeblocks/xm7-sdl/vm/mmr.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/mmr.h
 
-1281428051 /home/whatisthis/codeblocks/xm7-sdl/vm/aluline.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/aluline.h
 
 1289360452 /home/whatisthis/codeblocks/xm7-sdl/sdl_inifile.h
 
-1301932452 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cfg.h
+1306429058 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cfg.h
 	"KbdInterface.h"
 
 1305582205 /home/whatisthis/codeblocks/xm7-sdl/sdl_prop.h
@@ -1191,15 +1191,15 @@
 	<windows.h>
 	<stddef.h>
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/multipag.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/multipag.h
 
-1281428053 /home/whatisthis/codeblocks/xm7-sdl/vm/ttlpalet.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/ttlpalet.h
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/apalet.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/apalet.h
 
-1281428053 /home/whatisthis/codeblocks/xm7-sdl/vm/subctrl.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/subctrl.h
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/display.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/display.h
 
 1289305712 /home/whatisthis/codeblocks/xm7-sdl/api_scaler.h
 	<SDL.h>
@@ -1231,47 +1231,47 @@
 	"EmuAgarGL.h"
 	"EmuGLUtils.h"
 
-1289279523 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphLib.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphLib.h
 	<SDL.h>
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrph400l.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrph400l.h
 	"EmuGrphLib.h"
 
-1288237922 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrph4096c.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrph4096c.h
 	"EmuGrphLib.h"
 
-1288547727 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrph256kc.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrph256kc.h
 	"EmuGrphLib.h"
 	"EmuGrph4096c.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x1.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x1.h
 	"EmuGrphScale1x2.h"
 
-1288720630 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2.h
 	<SDL/SDL.h>
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2i.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2i.h
 	"EmuGrphScale1x2.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x2.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x2.h
 	"EmuGrphScale2x4.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x4.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x4.h
 	"EmuGrphScale1x2.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x2i.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x2i.h
 	"EmuGrphScale2x4i.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x4i.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x4i.h
 	"EmuGrphScale2x4.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale4x4.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale4x4.h
 	"EmuGrphScale2x4.h"
 
-1288237923 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale4x4i.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale4x4i.h
 	"EmuGrphScale4x4.h"
 
-1290914671 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuAgarGL.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuAgarGL.h
 	"EmuGLUtils.h"
 	<SDL.h>
 	<agar/core.h>
@@ -1279,7 +1279,7 @@
 	<agar/gui.h>
 	<agar/gui/opengl.h>
 
-1288557356 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGLUtils.h
+1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGLUtils.h
 	<SDL/SDL.h>
 	<GL/gl.h>
 	<GL/glu.h>
@@ -1315,7 +1315,7 @@
 	<agar/gui/begin.h>
 	<agar/gui/close.h>
 
-1301932452 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cmd.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cmd.cpp
 	<gtk/gtk.h>
 	<agar/core.h>
 	<agar/core/types.h>
@@ -1339,17 +1339,17 @@
 	"api_js.h"
 	"gtk_toolbox.h"
 
-1281428052 /home/whatisthis/codeblocks/xm7-sdl/vm/tools.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/tools.h
 
-1281428053 /home/whatisthis/codeblocks/xm7-sdl/vm/rtc.h
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/rtc.h
 
-1301932452 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cmd.h
+1306429058 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_cmd.h
 
-1301932453 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.h
+1306429058 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.h
 	<agar/core.h>
 	<agar/gui.h>
 
-1305003506 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1360,7 +1360,7 @@
 	"agar_gldraw.h"
 	<SDL.h>
 
-1304969828 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
+1306429058 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1369,7 +1369,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1305576613 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.cpp
 	<SDL.h>
 	<agar/core/types.h>
 	<agar/core.h>
@@ -1380,7 +1380,7 @@
 	"agar_xm7.h"
 	"agar_gldraw.h"
 
-1305568834 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_menu.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_menu.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1402,7 +1402,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1301932452 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_pref.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_pref.cpp
 	<libintl.h>
 	<agar/core.h>
 	<agar/core/types.h>
@@ -1436,7 +1436,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1305575251 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1458,7 +1458,7 @@
 	"agar_toolbox.h"
 	"agar_gldraw.h"
 
-1306135471 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_main.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_main.cpp
 	<SDL.h>
 	<sys/types.h>
 	<sys/stat.h>
@@ -1481,7 +1481,7 @@
 	"agar_cfg.h"
 	"sdl_inifile.h"
 
-1301932452 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_about.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_about.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1503,7 +1503,7 @@
 	"agar_toolbox.h"
 	"agar_cmd.h"
 
-1301932452 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_disk.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_disk.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1524,7 +1524,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1301932452 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tape.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tape.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1545,7 +1545,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1305576851 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tool.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tool.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1567,7 +1567,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1305572532 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
 	<SDL.h>
 	<agar/core.h>
 	<agar/core/types.h>
@@ -1588,7 +1588,7 @@
 	"api_draw.h"
 	<iconv.h>
 
-1301932453 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sch.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sch.cpp
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1608,7 +1608,7 @@
 	"api_js.h"
 	"api_draw.h"
 
-1306263824 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdl.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdl.cpp
 	<SDL.h>
 	"sdl.h"
 	<agar/core.h>
@@ -1620,7 +1620,7 @@
 	<SDL.h>
 	"xm7.h"
 
-1305568811 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.cpp
 	<libintl.h>
 	<iconv.h>
 	<agar/core.h>
@@ -1641,7 +1641,7 @@
 	"api_kbd.h"
 	"agar_toolbox.h"
 
-1301932453 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_ui_vkey.cpp
+1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_ui_vkey.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1651,4 +1651,134 @@
 	"xm7.h"
 	"fdc.h"
 	"AgarKbdInterface.h"
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLKbdInterface.h
+	"KbdInterface.h"
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/KbdInterface.h
+	<SDL.h>
+	"xm7.h"
+	"api_kbd.h"
+	"api_mouse.h"
+
+1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/xm7.h
+	<stdio.h>
+	"build_config.h"
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<memwatch.h>
+	<assert.h>
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/build_config.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.h
+	<X11/Xlib.h>
+	<gtk/gtk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<memory.h>
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	<SDL.h>
+	<SDL_syswm.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"agar_xm7.h"
+	<SDL.h>
+	<SDL_syswm.h>
+	"sdl.h"
+	"sdl_sch.h"
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl.h
+	<stdlib.h>
+	<sys/param.h>
+	<gtk/gtk.h>
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_sch.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_mouse.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_prop.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_snd.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_bar.h
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.h
+	"xm7.h"
+	"api_kbd.h"
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
+	<gtk/gtk.h>
+	<gdk/gdk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"xm7.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"xm7.h"
+	"agar_xm7.h"
+	"sdl.h"
+	"api_scaler.h"
+	"EmuGrphLib.h"
+	"EmuGrph400l.h"
+	"EmuGrph4096c.h"
+	"EmuGrph256kc.h"
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
+	<SDL.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"agar_xm7.h"
+	"sdl.h"
+	"api_draw.h"
+	"xm7.h"
+	"EmuGrphLib.h"
+	"EmuGrph400l.h"
+	"EmuGrph4096c.h"
+	"EmuGrph256kc.h"
+	"EmuGrphScale1x1.h"
+	"EmuGrphScale1x2.h"
+	"EmuGrphScale1x2i.h"
+	"EmuGrphScale2x2.h"
+	"EmuGrphScale2x2i.h"
+	"EmuGrphScale2x4.h"
+	"EmuGrphScale2x4i.h"
+	"EmuGrphScale4x4.h"
+	"EmuGrphScale4x4i.h"
+	"EmuAgarGL.h"
+	"EmuGLUtils.h"
+
+1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.h
+	<SDL.h>
+	"xm7.h"
 

@@ -6,7 +6,7 @@
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
 
-include ../xm7-sdl/config.mak
+include ../config.mak
 
 #CFLAGS += -I../xm7-sdl/
 
@@ -26,7 +26,8 @@ UISRC = \
 	agar_menu_tool.cpp \
 	agar_menu_about.cpp \
 	agar_gui_pref.cpp 
-	
+
+
 LOCALSRC = \
 	agar_cfg.cpp  \
         agar_cmd.cpp agar_sch.cpp \
@@ -47,12 +48,12 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
 
 .SUFFIXES: .o .c .cc .cpp 
-all:	Debug/libxm7-ui-agar.a  Release/libxm7-ui-agar.a
+all:	Debug/libui-agar.a  Release/libui-agar.a
 
-Debug/libxm7-ui-agar.a: ${OBJS_DEBUG}
+Debug/libui-agar.a: ${OBJS_DEBUG}
 	ar crv $@ ${OBJS_DEBUG}
 
-Release/libxm7-ui-agar.a: ${OBJS_RELEASE}
+Release/libui-agar.a: ${OBJS_RELEASE}
 	ar crv $@ ${OBJS_RELEASE}
 
 Release/agar_draw.o: agar_draw.cpp

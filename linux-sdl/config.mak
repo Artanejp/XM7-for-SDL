@@ -33,10 +33,10 @@ CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
 CFLAGS +=  -I. -I/usr/local/include
-CFLAGS += -I../libemugrph/ -I../xm7-ui-agar/ -I../xm7-sdl/
+CFLAGS += -I../libemugrph/ -I../ui-agar/ -I../sdl/ -I../vm/
 CFLAGS += `pkg-config --cflags sdl`
 #CFLAGS += -I/usr/local/include/SDL
-CFLAGS += -I/usr/local/include/agar
+CFLAGS += `agar-config --cflags`
 
 CFLAGS_DEBUG = -g -O0 -export-dynamic
 CFLAGS_DEBUG += $(CFLAGS)

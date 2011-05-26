@@ -28,6 +28,8 @@
 					<Add directory="../vm" />
 					<Add directory="/usr/local/include/agar/" />
 					<Add directory="/usr/include/SDL" />
+					<Add directory="../sdl" />
+					<Add directory="../libemugrph" />
 				</Compiler>
 				<Linker>
 					<Add directory="/usr/local/lib" />
@@ -75,6 +77,7 @@
 			<Add directory="/usr/local/include/agar/" />
 			<Add directory="/usr/include/SDL" />
 			<Add directory="../libemugrph" />
+			<Add directory="../sdl" />
 		</Compiler>
 		<Linker>
 			<Add directory="/usr/local/lib" />

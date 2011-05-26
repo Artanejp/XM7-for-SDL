@@ -36,7 +36,6 @@
 			<Add option="`sdl-config --libs`" />
 		</Linker>
 		<Unit filename="cb.bmp" />
-		<Unit filename="main.cpp" />
 		<Extensions>
 			<envvars />
 			<code_completion />

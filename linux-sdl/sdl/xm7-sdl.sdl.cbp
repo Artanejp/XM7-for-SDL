@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="xm7-sdl.sdl" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/xm7-sdl" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="../libemugrph/obj/Debug/libemugrph.a" />
+					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
+					<Add library="../vm/obj/Debug/libxm7_vm.a" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/xm7-sdl" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="../libemugrph/obj/Release/libemugrph.a" />
+					<Add library="../ui-agar/obj/Release/libui-agar.a" />
+					<Add library="../vm/obj/Release/libxm7_vm.a" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="`sdl-config --cflags`" />
+			<Add option="`pkg-config --cflags gtk+-2.0`" />
+			<Add option="`agar-config --cflags`" />
+			<Add option="-DUSE_OPENGL" />
+			<Add option="-DUSE_AGAR" />
+			<Add option="-DMOUSE" />
+			<Add option="-DMR2" />
+			<Add option="-DFDDSND" />
+			<Add option="-D_XWIN" />
+			<Add directory="../" />
+			<Add directory="." />
+			<Add directory="../vm/" />
+			<Add directory="../libemugrph" />
+			<Add directory="../ui-agar" />
+		</Compiler>
+		<Linker>
+			<Add option="`sdl-config --libs`" />
+			<Add library="ag_core" />
+			<Add library="ag_gui" />
+			<Add library="ag_dev" />
+			<Add library="ag_math" />
+		</Linker>
+		<Unit filename="GtkKbdInterface.cpp" />
+		<Unit filename="GtkKbdInterface.h" />
+		<Unit filename="KbdInterface.cpp" />
+		<Unit filename="KbdInterface.h" />
+		<Unit filename="SDLJoyInterface.cpp" />
+		<Unit filename="SDLJoyInterface.h" />
+		<Unit filename="SDLKbdInterface.cpp" />
+		<Unit filename="SDLKbdInterface.h" />
+		<Unit filename="SndDrvBeep.cpp" />
+		<Unit filename="SndDrvBeep.h" />
+		<Unit filename="SndDrvCMT.cpp" />
+		<Unit filename="SndDrvCMT.h" />
+		<Unit filename="SndDrvOpn.cpp" />
+		<Unit filename="SndDrvOpn.h" />
+		<Unit filename="SndDrvTmpl.cpp" />
+		<Unit filename="SndDrvTmpl.h" />
+		<Unit filename="SndDrvWav.cpp" />
+		<Unit filename="SndDrvWav.h" />
+		<Unit filename="api_draw.cpp" />
+		<Unit filename="api_draw.h" />
+		<Unit filename="api_js.cpp" />
+		<Unit filename="api_js.h" />
+		<Unit filename="api_kbd.cpp" />
+		<Unit filename="api_kbd.h" />
+		<Unit filename="api_mouse.cpp" />
+		<Unit filename="api_mouse.h" />
+		<Unit filename="api_scaler.cpp" />
+		<Unit filename="api_scaler.h" />
+		<Unit filename="api_snd2.cpp" />
+		<Unit filename="api_wavwriter.cpp" />
+		<Unit filename="api_wavwriter.h" />
+		<Unit filename="build_config.h" />
+		<Unit filename="cb.bmp" />
+		<Unit filename="makefile" />
+		<Unit filename="sdl.h" />
+		<Unit filename="sdl_bar.h" />
+		<Unit filename="sdl_file.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sdl_inifile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sdl_inifile.h" />
+		<Unit filename="sdl_prop.h" />
+		<Unit filename="sdl_sch.h" />
+		<Unit filename="sdl_snd.h" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
