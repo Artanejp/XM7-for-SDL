@@ -2254,7 +2254,7 @@ bmp_400l_sub(int fileh)
 }
 #endif
 
-#if XM7_VER == 1
+#if XM7_VER == 1 && defined(L4CARD)
 /*
  *  BMPデータ書き込み(L4 400ラインモード)
  */
@@ -3137,7 +3137,7 @@ bmp_400l_sub2(int fileh)
 }
 #endif
 
-#if XM7_VER == 1
+#if XM7_VER == 1 && defined(L4CARD)
 /*
  *  BMPデータ書き込み(L4 400ラインモード・縮小画像)
  */

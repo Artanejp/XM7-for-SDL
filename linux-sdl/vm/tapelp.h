@@ -113,7 +113,7 @@ extern          "C" {
     /*
      * テープ ファイルオフセット 
      */
-    extern char     tape_fname[128 + 1];
+    extern char     tape_fname[256 + 1];
     /*
      * テープ ファイルネーム 
      */

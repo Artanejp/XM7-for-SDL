@@ -43,9 +43,9 @@
 #define FDC_ACCESS_SEEK		1	/* シーク系アクセス */
 #define FDC_ACCESS_READ		2	/* 読み込み系アクセス */
 #define FDC_ACCESS_WRITE	3	/* 書き込み系アクセス */
+#define FDC_ACCESS_NOTREADY	4	/* ドライブの準備ができていない */
 
-#define FDC_LOST_TIME		48	/* wait時のLOST
-					 * DATAまでの時間 */
+#define FDC_LOST_TIME		48	/* wait時のLOST DATAまでの時間 */
 
 #ifdef __cplusplus
 extern          "C" {
@@ -179,7 +179,7 @@ extern          "C" {
      * 実トラック 
      */
 
-    extern char     fdc_fname[FDC_DRIVES][128 + 1];
+    extern char     fdc_fname[FDC_DRIVES][256 + 1];
     /*
      * ファイルネーム 
      */

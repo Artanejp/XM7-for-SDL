@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <string.h>
 #include "xm7.h"
+#include "mmr.h"
 #include "device.h"
 #include "kanji.h"
 #include "jcard.h"
@@ -93,13 +94,18 @@ jcard_init(void)
     } else {
 	/*
 	 * バンク56〜63にBASIC
-	 * ROM、DOSモードブートROMの内容をコピー 
+	 * ROM、隠しブートROMの内容をコピー 
 	 */
 	memcpy(&extrom[0x18000], basic_rom, 0x7c00);
-	memcpy(&extrom[0x1fe00], &init_rom[0x1a00], 0x1e0);
-	memset(&extrom[0x1ffe0], 0, 32);
-	extrom[0x1fffe] = 0xfe;
-	extrom[0x1ffff] = 0x00;
+	if (available_mmrboot) {
+	   memcpy(&extrom[0x1fe00], boot_mmr, 0x200);
+	}
+	else {
+	   memcpy(&extrom[0x1fe00], &init_rom[0x1a00], 0x1e0);
+	   memset(&extrom[0x1ffe0], 0, 32);
+	   extrom[0x1fffe] = 0xfe;
+	   extrom[0x1ffff] = 0x00;
+	}
     }
 
     return TRUE;
@@ -191,14 +197,17 @@ jcard_readb(WORD addr)
 	     * 拡張ROMが有効か 
 	     */
 	    if (extrom_sel) {
-		/*
-		 * バンク0〜31 :
-		 * 第1水準漢字(実機ではJIS78準拠らしい…) 
-		 */
+		/* バンク0〜31 : 第1水準漢字(JIS78準拠) */
+		if (dicrom_bank < 6) {
+			return kanji_rom_jis78[addr | dicrom_addr];
+		}
+		if (dicrom_bank < 8) {
+			return (BYTE)(addr & 1);
+		}
+	       
 		if (dicrom_bank < 32) {
 		    return kanji_rom[addr | dicrom_addr];
 		}
-
 		/*
 		 * バンク32〜43 :
 		 * 拡張サブシステムROM(extsub.rom) 

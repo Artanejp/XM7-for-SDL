@@ -26,6 +26,7 @@
 #include "apalet.h"
 #include "rtc.h"
 #include "mouse.h"
+#include "rs232c.h"
 #include "jsubsys.h"
 
 #ifdef MIDI
@@ -49,6 +50,8 @@ BYTE            fm_subtype;	/* ハードウェアサブバージョン
 BOOL            lowspeed_mode;	/* 動作クロックモード */
 BOOL            available_fm8roms;	/* FM-8 ROM使用可能フラグ */
 BOOL            available_fm7roms;	/* FM-7 ROM使用可能フラグ */
+#endif
+#if (XM7_VER == 1) || (XM7_VER >= 3)
 BOOL            available_mmrboot;	/* FM-77 MMRブートROM使用可能フラグ */
 #endif
 
@@ -61,11 +64,11 @@ BYTE            fetch_op;	/* 直前にフェッチした命令 */
  *      ステートファイルヘッダ
  */
 #if XM7_VER >= 3
-const char     *state_header = "XM7 VM STATE 912";
+const char     *state_header = "XM7 VM STATE 915";
 #elif XM7_VER >= 2
-const char     *state_header = "XM7 VM STATE 711";
+const char     *state_header = "XM7 VM STATE 715";
 #else
-const char     *state_header = "XM7 VM STATE 302";
+const char     *state_header = "XM7 VM STATE 305";
 #endif
 
 /*
@@ -80,6 +83,7 @@ system_init(void)
      */
 #if XM7_VER >= 3
     fm7_ver = 3;		/* FM77AV40EX相当に設定 */
+    available_mmrboot = TRUE;
 #elif XM7_VER >= 2
     fm7_ver = 2;		/* FM77AV相当に設定 */
 #else
@@ -289,6 +293,9 @@ system_reset(void)
 #endif
 #ifdef MIDI
     midi_reset();
+#endif
+#ifdef RSC
+	rs232c_reset();
 #endif
 #if XM7_VER >= 3
     jcard_reset();
@@ -511,6 +518,11 @@ system_save(char *filename)
     if (!mos_save(fileh)) {
 	flag = FALSE;
     }
+#endif
+#ifdef RSC
+	if (!rs232c_save(fileh)) {
+		flag = FALSE;
+	}
 #endif
 #ifdef MIDI
     if (!midi_save(fileh)) {
@@ -782,6 +794,11 @@ system_load(char *filename)
     if (!mos_load(fileh, ver)) {
 	flag = FALSE;
     }
+#endif
+#ifdef RSC
+	if (!rs232c_load(fileh, ver)) {
+		flag = FALSE;
+	}
 #endif
 #ifdef MIDI
     if (!midi_load(fileh, ver)) {

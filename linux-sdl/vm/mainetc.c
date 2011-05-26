@@ -42,6 +42,10 @@ BOOL            dma_irq_flag;	/* DMA割り込み フラグ */
 #endif
 BOOL            beep_flag;	/* BEEPフラグ */
 BOOL            speaker_flag;	/* スピーカフラグ */
+#if XM7_VER == 1
+BOOL banksel_en;					/* バンク切り換えイネーブルフラグ */
+#endif
+
 
 /*
  *      プロトタイプ宣言
@@ -53,9 +57,12 @@ BOOL FASTCALL   mainetc_event(void);	/* 2.03ms タイマーイベント
  *      メインCPU I/O
  *      初期化
  */
-BOOL            FASTCALL
-mainetc_init(void)
+BOOL FASTCALL mainetc_init(void)
 {
+#if XM7_VER == 1
+	/* FM-8モードの標準はバンク切り換え無効 */
+	banksel_en = FALSE;
+#endif
     return TRUE;
 }
 
@@ -188,7 +195,7 @@ mainetc_fdc(void)
     /*
      * マスクされていれば、何もしない 
      */
-    if ((fm_subtype != FMSUB_FM8) && mfd_irq_mask) {
+   if ((fm_subtype == FMSUB_FM8) || mfd_irq_mask) {
 	return;
     }
 #else
@@ -249,8 +256,7 @@ mainetc_lp(void)
  *      メインCPU I/O
  *      １バイト読み出し
  */
-BOOL            FASTCALL
-mainetc_readb(WORD addr, BYTE * dat)
+BOOL FASTCALL mainetc_readb(WORD addr, BYTE * dat)
 {
     BYTE            ret;
 
@@ -339,13 +345,19 @@ mainetc_readb(WORD addr, BYTE * dat)
 	 */
     case 0xfd0f:
 #if XM7_VER == 1
-	if (fm_subtype == FMSUB_FM8) {
+	if ((fm_subtype == FMSUB_FM8) && !banksel_en) {
 	    return FALSE;
 	}
 #endif
 
 	basicrom_en = TRUE;
 	*dat = 0xff;
+#if XM7_VER == 1
+			/* FM-8モード時はブートモードが切り替わる仕様 */
+	if (fm_subtype == FMSUB_FM8) {
+		boot_mode = BOOT_BASIC;
+	}
+#endif
 	return TRUE;
     }
 
@@ -457,12 +469,18 @@ mainetc_writeb(WORD addr, BYTE dat)
 	 */
     case 0xfd0f:
 #if XM7_VER == 1
-	if (fm_subtype == FMSUB_FM8) {
+	if ((fm_subtype == FMSUB_FM8) && !banksel_en) {
 	    return FALSE;
 	}
 #endif
-
 	basicrom_en = FALSE;
+
+#if XM7_VER == 1
+	/* FM-8モード時はブートモードが切り替わる仕様 */
+	if (fm_subtype == FMSUB_FM8) {
+		boot_mode = BOOT_DOS;
+	}
+#endif
 	return TRUE;
     }
 
@@ -547,7 +565,11 @@ mainetc_save(int fileh)
     if (!file_bool_write(fileh, speaker_flag)) {
 	return FALSE;
     }
-
+#if XM7_VER == 1
+   if (!file_bool_write(fileh, banksel_en)) {
+       return FALSE;
+   }
+#endif
     return TRUE;
 }
 
@@ -644,6 +666,13 @@ mainetc_load(int fileh, int ver)
     if (!file_bool_read(fileh, &speaker_flag)) {
 	return FALSE;
     }
+#if XM7_VER == 1
+    if (ver >= 303) {
+	if (!file_bool_read(fileh, &banksel_en)) {
+		return FALSE;
+	}
+    }
+#endif
 
     /*
      * イベント 

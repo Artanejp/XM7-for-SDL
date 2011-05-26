@@ -14,6 +14,7 @@
 #include "mmr.h"
 #include "subctrl.h"
 #include "jcard.h"
+#include "rs232c.h"
 
 /*
  *      グローバル ワーク
@@ -551,6 +552,13 @@ mmr_extwb(WORD * addr, BYTE dat)
 			if (!basicrom_en) {
 				boot_ram[raddr - 0x3fe00] = dat;
 			}
+
+#ifdef RSC
+			/* RS-232C CD信号 */
+			if (rs_cd) {
+				*dat &= (BYTE)~RSCB_CD;
+			}
+#endif
 			return TRUE;
 		}
 #endif

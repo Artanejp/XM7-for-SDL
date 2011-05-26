@@ -13,6 +13,7 @@
 #include <string.h>
 #include "xm7.h"
 #include "jsubsys.h"
+#include "kanji.h"
 #include "mainetc.h"
 #include "device.h"
 #include "event.h"
@@ -124,6 +125,7 @@ jsubsys_reset(void)
 {
     jsub_address = 0;
     jsub_haltflag = FALSE;
+    jsub_kanji_addr = 0;
 
     if (jsub_available) {
 	jsub_reset();
@@ -328,14 +330,17 @@ BOOL            FASTCALL
 jsub_readb(WORD addr, BYTE * dat)
 {
     int             offset;
-
+   /* FM-8モード時・日本語通信カード無効時は無効 */
+   if ((fm_subtype == FMSUB_FM8) || !jsub_enable) {
+      return FALSE;
+   }
     switch (addr) {
 	/*
 	 * 日本語サブシステム同期フラグ 
 	 */
     case 0xfd28:
 	*dat = 0xff;
-	if ((fm_subtype != FMSUB_FM8) && jsub_haltflag) {
+	if (jsub_haltflag) {
 	    *dat &= ~0x80;
 	}
 	return TRUE;
@@ -344,14 +349,29 @@ jsub_readb(WORD addr, BYTE * dat)
 	 * RCBデータ読み込み 
 	 */
     case 0xfd29:
-	if ((fm_subtype != FMSUB_FM8) && jsub_haltflag) {
-	    *dat = jsub_readrcb();
+	if (jsub_haltflag) {
+	   *dat = jsub_readrcb();
 	} else {
 	    *dat = 0xff;
 	}
 	return TRUE;
+	/* 第1水準データ */
+	case 0xfd2a:		/* 第1データLEFT */
+	case 0xfd2b:		/* 第1データRIGHT */
+         if (fm_subtype == FMSUB_FM77) {
+		offset = jsub_kanji_addr << 1;
+		if ((offset >= 0x6000) && (offset < 0x8000)) {
+		/* $6000〜$7FFFは未定義領域 */
+			*dat = (BYTE)(addr & 1);
+		}
+		else {
+		/* 通常領域 */
+			*dat = kanji_rom[offset + (addr & 1)];
+			}
+			return TRUE;
+		}
+	return FALSE;
     }
-
     return FALSE;
 }
 
@@ -362,42 +382,52 @@ jsub_readb(WORD addr, BYTE * dat)
 BOOL            FASTCALL
 jsub_writeb(WORD addr, BYTE dat)
 {
-    switch (addr) {
+	/* FM-8モード時・日本語通信カード無効時は無効 */
+	if ((fm_subtype == FMSUB_FM8) || !jsub_enable) {
+		return FALSE;
+	}
+
+       switch (addr) {
+	/* アドレス上位 */
+	case 0xfd28:
+	  jsub_kanji_addr &= 0x00ff;
+	  jsub_kanji_addr |= (WORD)(dat << 8);
+	  return TRUE;
+	/* アドレス下位 */
+	case 0xfd29:
+	  jsub_kanji_addr &= 0xff00;
+	  jsub_kanji_addr |= dat;
+	  return TRUE;
 	/*
 	 * 日本語サブシステム同期フラグ 
 	 */
-    case 0xfd2a:
-	if (fm_subtype != FMSUB_FM8) {
-	    if (dat & 0x80) {
-		jsub_haltflag = FALSE;
-	    } else {
-		jsub_haltflag = TRUE;
-		jsub_clear_address();
-	    }
-	}
+	case 0xfd2a:
+	  if (dat & 0x80) {
+	     jsub_haltflag = FALSE;
+	  }
+	  else {
+	     jsub_haltflag = TRUE;
+	     jsub_clear_address();
+	  }
 	return TRUE;
 
 	/*
 	 * RCBデータ書き込み 
 	 */
-    case 0xfd2b:
-	if (fm_subtype != FMSUB_FM8) {
-	    if (jsub_haltflag) {
-		jsub_writercb(dat);
-	    }
-	}
-	return TRUE;
-    }
-
-    return FALSE;
+	case 0xfd2b:
+	  if (jsub_haltflag) {
+	     jsub_writercb(dat);
+	  }
+	  return TRUE;
+       }
+   return FALSE;
 }
 
 /*
  *      日本語サブシステム
  *      セーブ
  */
-BOOL            FASTCALL
-jsubsys_save(int fileh)
+BOOL FASTCALL jsubsys_save(int fileh)
 {
     /*
      * プラットフォームごとのパッキング差を回避するため、分割 
@@ -486,6 +516,9 @@ jsubsys_load(int fileh, int ver)
 	if (!file_byte_read(fileh, &jsubcpu.cc)) {
 	    return FALSE;
 	}
+	if (!file_word_write(fileh, jsub_kanji_addr)) {
+		return FALSE;
+	}
 
 	if (!file_byte_read(fileh, &jsubcpu.dp)) {
 	    return FALSE;
@@ -541,6 +574,11 @@ jsubsys_load(int fileh, int ver)
 	}
 	if (!file_read(fileh, jsub_sram, 0x2000)) {
 	    return FALSE;
+	}
+	if (ver >= 305 && ver <= 499) {
+	   if (!file_word_read(fileh, &jsub_kanji_addr)) {
+	      return FALSE;
+	   }
 	}
     }
 

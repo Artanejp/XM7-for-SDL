@@ -57,6 +57,7 @@ extern          "C" {
      * 第１水準ROM 
      */
 #if XM7_VER >= 3
+    extern BYTE *kanji_rom_jis78; /* 第１水準ROM(JIS78準拠) */
     extern BYTE    *kanji_rom2;
     /*
      * 第２水準ROM 

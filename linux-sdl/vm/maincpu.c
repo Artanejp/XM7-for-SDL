@@ -187,7 +187,8 @@ maincpu_irq(void)
      * FM-8モード時のIRQ割り込み設定 
      */
     if (fm_subtype == FMSUB_FM8) {
-	if (mfd_irq_flag || txrdy_irq_flag || rxrdy_irq_flag
+	if (txrdy_irq_flag 
+	    || rxrdy_irq_flag
 	    || syndet_irq_flag) {
 	    maincpu.intr |= INTR_IRQ;
 	} else {

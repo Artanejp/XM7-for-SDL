@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2011 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2011 Ryu Takegami
  *
  *      [ 共通定義 ]
  */
@@ -35,16 +35,17 @@
 #define	VERSION		"V1.1"
 #endif
 #if XM7_VER == 1
-#define	LEVEL		"L21a"
+#define	LEVEL		"L30a"
 // #define BETAVER
 #else
-#define	LEVEL		"L31a"
+#define	LEVEL		"L40"
 // #define BETAVER
 #endif
 
 #define          LOCALVER         "SDL/Agar/OpenGL 0.2β"
 
 #define	DATE		"2011/05/27"
+//#define	DATE		"2011/04/23"
 
 /*
  *      定数、型定義
@@ -136,7 +137,10 @@ typedef struct {
 #define INTR_SYNC_OUT	0x0040	/* SYNC終了可能 */
 #define INTR_CWAI_IN	0x0080	/* CWAI実行中 */
 #define INTR_CWAI_OUT	0x0100	/* CWAI終了可能 */
-#define INTR_HALT		0x8000	/* 謎命令(HALT?)実行中 */
+#define INTR_NMI_LC	0x1000			/* NMI割り込み信号3サイクル未満 */
+#define INTR_FIRQ_LC	0x2000			/* FIRQ割り込み信号3サイクル未満 */
+#define INTR_IRQ_LC	0x4000			/* IRQ割り込み信号3サイクル未満 */
+#define INTR_HALT	0x8000			/* HALT命令実行中 */
 
 /*
  * ブレークポイント定義 
@@ -716,7 +720,7 @@ extern          "C" {
     /*
      * BOOT (DOS,FM-8) $200 
      */
-    extern BYTE *boot_mmr;
+//    extern BYTE *boot_mmr;
      /*
       * BOOT (MMR)        $200
       */
@@ -729,6 +733,9 @@ extern          "C" {
     /*
      * FM-8 ROM使用可能フラグ 
      */
+#endif
+#if (XM7_VER == 1) || (XM7_VER >= 3)
+   extern BYTE *boot_mmr;    /* BOOT (隠し)       $200 */
    extern BOOL available_mmrboot;
      /*
       * FM-77 MMRブートROM使用可能フラグ

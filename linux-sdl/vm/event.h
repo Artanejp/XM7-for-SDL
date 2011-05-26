@@ -47,15 +47,14 @@
 #define	EVENT_FDD_SEEK			16	/* FDD
 						 * シーク動作ウェイト 
 						 */
-#define	EVENT_HOT_RESET			16	/* 旧ホットリセットイベント 
-						 */
+//#define	EVENT_HOT_RESET			16	/* 旧ホットリセットイベント  */
 #define	EVENT_TAPEMON			17	/* テープ音声サンプリングタイマ 
 						 */
 #define	EVENT_MOUSE				18	/* マウスデータロスト 
 							 */
 #define	EVENT_FDC_DMA			19	/* FDC DMA転送開始(V3) 
 						 */
-#define	EVENT_FDC_NMI			19	/* FDC NMI(V1) */
+//#define	EVENT_FDC_NMI			19	/* FDC NMI(V1) */
 #define	EVENT_KEYENC_ACK		20	/* キーエンコーダ
 						 * ACK送信 */
 #define	EVENT_RS_TXTIMING		21	/* RS-232C

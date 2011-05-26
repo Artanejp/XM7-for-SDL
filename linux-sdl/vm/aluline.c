@@ -68,7 +68,7 @@ static void FASTCALL alu_cmp(WORD addr);	/* コンペア */
  *      論理演算・直線補間
  *      初期化
  */
-BOOL            FASTCALL
+BOOL  FASTCALL
 aluline_init(void)
 {
     /*
@@ -83,8 +83,7 @@ aluline_init(void)
  *      論理演算・直線補間
  *      クリーンアップ
  */
-void            FASTCALL
-aluline_cleanup(void)
+void  FASTCALL aluline_cleanup(void)
 {
 }
 
@@ -103,7 +102,7 @@ aluline_reset(void)
     alu_mask = 0;
     alu_cmpstat = 0;
     memset(alu_cmpdat, 0x80, sizeof(alu_cmpdat));
-    alu_disable = 0x08;		/* 実機(40EX)では0x0f? */
+    alu_disable = 0x0f;
     memset(alu_tiledat, 0, sizeof(alu_tiledat));
 
     line_busy = FALSE;

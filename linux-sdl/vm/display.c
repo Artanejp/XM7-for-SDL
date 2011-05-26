@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2011 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2011 Ryu Takegami
  *
  *      [ ディスプレイ ]
  */
@@ -144,7 +144,7 @@ static BOOL FASTCALL display_cursor_blink(void);	/* カーソルブリンクイ�
 							 */
 #endif
 
-#if (XM7_VER >= 3) && (defined(_OMF) || defined(_WIN32) || defined(FMT))
+#if (XM7_VER >= 3) && (defined(_OMF) || defined(_WIN32))
 extern void     memcpy400l(BYTE *, BYTE *, int);
 										/*
 										 * 400ラインスクロール用メモリ転送 
@@ -890,7 +890,7 @@ vram_scroll_analog(WORD offset, DWORD addr)
 /*
  *      400ラインモードVRAMスクロール用メモリ転送 (C版)
  */
-#if (XM7_VER >= 3) && (!(defined(_OMF) || defined(_WIN32) || defined(FMT)))
+#if (XM7_VER >= 3) && (!(defined(_OMF) || defined(_WIN32)))
 static void     FASTCALL
 memcpy400l(BYTE * dest, BYTE * src, WORD siz)
 {
@@ -1351,7 +1351,14 @@ display_readb(WORD addr, BYTE * dat)
 	     * アドレスはワード単位で、8bitのみ取得 
 	     */
 	    offset = sub_kanji_addr << 1;
-	    *dat = kanji_rom[offset + (addr & 1)];
+	   if ((offset >= 0x6000) && (offset < 0x8000)) {
+	      /* FM-7モード時の$6000〜$7FFFは未定義領域 */
+	      *dat = (BYTE)(addr & 1);
+	   }
+	   else {
+	      /* 通常領域 */
+	      *dat = kanji_rom[offset + (addr & 1)];
+	   }
 	}
 #endif
 	else {

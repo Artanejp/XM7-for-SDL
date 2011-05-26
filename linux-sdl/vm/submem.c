@@ -52,8 +52,9 @@ BYTE            consram_bank;	/* コンソールRAMバンク */
 #endif				/* XM7_VER >= 3 */
 #endif				/* XM7_VER >= 2 */
 
-#if XM7_VER == 1 && defined(L4CARD)
+#if XM7_VER == 1
 BYTE           *subrom_8;	/* ROM (FM-8) $2800 */
+#ifdef L4CARD
 BYTE           *tvram_c;	/* Text VRAM $1000 */
 BYTE           *subrom_l4;	/* ROM (400ライン)$4800 */
 BYTE           *subcg_l4;	/* CG (400ライン)$1000 */
@@ -62,7 +63,7 @@ BOOL            enable_400linecard;	/* 400ラインカードイネーブル
 BOOL            detect_400linecard;	/* 400ラインカード発見フラグ 
 					 */
 #endif
-
+#endif
 
 /*
  *      サブCPUメモリ

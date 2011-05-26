@@ -53,7 +53,7 @@ BYTE            fdc_physdrv[FDC_DRIVES];	/* 論理/物理ドライブの対応
 BYTE            fdc_2ddmode;	/* 2Dモード選択状態 */
 #endif
 
-char            fdc_fname[FDC_DRIVES][128 + 1];	/* ファイル名 */
+char            fdc_fname[FDC_DRIVES][256 + 1];	/* ファイル名 */
 char            fdc_name[FDC_DRIVES][FDC_MEDIAS][17];
 BOOL            fdc_fwritep[FDC_DRIVES];	/* ライトプロテクト状態(ファイルレベル) 
 						 */
@@ -81,7 +81,7 @@ static DWORD    fdc_foffset[FDC_DRIVES][FDC_MEDIAS];
 static WORD     fdc_trklen[FDC_DRIVES];	/* トラックデータ長さ */
 static BOOL     fdc_seekvct;	/* シーク方向(Trk0:TRUE) */
 static BYTE     fdc_indexcnt;	/* INDEXホール カウンタ */
-static BOOL     fdc_boot;	/* ブートフラグ */
+//static BOOL     fdc_boot;	/* ブートフラグ */
 #ifdef FDDSND
 static BOOL     fdc_wait;	/* ウェイトモード実行フラグ */
 static int32_t      fdc_seek_track;	/* waitmode用シークカウンタ */
@@ -200,7 +200,7 @@ fdc_reset(void)
     memset(fdc_track, 0, sizeof(fdc_track));
     fdc_dataptr = NULL;
     memset(fdc_access, 0, sizeof(fdc_access));
-    fdc_boot = FALSE;
+    //fdc_boot = FALSE;
 
     /*
      * データバッファへ読み込み 
@@ -826,7 +826,7 @@ fdc_next_index(void)
     }
 
     /*
-     * D77 
+     * D77 / VFD 
      */
     ASSERT((fdc_ready[fdc_drvreg] == FDC_TYPE_D77) ||
 	   (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD));
@@ -839,7 +839,7 @@ fdc_next_index(void)
 	}
 #endif
 	secs = fdc_header[fdc_drvreg][track * 6 + 5];
-    } else {
+    } else if (fdc_ready[fdc_drvreg] == FDC_TYPE_D77) {
 	secs = fdc_buffer[0x0005];
 	secs *= 256;
 	secs |= fdc_buffer[0x0004];
@@ -1222,7 +1222,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
     fdctrack = fdc_track[fdc_drvreg];
 
     /*
-     * 2Dファイルの場合 
+     * 2D/2DDファイルの場合 
      */
 #if XM7_VER >= 3
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
@@ -1473,7 +1473,7 @@ fdc_readbuf(int drive)
     trkside = fdc_track[drive] * 2 + fdc_sidereg;
 
     /*
-     * 2Dファイル
+     * 2D/2DDファイル
      */
 #if XM7_VER >= 3
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
@@ -1961,21 +1961,19 @@ fdc_setmedia(int drive, int index)
 	}
     } else {
 	/*
-	 * 2Dファイルなら、ファイル属性に従う 
+	 * 2D/2DD/VFDファイルなら、ファイル属性に従う 
 	 */
 	fdc_writep[drive] = fdc_fwritep[drive];
     }
-
-    /*
-     * 一時イジェクトを強制解除 
-     */
-    fdc_teject[fdc_drvreg] = FALSE;
-
+       /* メディアが交換された場合、一時イジェクトを強制解除 */
+       if (fdc_media[drive] != index) {
+	  fdc_teject[drive] = FALSE;
+       }
     /*
      * データバッファ読み込み、ワークセーブ 
      */
-    fdc_readbuf(fdc_drvreg);
     fdc_media[drive] = (BYTE) index;
+    fdc_readbuf(drive);
 
     return TRUE;
 }
@@ -2147,11 +2145,18 @@ fdc_setdisk(int drive, char *fname)
     /*
      * ファイルをオープンし、ファイルサイズを調べる 
      */
-    strcpy(fdc_fname[drive], fname);
+   if (strlen(fname) < sizeof(fdc_fname[drive])) {
+	strcpy(fdc_fname[drive], fname);
+   }
+   else {
+      fdc_ready[drive] = FDC_TYPE_NOTREADY;
+	fdc_fname[drive][0] = '\0';
+	return 1;
+   }
     writep = FALSE;
-    handle = file_open(fname, OPEN_RW);
+   handle = file_open(fdc_fname[drive], OPEN_RW);
     if (handle == -1) {
-	handle = file_open(fname, OPEN_R);
+	handle = file_open(fdc_fname[drive], OPEN_R);
 	if (handle == -1) {
 	    return 0;
 	}
@@ -2604,8 +2609,7 @@ fdc_seek(void)
     /*
      * アップデート 
      */
-    fdc_trkreg = fdc_track[fdc_drvreg];
-
+    fdc_trkreg = fdc_datareg;	/* データレジスタの値が反映される模様 */
     /*
      * FDC割り込み 
      */
@@ -2710,7 +2714,9 @@ fdc_step_in(void)
      * アップデート 
      */
     if (fdc_command & 0x10) {
-	fdc_trkreg = fdc_track[fdc_drvreg];
+       if (fdc_trkreg < 255) {
+	  fdc_trkreg++;	/* トラックレジスタ自体の更新のみと思われる */
+       }
     }
 
     /*
@@ -2803,7 +2809,9 @@ fdc_step_out(void)
      * アップデート 
      */
     if (fdc_command & 0x10) {
-	fdc_trkreg = fdc_track[fdc_drvreg];
+	if (fdc_trkreg > 0) {
+	   fdc_trkreg--;	/* トラックレジスタ自体の更新のみと思われる */
+	}
     }
 
     /*
@@ -2898,11 +2906,10 @@ fdc_rw_sub(void)
  *      TYPE II
  *      READ DATA
  */
-static void      
-fdc_read_data(void)
+static void   fdc_read_data(void)
 {
     BYTE            stat;
-    WORD            drv;
+
 
     /*
      * TYPE II, Read 
@@ -2916,38 +2923,6 @@ fdc_read_data(void)
 	return;
     }
 
-    /*
-     * ブートフラグ 
-     */
-#if XM7_VER >= 3
-    if (fm7_ver <= 2) {
-	/*
-	 * FM-7/77AVモード時はドライブ0以外で処理を行う 
-	 */
-	drv = 0;
-    } else {
-	/*
-	 * 40EXモード時はドライブ2,3で処理を行う(ドライブ1起動対策) 
-	 */
-	drv = 1;
-    }
-#else
-    drv = 0;
-#endif
-
-    if (!fdc_boot && (fdc_drvreg > drv)) {
-	/*
-	 * 擬似的に、NOT READYを作る 
-	 */
-	fdc_status |= 0x80;
-
-	/*
-	 * FDC割り込み 
-	 */
-	mainetc_fdc();
-	fdc_drqirq = 0x40;
-	return;
-    }
 
     /*
      * セクタ検索 
@@ -3000,12 +2975,6 @@ fdc_read_data(void)
     fdc_drqirq = 0x80;
 #endif
 
-    /*
-     * ブートフラグ設定 
-     */
-    if ((fdc_trkreg == 0) && (fdc_secreg == 1) && (fdc_sidereg == 0)) {
-	fdc_boot = TRUE;
-    }
 
     /*
      * アクセス(READ) 
@@ -4135,7 +4104,7 @@ fdc_save(int fileh)
 	}
     }
     for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_write(fileh, (BYTE *) fdc_fname[i], 128 + 1)) {
+	if (!file_write(fileh, (BYTE *) fdc_fname[i], 256 + 1)) {
 	    return FALSE;
 	}
     }
@@ -4242,7 +4211,7 @@ fdc_save(int fileh)
 	    return FALSE;
 	}
     }
-    if (!file_bool_write(fileh, fdc_boot)) {
+    if (!file_bool_write(fileh, TRUE)) {
 	return FALSE;
     }
 
@@ -4291,12 +4260,11 @@ fdc_load(int fileh, int ver)
 {
     int             i;
     BYTE            ready[FDC_DRIVES];
-    char            fname[FDC_DRIVES][128 + 1];
+    char            fname[FDC_DRIVES][256 + 1];
     BYTE            media[FDC_DRIVES];
     WORD            offset;
-#ifndef FDDSND
+    int             pathlen;
     BOOL            tmp;
-#endif
 
     /*
      * バージョンチェック 
@@ -4304,7 +4272,19 @@ fdc_load(int fileh, int ver)
     if (ver < 200) {
 	return FALSE;
     }
-
+   /* ファイル名の最大文字数を決定 */
+#if XM7_VER >= 3
+	if (((ver >= 715) && (ver <= 799)) || (ver >= 915)) {
+#elif XM7_VER >= 2
+	if ((ver >= 715) && (ver <= 799)) {
+#else
+	if ((ver >= 305) && (ver <= 499)) {
+#endif
+	   pathlen = 256;
+	}
+	else {
+		pathlen = 128;
+	}
     /*
      * ファイル関係を先に持ってくる 
      */
@@ -4314,7 +4294,7 @@ fdc_load(int fileh, int ver)
 	}
     }
     for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_read(fileh, (BYTE *) fname[i], 128 + 1)) {
+	if (!file_read(fileh, (BYTE *) fname[i], pathlen + 1)) {
 	    return FALSE;
 	}
     }
@@ -4441,7 +4421,8 @@ fdc_load(int fileh, int ver)
 	    return FALSE;
 	}
     }
-    if (!file_bool_read(fileh, &fdc_boot)) {
+	   /* 旧バージョンとの互換用(ブートフラグ) */
+    if (!file_bool_read(fileh, &tmp)) {
 	return FALSE;
     }
 
@@ -4477,11 +4458,8 @@ fdc_load(int fileh, int ver)
 	 * ウェイトモードはFALSE 
 	 */
 	fdc_wait = FALSE;
-
-	/*
-	 * 旧ホットリセットイベントを削除 
-	 */
-	schedule_delevent(EVENT_HOT_RESET);
+	/* シークイベント(旧ホットリセットイベント)を削除 */
+	schedule_delevent(EVENT_FDD_SEEK);
     }
 #endif
 

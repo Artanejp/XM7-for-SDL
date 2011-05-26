@@ -142,6 +142,13 @@ extern          "C" {
     /*
      * スピーカ有効フラグ 
      */
+#if XM7_VER == 1
+   extern BOOL banksel_en;
+   /*
+    * バンク切り換えイネーブルフラグ
+    */
+#endif
+   
 #ifdef __cplusplus
 }
 #endif

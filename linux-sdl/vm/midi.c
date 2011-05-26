@@ -13,6 +13,7 @@
 #include "xm7.h"
 #include "midi.h"
 #include "device.h"
+#include "rs232c.h"
 
 /*
  *      グローバル ワーク
@@ -136,7 +137,26 @@ midi_writeb(WORD addr, BYTE dat)
 		midi_selectmc = TRUE;
 	    }
 	}
+#if XM7_VER >= 3
+	if (((ver >= 500) && (ver < 715)) || ((ver >= 800) && (ver < 915))) {
+#elif XM7_VER >= 2
+	if (ver < 715) {
+#else
+	if (ver < 305) {
+#endif
+		return TRUE;
+	}
 
+	if (!file_bool_read(fileh, &midi_txenable)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &midi_selectmc)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &midi_modereg)) {
+		return FALSE;
+	}
+	
 	return TRUE;
     }
 
@@ -150,7 +170,16 @@ midi_writeb(WORD addr, BYTE dat)
 BOOL            FASTCALL
 midi_save(int fileh)
 {
-    return TRUE;
+   if (!file_bool_write(fileh, midi_txenable)) {
+      return FALSE;
+   }
+   if (!file_bool_write(fileh, midi_selectmc)) {
+      return FALSE;
+   }
+   if (!file_byte_write(fileh, midi_modereg)) {
+      return FALSE;
+   }
+   return TRUE;
 }
 
 /*

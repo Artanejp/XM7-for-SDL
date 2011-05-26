@@ -21,6 +21,7 @@
 #include "opn.h"
 #include "mmr.h"
 #include "apalet.h"
+#include "rs232c.h"
 #ifdef MIDI
 #include "midi.h"
 #endif
@@ -46,7 +47,7 @@ BYTE           *boot_bas;	/* ブート(BASIC,FM-7) $200 */
 BYTE           *boot_dos;	/* ブート(DOS,FM-7) $200 */
 BYTE           *boot_bas8;	/* ブート(BASIC,FM-8) $200 */
 BYTE           *boot_dos8;	/* ブート(DOS,FM-8) $200 */
-BYTE           *boot_mmr;	/* ブート(MMR,FM-77)   $200 */
+BYTE           *boot_mmr;	/* ブート(隠し)   $200 */
 #endif
 BYTE           *boot_ram;	/* ブートRAM $200 */
 BOOL            bootram_rw;	/* ブートRAM 書き込みフラグ */
@@ -54,6 +55,7 @@ BOOL            bootram_rw;	/* ブートRAM 書き込みフラグ */
 BYTE           *extram_a;	/* 拡張RAM $10000 */
 #if XM7_VER >= 3
 BYTE           *extram_c;	/* AV40拡張RAM $C0000 */
+BYTE           *boot_mmr;	/* ブート(隠し)   $200 */
 #endif
 
 #if XM7_VER >= 2
@@ -66,6 +68,8 @@ BOOL            initrom_en;	/* イニシエータROMイネーブルフラグ
 /*
  *      スタティック ワーク
  */
+static BYTE *patch_branewboottfr; /* 新ブート転送用処理へのBRA命令 */
+static BYTE *patch_jmpnewboot;	/* 新ブートへのJMP命令 */
 static BYTE     ioaccess_count;	/* I/O領域アクセスカウンタ */
 static BOOL     ioaccess_flag;	/* I/Oアクセスウェイト調整フラグ 
 				 */
@@ -96,7 +100,10 @@ mainmem_init(void)
     boot_bas8 = NULL;
     boot_dos8 = NULL;
 #else
+   patch_branewboottfr = NULL;
+   patch_jmpnewboot = NULL;
 #if XM7_VER >= 3
+    boot_mmr = NULL;
     extram_c = NULL;
 #endif
     init_rom = NULL;
@@ -177,10 +184,10 @@ mainmem_init(void)
     if (boot_dos == NULL) {
 	return FALSE;
     }
-    boot_mmr = (BYTE *)malloc(0x200);
-    if (boot_mmr == NULL) {
-	return FALSE;
-    }
+//    boot_mmr = (BYTE *)malloc(0x200);
+//    if (boot_mmr == NULL) {
+//	return FALSE;
+//    }
     boot_bas8 = (BYTE *) malloc(0x200);
     if (boot_bas8 == NULL) {
 	return FALSE;
@@ -189,6 +196,12 @@ mainmem_init(void)
     if (boot_dos8 == NULL) {
 	return FALSE;
     }
+#endif
+#if (XM7_VER == 1) || (XM7_VER >= 3)
+	boot_mmr = (BYTE *)malloc(0x200);
+	if (boot_mmr == NULL) {
+		return FALSE;
+	}
 #endif
     boot_ram = (BYTE *) malloc(0x200);
     if (boot_ram == NULL) {
@@ -351,9 +364,12 @@ mainmem_cleanup(void)
     ASSERT(basic_rom8);
     ASSERT(boot_bas);
     ASSERT(boot_dos);
-    ASSERT(boot_mmr);
+//    ASSERT(boot_mmr);
     ASSERT(boot_bas8);
     ASSERT(boot_dos8);
+#endif
+#if (XM7_VER == 1) || (XM7_VER >= 3)
+	ASSERT(boot_mmr);
 #endif
     ASSERT(boot_ram);
 
@@ -397,14 +413,19 @@ mainmem_cleanup(void)
     if (boot_dos) {
 	free(boot_dos);
     }
-    if (boot_mmr) {
-	free(boot_mmr);
-    }
+//    if (boot_mmr) {
+//	free(boot_mmr);
+//    }
     if (boot_bas8) {
 	free(boot_bas8);
     }
     if (boot_dos8) {
 	free(boot_dos8);
+    }
+#endif
+#if (XM7_VER == 1) || (XM7_VER >= 3)
+    if (boot_mmr) {
+	free(boot_mmr);
     }
 #endif
     if (boot_ram) {
@@ -478,7 +499,13 @@ mainmem_reset(void)
 	/*
 	 * FM77AV 
 	 */
-	memset(&init_rom[0x0b0e], 0xff, 3);
+	memset(&init_rom[0x0b0e], 0xff, 6);
+	/* イニシエータがFM77AV相当の動作となるようにパッチ */
+	if (patch_branewboottfr && patch_jmpnewboot) {
+		patch_branewboottfr[0x0000] = 0x21;
+		patch_jmpnewboot[0x0001] = 0xfe;
+		patch_jmpnewboot[0x0002] = 0x00;
+	}
 	break;
 #if XM7_VER >= 3
     case 3:
@@ -488,6 +515,15 @@ mainmem_reset(void)
 	init_rom[0xb0e] = '4';
 	init_rom[0xb0f] = '0';
 	init_rom[0xb10] = '1';
+	init_rom[0xb11] = 'M';
+	init_rom[0xb12] = 'a';
+	init_rom[0xb13] = '.';
+	/* イニシエータがFM77AV40EX本来の動作となるよう元に戻す */
+	if (patch_branewboottfr && patch_jmpnewboot) {
+		patch_branewboottfr[0x0000] = 0x20;
+		patch_jmpnewboot[0x0001] = 0x50;
+		patch_jmpnewboot[0x0002] = 0x00;
+	}
 	break;
 #endif
     }
@@ -738,6 +774,12 @@ mainmem_readb(WORD addr)
 	return dat;
     }
 #endif
+#ifdef RSC
+	if (rs232c_readb(addr, &dat)) {
+		return dat;
+	}
+#endif
+
 #if XM7_VER >= 3
     if (dmac_readb(addr, &dat)) {
 	return dat;
@@ -1024,6 +1066,13 @@ mainmem_writeb(WORD addr, BYTE dat)
 	return;
     }
 #endif
+       
+#ifdef RSC
+	if (rs232c_writeb(addr, dat)) {
+		return;
+	}
+#endif
+       
 #if XM7_VER >= 3
     if (dmac_writeb(addr, dat)) {
 	return;
@@ -1138,6 +1187,34 @@ mainmem_load(int fileh, int ver)
 			return FALSE;
 		}
 	}
+
+	/* 新ブート関連処理のアドレスを検索・記憶 */
+	for (i=0; i<0xb00; i++) {
+		/* 新ブート転送処理へのBRA命令 */
+		if (!patch_branewboottfr) {
+			if ((init_rom[i + 0] == 0x20) && (init_rom[i + 1] == 0xd7)) {
+				patch_branewboottfr = &init_rom[i];
+			}
+		}
+
+		/* 新ブートへのJMP命令(イニシエータの末尾に存在する) */
+		if (!patch_jmpnewboot) {
+			if ((init_rom[i + 0] == 0x7e) && (init_rom[i + 1] == 0x50) &&
+				(init_rom[i + 2] == 0x00)) {
+				patch_jmpnewboot = &init_rom[i];
+			}
+		}
+
+		/* 両方発見したらループを抜ける */
+		if (patch_branewboottfr && patch_jmpnewboot) {
+			break;
+		}
+	}
+#if XM7_VER >= 3
+	if (!file_load(BOOTMMR_ROM, boot_mmr, 0x200)) {
+		available_mmrboot = FALSE;
+	}
+#endif
 #else
    if (!file_read(fileh, mainram_b, 0x7c80)) {
  		return FALSE;

@@ -27,7 +27,7 @@ WORD            tape_count;	/* テープ サイクルカウンタ */
 DWORD           tape_subcnt;	/* テープ サブカウンタ */
 int             tape_fileh;	/* テープ ファイルハンドル */
 DWORD           tape_offset;	/* テープ ファイルオフセット */
-char            tape_fname[128 + 1];	/* テープ ファイルネーム 
+char            tape_fname[256 + 1];	/* テープ ファイルネーム 
 					 */
 
 WORD            tape_incnt;	/* テープ 読み込みカウンタ */
@@ -52,7 +52,7 @@ BOOL            lp_online;	/* プリンタ オンライン */
 BOOL            lp_strobe;	/* プリンタ ストローブ */
 int             lp_fileh;	/* プリンタ ファイルハンドル */
 
-char            lp_fname[128 + 1];	/* プリンタ
+char            lp_fname[256 + 1];	/* プリンタ
 					 * ファイルネーム */
 
 /*
@@ -1135,7 +1135,7 @@ tapelp_save(int fileh)
     if (!file_dword_write(fileh, tape_offset)) {
 	return FALSE;
     }
-    if (!file_write(fileh, (BYTE *) tape_fname, 128 + 1)) {
+    if (!file_write(fileh, (BYTE *) tape_fname, 256 + 1)) {
 	return FALSE;
     }
 
@@ -1173,7 +1173,7 @@ tapelp_save(int fileh)
 	return FALSE;
     }
 
-    if (!file_write(fileh, (BYTE *) lp_fname, 128 + 1)) {
+    if (!file_write(fileh, (BYTE *) lp_fname, 256 + 1)) {
 	return FALSE;
     }
 
@@ -1188,15 +1188,30 @@ BOOL            FASTCALL
 tapelp_load(int fileh, int ver)
 {
     DWORD           offset;
-    char            fname[128 + 1];
+    char            fname[256 + 1];
     BYTE            tmp;
     BOOL            flag;
+    int pathlen;
+
 
     /*
      * バージョンチェック 
      */
     if (ver < 200) {
 	return FALSE;
+    }
+	/* ファイル名の最大文字数を決定 */
+#if XM7_VER >= 3
+   if (((ver >= 715) && (ver <= 799)) || (ver >= 915)) {
+#elif XM7_VER >= 2
+      if ((ver >= 715) && (ver <= 799)) {
+#else
+	 if ((ver >= 305) && (ver <= 499)) {
+#endif
+	    pathlen = 256;
+	}
+	else {
+	pathlen = 128;
     }
 
     if (!file_bool_read(fileh, &tape_in)) {
@@ -1241,7 +1256,7 @@ tapelp_load(int fileh, int ver)
     if (!file_dword_read(fileh, &offset)) {
 	return FALSE;
     }
-    if (!file_read(fileh, (BYTE *) fname, 128 + 1)) {
+    if (!file_read(fileh, (BYTE *) fname, pathlen + 1)) {
 	return FALSE;
     }
     if (!file_bool_read(fileh, &flag)) {
@@ -1292,7 +1307,7 @@ tapelp_load(int fileh, int ver)
 	return FALSE;
     }
 
-    if (!file_read(fileh, (BYTE *) lp_fname, 128 + 1)) {
+    if (!file_read(fileh, (BYTE *) lp_fname, pathlen + 1)) {
 	return FALSE;
     }
 
