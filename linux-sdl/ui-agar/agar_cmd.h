@@ -30,11 +30,20 @@ extern          "C" {
 #define HTGIMO	"http://www.geocities.jp/kugimoto0715/"
 #define COART   "Copyright(C) 2010 K.Ohta porting to SDL & AGAR."
 #define HTART   "http://sky.geocities.jp/artanejp/"
-#ifdef LOCALVER
-#define VERSTR "For SDL/AGAR\n"VERSION" "LEVEL"\n（"LOCALVER"/"DATE"）\n"
-#else
-#define VERSTR "FM-7 EMULATOR XM7\n"VERSION" "LEVEL"（"DATE"）\n"
-#endif
+
+#ifdef SVNVER
+ #ifdef LOCALVER
+  #define VERSTR "For SDL/AGAR\n"VERSION" "LEVEL"\n（"LOCALVER"\nSVN "SVNVER"  "DATE"）\n"
+ #else
+  #define VERSTR "For SDL/AGAR\n"VERSION" "LEVEL"\n（SVN "SVNVER"  "DATE"）\n"
+ #endif
+#else   
+ #ifdef LOCALVER
+   #define VERSTR "For SDL/AGAR\n"VERSION" "LEVEL"\n（"LOCALVER"/"DATE"）\n"
+ #else
+  #define VERSTR "FM-7 EMULATOR XM7\n"VERSION" "LEVEL"（"DATE"）\n"
+ #endif
+#endif   
 #define AUTSTR COPI"\n"HTPI"\n\n"CORYU"\n"HTRYU"\n\n"COGIMO"\n"HTGIMO"\n\n"COART"\n"HTART"\n\n"COFMGEN
 typedef struct {
         int drive;

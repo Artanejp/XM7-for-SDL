@@ -16,6 +16,10 @@ INSTALL          = install -c
 PREFIX           = /usr/local
 SHAREDIR         = $(PREFIX)/share/xm7/
 
+## SVNの時はコメントアウト外す
+SVNVER = `svnversion`
+
+
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること
 UI_FONT           = ipagp.ttf
 STAT_FONT          = ipagp.ttf
@@ -32,6 +36,11 @@ AR = ar
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
+
+ifdef SVNVER
+CFLAGS += -DSVNVER=\"$(SVNVER)\"
+endif
+
 CFLAGS +=  -I. -I/usr/local/include
 CFLAGS += -I../libemugrph/ -I../ui-agar/ -I../sdl/ -I../vm/
 CFLAGS += `pkg-config --cflags sdl`

@@ -5,15 +5,18 @@
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
+
+SVNVER = `svnversion`
+
 include config.mak
 
 .PHONY: clean Release Debug libemugrph-debug ui-agar-debug vm-debug libemugrph-release ui-release vm-release
-all: Release Debug libemugrph-release ui-release vm-release libemugrph-debug ui-agar-debug vm-debug
+all: Release Debug
 
-Release: libemugrph/Release/libemugrph.a ui-agar/Release/libui-agar.a vm/Release/libxm7_vm.a
+Release: ui-agar-release libemugrph-release vm-release
 	make -C sdl xm7
 
-Debug: libemugrph/Debug/libemugrph.a ui-agar/Debug/libui-agar.a vm/Debug/libxm7_vm.a
+Debug: ui-agar-debug libemugrph-debug vm-debug
 	make -C sdl xm7.debug
 
 

@@ -147,8 +147,9 @@ Debug/EmuAgarGL.o: EmuAgarGL.cpp
 clean:
 	rm -f *.so *.o *.lo *.la *.a *~ 
 	rm -fR .libs/
+	rm -f Debug/*.o Debug/*.a Debug/*.so
+	rm -f Release/*.o Release/*.a Release/*.so
 	
-
 install: all
 	install -c .libs/libemugrph.so.0.0.0 $(PREFIX)/lib
 	install -c .libs/libemugrph.a $(PREFIX)/lib

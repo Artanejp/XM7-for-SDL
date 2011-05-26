@@ -41,8 +41,10 @@
 #define	LEVEL		"L31a"
 // #define BETAVER
 #endif
-#define          LOCALVER         "SDL 0.1α254 Agar/OpenGL"
-#define	DATE		"2011/03/20"
+
+#define          LOCALVER         "SDL/Agar/OpenGL 0.2β"
+
+#define	DATE		"2011/05/27"
 
 /*
  *      定数、型定義
