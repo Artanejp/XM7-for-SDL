@@ -95,8 +95,8 @@
 #endif
 
 #undef CPU_ASM
-#define MOUSE
-#define MR2
+//#define MOUSE
+//#define MR2
 //#define FDDSND
 
 

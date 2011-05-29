@@ -52,7 +52,7 @@
  */
 
 /*
- * 汎用定数 
+ * 汎用定数
  */
 #ifndef FALSE
 #define FALSE			0
@@ -63,7 +63,7 @@
 #endif
 
 /*
- * 診断 
+ * 診断
  */
 #ifndef ASSERT
 #ifdef _DEBUG
@@ -93,23 +93,26 @@ typedef int     BOOL;
 
 
 /*
- * CPUレジスタ定義 
+ * CPUレジスタ定義
  */
 #pragma pack(push, 1)
-typedef struct {
+typedef struct
+{
     BYTE            cc;
     BYTE            dp;
-    union {
-	struct {
+    union
+    {
+        struct
+        {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	    BYTE b __attribute__ ((aligned(1)));
-	    BYTE a __attribute__ ((aligned(1)));
+            BYTE b __attribute__ ((aligned(1)));
+            BYTE a __attribute__ ((aligned(1)));
 #else
-	    BYTE a __attribute__ ((aligned(1)));
-	    BYTE b __attribute__ ((aligned(1)));
+            BYTE a __attribute__ ((aligned(1)));
+            BYTE b __attribute__ ((aligned(1)));
 #endif
-	} h;
-	WORD            d;
+        } h;
+        WORD            d;
     } acc;
     WORD            x;
     WORD            y;
@@ -119,14 +122,14 @@ typedef struct {
     WORD            intr;
     WORD            cycle;
     WORD            total;
-                    BYTE(FASTCALL * readmem) (WORD);
+    BYTE(FASTCALL * readmem) (WORD);
     void            (FASTCALL * writemem) (WORD, BYTE);
     WORD            ea;
 } cpu6809_t;
 #pragma pack(pop)
 
 /*
- * 割り込み定義 
+ * 割り込み定義
  */
 #define INTR_NMI		0x0001	/* NMI割り込み */
 #define INTR_FIRQ		0x0002	/* FIRQ割り込み */
@@ -143,42 +146,44 @@ typedef struct {
 #define INTR_HALT	0x8000			/* HALT命令実行中 */
 
 /*
- * ブレークポイント定義 
+ * ブレークポイント定義
  */
 #define BREAKP_NOTUSE	0	/* 未使用 */
 #define BREAKP_ENABLED	1	/* 使用中 */
 #define BREAKP_DISABLED	2	/* 禁止中 */
 #define BREAKP_STOPPED	3	/* 停止中 */
 #define BREAKP_MAXNUM	16	/* ブレークポイントの個数 */
-#define BREAKP_MAXNUM_OLD	8	/* ブレークポイントの個数 
-					 * (〜V3.1L10) */
-typedef struct {
+#define BREAKP_MAXNUM_OLD	8	/* ブレークポイントの個数
+* (〜V3.1L10) */
+typedef struct
+{
     int             flag;	/* 上のフラグ */
     int             cpu;	/* CPU種別 */
     WORD            addr;	/* ブレークポイントアドレス */
 } breakp_t;
 
 /*
- * イベント定義 
+ * イベント定義
  */
 #define EVENT_NOTUSE	0	/* 未使用 */
 #define EVENT_ENABLED	1	/* 使用中 */
 #define EVENT_DISABLED	2	/* 禁止中 */
 #define	EVENT_MAXNUM	24	/* イベントの個数 */
-#define EVENT_MAXNUM_L31	18	/* V3.0L31でのイベントの個数 
-					 */
-#define	EVENT_MAXNUM_L30	16	/* V3.0L30でのイベントの個数 
-					 */
-typedef struct {
+#define EVENT_MAXNUM_L31	18	/* V3.0L31でのイベントの個数
+*/
+#define	EVENT_MAXNUM_L30	16	/* V3.0L30でのイベントの個数
+*/
+typedef struct
+{
     int             flag;	/* 上のフラグ */
     DWORD           current;	/* カレント時間カウンタ */
     DWORD           reload;	/* リロード時間カウンタ */
-                    BOOL(FASTCALL * callback) (void);	/* コールバック関数 
+    BOOL(FASTCALL * callback) (void);	/* コールバック関数
 							 */
 } event_t;
 
 /*
- * CPU実行サイクル数 
+ * CPU実行サイクル数
  */
 #define MAINCYCLES		1794	/* メインCPU MMR OFF */
 #define MAINCYCLES_MMR	1565	/* メインCPU MMR ON */
@@ -189,14 +194,14 @@ typedef struct {
 #define JSUBCYCLES		1228	/* 日本語サブCPU */
 
 /*
- * ハードウェアサブバージョン 
+ * ハードウェアサブバージョン
  */
 #define FMSUB_FM7		0x00	/* FM-7 */
 #define FMSUB_FM77		0x01	/* FM-77 */
 #define FMSUB_FM8		0x02	/* FM-8 */
 
 /*
- * その他定数 
+ * その他定数
  */
 #define MAINCPU			0	/* メインCPU */
 #define SUBCPU			1	/* サブCPU */
@@ -213,8 +218,8 @@ typedef struct {
 
 #define STATELOAD_ERROR		0	/* ステートロードエラー */
 #define STATELOAD_SUCCESS	1	/* ステートロード成功 */
-#define STATELOAD_OPENERR	-1	/* ファイルオープンエラー 
-					 */
+#define STATELOAD_OPENERR	-1	/* ファイルオープンエラー
+*/
 #define STATELOAD_HEADERR	-2	/* ヘッダエラー */
 #define STATELOAD_VERERR	-3	/* バージョンエラー */
 
@@ -235,7 +240,7 @@ typedef struct {
 #define SUBSYS8_ROM		"SUBSYS_8.ROM"	/* MICRO 8 SUBSYSTEM */
 #define SUBSYSL4_ROM	"SUBSYSL4.ROM"	/* FM-77L4 400LINE SUBSYSTEM */
 #define ANKCG16_ROM		"ANKCG16.ROM"	/* FM-77L4 400LINE ANK
-						 * FONT */
+* FONT */
 #define KANJI_ROM		"KANJI.ROM"
 #define JSUBSYS_ROM		"JSUBMON.ROM"
 #define JSUBDIC_ROM		"DICROM.ROM"
@@ -262,264 +267,264 @@ extern          "C" {
      */
 
     /*
-     * システム(system.c) 
+     * システム(system.c)
      */
     BOOL FASTCALL   system_init(void);
     /*
-     * システム 初期化 
+     * システム 初期化
      */
     void FASTCALL   system_cleanup(void);
     /*
-     * システム クリーンアップ 
+     * システム クリーンアップ
      */
     void FASTCALL   system_reset(void);
     /*
-     * システム リセット 
+     * システム リセット
      */
     void FASTCALL   system_hotreset(void);
     /*
-     * システム ホットリセット 
+     * システム ホットリセット
      */
     BOOL FASTCALL   system_save(char *filename);
     /*
-     * システム セーブ 
+     * システム セーブ
      */
     int FASTCALL    system_load(char *filename);
     /*
-     * システム ロード 
+     * システム ロード
      */
 
     /*
-     * スケジューラ(schedule.c) 
+     * スケジューラ(schedule.c)
      */
     BOOL FASTCALL   schedule_init(void);
     /*
-     * スケジューラ 初期化 
+     * スケジューラ 初期化
      */
     void FASTCALL   schedule_cleanup(void);
     /*
-     * スケジューラ クリーンアップ 
+     * スケジューラ クリーンアップ
      */
     void FASTCALL   schedule_reset(void);
     /*
-     * スケジューラ リセット 
+     * スケジューラ リセット
      */
     DWORD FASTCALL  schedule_exec(DWORD microsec);
     /*
-     * 実行 
+     * 実行
      */
     void FASTCALL   schedule_main_fullspeed(void);
     /*
-     * メインだけ全力駆動(tape用) 
+     * メインだけ全力駆動(tape用)
      */
     void FASTCALL   schedule_fullspeed(void);
     /*
-     * 全力駆動 
+     * 全力駆動
      */
     void FASTCALL   schedule_trace(void);
     /*
-     * トレース 
+     * トレース
      */
     BOOL FASTCALL   schedule_setbreak(int cpu, WORD addr);
     /*
-     * ブレークポイント設定 
+     * ブレークポイント設定
      */
     BOOL FASTCALL   schedule_setbreak2(int num, int cpu, WORD addr);
     /*
-     * ブレークポイント設定(位置指定) 
+     * ブレークポイント設定(位置指定)
      */
     BOOL FASTCALL   schedule_setevent(int id, DWORD microsec,
-				      BOOL(FASTCALL * func) (void));
+                                      BOOL(FASTCALL * func) (void));
     /*
-     * イベント追加 
+     * イベント追加
      */
     BOOL FASTCALL   schedule_delevent(int id);
     /*
-     * イベント削除 
+     * イベント削除
      */
     void FASTCALL   schedule_handle(int id, BOOL(FASTCALL * func) (void));
     /*
-     * イベントハンドラ設定 
+     * イベントハンドラ設定
      */
     BOOL FASTCALL   schedule_save(int fileh);
     /*
-     * スケジューラ セーブ 
+     * スケジューラ セーブ
      */
     BOOL FASTCALL   schedule_load(int fileh, int ver, BOOL old);
     /*
-     * スケジューラ ロード 
+     * スケジューラ ロード
      */
 
     /*
-     * 逆アセンブラ(disasm.c) 
+     * 逆アセンブラ(disasm.c)
      */
     int FASTCALL    disline(int cputype, WORD pc, char *buffer);
     /*
-     * １行逆アセンブル 
+     * １行逆アセンブル
      */
 
     /*
-     * メインCPUメモリ(mainmem.c) 
+     * メインCPUメモリ(mainmem.c)
      */
     BOOL FASTCALL   mainmem_init(void);
     /*
-     * メインCPUメモリ 初期化 
+     * メインCPUメモリ 初期化
      */
     void FASTCALL   mainmem_cleanup(void);
     /*
-     * メインCPUメモリ クリーンアップ 
+     * メインCPUメモリ クリーンアップ
      */
     void FASTCALL   mainmem_reset(void);
     /*
-     * メインCPUメモリ リセット 
+     * メインCPUメモリ リセット
      */
     void FASTCALL   mainmem_transfer_boot(void);
     /*
-     * メインCPUメモリ ブート転送 
+     * メインCPUメモリ ブート転送
      */
     volatile BYTE FASTCALL   mainmem_readb(WORD addr);
     /*
-     * メインCPUメモリ 読み出し 
+     * メインCPUメモリ 読み出し
      */
     volatile BYTE FASTCALL   mainmem_readbnio(WORD addr);
     /*
-     * メインCPUメモリ 読み出し(I/Oなし) 
+     * メインCPUメモリ 読み出し(I/Oなし)
      */
     void FASTCALL   mainmem_writeb(WORD addr, BYTE dat);
     /*
-     * メインCPUメモリ 書き込み 
+     * メインCPUメモリ 書き込み
      */
     BOOL FASTCALL   mainmem_save(int fileh);
     /*
-     * メインCPUメモリ セーブ 
+     * メインCPUメモリ セーブ
      */
     BOOL FASTCALL   mainmem_load(int fileh, int ver);
     /*
-     * メインCPUメモリ ロード 
+     * メインCPUメモリ ロード
      */
 
     /*
-     * サブCPUメモリ(submem.c) 
+     * サブCPUメモリ(submem.c)
      */
     BOOL FASTCALL   submem_init(void);
     /*
-     * サブCPUメモリ 初期化 
+     * サブCPUメモリ 初期化
      */
     void FASTCALL   submem_cleanup(void);
     /*
-     * サブCPUメモリ クリーンアップ 
+     * サブCPUメモリ クリーンアップ
      */
     void FASTCALL   submem_reset(void);
     /*
-     * サブCPUメモリ リセット 
+     * サブCPUメモリ リセット
      */
     volatile BYTE FASTCALL   submem_readb(WORD addr);
     /*
-     * サブCPUメモリ 読み出し 
+     * サブCPUメモリ 読み出し
      */
     volatile BYTE FASTCALL   submem_readbnio(WORD addr);
     /*
-     * サブCPUメモリ 読み出し(I/Oなし) 
+     * サブCPUメモリ 読み出し(I/Oなし)
      */
     void FASTCALL   submem_writeb(WORD addr, BYTE dat);
     /*
-     * サブCPUメモリ 書き込み 
+     * サブCPUメモリ 書き込み
      */
     BOOL FASTCALL   submem_save(int fileh);
     /*
-     * サブCPUメモリ セーブ 
+     * サブCPUメモリ セーブ
      */
     BOOL FASTCALL   submem_load(int fileh, int ver);
     /*
-     * サブCPUメモリ ロード 
+     * サブCPUメモリ ロード
      */
 
     /*
-     * メインCPU(maincpu.c) 
+     * メインCPU(maincpu.c)
      */
     BOOL FASTCALL   maincpu_init(void);
     /*
-     * メインCPU 初期化 
+     * メインCPU 初期化
      */
     void FASTCALL   maincpu_cleanup(void);
     /*
-     * メインCPU クリーンアップ 
+     * メインCPU クリーンアップ
      */
     void FASTCALL   maincpu_reset(void);
     /*
-     * メインCPU リセット 
+     * メインCPU リセット
      */
     void FASTCALL   maincpu_execline(void);
     /*
-     * メインCPU １行実行 
+     * メインCPU １行実行
      */
     void FASTCALL   maincpu_exec(void);
     /*
-     * メインCPU 実行 
+     * メインCPU 実行
      */
     void FASTCALL   maincpu_nmi(void);
     /*
-     * メインCPU NMI割り込み要求 
+     * メインCPU NMI割り込み要求
      */
     void FASTCALL   maincpu_firq(void);
     /*
-     * メインCPU FIRQ割り込み要求 
+     * メインCPU FIRQ割り込み要求
      */
     void FASTCALL   maincpu_irq(void);
     /*
-     * メインCPU IRQ割り込み要求 
+     * メインCPU IRQ割り込み要求
      */
     BOOL FASTCALL   maincpu_save(int fileh);
     /*
-     * メインCPU セーブ 
+     * メインCPU セーブ
      */
     BOOL FASTCALL   maincpu_load(int fileh, int ver);
     /*
-     * メインCPU ロード 
+     * メインCPU ロード
      */
 
     /*
-     * サブCPU(subcpu.c) 
+     * サブCPU(subcpu.c)
      */
     BOOL FASTCALL   subcpu_init(void);
     /*
-     * サブCPU 初期化 
+     * サブCPU 初期化
      */
     void FASTCALL   subcpu_cleanup(void);
     /*
-     * サブCPU クリーンアップ 
+     * サブCPU クリーンアップ
      */
     void FASTCALL   subcpu_reset(void);
     /*
-     * サブCPU リセット 
+     * サブCPU リセット
      */
     void FASTCALL   subcpu_execline(void);
     /*
-     * サブCPU １行実行 
+     * サブCPU １行実行
      */
     void FASTCALL   subcpu_exec(void);
     /*
-     * サブCPU 実行 
+     * サブCPU 実行
      */
     void FASTCALL   subcpu_nmi(void);
     /*
-     * サブCPU NMI割り込み要求 
+     * サブCPU NMI割り込み要求
      */
     void FASTCALL   subcpu_firq(void);
     /*
-     * サブCPU FIRQ割り込み要求 
+     * サブCPU FIRQ割り込み要求
      */
     void FASTCALL   subcpu_irq(void);
     /*
-     * サブCPU IRQ割り込み要求 
+     * サブCPU IRQ割り込み要求
      */
     BOOL FASTCALL   subcpu_save(int fileh);
     /*
-     * サブCPU セーブ 
+     * サブCPU セーブ
      */
     BOOL FASTCALL   subcpu_load(int fileh, int ver);
     /*
-     * サブCPU ロード 
+     * サブCPU ロード
      */
 
     /*
@@ -527,16 +532,16 @@ extern          "C" {
      */
     extern cpu6809_t maincpu;
     /*
-     * メインCPU 
+     * メインCPU
      */
     extern cpu6809_t subcpu;
     /*
-     * サブCPU 
+     * サブCPU
      */
 #if XM7_VER == 1
     extern cpu6809_t jsubcpu;
     /*
-     * 日本語サブCPU 
+     * 日本語サブCPU
      */
 #endif
     extern DWORD    main_cycles;
@@ -551,115 +556,115 @@ extern          "C" {
     extern int		 disasm_sub_count;
     extern char 	disasm_sub_buf[DISASM_BUF_SIZE];
 
-    extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
+//    extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
     /*
-     * メインCPU実行サイクル数 
+     * メインCPU実行サイクル数
      */
     extern int      fm7_ver;
     /*
-     * 動作バージョン 
+     * 動作バージョン
      */
     extern breakp_t breakp[BREAKP_MAXNUM];
     /*
-     * ブレークポイント 
+     * ブレークポイント
      */
     extern event_t  event[EVENT_MAXNUM];
     /*
-     * イベント 
+     * イベント
      */
     extern BOOL     run_flag;
     /*
-     * 動作フラグ 
+     * 動作フラグ
      */
     extern BOOL     stopreq_flag;
     /*
-     * 停止要求フラグ 
+     * 停止要求フラグ
      */
     extern DWORD    main_speed;
     /*
-     * メインCPUスピード 
+     * メインCPUスピード
      */
     extern DWORD    mmr_speed;
     /*
-     * メインCPU(MMR)スピード 
+     * メインCPU(MMR)スピード
      */
 #if XM7_VER >= 3
     extern DWORD    fmmr_speed;
     /*
-     * メインCPU(高速MMR)スピード 
+     * メインCPU(高速MMR)スピード
      */
 #endif
     extern DWORD    sub_speed;
     /*
-     * サブCPUスピード 
+     * サブCPUスピード
      */
     extern DWORD    speed_ratio;
     /*
-     * サブCPUスピード 
+     * サブCPUスピード
      */
     extern BOOL     cycle_steal;
     /*
-     * サイクルスチールフラグ 
+     * サイクルスチールフラグ
      */
     extern DWORD    vmtime;
     /*
-     * VM仮想時間 
+     * VM仮想時間
      */
     extern BOOL     reset_flag;
     /*
-     * システムリセットフラグ 
+     * システムリセットフラグ
      */
     extern BOOL     hotreset_flag;
     /*
-     * メインホットリセットフラグ 
+     * メインホットリセットフラグ
      */
     extern WORD     main_overcycles;
     /*
-     * メインCPUオーバーサイクル数 
+     * メインCPUオーバーサイクル数
      */
     extern WORD     sub_overcycles;
     /*
-     * サブCPUオーバーサイクル数 
+     * サブCPUオーバーサイクル数
      */
 #ifdef DEBUG
     extern DWORD    main_cycle;
     /*
-     * メインCPU実行サイクル数カウンタ 
+     * メインCPU実行サイクル数カウンタ
      */
     extern DWORD    sub_cycle;
     /*
-     * サブCPU実行サイクル数カウンタ 
+     * サブCPU実行サイクル数カウンタ
      */
 #endif
     extern BYTE     fetch_op;
     /*
-     * 直前にフェッチした命令コード 
+     * 直前にフェッチした命令コード
      */
 #if XM7_VER == 1
     extern BYTE     fm_subtype;
     /*
-     * ハードウェアサブバージョン 
+     * ハードウェアサブバージョン
      */
     extern BOOL     lowspeed_mode;
     /*
-     * CPU動作クロックモード 
+     * CPU動作クロックモード
      */
     extern DWORD    main_speed_low;
     /*
-     * メインCPUスピード(低速) 
+     * メインCPUスピード(低速)
      */
     extern DWORD    sub_speed_low;
     /*
-     * サブCPUスピード(低速) 
+     * サブCPUスピード(低速)
      */
 #ifdef JSUB
     extern DWORD    jsub_speed;
     /*
-     * 日本語サブCPUスピード 
+     * 日本語サブCPUスピード
      */
     extern WORD     jsub_overcycles;
     /*
-     * 日本語サブCPUオーバーサイクル数 
+     * 日本語サブCPUオーバーサイクル数
      */
 #endif
 #endif
@@ -669,134 +674,134 @@ extern          "C" {
      */
     extern BYTE    *mainram_a;
     /*
-     * RAM (表RAM) $8000 
+     * RAM (表RAM) $8000
      */
     extern BYTE    *mainram_b;
     /*
-     * RAM (裏RAM) $7C80 
+     * RAM (裏RAM) $7C80
      */
     extern BYTE    *basic_rom;
     /*
-     * ROM (F-BASIC) $7C00 
+     * ROM (F-BASIC) $7C00
      */
     extern BYTE    *main_io;
     /*
-     * メインCPU I/O $0100 
+     * メインCPU I/O $0100
      */
     extern BYTE    *vram_c;
     /*
-     * VRAM(タイプC) $C000 ($30000) 
+     * VRAM(タイプC) $C000 ($30000)
      */
     extern BYTE    *subrom_c;
     /*
-     * ROM (タイプC) $2800 
+     * ROM (タイプC) $2800
      */
     extern BYTE    *sub_ram;
     /*
-     * コンソールRAM $1680 
+     * コンソールRAM $1680
      */
     extern BYTE    *sub_io;
     /*
-     * サブCPU I/O $0100 
+     * サブCPU I/O $0100
      */
 #if XM7_VER == 1
     extern BYTE    *basic_rom8;
     /*
-     * ROM (F-BASIC1.0) $7C00 
+     * ROM (F-BASIC1.0) $7C00
      */
     extern BYTE    *boot_bas;
     /*
-     * BOOT (BASIC) $200 
+     * BOOT (BASIC) $200
      */
     extern BYTE    *boot_dos;
     /*
-     * BOOT (DOSモード) $200 
+     * BOOT (DOSモード) $200
      */
     extern BYTE    *boot_bas8;
     /*
-     * BOOT (BASIC,FM-8) $200 
+     * BOOT (BASIC,FM-8) $200
      */
     extern BYTE    *boot_dos8;
     /*
-     * BOOT (DOS,FM-8) $200 
+     * BOOT (DOS,FM-8) $200
      */
 //    extern BYTE *boot_mmr;
-     /*
-      * BOOT (MMR)        $200
-      */
-   
+    /*
+     * BOOT (MMR)        $200
+     */
+
     extern BOOL     available_fm7roms;
     /*
-     * FM-7 ROM使用可能フラグ 
+     * FM-7 ROM使用可能フラグ
      */
     extern BOOL     available_fm8roms;
     /*
-     * FM-8 ROM使用可能フラグ 
+     * FM-8 ROM使用可能フラグ
      */
 #endif
 #if (XM7_VER == 1) || (XM7_VER >= 3)
-   extern BYTE *boot_mmr;    /* BOOT (隠し)       $200 */
-   extern BOOL available_mmrboot;
-     /*
-      * FM-77 MMRブートROM使用可能フラグ
-      */
+    extern BYTE *boot_mmr;    /* BOOT (隠し)       $200 */
+    extern BOOL available_mmrboot;
+    /*
+     * FM-77 MMRブートROM使用可能フラグ
+     */
 #endif
     extern BOOL     boot_mode;
     /*
-     * 起動モード 
+     * 起動モード
      */
     extern BOOL     basicrom_en;
     /*
-     * F-BASIC 3.0 ROM イネーブル 
+     * F-BASIC 3.0 ROM イネーブル
      */
 
     extern BYTE *boot_ram;
-   /*
-    * BOOT (RAM)        $200
-    */
+    /*
+     * BOOT (RAM)        $200
+     */
     extern BOOL bootram_rw;
-   /*
-    * ブートRAM 書き込み可能
-    */
-   
+    /*
+     * ブートRAM 書き込み可能
+     */
+
     /*
      *      メモリ (FM-77)
      */
 #if XM7_VER == 1
     extern BYTE    *extram_a;
     /*
-     * RAM (FM-77) $30000 
+     * RAM (FM-77) $30000
      */
 #ifdef L4CARD
     extern BYTE    *tvram_c;
     /*
-     * テキストVRAM(L4) $1000 
+     * テキストVRAM(L4) $1000
      */
     extern BYTE    *subrom_l4;
     /*
-     * サブモニタ (L4) $4800 
+     * サブモニタ (L4) $4800
      */
     extern BYTE    *subcg_l4;
     /*
-     * CGROM (L4) $1000 
+     * CGROM (L4) $1000
      */
     extern BOOL     enable_400linecard;
     /*
-     * 400ライン有効フラグ 
+     * 400ライン有効フラグ
      */
     extern BOOL     detect_400linecard;
     /*
-     * 400ラインカード発見フラグ 
+     * 400ラインカード発見フラグ
      */
 #endif
 #endif
 //    extern BYTE    *boot_ram;
 //    /*
-//     * BOOT (RAM) $200 
+//     * BOOT (RAM) $200
 //     */
 //    extern BOOL     bootram_rw;
 //    /*
-//     * ブートRAM 書き込み可能 
+//     * ブートRAM 書き込み可能
 //     */
 
     /*
@@ -805,41 +810,41 @@ extern          "C" {
 #if XM7_VER >= 2
     extern BYTE    *extram_a;
     /*
-     * RAM (FM77AV) $10000 
+     * RAM (FM77AV) $10000
      */
     extern BYTE    *init_rom;
     /*
-     * イニシエートROM $2000 
+     * イニシエートROM $2000
      */
 
     extern BYTE    *subrom_a;
     /*
-     * ROM (タイプA) $2000 
+     * ROM (タイプA) $2000
      */
     extern BYTE    *subrom_b;
     /*
-     * ROM (タイプB) $2000 
+     * ROM (タイプB) $2000
      */
     extern BYTE    *subromcg;
     /*
-     * ROM (CG) $2000 
+     * ROM (CG) $2000
      */
     extern BYTE    *vram_b;
     /*
-     * VRAM (タイプA,B) $C000 
+     * VRAM (タイプA,B) $C000
      */
 
     extern BOOL     initrom_en;
     /*
-     * イニシエータROM イネーブル 
+     * イニシエータROM イネーブル
      */
     extern BYTE     subrom_bank;
     /*
-     * サブシステムROM/RAMバンク 
+     * サブシステムROM/RAMバンク
      */
     extern BYTE     cgrom_bank;
     /*
-     * CGROMバンク 
+     * CGROMバンク
      */
 #endif
 
@@ -849,28 +854,28 @@ extern          "C" {
 #if XM7_VER >= 3
     extern BYTE    *extram_c;
     /*
-     * RAM (FM77AV40) $40000 
+     * RAM (FM77AV40) $40000
      */
     extern BYTE    *subramde;
     /*
-     * RAM (TypeD/E) $2000 
+     * RAM (TypeD/E) $2000
      */
     extern BYTE    *subramcg;
     /*
-     * RAM (フォント) $4000 
+     * RAM (フォント) $4000
      */
     extern BYTE    *subramcn;
     /*
-     * 裏コンソールRAM $2000 
+     * 裏コンソールRAM $2000
      */
 
     extern BYTE     cgram_bank;
     /*
-     * CGRAMバンク 
+     * CGRAMバンク
      */
     extern BYTE     consram_bank;
     /*
-     * コンソールRAMバンク 
+     * コンソールRAMバンク
      */
 #endif
 

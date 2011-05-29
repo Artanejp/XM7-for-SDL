@@ -256,11 +256,11 @@ Uint8 SDLJoyInterface::GetBUTTON3(void)
 	return BUTTON3;
 }
 
-void SDLJoyInterface::OnMove(SDL_Event *event)
+void SDLJoyInterface::OnMove(SDL_Event *ev)
 {
-	Uint8 axis = event->jaxis.axis;
-	Sint16 value = event->jaxis.value;
-	Uint8 num = event->jaxis.which;
+	Uint8 axis = ev->jaxis.axis;
+	Sint16 value = ev->jaxis.value;
+	Uint8 num = ev->jaxis.which;
 	BYTE code = 0;
 
 	if(num != SDL_JoystickIndex(JoyEntry)) {
@@ -290,10 +290,10 @@ void SDLJoyInterface::OnMove(SDL_Event *event)
 	return;
 }
 
-void SDLJoyInterface::OnPress(SDL_Event *event)
+void SDLJoyInterface::OnPress(SDL_Event *ev)
 {
-	Uint8 num = event->jbutton.which;
-	Uint8 button = event->jbutton.button;
+	Uint8 num = ev->jbutton.which;
+	Uint8 button = ev->jbutton.button;
 	int            code = 0;
 
 	/*
@@ -322,10 +322,10 @@ void SDLJoyInterface::OnPress(SDL_Event *event)
 	return;
 }
 
-void SDLJoyInterface::OnRelease(SDL_Event *event)
+void SDLJoyInterface::OnRelease(SDL_Event *ev)
 {
-	Uint8 num = event->jbutton.which;
-	Uint8 button = event->jbutton.button;
+	Uint8 num = ev->jbutton.which;
+	Uint8 button = ev->jbutton.button;
 	int            code = 0;
 
 	/*

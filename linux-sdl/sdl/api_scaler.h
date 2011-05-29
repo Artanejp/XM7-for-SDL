@@ -11,9 +11,12 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 
+#ifndef USE_AGAR
 #ifdef USE_OPENGL
 #include <SDL_opengl.h>
 #endif
+#endif
+
 #include "multipag.h"
 #include "ttlpalet.h"
 #include "apalet.h"

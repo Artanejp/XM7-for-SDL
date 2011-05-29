@@ -432,7 +432,7 @@ static void OnSetVkey(AG_Event *event)
 	AG_WindowShow(w);
 }
 
-void SetKeyTable(AG_Event *event)
+void SetKeyTable(AG_Event *ev)
 {
-	VkeyBoard(event, OnSetVkey, OnSetVkey, FALSE, gettext("Assign Keycode"));
+	VkeyBoard(ev, OnSetVkey, OnSetVkey, FALSE, gettext("Assign Keycode"));
 }

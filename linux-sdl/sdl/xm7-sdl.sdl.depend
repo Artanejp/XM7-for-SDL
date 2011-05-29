@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/GtkKbdInterface.cpp
+1306517106 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/GtkKbdInterface.cpp
 	<X11/Xlib.h>
 	<gtk/gtk.h>
 	<gdk/gdkx.h>
@@ -2277,7 +2277,7 @@
 
 1302468234 /usr/include/gtk-2.0/gdk/gdkkeysyms-compat.h
 
-1306446973 /home/whatisthis/codeblocks/xm7-sdl/vm//xm7.h
+1306516049 /home/whatisthis/codeblocks/xm7-sdl/vm//xm7.h
 	<stdio.h>
 	"build_config.h"
 	<agar/core.h>
@@ -2287,7 +2287,7 @@
 	<memwatch.h>
 	<assert.h>
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/build_config.h
+1306515607 /home/whatisthis/codeblocks/xm7-sdl/sdl/build_config.h
 
 1306263666 /usr/local/include/agar/agar/core.h
 	<agar/core/core_begin.h>
@@ -3305,7 +3305,7 @@
 
 1306448865 /home/whatisthis/codeblocks/xm7-sdl/vm//event.h
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl.h
+1306517105 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl.h
 	<stdlib.h>
 	<sys/param.h>
 	<gtk/gtk.h>
@@ -3352,7 +3352,7 @@
 	<Ph.h>
 	"close_code.h"
 
-1306429762 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_xm7.h
+1306517105 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_xm7.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -3367,7 +3367,7 @@
 	<SDL/SDL.h>
 	"KbdInterface.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/KbdInterface.h
+1306515962 /home/whatisthis/codeblocks/xm7-sdl/sdl/KbdInterface.h
 	<SDL.h>
 	"xm7.h"
 	"api_kbd.h"
@@ -3385,7 +3385,7 @@
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLKbdInterface.h
 	"KbdInterface.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.cpp
+1306517204 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.cpp
 	<X11/Xlib.h>
 	<memory.h>
 	<SDL/SDL.h>
@@ -3509,7 +3509,7 @@
 	"sdl.h"
 	"sdl_snd.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
+1306486952 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3611,7 +3611,7 @@
 1306429031 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScale1x2.h
 	<SDL/SDL.h>
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
+1306516519 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3638,7 +3638,7 @@
 	"EmuGrph4096c.h"
 	"EmuGrph256kc.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
+1306516809 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
 	<SDL.h>
 	<SDL_syswm.h>
 	<SDL_opengl.h>

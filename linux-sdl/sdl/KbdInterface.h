@@ -33,7 +33,6 @@ struct KeyCode2 {
 	Uint8 code;
 };
 
-extern void PushKeyData(Uint8 code,Uint8 MakeBreak);
 
 class KbdInterface {
 public:

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/aluline.c
+1306448945 source:/home/whatisthis/codeblocks/xm7-sdl/vm/aluline.c
 	<string.h>
 	<stdio.h>
 	"xm7.h"
@@ -12,7 +12,7 @@
 	"agar_xm7.h"
 	"sdl.h"
 
-1306446973 /home/whatisthis/codeblocks/xm7-sdl/vm/xm7.h
+1306486951 /home/whatisthis/codeblocks/xm7-sdl/vm/xm7.h
 	<stdio.h>
 	"build_config.h"
 	<agar/core.h>
@@ -1073,14 +1073,14 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/apalet.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/disasm.c
+1306444549 source:/home/whatisthis/codeblocks/xm7-sdl/vm/disasm.c
 	<string.h>
 	"xm7.h"
 	"jsubsys.h"
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/jsubsys.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/display.c
+1306448831 source:/home/whatisthis/codeblocks/xm7-sdl/vm/display.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
@@ -1104,7 +1104,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/keyboard.h
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/kanji.h
+1306445110 /home/whatisthis/codeblocks/xm7-sdl/vm/kanji.h
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl//api_draw.h
 	<gtk/gtk.h>
@@ -1290,7 +1290,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/mmr.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/fdc.c
+1306513951 source:/home/whatisthis/codeblocks/xm7-sdl/vm/fdc.c
 	<string.h>
 	<stdlib.h>
 	<sys/types.h>
@@ -1315,22 +1315,24 @@
 
 1306449120 /home/whatisthis/codeblocks/xm7-sdl/vm/fmgeninl.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/jcard.c
+1306447674 source:/home/whatisthis/codeblocks/xm7-sdl/vm/jcard.c
 	<stdlib.h>
 	<assert.h>
 	<string.h>
 	"xm7.h"
+	"mmr.h"
 	"device.h"
 	"kanji.h"
 	"jcard.h"
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/jcard.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/jsubsys.c
+1306447471 source:/home/whatisthis/codeblocks/xm7-sdl/vm/jsubsys.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
 	"jsubsys.h"
+	"kanji.h"
 	"mainetc.h"
 	"device.h"
 	"event.h"
@@ -1351,7 +1353,7 @@
 
 1306445600 /home/whatisthis/codeblocks/xm7-sdl/vm/opn.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/kanji.c
+1306445067 source:/home/whatisthis/codeblocks/xm7-sdl/vm/kanji.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
@@ -1360,7 +1362,7 @@
 	"device.h"
 	"jcard.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/keyboard.c
+1306445155 source:/home/whatisthis/codeblocks/xm7-sdl/vm/keyboard.c
 	<string.h>
 	"xm7.h"
 	"event.h"
@@ -1385,7 +1387,7 @@
 
 1306431741 source:/home/whatisthis/codeblocks/xm7-sdl/vm/main.c
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/maincpu.c
+1306445230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/maincpu.c
 	"xm7.h"
 	"subctrl.h"
 	"keyboard.h"
@@ -1393,9 +1395,9 @@
 	"tapelp.h"
 	"device.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/tapelp.h
+1306446803 /home/whatisthis/codeblocks/xm7-sdl/vm/tapelp.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mainetc.c
+1306445582 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mainetc.c
 	<string.h>
 	"xm7.h"
 	"mainetc.h"
@@ -1404,7 +1406,7 @@
 	"device.h"
 	"event.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mainmem.c
+1306446193 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mainmem.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
@@ -1419,20 +1421,22 @@
 	"opn.h"
 	"mmr.h"
 	"apalet.h"
+	"rs232c.h"
 	"midi.h"
 	"jcard.h"
 	"dmac.h"
 	"jsubsys.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/midi.h
+1306446354 /home/whatisthis/codeblocks/xm7-sdl/vm/midi.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/midi.c
+1306446262 source:/home/whatisthis/codeblocks/xm7-sdl/vm/midi.c
 	<string.h>
 	"xm7.h"
 	"midi.h"
 	"device.h"
+	"rs232c.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mmr.c
+1306444464 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mmr.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
@@ -1440,6 +1444,7 @@
 	"mmr.h"
 	"subctrl.h"
 	"jcard.h"
+	"rs232c.h"
 
 1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/mouse.c
 	<assert.h>
@@ -1462,7 +1467,7 @@
 	"apalet.h"
 	"device.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/opn.c
+1306448997 source:/home/whatisthis/codeblocks/xm7-sdl/vm/opn.c
 	<string.h>
 	"xm7.h"
 	"opn.h"
@@ -1471,20 +1476,20 @@
 	"event.h"
 	"mouse.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/opna.cpp
+1306449107 source:/home/whatisthis/codeblocks/xm7-sdl/vm/opna.cpp
 	"cisc.h"
 	"opna.h"
 	"fmgeninl.h"
 	"file.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/opna.h
+1306449095 /home/whatisthis/codeblocks/xm7-sdl/vm/opna.h
 	"fmgen.h"
 	"psg.h"
 
-1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/psg.h
+1306449086 /home/whatisthis/codeblocks/xm7-sdl/vm/psg.h
 	"cisc.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/psg.cpp
+1306449132 source:/home/whatisthis/codeblocks/xm7-sdl/vm/psg.cpp
 	<string.h>
 	"cisc.h"
 	"psg.h"
@@ -1497,7 +1502,7 @@
 	"rtc.h"
 	"device.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/schedule.c
+1306449017 source:/home/whatisthis/codeblocks/xm7-sdl/vm/schedule.c
 	<string.h>
 	"xm7.h"
 	"jsubsys.h"
@@ -1518,7 +1523,7 @@
 	"device.h"
 	"event.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/subctrl.c
+1306449032 source:/home/whatisthis/codeblocks/xm7-sdl/vm/subctrl.c
 	<string.h>
 	"xm7.h"
 	"keyboard.h"
@@ -1529,7 +1534,7 @@
 	"ttlpalet.h"
 	"multipag.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/submem.c
+1306513404 source:/home/whatisthis/codeblocks/xm7-sdl/vm/submem.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
@@ -1543,7 +1548,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/l4font.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/system.c
+1306446595 source:/home/whatisthis/codeblocks/xm7-sdl/vm/system.c
 	<string.h>
 	<stdlib.h>
 	"xm7.h"
@@ -1563,6 +1568,7 @@
 	"apalet.h"
 	"rtc.h"
 	"mouse.h"
+	"rs232c.h"
 	"jsubsys.h"
 	"midi.h"
 	"jcard.h"
@@ -1570,7 +1576,7 @@
 	"device.h"
 	"event.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/tapelp.c
+1306449046 source:/home/whatisthis/codeblocks/xm7-sdl/vm/tapelp.c
 	<stdlib.h>
 	<string.h>
 	"xm7.h"
@@ -1579,7 +1585,7 @@
 	"device.h"
 	"event.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/tools.c
+1306444464 source:/home/whatisthis/codeblocks/xm7-sdl/vm/tools.c
 	<string.h>
 	<stdlib.h>
 	<math.h>
@@ -1594,7 +1600,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/tools.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/ttlpalet.c
+1306449060 source:/home/whatisthis/codeblocks/xm7-sdl/vm/ttlpalet.c
 	<string.h>
 	"xm7.h"
 	"ttlpalet.h"
@@ -1605,4 +1611,6 @@
 1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/vm_sub.c
 	<string.h>
 	<SDL/SDL.h>
+
+1306448983 /home/whatisthis/codeblocks/xm7-sdl/vm/rs232c.h
 

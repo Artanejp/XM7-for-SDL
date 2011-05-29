@@ -197,9 +197,9 @@ void GtkKbdInterface::InitKeyTable(void)
 void GtkKbdInterface::OnPress(void *arg)
 {
 	int i;
-	GdkEventKey *event = (GdkEventKey *)arg;
-	guint16 scan = event->hardware_keycode;
-	guint   mod = event->state;
+	GdkEventKey *ev = (GdkEventKey *)arg;
+	guint16 scan = ev->hardware_keycode;
+//	guint   mod = ev->state;
 	struct XM7KeyCode *p = KeyCodeTable2;
 
     for (i = 0; i<255; i++) {
@@ -221,9 +221,9 @@ extern void UnlockVM(void);
 void GtkKbdInterface::OnRelease(void *arg)
 {
     int            i;
-	GdkEventKey *event = (GdkEventKey *)arg;
-	guint16 scan = event->hardware_keycode;
-	guint   mod = event->state;
+	GdkEventKey *ev = (GdkEventKey *)arg;
+	guint16 scan = ev->hardware_keycode;
+//	guint   mod = evt->state;
 	struct XM7KeyCode *p = KeyCodeTable2;
 
     for (i = 0; i < 256; i++) {

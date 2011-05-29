@@ -48,16 +48,16 @@ BYTE            fdc_track[FDC_DRIVES];	/* 実トラック */
 
 #if XM7_VER >= 3
 BYTE            fdc_logidrv;	/* 論理ドライブ番号 */
-BYTE            fdc_physdrv[FDC_DRIVES];	/* 論理/物理ドライブの対応 
+BYTE            fdc_physdrv[FDC_DRIVES];	/* 論理/物理ドライブの対応
 						 */
 BYTE            fdc_2ddmode;	/* 2Dモード選択状態 */
 #endif
 
 char            fdc_fname[FDC_DRIVES][256 + 1];	/* ファイル名 */
 char            fdc_name[FDC_DRIVES][FDC_MEDIAS][17];
-BOOL            fdc_fwritep[FDC_DRIVES];	/* ライトプロテクト状態(ファイルレベル) 
+BOOL            fdc_fwritep[FDC_DRIVES];	/* ライトプロテクト状態(ファイルレベル)
 						 */
-BYTE            fdc_header[FDC_DRIVES][0x2b0];	/* D77ファイルヘッダ 
+BYTE            fdc_header[FDC_DRIVES][0x2b0];	/* D77ファイルヘッダ
 						 */
 BYTE            fdc_media[FDC_DRIVES];	/* メディア枚数 */
 BYTE            fdc_medias[FDC_DRIVES];	/* メディアセレクト状態 */
@@ -74,7 +74,7 @@ BOOL            fdc_sound;	/* FDDシーク音発生フラグ */
  */
 static BYTE     fdc_buffer[0x2000];	/* データバッファ */
 static BYTE    *fdc_dataptr;	/* データポインタ */
-static DWORD    fdc_seekofs[FDC_DRIVES];	/* シークオフセット 
+static DWORD    fdc_seekofs[FDC_DRIVES];	/* シークオフセット
 						 */
 static DWORD    fdc_secofs[FDC_DRIVES];	/* セクタオフセット */
 static DWORD    fdc_foffset[FDC_DRIVES][FDC_MEDIAS];
@@ -99,7 +99,7 @@ static const WORD fdc_steprate[4] = { 6000, 12000, 20000, 30000 };
 /*
  *      プロトタイプ宣言
  */
-static void fdc_readbuf(int32_t drive);	/* １トラック分読み込み 
+static void fdc_readbuf(int32_t drive);	/* １トラック分読み込み
 						 */
 static BOOL fdc_lost_event(void);	/* LOST DATAイベント */
 
@@ -108,13 +108,12 @@ static BOOL fdc_lost_event(void);	/* LOST DATAイベント */
  *      FDC
  *      初期化
  */
-BOOL            
-fdc_init(void)
+BOOL fdc_init(void)
 {
     int             i;
 
     /*
-     * フロッピーファイル関係をリセット 
+     * フロッピーファイル関係をリセット
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	fdc_ready[i] = FDC_TYPE_NOTREADY;
@@ -124,12 +123,12 @@ fdc_init(void)
     }
 
     /*
-     * ファイルオフセットを全てクリア 
+     * ファイルオフセットを全てクリア
      */
     memset(fdc_foffset, 0, sizeof(fdc_foffset));
 
     /*
-     * ウェイト挿入モードフラグ初期化 
+     * ウェイト挿入モードフラグ初期化
      */
 #ifdef FDDSND
     fdc_waitmode = FALSE;
@@ -144,13 +143,12 @@ fdc_init(void)
  *      FDC
  *      クリーンアップ
  */
-void            
-fdc_cleanup(void)
+void fdc_cleanup(void)
 {
     int             i;
 
     /*
-     * フロッピーファイル関係をリセット 
+     * フロッピーファイル関係をリセット
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	fdc_ready[i] = FDC_TYPE_NOTREADY;
@@ -161,15 +159,14 @@ fdc_cleanup(void)
  *      FDC
  *      リセット
  */
-void            
-fdc_reset(void)
+void fdc_reset(void)
 {
 #if XM7_VER >= 3
     int             i;
 #endif
 
     /*
-     * FDC物理レジスタをリセット 
+     * FDC物理レジスタをリセット
      */
     fdc_command = 0xff;
     fdc_status = 0;
@@ -188,7 +185,7 @@ fdc_reset(void)
     fdc_2ddmode = FALSE;
 
     /*
-     * 論理ドライブ＝物理ドライブに設定 
+     * 論理ドライブ＝物理ドライブに設定
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	fdc_physdrv[i] = (BYTE) i;
@@ -203,7 +200,7 @@ fdc_reset(void)
     //fdc_boot = FALSE;
 
     /*
-     * データバッファへ読み込み 
+     * データバッファへ読み込み
      */
     fdc_readbuf(fdc_drvreg);
 }
@@ -251,18 +248,17 @@ static WORD     crc_table[256] = {
 /*
  *      16bit CRCを計算し、セット
  */
-static void     
-calc_crc(BYTE * addr, int16_t size)
+static void calc_crc(BYTE * addr, int16_t size)
 {
     WORD            crc;
 
     /*
-     * 初期化 
+     * 初期化
      */
     crc = 0;
 
     /*
-     * 計算 
+     * 計算
      */
     while (size > 0) {
 	crc =
@@ -272,7 +268,7 @@ calc_crc(BYTE * addr, int16_t size)
     }
 
     /*
-     * 続く２バイトにセット(ビッグエンディアン) 
+     * 続く２バイトにセット(ビッグエンディアン)
      */
     *addr++ = (BYTE) (crc >> 8);
     *addr = (BYTE) (crc & 0xff);
@@ -281,8 +277,7 @@ calc_crc(BYTE * addr, int16_t size)
 /*
  *      乱数を計算
  */
-static BYTE     
-calc_rand(void)
+static BYTE calc_rand(void)
 {
     static WORD     rand_s = 0x7f28;
     WORD            tmp1,
@@ -304,8 +299,7 @@ calc_rand(void)
 /*
  *      Read Trackデータ作成
  */
-static void     
-fdc_make_track(void)
+static void fdc_make_track(void)
 {
     int             i;
     int             j;
@@ -320,16 +314,16 @@ fdc_make_track(void)
     BOOL            ddm;
 
     /*
-     * アンフォーマットチェック 
+     * アンフォーマットチェック
      */
     flag = FALSE;
     if (fdc_ready[fdc_drvreg] != FDC_TYPE_D77) {
 	/*
-	 * 2D/VFDファイルのアンフォーマットチェック処理は共通 
+	 * 2D/VFDファイルのアンフォーマットチェック処理は共通
 	 */
 	if (fdc_track[fdc_drvreg] > 79) {
 	    /*
-	     * アンフォーマット 
+	     * アンフォーマット
 	     */
 	    flag = TRUE;
 	}
@@ -337,7 +331,7 @@ fdc_make_track(void)
 	if (((fdc_ready[fdc_drvreg] != FDC_TYPE_2DD) && fdc_2ddmode) &&
 	    ((fdc_track[fdc_drvreg] % 2) == 1)) {
 	    /*
-	     * 2Dイメージの2DDアクセス時、奇数トラックはアンフォーマット 
+	     * 2Dイメージの2DDアクセス時、奇数トラックはアンフォーマット
 	     */
 	    flag = TRUE;
 	}
@@ -345,7 +339,7 @@ fdc_make_track(void)
     } else {
 	if ((fdc_buffer[4] == 0) && (fdc_buffer[5] == 0)) {
 	    /*
-	     * アンフォーマット 
+	     * アンフォーマット
 	     */
 	    flag = TRUE;
 	}
@@ -353,7 +347,7 @@ fdc_make_track(void)
 	if (((fdc_header[fdc_drvreg][0x001b] == 0x00) && fdc_2ddmode) &&
 	    ((fdc_track[fdc_drvreg] % 2) == 1)) {
 	    /*
-	     * 2Dイメージの2DDアクセス時、奇数トラックはアンフォーマット 
+	     * 2Dイメージの2DDアクセス時、奇数トラックはアンフォーマット
 	     */
 	    flag = TRUE;
 	}
@@ -361,7 +355,7 @@ fdc_make_track(void)
     }
 
     /*
-     * アンフォーマットなら、ランダムデータ作成 
+     * アンフォーマットなら、ランダムデータ作成
      */
     if (flag) {
 	p = fdc_buffer;
@@ -370,7 +364,7 @@ fdc_make_track(void)
 	}
 
 	/*
-	 * データポインタ、カウンタ設定 
+	 * データポインタ、カウンタ設定
 	 */
 	fdc_dataptr = fdc_buffer;
 	fdc_totalcnt = 0x1800;
@@ -379,7 +373,7 @@ fdc_make_track(void)
     }
 
     /*
-     * セクタ数算出、データ移動 
+     * セクタ数算出、データ移動
      */
 #if XM7_VER >= 3
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
@@ -394,12 +388,12 @@ fdc_make_track(void)
 #if XM7_VER >= 3
 	if (fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2D) != ドライブモード(2DD) 
+	     * メディアタイプ(2D) != ドライブモード(2DD)
 	     */
 	    track = (fdc_track[fdc_drvreg] >> 1);
 	} else {
 	    /*
-	     * メディアタイプ == ドライブモード 補正なし 
+	     * メディアタイプ == ドライブモード 補正なし
 	     */
 	    track = fdc_track[fdc_drvreg];
 	}
@@ -415,7 +409,7 @@ fdc_make_track(void)
 	count *= (WORD) fdc_header[fdc_drvreg][track * 6 + 5];
 
 	/*
-	 * データコピー 
+	 * データコピー
 	 */
 	q = &fdc_buffer[0x2000 - count];
 	for (j = (count - 1); j >= 0; j--) {
@@ -426,7 +420,7 @@ fdc_make_track(void)
 	secs += (WORD) (fdc_buffer[0x0004]);
 	count = 0;
 	/*
-	 * 全セクタまわって、サイズを計る 
+	 * 全セクタまわって、サイズを計る
 	 */
 	for (j = 0; j < secs; j++) {
 	    p = &fdc_buffer[count];
@@ -434,7 +428,7 @@ fdc_make_track(void)
 	    count += (WORD) 0x10;
 	}
 	/*
-	 * データコピー 
+	 * データコピー
 	 */
 	q = &fdc_buffer[0x2000 - count];
 	for (j = (count - 1); j >= 0; j--) {
@@ -443,7 +437,7 @@ fdc_make_track(void)
     }
 
     /*
-     * GAP3決定 
+     * GAP3決定
      */
     if (secs <= 5) {
 	gap3 = 0x74;
@@ -460,13 +454,13 @@ fdc_make_track(void)
     }
 
     /*
-     * バッファ初期化 
+     * バッファ初期化
      */
     p = fdc_buffer;
     count = 0;
 
     /*
-     * GAP0 
+     * GAP0
      */
     for (i = 0; i < 80; i++) {
 	*p++ = 0x4e;
@@ -474,7 +468,7 @@ fdc_make_track(void)
     count += (WORD) 80;
 
     /*
-     * SYNC 
+     * SYNC
      */
     for (i = 0; i < 12; i++) {
 	*p++ = 0;
@@ -482,7 +476,7 @@ fdc_make_track(void)
     count += (WORD) 12;
 
     /*
-     * INDEX MARK 
+     * INDEX MARK
      */
     *p++ = 0xc2;
     *p++ = 0xc2;
@@ -491,7 +485,7 @@ fdc_make_track(void)
     count += (WORD) 4;
 
     /*
-     * GAP1 
+     * GAP1
      */
     for (i = 0; i < 50; i++) {
 	*p++ = 0x4e;
@@ -499,11 +493,11 @@ fdc_make_track(void)
     count += (WORD) 50;
 
     /*
-     * セクタループ 
+     * セクタループ
      */
     for (j = 0; j < secs; j++) {
 	/*
-	 * SYNC 
+	 * SYNC
 	 */
 	for (i = 0; i < 12; i++) {
 	    *p++ = 0;
@@ -511,7 +505,7 @@ fdc_make_track(void)
 	count += (WORD) 12;
 
 	/*
-	 * ID ADDRESS MARK 
+	 * ID ADDRESS MARK
 	 */
 	*p++ = 0xa1;
 	*p++ = 0xa1;
@@ -520,26 +514,26 @@ fdc_make_track(void)
 	count += (WORD) 4;
 
 	/*
-	 * ID 
+	 * ID
 	 */
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
 	    (fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 	    if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
 		/*
-		 * メディアタイプ(2D) != ドライブモード(2DD) 
+		 * メディアタイプ(2D) != ドライブモード(2DD)
 		 */
 		p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 	    } else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)
 		       && !fdc_2ddmode) {
 		/*
-		 * メディアタイプ(2DD) != ドライブモード(2D) 
+		 * メディアタイプ(2DD) != ドライブモード(2D)
 		 */
 		p[0] = (BYTE) (fdc_track[fdc_drvreg] << 1);
 	    } else {
 		/*
 		 * メディアタイプ == ドライブモード
-		 * 補正なし 
+		 * 補正なし
 		 */
 		p[0] = fdc_track[fdc_drvreg];
 	    }
@@ -556,13 +550,13 @@ fdc_make_track(void)
 #if XM7_VER >= 3
 	    if (fdc_2ddmode) {
 		/*
-		 * メディアタイプ(2D) != ドライブモード(2DD) 
+		 * メディアタイプ(2D) != ドライブモード(2DD)
 		 */
 		p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 	    } else {
 		/*
 		 * メディアタイプ == ドライブモード
-		 * 補正なし 
+		 * 補正なし
 		 */
 		p[0] = fdc_track[fdc_drvreg];
 	    }
@@ -593,7 +587,7 @@ fdc_make_track(void)
 	count += (WORD) (4 + 2);
 
 	/*
-	 * GAP2 
+	 * GAP2
 	 */
 	for (i = 0; i < 22; i++) {
 	    *p++ = 0x4e;
@@ -601,7 +595,7 @@ fdc_make_track(void)
 	count += (WORD) 22;
 
 	/*
-	 * SYNC 
+	 * SYNC
 	 */
 	for (i = 0; i < 12; i++) {
 	    *p++ = 0;
@@ -609,26 +603,26 @@ fdc_make_track(void)
 	count += (WORD) 12;
 
 	/*
-	 * DATA ADDRESS MARK 
+	 * DATA ADDRESS MARK
 	 */
 	*p++ = 0xa1;
 	*p++ = 0xa1;
 	*p++ = 0xa1;
 	if (ddm) {
 	    /*
-	     * DELETED DATA MARK 
+	     * DELETED DATA MARK
 	     */
 	    *p++ = 0xf8;
 	} else {
 	    /*
-	     * DATA MARK 
+	     * DATA MARK
 	     */
 	    *p++ = 0xfb;
 	}
 	count += (WORD) 4;
 
 	/*
-	 * データ 
+	 * データ
 	 */
 	memcpy(p, q, size);
 	q += size;
@@ -637,7 +631,7 @@ fdc_make_track(void)
 	count += (WORD) (size + 2);
 
 	/*
-	 * GAP3 
+	 * GAP3
 	 */
 	for (i = 0; i < gap3; i++) {
 	    *p++ = 0x4e;
@@ -646,7 +640,7 @@ fdc_make_track(void)
     }
 
     /*
-     * GAP4 
+     * GAP4
      */
     j = (0x1800 - count);
     if (j < 0x1800) {
@@ -657,7 +651,7 @@ fdc_make_track(void)
     }
 
     /*
-     * データポインタ、カウンタ設定 
+     * データポインタ、カウンタ設定
      */
     fdc_dataptr = fdc_buffer;
     fdc_totalcnt = count;
@@ -668,8 +662,7 @@ fdc_make_track(void)
  *      IDフィールドをバッファに作る
  *      カウンタ、データポインタを設定
  */
-static void     
-fdc_makeaddr(int index)
+static void fdc_makeaddr(int index)
 {
     int             i;
     BYTE           *p;
@@ -677,10 +670,10 @@ fdc_makeaddr(int index)
     WORD            size;
 
     /*
-     * 転送のためのテンポラリバッファは、通常バッファの 
+     * 転送のためのテンポラリバッファは、通常バッファの
      */
     /*
-     * 最後尾を潰して設ける 
+     * 最後尾を潰して設ける
      */
     p = &fdc_buffer[0x1ff0];
 
@@ -688,28 +681,28 @@ fdc_makeaddr(int index)
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
 	(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 	/*
-	 * 2D/2DDの場合、C,H,R,Nは確定する 
+	 * 2D/2DDの場合、C,H,R,Nは確定する
 	 */
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2D) != ドライブモード(2DD) 
+	     * メディアタイプ(2D) != ドライブモード(2DD)
 	     */
 	    p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 	} else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) && !fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2DD) != ドライブモード(2D) 
+	     * メディアタイプ(2DD) != ドライブモード(2D)
 	     */
 	    p[0] = (BYTE) (fdc_track[fdc_drvreg] << 1);
 	} else {
 	    /*
-	     * メディアタイプ == ドライブモード 補正なし 
+	     * メディアタイプ == ドライブモード 補正なし
 	     */
 	    p[0] = fdc_track[fdc_drvreg];
 	}
 #else
     if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 	/*
-	 * 2Dの場合、C,H,R,Nは確定する 
+	 * 2Dの場合、C,H,R,Nは確定する
 	 */
 	p[0] = fdc_track[fdc_drvreg];
 #endif
@@ -718,17 +711,17 @@ fdc_makeaddr(int index)
 	p[3] = 1;
     } else if (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD) {
 	/*
-	 * VFDの場合、C,H,Rは確定、Nはヘッダから取得 
+	 * VFDの場合、C,H,Rは確定、Nはヘッダから取得
 	 */
 #if XM7_VER >= 3
 	if (fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2D) != ドライブモード(2DD) 
+	     * メディアタイプ(2D) != ドライブモード(2DD)
 	     */
 	    p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 	} else {
 	    /*
-	     * メディアタイプ == ドライブモード 補正なし 
+	     * メディアタイプ == ドライブモード 補正なし
 	     */
 	    p[0] = fdc_track[fdc_drvreg];
 	}
@@ -740,20 +733,20 @@ fdc_makeaddr(int index)
 	p[3] = fdc_header[fdc_drvreg][p[0] * 6 + 4];
     } else {
 	/*
-	 * バッファを目的のセクタまで進める 
+	 * バッファを目的のセクタまで進める
 	 */
 	offset = 0;
 	i = 0;
 	while (i < index) {
 	    /*
-	     * セクタサイズを取得 
+	     * セクタサイズを取得
 	     */
 	    size = fdc_buffer[offset + 0x000f];
 	    size *= (WORD) 256;
 	    size |= fdc_buffer[offset + 0x000e];
 
 	    /*
-	     * 次のセクタへ進める 
+	     * 次のセクタへ進める
 	     */
 	    offset += size;
 	    offset += (WORD) 0x10;
@@ -762,25 +755,25 @@ fdc_makeaddr(int index)
 	}
 
 	/*
-	 * C,H,R,Nコピー 
+	 * C,H,R,Nコピー
 	 */
 	memcpy(p, &fdc_buffer[offset], 4);
     }
 
     /*
-     * CRC 
+     * CRC
      */
     calc_crc(p, 4);
 
     /*
-     * データポインタ、カウンタ設定 
+     * データポインタ、カウンタ設定
      */
     fdc_dataptr = &fdc_buffer[0x1ff0];
     fdc_totalcnt = 6;
     fdc_nowcnt = 0;
 
     /*
-     * セクタレジスタにトラック番号を設定 
+     * セクタレジスタにトラック番号を設定
      */
     fdc_secreg = p[0];
 }
@@ -788,8 +781,7 @@ fdc_makeaddr(int index)
 /*
  *      インデックスカウンタを次のセクタへ移す
  */
-static int       
-fdc_next_index(void)
+static int fdc_next_index(void)
 {
     int             max_track;
     int             track;
@@ -798,7 +790,7 @@ fdc_next_index(void)
     ASSERT(fdc_ready[fdc_drvreg] != FDC_TYPE_NOTREADY);
 
     /*
-     * ディスクタイプをチェック 
+     * ディスクタイプをチェック
      */
 #if XM7_VER >= 3
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
@@ -807,7 +799,7 @@ fdc_next_index(void)
     if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 #endif
 	/*
-	 * 2D/2DDなら16セクタ固定 
+	 * 2D/2DDなら16セクタ固定
 	 */
 	fdc_indexcnt = (BYTE) ((fdc_indexcnt + 1) & 0x0f);
 #if XM7_VER >= 3
@@ -826,7 +818,7 @@ fdc_next_index(void)
     }
 
     /*
-     * D77 / VFD 
+     * D77 / VFD
      */
     ASSERT((fdc_ready[fdc_drvreg] == FDC_TYPE_D77) ||
 	   (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD));
@@ -846,7 +838,7 @@ fdc_next_index(void)
     }
     if (secs == 0) {
 	/*
-	 * アンフォーマット 
+	 * アンフォーマット
 	 */
 	fdc_indexcnt = (BYTE) ((fdc_indexcnt + 1) & 0x0f);
 	return -1;
@@ -862,14 +854,13 @@ fdc_next_index(void)
 /*
  *      IDマークを探す
  */
-static BOOL      
-fdc_idmark(WORD * p)
+static BOOL fdc_idmark(WORD * p)
 {
     WORD            offset;
     BYTE            dat;
 
     /*
-     * A1 A1 A1 FEもしくはF5 F5 F5 FE 
+     * A1 A1 A1 FEもしくはF5 F5 F5 FE
      */
     offset = *p;
 
@@ -900,17 +891,16 @@ fdc_idmark(WORD * p)
 /*
  *      データマークを探す
  */
-static BOOL      
-fdc_datamark(WORD * p, BOOL * deleted_mark)
+static BOOL fdc_datamark(WORD * p, BOOL * deleted_mark)
 {
     WORD            offset;
     BYTE            dat;
 
     /*
-     * data mark : A1 A1 A1 FBもしくはF5 F5 F5 FB 
+     * data mark : A1 A1 A1 FBもしくはF5 F5 F5 FB
      */
     /*
-     * deleted data mark : A1 A1 A1 F8もしくはF5 F5 F5 F8 
+     * deleted data mark : A1 A1 A1 F8もしくはF5 F5 F5 F8
      */
     offset = *p;
 
@@ -932,12 +922,12 @@ fdc_datamark(WORD * p, BOOL * deleted_mark)
 	    *p = offset;
 	    if (dat == 0xfb) {
 		/*
-		 * 0xFB : DATA MARK 
+		 * 0xFB : DATA MARK
 		 */
 		*deleted_mark = FALSE;
 	    } else {
 		/*
-		 * 0xF8 : DELETED DATA MARK 
+		 * 0xF8 : DELETED DATA MARK
 		 */
 		*deleted_mark = TRUE;
 	    }
@@ -952,8 +942,7 @@ fdc_datamark(WORD * p, BOOL * deleted_mark)
 /*
  *      トラック書き込み終了
  */
-static BOOL      
-fdc_writetrk(void)
+static BOOL fdc_writetrk(void)
 {
     int             total;
     int             sectors;
@@ -965,24 +954,24 @@ fdc_writetrk(void)
     BOOL            ddm;
 
     /*
-     * 初期化 
+     * 初期化
      */
     total = 0;
     sectors = 0;
 
     /*
-     * セクタ数と、データ部のトータルサイズを数える 
+     * セクタ数と、データ部のトータルサイズを数える
      */
     offset = 0;
     while (offset < fdc_totalcnt) {
 	/*
-	 * IDマークを探す 
+	 * IDマークを探す
 	 */
 	if (!fdc_idmark(&offset)) {
 	    break;
 	}
 	/*
-	 * C,H,R,Nの次が$F7か 
+	 * C,H,R,Nの次が$F7か
 	 */
 	offset += (WORD) 4;
 	if (offset >= fdc_totalcnt) {
@@ -993,13 +982,13 @@ fdc_writetrk(void)
 	}
 	offset++;
 	/*
-	 * データマークを探す 
+	 * データマークを探す
 	 */
 	if (!fdc_datamark(&offset, &ddm)) {
 	    return FALSE;
 	}
 	/*
-	 * レングスを計算しつつ、$F7を探す 
+	 * レングスを計算しつつ、$F7を探す
 	 */
 	seclen = 0;
 	while (offset < fdc_totalcnt) {
@@ -1013,7 +1002,7 @@ fdc_writetrk(void)
 	    return FALSE;
 	}
 	/*
-	 * セクタok 
+	 * セクタok
 	 */
 	total += seclen;
 	sectors++;
@@ -1021,7 +1010,7 @@ fdc_writetrk(void)
     }
 
     /*
-     * 2D/2DDメディアの場合、total=0x1000, sectors=0x10が必須 
+     * 2D/2DDメディアの場合、total=0x1000, sectors=0x10が必須
      */
 #if XM7_VER >= 3
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
@@ -1030,7 +1019,7 @@ fdc_writetrk(void)
     if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 #endif
 	/*
-	 * total, sectorsの検査 
+	 * total, sectorsの検査
 	 */
 	if (total != 0x1000) {
 	    return FALSE;
@@ -1040,48 +1029,48 @@ fdc_writetrk(void)
 	}
 
 	/*
-	 * 本来はC,H,Nなどチェックすべき 
+	 * 本来はC,H,Nなどチェックすべき
 	 */
 	return TRUE;
     }
 
     /*
-     * VFDメディアの場合、ここまで 
+     * VFDメディアの場合、ここまで
      */
     if (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD) {
 	/*
-	 * 本来はC,H,Nなどチェックすべき 
+	 * 本来はC,H,Nなどチェックすべき
 	 */
 	return TRUE;
     }
 
     /*
-     * セクタごとに0x10ぶん、余計にかかる 
+     * セクタごとに0x10ぶん、余計にかかる
      */
     if ((total + (sectors * 0x10)) > fdc_trklen[fdc_drvreg]) {
 	return FALSE;
     }
 
     /*
-     * 書き込む必要がない場合は正常終了 
+     * 書き込む必要がない場合は正常終了
      */
     if ((sectors == 0) && (total == 0)) {
 	return TRUE;
     }
 
     /*
-     * 収まることがわかったので、データを作成する 
+     * 収まることがわかったので、データを作成する
      */
     writep = 0;
     offset = 0;
     for (i = 0; i < sectors; i++) {
 	/*
-	 * IDマークを見る 
+	 * IDマークを見る
 	 */
 	fdc_idmark(&offset);
 
 	/*
-	 * 0x10ヘッダの作成 
+	 * 0x10ヘッダの作成
 	 */
 	fdc_buffer[writep++] = fdc_buffer[offset++];
 	fdc_buffer[writep++] = fdc_buffer[offset++];
@@ -1093,7 +1082,7 @@ fdc_writetrk(void)
 	offset++;
 
 	/*
-	 * データマークの書き込み 
+	 * データマークの書き込み
 	 */
 	fdc_datamark(&offset, &ddm);
 	if (ddm) {
@@ -1103,16 +1092,16 @@ fdc_writetrk(void)
 	}
 
 	/*
-	 * リザーブエリアをクリア 
+	 * リザーブエリアをクリア
 	 */
 	/*
-	 * セクタレングスは後で書き込む 
+	 * セクタレングスは後で書き込む
 	 */
 	memset(&fdc_buffer[writep], 0, 8);
 	writep += (WORD) 8;
 
 	/*
-	 * レングスを数えつつコピー 
+	 * レングスを数えつつコピー
 	 */
 	seclen = 0;
 	while (fdc_buffer[offset] != 0xf7) {
@@ -1122,14 +1111,14 @@ fdc_writetrk(void)
 	offset++;
 
 	/*
-	 * セクタレングスを設定 
+	 * セクタレングスを設定
 	 */
 	fdc_buffer[writep - seclen - 2] = (BYTE) (seclen & 0xff);
 	fdc_buffer[writep - seclen - 1] = (BYTE) (seclen >> 8);
     }
 
     /*
-     * ファイルにデータを書きこむ 
+     * ファイルにデータを書きこむ
      */
     handle = file_open(fdc_fname[fdc_drvreg], OPEN_RW);
     if (handle == -1) {
@@ -1146,7 +1135,7 @@ fdc_writetrk(void)
     file_close(handle);
 
     /*
-     * 正常終了 
+     * 正常終了
      */
     return TRUE;
 }
@@ -1154,14 +1143,13 @@ fdc_writetrk(void)
 /*
  *      セクタ書き込み終了
  */
-static BOOL      
-fdc_writesec(void)
+static BOOL fdc_writesec(void)
 {
     DWORD           offset;
     int             handle;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(fdc_drvreg < FDC_DRIVES);
     ASSERT(fdc_ready[fdc_drvreg] != FDC_TYPE_NOTREADY);
@@ -1169,13 +1157,13 @@ fdc_writesec(void)
     ASSERT(fdc_totalcnt > 0);
 
     /*
-     * オフセット算出 
+     * オフセット算出
      */
     offset = fdc_seekofs[fdc_drvreg];
     offset += fdc_secofs[fdc_drvreg];
 
     /*
-     * 書き込み 
+     * 書き込み
      */
     handle = file_open(fdc_fname[fdc_drvreg], OPEN_RW);
     if (handle == -1) {
@@ -1198,8 +1186,7 @@ fdc_writesec(void)
  *      トラック、セクタ、サイドと一致するセクタを検索
  *      カウンタ、データポインタを設定
  */
-static BYTE      
-fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
+static BYTE fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 {
     int             secs;
     int             len;
@@ -1211,36 +1198,36 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
     int             fdctrack;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(fdc_drvreg < FDC_DRIVES);
     ASSERT(fdc_ready[fdc_drvreg] != FDC_TYPE_NOTREADY);
 
     /*
-     * ヘッダのあるトラック番号(比較用)を初期設定 
+     * ヘッダのあるトラック番号(比較用)を初期設定
      */
     fdctrack = fdc_track[fdc_drvreg];
 
     /*
-     * 2D/2DDファイルの場合 
+     * 2D/2DDファイルの場合
      */
 #if XM7_VER >= 3
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
 	(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2D) != ドライブモード(2DD) 
+	     * メディアタイプ(2D) != ドライブモード(2DD)
 	     */
 	    if ((fdctrack % 2) == 1) {
 		/*
-		 * 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー 
+		 * 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー
 		 */
 		return FDC_ST_RECNFND;
 	    }
 	    fdctrack = (BYTE) (fdctrack >> 1);
 	} else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) && !fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2DD) != ドライブモード(2D) 
+	     * メディアタイプ(2DD) != ドライブモード(2D)
 	     */
 	    fdctrack = (BYTE) (fdctrack << 1);
 	}
@@ -1258,13 +1245,13 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	}
 
 	/*
-	 * データポインタ設定 
+	 * データポインタ設定
 	 */
 	fdc_dataptr = &fdc_buffer[(sector - 1) * 0x0100];
 	fdc_secofs[fdc_drvreg] = (sector - 1) * 0x0100;
 
 	/*
-	 * カウンタ設定 
+	 * カウンタ設定
 	 */
 	fdc_totalcnt = 0x0100;
 	fdc_nowcnt = 0;
@@ -1273,17 +1260,17 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
     }
 
     /*
-     * VFDファイルの場合 
+     * VFDファイルの場合
      */
     if (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD) {
 #if XM7_VER >= 3
 	if (fdc_2ddmode) {
 	    /*
-	     * メディアタイプ(2D) != ドライブモード(2DD) 
+	     * メディアタイプ(2D) != ドライブモード(2DD)
 	     */
 	    if ((fdctrack % 2) == 1) {
 		/*
-		 * 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー 
+		 * 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー
 		 */
 		return FDC_ST_RECNFND;
 	    }
@@ -1298,7 +1285,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	}
 
 	/*
-	 * トラックへのオフセットをチェック 
+	 * トラックへのオフセットをチェック
 	 */
 	vfdoffset = fdc_header[fdc_drvreg][track * 6 + 3];
 	vfdoffset *= (DWORD) 256;
@@ -1312,7 +1299,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	}
 
 	/*
-	 * トラック中のセクタ数をチェック 
+	 * トラック中のセクタ数をチェック
 	 */
 	len = fdc_header[fdc_drvreg][track * 6 + 4];
 	if (len == 0) {
@@ -1326,13 +1313,13 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	}
 
 	/*
-	 * データポインタ設定 
+	 * データポインタ設定
 	 */
 	fdc_dataptr = &fdc_buffer[(sector - 1) * len];
 	fdc_secofs[fdc_drvreg] = (sector - 1) * len;
 
 	/*
-	 * カウンタ設定 
+	 * カウンタ設定
 	 */
 	fdc_totalcnt = (WORD) len;
 	fdc_nowcnt = 0;
@@ -1341,7 +1328,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
     }
 
     /*
-     * D77ファイルの場合 
+     * D77ファイルの場合
      */
     secs = fdc_buffer[0x0005];
     secs *= (WORD) 256;
@@ -1351,7 +1338,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
     }
 #if XM7_VER >= 3
     /*
-     * 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー 
+     * 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー
      */
     if ((fdc_header[fdc_drvreg][0x001b] == 0x00) && fdc_2ddmode) {
 	if ((fdctrack % 2) == 1) {
@@ -1362,18 +1349,18 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 
     offset = 0;
     /*
-     * セクタループ 
+     * セクタループ
      */
     for (i = 0; i < secs; i++) {
 	/*
-	 * このセクタのサイズを先に取得 
+	 * このセクタのサイズを先に取得
 	 */
 	size = fdc_buffer[offset + 0x000f];
 	size *= (WORD) 256;
 	size |= fdc_buffer[offset + 0x000e];
 
 	/*
-	 * C,H,Rが一致するセクタがあるか 
+	 * C,H,Rが一致するセクタがあるか
 	 */
 	if (fdc_buffer[offset + 0] != track) {
 	    offset += size;
@@ -1381,7 +1368,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	    continue;
 	}
 	/*
-	 * サイド情報のbit0以外は考慮しないように変更 
+	 * サイド情報のbit0以外は考慮しないように変更
 	 */
 	if (sidecmp) {
 	    if ((BYTE) (fdc_buffer[offset + 1] & 1) != side) {
@@ -1397,14 +1384,14 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	}
 
 	/*
-	 * 単密チェック 
+	 * 単密チェック
 	 */
 	if (fdc_buffer[offset + 0x0006] != 0) {
 	    continue;
 	}
 
 	/*
-	 * データポインタ、カウンタ設定 
+	 * データポインタ、カウンタ設定
 	 */
 	fdc_dataptr = &fdc_buffer[offset + 0x0010];
 	fdc_secofs[fdc_drvreg] = offset + 0x0010;
@@ -1412,7 +1399,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	fdc_nowcnt = 0;
 
 	/*
-	 * ステータス設定 
+	 * ステータス設定
 	 */
 	stat = 0;
 	if (fdc_buffer[offset + 0x0007] != 0) {
@@ -1420,8 +1407,8 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 	}
 	if (fdc_buffer[offset + 0x0008] == 0xb0) {
 	    /*
-	     * 前に設定したステータスが無効になる問題を修正 
-	     * (キホンジショ) 
+	     * 前に設定したステータスが無効になる問題を修正
+	     * (キホンジショ)
 	     */
 	    stat |= FDC_ST_CRCERR;
 	}
@@ -1430,7 +1417,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
     }
 
     /*
-     * 全セクタを検査したが、見つからなかった 
+     * 全セクタを検査したが、見つからなかった
      */
     return FDC_ST_RECNFND;
 }
@@ -1438,8 +1425,7 @@ fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 /*
  *      トラック読み込み
  */
-static void      
-fdc_readbuf(int drive)
+static void fdc_readbuf(int drive)
 {
     DWORD           offset;
     DWORD           len;
@@ -1449,26 +1435,26 @@ fdc_readbuf(int drive)
     int             max_track;
 
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if ((drive < 0) || (drive >= FDC_DRIVES)) {
 	return;
     }
 
     /*
-     * レディチェック 
+     * レディチェック
      */
     if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
 	return;
     }
 
     /*
-     * インデックスホールカウンタをクリア 
+     * インデックスホールカウンタをクリア
      */
     fdc_indexcnt = 0;
 
     /*
-     * トラック×２＋サイド 
+     * トラック×２＋サイド
      */
     trkside = fdc_track[drive] * 2 + fdc_sidereg;
 
@@ -1482,7 +1468,7 @@ fdc_readbuf(int drive)
 	    max_track = 80;
 
 	    /*
-	     * 2Dファイルで2DD読み出しの場合の補正 
+	     * 2Dファイルで2DD読み出しの場合の補正
 	     */
 	    if (fdc_2ddmode) {
 		trkside = (fdc_track[drive] >> 1) * 2 + fdc_sidereg;
@@ -1491,7 +1477,7 @@ fdc_readbuf(int drive)
 	    max_track = 160;
 
 	    /*
-	     * 2DDファイルで2D読み出しの場合の補正 
+	     * 2DDファイルで2D読み出しの場合の補正
 	     */
 	    if (!fdc_2ddmode) {
 		trkside = fdc_track[drive] * 4 + fdc_sidereg;
@@ -1499,7 +1485,7 @@ fdc_readbuf(int drive)
 	}
 
 	/*
-	 * オーバーチェック 
+	 * オーバーチェック
 	 */
 	if (trkside >= max_track) {
 	    memset(fdc_buffer, 0, 0x1000);
@@ -1508,7 +1494,7 @@ fdc_readbuf(int drive)
 #else
     if (fdc_ready[drive] == FDC_TYPE_2D) {
 	/*
-	 * 範囲チェック 
+	 * 範囲チェック
 	 */
 	if (trkside >= 80) {
 	    memset(fdc_buffer, 0, 0x1000);
@@ -1517,7 +1503,7 @@ fdc_readbuf(int drive)
 #endif
 
 	/*
-	 * オフセット算出 
+	 * オフセット算出
 	 */
 	offset = (DWORD) trkside;
 	offset *= 0x1000;
@@ -1525,7 +1511,7 @@ fdc_readbuf(int drive)
 	fdc_trklen[drive] = 0x1000;
 
 	/*
-	 * 読み込み 
+	 * 読み込み
 	 */
 	memset(fdc_buffer, 0, 0x1000);
 	handle = file_open(fdc_fname[drive], OPEN_R);
@@ -1547,7 +1533,7 @@ fdc_readbuf(int drive)
     if (fdc_ready[drive] == FDC_TYPE_VFD) {
 #if XM7_VER >= 3
 	/*
-	 * 2DDモードの場合、補正 
+	 * 2DDモードの場合、補正
 	 */
 	if (fdc_2ddmode) {
 	    trkside = (fdc_track[drive] >> 1) * 2 + fdc_sidereg;
@@ -1555,7 +1541,7 @@ fdc_readbuf(int drive)
 #endif
 
 	/*
-	 * 範囲チェック 
+	 * 範囲チェック
 	 */
 	if (trkside >= 80) {
 	    memset(fdc_buffer, 0, 0x1000);
@@ -1563,7 +1549,7 @@ fdc_readbuf(int drive)
 	}
 
 	/*
-	 * オフセット算出 
+	 * オフセット算出
 	 */
 	offset = fdc_header[drive][trkside * 6 + 3];
 	offset *= 256;
@@ -1584,7 +1570,7 @@ fdc_readbuf(int drive)
 	fdc_trklen[drive] = (WORD) (len * secs);
 
 	/*
-	 * 読み込み 
+	 * 読み込み
 	 */
 	memset(fdc_buffer, 0, fdc_trklen[drive]);
 	handle = file_open(fdc_fname[drive], OPEN_R);
@@ -1612,12 +1598,12 @@ fdc_readbuf(int drive)
 
     if (fdc_2ddmode) {
 	/*
-	 * 2Dファイルを2DD読みした場合、ここで補正 
+	 * 2Dファイルを2DD読みした場合、ここで補正
 	 */
 	if (fdc_header[drive][0x001b] == 0x00) {
 	    if ((fdc_track[drive] % 2) == 1) {
 		/*
-		 * 奇数トラックアクセス、セクタ数0 
+		 * 奇数トラックアクセス、セクタ数0
 		 */
 		fdc_buffer[4] = 0;
 		fdc_buffer[5] = 0;
@@ -1628,7 +1614,7 @@ fdc_readbuf(int drive)
     } else {
 	/*
 	 * 2DDファイルを2D読みした場合、ここで補正
-	 * (AV40専用OS-9) 
+	 * (AV40専用OS-9)
 	 */
 	if (fdc_header[drive][0x001b] == 0x10) {
 	    trkside = fdc_track[drive] * 4 + fdc_sidereg;
@@ -1639,11 +1625,11 @@ fdc_readbuf(int drive)
 #endif
 
     /*
-     * オーバーチェック 
+     * オーバーチェック
      */
     if (trkside >= max_track) {
 	/*
-	 * トラックオーバー、セクタ数0 
+	 * トラックオーバー、セクタ数0
 	 */
 	fdc_buffer[4] = 0;
 	fdc_buffer[5] = 0;
@@ -1651,12 +1637,12 @@ fdc_readbuf(int drive)
     }
 
     /*
-     * ヘッダファイルに従い、オフセット・レングスを算出 
+     * ヘッダファイルに従い、オフセット・レングスを算出
      */
     offset = *(DWORD *) (&fdc_header[drive][0x0020 + trkside * 4]);
     if (offset == 0) {
 	/*
-	 * 存在しないトラック 
+	 * 存在しないトラック
 	 */
 	fdc_buffer[4] = 0;
 	fdc_buffer[5] = 0;
@@ -1666,7 +1652,7 @@ fdc_readbuf(int drive)
     len = *(DWORD *) (&fdc_header[drive][0x0020 + (trkside + 1) * 4]);
     if (len == 0) {
 	/*
-	 * 最終トラック 
+	 * 最終トラック
 	 */
 	len = *(DWORD *) (&fdc_header[drive][0x0014]);
     }
@@ -1678,7 +1664,7 @@ fdc_readbuf(int drive)
     fdc_trklen[drive] = (WORD) len;
 
     /*
-     * シーク、読み込み 
+     * シーク、読み込み
      */
     memset(fdc_buffer, 0, 0x2000);
     handle = file_open(fdc_fname[drive], OPEN_R);
@@ -1696,8 +1682,7 @@ fdc_readbuf(int drive)
 /*
  *      D77ファイル ヘッダ読み込み
  */
-static BOOL      
-fdc_readhead(int drive, int index)
+static BOOL fdc_readhead(int drive, int index)
 {
     int             i;
     DWORD           offset;
@@ -1705,19 +1690,19 @@ fdc_readhead(int drive, int index)
     int             handle;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT((drive >= 0) && (drive < FDC_DRIVES));
     ASSERT((index >= 0) && (index < FDC_MEDIAS));
     ASSERT(fdc_ready[drive] == FDC_TYPE_D77);
 
     /*
-     * オフセット決定 
+     * オフセット決定
      */
     offset = fdc_foffset[drive][index];
 
     /*
-     * シーク、読み込み 
+     * シーク、読み込み
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
     if (handle == -1) {
@@ -1734,12 +1719,12 @@ fdc_readhead(int drive, int index)
     file_close(handle);
 
     /*
-     * タイプチェック、ライトプロテクト設定 
+     * タイプチェック、ライトプロテクト設定
      */
     if ((fdc_header[drive][0x001b] != 0x00) &&
 	(fdc_header[drive][0x001b] != 0x10)) {
 	/*
-	 * 2D/2DDでない 
+	 * 2D/2DDでない
 	 */
 	return FALSE;
     }
@@ -1754,7 +1739,7 @@ fdc_readhead(int drive, int index)
     }
 
     /*
-     * トラックオフセットを設定 
+     * トラックオフセットを設定
      */
     for (i = 0; i < 164; i++) {
 	temp = 0;
@@ -1768,7 +1753,7 @@ fdc_readhead(int drive, int index)
 
 	if (temp != 0) {
 	    /*
-	     * データあり 
+	     * データあり
 	     */
 	    temp += offset;
 	    *(DWORD *) (&fdc_header[drive][0x0020 + i * 4]) = temp;
@@ -1776,7 +1761,7 @@ fdc_readhead(int drive, int index)
     }
 
     /*
-     * ディスクサイズ＋オフセット 
+     * ディスクサイズ＋オフセット
      */
     temp = 0;
     temp |= fdc_header[drive][0x001c + 3];
@@ -1795,19 +1780,18 @@ fdc_readhead(int drive, int index)
 /*
  *      VFDファイル ヘッダ読み込み
  */
-static BOOL      
-fdc_readhead_vfd(int drive)
+static BOOL fdc_readhead_vfd(int drive)
 {
     int             handle;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT((drive >= 0) && (drive < FDC_DRIVES));
     ASSERT(fdc_ready[drive] == FDC_TYPE_VFD);
 
     /*
-     * シーク、読み込み 
+     * シーク、読み込み
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
     if (handle == -1) {
@@ -1829,35 +1813,34 @@ fdc_readhead_vfd(int drive)
 /*
  *      現在のメディアのライトプロテクトを切り替える
  */
-BOOL             
-fdc_setwritep(int drive, BOOL writep)
+BOOL fdc_setwritep(int drive, BOOL writep)
 {
     BYTE            header[0x2b0];
     DWORD           offset;
     int             handle;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT((drive >= 0) && (drive < FDC_DRIVES));
     ASSERT((writep == TRUE) || (writep == FALSE));
 
     /*
-     * レディでなければならない 
+     * レディでなければならない
      */
     if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
 	return FALSE;
     }
 
     /*
-     * ファイルが書き込み不可ならダメ 
+     * ファイルが書き込み不可ならダメ
      */
     if (fdc_fwritep[drive]) {
 	return FALSE;
     }
 
     /*
-     * 読み込み、設定、書き込み 
+     * 読み込み、設定、書き込み
      */
     if (fdc_ready[drive] == FDC_TYPE_D77) {
 	offset = fdc_foffset[drive][fdc_media[drive]];
@@ -1889,7 +1872,7 @@ fdc_setwritep(int drive, BOOL writep)
     }
 
     /*
-     * 成功 
+     * 成功
      */
     file_close(handle);
     fdc_writep[drive] = writep;
@@ -1899,24 +1882,23 @@ fdc_setwritep(int drive, BOOL writep)
 /*
  *      メディア番号を設定
  */
-BOOL             
-fdc_setmedia(int drive, int index)
+BOOL fdc_setmedia(int drive, int index)
 {
     /*
-     * assert 
+     * assert
      */
     ASSERT((drive >= 0) && (drive < FDC_DRIVES));
     ASSERT((index >= 0) && (index < FDC_MEDIAS));
 
     /*
-     * レディ状態か 
+     * レディ状態か
      */
     if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
 	return FALSE;
     }
 
     /*
-     * 2D/2DDファイルの場合、index = 0か 
+     * 2D/2DDファイルの場合、index = 0か
      */
 #if XM7_VER >= 3
     if (((fdc_ready[drive] == FDC_TYPE_2D) ||
@@ -1929,7 +1911,7 @@ fdc_setmedia(int drive, int index)
 
     /*
      * VFDファイルの場合、index =
-     * 0かをチェックしてヘッダ読み込み 
+     * 0かをチェックしてヘッダ読み込み
      */
     if (fdc_ready[drive] == FDC_TYPE_VFD) {
 	if (index != 0) {
@@ -1941,7 +1923,7 @@ fdc_setmedia(int drive, int index)
     }
 
     /*
-     * index > 0 なら、fdc_foffsetを調べて>0が必要 
+     * index > 0 なら、fdc_foffsetを調べて>0が必要
      */
     if (index > 0) {
 	if (fdc_foffset[drive][index] == 0) {
@@ -1950,18 +1932,18 @@ fdc_setmedia(int drive, int index)
     }
 
     /*
-     * D77ファイルの場合、ヘッダ読み込み 
+     * D77ファイルの場合、ヘッダ読み込み
      */
     if (fdc_ready[drive] == FDC_TYPE_D77) {
 	/*
-	 * ライトプロテクトは内部で設定 
+	 * ライトプロテクトは内部で設定
 	 */
 	if (!fdc_readhead(drive, index)) {
 	    return FALSE;
 	}
     } else {
 	/*
-	 * 2D/2DD/VFDファイルなら、ファイル属性に従う 
+	 * 2D/2DD/VFDファイルなら、ファイル属性に従う
 	 */
 	fdc_writep[drive] = fdc_fwritep[drive];
     }
@@ -1970,7 +1952,7 @@ fdc_setmedia(int drive, int index)
 	  fdc_teject[drive] = FALSE;
        }
     /*
-     * データバッファ読み込み、ワークセーブ 
+     * データバッファ読み込み、ワークセーブ
      */
     fdc_media[drive] = (BYTE) index;
     fdc_readbuf(drive);
@@ -1981,8 +1963,7 @@ fdc_setmedia(int drive, int index)
 /*
  *      D77ファイル解析、メディア数および名称取得
  */
-static int       
-fdc_chkd77(int drive)
+static int fdc_chkd77(int drive)
 {
     int             i;
     int             handle;
@@ -1992,7 +1973,7 @@ fdc_chkd77(int drive)
     BYTE            buf[0x20];
 
     /*
-     * 初期化 
+     * 初期化
      */
     for (i = 0; i < FDC_MEDIAS; i++) {
 	fdc_foffset[drive][i] = 0;
@@ -2002,7 +1983,7 @@ fdc_chkd77(int drive)
     offset = 0;
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
     if (handle == -1) {
@@ -2010,11 +1991,11 @@ fdc_chkd77(int drive)
     }
 
     /*
-     * メディアループ 
+     * メディアループ
      */
     while (count < FDC_MEDIAS) {
 	/*
-	 * シーク 
+	 * シーク
 	 */
 	if (!file_seek(handle, offset)) {
 	    file_close(handle);
@@ -2022,7 +2003,7 @@ fdc_chkd77(int drive)
 	}
 
 	/*
-	 * 読み込み 
+	 * 読み込み
 	 */
 	if (!file_read(handle, buf, 0x0020)) {
 	    file_close(handle);
@@ -2030,7 +2011,7 @@ fdc_chkd77(int drive)
 	}
 
 	/*
-	 * タイプチェック。2D,2DDのみ対応 
+	 * タイプチェック。2D,2DDのみ対応
 	 */
 #if XM7_VER >= 3
 	if ((buf[0x1b] != 0) && (buf[0x1b] != 0x10)) {
@@ -2042,14 +2023,14 @@ fdc_chkd77(int drive)
 	}
 
 	/*
-	 * ok,ファイル名、オフセット格納 
+	 * ok,ファイル名、オフセット格納
 	 */
 	buf[17] = '\0';
 	memcpy(fdc_name[drive][count], buf, 17);
 	fdc_foffset[drive][count] = offset;
 
 	/*
-	 * next処理 
+	 * next処理
 	 */
 	len = 0;
 	len |= buf[0x1f];
@@ -2064,7 +2045,7 @@ fdc_chkd77(int drive)
     }
 
     /*
-     * 最大メディア枚数に達した 
+     * 最大メディア枚数に達した
      */
     file_close(handle);
     return count;
@@ -2073,15 +2054,14 @@ fdc_chkd77(int drive)
 /*
  *      VFDファイルチェック
  */
-static int       
-fdc_chkvfd(int drive)
+static int fdc_chkvfd(int drive)
 {
     int             i;
     int             handle;
     BYTE            buf[0x20];
 
     /*
-     * 初期化 
+     * 初期化
      */
     for (i = 0; i < FDC_MEDIAS; i++) {
 	fdc_foffset[drive][i] = 0;
@@ -2089,7 +2069,7 @@ fdc_chkvfd(int drive)
     }
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
     if (handle == -1) {
@@ -2097,7 +2077,7 @@ fdc_chkvfd(int drive)
     }
 
     /*
-     * ヘッダのチェック 
+     * ヘッダのチェック
      */
     if (!file_seek(handle, 0)) {
 	file_close(handle);
@@ -2112,7 +2092,7 @@ fdc_chkvfd(int drive)
     if ((buf[0x00] != 0xe0) || (buf[0x01] != 0x01) ||
 	(buf[0x02] != 0x00) || (buf[0x03] != 0x00)) {
 	/*
-	 * トラック0のオフセットが0x01e0以外ならVFDではない(手抜きだ…) 
+	 * トラック0のオフセットが0x01e0以外ならVFDではない(手抜きだ…)
 	 */
 	return 0;
     }
@@ -2123,8 +2103,7 @@ fdc_chkvfd(int drive)
 /*
  *      ディスクファイルを設定
  */
-int              
-fdc_setdisk(int drive, char *fname)
+int fdc_setdisk(int drive, char *fname)
 {
     BOOL            writep;
     int             handle;
@@ -2134,7 +2113,7 @@ fdc_setdisk(int drive, char *fname)
     ASSERT((drive >= 0) && (drive < FDC_DRIVES));
 
     /*
-     * ノットレディにする場合 
+     * ノットレディにする場合
      */
     if (fname == NULL) {
 	fdc_ready[drive] = FDC_TYPE_NOTREADY;
@@ -2143,7 +2122,7 @@ fdc_setdisk(int drive, char *fname)
     }
 
     /*
-     * ファイルをオープンし、ファイルサイズを調べる 
+     * ファイルをオープンし、ファイルサイズを調べる
      */
    if (strlen(fname) < sizeof(fdc_fname[drive])) {
 	strcpy(fdc_fname[drive], fname);
@@ -2170,13 +2149,13 @@ fdc_setdisk(int drive, char *fname)
      */
     if (fsize == 327680) {
 	/*
-	 * タイプ、書き込み属性設定 
+	 * タイプ、書き込み属性設定
 	 */
 	fdc_ready[drive] = FDC_TYPE_2D;
 	fdc_fwritep[drive] = writep;
 
 	/*
-	 * メディア設定 
+	 * メディア設定
 	 */
 	if (!fdc_setmedia(drive, 0)) {
 	    fdc_ready[drive] = FDC_TYPE_NOTREADY;
@@ -2184,7 +2163,7 @@ fdc_setdisk(int drive, char *fname)
 	}
 
 	/*
-	 * 成功。一時イジェクト解除 
+	 * 成功。一時イジェクト解除
 	 */
 	fdc_teject[drive] = FALSE;
 	fdc_medias[drive] = 1;
@@ -2196,13 +2175,13 @@ fdc_setdisk(int drive, char *fname)
      */
     if (fsize == 655360) {
 	/*
-	 * タイプ、書き込み属性設定 
+	 * タイプ、書き込み属性設定
 	 */
 	fdc_ready[drive] = FDC_TYPE_2DD;
 	fdc_fwritep[drive] = writep;
 
 	/*
-	 * メディア設定 
+	 * メディア設定
 	 */
 	if (!fdc_setmedia(drive, 0)) {
 	    fdc_ready[drive] = FDC_TYPE_NOTREADY;
@@ -2210,7 +2189,7 @@ fdc_setdisk(int drive, char *fname)
 	}
 
 	/*
-	 * 成功。一時イジェクト解除 
+	 * 成功。一時イジェクト解除
 	 */
 	fdc_teject[drive] = FALSE;
 	fdc_medias[drive] = 1;
@@ -2222,14 +2201,14 @@ fdc_setdisk(int drive, char *fname)
      * VFDファイル
      */
     /*
-     * ファイル検査 
+     * ファイル検査
      */
     if (fdc_chkvfd(drive) != 0) {
 	fdc_ready[drive] = FDC_TYPE_VFD;
 	fdc_fwritep[drive] = writep;
 
 	/*
-	 * メディア設定 
+	 * メディア設定
 	 */
 	if (!fdc_setmedia(drive, 0)) {
 	    fdc_ready[drive] = FDC_TYPE_NOTREADY;
@@ -2237,7 +2216,7 @@ fdc_setdisk(int drive, char *fname)
 	}
 
 	/*
-	 * 成功。一時イジェクト解除 
+	 * 成功。一時イジェクト解除
 	 */
 	fdc_teject[drive] = FALSE;
 	fdc_medias[drive] = 1;
@@ -2251,7 +2230,7 @@ fdc_setdisk(int drive, char *fname)
     fdc_fwritep[drive] = writep;
 
     /*
-     * ファイル検査 
+     * ファイル検査
      */
     count = fdc_chkd77(drive);
     if (count == 0) {
@@ -2260,7 +2239,7 @@ fdc_setdisk(int drive, char *fname)
     }
 
     /*
-     * メディア設定 
+     * メディア設定
      */
     if (!fdc_setmedia(drive, 0)) {
 	fdc_ready[drive] = FDC_TYPE_NOTREADY;
@@ -2268,7 +2247,7 @@ fdc_setdisk(int drive, char *fname)
     }
 
     /*
-     * 成功。一時イジェクト解除 
+     * 成功。一時イジェクト解除
      */
     fdc_teject[drive] = FALSE;
     fdc_medias[drive] = (BYTE) count;
@@ -2281,11 +2260,10 @@ fdc_setdisk(int drive, char *fname)
  *      FDC DataRequestイベント (WAIT)
  */
 #ifdef FDDSND
-static BOOL      
-fdc_drq_event(void)
+static BOOL fdc_drq_event(void)
 {
     /*
-     * ロストデータチェック 
+     * ロストデータチェック
      */
     if (fdc_drqirq & 0x80) {
 	return fdc_lost_event();
@@ -2300,33 +2278,32 @@ fdc_drq_event(void)
 /*
  *      FDC シークイベント (WAIT)
  */
-static BOOL      
-fdd_seek_event(void)
+static BOOL fdd_seek_event(void)
 {
     /*
-     * シーク処理が終了したか 
+     * シーク処理が終了したか
      */
     if (fdc_seek_track < 0) {
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
 
 	/*
-	 * BUSYフラグを落とす 
+	 * BUSYフラグを落とす
 	 */
 	fdc_status &= ~FDC_ST_BUSY;
 	fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 	schedule_delevent(EVENT_FDD_SEEK);
     } else if (fdc_seek_track-- == 0) {
 	/*
-	 * シーク終了後はウェイトを挿入 
+	 * シーク終了後はウェイトを挿入
 	 */
 	schedule_setevent(EVENT_FDD_SEEK, 20000, fdd_seek_event);
     } else {
 	/*
-	 * サウンド発生 
+	 * サウンド発生
 	 */
 	if (fdc_sound) {
 	    wav_notify(SOUND_FDDSEEK);
@@ -2339,23 +2316,22 @@ fdd_seek_event(void)
 /*
  *      FDC シークイベント設定 (SOUND ON)
  */
-static void      
-fdc_setseekevent(BYTE track)
+static void fdc_setseekevent(BYTE track)
 {
     /*
-     * シークするトラック数を保存 
+     * シークするトラック数を保存
      */
     fdc_seek_track = track;
 
     /*
-     * イベント設定 
+     * イベント設定
      */
     if (track > 0) {
 	schedule_setevent(EVENT_FDD_SEEK, fdc_steprate[fdc_command & 3],
 			  fdd_seek_event);
     } else {
 	/*
-	 * ヘッド移動がなくてもしばらくの間はBUSY状態にする 
+	 * ヘッド移動がなくてもしばらくの間はBUSY状態にする
 	 */
 	schedule_setevent(EVENT_FDD_SEEK, 300, fdd_seek_event);
     }
@@ -2367,11 +2343,10 @@ fdc_setseekevent(BYTE track)
 /*
  *      FDC ステータス作成
  */
-static void      
-fdc_make_stat(void)
+static void fdc_make_stat(void)
 {
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if (fdc_drvreg >= FDC_DRIVES) {
 	fdc_status |= FDC_ST_NOTREADY;
@@ -2379,7 +2354,7 @@ fdc_make_stat(void)
     }
 
     /*
-     * 有効なドライブ 
+     * 有効なドライブ
      */
     if (fdc_ready[fdc_drvreg] == FDC_TYPE_NOTREADY) {
 	fdc_status |= FDC_ST_NOTREADY;
@@ -2388,14 +2363,14 @@ fdc_make_stat(void)
     }
 
     /*
-     * 一時イジェクト 
+     * 一時イジェクト
      */
     if (fdc_teject[fdc_drvreg]) {
 	fdc_status |= FDC_ST_NOTREADY;
     }
 
     /*
-     * ライトプロテクト(Read系コマンドは0) 
+     * ライトプロテクト(Read系コマンドは0)
      */
     if ((fdc_cmdtype == 2) || (fdc_cmdtype == 4) || (fdc_cmdtype == 6)) {
 	fdc_status &= ~FDC_ST_WRITEP;
@@ -2408,14 +2383,14 @@ fdc_make_stat(void)
     }
 
     /*
-     * TYPE I のみ 
+     * TYPE I のみ
      */
     if (fdc_cmdtype != 1) {
 	return;
     }
 
     /*
-     * TRACK00 
+     * TRACK00
      */
     if (fdc_track[fdc_drvreg] == 0) {
 	fdc_status |= FDC_ST_TRACK00;
@@ -2424,7 +2399,7 @@ fdc_make_stat(void)
     }
 
     /*
-     * index 
+     * index
      */
     if (!(fdc_status & FDC_ST_NOTREADY)) {
 	if (fdc_indexcnt == 0) {
@@ -2440,21 +2415,20 @@ fdc_make_stat(void)
  *      TYPE I
  *      RESTORE
  */
-static void      
-fdc_restore(void)
+static void fdc_restore(void)
 {
 #ifdef FDDSND
     BYTE            prevtrk;
 #endif
 
     /*
-     * TYPE I 
+     * TYPE I
      */
     fdc_cmdtype = 1;
     fdc_status = 0;
 
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if (fdc_drvreg >= FDC_DRIVES) {
 	mainetc_fdc();
@@ -2464,13 +2438,13 @@ fdc_restore(void)
     }
 #ifdef FDDSND
     /*
-     * 現在のトラック番号を保存 
+     * 現在のトラック番号を保存
      */
     prevtrk = fdc_track[fdc_drvreg];
 #endif
 
     /*
-     * トラック比較、リストア、読み込み 
+     * トラック比較、リストア、読み込み
      */
     if (fdc_track[fdc_drvreg] != 0) {
 	fdc_track[fdc_drvreg] = 0;
@@ -2479,13 +2453,13 @@ fdc_restore(void)
     fdc_seekvct = TRUE;
 
     /*
-     * 自動アップデート(データレジスタも0にする) 
+     * 自動アップデート(データレジスタも0にする)
      */
     fdc_trkreg = 0;
     fdc_datareg = 0;
 
     /*
-     * FDC割り込み 
+     * FDC割り込み
      */
     fdc_drqirq = 0x00;
 #ifdef FDDSND
@@ -2505,7 +2479,7 @@ fdc_restore(void)
 #endif
 
     /*
-     * ステータス生成 
+     * ステータス生成
      */
     fdc_status = FDC_ST_BUSY;
     if (fdc_command & 0x08) {
@@ -2514,7 +2488,7 @@ fdc_restore(void)
     fdc_make_stat();
 
     /*
-     * アクセス(SEEK) 
+     * アクセス(SEEK)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_SEEK;
 }
@@ -2523,8 +2497,7 @@ fdc_restore(void)
  *      TYPE I
  *      SEEK
  */
-static void      
-fdc_seek(void)
+static void fdc_seek(void)
 {
     BYTE            target;
 #ifdef FDDSND
@@ -2532,13 +2505,13 @@ fdc_seek(void)
 #endif
 
     /*
-     * TYPE I 
+     * TYPE I
      */
     fdc_cmdtype = 1;
     fdc_status = 0;
 
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if (fdc_drvreg >= FDC_DRIVES) {
 	mainetc_fdc();
@@ -2548,26 +2521,26 @@ fdc_seek(void)
     }
 
     /*
-     * 先にベリファイ 
+     * 先にベリファイ
      */
     if (fdc_command & 0x04) {
 	if (fdc_trkreg != fdc_track[fdc_drvreg]) {
             fdc_status |= FDC_ST_SEEKERR;
 	    /*
-	     * 自動修復(らぷてっく対策) 
+	     * 自動修復(らぷてっく対策)
 	     */
 	    fdc_trkreg = fdc_track[fdc_drvreg];
 	}
     }
 #ifdef FDDSND
     /*
-     * 現在のトラック番号を保存 
+     * 現在のトラック番号を保存
      */
     prevtrk = fdc_track[fdc_drvreg];
 #endif
 
     /*
-     * 相対シーク 
+     * 相対シーク
      */
     target = (BYTE) (fdc_track[fdc_drvreg] + fdc_datareg - fdc_trkreg);
     if (fdc_datareg > fdc_trkreg) {
@@ -2591,7 +2564,7 @@ fdc_seek(void)
 	fdc_seekvct = TRUE;
 	/*
 	 * トラック番号のオーバーフローを防止
-	 * (OS-9対策) 
+	 * (OS-9対策)
 	 */
 	if (fdc_track[fdc_drvreg] < (fdc_trkreg - fdc_datareg)) {
 	    target = 0;
@@ -2599,7 +2572,7 @@ fdc_seek(void)
     }
 
     /*
-     * トラック比較、シーク、読み込み 
+     * トラック比較、シーク、読み込み
      */
     if (fdc_track[fdc_drvreg] != target) {
 	fdc_track[fdc_drvreg] = target;
@@ -2607,11 +2580,11 @@ fdc_seek(void)
     }
 
     /*
-     * アップデート 
+     * アップデート
      */
     fdc_trkreg = fdc_datareg;	/* データレジスタの値が反映される模様 */
     /*
-     * FDC割り込み 
+     * FDC割り込み
      */
     fdc_drqirq = 0x00;
 #ifdef FDDSND
@@ -2631,7 +2604,7 @@ fdc_seek(void)
 #endif
 
     /*
-     * ステータス生成 
+     * ステータス生成
      */
     fdc_status |= FDC_ST_BUSY;
     if (fdc_command & 0x08) {
@@ -2640,7 +2613,7 @@ fdc_seek(void)
     fdc_make_stat();
 
     /*
-     * アクセス(SEEK) 
+     * アクセス(SEEK)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_SEEK;
 }
@@ -2649,21 +2622,20 @@ fdc_seek(void)
  *      TYPE I
  *      STEP IN
  */
-static void      
-fdc_step_in(void)
+static void fdc_step_in(void)
 {
 #ifdef FDDSND
     BYTE            prevtrk;
 #endif
 
     /*
-     * TYPE I 
+     * TYPE I
      */
     fdc_cmdtype = 1;
     fdc_status = 0;
 
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if (fdc_drvreg >= FDC_DRIVES) {
 	mainetc_fdc();
@@ -2673,13 +2645,13 @@ fdc_step_in(void)
     }
 #ifdef FDDSND
     /*
-     * 現在のトラック番号を保存 
+     * 現在のトラック番号を保存
      */
     prevtrk = fdc_track[fdc_drvreg];
 #endif
 
     /*
-     * 先にベリファイ 
+     * 先にベリファイ
      */
     if (fdc_command & 0x04) {
 	if (fdc_trkreg != fdc_track[fdc_drvreg]) {
@@ -2688,7 +2660,7 @@ fdc_step_in(void)
     }
 
     /*
-     * ステップ、読み込み 
+     * ステップ、読み込み
      */
 #if XM7_VER >= 3
     if (fdc_2ddmode) {
@@ -2711,7 +2683,7 @@ fdc_step_in(void)
     fdc_seekvct = FALSE;
 
     /*
-     * アップデート 
+     * アップデート
      */
     if (fdc_command & 0x10) {
        if (fdc_trkreg < 255) {
@@ -2720,7 +2692,7 @@ fdc_step_in(void)
     }
 
     /*
-     * FDC割り込み 
+     * FDC割り込み
      */
     fdc_drqirq = 0x00;
 #ifdef FDDSND
@@ -2740,7 +2712,7 @@ fdc_step_in(void)
 #endif
 
     /*
-     * ステータス生成 
+     * ステータス生成
      */
     fdc_status |= FDC_ST_BUSY;
     if (fdc_command & 0x08) {
@@ -2749,7 +2721,7 @@ fdc_step_in(void)
     fdc_make_stat();
 
     /*
-     * アクセス(SEEK) 
+     * アクセス(SEEK)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_SEEK;
 }
@@ -2758,21 +2730,20 @@ fdc_step_in(void)
  *      TYPE I
  *      STEP OUT
  */
-static void      
-fdc_step_out(void)
+static void fdc_step_out(void)
 {
 #ifdef FDDSND
     BYTE            prevtrk;
 #endif
 
     /*
-     * TYPE I 
+     * TYPE I
      */
     fdc_cmdtype = 1;
     fdc_status = 0;
 
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if (fdc_drvreg >= FDC_DRIVES) {
 	mainetc_fdc();
@@ -2782,13 +2753,13 @@ fdc_step_out(void)
     }
 #ifdef FDDSND
     /*
-     * 現在のトラック番号を保存 
+     * 現在のトラック番号を保存
      */
     prevtrk = fdc_track[fdc_drvreg];
 #endif
 
     /*
-     * 先にベリファイ 
+     * 先にベリファイ
      */
     if (fdc_command & 0x04) {
 	if (fdc_trkreg != fdc_track[fdc_drvreg]) {
@@ -2797,7 +2768,7 @@ fdc_step_out(void)
     }
 
     /*
-     * ステップ、読み込み 
+     * ステップ、読み込み
      */
     if (fdc_track[fdc_drvreg] != 0) {
 	fdc_track[fdc_drvreg]--;
@@ -2806,7 +2777,7 @@ fdc_step_out(void)
     fdc_seekvct = TRUE;
 
     /*
-     * アップデート 
+     * アップデート
      */
     if (fdc_command & 0x10) {
 	if (fdc_trkreg > 0) {
@@ -2815,7 +2786,7 @@ fdc_step_out(void)
     }
 
     /*
-     * FDC割り込み 
+     * FDC割り込み
      */
     fdc_drqirq = 0x00;
 #ifdef FDDSND
@@ -2835,7 +2806,7 @@ fdc_step_out(void)
 #endif
 
     /*
-     * ステータス生成 
+     * ステータス生成
      */
     fdc_status |= FDC_ST_BUSY;
     if (fdc_command & 0x08) {
@@ -2844,7 +2815,7 @@ fdc_step_out(void)
     fdc_make_stat();
 
     /*
-     * アクセス(SEEK) 
+     * アクセス(SEEK)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_SEEK;
 }
@@ -2853,8 +2824,7 @@ fdc_step_out(void)
  *      TYPE I
  *      STEP
  */
-static void      
-fdc_step(void)
+static void fdc_step(void)
 {
     if (fdc_seekvct) {
 	fdc_step_out();
@@ -2867,18 +2837,17 @@ fdc_step(void)
  *      TYPE II, III
  *      READ/WRITE サブ
  */
-static BOOL      
-fdc_rw_sub(void)
+static BOOL fdc_rw_sub(void)
 {
     fdc_status = 0;
 
     /*
-     * ドライブチェック 
+     * ドライブチェック
      */
     if (fdc_drvreg >= FDC_DRIVES) {
 	fdc_make_stat();
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -2886,13 +2855,13 @@ fdc_rw_sub(void)
     }
 
     /*
-     * NOT READYチェック 
+     * NOT READYチェック
      */
     if ((fdc_ready[fdc_drvreg] == FDC_TYPE_NOTREADY)
 	|| fdc_teject[fdc_drvreg]) {
 	fdc_make_stat();
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -2906,18 +2875,18 @@ fdc_rw_sub(void)
  *      TYPE II
  *      READ DATA
  */
-static void   fdc_read_data(void)
+static void fdc_read_data(void)
 {
     BYTE            stat;
 
 
     /*
-     * TYPE II, Read 
+     * TYPE II, Read
      */
     fdc_cmdtype = 2;
 
     /*
-     * 基本チェック 
+     * 基本チェック
      */
     if (!fdc_rw_sub()) {
 	return;
@@ -2925,7 +2894,7 @@ static void   fdc_read_data(void)
 
 
     /*
-     * セクタ検索 
+     * セクタ検索
      */
     if (fdc_command & 0x02) {
 	stat =
@@ -2936,7 +2905,7 @@ static void   fdc_read_data(void)
     }
 
     /*
-     * 先にステータスを設定する 
+     * 先にステータスを設定する
      */
     fdc_status = stat;
 #ifdef FDC_DEBUG
@@ -2945,11 +2914,11 @@ static void   fdc_read_data(void)
 #endif
 
     /*
-     * RECORD NOT FOUND ? 
+     * RECORD NOT FOUND ?
      */
     if (fdc_status & FDC_ST_RECNFND) {
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -2958,7 +2927,7 @@ static void   fdc_read_data(void)
     }
 
     /*
-     * 最初のデータを設定 
+     * 最初のデータを設定
      */
     fdc_status |= FDC_ST_BUSY;
     fdc_datareg = fdc_dataptr[0];
@@ -2977,12 +2946,12 @@ static void   fdc_read_data(void)
 
 
     /*
-     * アクセス(READ) 
+     * アクセス(READ)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_READ;
 
     /*
-     * DMA転送開始、ロストデータイベント設定 
+     * DMA転送開始、ロストデータイベント設定
      */
 #if XM7_VER >= 3
     dmac_start();
@@ -3000,30 +2969,29 @@ static void   fdc_read_data(void)
  *      TYPE II
  *      WRITE DATA
  */
-static void      
-fdc_write_data(void)
+static void fdc_write_data(void)
 {
     BYTE            stat;
 
     /*
-     * TYPE II, Write 
+     * TYPE II, Write
      */
     fdc_cmdtype = 3;
 
     /*
-     * 基本チェック 
+     * 基本チェック
      */
     if (!fdc_rw_sub()) {
 	return;
     }
 
     /*
-     * WRITE PROTECTチェック 
+     * WRITE PROTECTチェック
      */
     if (fdc_writep[fdc_drvreg] != 0) {
 	fdc_make_stat();
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -3031,7 +2999,7 @@ fdc_write_data(void)
     }
 
     /*
-     * セクタ検索 
+     * セクタ検索
      */
     if (fdc_command & 0x02) {
 	stat =
@@ -3042,7 +3010,7 @@ fdc_write_data(void)
     }
 
     /*
-     * 先にステータスを設定する 
+     * 先にステータスを設定する
      */
     fdc_status = stat;
 #ifdef FDC_DEBUG
@@ -3051,12 +3019,12 @@ fdc_write_data(void)
 #endif
 
     /*
-     * RECORD NOT FOUND ? 
+     * RECORD NOT FOUND ?
      */
     if (fdc_status & FDC_ST_RECNFND) {
 	fdc_status = FDC_ST_RECNFND;
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -3065,7 +3033,7 @@ fdc_write_data(void)
     }
 
     /*
-     * DRQ 
+     * DRQ
      */
 #ifdef FDDSND
     fdc_status = FDC_ST_BUSY;
@@ -3082,12 +3050,12 @@ fdc_write_data(void)
 #endif
 
     /*
-     * アクセス(WRITE) 
+     * アクセス(WRITE)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_WRITE;
 
     /*
-     * DMA転送開始、ロストデータイベント設定 
+     * DMA転送開始、ロストデータイベント設定
      */
 #if XM7_VER >= 3
     dmac_start();
@@ -3105,35 +3073,34 @@ fdc_write_data(void)
  *      TYPE III
  *      READ ADDRESS
  */
-static void      
-fdc_read_addr(void)
+static void fdc_read_addr(void)
 {
     int             idx;
 
     /*
-     * TYPE III, Read Address 
+     * TYPE III, Read Address
      */
     fdc_cmdtype = 4;
 
     /*
-     * 基本チェック 
+     * 基本チェック
      */
     if (!fdc_rw_sub()) {
 	return;
     }
 
     /*
-     * トラック先頭からの相対セクタ番号を取得 
+     * トラック先頭からの相対セクタ番号を取得
      */
     idx = fdc_next_index();
 
     /*
-     * アンフォーマットチェック 
+     * アンフォーマットチェック
      */
     if (idx == -1) {
 	fdc_status = FDC_ST_RECNFND;
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -3141,12 +3108,12 @@ fdc_read_addr(void)
     }
 
     /*
-     * データ作成 
+     * データ作成
      */
     fdc_makeaddr(idx);
 
     /*
-     * 最初のデータを設定 
+     * 最初のデータを設定
      */
     fdc_status |= FDC_ST_BUSY;
     fdc_datareg = fdc_dataptr[0];
@@ -3164,17 +3131,17 @@ fdc_read_addr(void)
 #endif
 
     /*
-     * ここで、セクタレジスタにトラックを設定 
+     * ここで、セクタレジスタにトラックを設定
      */
     fdc_secreg = fdc_track[fdc_drvreg];
 
     /*
-     * アクセス(READ) 
+     * アクセス(READ)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_READ;
 
     /*
-     * DMA転送開始、ロストデータイベント設定 
+     * DMA転送開始、ロストデータイベント設定
      */
 #if XM7_VER >= 3
     dmac_start();
@@ -3192,28 +3159,27 @@ fdc_read_addr(void)
  *      TYPE III
  *      READ TRACK
  */
-static void      
-fdc_read_track(void)
+static void fdc_read_track(void)
 {
     /*
-     * TYPE III, Read Track 
+     * TYPE III, Read Track
      */
     fdc_cmdtype = 6;
 
     /*
-     * 基本チェック 
+     * 基本チェック
      */
     if (!fdc_rw_sub()) {
 	return;
     }
 
     /*
-     * データ作成 
+     * データ作成
      */
     fdc_make_track();
 
     /*
-     * 最初のデータを設定 
+     * 最初のデータを設定
      */
     fdc_status |= FDC_ST_BUSY;
     fdc_datareg = fdc_dataptr[0];
@@ -3231,12 +3197,12 @@ fdc_read_track(void)
 #endif
 
     /*
-     * アクセス(READ) 
+     * アクセス(READ)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_READ;
 
     /*
-     * DMA転送開始、ロストデータイベント設定 
+     * DMA転送開始、ロストデータイベント設定
      */
 #if XM7_VER >= 3
     dmac_start();
@@ -3254,30 +3220,29 @@ fdc_read_track(void)
  *      TYPE III
  *      WRITE TRACK
  */
-static void      
-fdc_write_track(void)
+static void fdc_write_track(void)
 {
     fdc_status = 0;
 
     /*
-     * TYPE III, Write 
+     * TYPE III, Write
      */
     fdc_cmdtype = 5;
 
     /*
-     * 基本チェック 
+     * 基本チェック
      */
     if (!fdc_rw_sub()) {
 	return;
     }
 
     /*
-     * WRITE PROTECTチェック 
+     * WRITE PROTECTチェック
      */
     if (fdc_writep[fdc_drvreg] != 0) {
 	fdc_make_stat();
 	/*
-	 * FDC割り込み 
+	 * FDC割り込み
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
@@ -3285,7 +3250,7 @@ fdc_write_track(void)
     }
 
     /*
-     * DRQ 
+     * DRQ
      */
 #ifdef FDDSND
     fdc_status = FDC_ST_BUSY;
@@ -3306,12 +3271,12 @@ fdc_write_track(void)
     fdc_nowcnt = 0;
 
     /*
-     * アクセス(WRITE) 
+     * アクセス(WRITE)
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_WRITE;
 
     /*
-     * DMA転送開始、ロストデータイベント設定 
+     * DMA転送開始、ロストデータイベント設定
      */
 #if XM7_VER >= 3
     dmac_start();
@@ -3329,25 +3294,24 @@ fdc_write_track(void)
  *      TYPE IV
  *      FORCE INTERRUPT
  */
-static void      
-fdc_force_intr(void)
+static void fdc_force_intr(void)
 {
 
     /*
-     * WRITE TRACK終了処理 
+     * WRITE TRACK終了処理
      */
     if (fdc_cmdtype == 5) {
 	if (!fdc_writetrk()) {
 	    fdc_status |= FDC_ST_WRITEFAULT;
 	}
 	/*
-	 * フォーマットのため使用したバッファを修復 
+	 * フォーマットのため使用したバッファを修復
 	 */
 	fdc_readbuf(fdc_drvreg);
     }
 
     /*
-     * アクセス停止 
+     * アクセス停止
      */
 #ifdef FDDSND
     if (!fdc_wait) {
@@ -3358,13 +3322,13 @@ fdc_force_intr(void)
     fdc_dataptr = NULL;
 
     /*
-     * ステータス生成 
+     * ステータス生成
      */
     switch (fdc_access[fdc_drvreg]) {
     case FDC_ACCESS_READ:
     case FDC_ACCESS_WRITE:
 	/*
-	 * 実行中のコマンドと同じステータスを示す 
+	 * 実行中のコマンドと同じステータスを示す
 	 */
 	fdc_status &= ~FDC_ST_BUSY;
 	break;
@@ -3378,7 +3342,7 @@ fdc_force_intr(void)
     }
 
     /*
-     * ここでアクセスREADYに 
+     * ここでアクセスREADYに
      */
     fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 #ifdef FDC_DEBUG
@@ -3387,7 +3351,7 @@ fdc_force_intr(void)
 #endif
 
     /*
-     * いずれかが立っていれば、IRQ発生(実装としては不十分) 
+     * いずれかが立っていれば、IRQ発生(実装としては不十分)
      */
     if (fdc_command & 0x0f) {
 	mainetc_fdc();
@@ -3401,13 +3365,12 @@ fdc_force_intr(void)
  *      マルチセクタ
  *      イベント
  */
-static BOOL      
-fdc_multi_event(void)
+static BOOL fdc_multi_event(void)
 {
     if (fdc_drqirq & 0x10) {
 	fdc_drqirq = 0x08;
 	/*
-	 * セクタレジスタをUp、セクタ検索中 
+	 * セクタレジスタをUp、セクタ検索中
 	 */
 	fdc_secreg++;
 	schedule_setevent(EVENT_FDC_M, 30, fdc_multi_event);
@@ -3422,7 +3385,7 @@ fdc_multi_event(void)
     if (fdc_drqirq & 0x08) {
 	fdc_drqirq = 0x00;
 	/*
-	 * セクタ見つかった 
+	 * セクタ見つかった
 	 */
 	if (fdc_cmdtype == 2) {
 	    fdc_read_data();
@@ -3435,7 +3398,7 @@ fdc_multi_event(void)
     }
 
     /*
-     * イベント削除して終了 
+     * イベント削除して終了
      */
 #ifdef FDC_DEBUG
         printf("FDC: MULTISEC: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
@@ -3450,12 +3413,11 @@ fdc_multi_event(void)
  *      ロストデータ
  *      イベント
  */
-static BOOL      
-fdc_lost_event(void)
+static BOOL fdc_lost_event(void)
 {
     if (fdc_dataptr && (fdc_drqirq & 0x80)) {
 	/*
-	 * コマンド打ち切り、ロストデータ 
+	 * コマンド打ち切り、ロストデータ
 	 */
 	fdc_dataptr = NULL;
 	fdc_status |= FDC_ST_LOSTDATA;
@@ -3464,14 +3426,14 @@ fdc_lost_event(void)
 	fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 
 	/*
-	 * 割り込み発生 
+	 * 割り込み発生
 	 */
 	mainetc_fdc();
 	fdc_drqirq = 0x40;
     }
 
     /*
-     * イベント削除して終了 
+     * イベント削除して終了
      */
 #ifdef FDC_DEBUG
         printf("FDC: LOSTDATA: DRIVE0 : TRACK %02d/ DRIVE1 : TRACK %02d - \n",fdc_track[0],fdc_track[1]);
@@ -3486,8 +3448,7 @@ fdc_lost_event(void)
 /*
  *      コマンド処理
  */
-static void      
-fdc_process_cmd(void)
+static void fdc_process_cmd(void)
 {
     BYTE            high;
 
@@ -3495,93 +3456,93 @@ fdc_process_cmd(void)
 
 #ifdef FDDSND
     /*
-     * ウェイトフラグ設定 
+     * ウェイトフラグ設定
      */
     fdc_wait = fdc_waitmode;
 #endif
 
     /*
-     * データ転送を実行していれば、即時止める 
+     * データ転送を実行していれば、即時止める
      */
     fdc_dataptr = NULL;
 
     /*
-     * 分岐 
+     * 分岐
      */
     switch (high) {
 	/*
-	 * restore 
+	 * restore
 	 */
     case 0x00:
 	fdc_restore();
 	break;
 	/*
-	 * seek 
+	 * seek
 	 */
     case 0x01:
 	fdc_seek();
 	break;
 	/*
-	 * step 
+	 * step
 	 */
     case 0x02:
     case 0x03:
 	fdc_step();
 	break;
 	/*
-	 * step in 
+	 * step in
 	 */
     case 0x04:
     case 0x05:
 	fdc_step_in();
 	break;
 	/*
-	 * step out 
+	 * step out
 	 */
     case 0x06:
     case 0x07:
 	fdc_step_out();
 	break;
 	/*
-	 * read data 
+	 * read data
 	 */
     case 0x08:
     case 0x09:
 	fdc_read_data();
 	break;
 	/*
-	 * write data 
+	 * write data
 	 */
     case 0x0a:
     case 0x0b:
 	fdc_write_data();
 	break;
 	/*
-	 * read address 
+	 * read address
 	 */
     case 0x0c:
 	fdc_read_addr();
 	break;
 	/*
-	 * force interrupt 
+	 * force interrupt
 	 */
     case 0x0d:
 	fdc_force_intr();
 	break;
 	/*
-	 * read track 
+	 * read track
 	 */
     case 0x0e:
 	fdc_read_track();
 	break;
 	/*
-	 * write track 
+	 * write track
 	 */
     case 0x0f:
 	fdc_write_track();
 	break;
 	/*
-	 * それ以外 
+	 * それ以外
 	 */
     default:
 	ASSERT(FALSE);
@@ -3593,8 +3554,7 @@ fdc_process_cmd(void)
  *      FDC
  *      １バイト読み出し
  */
-BOOL             
-fdc_readb(WORD addr, BYTE * dat)
+BOOL fdc_readb(WORD addr, BYTE * dat)
 {
 #if XM7_VER >= 3
     BYTE            tmp;
@@ -3602,17 +3562,17 @@ fdc_readb(WORD addr, BYTE * dat)
 
     switch (addr) {
 	/*
-	 * ステータスレジスタ 
+	 * ステータスレジスタ
 	 */
     case 0xfd18:
 	fdc_make_stat();
 	*dat = fdc_status;
 	/*
-	 * ステータスをチェックした(麻雀悟空) 
+	 * ステータスをチェックした(麻雀悟空)
 	 */
 	fdc_drqirq |= (BYTE) 0x20;
 	/*
-	 * BUSY処理 
+	 * BUSY処理
 	 */
 	if ((fdc_status & FDC_ST_BUSY) && (fdc_dataptr == NULL)) {
 #ifdef FDDSND
@@ -3621,35 +3581,35 @@ fdc_readb(WORD addr, BYTE * dat)
 	    if (fdc_cmdtype == 1) {
 #endif
 		/*
-		 * IRQ On 
+		 * IRQ On
 		 */
 		fdc_drqirq |= (BYTE) 0x40;
 	    }
 #ifdef FDDSND
 	    if (!fdc_wait || (fdc_cmdtype != 1) || (fdc_drqirq & 0x40)) {
 		/*
-		 * BUSYフラグを落とす 
+		 * BUSYフラグを落とす
 		 */
 		fdc_status &= ~FDC_ST_BUSY;
 		fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 	    }
 #else
 	    /*
-	     * BUSYフラグを落とす 
+	     * BUSYフラグを落とす
 	     */
 	    fdc_status &= ~FDC_ST_BUSY;
 	    fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 #endif
 	    /*
-	     * 一度だけBUSYを見せる 
+	     * 一度だけBUSYを見せる
 	     */
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: CMDREG($FD18): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: CMDREG($FD18): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
 	    return TRUE;
 	}
 	/*
-	 * FDC割り込みを、ここで止める 
+	 * FDC割り込みを、ここで止める
 	 */
 	mfd_irq_flag = FALSE;
 	fdc_drqirq &= ~0x40;
@@ -3657,37 +3617,37 @@ fdc_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * トラックレジスタ 
+	 * トラックレジスタ
 	 */
     case 0xfd19:
 	*dat = fdc_trkreg;
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: TRKREG($FD19): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: TRKREG($FD19): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
          return TRUE;
 
 	/*
-	 * セクタレジスタ 
+	 * セクタレジスタ
 	 */
     case 0xfd1a:
 	*dat = fdc_secreg;
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: SECREG($FD1a): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: SECREG($FD1a): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
          return TRUE;
 
 	/*
-	 * データレジスタ 
+	 * データレジスタ
 	 */
     case 0xfd1b:
 	*dat = fdc_datareg;
 	/*
-	 * カウンタ処理 
+	 * カウンタ処理
 	 */
 	if (fdc_dataptr && (fdc_drqirq & 0x20)) {
 	    fdc_nowcnt++;
 	    /*
-	     * DRQ,IRQ処理 
+	     * DRQ,IRQ処理
 	     */
 	    if (fdc_nowcnt == fdc_totalcnt) {
 #ifdef FDDSND
@@ -3701,7 +3661,7 @@ fdc_readb(WORD addr, BYTE * dat)
 
 		if ((fdc_cmdtype == 2) && (fdc_command & 0x10)) {
 		    /*
-		     * マルチセクタ処理 
+		     * マルチセクタ処理
 		     */
 		    fdc_status |= FDC_ST_BUSY;
 		    fdc_dataptr = NULL;
@@ -3710,14 +3670,14 @@ fdc_readb(WORD addr, BYTE * dat)
 		    return TRUE;
 		}
 		/*
-		 * シングルセクタ 
+		 * シングルセクタ
 		 */
 		fdc_dataptr = NULL;
 		mainetc_fdc();
 		fdc_drqirq = 0x40;
 		fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 		/*
-		 * Read Trackは必ずLOST DATA、バッファ修復 
+		 * Read Trackは必ずLOST DATA、バッファ修復
 		 */
 		if (fdc_cmdtype == 6) {
 		    fdc_status |= FDC_ST_LOSTDATA;
@@ -3742,17 +3702,17 @@ fdc_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * ヘッドレジスタ 
+	 * ヘッドレジスタ
 	 */
     case 0xfd1c:
 	*dat = (BYTE) (fdc_sidereg | 0xfe);
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: HEADREG($FD1c): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: HEADREG($FD1c): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * ドライブレジスタ 
+	 * ドライブレジスタ
 	 */
     case 0xfd1d:
 #if XM7_VER >= 3
@@ -3769,29 +3729,29 @@ fdc_readb(WORD addr, BYTE * dat)
 	}
 #endif
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: DRVREG($FD1D): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: DRVREG($FD1D): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * モードレジスタ 
+	 * モードレジスタ
 	 */
     case 0xfd1e:
 #if XM7_VER >= 3
 	if (fm7_ver < 3) {
 	    *dat = 0xff;
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: MODEREG($FD1E): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: MODEREG($FD1E): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
 	    return TRUE;
 	}
 
 	/*
-	 * 論理ドライブ・物理ドライブ対応読み出し 
+	 * 論理ドライブ・物理ドライブ対応読み出し
 	 */
 	tmp = (BYTE) (fdc_logidrv << 2) | (fdc_physdrv[fdc_logidrv]);
 	/*
-	 * 2DDモード読み出し 
+	 * 2DDモード読み出し
 	 */
 	if (fdc_2ddmode) {
 	    *dat = (BYTE) (tmp | 0xb0);
@@ -3802,21 +3762,21 @@ fdc_readb(WORD addr, BYTE * dat)
 	*dat = 0xFF;
 #endif
 #ifdef FDC_DEBUG
-    printf("FDC: REGREAD: MODEREG($FD1E): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status); 
+    printf("FDC: REGREAD: MODEREG($FD1E): %03d %02x STS=%03d (%02x)\n",*dat,*dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * DRQ,IRQ 
+	 * DRQ,IRQ
 	 */
     case 0xfd1f:
 	*dat = (BYTE) (fdc_drqirq | 0x3f);
 	/*
-	 * DRQまたはIRQをチェックした(麻雀悟空) 
+	 * DRQまたはIRQをチェックした(麻雀悟空)
 	 */
 	fdc_drqirq |= (BYTE) 0x20;
 	/*
-	 * データ転送中で無ければ終了(太陽の神殿) 
+	 * データ転送中で無ければ終了(太陽の神殿)
 	 */
 	if (fdc_dataptr == NULL) {
 #ifdef FDDSND
@@ -3826,21 +3786,21 @@ fdc_readb(WORD addr, BYTE * dat)
 	    if ((fdc_cmdtype == 1) && (fdc_status & FDC_ST_BUSY)) {
 #endif
 		/*
-		 * IRQ On 
+		 * IRQ On
 		 */
 		fdc_drqirq |= (BYTE) 0x40;
 	    }
 #ifdef FDDSND
 	    if (!fdc_wait || (fdc_cmdtype != 1) || (fdc_drqirq & 0x40)) {
 		/*
-		 * BUSYフラグを落とす 
+		 * BUSYフラグを落とす
 		 */
 		fdc_status &= ~FDC_ST_BUSY;
 		fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
 	    }
 #else
 	    /*
-	     * BUSYフラグを落とす 
+	     * BUSYフラグを落とす
 	     */
 	    fdc_status &= ~FDC_ST_BUSY;
 	    fdc_access[fdc_drvreg] = FDC_ACCESS_READY;
@@ -3856,8 +3816,7 @@ fdc_readb(WORD addr, BYTE * dat)
  *      FDC
  *      １バイト書き込み
  */
-BOOL             
-fdc_writeb(WORD addr, BYTE dat)
+BOOL fdc_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER >= 3
     BOOL            tmp;
@@ -3866,69 +3825,69 @@ fdc_writeb(WORD addr, BYTE dat)
 
     switch (addr) {
 	/*
-	 * コマンドレジスタ 
+	 * コマンドレジスタ
 	 */
     case 0xfd18:
 	fdc_command = dat;
 	fdc_process_cmd();
 #ifdef FDC_DEBUG
-    printf("FDC: REGWRITE: CMDREG($FD18): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+    printf("FDC: REGWRITE: CMDREG($FD18): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * トラックレジスタ 
+	 * トラックレジスタ
 	 */
     case 0xfd19:
 	fdc_trkreg = dat;
 	/*
-	 * コマンド発行後のトラックレジスタ書き換え対策 
+	 * コマンド発行後のトラックレジスタ書き換え対策
 	 */
 	/*
-	 * (F-BASIC V3.3L3x/V3.4L2x VOLCOPY/SUBSET(VCOPYEB)) 
+	 * (F-BASIC V3.3L3x/V3.4L2x VOLCOPY/SUBSET(VCOPYEB))
 	 */
 	if (((fdc_status & FDC_ST_BUSY) && (fdc_nowcnt == 0)) &&
 	    ((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
 	    fdc_process_cmd();
 	}
 #ifdef FDC_DEBUG
-    printf("FDC: REGWRITE: TRKREG($FD19): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+    printf("FDC: REGWRITE: TRKREG($FD19): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * セクタレジスタ 
+	 * セクタレジスタ
 	 */
     case 0xfd1a:
 	fdc_secreg = dat;
 	/*
-	 * コマンド発行後のセクタレジスタ書き換え対策 
+	 * コマンド発行後のセクタレジスタ書き換え対策
 	 */
 	/*
-	 * (F-BASIC V3.3L3x/V3.4L2x VOLCOPY/SUBSET(VCOPYEB)) 
+	 * (F-BASIC V3.3L3x/V3.4L2x VOLCOPY/SUBSET(VCOPYEB))
 	 */
 	if (((fdc_status & FDC_ST_BUSY) && (fdc_nowcnt == 0)) &&
 	    ((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
 	    fdc_process_cmd();
 	}
 #ifdef FDC_DEBUG
-    printf("FDC: REGWRITE: SECREG($FD1A): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+    printf("FDC: REGWRITE: SECREG($FD1A): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * データレジスタ 
+	 * データレジスタ
 	 */
     case 0xfd1b:
 	fdc_datareg = dat;
 	/*
-	 * カウンタ処理 
+	 * カウンタ処理
 	 */
 	if (fdc_dataptr && (fdc_drqirq & 0x20)) {
 	    fdc_dataptr[fdc_nowcnt] = fdc_datareg;
 	    fdc_nowcnt++;
 	    /*
-	     * DRQ,IRQ処理 
+	     * DRQ,IRQ処理
 	     */
 	    if (fdc_nowcnt == fdc_totalcnt) {
 #ifdef FDDSND
@@ -3950,13 +3909,13 @@ fdc_writeb(WORD addr, BYTE dat)
 			fdc_status |= FDC_ST_WRITEFAULT;
 		    }
 		    /*
-		     * フォーマットのため使用したバッファを修復 
+		     * フォーマットのため使用したバッファを修復
 		     */
 		    fdc_readbuf(fdc_drvreg);
 		}
 		if ((fdc_cmdtype == 3) && (fdc_command & 0x10)) {
 		    /*
-		     * マルチセクタ処理 
+		     * マルチセクタ処理
 		     */
 		    fdc_status |= FDC_ST_BUSY;
 		    fdc_dataptr = NULL;
@@ -3986,7 +3945,7 @@ fdc_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * ヘッドレジスタ 
+	 * ヘッドレジスタ
 	 */
     case 0xfd1c:
 	if ((dat & 0x01) != fdc_sidereg) {
@@ -3994,16 +3953,16 @@ fdc_writeb(WORD addr, BYTE dat)
 	    fdc_readbuf(fdc_drvreg);
 	}
 #ifdef FDC_DEBUG
-    printf("FDC: REGWRITE: HEADREG($FD1c): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+    printf("FDC: REGWRITE: HEADREG($FD1c): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * ドライブレジスタ 
+	 * ドライブレジスタ
 	 */
     case 0xfd1d:
 	/*
-	 * ドライブ変更なら、fdc_readbuf 
+	 * ドライブ変更なら、fdc_readbuf
 	 */
 #if XM7_VER >= 3
 	if (fdc_drvregP != (dat & 0x03)) {
@@ -4019,18 +3978,18 @@ fdc_writeb(WORD addr, BYTE dat)
 #endif
 	fdc_motor = (BYTE) (dat & 0x80);
 	/*
-	 * ドライブ無しなら、モータ止める 
+	 * ドライブ無しなら、モータ止める
 	 */
 	if (fdc_drvreg >= FDC_DRIVES) {
 	    fdc_motor = 0;
 	}
 #ifdef FDC_DEBUG
-    printf("FDC: REGWRITE: DRIVEREG($FD1D): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+    printf("FDC: REGWRITE: DRIVEREG($FD1D): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status);
 #endif
 	return TRUE;
 
 	/*
-	 * モードレジスタ 
+	 * モードレジスタ
 	 */
     case 0xfd1e:
 #if XM7_VER >= 3
@@ -4039,7 +3998,7 @@ fdc_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * 2DD切り換え 
+	 * 2DD切り換え
 	 */
 	tmp = fdc_2ddmode;
 
@@ -4050,17 +4009,17 @@ fdc_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * 論理ドライブと物理ドライブの対応変更 
+	 * 論理ドライブと物理ドライブの対応変更
 	 */
 	fdc_logidrv = (BYTE) ((dat & 0x0c) >> 2);
 	if (dat & 0x10) {
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    fdc_physdrv[fdc_logidrv] = (BYTE) (dat & 0x03);
 
 	    /*
-	     * カレントドライブの設定が変更された場合の処理 
+	     * カレントドライブの設定が変更された場合の処理
 	     */
 	    if (fdc_logidrv == fdc_drvregP) {
 		fdc_drvreg = (BYTE) fdc_physdrv[fdc_logidrv];
@@ -4070,14 +4029,14 @@ fdc_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * 2DD切り換えが行われた場合は再読み込み 
+	 * 2DD切り換えが行われた場合は再読み込み
 	 */
 	if (fdc_2ddmode != tmp) {
 	    fdc_readbuf(fdc_drvreg);
 	}
 #endif
 #ifdef FDC_DEBUG
-    printf("FDC: REGWRITE: MODEREG($FD1e): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status); 
+    printf("FDC: REGWRITE: MODEREG($FD1e): %03d %02x STS=%03d (%02x)\n",dat,dat,fdc_status,fdc_status);
 #endif
 
 	return TRUE;
@@ -4090,13 +4049,12 @@ fdc_writeb(WORD addr, BYTE dat)
  *      FDC
  *      セーブ
  */
-BOOL             
-fdc_save(int fileh)
+BOOL fdc_save(int fileh)
 {
     int             i;
 
     /*
-     * ファイル関係を先に持ってくる 
+     * ファイル関係を先に持ってくる
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	if (!file_byte_write(fileh, fdc_ready[i])) {
@@ -4115,14 +4073,14 @@ fdc_save(int fileh)
     }
 
     /*
-     * Ver4拡張 
+     * Ver4拡張
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	if (!file_bool_write(fileh, fdc_teject[i]));
     }
 
     /*
-     * ファイルステータス 
+     * ファイルステータス
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	if (!file_byte_write(fileh, fdc_track[i])) {
@@ -4134,7 +4092,7 @@ fdc_save(int fileh)
     }
 
     /*
-     * fdc_dataptrは環境に依存するデータポインタ 
+     * fdc_dataptrは環境に依存するデータポインタ
      */
     if (!fdc_dataptr) {
 	if (!file_word_write(fileh, 0x2000)) {
@@ -4158,7 +4116,7 @@ fdc_save(int fileh)
     }
 
     /*
-     * I/O 
+     * I/O
      */
     if (!file_byte_write(fileh, fdc_command)) {
 	return FALSE;
@@ -4192,7 +4150,7 @@ fdc_save(int fileh)
     }
 
     /*
-     * その他 
+     * その他
      */
     if (!file_word_write(fileh, fdc_totalcnt)) {
 	return FALSE;
@@ -4216,7 +4174,7 @@ fdc_save(int fileh)
     }
 
     /*
-     * Ver9.05/7.05拡張 
+     * Ver9.05/7.05拡張
      */
 #ifdef FDDSND
     if (!file_bool_write(fileh, fdc_wait)) {
@@ -4230,7 +4188,7 @@ fdc_save(int fileh)
 
 #if XM7_VER >= 3
     /*
-     * Ver8拡張 
+     * Ver8拡張
      */
     if (!file_byte_write(fileh, fdc_2ddmode)) {
 	return FALSE;
@@ -4255,8 +4213,7 @@ fdc_save(int fileh)
  *      FDC
  *      ロード
  */
-BOOL             
-fdc_load(int fileh, int ver)
+BOOL fdc_load(int fileh, int ver)
 {
     int             i;
     BYTE            ready[FDC_DRIVES];
@@ -4267,7 +4224,7 @@ fdc_load(int fileh, int ver)
     BOOL            tmp;
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -4286,7 +4243,7 @@ fdc_load(int fileh, int ver)
 		pathlen = 128;
 	}
     /*
-     * ファイル関係を先に持ってくる 
+     * ファイル関係を先に持ってくる
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	if (!file_byte_read(fileh, &ready[i])) {
@@ -4305,7 +4262,7 @@ fdc_load(int fileh, int ver)
     }
 
     /*
-     * 再マウントを試みる 
+     * 再マウントを試みる
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	fdc_setdisk(i, NULL);
@@ -4321,7 +4278,7 @@ fdc_load(int fileh, int ver)
 
     /*
      * Ver4拡張
-     * …ってチェック入れる意味がないんでは(汁 
+     * …ってチェック入れる意味がないんでは(汁
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	if (!file_bool_read(fileh, &fdc_teject[i])) {
@@ -4330,7 +4287,7 @@ fdc_load(int fileh, int ver)
     }
 
     /*
-     * ファイルステータス 
+     * ファイルステータス
      */
     for (i = 0; i < FDC_DRIVES; i++) {
 	if (!file_byte_read(fileh, &fdc_track[i])) {
@@ -4342,7 +4299,7 @@ fdc_load(int fileh, int ver)
     }
 
     /*
-     * fdc_dataptrは環境に依存するデータポインタ 
+     * fdc_dataptrは環境に依存するデータポインタ
      */
     if (!file_word_read(fileh, &offset)) {
 	return FALSE;
@@ -4365,7 +4322,7 @@ fdc_load(int fileh, int ver)
     }
 
     /*
-     * I/O 
+     * I/O
      */
     if (!file_byte_read(fileh, &fdc_command)) {
 	return FALSE;
@@ -4402,7 +4359,7 @@ fdc_load(int fileh, int ver)
     }
 
     /*
-     * その他 
+     * その他
      */
     if (!file_word_read(fileh, &fdc_totalcnt)) {
 	return FALSE;
@@ -4427,7 +4384,7 @@ fdc_load(int fileh, int ver)
     }
 
     /*
-     * イベント 
+     * イベント
      */
     schedule_handle(EVENT_FDC_M, fdc_multi_event);
     schedule_handle(EVENT_FDC_L, fdc_lost_event);
@@ -4439,7 +4396,7 @@ fdc_load(int fileh, int ver)
     if (ver >= 300) {
 #endif
 	/*
-	 * Ver9.05/7.05拡張 
+	 * Ver9.05/7.05拡張
 	 */
 #ifdef FDDSND
 	if (!file_bool_read(fileh, &fdc_wait)) {
@@ -4455,7 +4412,7 @@ fdc_load(int fileh, int ver)
 #ifdef FDDSND
     else {
 	/*
-	 * ウェイトモードはFALSE 
+	 * ウェイトモードはFALSE
 	 */
 	fdc_wait = FALSE;
 	/* シークイベント(旧ホットリセットイベント)を削除 */
@@ -4465,14 +4422,14 @@ fdc_load(int fileh, int ver)
 
 #if XM7_VER >= 3
     /*
-     * Ver8拡張 
+     * Ver8拡張
      */
     if (ver < 800) {
 	fdc_2ddmode = FALSE;
 	fdc_logidrv = 0;
 	fdc_drvregP = fdc_drvreg;
 	/*
-	 * 論理ドライブ＝物理ドライブに設定 
+	 * 論理ドライブ＝物理ドライブに設定
 	 */
 	for (i = 0; i < FDC_DRIVES; i++) {
 	    fdc_physdrv[i] = (BYTE) i;

@@ -132,12 +132,12 @@ extern int OnPaint(void);
  * XM7 NOTIFY APIs
  */
 
-extern void vram_notify(WORD addr, BYTE dat);
-extern void	ttlpalet_notify(void);
-extern void 	apalet_notify(void);
-extern void 	display_notify(void);
+//extern void vram_notify(WORD addr, BYTE dat);
+//extern void	ttlpalet_notify(void);
+//extern void 	apalet_notify(void);
+//extern void 	display_notify(void);
 #if XM7_VER >= 3
-extern void window_notify(void);
+//extern void window_notify(void);
 #endif
 extern void OnFullScreen(void);
 extern void OnWindowedScreen(void);

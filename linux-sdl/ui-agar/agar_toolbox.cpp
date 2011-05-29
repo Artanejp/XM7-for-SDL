@@ -140,6 +140,7 @@ static void OnLoadStatusSub(char *filename)
 static void OnLoadStatusSubEv(AG_Event *event)
 {
     char  *sFilename = AG_STRING(1);
+    KeyBoardSnoop(FALSE);
     OnLoadStatusSub(sFilename);
 }
 

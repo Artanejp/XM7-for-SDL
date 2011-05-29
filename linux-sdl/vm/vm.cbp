@@ -14,7 +14,6 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-Wall" />
 					<Add option="-g" />
 				</Compiler>
 			</Target>
@@ -26,8 +25,8 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-Wall" />
-					<Add option="-O2" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-O3" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -35,6 +34,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Winit-self" />
 			<Add option="`pkg-config --cflags sdl`" />
 			<Add option="-DXM7_VER=3" />
 			<Add option="-DUSE_OPENGL" />

@@ -148,21 +148,21 @@ INLINE BYTE READB(cpu6809_t *t, WORD addr)
 
 INLINE WORD READW(cpu6809_t *t, WORD addr)
 {
-   
+
        return (WORD)((t->readmem(addr)<<8) + t->readmem((addr+1)&0xffff));
 }
 
 
 INLINE void WRITEB(cpu6809_t *t, WORD addr, BYTE data)
 {
-   
+
       t->writemem(addr, data);
 }
 
-  
+
 INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 {
-   
+
       t->writemem(addr,(BYTE)(data >>8));
       t->writemem((addr+1)&0xffff,(BYTE)(data & 0xff));
 }
@@ -290,9 +290,9 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 
 /* macros for branch instructions */
 INLINE void
-BRANCH(cpu6809_t *m68_state, int f) 
+BRANCH(cpu6809_t *m68_state, int f)
 {
-	BYTE t;	
+	BYTE t;
         IMMBYTE(t);
 	if( f )
 	{
@@ -309,7 +309,7 @@ INLINE void
  {
 	WORD t;
 	IMMWORD(t);
-	if( f ) 
+	if( f )
 	{
 		m68_state->cycle += 1;
 		PC = (PC + t) & 0xffff;
@@ -356,8 +356,8 @@ static void cpu_reset(cpu6809_t *m68_state)
 
         m68_state->cycle = 0;
         m68_state->total = 0;
-        m68_state->ea = 0;   
-        m68_state->intr = 0x0000;  
+        m68_state->ea = 0;
+        m68_state->intr = 0x0000;
 	m68_state->pc = RM16(m68_state, 0xfffe);
 #ifdef CPU_DEBUG
    printf("DEBUG: Reset %04x %02x\n",m68_state->pc ,READB(m68_state, m68_state->pc));
@@ -476,9 +476,9 @@ check_nmi:
 	} else {
 		goto check_ok;
 	}
-   
-	
-   
+
+
+
 check_firq:
    if((intr & INTR_FIRQ) != 0)
      {
@@ -507,7 +507,7 @@ check_irq:
 check_ok:
    cpu_execline(m68_state);
    return;
-   
+
 int_cycle:
    if((m68_state->intr & INTR_CWAI_IN) == 0)
      {
@@ -1076,7 +1076,7 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 
 
 
-extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
+//extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
 
 static void debugreg(cpu6809_t *p)
 {

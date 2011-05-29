@@ -1838,7 +1838,7 @@ void Draw640All(void)
 	 *描画モードを変えたら強制的にPalet640すること。
 	 */
 	SetVramReader_200l();
-	if(bPaletFlag) {
+	if(bPaletFlag) { // 描画モードでVRAM変更
 		Palet640();
 		bPaletFlag = FALSE;
 		nDrawTop = 0;

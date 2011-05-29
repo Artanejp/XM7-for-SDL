@@ -71,7 +71,7 @@ char InitialDir[5][MAXPATHLEN];
 /*
  *  リセット(R)
  */
-void OnReset(AG_Event *event)
+void OnReset(AG_Event *ev)
 {
     LockVM();
     system_reset();
@@ -85,7 +85,7 @@ void OnReset(AG_Event *event)
 /*
  *  ホットリセット(H)
  */
-void OnHotReset(AG_Event *event)
+void OnHotReset(AG_Event *ev)
 {
     LockVM();
     system_hotreset();
@@ -99,7 +99,7 @@ void OnHotReset(AG_Event *event)
     /*
      *  BASICモード(B)
      */
-void OnBasic(AG_Event *event)
+void OnBasic(AG_Event *ev)
 {
 
     LockVM();
@@ -117,7 +117,7 @@ void OnBasic(AG_Event *event)
     /*
      *  DOSモード(D)
      */
-void OnDos(AG_Event *event)
+void OnDos(AG_Event *ev)
 {
 
     LockVM();

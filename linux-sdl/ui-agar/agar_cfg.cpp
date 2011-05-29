@@ -724,7 +724,6 @@ void SaveCfg(void)
     SaveCfgFile();
 }
 
-extern void 	ResizeGL(int w, int h);
 
     /*
      *  設定データ適用

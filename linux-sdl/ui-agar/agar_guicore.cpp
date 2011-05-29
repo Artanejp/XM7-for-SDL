@@ -153,7 +153,7 @@ void AGDrawTaskEvent(BOOL flag)
 			     if (!AGDRIVER_MULTIPLE(drv)) {
 				  continue;
 			       }
-			     
+
 			     win = AGDRIVER_MW(drv)->win;
 			     if (win->visible) {
 				  AG_BeginRendering(drv);
@@ -161,8 +161,8 @@ void AGDrawTaskEvent(BOOL flag)
 				  AG_WindowDraw(win);
 				  AG_ObjectUnlock(win);
 				  AG_EndRendering(drv);
-			       }			     
-			  }			
+			       }
+			  }
 		     }
 		   AG_UnlockVFS(&agDrivers);
 		}	else if (AG_PendingEvents(drv) > 0){
@@ -297,11 +297,11 @@ void MainLoop(int argc, char *argv[])
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	AG_initsub();
-   
+
 	inf = SDL_GetVideoInfo();
 	RootVideoWidth = inf->current_w;
 	RootVideoHeight = inf->current_h;
-   
+
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();
@@ -393,7 +393,7 @@ void InitInstance(void)
 //        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS );
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 440);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-   
+
 
 	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
         AG_WidgetSetSize(DrawArea, 640,440);
