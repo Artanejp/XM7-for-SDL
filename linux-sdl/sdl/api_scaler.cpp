@@ -26,9 +26,9 @@
 //EmuAgarGL *scalerGL;
 extern AG_Window *MainWindow;
 extern void GetVram_AGGL_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
-EmuAgarGL *scalerGL;
+//EmuAgarGL *pScalerGL;
 #else
-EmuGLUtils *scalerGL;
+EmuGLUtils *pScalerGL;
 #endif
 EmuGrphScaleTmpl *pSwScaler;
 
@@ -117,94 +117,66 @@ void PutWord_4096(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 
 void SetVramReader_200l()
 {
-#ifdef USE_OPENGL
 #ifdef USE_AGAR
 	SetVramReader_AG_GL(VramReader, 80, 200);
 #else
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader, 80, 200);
-		scalerGL->SetPutWord(PutWordGL8);
+	if(pScalerGL != NULL) {
+		pScalerGL->SetVramReader(VramReader, 80, 200);
+		pScalerGL->SetPutWord(PutWordGL8);
 	}
 #endif
-#else
 	if(pSwScaler != NULL) {
 		pSwScaler->SetVramReader(VramReader, 80, 200);
 		pSwScaler->SetPutWord(PutWord);
 	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader, 80, 200);
-		scalerGL->SetPutWord(PutWordGL8);
-	}
-#endif
 }
 
 void SetVramReader_400l()
 {
-#ifdef USE_OPENGL
 #ifdef USE_AGAR
 	SetVramReader_AG_GL(VramReader_400l, 80, 400);
 #else
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_400l, 80, 400);
-		scalerGL->SetPutWord(PutWordGL8);
+	if(pScalerGL != NULL) {
+		pScalerGL->SetVramReader(VramReader_400l, 80, 400);
+		pScalerGL->SetPutWord(PutWordGL8);
 	}
 #endif
-#else
 	if(pSwScaler != NULL) {
-		pSwScaler->SetVramReader(VramReader, 80, 400);
+		pSwScaler->SetVramReader(VramReader_400l, 80, 400);
 		pSwScaler->SetPutWord(PutWord);
 	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_400l, 80, 400);
-		scalerGL->SetPutWord(PutWordGL8);
-	}
-#endif
 }
 
 void SetVramReader_4096(void)
 {
-#ifdef USE_OPENGL
 #ifdef USE_AGAR
 	SetVramReader_AG_GL(VramReader_4096, 40, 200);
 #else
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_4096, 40, 200);
-		scalerGL->SetPutWord(PutWordGL);
+	if(pScalerGL != NULL) {
+		pScalerGL->SetVramReader(VramReader_4096, 40, 200);
+		pScalerGL->SetPutWord(PutWordGL);
 	}
 #endif
-#else
 	if(pSwScaler != NULL) {
-		pSwScaler->SetVramReader(VramReader, 80, 200);
+		pSwScaler->SetVramReader(VramReader_4096, 40, 200);
 		pSwScaler->SetPutWord(PutWord);
 	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_4096, 40, 200);
-		scalerGL->SetPutWord(PutWordGL);
-	}
-#endif
 }
 
 void SetVramReader_256k(void)
 {
-#ifdef USE_OPENGL
 #ifdef USE_AGAR
 	SetVramReader_AG_GL(VramReader_256k, 40, 200);
 #else
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_256k, 40, 200);
-		scalerGL->SetPutWord(PutWordGL);
+	if(pScalerGL != NULL) {
+		pScalerGL->SetVramReader(VramReader_256k, 40, 200);
+		pScalerGL->SetPutWord(PutWordGL);
 	}
 #endif
-#else
 	if(pSwScaler != NULL) {
-		pSwScaler->SetVramReader(VramReader, 80, 200);
+		pSwScaler->SetVramReader(VramReader_256k, 40, 200);
 		pSwScaler->SetPutWord(PutWord);
 	}
-	if(scalerGL != NULL) {
-		scalerGL->SetVramReader(VramReader_256k, 40, 200);
-		scalerGL->SetPutWord(PutWordGL);
-	}
-#endif
 }
 
 
@@ -222,15 +194,14 @@ void init_scaler(void)
 		pSwScaler->SetPutWord(PutWord);
     }
 
-	if(scalerGL == NULL) {
+	if(pScalerGL == NULL) {
 #ifdef USE_AGAR
-		scalerGL = new EmuAgarGL;
+//		scalerGL = new EmuAgarGL;
 #else
-		scalerGL = new EmuGLUtils;
+		pScalerGL = new EmuGLUtils;
+		pScalerGL->SetVramReader(VramReader, 80, 400);
+		pScalerGL->SetPutWord(PutWordGL8);
 #endif
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scalerGL->SetVramReader(VramReader, 80, 400);
-		scalerGL->SetPutWord(PutWordGL8);
 	}
 #endif
 }
@@ -238,14 +209,15 @@ void init_scaler(void)
 void initsub_scaler()
 {
 	//	b256kFlag = FALSE;
-#ifdef USE_OPENGL
-#else
     if(pSwScaler != NULL) {
         delete pSwScaler;
+        pSwScaler = NULL;
     }
-    pSwScaler = NULL;
-
-	scalerGL = NULL;
+#ifndef USE_AGAR
+    if(pScalerGL != NULL) {
+        delete pScalerGL;
+       	pScalerGL = NULL;
+    }
 #endif
 }
 
@@ -255,15 +227,15 @@ void detachsub_scaler(void)
 #ifdef USE_OPENGL
 	Detach_AG_GL();
 #else
-	if(pSwScaler != NULL) {
-		delete pSwScaler;
-		pSwScaler = NULL;
-	}
 	if(scalerGL != NULL) {
 		delete scalerGL;
 		scalerGL = NULL;
 	}
 #endif
+	if(pSwScaler != NULL) {
+		delete pSwScaler;
+		pSwScaler = NULL;
+	}
 }
 
 void SetupGL(int w, int h)
@@ -340,8 +312,10 @@ void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
     }
     scalerGL->PutVram(p, x, y, w, h, mpage);
 #else
-    SetDrawArea_AG_GL(AGWIDGET(DrawArea), 0, 0, w, h);
-
+    /*
+     * Agar+OpenGLの場合、WidgetがViewPort設定するのでここでは
+     * テクスチャのアップデートだけ。
+     */
     PutVram_AG_GL((AG_Surface *)p, x, y, w, h, mpage);
 #endif
 //	scalerGL->SetViewPort();

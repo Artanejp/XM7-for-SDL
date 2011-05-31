@@ -248,7 +248,7 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	Uint8 *disp;
 	AG_Driver *drv;
     BOOL newFlag = FALSE;
-   
+
 
 	if(DrawArea == NULL) return;
 	// Test
@@ -289,15 +289,11 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 			addr++;
 			}
 	}
-//        if(newFlag) {
 	   DiscardTexture(textureid);
 	   textureid = CreateTexture(pixvram);
-//	}
-   
-	
+
+
 	UnLockVram();
-//	xratio = (float)pixvram->w / (float)AGWIDGET(DrawArea)->w;
-//	yratio =  (float)pixvram->h / (float)AGWIDGET(DrawArea)->h ;
 }
 
 /*

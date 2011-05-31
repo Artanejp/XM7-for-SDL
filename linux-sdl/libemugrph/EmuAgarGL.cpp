@@ -94,11 +94,6 @@ void EmuAgarGL::SetViewPort(int x, int y, int w, int h, int osd_ww, int osd_hh)
 	osd_w = osd_ww;
 	osd_h = osd_hh;
 
-#if 0
-	printf("VIEWPORT %d,%d %d,%d %f,%f - %f,%f\n",
-			viewport_x, viewport_y, viewport_w, viewport_h,
-			minX, minY, maxX, maxY);
-#endif
 }
 
 void EmuAgarGL::SetDrawArea(int x, int y, int w, int h)

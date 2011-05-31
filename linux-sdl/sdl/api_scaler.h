@@ -63,9 +63,9 @@ extern EmuGrph256kc *vramhdr_256k;
 extern EmuGrphScaleTmpl *pSwScaler;
 
 #ifdef USE_AGAR
-extern EmuAgarGL *scalerGL;
+//extern EmuAgarGL *pScalerGL;
 #else
-extern EmuGLUtils *scalerGL;
+extern EmuGLUtils *pScalerGL;
 #endif
 #endif
 

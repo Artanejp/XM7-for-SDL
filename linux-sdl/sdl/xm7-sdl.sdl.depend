@@ -3638,7 +3638,7 @@
 	"EmuGrph4096c.h"
 	"EmuGrph256kc.h"
 
-1306853545 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
+1306854840 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
 	<SDL.h>
 	<SDL_syswm.h>
 	<SDL_opengl.h>
@@ -3800,7 +3800,7 @@
 	"api_mouse.h"
 	"gtk_propkeyboard.h"
 
-1306853201 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.cpp
+1306854913 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.cpp
 	"agar_gldraw.h"
 	<SDL.h>
 	"api_draw.h"
@@ -3884,9 +3884,9 @@
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.h
 
-1306849627 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScaleTmpl.h
+1306855106 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
 
-1306849627 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
+1306855106 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
 

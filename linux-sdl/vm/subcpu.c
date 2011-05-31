@@ -33,8 +33,7 @@ BOOL            subcpu_event(void);
  *      サブCPU
  *      初期化
  */
-BOOL            FASTCALL
-subcpu_init(void)
+BOOL FASTCALL subcpu_init(void)
 {
     subcpu.readmem = submem_readb;
     subcpu.writemem = submem_writeb;
@@ -48,8 +47,7 @@ subcpu_init(void)
  *      サブCPU
  *      クリーンアップ
  */
-void            FASTCALL
-subcpu_cleanup(void)
+void FASTCALL subcpu_cleanup(void)
 {
     return;
 }
@@ -58,8 +56,7 @@ subcpu_cleanup(void)
  *      サブCPU
  *      リセット
  */
-void            FASTCALL
-subcpu_reset(void)
+void FASTCALL subcpu_reset(void)
 {
     sub_reset();
 }
@@ -68,8 +65,7 @@ subcpu_reset(void)
  *      サブCPU
  *      １行実行
  */
-void            FASTCALL
-subcpu_execline(void)
+void FASTCALL subcpu_execline(void)
 {
     sub_line();
 }
@@ -78,8 +74,7 @@ subcpu_execline(void)
  *      サブCPU
  *      実行
  */
-void            FASTCALL
-subcpu_exec(void)
+void  FASTCALL subcpu_exec(void)
 {
     sub_exec();
 }
@@ -105,12 +100,12 @@ subcpu_firq(void)
 {
     if (!key_irq_mask) {
 	/*
-	 * メインCPUにつながっている場合は、割り込みなし 
+	 * メインCPUにつながっている場合は、割り込みなし
 	 */
 	subcpu.intr &= ~INTR_FIRQ;
     } else {
 	/*
-	 * キー割り込みの有無で分かれる 
+	 * キー割り込みの有無で分かれる
 	 */
 	if (key_irq_flag) {
 	    subcpu.intr |= INTR_FIRQ;
@@ -128,7 +123,7 @@ void            FASTCALL
 subcpu_irq(void)
 {
     /*
-     * キャンセルIRQ 
+     * キャンセルIRQ
      */
     if (subcancel_flag) {
 	subcpu.intr |= INTR_IRQ;
@@ -145,7 +140,7 @@ BOOL            FASTCALL
 subcpu_save(int fileh)
 {
     /*
-     * プラットフォームごとのパッキング差を回避するため、分割 
+     * プラットフォームごとのパッキング差を回避するため、分割
      */
     if (!file_byte_write(fileh, subcpu.cc)) {
 	return FALSE;
@@ -202,14 +197,14 @@ BOOL            FASTCALL
 subcpu_load(int fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
     }
 
     /*
-     * プラットフォームごとのパッキング差を回避するため、分割 
+     * プラットフォームごとのパッキング差を回避するため、分割
      */
     if (!file_byte_read(fileh, &subcpu.cc)) {
 	return FALSE;
