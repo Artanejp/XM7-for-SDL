@@ -7,7 +7,8 @@
 
 #ifndef EMUGRPHSCALE1X2_H_
 #define EMUGRPHSCALE1X2_H_
-#include <SDL/SDL.h>
+//#include <SDL/SDL.h>
+#include "EmuGrphScaleTmpl.h"
 
 #ifndef TRUE
 #define TRUE 1
@@ -19,7 +20,7 @@
 typedef int BOOL;
 #endif
 
-class EmuGrphScale1x2 {
+class EmuGrphScale1x2 : public EmuGrphScaleTmpl {
 public:
 	EmuGrphScale1x2();
 	virtual ~EmuGrphScale1x2();

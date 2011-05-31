@@ -16,6 +16,25 @@ EmuGrphScale2x2::~EmuGrphScale2x2() {
 	// TODO Auto-generated destructor stub
 }
 
+
+void EmuGrphScale2x2::SetVramReader(void p(Uint32, Uint32 *, Uint32), int w, int h)
+{
+	getvram = p;
+	vramwidth = w;
+	vramheight = h;
+}
+
+void EmuGrphScale2x2::SetPutWord(void p(Uint32 *, Uint32, Uint32 *))
+{
+	putword = p;
+}
+
+void EmuGrphScale2x2::SetConvWord(void p(SDL_Surface *, Uint32 *, Uint32 *))
+{
+	convword = p;
+}
+
+
 void EmuGrphScale2x2::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 	Uint32 wbuf[8];

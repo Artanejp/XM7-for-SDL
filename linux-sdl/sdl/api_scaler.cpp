@@ -21,26 +21,16 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
-#ifndef USE_OPENGL
-EmuGrphScale1x1 *scaler1x1;
-EmuGrphScale1x2 *scaler1x2;
-EmuGrphScale1x2i *scaler1x2i;
-EmuGrphScale2x2 *scaler2x2;
-EmuGrphScale2x2i *scaler2x2i;
-EmuGrphScale2x4 *scaler2x4;
-EmuGrphScale2x4i *scaler2x4i;
-EmuGrphScale4x4 *scaler4x4;
-EmuGrphScale4x4i *scaler4x4i;
-#endif
 
 #ifdef USE_AGAR
 //EmuAgarGL *scalerGL;
 extern AG_Window *MainWindow;
 extern void GetVram_AGGL_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
-
+EmuAgarGL *scalerGL;
 #else
 EmuGLUtils *scalerGL;
 #endif
+EmuGrphScaleTmpl *pSwScaler;
 
 
 #ifdef __cplusplus
@@ -118,38 +108,11 @@ void PutWord(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 	}
 }
 
-void PutWord2x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-#ifdef USE_OPENGL
-#else
-	if(scaler2x4 != NULL) {
-		scaler2x4->PutWord2x(disp, pixsize, cbuf);
-	}
-#endif
-}
-
 void PutWord_4096(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 {
 	if(vramhdr_4096 != NULL) {
 		vramhdr_4096->PutWord(disp, pixsize, cbuf);
 	}
-}
-
-void PutWord2x2(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-		if(vramhdr_4096 != NULL) {
-			vramhdr_4096->PutWordx2(disp, pixsize, cbuf);
-		}
-}
-
-void PutWord4x(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
-{
-#ifdef USE_OPENGL
-#else
-	if(scaler4x4 != NULL) {
-		scaler4x4->PutWord4x(disp, pixsize, cbuf);
-	}
-#endif
 }
 
 void SetVramReader_200l()
@@ -164,32 +127,9 @@ void SetVramReader_200l()
 	}
 #endif
 #else
-	if(scaler1x1 != NULL) {
-		scaler1x1->SetVramReader(VramReader, 80, 200);
-	}
-	if(scaler1x2 != NULL) {
-		scaler1x2->SetVramReader(VramReader, 80, 200);
-		scaler1x2->SetPutWord(PutWord);
-	}
-	if(scaler1x2i != NULL) {
-		scaler1x2i->SetVramReader(VramReader, 80, 200);
-		scaler1x2i->SetPutWord(PutWord);
-	}
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader, 80, 200);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader, 80, 200);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4 != NULL) {
-		scaler2x4->SetVramReader(VramReader, 80, 200);
-		scaler2x4->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4i != NULL) {
-		scaler2x4i->SetVramReader(VramReader, 80, 200);
-		scaler2x4i->SetPutWord(PutWord2x);
+	if(pSwScaler != NULL) {
+		pSwScaler->SetVramReader(VramReader, 80, 200);
+		pSwScaler->SetPutWord(PutWord);
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader, 80, 200);
@@ -210,32 +150,9 @@ void SetVramReader_400l()
 	}
 #endif
 #else
-	if(scaler1x1 != NULL) {
-		scaler1x1->SetVramReader(VramReader_400l, 80, 400);
-	}
-	if(scaler1x2 != NULL) {
-		scaler1x2->SetVramReader(VramReader_400l, 80, 400);
-		scaler1x2->SetPutWord(PutWord);
-	}
-	if(scaler1x2i != NULL) {
-		scaler1x2i->SetVramReader(VramReader_400l, 80, 400);
-		scaler1x2i->SetPutWord(PutWord);
-	}
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4 != NULL) {
-		scaler2x4->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x4->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4i != NULL) {
-		scaler2x4i->SetVramReader(VramReader_400l, 80, 400);
-		scaler2x4i->SetPutWord(PutWord2x);
+	if(pSwScaler != NULL) {
+		pSwScaler->SetVramReader(VramReader, 80, 400);
+		pSwScaler->SetPutWord(PutWord);
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_400l, 80, 400);
@@ -256,21 +173,9 @@ void SetVramReader_4096(void)
 	}
 #endif
 #else
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader_4096, 40, 200);
-		scaler2x2->SetPutWord(PutWord2x2);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader_4096, 40, 200);
-		scaler2x2i->SetPutWord(PutWord2x2);
-	}
-	if(scaler4x4 != NULL) {
-		scaler4x4->SetVramReader(VramReader_4096, 40, 200);
-		scaler4x4->SetPutWord(PutWord4x);
-	}
-	if(scaler4x4i != NULL) {
-		scaler4x4i->SetVramReader(VramReader_4096, 40, 200);
-		scaler4x4i->SetPutWord(PutWord4x);
+	if(pSwScaler != NULL) {
+		pSwScaler->SetVramReader(VramReader, 80, 200);
+		pSwScaler->SetPutWord(PutWord);
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_4096, 40, 200);
@@ -291,21 +196,9 @@ void SetVramReader_256k(void)
 	}
 #endif
 #else
-	if(scaler2x2 != NULL) {
-		scaler2x2->SetVramReader(VramReader_256k, 40, 200);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i != NULL) {
-		scaler2x2i->SetVramReader(VramReader_256k, 40, 200);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
-	if(scaler4x4 != NULL) {
-		scaler4x4->SetVramReader(VramReader_256k, 40, 200);
-		scaler4x4->SetPutWord(PutWord4x);
-	}
-	if(scaler4x4i != NULL) {
-		scaler4x4i->SetVramReader(VramReader_256k, 40, 200);
-		scaler4x4i->SetPutWord(PutWord4x);
+	if(pSwScaler != NULL) {
+		pSwScaler->SetVramReader(VramReader, 80, 200);
+		pSwScaler->SetPutWord(PutWord);
 	}
 	if(scalerGL != NULL) {
 		scalerGL->SetVramReader(VramReader_256k, 40, 200);
@@ -315,69 +208,20 @@ void SetVramReader_256k(void)
 }
 
 
-
-
 void init_scaler(void)
 {
 #ifdef USE_AGAR
 //	InitGL_AG_GL(80 * 8, 200);
 	SetVramReader_AG_GL(VramReader, 80, 200);
 #else
-	if(scaler1x1 == NULL) {
-		scaler1x1 = new EmuGrphScale1x1;
-		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
-		scaler1x1->SetVramReader(VramReader, 80, 400);
-		scaler1x1->SetPutWord(PutWord);
-	}
-	if(scaler1x2 == NULL) {
-		scaler1x2 = new EmuGrphScale1x2;
-		//		scaler1x2->SetConvWord(&vramhdr->ConvWord);
-		scaler1x2->SetVramReader(VramReader, 80, 400);
-		scaler1x2->SetPutWord(PutWord);
-	}
-	if(scaler1x2i == NULL) {
-		scaler1x2i = new EmuGrphScale1x2i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler1x2i->SetVramReader(VramReader, 80, 400);
-		scaler1x2i->SetPutWord(PutWord);
-	}
-	if(scaler2x2 == NULL) {
-		scaler2x2 = new EmuGrphScale2x2;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2->SetVramReader(VramReader, 80, 400);
-		scaler2x2->SetPutWord(PutWord2x);
-	}
-	if(scaler2x2i == NULL) {
-		scaler2x2i = new EmuGrphScale2x2i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x2i->SetVramReader(VramReader, 80, 400);
-		scaler2x2i->SetPutWord(PutWord2x);
-	}
+    pSwScaler = NULL;
+    // 最初は1x1にする
+    pSwScaler = new EmuGrphScale1x1;
+    if(pSwScaler != NULL) {
+        pSwScaler->SetVramReader(VramReader, 80, 400);
+		pSwScaler->SetPutWord(PutWord);
+    }
 
-	if(scaler2x4 == NULL) {
-		scaler2x4 = new EmuGrphScale2x4;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x4->SetVramReader(VramReader, 80, 400);
-		scaler2x4->SetPutWord(PutWord2x);
-	}
-	if(scaler2x4i == NULL) {
-		scaler2x4i = new EmuGrphScale2x4i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler2x4i->SetVramReader(VramReader, 80, 400);
-		scaler2x4i->SetPutWord(PutWord2x);
-	}
-	if(scaler4x4 == NULL) {
-		scaler4x4 = new EmuGrphScale4x4;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler4x4->SetVramReader(VramReader, 40, 200);
-		scaler4x4->SetPutWord(PutWord4x);
-	}
-	if(scaler4x4i == NULL) {
-		scaler4x4i = new EmuGrphScale4x4i;
-		//		scaler1x2i->SetConvWord(&vramhdr->ConvWord);
-		scaler4x4i->SetVramReader(VramReader, 40, 200);
-		scaler4x4i->SetPutWord(PutWord4x);
-	}
 	if(scalerGL == NULL) {
 #ifdef USE_AGAR
 		scalerGL = new EmuAgarGL;
@@ -396,15 +240,11 @@ void initsub_scaler()
 	//	b256kFlag = FALSE;
 #ifdef USE_OPENGL
 #else
-	scaler1x1 = NULL;
-	scaler1x2 = NULL;
-	scaler1x2i = NULL;
-	scaler2x2 = NULL;
-	scaler2x2i = NULL;
-	scaler2x4 = NULL;
-	scaler2x4i = NULL;
-	scaler4x4 = NULL;
-	scaler4x4i = NULL;
+    if(pSwScaler != NULL) {
+        delete pSwScaler;
+    }
+    pSwScaler = NULL;
+
 	scalerGL = NULL;
 #endif
 }
@@ -415,56 +255,10 @@ void detachsub_scaler(void)
 #ifdef USE_OPENGL
 	Detach_AG_GL();
 #else
-	if(scaler1x1 != NULL) {
-		delete scaler1x1;
-		scaler1x1 = NULL;
+	if(pSwScaler != NULL) {
+		delete pSwScaler;
+		pSwScaler = NULL;
 	}
-	if(scaler1x2 != NULL) {
-		delete scaler1x2;
-		scaler1x2 = NULL;
-	}
-	if(scaler1x2i != NULL) {
-		delete scaler1x2i;
-		scaler1x2i = NULL;
-	}
-	if(scaler2x2 != NULL) {
-		delete scaler2x2;
-		scaler2x2 = NULL;
-	}
-	if(scaler2x2i != NULL) {
-		delete scaler2x2i;
-		scaler2x2i = NULL;
-	}
-	if(scaler2x4 != NULL) {
-		delete scaler2x4;
-		scaler2x4 = NULL;
-	}
-	if(scaler2x4i != NULL) {
-		delete scaler2x4i;
-		scaler2x4i = NULL;
-	}
-
-	if(scaler1x1 != NULL) {
-		delete scaler1x1;
-		scaler1x1 = NULL;
-	}
-	if(scaler2x2 != NULL) {
-		delete scaler2x2;
-		scaler2x2 = NULL;
-	}
-	if(scaler2x2i != NULL) {
-		delete scaler2x2i;
-		scaler2x2i = NULL;
-	}
-	if(scaler4x4 != NULL) {
-		delete scaler4x4;
-		scaler4x4 = NULL;
-	}
-	if(scaler4x4i != NULL) {
-		delete scaler4x4i;
-		scaler4x4i = NULL;
-	}
-
 	if(scalerGL != NULL) {
 		delete scalerGL;
 		scalerGL = NULL;
@@ -533,24 +327,6 @@ void Flip(void)
 
 #ifdef USE_OPENGL
 #else
-void Scaler_1x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler1x2->PutVram(p, x, y, w, h, mpage);
-}
-
-void Scaler_1x2i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler1x2i->PutVram(p, x, y, w, h, mpage);
-}
-
-void Scaler_2x4(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler2x4->PutVram(p, x, y, w, h, mpage);
-}
-void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
-{
-	scaler2x4i->PutVram(p, x, y, w, h, mpage);
-}
 #endif
 
 void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
@@ -571,37 +347,11 @@ void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 //	scalerGL->SetViewPort();
 }
 
-#ifdef USE_OPENGL
-#else
-void Scaler_1x1(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
+void SwScaler(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
 {
-	if(scaler1x1 == NULL) return;
-	scaler1x1->PutVram(p, x, y, w, h, multip );
+	if(pSwScaler == NULL) return;
+	pSwScaler->PutVram(p, x, y, w, h, multip );
 }
-
-void Scaler_2x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler2x2 == NULL) return;
-	scaler2x2->PutVram(p, x, y, w, h, multip );
-}
-
-void Scaler_2x2i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler2x2i == NULL) return;
-	scaler2x2i->PutVram(p, x, y, w, h, multip );
-}
-void Scaler_4x4(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler4x4 == NULL) return;
-	scaler4x4->PutVram(p, x, y, w, h, multip );
-}
-
-void Scaler_4x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip)
-{
-	if(scaler4x4 == NULL) return;
-	scaler4x4i->PutVram(p, x, y, w, h, multip );
-}
-#endif
 
 #ifdef __cplusplus
 }

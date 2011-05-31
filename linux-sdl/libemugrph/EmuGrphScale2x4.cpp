@@ -15,6 +15,23 @@ EmuGrphScale2x4::~EmuGrphScale2x4() {
 	// TODO Auto-generated destructor stub
 }
 
+void EmuGrphScale2x4::SetVramReader(void p(Uint32, Uint32 *, Uint32), int w, int h)
+{
+	getvram = p;
+	vramwidth = w;
+	vramheight = h;
+}
+
+void EmuGrphScale2x4::SetPutWord(void p(Uint32 *, Uint32, Uint32 *))
+{
+	putword = p;
+}
+
+void EmuGrphScale2x4::SetConvWord(void p(SDL_Surface *, Uint32 *, Uint32 *))
+{
+	convword = p;
+}
+
 
 static inline void
 __SETDOT(Uint8 * addr, Uint32 c,Uint32 pixels)
@@ -38,7 +55,7 @@ __SETDOT(Uint8 * addr, Uint32 c,Uint32 pixels)
 
 }
 
-void EmuGrphScale2x4::PutWord2x(Uint32 *disp,Uint32 pixels, Uint32 *cbuf)
+static void PutWord2x(Uint32 *disp,Uint32 pixels, Uint32 *cbuf)
 {
 	Uint8 *d =(Uint8 *)disp;
 	__SETDOT(d, cbuf[7], pixels);

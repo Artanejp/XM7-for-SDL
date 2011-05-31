@@ -1257,11 +1257,11 @@ void ProcessSnd(BOOL bZero)
 		   /*
 		    * どちらかがONなら、バッファ充填
 		    */
-		   if (bWrite) {
+//		   if (bWrite) {
 		       // OPNについては不要か？必要か？
-			   //samples = CalcSamples(pOpnBuf, time);
-			   //RenderOpnSub(time, samples, bZero);
-		   }
+			   samples = CalcSamples(pOpnBuf, time);
+			   RenderOpnSub(time, samples, bZero);
+//		   }
 		   return;
 	  }
 

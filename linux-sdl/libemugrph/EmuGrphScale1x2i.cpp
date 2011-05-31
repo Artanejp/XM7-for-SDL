@@ -10,10 +10,30 @@
 EmuGrphScale1x2i::EmuGrphScale1x2i() {
 	// TODO Auto-generated constructor stub
 	convword = NULL;
+	putword = NULL;
+	getvram = NULL;
 }
 
 EmuGrphScale1x2i::~EmuGrphScale1x2i() {
 	// TODO Auto-generated destructor stub
+}
+
+
+void EmuGrphScale1x2i::SetVramReader(void p(Uint32, Uint32 *, Uint32), int w, int h)
+{
+	getvram = p;
+	vramwidth = w;
+	vramheight = h;
+}
+
+void EmuGrphScale1x2i::SetPutWord(void p(Uint32 *, Uint32, Uint32 *))
+{
+	putword = p;
+}
+
+void EmuGrphScale1x2i::SetConvWord(void p(SDL_Surface *, Uint32 *, Uint32 *))
+{
+	convword = p;
 }
 
 /*
@@ -41,7 +61,7 @@ void EmuGrphScale1x2i::PutVram(SDL_Surface *p, int x, int y, int w, int h, Uint3
 	SDL_LockSurface(p);
 #if SDL_VERSION_ATLEAST(1,3,0)
       nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , 0 );
-#else   
+#else
    nullline = SDL_MapRGBA(p->format, 0 , 0, 0 , p->format->alpha );
 #endif
 	for(yy = y; yy < hh ; yy++) {

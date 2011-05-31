@@ -10,12 +10,35 @@
 EmuGrphScale1x1::EmuGrphScale1x1() {
 	// TODO Auto-generated constructor stub
 	convword = NULL;
+	putword = NULL;
+	getvram = NULL;
 
 }
 
 EmuGrphScale1x1::~EmuGrphScale1x1() {
 	// TODO Auto-generated destructor stub
 }
+
+
+
+void EmuGrphScale1x1::SetVramReader(void p(Uint32, Uint32 *, Uint32), int w, int h)
+{
+	getvram = p;
+	vramwidth = w;
+	vramheight = h;
+}
+
+void EmuGrphScale1x1::SetPutWord(void p(Uint32 *, Uint32, Uint32 *))
+{
+	putword = p;
+}
+
+void EmuGrphScale1x1::SetConvWord(void p(SDL_Surface *, Uint32 *, Uint32 *))
+{
+	convword = p;
+}
+
+
 /*
  * 1x1, Not Interlaced.
  */

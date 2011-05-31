@@ -199,8 +199,8 @@
 	<stdlib.h>
 	"EmuGrphScale1x2.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2.h
-	<SDL/SDL.h>
+1306849143 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2.h
+	"EmuGrphScaleTmpl.h"
 
 1306263666 /usr/local/include/agar/agar/core.h
 	<agar/core/core_begin.h>
@@ -1085,20 +1085,20 @@
 1306429031 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphLib.cpp
 	"EmuGrphLib.h"
 
-1306429031 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x1.cpp
+1306849517 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x1.cpp
 	"EmuGrphScale1x1.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x1.h
-	"EmuGrphScale1x2.h"
+1306849737 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x1.h
+	"EmuGrphScaleTmpl.h"
 
 1306429031 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2.cpp
 	"EmuGrphScale1x2.h"
 
-1306429031 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2i.cpp
+1306849264 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2i.cpp
 	"EmuGrphScale1x2i.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2i.h
-	"EmuGrphScale1x2.h"
+1306849361 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale1x2i.h
+	"EmuGrphScaleTmpl.h"
 
 1306429031 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale2x2.cpp
 	"EmuGrphScale2x2.h"
@@ -1135,4 +1135,7 @@
 
 1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale4x4i.h
 	"EmuGrphScale4x4.h"
+
+1306849627 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
+	<SDL/SDL.h>
 

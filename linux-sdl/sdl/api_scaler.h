@@ -38,6 +38,7 @@
 #include "EmuGrph4096c.h"
 #include "EmuGrph256kc.h"
 
+#include "EmuGrphScaleTmpl.h"
 #include "EmuGrphScale1x1.h"
 #include "EmuGrphScale1x2.h"
 #include "EmuGrphScale1x2i.h"
@@ -47,6 +48,7 @@
 #include "EmuGrphScale2x4i.h"
 #include "EmuGrphScale4x4.h"
 #include "EmuGrphScale4x4i.h"
+
 #ifdef USE_AGAR
 #include "EmuAgarGL.h"
 #else
@@ -58,15 +60,7 @@ extern EmuGrph400l *vramhdr_400l;
 extern EmuGrph4096c *vramhdr_4096;
 extern EmuGrph256kc *vramhdr_256k;
 
-extern EmuGrphScale1x1 *scaler1x1;
-extern EmuGrphScale1x2 *scaler1x2;
-extern EmuGrphScale1x2i *scaler1x2i;
-extern EmuGrphScale2x2 *scaler2x2;
-extern EmuGrphScale2x2i *scaler2x2i;
-extern EmuGrphScale2x4 *scaler2x4;
-extern EmuGrphScale2x4i *scaler2x4i;
-extern EmuGrphScale4x4 *scaler4x4;
-extern EmuGrphScale4x4i *scaler4x4i;
+extern EmuGrphScaleTmpl *pSwScaler;
 
 #ifdef USE_AGAR
 extern EmuAgarGL *scalerGL;
@@ -105,16 +99,8 @@ extern void Flip(void);
 /*
  * スケーラ
  */
-extern void Scaler_1x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
-extern void Scaler_1x2i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
-extern void Scaler_2x4(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
-extern void Scaler_2x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
-extern void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
-extern void Scaler_1x1(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
-extern void Scaler_2x2(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
-extern void Scaler_2x2i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
-extern void Scaler_4x4(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
-extern void Scaler_4x4i(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
+extern  void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
+extern  void SwScaler(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
 
 #ifdef __cplusplus
 }

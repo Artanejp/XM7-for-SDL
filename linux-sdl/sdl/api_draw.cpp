@@ -632,6 +632,126 @@ void ResizeGL(int w, int h)
 	newDrawHeight = h;
 	newResize = TRUE;
 }
+
+static void SelectScaler200l(int w, int h)
+{
+    	if(bFullScan) {
+		switch(nDrawWidth) {
+		case 1280:
+            pSwScaler = new EmuGrphScale2x4;
+            break;
+        case 640:
+            pSwScaler = new EmuGrphScale1x2;
+            break;
+		default:
+            pSwScaler = new EmuGrphScale1x1;
+			break;
+			}
+		} else {
+			switch(nDrawWidth) {
+			case 1280:
+                pSwScaler = new EmuGrphScale2x4i;
+                break;
+			case 640:
+	            pSwScaler = new EmuGrphScale1x2i;
+                break;
+			default:
+	            pSwScaler = new EmuGrphScale1x1;
+				break;
+			}
+		}
+}
+
+
+static void SelectScaler400l(int w, int h)
+{
+    	if(bFullScan) {
+		switch(nDrawWidth) {
+		case 1280:
+            pSwScaler = new EmuGrphScale2x2;
+            break;
+        case 640:
+            pSwScaler = new EmuGrphScale1x1;
+            break;
+		default:
+            pSwScaler = new EmuGrphScale1x1;
+			break;
+			}
+		} else {
+			switch(nDrawWidth) {
+			case 1280:
+                pSwScaler = new EmuGrphScale2x2i;
+                break;
+			case 640:
+	            pSwScaler = new EmuGrphScale1x1;
+                break;
+			default:
+	            pSwScaler = new EmuGrphScale1x1;
+				break;
+			}
+		}
+}
+
+static void SelectScaler320(int w, int h)
+{
+    	if(bFullScan) {
+		switch(nDrawWidth) {
+		case 1280:
+            pSwScaler = new EmuGrphScale4x4;
+            break;
+        case 640:
+            pSwScaler = new EmuGrphScale2x2;
+            break;
+		default:
+            pSwScaler = new EmuGrphScale1x1;
+			break;
+			}
+		} else {
+			switch(nDrawWidth) {
+			case 1280:
+                pSwScaler = new EmuGrphScale4x4i;
+                break;
+			case 640:
+	            pSwScaler = new EmuGrphScale2x2i;
+                break;
+			default:
+	            pSwScaler = new EmuGrphScale1x1;
+				break;
+			}
+		}
+}
+
+/*
+ * Select Scaler
+ */
+void SelectScaler(int w, int h)
+{
+    if(pSwScaler != NULL) {
+        delete pSwScaler;
+        pSwScaler = NULL;
+    }
+	switch (bMode) {
+	case SCR_400LINE:
+		SelectScaler400l(w, h);
+		SetVramReader_400l();
+		break;
+	case SCR_262144:
+		SelectScaler320(w, h);
+		SetVramReader_256k();
+		break;
+	case SCR_4096:
+		SelectScaler320(w, h);
+		SetVramReader_4096();
+		break;
+	case SCR_200LINE:
+		SelectScaler200l(w, h);
+		SetVramReader_200l();
+		break;
+	}
+
+}
+
+
 /*
  *  初期化
  */
@@ -641,7 +761,7 @@ void ChangeResolution(void)
 #ifndef USE_AGAR
         SDL_Surface *p;
 #endif
-        if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth)){
+        if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth) && (bOldFullScan == bFullScan)){
                 return;
         }
 
@@ -661,13 +781,16 @@ void ChangeResolution(void)
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
 #endif
 #endif
-        SDL_SemPost(DrawInitSem);
 #ifndef USE_AGAR
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
 #endif
+// 後でコメント解除
+//        SelectScaler(nOldDrawWidth, nOldDrawHeight);
+        SDL_SemPost(DrawInitSem);
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
+        bOldFullScan = bFullScan;
 }
 
 
@@ -701,9 +824,9 @@ void	InitDraw(void)
 		bSmoosing = FALSE;
 		nDrawCount = DrawCountSet(nDrawFPS);
 
-		nOldVideoMode =
-				bOldFullScan = TRUE;
+		bFullScan = TRUE;
 		bPaletFlag = FALSE;
+		bOldFullScan = bFullScan;
 #if XM7_VER >= 3
 		nOldVideoMode = SCR_200LINE;
 #else
@@ -1293,10 +1416,6 @@ void OnDraw(void)
 	/*
 	 * 描画スレッドのKICKを1/60secごとにする。
 	 */
-//	if(nDrawCount > 0) {
-//		nDrawCount --;
-//	} else {
-//		nDrawCount = DrawCountSet(nDrawFPS);
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
 #else
@@ -1854,45 +1973,11 @@ void Draw640All(void)
 		AllClear();
 	}
 
-#ifdef USE_AGAR
-	PutVramFunc = &Scaler_GL;
-#else
 	if(!bUseOpenGL) {
-		if(bFullScan) {
-			switch(nDrawWidth) {
-			case 1280:
-				if(scaler2x4 != NULL) {
-					PutVramFunc = &Scaler_2x4;
-				}
-				break;
-			case 640:
-			default:
-				if(scaler1x1 != NULL) {
-					PutVramFunc = &Scaler_1x2;
-				}
-				break;
-			}
-		} else {
-			switch(nDrawWidth) {
-			case 1280:
-				if(scaler2x4i != NULL) {
-					PutVramFunc = &Scaler_2x4i;
-				}
-				break;
-			case 640:
-			default:
-				if(scaler1x2i != NULL) {
-					PutVramFunc = &Scaler_1x2i;
-				}
-				break;
-			}
-		}
+	    PutVramFunc = &SwScaler;
 	} else {
-		if(scalerGL != NULL) {
-			PutVramFunc = &Scaler_GL;
-		}
+		PutVramFunc = &Scaler_GL;
 	}
-#endif
 	/*
 	 * レンダリング
 	 */
@@ -1986,39 +2071,9 @@ void Draw400l(void)
 		PutVramFunc = &Scaler_GL;
 #else
 	 if(!bUseOpenGL) {
-		 if(bFullScan) {
-			 switch(nDrawWidth) {
-			 case 1280:
-				 if(scaler2x2 != NULL) {
-					 PutVramFunc = &Scaler_2x2;
-				 }
-				 break;
-			 case 640:
-			 default:
-				 if(scaler1x1 != NULL) {
-					 PutVramFunc = &Scaler_1x1;
-				 }
-				 break;
-			 }
-		 } else {
-			 switch(nDrawWidth) {
-			 case 1280:
-				 if(scaler2x2i != NULL) {
-					 PutVramFunc = &Scaler_2x2i;
-				 }
-				 break;
-			 case 640:
-			 default:
-				 if(scaler1x1 != NULL) {
-					 PutVramFunc = &Scaler_1x1;
-				 }
-				 break;
-			 }
-		 }
+	    PutVramFunc = &SwScaler;
 	 } else {
-		 if(scalerGL != NULL) {
-			 PutVramFunc = &Scaler_GL;
-		 }
+        PutVramFunc = &Scaler_GL;
 	 }
 #endif
 	 if(PutVramFunc == NULL) return;
@@ -2079,35 +2134,11 @@ void Draw320(void)
 	/*
 	 * パレット設定
 	 */
-#ifdef USE_AGAR
-		PutVramFunc = &Scaler_GL;
-#else
-	if(!bUseOpenGL) {
-		if(bFullScan) {
-			switch(nDrawWidth) {
-			case 1280:
-				PutVramFunc = &Scaler_4x4;
-				break;
-			case 640:
-			default:
-				PutVramFunc = &Scaler_2x2;
-				break;
-			}
-		} else {
-			switch(nDrawWidth) {
-			case 1280:
-				PutVramFunc = &Scaler_4x4i;
-				break;
-			case 640:
-			default:
-				PutVramFunc = &Scaler_2x2i;
-				break;
-			}
-		}
-	} else {
-		PutVramFunc = &Scaler_GL;
-	}
-#endif
+	 if(!bUseOpenGL) {
+	    PutVramFunc = &SwScaler;
+	 } else {
+        PutVramFunc = &Scaler_GL;
+	 }
 	//	if(bPaletFlag) {
 	Palet320();
 	SetVramReader_4096();
@@ -2179,35 +2210,11 @@ void Draw256k(void)
 
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
-#ifdef USE_AGAR
-		PutVramFunc = &Scaler_GL;
-#else
-	if(!bUseOpenGL) {
-		if(bFullScan) {
-			switch(nDrawWidth) {
-			case 1280:
-				PutVramFunc = &Scaler_4x4;
-				break;
-			case 640:
-			default:
-				PutVramFunc = &Scaler_2x2;
-				break;
-			}
-		} else {
-			switch(nDrawWidth) {
-			case 1280:
-				PutVramFunc = &Scaler_4x4i;
-				break;
-			case 640:
-			default:
-				PutVramFunc = &Scaler_2x2i;
-				break;
-			}
-		}
-	} else {
-		PutVramFunc = &Scaler_GL;
-	}
-#endif
+	 if(!bUseOpenGL) {
+	    PutVramFunc = &SwScaler;
+	 } else {
+        PutVramFunc = &Scaler_GL;
+	 }
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
