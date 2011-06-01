@@ -16,20 +16,199 @@ SndDrvBeep::SndDrvBeep() {
 	enable = FALSE;
 	counter = 0;
 	freq = 1200;
+
+	uStereo = nStereoOut %4;
+	channels = 2;
+	ms = nSoundBuffer;
+    srate = nSampleRate;
+	nLevel = 32767;
+	RenderSem = SDL_CreateSemaphore(1);
+	SDL_SemPost(RenderSem);
 }
 
 SndDrvBeep::~SndDrvBeep() {
 	// TODO Auto-generated destructor stub
-	counter = 0;
 	enable = FALSE;
+	if(RenderSem != NULL) {
+		SDL_SemWait(RenderSem);
+		SDL_DestroySemaphore(RenderSem);
+		RenderSem = NULL;
+	}
+	counter = 0;
 }
 
-//Uint8  *SndDrvBeep::Setup(int tick) -> SndDrvTmpl::Setup(int)
+
+
+void SndDrvBeep::SetChannels(int c)
+{
+	channels = c;
+}
+
+void SndDrvBeep::SetRate(int rate)
+{
+	srate = rate;
+}
+
+
+void SndDrvBeep::Enable(BOOL flag)
+{
+	enable = flag;
+}
+
+
+void SndDrvBeep::SetState(BOOL state)
+{
+
+}
+
 
 void SndDrvBeep::SetRenderVolume(int level)
 {
 	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
 }
+
+void SndDrvBeep::Setup(int tick)
+{
+	UINT uChannels;
+
+	uStereo = nStereoOut %4;
+	uChannels = 2;
+	channels = uChannels;
+	ms = tick;
+
+	enable = FALSE;
+	counter = 0;
+	return;
+}
+
+/*
+ * Beepのみのダミー関数
+ */
+void SndDrvBeep::SetFreq(int f)
+{
+
+}
+
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::Setup(int tick, int opno)
+{
+  Setup(tick);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+BYTE SndDrvBeep::GetCh3Mode(int opn)
+{
+    return 0;
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetCh3Mode(int opn, Uint8 dat)
+{
+
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetRenderVolume(void)
+{
+	SetRenderVolume(0);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetRenderVolume(int ch, int level)
+{
+    SetRenderVolume(level);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetRenderVolume(int ch, int fm, int psg)
+{
+	SetRenderVolume(0);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetLRVolume(void)
+{
+
+}
+/*
+ * OPNのみのダミー関数
+ */
+int *SndDrvBeep::GetLVolume(int num)
+{
+    return NULL;
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+int *SndDrvBeep::GetRVolume(int num)
+{
+    return NULL;
+}
+/*
+ * OPNのみのダミー関数
+ */
+BYTE SndDrvBeep::GetReg(int opn, BYTE)
+{
+    return 0;
+}
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetReg(int opn, BYTE reg, BYTE dat)
+{
+
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::SetReg(int opn, BYTE *reg)
+{
+
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+int SndDrvBeep::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+    return Render(pBuf, start, sSamples, clear, bZero);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+int SndDrvBeep::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+    // 32bitバッファがないから、そのまま帰る
+    return 0;
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvBeep::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
+{
+    return;
+}
+
+
 
 void SndDrvBeep::ResetCounter(BOOL flag)
 {
@@ -39,24 +218,17 @@ void SndDrvBeep::ResetCounter(BOOL flag)
 
 }
 
-void SndDrvBeep::SetFreq(int f)
-{
-	freq = f;
-}
 
 extern DWORD dwSoundTotal;
 
 int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
 {
 	int i;
-	int s;
 	int ss2;
 
 	Sint16          *wbuf;
 	int sf;
 	Sint16 level;
-
-	s = (ms * srate)/1000;
 
 	if(pBuf == NULL) return 0;
 	channels = 2;

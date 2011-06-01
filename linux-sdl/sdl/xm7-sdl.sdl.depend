@@ -3417,14 +3417,14 @@
 	<SDL.h>
 	"SDLKbdInterface.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvBeep.cpp
+1306940816 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvBeep.cpp
 	<SDL/SDL.h>
 	<SDL/SDL_mixer.h>
 	"xm7.h"
 	"SndDrvBeep.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvBeep.h
-	"SndDrvTmpl.h"
+1306939789 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvBeep.h
+	"SndDrvIF.h"
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvTmpl.h
 	<SDL/SDL.h>
@@ -3437,26 +3437,24 @@
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_snd.h
 
-1306450870 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.cpp
+1306940904 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.cpp
 	"SndDrvCMT.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.h
+1306939821 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvCMT.h
 	"xm7.h"
 	"device.h"
 	"mainetc.h"
 	"tapelp.h"
 	"sdl.h"
 	"sdl_sch.h"
-	"SndDrvTmpl.h"
+	"SndDrvIF.h"
 
 1306446803 /home/whatisthis/codeblocks/xm7-sdl/vm//tapelp.h
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
+1306942394 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
 	"SndDrvOpn.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.h
-	<SDL/SDL.h>
-	<SDL/SDL_mixer.h>
+1306939800 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.h
 	"xm7.h"
 	"cisc.h"
 	"opna.h"
@@ -3468,7 +3466,7 @@
 	"sdl_sch.h"
 	"sdl_snd.h"
 	<vector>
-	"SndDrvTmpl.h"
+	"SndDrvIF.h"
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//cisc.h
 	<math.h>
@@ -3806,7 +3804,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1306934217 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
+1306942718 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
 	<machine/soundcard.h>
 	<linux/soundcard.h>
 	<stdlib.h>
@@ -3831,11 +3829,11 @@
 	"sdl_sch.h"
 	"sdl_snd.h"
 	"api_wavwriter.h"
+	"SndDrvIF.h"
 	"SndDrvBeep.h"
 	"SndDrvWav.h"
 	"SndDrvOpn.h"
 	"SndDrvCMT.h"
-	"util_ringbuffer.h"
 
 1305541919 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_wavwriter.h
 	<stdlib.h>
@@ -3889,4 +3887,13 @@
 
 1306855106 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
+
+1306940612 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvIF.h
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"sdl.h"
+	"sdl_snd.h"
+	<vector>
 

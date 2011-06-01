@@ -20,7 +20,7 @@ static int r_vol[3][4] = {
 
 void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 {
-        int         i, j, k;
+        int         i, j;
         Sint32       *p = (Sint32 *) from;
         Sint16       *t = (Sint16 *) to;
         Sint32       tmp1;
@@ -31,7 +31,6 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         if (t == NULL) {
                 return;
         }
-#if 1
         i = (size / 4) * 4;
         for (j = 0; j < i; j += 4) {
                 tmp1 = p[j];
@@ -43,18 +42,10 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
                 tmp1 = p[j + 3];
                 t[j + 3] = (Sint16) tmp1;
         }
-       k = size % 4;
         for (j = i; j < size; j++) {
                 tmp1 = p[j];
                 t[j] = (Sint16)tmp1;
         }
-#else
-        for (j = 0; j < size; j++) {
-                tmp1 = p[j];
-                t[j] = (Sint16)tmp1;
-        }
-
-#endif
 }
 
 
@@ -134,17 +125,23 @@ void SndDrvOpn::SetReg(int opn, BYTE *reg)
 SndDrvOpn::SndDrvOpn(void) {
 	// TODO Auto-generated constructor stub
 	int i;
-        channels = 2;
-        
+	uStereo = nStereoOut %4;
+    channels = 2;
+	ms = nSoundBuffer;
+    srate = nSampleRate;
+
 	enable = TRUE;
 	counter = 0;
 	uChanSep = uChSeparation;
+	nLevel = 32767;
+
 	for(i = 0; i<3; i++) {
 		uCh3Mode[i] = 0;
 	}
-	if(RenderSem == NULL) RenderSem = SDL_CreateSemaphore(1);
+	RenderSem = SDL_CreateSemaphore(1);
 	SDL_SemPost(RenderSem);
 	pOPN = new FM::OPN[3];
+
 //	InitOpn();
 }
 
@@ -164,6 +161,50 @@ SndDrvOpn::~SndDrvOpn() {
 	DeleteOpn();
 }
 
+
+void SndDrvOpn::SetChannels(int c)
+{
+	channels = c;
+}
+
+void SndDrvOpn::SetRate(int rate)
+{
+	srate = rate;
+}
+
+void SndDrvOpn::SetRenderVolume(int level)
+{
+	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
+}
+
+void SndDrvOpn::Enable(BOOL flag)
+{
+	enable = flag;
+}
+
+/*
+ * 互換のためのダミー関数
+ */
+void SndDrvOpn::SetState(BOOL state)
+{
+
+}
+
+/*
+ * 互換のためのダミー関数
+ */
+void SndDrvOpn::SetFreq(int f)
+{
+
+}
+
+/*
+ * 互換のためのダミー関数
+ */
+void SndDrvOpn::ResetCounter(BOOL flag)
+{
+
+}
 
 
 /*
@@ -214,25 +255,33 @@ int *SndDrvOpn::GetRVolume(int num)
 	return r_vol[num];
 }
 
+
+
 void SndDrvOpn::Setup(int tick)
 {
 	UINT uChannels;
-	int i;
 
 	uStereo = nStereoOut %4;
 	uChannels = 2;
     channels = uChannels;
-	   if(tick > 0) {
-		   ms = (UINT)tick;
-	   } else {
-		   ms = nSoundBuffer;
-	   }
-		uChanSep = uChSeparation;
+	enable = FALSE;
+	counter = 0;
 
-	   InitOpn();
-	   return;
+
+    if(tick > 0) {
+	   ms = (UINT)tick;
+	  } else {
+	   ms = nSoundBuffer;
+	  }
+	uChanSep = uChSeparation;
+   InitOpn();
+   return;
 }
 
+void SndDrvOpn::Setup(int tick, int opno)
+{
+    Setup(tick);
+}
 
 
 
@@ -243,26 +292,14 @@ void SndDrvOpn::Setup(int tick)
 int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero)
 {
 
-	int s;
-	int ss;
 	int ss2;
 	Uint32 *q;
 
-	s = (ms * srate)/1000;
 	if(pBuf32 == NULL) return 0;
 
 	q = (Uint32 *)pBuf32;
 	q = &q[start * channels];
-#if 0
-	ss = sSamples + start;
-	if(ss > s) {
-		ss2 = s - start;
-	} else {
-		ss2 = sSamples;
-	}
-#else
 	ss2 = sSamples;
-#endif
 	if(ss2 <= 0) return 0;
 	if(RenderSem == NULL) {
 		return 0;

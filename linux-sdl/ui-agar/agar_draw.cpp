@@ -9,7 +9,7 @@
 #include <agar/core.h>
 #include <agar/gui.h>
 #include <agar/gui/opengl.h>
-#include <libemugrph/EmuAgarGL.h>
+#include "EmuAgarGL.h"
 #include "api_draw.h"
 #include "api_scaler.h"
 #include "agar_gldraw.h"

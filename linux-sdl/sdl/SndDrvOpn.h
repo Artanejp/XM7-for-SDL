@@ -8,8 +8,8 @@
 #ifndef SNDDRVOPN_H_
 #define SNDDRVOPN_H_
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+//#include <SDL/SDL.h>
+//#include <SDL/SDL_mixer.h>
 #include "xm7.h"
 #include "cisc.h"
 #include "opna.h"
@@ -24,16 +24,26 @@
 
 
 #include <vector>
-#include "SndDrvTmpl.h"
+#include "SndDrvIF.h"
 
 #define OPN_SLOT 8
 
-class SndDrvOpn: public SndDrvTmpl {
+class SndDrvOpn: public SndDrvIF {
 public:
 	SndDrvOpn();
 	virtual ~SndDrvOpn();
+
 	void Setup(int tick);
 	void Setup(int tick, int opno);
+	void Enable(BOOL flag);
+	void SetChannels(int c);
+	void SetRate(int rate);
+	void SetRenderVolume(int level);
+	void SetState(BOOL state); // CMTのみ？
+	void SetFreq(int f); // Beepのみ?
+	void ResetCounter(BOOL flag); // Beepのみ？
+
+
 	BYTE GetCh3Mode(int opn);
 	void SetCh3Mode(int opn, Uint8 dat);
 
@@ -52,6 +62,15 @@ public:
 	int Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero);
 	int Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero);
 	void Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples);
+
+protected:
+	UINT channels;
+	UINT srate;
+	UINT ms;
+	UINT uStereo;
+	int nLevel; /* レンダリングの音量 */
+	BOOL enable;
+	SDL_sem *RenderSem;
 
 private:
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);

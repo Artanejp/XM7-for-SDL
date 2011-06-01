@@ -22,23 +22,47 @@
 	<File name="SDLKbdInterface.h" open="1" top="0" tabpos="8">
 		<Cursor position="221" topLine="7" />
 	</File>
-	<File name="SndDrvBeep.cpp" open="1" top="0" tabpos="3">
-		<Cursor position="1847" topLine="81" />
+	<File name="SndDrvBeep.cpp" open="1" top="1" tabpos="3">
+		<Cursor position="3171" topLine="214" />
 	</File>
-	<File name="SndDrvCMT.cpp" open="0" top="0" tabpos="0">
-		<Cursor position="1630" topLine="71" />
+	<File name="SndDrvBeep.h" open="1" top="0" tabpos="28">
+		<Cursor position="232" topLine="3" />
+	</File>
+	<File name="SndDrvCMT.cpp" open="1" top="0" tabpos="27">
+		<Cursor position="5279" topLine="220" />
+	</File>
+	<File name="SndDrvCMT.h" open="1" top="0" tabpos="26">
+		<Cursor position="343" topLine="7" />
+	</File>
+	<File name="SndDrvIF.h" open="1" top="0" tabpos="21">
+		<Cursor position="1921" topLine="31" />
+	</File>
+	<File name="SndDrvOpn.cpp" open="1" top="0" tabpos="24">
+		<Cursor position="5196" topLine="344" />
+	</File>
+	<File name="SndDrvOpn.h" open="1" top="0" tabpos="22">
+		<Cursor position="506" topLine="30" />
+	</File>
+	<File name="SndDrvTmpl.cpp" open="1" top="0" tabpos="25">
+		<Cursor position="610" topLine="11" />
+	</File>
+	<File name="SndDrvTmpl.h" open="1" top="0" tabpos="23">
+		<Cursor position="574" topLine="0" />
 	</File>
 	<File name="SndDrvWav.cpp" open="1" top="0" tabpos="1">
 		<Cursor position="4166" topLine="193" />
 	</File>
+	<File name="SndDrvWav.h" open="1" top="0" tabpos="29">
+		<Cursor position="0" topLine="0" />
+	</File>
 	<File name="api_draw.cpp" open="1" top="0" tabpos="16">
-		<Cursor position="41012" topLine="2234" />
+		<Cursor position="41012" topLine="2226" />
 	</File>
 	<File name="api_draw.h" open="1" top="0" tabpos="4">
 		<Cursor position="3508" topLine="45" />
 	</File>
 	<File name="api_js.h" open="1" top="0" tabpos="6">
-		<Cursor position="389" topLine="9" />
+		<Cursor position="389" topLine="5" />
 	</File>
 	<File name="api_kbd.cpp" open="1" top="0" tabpos="19">
 		<Cursor position="204" topLine="689" />
@@ -47,13 +71,13 @@
 		<Cursor position="1696" topLine="73" />
 	</File>
 	<File name="api_scaler.cpp" open="1" top="0" tabpos="17">
-		<Cursor position="4744" topLine="216" />
+		<Cursor position="4744" topLine="27" />
 	</File>
-	<File name="api_scaler.h" open="1" top="0" tabpos="36">
+	<File name="api_scaler.h" open="1" top="0" tabpos="20">
 		<Cursor position="1214" topLine="55" />
 	</File>
-	<File name="api_snd2.cpp" open="1" top="1" tabpos="2">
-		<Cursor position="25140" topLine="1259" />
+	<File name="api_snd2.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="6415" topLine="1263" />
 	</File>
 	<File name="build_config.h" open="0" top="0" tabpos="1">
 		<Cursor position="1512" topLine="84" />

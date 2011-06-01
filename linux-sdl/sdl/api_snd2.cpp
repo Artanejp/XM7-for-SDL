@@ -36,12 +36,12 @@
 
 #include "api_wavwriter.h"
 
-
+#include "SndDrvIF.h"
 #include "SndDrvBeep.h"
 #include "SndDrvWav.h"
 #include "SndDrvOpn.h"
 #include "SndDrvCMT.h"
-#include "util_ringbuffer.h"
+//#include "util_ringbuffer.h"
 
 
 
@@ -145,11 +145,11 @@ static SDL_sem 			*applySem;
 /*
  * サウンドレンダリングドライバ
  */
-static SndDrvBeep *DrvBeep;
+static SndDrvIF *DrvBeep;
 static SndDrvWav *DrvWav;
-static SndDrvOpn *DrvPSG;
-static SndDrvOpn *DrvOPN;
-static SndDrvCMT *DrvCMT;
+static SndDrvIF *DrvPSG;
+static SndDrvIF *DrvOPN;
+static SndDrvIF *DrvCMT;
 
 
 static char     *WavName[] = {
@@ -437,7 +437,6 @@ BOOL SelectSnd(void)
 {
 
 	int members;
-	int wavlength;
 
 	/*
 	 * パラメータを設定
@@ -862,8 +861,11 @@ static BOOL FlushCMTSub(DWORD time,  BOOL bZero, int chunksize)
 	return TRUE;
 }
 
+static BOOL Flush(DWORD time, struct SndBufType *p, BOOL bZero, int chunksize)
+{
 
 
+}
 /*
  * XXX Notify系関数…VM上の仮想デバイスに変化があったとき呼び出される
  */
@@ -1261,8 +1263,8 @@ void ProcessSnd(BOOL bZero)
 		    */
 		   if (bWrite) {
 		       // OPNについては不要か？必要か？
-			   samples = CalcSamples(pOpnBuf, time);
-			   RenderOpnSub(time, samples, bZero);
+//			   samples = CalcSamples(pOpnBuf, time);
+//			   RenderOpnSub(time, samples, bZero);
 		   }
 		   return;
 	  }

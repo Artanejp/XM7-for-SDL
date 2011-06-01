@@ -50,7 +50,7 @@
 #include "EmuGrphScale4x4i.h"
 
 #ifdef USE_AGAR
-#include "EmuAgarGL.h"
+//#include "EmuAgarGL.h"
 #else
 #include "EmuGLUtils.h"
 #endif

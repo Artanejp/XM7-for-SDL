@@ -13,7 +13,6 @@
 
 
 SndDrvTmpl::SndDrvTmpl() {
-	int i;
 	uStereo = nStereoOut %4;
 	channels = 2;
 	ms = nSoundBuffer;
@@ -26,8 +25,6 @@ SndDrvTmpl::SndDrvTmpl() {
 
 SndDrvTmpl::~SndDrvTmpl() {
 	// TODO Auto-generated destructor stub
-	int i;
-
 	enable = FALSE;
 	if(RenderSem != NULL) {
 		SDL_SemWait(RenderSem);

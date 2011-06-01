@@ -74,6 +74,7 @@
 		<Unit filename="SndDrvBeep.h" />
 		<Unit filename="SndDrvCMT.cpp" />
 		<Unit filename="SndDrvCMT.h" />
+		<Unit filename="SndDrvIF.h" />
 		<Unit filename="SndDrvOpn.cpp" />
 		<Unit filename="SndDrvOpn.h" />
 		<Unit filename="SndDrvTmpl.cpp" />

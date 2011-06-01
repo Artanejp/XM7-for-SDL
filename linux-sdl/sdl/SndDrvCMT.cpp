@@ -20,6 +20,15 @@ SndDrvCMT::SndDrvCMT() {
 	bTapeFlag = FALSE;
 	bTapeFlag2 = FALSE;
 	enable = FALSE;
+
+	uStereo = nStereoOut %4;
+	channels = 2;
+	ms = nSoundBuffer;
+    srate = nSampleRate;
+	counter = 0;
+	nLevel = 32767;
+	RenderSem = SDL_CreateSemaphore(1);
+    SDL_SemPost(RenderSem);
 }
 
 SndDrvCMT::~SndDrvCMT() {
@@ -27,7 +36,30 @@ SndDrvCMT::~SndDrvCMT() {
 	bTapeFlag2 = FALSE;
 	bTapeFlag = FALSE;
 	enable = FALSE;
+	if(RenderSem != NULL) {
+		SDL_SemWait(RenderSem);
+		SDL_DestroySemaphore(RenderSem);
+		RenderSem = NULL;
+	}
 }
+
+
+void SndDrvCMT::SetChannels(int c)
+{
+	channels = c;
+}
+
+void SndDrvCMT::SetRate(int rate)
+{
+	srate = rate;
+}
+
+
+void SndDrvCMT::Enable(BOOL flag)
+{
+	enable = flag;
+}
+
 
 void SndDrvCMT::SetState(BOOL state)
 {
@@ -40,33 +72,168 @@ void SndDrvCMT::SetRenderVolume(int level)
 	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
 }
 
+void SndDrvCMT::Setup(int tick)
+{
+	UINT uChannels;
+
+	uStereo = nStereoOut %4;
+	uChannels = 2;
+	channels = uChannels;
+	ms = tick;
+
+	enable = FALSE;
+	counter = 0;
+	return;
+}
+
+/*
+ * Beepのみのダミー関数
+ */
+void SndDrvCMT::SetFreq(int f)
+{
+
+}
+
+void SndDrvCMT::ResetCounter(BOOL flag)
+{
+    if(flag) {
+        counter = 0;
+    }
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::Setup(int tick, int opno)
+{
+  Setup(tick);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+BYTE SndDrvCMT::GetCh3Mode(int opn)
+{
+    return 0;
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetCh3Mode(int opn, Uint8 dat)
+{
+
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetRenderVolume(void)
+{
+	SetRenderVolume(0);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetRenderVolume(int ch, int level)
+{
+    SetRenderVolume(level);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetRenderVolume(int ch, int fm, int psg)
+{
+	SetRenderVolume(0);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetLRVolume(void)
+{
+
+}
+/*
+ * OPNのみのダミー関数
+ */
+int *SndDrvCMT::GetLVolume(int num)
+{
+    return NULL;
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+int *SndDrvCMT::GetRVolume(int num)
+{
+    return NULL;
+}
+/*
+ * OPNのみのダミー関数
+ */
+BYTE SndDrvCMT::GetReg(int opn, BYTE)
+{
+    return 0;
+}
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetReg(int opn, BYTE reg, BYTE dat)
+{
+
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::SetReg(int opn, BYTE *reg)
+{
+
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+int SndDrvCMT::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+    return Render(pBuf, start, sSamples, clear, bZero);
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+int SndDrvCMT::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero)
+{
+    // 32bitバッファがないから、そのまま帰る
+    return 0;
+}
+
+/*
+ * OPNのみのダミー関数
+ */
+void SndDrvCMT::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
+{
+    return;
+}
+
+
 int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL bZero)
 {
 	int		dat;
 	int      i;
 	int    tmp;
 	int 	sSamples = uSamples;
-	int 	s;
-	int 	ss;
+
 	int 	ss2;
 	int 	level;
 	Sint16 *wbuf;
 
 
 	if(pBuf == NULL) return 0;
-	s = (ms * srate) / 1000;
-#if 0
-	if(sSamples > s) sSamples = s;
-	ss = sSamples + start;
-	if(ss > s) {
-		ss2 = s - start;
-	} else {
-		ss2 = sSamples;
-	}
-	if(ss2 <= 0) return 0;
-#else
 	ss2 = sSamples;
-#endif
 	if(RenderSem == NULL) return 0;
 	SDL_SemWait(RenderSem);
 
