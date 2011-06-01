@@ -77,6 +77,7 @@
 		<Unit filename="EmuGrphScale4x4.h" />
 		<Unit filename="EmuGrphScale4x4i.cpp" />
 		<Unit filename="EmuGrphScale4x4i.h" />
+		<Unit filename="EmuGrphScaleTmpl.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />

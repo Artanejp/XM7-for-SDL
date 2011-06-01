@@ -729,6 +729,7 @@ static BOOL FlushOpnSub(DWORD time,  BOOL bZero, int chunksize)
 	if(pOpnBuf == NULL) return FALSE;
 
 	if(chunksize<0) return FALSE;
+	if(p->nWritePTR >= p->nSize) return FALSE;
 	i = chunksize - (p->nWritePTR % chunksize);
 	/*
 	 * オーバーフロー対策込
@@ -852,6 +853,7 @@ static BOOL FlushCMTSub(DWORD time,  BOOL bZero, int chunksize)
 	p = pCMTBuf;
 
 	if(chunksize<0) return FALSE;
+	if(p->nWritePTR >= p->nSize) return FALSE;
 	i = chunksize - (p->nWritePTR % chunksize);
 	/*
 	 * オーバーフロー対策込
