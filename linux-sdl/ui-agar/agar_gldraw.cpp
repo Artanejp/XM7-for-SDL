@@ -24,6 +24,7 @@ static GLuint blanktextureid;
 static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
+
 static SDL_semaphore *VramSem;
 
 extern void DrawOSDGL(AG_GLView *w);

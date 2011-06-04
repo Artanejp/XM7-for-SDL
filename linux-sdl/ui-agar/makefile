@@ -11,7 +11,8 @@ include ../config.mak
 #CFLAGS += -I../xm7-sdl/
 
 VIDEODRVSRC = \
-	agar_draw.cpp agar_gldraw.cpp
+	agar_draw.cpp agar_gldraw.cpp \
+	DrawAGNonGL.cpp
 
 INPUTSRC = \
 	AgarKbdInterface.cpp \
@@ -110,6 +111,9 @@ Release/agar_sdl.o: agar_sdl.cpp
 Release/agar_osd.o: agar_osd.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
+Release/DrawAGNonGL.o: DrawAGNonGL.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
 #########
 Debug/agar_draw.o: agar_draw.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
@@ -165,6 +169,8 @@ Debug/agar_sdl.o: agar_sdl.cpp
 Debug/agar_osd.o: agar_osd.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
+Debug/DrawAGNonGL.o: DrawAGNonGL.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 #.asm.o:
 #	nasm ${ASFLAGS} $<
