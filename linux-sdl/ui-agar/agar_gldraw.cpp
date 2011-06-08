@@ -13,9 +13,12 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 #include "agar_xm7.h"
+#include "agar_draw.h"
 #include "agar_gldraw.h"
 
-
+extern "C" {
+    AG_GLView *GLDrawArea;
+}
 static AG_Surface *pixvram;
 static Uint32 vramwidth;
 static Uint32 vramheight;
@@ -24,7 +27,6 @@ static GLuint blanktextureid;
 static AG_PixelFormat format;
 static void (*getvram)(Uint32, Uint32 *, Uint32);
 static BOOL InitVideo;
-
 static SDL_semaphore *VramSem;
 
 extern void DrawOSDGL(AG_GLView *w);
@@ -200,7 +202,7 @@ static GLuint CreateTexture(AG_Surface *p)
 
 static void DiscardTextures(int n, GLuint *id)
 {
-	if(DrawArea == NULL) return;
+	if(GLDrawArea == NULL) return;
 	if(agDriverOps == NULL) return;
 	glDeleteTextures(n, id);
 
@@ -225,9 +227,9 @@ AG_Surface *GetVramSurface_AG_GL()
 	return pixvram;
 }
 
-void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h)
-{
-}
+//void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h)
+//{
+//}
 
 void Flip_AG_GL(void)
 {
@@ -251,13 +253,13 @@ void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
     BOOL newFlag = FALSE;
 
 
-	if(DrawArea == NULL) return;
+	if(GLDrawArea == NULL) return;
 	// Test
 	if(agDriverOps == NULL) return;
 	if(agDriverSw) {
 		drv = &agDriverSw->_inherit;
 	} else {
-		drv = AGWIDGET(DrawArea)->drv;
+		drv = AGWIDGET(GLDrawArea)->drv;
 	}
 	if(drv == NULL) return;
 	if((vramwidth <= 0) || (vramheight <=0)) return;

@@ -158,10 +158,13 @@ SDL_Surface *DrawAGNonGL::MakeShadowSurface(void)
 
 void DrawAGNonGL::FreeShadowSurface(void)
 {
+    if(ShadowSurface == NULL) return;
     if(ShadowSurface->format != NULL) {
         free(ShadowSurface->format);
+        ShadowSurface->format = NULL;
     }
     free(ShadowSurface);
+    ShadowSurface = NULL;
 }
 /*
  * VRAMをアロケートする
@@ -169,15 +172,20 @@ void DrawAGNonGL::FreeShadowSurface(void)
 void DrawAGNonGL::InitDraw(int w, int h)
 {
 
+    AG_PixelFormat fmt;
+
 	if(InitVideo) return;
     InitVideo = TRUE;
 
 	if((pixvram == NULL) &&(w != 0) &&(h != 0)) {
-	    pixvram = AG_SurfaceStdRGB(w, h);
+	    pixvram = AG_SurfaceRGBA(w, h, 32, AG_SRCALPHA, 0xff00000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 	    if(ShadowSurface != NULL) {
 	        FreeShadowSurface();
 	    }
         ShadowSurface = MakeShadowSurface();
+	} else {
+	    AG_SurfaceFree(pixvram);
+	    pixvram = AG_SurfaceRGBA(w, h, 32, AG_SRCALPHA, 0xff00000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 	}
 	if(VramSem == NULL) {
 		VramSem = SDL_CreateSemaphore(1);

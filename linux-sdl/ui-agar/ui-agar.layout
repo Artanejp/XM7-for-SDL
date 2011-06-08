@@ -1,40 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Release" />
+	<ActiveTarget name="Debug" />
 	<File name="AgarKbdInterface.cpp" open="1" top="0" tabpos="4">
 		<Cursor position="5972" topLine="220" />
 	</File>
-	<File name="AgarKbdInterface.h" open="1" top="1" tabpos="1">
+	<File name="AgarKbdInterface.h" open="1" top="0" tabpos="1">
 		<Cursor position="303" topLine="12" />
 	</File>
+	<File name="DrawAGNonGL.cpp" open="1" top="0" tabpos="11">
+		<Cursor position="4670" topLine="171" />
+	</File>
+	<File name="DrawAGNonGL.h" open="0" top="0" tabpos="0">
+		<Cursor position="292" topLine="0" />
+	</File>
 	<File name="agar_cfg.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="8071" topLine="0" />
+		<Cursor position="21521" topLine="793" />
 	</File>
 	<File name="agar_cmd.cpp" open="1" top="0" tabpos="7">
 		<Cursor position="1519" topLine="92" />
 	</File>
 	<File name="agar_draw.cpp" open="1" top="0" tabpos="6">
-		<Cursor position="2809" topLine="112" />
+		<Cursor position="563" topLine="30" />
 	</File>
-	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="16">
-		<Cursor position="4579" topLine="236" />
+	<File name="agar_draw.h" open="1" top="0" tabpos="14">
+		<Cursor position="340" topLine="5" />
 	</File>
-	<File name="agar_gui_menu.cpp" open="0" top="0" tabpos="31">
-		<Cursor position="3045" topLine="137" />
+	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="10">
+		<Cursor position="1943" topLine="87" />
+	</File>
+	<File name="agar_gldraw.h" open="1" top="0" tabpos="13">
+		<Cursor position="1103" topLine="6" />
+	</File>
+	<File name="agar_gui_menu.cpp" open="1" top="0" tabpos="15">
+		<Cursor position="1161" topLine="39" />
 	</File>
 	<File name="agar_guicore.cpp" open="1" top="0" tabpos="8">
-		<Cursor position="3856" topLine="187" />
+		<Cursor position="6482" topLine="272" />
 	</File>
 	<File name="agar_main.cpp" open="1" top="0" tabpos="5">
-		<Cursor position="3767" topLine="168" />
+		<Cursor position="883" topLine="127" />
+	</File>
+	<File name="agar_osd.cpp" open="1" top="0" tabpos="16">
+		<Cursor position="16240" topLine="716" />
 	</File>
 	<File name="agar_toolbox.cpp" open="0" top="0" tabpos="32">
 		<Cursor position="2694" topLine="187" />
+	</File>
+	<File name="agar_toolbox.h" open="1" top="0" tabpos="12">
+		<Cursor position="239" topLine="8" />
 	</File>
 	<File name="agar_ui_vkey.cpp" open="1" top="0" tabpos="9">
 		<Cursor position="12526" topLine="407" />
 	</File>
 	<File name="agar_xm7.h" open="1" top="0" tabpos="3">
-		<Cursor position="790" topLine="53" />
+		<Cursor position="1109" topLine="57" />
 	</File>
 </CodeBlocks_layout_file>

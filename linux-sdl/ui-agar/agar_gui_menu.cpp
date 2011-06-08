@@ -50,7 +50,6 @@ extern void OnDestroy(AG_Event *event);
 extern void OnDestroy2(void);
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
-AG_GLView *DrawArea;
 }
 
 

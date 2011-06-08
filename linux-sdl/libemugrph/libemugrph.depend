@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1306429031 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuAgarGL.cpp
+1306854126 source:/home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuAgarGL.cpp
 	<SDL.h>
 	"EmuAgarGL.h"
 
@@ -1136,6 +1136,6 @@
 1306850314 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScale4x4i.h
 	"EmuGrphScaleTmpl.h"
 
-1306855021 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
+1306855106 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
 

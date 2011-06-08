@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="EmuAgarGL.cpp" open="1" top="1" tabpos="1">
+	<File name="EmuAgarGL.cpp" open="1" top="0" tabpos="1">
 		<Cursor position="8515" topLine="374" />
+	</File>
+	<File name="EmuAgarGL.h" open="1" top="0" tabpos="30">
+		<Cursor position="463" topLine="16" />
+	</File>
+	<File name="EmuGLUtils.h" open="1" top="0" tabpos="31">
+		<Cursor position="348" topLine="10" />
 	</File>
 	<File name="EmuGrph256kc.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="3003" topLine="155" />
@@ -14,7 +20,7 @@
 		<Cursor position="156" topLine="19" />
 	</File>
 	<File name="EmuGrphScale1x1.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="252" topLine="7" />
+		<Cursor position="1163" topLine="47" />
 	</File>
 	<File name="EmuGrphScale1x1.h" open="0" top="0" tabpos="0">
 		<Cursor position="538" topLine="8" />
@@ -43,8 +49,8 @@
 	<File name="EmuGrphScale2x2i.h" open="0" top="0" tabpos="0">
 		<Cursor position="174" topLine="5" />
 	</File>
-	<File name="EmuGrphScale2x4.cpp" open="0" top="0" tabpos="1">
-		<Cursor position="2018" topLine="47" />
+	<File name="EmuGrphScale2x4.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="2018" topLine="77" />
 	</File>
 	<File name="EmuGrphScale2x4.h" open="0" top="0" tabpos="0">
 		<Cursor position="218" topLine="6" />
@@ -56,13 +62,13 @@
 		<Cursor position="82" topLine="5" />
 	</File>
 	<File name="EmuGrphScale4x4.cpp" open="1" top="0" tabpos="6">
-		<Cursor position="1372" topLine="58" />
+		<Cursor position="1372" topLine="106" />
 	</File>
 	<File name="EmuGrphScale4x4.h" open="0" top="0" tabpos="0">
 		<Cursor position="170" topLine="5" />
 	</File>
 	<File name="EmuGrphScale4x4i.cpp" open="1" top="0" tabpos="5">
-		<Cursor position="2136" topLine="71" />
+		<Cursor position="2136" topLine="65" />
 	</File>
 	<File name="EmuGrphScale4x4i.h" open="0" top="0" tabpos="0">
 		<Cursor position="222" topLine="5" />

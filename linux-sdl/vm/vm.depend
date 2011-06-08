@@ -12,7 +12,7 @@
 	"agar_xm7.h"
 	"sdl.h"
 
-1306486951 /home/whatisthis/codeblocks/xm7-sdl/vm/xm7.h
+1306516049 /home/whatisthis/codeblocks/xm7-sdl/vm/xm7.h
 	<stdio.h>
 	"build_config.h"
 	<agar/core.h>
@@ -22,7 +22,7 @@
 	<memwatch.h>
 	<assert.h>
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl//build_config.h
+1306515607 /home/whatisthis/codeblocks/xm7-sdl/sdl//build_config.h
 
 1306263666 /usr/local/include/agar/agar/core.h
 	<agar/core/core_begin.h>
@@ -1042,7 +1042,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/device.h
 
-1306429762 /home/whatisthis/codeblocks/xm7-sdl/ui-agar//agar_xm7.h
+1307543947 /home/whatisthis/codeblocks/xm7-sdl/ui-agar//agar_xm7.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1052,7 +1052,7 @@
 	<gtk/gtk.h>
 	<SDL.h>
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl//sdl.h
+1306517105 /home/whatisthis/codeblocks/xm7-sdl/sdl//sdl.h
 	<stdlib.h>
 	<sys/param.h>
 	<gtk/gtk.h>
@@ -1106,7 +1106,7 @@
 
 1306445110 /home/whatisthis/codeblocks/xm7-sdl/vm/kanji.h
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl//api_draw.h
+1306516519 /home/whatisthis/codeblocks/xm7-sdl/sdl//api_draw.h
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -1158,7 +1158,7 @@
 	<windows.h>
 	<stddef.h>
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl//api_scaler.h
+1306944229 /home/whatisthis/codeblocks/xm7-sdl/sdl//api_scaler.h
 	<SDL.h>
 	<SDL_syswm.h>
 	<SDL_opengl.h>
@@ -1176,6 +1176,7 @@
 	"EmuGrph400l.h"
 	"EmuGrph4096c.h"
 	"EmuGrph256kc.h"
+	"EmuGrphScaleTmpl.h"
 	"EmuGrphScale1x1.h"
 	"EmuGrphScale1x2.h"
 	"EmuGrphScale1x2i.h"
@@ -1185,7 +1186,6 @@
 	"EmuGrphScale2x4i.h"
 	"EmuGrphScale4x4.h"
 	"EmuGrphScale4x4i.h"
-	"EmuAgarGL.h"
 	"EmuGLUtils.h"
 
 1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphLib.h
@@ -1201,32 +1201,32 @@
 	"EmuGrphLib.h"
 	"EmuGrph4096c.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale1x1.h
-	"EmuGrphScale1x2.h"
+1306849737 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale1x1.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale1x2.h
-	<SDL/SDL.h>
+1306849143 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale1x2.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale1x2i.h
-	"EmuGrphScale1x2.h"
+1306849361 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale1x2i.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x2.h
-	"EmuGrphScale2x4.h"
+1306850195 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x2.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x4.h
-	"EmuGrphScale1x2.h"
+1306850236 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x4.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x2i.h
-	"EmuGrphScale2x4i.h"
+1306850214 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x2i.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x4i.h
-	"EmuGrphScale2x4.h"
+1306850261 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale2x4i.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale4x4.h
-	"EmuGrphScale2x4.h"
+1306850314 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale4x4.h
+	"EmuGrphScaleTmpl.h"
 
-1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale4x4i.h
-	"EmuGrphScale4x4.h"
+1306850314 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScale4x4i.h
+	"EmuGrphScaleTmpl.h"
 
 1306429031 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuAgarGL.h
 	"EmuGLUtils.h"
@@ -1376,7 +1376,7 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm/rtc.h
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/m6809.c
+1306516449 source:/home/whatisthis/codeblocks/xm7-sdl/vm/m6809.c
 	"xm7.h"
 	"m6809tbl.h"
 	"m6809ops.h"
@@ -1516,7 +1516,7 @@
 	"event.h"
 	"tapelp.h"
 
-1306429230 source:/home/whatisthis/codeblocks/xm7-sdl/vm/subcpu.c
+1306855243 source:/home/whatisthis/codeblocks/xm7-sdl/vm/subcpu.c
 	"xm7.h"
 	"subctrl.h"
 	"mainetc.h"
@@ -1613,4 +1613,7 @@
 	<SDL/SDL.h>
 
 1306448983 /home/whatisthis/codeblocks/xm7-sdl/vm/rs232c.h
+
+1306855106 /home/whatisthis/codeblocks/xm7-sdl/libemugrph//EmuGrphScaleTmpl.h
+	<SDL/SDL.h>
 

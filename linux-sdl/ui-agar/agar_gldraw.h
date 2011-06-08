@@ -16,11 +16,10 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
+#include "agar_draw.h"
+
 extern "C" {
-extern AG_GLView *DrawArea;
-extern AG_Window *MainWindow;
-extern AG_Menu  *MenuBar;
-extern void DrawStatus(void);
+extern AG_GLView *GLDrawArea;
 }
 extern BOOL EventSDL(AG_Driver *drv);
 extern BOOL EventGUI(AG_Driver *drv);
@@ -45,7 +44,7 @@ extern void UnLockVram(void);
 extern void CalcPalette_AG_GL(Uint32 *palette, Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 extern void SetVramReader_AG_GL(void p(Uint32, Uint32 *, Uint32), int w, int h);
-extern void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h);
+//extern void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h);
 extern void Flip_AG_GL(void);
 
 extern void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage);

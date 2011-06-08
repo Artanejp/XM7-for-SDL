@@ -38,11 +38,6 @@ void InitInstance(void);
 void OnDestroy(AG_Event *event);
 void OnDestroy2(void);
 extern void InitGL(int w, int h);
-
-extern AG_Window *MainWindow;
-extern AG_Menu *MenuBar;
-extern AG_GLView *DrawArea;
-extern AG_GLView *OsdArea;
 }
 
 Uint32 nDrawTick1D;
@@ -276,6 +271,8 @@ void MainLoop(int argc, char *argv[])
     }
     stopreq_flag = FALSE;
     run_flag = TRUE;
+    // Debug
+//    drivers = "sdlfb:width=1280:height=880:depth=32";
 	/*
 	 * Agar のメインループに入る
 	 */
@@ -290,8 +287,8 @@ void MainLoop(int argc, char *argv[])
                 return;
         }
     }
-	InitGL(640, 400);
-   OnCreate((AG_Widget *)NULL);
+    InitGL(640, 400);
+    OnCreate((AG_Widget *)NULL);
 	InitInstance();
 	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
@@ -387,6 +384,11 @@ void InitInstance(void)
 {
 	AG_Box *hb;
 	AG_Window *win;
+	AG_Driver *drv;
+
+
+    GLDrawArea = NULL;
+    DrawArea = NULL;
 
 	InitFont();
         MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
@@ -394,22 +396,44 @@ void InitInstance(void)
 	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 440);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
 
+	if(agDriverSw) {
+		drv = &agDriverSw->_inherit;
+	} else {
+	    drv = AGDRIVER(MainWindow);
+	}
 
-	DrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
+    if(AG_UsingGL(drv) != 0) {
+        /*
+         * OpenGL Capability
+         */
+        GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
+        AG_WidgetSetSize(GLDrawArea, 640,440);
+        AG_GLViewSizeHint(GLDrawArea, 640, 440);
+        AG_WidgetSetPosition(GLDrawArea, 0, 0);
+        AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL, NULL);
+        AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
+        //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
+        //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
+		bUseOpenGL = TRUE;
+    } else {
+        // Non-GL
+        DrawArea = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HORIZ);
         AG_WidgetSetSize(DrawArea, 640,440);
-	AG_GLViewSizeHint(DrawArea, 640, 440);
-	AG_WidgetSetPosition(DrawArea, 0, 0);
-	AG_GLViewDrawFn (DrawArea, AGEventDrawGL, NULL);
-	AG_GLViewScaleFn (DrawArea, AGEventScaleGL, NULL);
-	//AG_GLViewOverlayFn (DrawArea, AGEventOverlayGL, NULL);
-
-	//	AG_GLViewMotionFn(DrawArea, AGEventMouseMove_AG_GL, NULL);
+        AG_WidgetSetPosition(DrawArea, 0, 0);
+        InitDrawArea(640,400);
+        LinkDrawArea(AGWIDGET(DrawArea));
+        bUseOpenGL = FALSE;
+    }
 	CreateStatus();
-//	AG_WidgetDisable(AGWIDGET(DrawArea));
-	AG_WidgetShow(DrawArea);
+	if(GLDrawArea != NULL) {
+	    AG_WidgetShow(GLDrawArea);
+	}
+	if(DrawArea != NULL) {
+	    AG_WidgetShow(DrawArea);
+	}
 	AG_WindowShow(MainWindow);
 
-        MenuBar = AG_MenuNewGlobal(0);
+    MenuBar = AG_MenuNewGlobal(0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
 

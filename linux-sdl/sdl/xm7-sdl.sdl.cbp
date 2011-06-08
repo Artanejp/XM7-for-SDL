@@ -9,7 +9,8 @@
 			<Target title="Debug">
 				<Option output="bin/Debug/xm7-sdl" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
-				<Option type="1" />
+				<Option external_deps="../ui-agar/obj/Debug/libui-agar.a;../vm/obj/Debug/libxm7_vm.a;../libemugrph/obj/Debug/libemugrph.a;" />
+				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
@@ -23,6 +24,7 @@
 			<Target title="Release">
 				<Option output="bin/Release/xm7-sdl" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
+				<Option external_deps="../ui-agar/obj/Release/libui-agar.a;../vm/obj/Release/libxm7_vm.a;../libemugrph/obj/Release/libemugrph.a;" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -117,6 +119,13 @@
 				<search_path add="../ui-agar" />
 				<search_path add="../libemugrph" />
 				<search_path add="../vm" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/gui" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/au" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/dev" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/math" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/rg" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/vg" />
+				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/core" />
 			</debugger>
 		</Extensions>
 	</Project>

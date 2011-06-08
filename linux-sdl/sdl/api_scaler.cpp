@@ -262,8 +262,21 @@ void SetupGL(int w, int h)
 void InitGL(int w, int h)
 {
 #ifdef USE_AGAR
+    AG_Driver *drv;
+
+    if(agDriverSw) {
+        drv = &agDriverSw->_inherit;
+    } else if(MainWindow != NULL) {
+        drv = AGDRIVER(MainWindow);
+    } else {
+        return;
+    }
     SDL_SemWait(DrawInitSem);
-	InitGL_AG_GL(w, h);
+    if(AG_UsingGL(drv)) {
+        InitGL_AG_GL(w, h);
+    } else {
+        AG_ResizeDisplay(w, h);
+    }
     SDL_SemPost(DrawInitSem);
 #else
     SDL_SemWait(DrawInitSem);

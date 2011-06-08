@@ -31,6 +31,8 @@
 #include "sdl_bar.h"
 #include "sdl_sch.h"
 #include "api_draw.h"
+#include "agar_draw.h"
+#include "agar_gldraw.h"
 
 #include <iconv.h>
 
@@ -86,12 +88,6 @@ static AG_Color 		black;
 static AG_Color			alpha;
 static BOOL bGLMode; /* 描画にOpenGLを使うか否か*/
 
-extern "C" {
-extern AG_GLView *DrawArea;
-extern AG_Window *MainWindow;
-extern AG_Menu  *MenuBar;
-AG_GLView *OsdArea;
-}
 
 GLuint tid_ins_on;
 GLuint tid_kana_on;

@@ -19,7 +19,6 @@ extern          "C" {
 
 extern AG_Window *MainWindow;
 extern AG_Menu *ToolBarMenu;
-extern AG_GLView *DrawArea;
 #ifdef __cplusplus
 }
 #endif				/*  */

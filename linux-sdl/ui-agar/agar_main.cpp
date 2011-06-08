@@ -28,6 +28,9 @@
 #include "sdl_sch.h"
 #include "sdl_snd.h"
 #include "agar_cfg.h"
+#include "agar_draw.h"
+#include "agar_gldraw.h"
+
 #include "sdl_inifile.h"
 
 #ifdef __cplusplus
@@ -167,7 +170,6 @@ void OnCreate(AG_Widget *parent)
 #endif
 
 extern void MainLoop(int argc, char *argv[]);
-extern void InitGUI(int w, int h);
 
 /*
  *  メイン関数
