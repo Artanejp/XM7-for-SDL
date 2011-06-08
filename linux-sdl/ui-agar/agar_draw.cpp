@@ -100,10 +100,11 @@ void ResizeWindow_Agar(int w, int h)
 #endif
 
 	if(DrawArea != NULL) {
-        AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
-        AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h + 10);
-        InitDrawArea(w, h);
-        LinkDrawArea(AGWIDGET(DrawArea));
+	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h + 10);
+	   //InitDrawArea(w, h);
+	   LinkDrawArea(AGWIDGET(DrawArea));
+	   AG_Redraw(AGWIDGET(DrawArea));
 	}
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, w, h);
@@ -171,8 +172,9 @@ void ResizeWindow_Agar2(int w, int h)
 	if(DrawArea != NULL) {
         AG_WidgetSetSize(AGWIDGET(DrawArea), ww, hh);
         AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h + 10);
-        InitDrawArea(ww, hh);
+        //InitDrawArea(ww, hh);
         LinkDrawArea(AGWIDGET(DrawArea));
+	AG_Redraw(AGWIDGET(DrawArea));
 	}
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, ww, hh);
@@ -239,6 +241,9 @@ void AGDrawTaskMain(void)
 	}
 #endif				/*  */
 	SelectDraw2();
+        if(DrvNonGL) {
+	   DrvNonGL->Flip();
+	}
 		/* Render the Agar windows */
 }
 

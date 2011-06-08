@@ -178,14 +178,14 @@ void DrawAGNonGL::InitDraw(int w, int h)
     InitVideo = TRUE;
 
 	if((pixvram == NULL) &&(w != 0) &&(h != 0)) {
-	    pixvram = AG_SurfaceRGBA(w, h, 32, AG_SRCALPHA, 0xff00000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	    pixvram = AG_SurfaceRGBA(w, h, 32, AG_SRCALPHA, 0x00ff000, 0x0000ff00, 0x000000ff, 0xff000000);
 	    if(ShadowSurface != NULL) {
 	        FreeShadowSurface();
 	    }
         ShadowSurface = MakeShadowSurface();
 	} else {
 	    AG_SurfaceFree(pixvram);
-	    pixvram = AG_SurfaceRGBA(w, h, 32, AG_SRCALPHA, 0xff00000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	    pixvram = AG_SurfaceRGBA(w, h, 32, AG_SRCALPHA, 0x00ff00000, 0x0000ff00, 0x000000ff, 0xff000000);
 	}
 	if(VramSem == NULL) {
 		VramSem = SDL_CreateSemaphore(1);
@@ -316,8 +316,8 @@ int DrawAGNonGL::GetMaxWidgets(void)
 
 SDL_Surface *DrawAGNonGL::GetSDLSurface(void)
 {
-//    return ShadowSurface;
-    return NULL;
+    return ShadowSurface;
+//    return NULL;
 }
 
 /*

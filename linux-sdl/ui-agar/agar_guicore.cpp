@@ -422,8 +422,8 @@ void InitInstance(void)
 		bUseOpenGL = TRUE;
     } else {
         // Non-GL
-        DrawArea = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HORIZ);
-        AG_WidgetSetSize(DrawArea, 640,440);
+        DrawArea = AG_BoxNewVert(AGWIDGET(MainWindow), AG_BOX_HORIZ);
+        AG_WidgetSetSize(DrawArea, 640,400);
         AG_WidgetSetPosition(DrawArea, 0, 0);
         InitDrawArea(640,400);
         LinkDrawArea(AGWIDGET(DrawArea));
