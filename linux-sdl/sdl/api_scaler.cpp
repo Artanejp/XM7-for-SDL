@@ -25,7 +25,6 @@
 #ifdef USE_AGAR
 //EmuAgarGL *scalerGL;
 extern AG_Window *MainWindow;
-extern void GetVram_AGGL_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
 //EmuAgarGL *pScalerGL;
 #else
 EmuGLUtils *pScalerGL;
@@ -196,7 +195,7 @@ void init_scaler(void)
 
 	if(pScalerGL == NULL) {
 #ifdef USE_AGAR
-//		scalerGL = new EmuAgarGL;
+		pScalerGL = new EmuAgarGL;
 #else
 		pScalerGL = new EmuGLUtils;
 		pScalerGL->SetVramReader(VramReader, 80, 400);
@@ -310,9 +309,6 @@ void Flip(void)
 	SDL_SemPost(DrawInitSem);
 }
 
-#ifdef USE_OPENGL
-#else
-#endif
 
 void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {

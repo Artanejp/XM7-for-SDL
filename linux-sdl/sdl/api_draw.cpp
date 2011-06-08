@@ -263,6 +263,7 @@ BOOL SelectDraw2(void)
 		AG_Color nullcolor;
 		AG_Driver *drv;
 		AG_Rect rect;
+                AG_Widget *wid;
 		SDL_Surface *p;
 #else // SDL
 		Uint32 nullcolor;
@@ -279,10 +280,14 @@ BOOL SelectDraw2(void)
 			return TRUE;
 		}
 #ifdef USE_AGAR
-		if(agDriverOps == NULL) return FALSE;
-		if(DrawArea == NULL) return FALSE;
-		drv = AGWIDGET(DrawArea)->drv;
-		if(drv == NULL) return FALSE;
+//		if(agDriverOps == NULL) return FALSE;
+                if(GLDrawArea != NULL) {
+		   wid = AGWIDGET(GLDrawArea);
+		} else if(DrawArea != NULL) {
+		   wid = AGWIDGET(DrawArea);
+		} else {
+		   return FALSE;
+		}
 		p = GetDrawSurface();
 #else
 		p = SDL_GetVideoSurface();
@@ -297,14 +302,14 @@ BOOL SelectDraw2(void)
 			 * すべてクリア
 			 */
 #ifdef USE_AGAR
-//			AG_ObjectLock(DrawArea);
+//			AG_ObjectLock(wid);
 			nullcolor.r = 0;
 			nullcolor.g = 0;
 			nullcolor.b = 0;
 			nullcolor.a = 255;
 
 //			AG_FillRect(drv->sRef, &rect, nullcolor);
-//			AG_ObjectUnlock(DrawArea);
+//			AG_ObjectUnlock(wid);
 #else
 			SDL_LockSurface(p);
 			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
@@ -790,7 +795,7 @@ void ChangeResolution(void)
         realDrawArea = SDL_GetVideoSurface();
 #endif
 // 後でコメント解除
-//        SelectScaler(nOldDrawWidth, nOldDrawHeight);
+        SelectScaler(nOldDrawWidth, nOldDrawHeight);
         SDL_SemPost(DrawInitSem);
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
@@ -1842,12 +1847,6 @@ static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	if(vramhdr != NULL) {
 		vramhdr->CalcPalette(i, r, g, b, a, p);
 	}
-//	if(vramhdr_400l != NULL) {
-//		vramhdr_400l->CalcPalette(i, r, g, b, a, p);
-//	}
-	if(vramhdr != NULL) {
-		vramhdr->CalcPalette(i, r, g, b, a);
-	}
 	if(vramhdr_400l != NULL) {
 		vramhdr_400l->CalcPalette(i, r, g, b, a);
 	}
@@ -1992,8 +1991,9 @@ void Draw640All(void)
 	p = GetDrawSurface();
 #else
 	p = SDL_GetVideoSurface();
-#endif
 //	if(p == NULL) return;
+#endif
+
 	/*
 	 * パレット設定
 	 */
@@ -2078,6 +2078,13 @@ void Draw400l(void)
 	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
 	SDL_Surface *p;
 	WORD wdtop, wdbtm;
+#ifdef USE_AGAR
+	AG_Driver *drv;
+	if(agDriverOps == NULL) return;
+	p = GetDrawSurface();
+#else
+	p = SDL_GetVideoSurface();
+#endif
 	/*
 	 * パレット設定
 	 */
@@ -2099,17 +2106,6 @@ void Draw400l(void)
 		 AllClear();
 	 }
 
-	/*
-	 * レンダリング
-	 */
-#ifdef USE_AGAR
-	if(agDriverOps == NULL) return;
-	p = GetDrawSurface();
-    if(p == NULL) return;
-#else
-	 p = SDL_GetVideoSurface();
-	 if(p == NULL) return;
-#endif
 	 /*
 	  * レンダリング
 	  */
@@ -2180,8 +2176,8 @@ void Draw320(void)
 	p = GetDrawSurface();
 #else
 	p = SDL_GetVideoSurface();
-#endif
 	if(p == NULL) return;
+#endif
 	/*
 	 * パレット設定
 	 */
@@ -2190,15 +2186,15 @@ void Draw320(void)
 	 } else {
         PutVramFunc = &Scaler_GL;
 	 }
-	//	if(bPaletFlag) {
+	if(bPaletFlag) {
 	Palet320();
 	SetVramReader_4096();
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
 	nDrawRight = 320;
-	//SetDrawFlag(TRUE);
-	//	}
+	SetDrawFlag(TRUE);
+	}
 	/*
 	 * クリア処理
 	 */
@@ -2263,8 +2259,9 @@ void Draw256k(void)
 	p = GetDrawSurface();
 #else
 	p = SDL_GetVideoSurface();
-#endif
 	if(p == NULL) return;
+#endif
+
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	 } else {

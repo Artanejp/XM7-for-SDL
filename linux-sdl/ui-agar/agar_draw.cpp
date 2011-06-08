@@ -187,9 +187,6 @@ void ResizeWindow_Agar2(int w, int h)
 		AG_WindowSetGeometry(MainWindow, 0, MenuBar->wid.h + 10 , w, hh);
 	}
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
-	if(AG_UsingGL(drv)) {
-        AG_ResizeDisplay(w, hh);
-	}
     printf("Resize to %d x %d\n", w, h);
     if(MainWindow) {
         AG_Redraw(AGWIDGET(MainWindow));

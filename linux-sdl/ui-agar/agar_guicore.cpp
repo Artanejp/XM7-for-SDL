@@ -296,9 +296,14 @@ void MainLoop(int argc, char *argv[])
 	AG_initsub();
 
 	inf = SDL_GetVideoInfo();
-	RootVideoWidth = inf->current_w;
-	RootVideoHeight = inf->current_h;
-
+        if(inf != NULL) {
+	   RootVideoWidth = inf->current_w;
+	   RootVideoHeight = inf->current_h;
+	} else {
+	   RootVideoWidth = 640;
+	   RootVideoHeight = 400;
+	}
+   
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();

@@ -316,7 +316,8 @@ int DrawAGNonGL::GetMaxWidgets(void)
 
 SDL_Surface *DrawAGNonGL::GetSDLSurface(void)
 {
-    return ShadowSurface;
+//    return ShadowSurface;
+    return NULL;
 }
 
 /*
