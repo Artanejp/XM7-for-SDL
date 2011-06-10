@@ -303,7 +303,7 @@ void MainLoop(int argc, char *argv[])
 	   RootVideoWidth = 640;
 	   RootVideoHeight = 400;
 	}
-   
+
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();
@@ -415,7 +415,7 @@ void InitInstance(void)
         AG_WidgetSetSize(GLDrawArea, 640,440);
         AG_GLViewSizeHint(GLDrawArea, 640, 440);
         AG_WidgetSetPosition(GLDrawArea, 0, 0);
-        AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL, NULL);
+        AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);

@@ -26,10 +26,13 @@
 		<Cursor position="340" topLine="5" />
 	</File>
 	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="10">
-		<Cursor position="1943" topLine="87" />
+		<Cursor position="4241" topLine="186" />
 	</File>
 	<File name="agar_gldraw.h" open="1" top="0" tabpos="13">
 		<Cursor position="1103" topLine="6" />
+	</File>
+	<File name="agar_gldraw2.cpp" open="1" top="0" tabpos="33">
+		<Cursor position="9220" topLine="406" />
 	</File>
 	<File name="agar_gui_menu.cpp" open="1" top="0" tabpos="15">
 		<Cursor position="1161" topLine="39" />

@@ -117,7 +117,8 @@ void PutWord_4096(Uint32 *disp, Uint32 pixsize, Uint32 *cbuf)
 void SetVramReader_200l()
 {
 #ifdef USE_AGAR
-	SetVramReader_AG_GL(VramReader, 80, 200);
+//	SetVramReader_AG_GL(VramReader, 80, 200);
+    SetVramReader_GL2(VramReader, 80, 200);
 #else
 	if(pScalerGL != NULL) {
 		pScalerGL->SetVramReader(VramReader, 80, 200);
@@ -133,7 +134,8 @@ void SetVramReader_200l()
 void SetVramReader_400l()
 {
 #ifdef USE_AGAR
-	SetVramReader_AG_GL(VramReader_400l, 80, 400);
+//	SetVramReader_AG_GL(VramReader_400l, 80, 400);
+    SetVramReader_GL2(VramReader_400l, 80, 400);
 #else
 	if(pScalerGL != NULL) {
 		pScalerGL->SetVramReader(VramReader_400l, 80, 400);
@@ -149,7 +151,8 @@ void SetVramReader_400l()
 void SetVramReader_4096(void)
 {
 #ifdef USE_AGAR
-	SetVramReader_AG_GL(VramReader_4096, 40, 200);
+//	SetVramReader_AG_GL(VramReader_4096, 40, 200);
+    SetVramReader_GL2(VramReader_4096, 40, 200);
 #else
 	if(pScalerGL != NULL) {
 		pScalerGL->SetVramReader(VramReader_4096, 40, 200);
@@ -165,7 +168,8 @@ void SetVramReader_4096(void)
 void SetVramReader_256k(void)
 {
 #ifdef USE_AGAR
-	SetVramReader_AG_GL(VramReader_256k, 40, 200);
+//	SetVramReader_AG_GL(VramReader_256k, 40, 200);
+    SetVramReader_GL2(VramReader_256k, 40, 200);
 #else
 	if(pScalerGL != NULL) {
 		pScalerGL->SetVramReader(VramReader_256k, 40, 200);
@@ -195,7 +199,7 @@ void init_scaler(void)
 
 	if(pScalerGL == NULL) {
 #ifdef USE_AGAR
-		pScalerGL = new EmuAgarGL;
+//		pScalerGL = new EmuAgarGL;
 #else
 		pScalerGL = new EmuGLUtils;
 		pScalerGL->SetVramReader(VramReader, 80, 400);
@@ -224,7 +228,8 @@ void initsub_scaler()
 void detachsub_scaler(void)
 {
 #ifdef USE_OPENGL
-	Detach_AG_GL();
+//	Detach_AG_GL();
+	DetachGL_AG2();
 #else
 	if(scalerGL != NULL) {
 		delete scalerGL;
@@ -242,7 +247,8 @@ void SetupGL(int w, int h)
 #ifdef USE_OPENGL
 	SDL_SemWait(DrawInitSem);
 #ifdef USE_AGAR
-	InitGL_AG_GL(w, h);
+//	InitGL_AG_GL(w, h);
+    InitGL_AG2(w, h);
 #else
 	scalerGL->InitGL(w, h);
 	SDL_SemPost(DrawInitSem);
@@ -272,7 +278,8 @@ void InitGL(int w, int h)
     }
     SDL_SemWait(DrawInitSem);
     if(AG_UsingGL(drv)) {
-        InitGL_AG_GL(w, h);
+//        InitGL_AG_GL(w, h);
+        InitGL_AG2(w, h);
     } else {
         AG_ResizeDisplay(w, h);
     }
@@ -325,7 +332,8 @@ void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
      * Agar+OpenGLの場合、WidgetがViewPort設定するのでここでは
      * テクスチャのアップデートだけ。
      */
-    PutVram_AG_GL((AG_Surface *)p, x, y, w, h, mpage);
+    PutVram_AG_GL2(p, x, y, w, h, mpage);
+//    PutVram_AG_GL((AG_Surface *)p, x, y, w, h, mpage);
 #endif
 //	scalerGL->SetViewPort();
 }

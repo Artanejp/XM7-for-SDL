@@ -80,6 +80,7 @@
 		<Unit filename="agar_draw.h" />
 		<Unit filename="agar_gldraw.cpp" />
 		<Unit filename="agar_gldraw.h" />
+		<Unit filename="agar_gldraw2.cpp" />
 		<Unit filename="agar_gui_menu.cpp" />
 		<Unit filename="agar_gui_pref.cpp" />
 		<Unit filename="agar_guicore.cpp" />

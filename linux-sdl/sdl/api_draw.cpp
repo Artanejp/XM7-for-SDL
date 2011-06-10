@@ -621,6 +621,7 @@ static void initsub()
 	vramhdr_4096->SetVram(vram_dptr, 40, 200);
 	vramhdr_256k->SetPaletteTable(NULL);
 	vramhdr_256k->SetVram(vram_dptr, 40, 200);
+    SetVram_200l(vram_dptr);
 
 	init_scaler();
 
@@ -1840,6 +1841,7 @@ static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 #ifdef USE_AGAR
 	CalcPalette_AG_GL(rgbTTLGDI, i,  r, g, b, a);
+//    CalcPalette_8colors((int)i, r, g, b, a);
 #else
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
@@ -1929,8 +1931,8 @@ void Palet320(void)
 	/*
 	 * アナログマスクを作成
 	 */
-	 if(vramhdr != NULL) {
-		 vramhdr->SetPaletteTable((Uint32 *)rgbAnalogGDI);
+	 if(vramhdr_4096 != NULL) {
+		 vramhdr_4096->SetPaletteTable((Uint32 *)rgbAnalogGDI);
 	 }
 	 amask = 0;
 	 if (!(multi_page & 0x10)) {
@@ -2020,7 +2022,8 @@ void Draw640All(void)
 	if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	} else {
-		PutVramFunc = &Scaler_GL;
+//		PutVramFunc = &Scaler_GL;
+        PutVramFunc = &PutVram_AG_GL2;
 	}
 	/*
 	 * レンダリング
@@ -2031,6 +2034,7 @@ void Draw640All(void)
 		if(window_open) { // ハードウェアウインドウ開いてる
 			if ((nDrawTop >> 1) < window_dy1) {
 				vramhdr->SetVram(vram_dptr, 80, 200);
+                SetVram_200l(vram_dptr);
 				PutVramFunc(p, 0, nDrawTop >> 1, 640, window_dy1, multi_page);
 			}
 			/* ウィンドウ内の描画 */
@@ -2050,15 +2054,18 @@ void Draw640All(void)
 
 			if (wdbtm > wdtop) {
 				vramhdr->SetVram(vram_bdptr, 80, 200);
+			    SetVram_200l(vram_bdptr);
 				PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
 			}
 			/* ハードウェアウインドウ外下部 */
 			if ((nDrawBottom >> 1) > window_dy2) {
 				vramhdr->SetVram(vram_dptr, 80, 200);
+                SetVram_200l(vram_dptr);
 				PutVramFunc(p, 0 , wdbtm, 640, (nDrawBottom >> 1) - wdbtm, multi_page);
 			}
 		} else { // ハードウェアウィンドウ開いてない
 			vramhdr->SetVram(vram_dptr, 80, 200);
+		    SetVram_200l(vram_dptr);
 			PutVramFunc(p, 0, 0, 640, 200, multi_page);
 		}
 	}
@@ -2110,7 +2117,8 @@ void Draw400l(void)
 	  * レンダリング
 	  */
 #ifdef USE_AGAR
-		PutVramFunc = &Scaler_GL;
+//		PutVramFunc = &Scaler_GL;
+        PutVramFunc = &PutVram_AG_GL2;
 #else
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
@@ -2124,6 +2132,7 @@ void Draw400l(void)
 		 if(window_open) { // ハードウェアウインドウ開いてる
 			 if (nDrawTop < window_dy1) {
 				 vramhdr_400l->SetVram(vram_dptr, 80, 400);
+                 SetVram_200l(vram_dptr);
 				 PutVramFunc(p, 0, nDrawTop, 640, window_dy1, multi_page);
 			 }
 			 /* ウィンドウ内の描画 */
@@ -2143,15 +2152,18 @@ void Draw400l(void)
 
 			 if (wdbtm > wdtop) {
 				 vramhdr_400l->SetVram(vram_bdptr, 80, 400);
+                SetVram_200l(vram_bdptr);
 				 PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
 			 }
 			 /* ハードウェアウインドウ外下部 */
 			 if (nDrawBottom  > window_dy2) {
 				 vramhdr_400l->SetVram(vram_dptr, 80, 400);
+                 SetVram_200l(vram_dptr);
 				 PutVramFunc(p, 0 , wdbtm, 640, nDrawBottom - wdbtm, multi_page);
 			 }
 		 } else { // ハードウェアウィンドウ開いてない
 			 vramhdr_400l->SetVram(vram_dptr, 80, 400);
+             SetVram_200l(vram_dptr);
 			 PutVramFunc(p, 0, 0, 640, 400, multi_page);
 		 }
 	 }
@@ -2181,11 +2193,12 @@ void Draw320(void)
 	/*
 	 * パレット設定
 	 */
-	 if(!bUseOpenGL) {
-	    PutVramFunc = &SwScaler;
-	 } else {
-        PutVramFunc = &Scaler_GL;
-	 }
+//	 if(!bUseOpenGL) {
+//	    PutVramFunc = &SwScaler;
+//	 } else {
+//        PutVramFunc = &Scaler_GL;
+    PutVramFunc = &PutVram_AG_GL2;
+//	 }
 	if(bPaletFlag) {
 	Palet320();
 	SetVramReader_4096();
@@ -2201,16 +2214,18 @@ void Draw320(void)
 	if (bClearFlag) {
 		AllClear();
 	}
+	SetVramReader_4096();
 	/*
 	 * レンダリング
 	 */
 	if(PutVramFunc == NULL) return;
-	if(vramhdr == NULL) return;
+	//if(vramhdr == NULL) return;
 	if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
 		if(window_open) { // ハードウェアウインドウ開いてる
 			if (nDrawTop < window_dy1) {
-				vramhdr_4096->SetVram(vram_dptr, 40, 200);
-				PutVramFunc(p, 0, nDrawTop, 320, window_dy1, multi_page);
+			vramhdr_4096->SetVram(vram_dptr, 40, 200);
+            SetVram_200l(vram_dptr);
+			PutVramFunc(p, 0, nDrawTop, 320, window_dy1, multi_page);
 			}
 			/* ウィンドウ内の描画 */
 			if (nDrawTop > window_dy1) {
@@ -2229,15 +2244,18 @@ void Draw320(void)
 
 			if (wdbtm > wdtop) {
 				vramhdr_4096->SetVram(vram_bdptr, 40, 200);
+                SetVram_200l(vram_bdptr);
 				PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
 			}
 			/* ハードウェアウインドウ外下部 */
 			if (nDrawBottom  > window_dy2) {
 				vramhdr_4096->SetVram(vram_dptr, 40, 200);
+                SetVram_200l(vram_dptr);
 				PutVramFunc(p, 0 , wdbtm, 320, nDrawBottom - wdbtm, multi_page);
 			}
 		} else { // ハードウェアウィンドウ開いてない
 			vramhdr_4096->SetVram(vram_dptr, 40, 200);
+            SetVram_200l(vram_dptr);
 			PutVramFunc(p, 0, 0, 320, 200, multi_page);
 		}
 	}
@@ -2265,7 +2283,8 @@ void Draw256k(void)
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	 } else {
-        PutVramFunc = &Scaler_GL;
+//        PutVramFunc = &Scaler_GL;
+        PutVramFunc = &PutVram_AG_GL2;
 	 }
 	nDrawTop = 0;
 	nDrawBottom = 200;

@@ -1349,7 +1349,7 @@
 	<agar/core.h>
 	<agar/gui.h>
 
-1307551923 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
+1307564200 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1362,7 +1362,7 @@
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1307542835 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
+1307708299 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1440,7 +1440,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1307550302 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
+1307710784 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1793,7 +1793,7 @@
 1306855106 /home/whatisthis/codeblocks/xm7-sdl/libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
 
-1307552820 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/DrawAGNonGL.cpp
+1307564484 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/DrawAGNonGL.cpp
 	"DrawAGNonGL.h"
 
 1307221085 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/DrawAGNonGL.h
@@ -1818,4 +1818,21 @@
 	"agar_gldraw.h"
 	"DrawAGNonGL.h"
 	<SDL.h>
+
+1307716475 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"api_scaler.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
 
