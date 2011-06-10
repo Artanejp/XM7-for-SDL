@@ -1840,8 +1840,8 @@ void	OnWindowedScreen(void)
 static void Palet640Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 #ifdef USE_AGAR
-	CalcPalette_AG_GL(rgbTTLGDI, i,  r, g, b, a);
-//    CalcPalette_8colors((int)i, r, g, b, a);
+//	CalcPalette_AG_GL(rgbTTLGDI, i,  r, g, b, a);
+    CalcPalette_8colors((int)i, r, g, b, a);
 #else
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
@@ -1906,7 +1906,8 @@ void Palet640(void)
 static inline void Palet320Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 #ifdef USE_AGAR
-	CalcPalette_AG_GL(rgbAnalogGDI, i, r, g, b, a);
+//	CalcPalette_AG_GL(rgbAnalogGDI, i, r, g, b, a);
+    CalcPalette_4096Colors(i, r, g, b, a);
 #else
 	SDL_Surface *p;
 	p = SDL_GetVideoSurface();

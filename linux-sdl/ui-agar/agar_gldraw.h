@@ -60,8 +60,8 @@ extern void SetVram_200l(Uint8 *p);
 
 extern void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage);
 extern void AGEventDrawGL2(AG_Event *event);
-extern void CalcPalette_8colors(int index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
-extern void CalcPalette_4096Colors(int index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
+extern void CalcPalette_8colors(Uint32 index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
+extern void CalcPalette_4096Colors(Uint32 index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
 
 
 
