@@ -2199,6 +2199,7 @@ void Draw320(void)
 //	 } else {
 //        PutVramFunc = &Scaler_GL;
     PutVramFunc = &PutVram_AG_GL2;
+//      PutVramFunc = &PutVram_AG_GL;
 //	 }
 	if(bPaletFlag) {
 	Palet320();
@@ -2285,7 +2286,8 @@ void Draw256k(void)
 	    PutVramFunc = &SwScaler;
 	 } else {
 //        PutVramFunc = &Scaler_GL;
-        PutVramFunc = &PutVram_AG_GL2;
+//        PutVramFunc = &PutVram_AG_GL2;
+          PutVramFunc = &PutVram_AG_GL2;
 	 }
 	nDrawTop = 0;
 	nDrawBottom = 200;

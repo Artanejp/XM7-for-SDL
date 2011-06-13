@@ -8,10 +8,10 @@
 		<Cursor position="303" topLine="12" />
 	</File>
 	<File name="DrawAGNonGL.cpp" open="1" top="0" tabpos="11">
-		<Cursor position="4670" topLine="171" />
+		<Cursor position="6661" topLine="289" />
 	</File>
-	<File name="DrawAGNonGL.h" open="0" top="0" tabpos="0">
-		<Cursor position="292" topLine="0" />
+	<File name="DrawAGNonGL.h" open="1" top="0" tabpos="55">
+		<Cursor position="719" topLine="22" />
 	</File>
 	<File name="agar_cfg.cpp" open="1" top="0" tabpos="2">
 		<Cursor position="21521" topLine="793" />
@@ -26,16 +26,19 @@
 		<Cursor position="340" topLine="5" />
 	</File>
 	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="10">
-		<Cursor position="1861" topLine="74" />
+		<Cursor position="940" topLine="32" />
 	</File>
 	<File name="agar_gldraw.h" open="1" top="0" tabpos="13">
 		<Cursor position="1807" topLine="43" />
 	</File>
 	<File name="agar_gldraw2.cpp" open="1" top="1" tabpos="17">
-		<Cursor position="1021" topLine="46" />
+		<Cursor position="15773" topLine="637" />
 	</File>
 	<File name="agar_gui_menu.cpp" open="1" top="0" tabpos="15">
 		<Cursor position="1161" topLine="39" />
+	</File>
+	<File name="agar_gui_pref.cpp" open="1" top="0" tabpos="56">
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="agar_guicore.cpp" open="1" top="0" tabpos="8">
 		<Cursor position="2505" topLine="132" />

@@ -47,7 +47,7 @@ extern void SetVramReader_AG_GL(void p(Uint32, Uint32 *, Uint32), int w, int h);
 //extern void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h);
 extern void Flip_AG_GL(void);
 
-extern void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage);
+extern void PutVram_AG_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 extern AG_Surface *GetVramSurface_AG_GL();
 
 /*

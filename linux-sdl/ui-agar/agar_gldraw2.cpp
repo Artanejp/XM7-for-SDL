@@ -792,6 +792,23 @@ void AGEventDrawGL2(AG_Event *event)
 	float ybegin;
 	float yend;
 
+   switch(bMode) {
+    case SCR_400LINE:
+      Lock();
+      DiscardTexture(textureid);
+      textureid =  UpdateTexture8(0 , 640, 400);
+      Unlock();
+      break;
+    case SCR_200LINE:
+      Lock();
+      DiscardTexture(textureid);
+      textureid =  UpdateTexture8(0 , 640, 200);
+      Unlock();
+      break;
+   }
+   
+
+	
 
     glPushAttrib(GL_ALL_ATTRIB_BITS);
 //    glMatrixMode(GL_PROJECTION);

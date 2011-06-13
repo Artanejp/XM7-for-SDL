@@ -239,7 +239,7 @@ void Flip_AG_GL(void)
 
 
 // Create GL Handler(Main)
-void PutVram_AG_GL(AG_Surface *p, int x, int y, int w, int h, Uint32 mpage)
+void PutVram_AG_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 {
 	int xx, yy;
 	int hh, ww;
@@ -334,9 +334,9 @@ void AGEventDrawGL(AG_Event *event)
 
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glEnable(GL_TEXTURE_2D);
- //   glMatrixMode(GL_PROJECTION);
- //   glPushMatrix();
-//    glEnable(GL_DEPTH_TEST);
+//    glMatrixMode(GL_PROJECTION);
+//    glPushMatrix();
+    glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
