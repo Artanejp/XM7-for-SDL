@@ -18,6 +18,8 @@
 
 extern "C" {
     AG_GLView *GLDrawArea;
+    extern void LockVram(void);
+    extern void UnlockVram(void);
 }
 static AG_Surface *pixvram;
 static Uint32 vramwidth;
@@ -30,7 +32,7 @@ static BOOL InitVideo;
 static SDL_semaphore *VramSem;
 
 extern void DrawOSDGL(AG_GLView *w);
-static void DiscardTexture(GLuint tid);
+void DiscardTexture(GLuint tid);
 
 
 /*
@@ -162,17 +164,6 @@ void Detach_AG_GL()
 //        DiscardTexture(blanktextureid);
 }
 
-extern "C" {
-void LockVram(void)
-{
-//	if(VramSem != NULL) SDL_SemWait(VramSem);
-}
-
-void UnLockVram(void)
-{
-//	if(VramSem != NULL) SDL_SemPost(VramSem);
-}
-}
 
 static GLuint CreateTexture(AG_Surface *p)
 {
@@ -194,7 +185,7 @@ static GLuint CreateTexture(AG_Surface *p)
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  pixvram->pixels);
-   UnLockVram();
+   UnlockVram();
    return tid;
 }
 
@@ -208,7 +199,7 @@ static void DiscardTextures(int n, GLuint *id)
 
 }
 
-static void DiscardTexture(GLuint tid)
+void DiscardTexture(GLuint tid)
 {
 	DiscardTextures(1, &tid);
 }
@@ -279,7 +270,7 @@ void PutVram_AG_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	hh = h + y;
 	bitmap = (Uint8 *)pixvram->pixels;
 	if(bitmap == NULL) {
-		UnLockVram();
+		UnlockVram();
 		return;
 	}
 	ofset = 0;
@@ -296,7 +287,7 @@ void PutVram_AG_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
 	   textureid = CreateTexture(pixvram);
 
 
-	UnLockVram();
+	UnlockVram();
 }
 
 /*

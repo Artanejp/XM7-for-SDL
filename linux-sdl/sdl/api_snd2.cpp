@@ -507,6 +507,7 @@ BOOL SelectSnd(void)
 		DrvCMT->Setup(uTick);
 		DrvCMT->Enable(TRUE);
 	}
+	return TRUE;
 }
 
 /*
@@ -784,7 +785,6 @@ static DWORD RenderBeepSub(DWORD time, int samples, BOOL bZero)
 static BOOL FlushBeepSub(DWORD time,  BOOL bZero, int maxchunk)
 {
 	struct SndBufType *p;
-	int i;
 	int chunksize = maxchunk;
 
 	if(pBeepBuf == NULL) return FALSE;
@@ -864,6 +864,7 @@ static BOOL FlushCMTSub(DWORD time,  BOOL bZero, int chunksize)
 static BOOL Flush(DWORD time, struct SndBufType *p, BOOL bZero, int chunksize)
 {
 
+ return TRUE;
 
 }
 /*
@@ -1120,7 +1121,6 @@ void beep_notify(void)
 {
 	DWORD time = dwSoundTotal;
 	int samples;
-	BYTE r;
 
 	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
 		return;
@@ -1230,7 +1230,6 @@ void ProcessSnd(BOOL bZero)
 	int channels = 2;
 	BOOL bWrite = FALSE;
 	Sint16 *DataPtr[4];
-	int i;
 
 
 	chunksize = ((uTick* uRate) / 1000) / CHUNKS;

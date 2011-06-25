@@ -17,7 +17,9 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	struct WavDesc *w;
 	struct WavHeader *h;
 	int result;
+#if 0
 	FILE *file;
+#endif
 
 	if(path == NULL) return NULL;
 
@@ -26,7 +28,7 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	memset((void *)w, 0x00, sizeof(struct WavDesc));
 	h = &(w->header);
 	// Open File
-#if 0 
+#if 0
 	file = fopen(path, "wb");
 	if(file == NULL) {
 		fclose(file);
@@ -36,7 +38,7 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	w->file = SDL_RWFromFP(file, 1);
 #else
         w->file = SDL_RWFromFile(path,  "wb");
-#endif   
+#endif
 	if(w->file == NULL) goto err;
 	// RIFF ヘッダ開始
 	h->ID1[0] = 'R';
