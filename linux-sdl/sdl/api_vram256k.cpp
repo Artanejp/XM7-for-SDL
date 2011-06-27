@@ -177,8 +177,8 @@ GLuint CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Ui
 			addr++;
 			}
 	}
-   DiscardTexture(uVramTextureID);
-   uVramTextureID = UpdateTexture256k(p, 0, 320, 200);
+//   DiscardTexture(uVramTextureID);
+//   uVramTextureID = UpdateTexture256k(p, 0, 320, 200);
    UnlockVram();
    return uVramTextureID;
 }

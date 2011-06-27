@@ -55,16 +55,16 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 }
 
 
-static inline void putword8(Uint8 *disp, Uint8 *cbuf)
+static inline void putword8(Uint32 *disp, Uint8 *cbuf)
 {
-    disp[0] = cbuf[7];
-    disp[1] = cbuf[6];
-    disp[2] = cbuf[5];
-    disp[3] = cbuf[4];
-    disp[4] = cbuf[3];
-    disp[5] = cbuf[2];
-    disp[6] = cbuf[1];
-    disp[7] = cbuf[0];
+    disp[0] = cbuf[7] & 0x0f;
+    disp[1] = cbuf[6] & 0x0f;
+    disp[2] = cbuf[5] & 0x0f;
+    disp[3] = cbuf[4] & 0x0f;
+    disp[4] = cbuf[3] & 0x0f;
+    disp[5] = cbuf[2] & 0x0f;
+    disp[6] = cbuf[1] & 0x0f;
+    disp[7] = cbuf[0] & 0x0f;
 }
 
 
@@ -101,18 +101,17 @@ static void copy8to32(Uint32 *p, int w, int h)
 {
     int size = w * h;
     int i;
-    Uint8 *pp;
+    Uint32 *pp = p;
 
-    pp = (Uint8 *)p;
     for(i = 0; i < size; i+=8 ) {
-        pVram2[i] =(Uint32) rgbTTLGDI[*pp];
-        pVram2[i + 1] =(Uint32) rgbTTLGDI[*(pp + 1)];
-        pVram2[i + 2] =(Uint32) rgbTTLGDI[*(pp + 2)];
-        pVram2[i + 3] =(Uint32) rgbTTLGDI[*(pp + 3)];
-        pVram2[i + 4] =(Uint32) rgbTTLGDI[*(pp + 4)];
-        pVram2[i + 5] =(Uint32) rgbTTLGDI[*(pp + 5)];
-        pVram2[i + 6] =(Uint32) rgbTTLGDI[*(pp + 6)];
-        pVram2[i + 7] =(Uint32) rgbTTLGDI[*(pp + 7)];
+        pVram2[i] =(Uint32) rgbTTLGDI[*pp & 0x0f];
+        pVram2[i + 1] =(Uint32) rgbTTLGDI[*(pp + 1) & 0x0f];
+        pVram2[i + 2] =(Uint32) rgbTTLGDI[*(pp + 2) & 0x0f];
+        pVram2[i + 3] =(Uint32) rgbTTLGDI[*(pp + 3) & 0x0f];
+        pVram2[i + 4] =(Uint32) rgbTTLGDI[*(pp + 4) & 0x0f];
+        pVram2[i + 5] =(Uint32) rgbTTLGDI[*(pp + 5) & 0x0f];
+        pVram2[i + 6] =(Uint32) rgbTTLGDI[*(pp + 6) & 0x0f];
+        pVram2[i + 7] =(Uint32) rgbTTLGDI[*(pp + 7) & 0x0f];
         pp+=8;
     }
 }
@@ -153,7 +152,7 @@ GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
 	int xx, yy;
 	Uint32 addr;
 	Uint8 *bitmap;
-	Uint8 *disp;
+	Uint32 *disp;
 	Uint8 c[8];
 
 	LockVram();
@@ -174,8 +173,7 @@ GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
     }
 	ww = (w>>3) + (x>>3);
 	hh = h + y;
-	bitmap = (Uint8 *)p;
-	if(bitmap == NULL) {
+	if(p == NULL) {
 		UnlockVram();
 		return 0;
 	}
@@ -183,13 +181,13 @@ GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * 80 + xx ;
 			getvram_8to8(addr, c);
-			disp = bitmap + xx * 8 + 640 * yy;
-			putword8((Uint8 *)disp,  c);
+			disp = p + xx * 8 + 640 * yy;
+			putword8(disp,  c);
 			addr++;
 			}
 	}
-   DiscardTexture(uVramTextureID);
-   uVramTextureID = UpdateTexture8(p, 0, vramwidth, vramheight);
+//   DiscardTexture(uVramTextureID);
+//   uVramTextureID = UpdateTexture8(p, 0, vramwidth, vramheight);
    UnlockVram();
    return uVramTextureID;
 }

@@ -29,7 +29,7 @@
 
 
 struct VirtualVram {
-    Uint32 pVram[320][200];
+    Uint32 pVram[640][400];
 };
 
 Uint32 *pVram2;
@@ -40,6 +40,7 @@ static GLuint blanktextureid;
 static BOOL InitVideo;
 static SDL_sem *pVideoSem;
 static void (*pGetVram)(Uint32, Uint32 *, Uint32);
+static int bModeOld;
 
 extern Uint8 *vram_pb;
 extern Uint8 *vram_pr;
@@ -77,7 +78,7 @@ void UnlockVram(void)
 static void InitVirtualVram()
 {
     if(pVirtualVram != NULL) return;
-    pVirtualVram = (struct VirtualVram *)malloc(640*400*sizeof(Uint8) + 256 * sizeof(Uint32));
+    pVirtualVram = (struct VirtualVram *)malloc(sizeof(struct VirtualVram));
     if(pVirtualVram == NULL) return;
     pVram2 = (Uint32 *)malloc(640*400*sizeof(Uint32));
     if(pVram2 == NULL) {
@@ -89,6 +90,7 @@ static void InitVirtualVram()
     memset(pVirtualVram, 0x00, sizeof(struct VirtualVram) );
     memset(pVram2, 0x00, sizeof(640*400*sizeof(Uint32)));
     // Phase 2
+    bModeOld = bMode;
 }
 
 static void InitBlankLine()
@@ -197,6 +199,11 @@ void InitGL_AG2(int w, int h)
 	return;
 }
 
+Uint32 *GetVirtualVram(void)
+{
+    if(pVirtualVram == NULL) return NULL;
+    return &(pVirtualVram->pVram[0][0]);
+}
  // Create GL Handler(Main)
 void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 {
@@ -227,6 +234,10 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
     if(pp == NULL) return;
 	if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
 
+//    if(bClearFlag) {
+//        memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
+//        bClearFlag = FALSE;
+//    }
 	switch (bMode) {
 	case SCR_400LINE:
         CreateVirtualVram8(pp, x, y, w, h, bMode);
@@ -257,28 +268,38 @@ void AGEventDrawGL2(AG_Event *event)
 	float yend;
 	Uint32 *p;
 
-    if(pVirtualVram == NULL) return;
+   if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
 
-   switch(bMode) {
-    case SCR_400LINE:
-      LockVram();
-      DiscardTexture(uVramTextureID);
-      uVramTextureID =  UpdateTexture8(p, 0 , 640, 400);
-      UnlockVram();
-      break;
-    case SCR_200LINE:
-      LockVram();
-      DiscardTexture(uVramTextureID);
-      uVramTextureID =  UpdateTexture8(p, 0 , 640, 200);
-      UnlockVram();
-      break;
-	case SCR_262144:
-        break;
-	case SCR_4096:
-        break;
-   }
+
+if(bPaletFlag) { // パレットの変更があればテクスチャ差し替える
+    switch(bMode) {
+        case SCR_400LINE:
+            LockVram();
+            bPaletFlag = FALSE;
+            DiscardTexture(uVramTextureID);
+            uVramTextureID =  UpdateTexture8(p, 0 , 640, 400);
+            UnlockVram();
+            break;
+        case SCR_200LINE:
+            LockVram();
+            bPaletFlag = FALSE;
+            DiscardTexture(uVramTextureID);
+            uVramTextureID =  UpdateTexture8(p, 0 , 640, 200);
+            UnlockVram();
+            break;
+        case SCR_262144:
+            break;
+        case SCR_4096:
+//            LockVram();
+//            bPaletFlag = FALSE;
+//            DiscardTexture(uVramTextureID);
+//            uVramTextureID =  UpdateTexture4096(p, 0 , 320, 200);
+//            UnlockVram();
+            break;
+            }
+    }
     glPushAttrib(GL_ALL_ATTRIB_BITS);
 //    glMatrixMode(GL_PROJECTION);
     glEnable(GL_TEXTURE_2D);
@@ -296,12 +317,14 @@ void AGEventDrawGL2(AG_Event *event)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
+//        LockVram();
         glBegin(GL_POLYGON);
         glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -0.99);
         glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, -1.0f, -0.99);
         glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, -0.99);
         glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -0.99);
         glEnd();
+//        UnlockVram();
      }
 
      switch(bMode) {

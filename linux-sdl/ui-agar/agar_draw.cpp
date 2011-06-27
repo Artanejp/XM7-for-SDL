@@ -241,9 +241,9 @@ void AGDrawTaskMain(void)
 	}
 #endif				/*  */
 	SelectDraw2();
-        if(DrvNonGL) {
-	   DrvNonGL->Flip();
-	}
+//        if(DrvNonGL) {
+//	   DrvNonGL->Flip();
+//	}
 		/* Render the Agar windows */
 }
 

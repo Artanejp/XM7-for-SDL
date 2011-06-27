@@ -38,29 +38,42 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
  {
     Uint32 ds;
 //     if((index > 4095) || (index < 0)) return;
-     LockVram();
+//     LockVram();
 #ifdef SDL_LIL_ENDIAN
 	ds =r + (g << 8)+ (b << 16) + (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
     rgbAnalogGDI[index] = ds;
-    UnlockVram();
+//    UnlockVram();
  }
 
 
 
 static inline void putword(Uint32 *disp, Uint32 *cbuf)
 {
-		disp[0] = cbuf[7];
-		disp[1] = cbuf[6];
-		disp[2] = cbuf[5];
-		disp[3] = cbuf[4];
-		disp[4] = cbuf[3];
-		disp[5] = cbuf[2];
-		disp[6] = cbuf[1];
-		disp[7] = cbuf[0];
+		disp[0] = cbuf[0] & 0xfff;
+		disp[1] = cbuf[1] & 0xfff;
+		disp[2] = cbuf[2] & 0xfff;
+		disp[3] = cbuf[3] & 0xfff;
+		disp[4] = cbuf[4] & 0xfff;
+		disp[5] = cbuf[5] & 0xfff;
+		disp[6] = cbuf[6] & 0xfff;
+		disp[7] = cbuf[7] & 0xfff;
 }
+
+static inline void putword2(Uint32 *disp, Uint32 *cbuf)
+{
+		disp[0] = rgbAnalogGDI[cbuf[0]];
+		disp[1] = rgbAnalogGDI[cbuf[1]];
+		disp[2] = rgbAnalogGDI[cbuf[2]];
+		disp[3] = rgbAnalogGDI[cbuf[3]];
+		disp[4] = rgbAnalogGDI[cbuf[4]];
+		disp[5] = rgbAnalogGDI[cbuf[5]];
+		disp[6] = rgbAnalogGDI[cbuf[6]];
+		disp[7] = rgbAnalogGDI[cbuf[7]];
+}
+
 
 
 static void copy4096pal(Uint32 *p, int w, int h)
@@ -114,7 +127,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit7
          */
-        cbuf[0] =
+        cbuf[7] =
     	((b[0] & 0x01)) + ((b[1] & 0x01) << 1) + ((b[2] & 0x01) << 2) +
     	((b[3] & 0x01) << 3)
     	+ ((r[0] & 0x01) << 4) + ((r[1] & 0x01) << 5) +
@@ -125,7 +138,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit6
          */
-        cbuf[1] =
+        cbuf[6] =
     	((b[0] & 0x02) >> 1) + ((b[1] & 0x02)) + ((b[2] & 0x02) << 1) +
     	((b[3] & 0x02) << 2)
     	+ ((r[0] & 0x02) << 3) + ((r[1] & 0x02) << 4) +
@@ -136,7 +149,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit5
          */
-        cbuf[2] =
+        cbuf[5] =
     	((b[0] & 0x04) >> 2) + ((b[1] & 0x04) >> 1) + ((b[2] & 0x04)) +
     	((b[3] & 0x04) << 1)
     	+ ((r[0] & 0x04) << 2) + ((r[1] & 0x04) << 3) +
@@ -147,7 +160,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit4
          */
-        cbuf[3] =
+        cbuf[4] =
     	((b[0] & 0x08) >> 3) + ((b[1] & 0x08) >> 2) +
     	((b[2] & 0x08) >> 1) + ((b[3] & 0x08))
     	+ ((r[0] & 0x08) << 1) + ((r[1] & 0x08) << 2) +
@@ -158,7 +171,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit3
          */
-        cbuf[4] =
+        cbuf[3] =
     	((b[0] & 0x10) >> 4) + ((b[1] & 0x10) >> 3) +
     	((b[2] & 0x10) >> 2) + ((b[3] & 0x10) >> 1)
     	+ ((r[0] & 0x10)) + ((r[1] & 0x10) << 1) + ((r[2] & 0x10) << 2) +
@@ -169,7 +182,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit2
          */
-        cbuf[5] =
+        cbuf[2] =
     	((b[0] & 0x20) >> 5) + ((b[1] & 0x20) >> 4) +
     	((b[2] & 0x20) >> 3) + ((b[3] & 0x20) >> 2)
     	+ ((r[0] & 0x20) >> 1) + ((r[1] & 0x20)) + ((r[2] & 0x20) << 1) +
@@ -180,7 +193,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit1
          */
-        cbuf[6] =
+        cbuf[1] =
     	((b[0] & 0x40) >> 6) + ((b[1] & 0x40) >> 5) +
     	((b[2] & 0x40) >> 4) + ((b[3] & 0x40) >> 3)
     	+ ((r[0] & 0x40) >> 2) + ((r[1] & 0x40) >> 1) + ((r[2] & 0x40)) +
@@ -191,7 +204,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
         /*
          * bit0
          */
-        cbuf[7] =
+        cbuf[0] =
     	((b[0] & 0x80) >> 7) + ((b[1] & 0x80) >> 6) +
     	((b[2] & 0x80) >> 5) + ((b[3] & 0x80) >> 4)
     	+ ((r[0] & 0x80) >> 3) + ((r[1] & 0x80) >> 2) +
@@ -213,7 +226,7 @@ GLuint UpdateTexture4096(Uint32 *p, GLuint tid , int w, int h)
         ttid = tid;
     }
     glBindTexture(GL_TEXTURE_2D, ttid);
-    copy4096pal(p, w, h);
+//    copy4096pal(p, w, h);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -224,7 +237,6 @@ GLuint UpdateTexture4096(Uint32 *p, GLuint tid , int w, int h)
                  pVram2);
     return ttid;
 }
-
 
 GLuint CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
 {
@@ -242,13 +254,13 @@ GLuint CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Ui
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * 40 + xx ;
 			getvram4096(addr, c);
-			disp = p + xx * 8 + 320 * yy;
-			putword(disp,  c);
+			disp = pVram2 + xx * 8 + 320 * yy;
+			putword2(disp,  c);
 			addr++;
 			}
 	}
-   DiscardTexture(uVramTextureID);
-   uVramTextureID = UpdateTexture4096(p, 0, 320, 200);
+//   DiscardTexture(uVramTextureID);
+//   uVramTextureID = UpdateTexture4096(p, 0, 320, 200);
    UnlockVram();
    return uVramTextureID;
 }

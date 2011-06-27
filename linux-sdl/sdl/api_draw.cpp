@@ -125,8 +125,19 @@ SDL_mutex *DrawMutex;
 int newDrawWidth;
 int newDrawHeight;
 BOOL newResize;
+
 extern Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
+extern GLuint uVramTextureID;
+
+extern GLuint UpdateTexture8(Uint32 *p, GLuint tid, int w, int h);
+extern GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode);
+extern GLuint UpdateTexture4096(Uint32 *p, GLuint tid , int w, int h);
+extern void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
+extern GLuint UpdateTexture256k(Uint32 *p, GLuint tid , int w, int h);
+extern void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
+extern void DiscardTexture(GLuint tid);
+extern Uint32 *GetVirtualVram(void);
 
 
 /*
@@ -479,7 +490,7 @@ int DrawThreadMain(void *p)
 			}
 #endif
 #ifdef USE_AGAR
-//			AG_MutexLock(&DrawMutex);
+			AG_MutexLock(&DrawMutex);
 			AG_CondWait(&DrawCond, &DrawMutex);
 #else
 			SDL_mutexP(DrawMutex);
@@ -494,23 +505,21 @@ int DrawThreadMain(void *p)
 #endif
 
 #ifdef USE_AGAR
-			if(DrawArea == NULL) continue;
+			//if(DrawArea == NULL) continue;
 #endif
-#ifndef USE_AGAR
 			if(nDrawCount > 0) {
 				nDrawCount --;
 #ifdef USE_AGAR
-				AGDrawTaskEvent(FALSE);
+//				AGDrawTaskEvent(FALSE);
 #endif
 				continue;
 			} else {
 				nDrawCount = DrawCountSet(nDrawFPS);
 			}
-#endif
 			DrawWaitFlag = TRUE;
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
-//			AGDrawTaskMain();
+			AGDrawTaskMain();
 #else
 			DrawTaskMain(NULL);
 #endif
@@ -882,6 +891,9 @@ void	InitDraw(void)
 #endif
 #ifdef USE_AGAR
 //		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
+//		if(!DrawThread) {
+//			AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
+//		}
 #else
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
@@ -1146,6 +1158,9 @@ BOOL SelectDraw(void)
 #ifdef USE_AGAR
 	 AG_MutexInit(&DrawMutex);
 	 AG_CondInit(&DrawCond);
+//	 if(!DrawThread) {
+//		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
+//	 }
 #else
 	 if(!DrawMutex) {
 		 DrawMutex = SDL_CreateMutex();
@@ -1923,7 +1938,6 @@ void Palet320(void)
 
 	int     i,
 	j;
-	DWORD   color;
 	DWORD   r,
 	g,
 	b;
@@ -1949,9 +1963,8 @@ void Palet320(void)
 		 /*
 		  * 最下位から5bitづつB,G,R
 		  */
-		  color = 0;
 		  if (crt_flag) {
-			  j = i & amask;
+		      j = i & amask;
 			  r = apalet_r[j] <<4;
 			  g = apalet_g[j] <<4;
 			  b = apalet_b[j] <<4;
@@ -2070,6 +2083,8 @@ void Draw640All(void)
 			PutVramFunc(p, 0, 0, 640, 200, multi_page);
 		}
 	}
+    DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture8(GetVirtualVram(), 0, 640, 200);
 
 	nDrawTop = 0;
 	nDrawBottom = 400;
@@ -2168,6 +2183,8 @@ void Draw400l(void)
 			 PutVramFunc(p, 0, 0, 640, 400, multi_page);
 		 }
 	 }
+     DiscardTexture(uVramTextureID);
+     uVramTextureID = UpdateTexture8(GetVirtualVram(), 0, 640, 400);
 	 nDrawTop = 0;
 	 nDrawBottom = 400;
 	 nDrawLeft = 0;
@@ -2209,6 +2226,7 @@ void Draw320(void)
 	nDrawLeft = 0;
 	nDrawRight = 320;
 	SetDrawFlag(TRUE);
+	bPaletFlag = FALSE;
 	}
 	/*
 	 * クリア処理
@@ -2262,6 +2280,8 @@ void Draw320(void)
 		}
 	}
 
+    DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture4096(GetVirtualVram(), 0, 320, 200);
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
@@ -2312,7 +2332,11 @@ void Draw256k(void)
 	 */
 	vramhdr_256k->SetVram(vram_dptr, 40, 200);
 	SetVramReader_256k();
+
 	PutVramFunc(p, 0, 0, 320, 200, multi_page);
+    DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture256k(GetVirtualVram(), 0, 320, 200);
+
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
