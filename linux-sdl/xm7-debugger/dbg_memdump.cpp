@@ -3,10 +3,10 @@
  */
 
 #include <SDL/SDL.h>
-#include "../vm/xm7.h"
+#include "xm7.h"
 
-#define FONTSIZE_X 8;
-#define FONTSIZE_Y 8;
+#define FONTSIZE_X 8
+#define FONTSIZE_Y 8
 
 
 struct DBG_ANKFontData{
@@ -92,7 +92,7 @@ static int chr2hex(Uint8 s)
      int base;
      int seekPtr;
      int ll;
-     Uint8 LineBuf[FONTSIZE_X + 2];
+     char LineBuf[FONTSIZE_X + 2];
      Uint8 *data;
      int xdup;
      int ydup;
@@ -105,7 +105,7 @@ static int chr2hex(Uint8 s)
      buf = p->buf;
 
      seekPtr = SDL_RWtell(f); // Push Pointer
-     ReadLN(f, LineBuf, FONTSIZE_X + 1);
+     ReadLN(f, (Uint8 *)LineBuf, FONTSIZE_X + 1);
      if((LineBuf[0] == '$') && (strlen(LineBuf) >= 3)) {
          // フォントポインタ
          addr = chr2hex(LineBuf[1]) * 16 + chr2hex(LineBuf[2]);
@@ -116,7 +116,7 @@ static int chr2hex(Uint8 s)
      pitch = xdup * FONTSIZE_X / 8;
      base = addr * (FONTSIZE_Y * FONTSIZE_X / 8);
      for(y = 0; y < FONTSIZE_Y; y++){
-         if(ReadLN(f, LineBuf, FONTSIZE_X + 1) <= 0) {
+         if(ReadLN(f, (Uint8 *)LineBuf, FONTSIZE_X + 1) <= 0) {
              return;
          }
          ll = strlen(LineBuf)>FONTSIZE_X?FONTSIZE_X:strlen(LineBuf);
@@ -154,7 +154,7 @@ struct DBG_ANKFontData *DBG_GenANKFont(SDL_RWops *f, int w, int h)
         p->w = w;
     }
     p->h = h;
-    p->buf = malloc((p->w * p->h * 256) / 8);
+    p->buf = (Uint8 *)malloc((p->w * p->h * 256) / 8);
     if(p->buf == NULL) {
         free((void *)p);
         return NULL;
@@ -204,20 +204,21 @@ void DBG_FreeANKFont(struct DBG_ANKFontData *p)
 
 void DBG_PutChar(Uint8 c, struct DBG_ANKFontData *font, SDL_Surface *buf, int x, int y, SDL_Color *col)
 {
-    int xx;
     int yy;
     int base;
-    int w;
     int ofset;
+    Uint32 pixel;
+    Uint32 zeropixel;
     Uint8 *p;
 
     if(font == NULL) return;
     if(buf == NULL) return;
     base = (font->h * font->w * c) / 8;
+    p = (Uint8 *)(buf->pixels);
 
     ofset = y * buf->pitch + x * buf->format->BytesPerPixel;
     for(yy = 0; yy < font->h; yy++) {
-        DBG_PutWord(buf->pixels[ofset] , font->w, &(font->buf[base]), pixel, zeropixel);
+        DBG_PutWord((Uint32 *) &(p[ofset]) , font->w, &(font->buf[base]), pixel, zeropixel);
         ofset += buf->pitch;
     }
 
