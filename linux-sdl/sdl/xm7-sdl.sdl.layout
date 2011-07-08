@@ -85,8 +85,8 @@
 	<File name="api_vram256k.cpp" open="1" top="0" tabpos="16">
 		<Cursor position="4170" topLine="161" />
 	</File>
-	<File name="api_vram4096.cpp" open="1" top="1" tabpos="17">
-		<Cursor position="1327" topLine="57" />
+	<File name="api_vram4096.cpp" open="1" top="0" tabpos="17">
+		<Cursor position="1293" topLine="35" />
 	</File>
 	<File name="api_vram8.cpp" open="1" top="0" tabpos="18">
 		<Cursor position="4526" topLine="171" />

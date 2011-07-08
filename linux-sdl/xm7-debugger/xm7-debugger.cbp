@@ -16,6 +16,10 @@
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-g" />
+					<Add directory="." />
+					<Add directory="../vm/" />
+					<Add directory="/usr/include/SDL" />
+					<Add directory="../sdl" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -28,18 +32,29 @@
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-O2" />
+					<Add directory="." />
+					<Add directory="../vm/" />
+					<Add directory="/usr/include/SDL" />
+					<Add directory="../sdl" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 				</Linker>
 			</Target>
 		</Build>
+		<Unit filename="dbg_breakpoint.cpp" />
+		<Unit filename="dbg_disasm09.cpp" />
+		<Unit filename="dbg_fonts.cpp" />
 		<Unit filename="dbg_memdump.cpp" />
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Extensions>
-			<code_completion />
+			<code_completion>
+				<search_path add="../vm" />
+				<search_path add="../sdl" />
+				<search_path add="../ui-agar" />
+				<search_path add="../libemugrph" />
+				<search_path add="/usr/include/SDL" />
+				<search_path add="." />
+			</code_completion>
 			<envvars />
 			<lib_finder disable_auto="1" />
 			<debugger />

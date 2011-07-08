@@ -5,41 +5,6 @@
 #include <SDL/SDL.h>
 #include "xm7.h"
 
-#define FONTSIZE_X 8
-#define FONTSIZE_Y 8
-
-
-struct DBG_ANKFontData{
-    int w;
-    int h;
-    Uint8 *buf;
-};
-
-/*
- * 1行読む
- * 正の数 : 文字数
- * 0: エラーもしくはEOF
- */
-static int ReadLN(SDL_RWops *f, Uint8 *buf, int limit)
-{
-    int i;
-
-    if(limit < 0) return 0;
-
-    do {
-        if(SDL_RWread(f, &buf[i], 1, 1) < 0) {
-            return i;
-        }
-        if(buf[i] == '\n') {
-            buf[i] = 0x00;
-            break;
-        }
-        i++;
-        if(i >= limit) break;
-    } while(TRUE);
-    return i;
-}
-
 static int chr2hex(Uint8 s)
 {
     int i;
@@ -79,154 +44,87 @@ static int chr2hex(Uint8 s)
     return i;
 }
 
-/*
- * ANKフォントを作成する。
- * 互換ROMのソースコードのfont.txtが必要
- * (ライセンス的な問題が解決したらBuiltinする)
- */
- static void mkankfontsub(SDL_RWops *f, struct DBG_ANKFontData *p, int chnum)
- {
-     int x;
-     int y;
-     int addr = 0;
-     int base;
-     int seekPtr;
-     int ll;
-     char LineBuf[FONTSIZE_X + 2];
-     Uint8 *data;
-     int xdup;
-     int ydup;
-     int pitch;
-     Uint8 *buf;
-     int i,j;
-
-     xdup = p->w / FONTSIZE_X;
-     ydup = p->h / FONTSIZE_Y;
-     buf = p->buf;
-
-     seekPtr = SDL_RWtell(f); // Push Pointer
-     ReadLN(f, (Uint8 *)LineBuf, FONTSIZE_X + 1);
-     if((LineBuf[0] == '$') && (strlen(LineBuf) >= 3)) {
-         // フォントポインタ
-         addr = chr2hex(LineBuf[1]) * 16 + chr2hex(LineBuf[2]);
-     } else {
-         SDL_RWseek(f, seekPtr,SEEK_SET); // Pop Pointer
-     }
-
-     pitch = xdup * FONTSIZE_X / 8;
-     base = addr * (FONTSIZE_Y * FONTSIZE_X / 8);
-     for(y = 0; y < FONTSIZE_Y; y++){
-         if(ReadLN(f, (Uint8 *)LineBuf, FONTSIZE_X + 1) <= 0) {
-             return;
-         }
-         ll = strlen(LineBuf)>FONTSIZE_X?FONTSIZE_X:strlen(LineBuf);
-         // とりあえず、8Dotまで
-         j = 0;
-         for(x = 0; x < ll; x++) {
-            if(LineBuf[x] == '@'){
-                for(i = 0; i < xdup; i++) {
-                    buf[base + (j / 8)] |= 0x01;
-                    buf[base + (j / 8)] <<= 1;
-                    j++;
-                }
-            } else {
-                for(i = 0; i < xdup; i++) {
-                    buf[base + (j / 8)] &= 0x01;
-                    buf[base + (j / 8)] <<= 1;
-                    j++;
-                }
-            }
-         }
-         base += pitch;
-     }
- }
-
-struct DBG_ANKFontData *DBG_GenANKFont(SDL_RWops *f, int w, int h)
+void DBG_GetMem(volatile BYTE FASTCALL (*readb)(WORD), int bytes, WORD addr, Uint8 *buf)
 {
-    struct DBG_ANKFontData *p;
+    int i;
+    WORD ad = addr;
+
+    for(i = 0; i < bytes; i++) {
+        buf[i] = readb(ad);
+        ad++;
+    }
+}
+
+static inline char hex2chr(Uint8 b)
+{
+    Uint8 bb = b & 0x0f;
+    char c;
+
+    if(bb < 10) {
+        c = '0' + bb;
+    } else {
+        c = 'A' + (bb - 10);
+    }
+    return c;
+}
+
+void DBG_Bin2Hex1(char *str, Uint8 b)
+{
+    str[0] = hex2chr((b & 0xf0) >>4);
+    str[1] = hex2chr(b & 0x0f);
+    str[2] = '\0';
+}
+
+void DBG_Bin2Hex2(char *str, Uint16 w)
+{
+    str[0] = hex2chr((w & 0xf000) >>12);
+    str[1] = hex2chr((w & 0x0f00) >>8);
+    str[2] = hex2chr((w & 0x00f0) >>4);
+    str[3] = hex2chr(w & 0x000f);
+    str[4] = '\0';
+}
+
+void DBG_Bin2Hex4(char *str, Uint32 dw)
+{
+    str[0] = hex2chr((dw & 0xf0000000) >>28);
+    str[1] = hex2chr((dw & 0x0f000000) >>24);
+    str[2] = hex2chr((dw & 0x00f00000) >>20);
+    str[3] = hex2chr((dw & 0x000f0000) >>16);
+
+    str[4] = hex2chr((dw & 0x0000f000) >>12);
+    str[5] = hex2chr((dw & 0x00000f00) >>8);
+    str[6] = hex2chr((dw & 0x000000f0) >>4);
+    str[7] = hex2chr(dw & 0x0000000f);
+    str[8] = '\0';
+}
+
+
+
+/*
+ * Bufに格納したメモリの写しをダンプしてstrに表示する
+ */
+ void DBG_HexDumpMemory(char *str, Uint8 *buf, WORD Segment, WORD addr, int bytes, BOOL SegFlag, BOOL AddrFlag)
+ {
+    char cb[16];
     int i;
 
-    p = (struct DBG_ANKFontData *)malloc(sizeof(struct DBG_ANKFontData));
-    if(p == NULL) return NULL;
-    if((w % 8) != 0) {
-        p->w = w + 8 - (w % 8);
-    } else {
-        p->w = w;
+    if(SegFlag) {
+        DBG_Bin2Hex2(cb, Segment);
+        strcat(str, cb);
+        strcat(str, ":");
     }
-    p->h = h;
-    p->buf = (Uint8 *)malloc((p->w * p->h * 256) / 8);
-    if(p->buf == NULL) {
-        free((void *)p);
-        return NULL;
+    if(AddrFlag) {
+        DBG_Bin2Hex2(cb, addr);
+        strcat(str, cb);
     }
-    for(i = 0; i < 256; i++) {
-        mkankfontsub(f, p, i);
+    if(AddrFlag | SegFlag) {
+        strcat(str, " ");
     }
-    return p;
-}
-
-void DBG_FreeANKFont(struct DBG_ANKFontData *p)
-{
-    free((void *)p);
-}
-
-/*
- * 一文字書きこむ
- * 32bpp前提
- */
- static inline void DBG_PutWord(Uint32 *p, int width,Uint8 *data, Uint32 pixel, Uint32 zeropixel)
- {
-     Uint8 dd;
-     Uint32 px;
-     Uint32 zpx;
-     int j;
-     int i;
-     int k;
-
-
-     px = pixel;
-     zpx = zeropixel;
-     j = 0;
-     for(k = 0; k < (width / 8); k++) {
-         dd = data[k];
-        for(i = 0; i < width ; i++) {
-            if((dd & 0x80) == 1) {
-                p[j] = px;
-            } else {
-                p[j] = zpx;
-            }
-            j += 1;
-            dd <<= 1;
-        }
-     }
- }
-
-
-void DBG_PutChar(Uint8 c, struct DBG_ANKFontData *font, SDL_Surface *buf, int x, int y, SDL_Color *col)
-{
-    int yy;
-    int base;
-    int ofset;
-    Uint32 pixel;
-    Uint32 zeropixel;
-    Uint8 *p;
-
-    if(font == NULL) return;
-    if(buf == NULL) return;
-    base = (font->h * font->w * c) / 8;
-    p = (Uint8 *)(buf->pixels);
-
-    ofset = y * buf->pitch + x * buf->format->BytesPerPixel;
-    for(yy = 0; yy < font->h; yy++) {
-        DBG_PutWord((Uint32 *) &(p[ofset]) , font->w, &(font->buf[base]), pixel, zeropixel);
-        ofset += buf->pitch;
+    for(i = 0; i < bytes; i++){
+            DBG_Bin2Hex1(cb, buf[i]);
+            cb[2] = ' ';
+            cb[3] = '\0';
+            strcat(str, cb);
     }
-
-}
-/*
- * メモリをダンプしてSurfaceに表示する
- */
- void DBG_DumpMemory(volatile BYTE FASTCALL (*readb)(WORD), SDL_Surface *s, int x, int y, Uint16 addr, int chars, Uint8 *font)
- {
 
  }

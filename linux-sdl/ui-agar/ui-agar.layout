@@ -4,7 +4,7 @@
 	<File name="AgarKbdInterface.cpp" open="1" top="0" tabpos="4">
 		<Cursor position="5972" topLine="220" />
 	</File>
-	<File name="AgarKbdInterface.h" open="1" top="1" tabpos="1">
+	<File name="AgarKbdInterface.h" open="1" top="0" tabpos="1">
 		<Cursor position="303" topLine="12" />
 	</File>
 	<File name="DrawAGNonGL.cpp" open="1" top="0" tabpos="11">
@@ -49,10 +49,10 @@
 	<File name="agar_osd.cpp" open="1" top="0" tabpos="16">
 		<Cursor position="16240" topLine="716" />
 	</File>
-	<File name="agar_sch.cpp" open="1" top="0" tabpos="21">
+	<File name="agar_sch.cpp" open="1" top="0" tabpos="20">
 		<Cursor position="0" topLine="519" />
 	</File>
-	<File name="agar_sdl.cpp" open="1" top="0" tabpos="22">
+	<File name="agar_sdl.cpp" open="1" top="0" tabpos="21">
 		<Cursor position="0" topLine="61" />
 	</File>
 	<File name="agar_toolbox.cpp" open="0" top="0" tabpos="32">
