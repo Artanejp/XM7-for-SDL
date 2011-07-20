@@ -45,6 +45,7 @@
 
 
 
+
 /*
  *  グローバル ワーク
  */
@@ -572,16 +573,16 @@ void CloseCaptureSnd(void)
 //   SDL_SemPost(WavSem);
 }
 
-static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
+static Sint16 *Mix16(struct SndBufType *q, int chunksize)
 {
-	Sint16 *p;
-	int channels = 2;
 	Sint16 *DataPtr[4];
+	Sint16 *p;
+	Sint16 *buf;
+	int channels = 2;
 
+    buf = &(q->pBuf[q->nWritePTR * channels]);
 	if(buf == NULL) return NULL;
-	if(desc == NULL) return NULL;
-//        if(WavSem == NULL) return NULL;
-//        SDL_SemWait(WavSem);
+	if(chunksize <= 0) return NULL;
 
 	DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
 	DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
@@ -589,10 +590,34 @@ static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
 	DataPtr[3] = NULL;
 	memset(buf, 0x00, chunksize * channels * sizeof(Sint16));
 	p = WavMix(DataPtr, buf , 3, chunksize * channels);
+	pCaptureBuf->nWritePTR += chunksize * channels;
+    if(pCaptureBuf->nWritePTR >= pCaptureBuf->nSize) pCaptureBuf->nWritePTR = 0;
+
+    return p;
+}
+
+static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
+{
+	Sint16 *p;
+	Sint16 *DataPtr[4];
+	int channels = 2;
+
+	if(buf == NULL) return NULL;
+	if(chunksize <= 0) return NULL;
+
+	DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
+	DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
+	DataPtr[2] = &(pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels]);
+	DataPtr[3] = NULL;
+	memset(buf, 0x00, chunksize * channels * sizeof(Sint16));
+	p = WavMix(DataPtr, buf , 3, chunksize * channels);
+	pCaptureBuf->nWritePTR += chunksize * channels;
+    if(pCaptureBuf->nWritePTR >= pCaptureBuf->nSize) pCaptureBuf->nWritePTR = 0;
+
+
 	if(p) {
-		WriteWavDataSint16(desc, p , chunksize * channels);
+       WriteWavDataSint16(desc, p , chunksize * channels);
 	}
-//        SDL_SemPost(WavSem);
    return p;
 }
 /*
@@ -720,21 +745,28 @@ static DWORD RenderOpnSub(DWORD time, int samples, BOOL bZero)
  * TRUE : 埋めた
  * FALSE : 埋める必要がなかった
  */
-static BOOL FlushOpnSub(DWORD time,  BOOL bZero, int chunksize)
+static BOOL FlushOpnSub(DWORD time,  BOOL bZero, int maxchunk)
 {
 	struct SndBufType *p;
-	int i;
+	int chunksize;
 
 	p = pOpnBuf;
-	if(pOpnBuf == NULL) return FALSE;
+	if(p == NULL) return FALSE;
 
-	if(chunksize<0) return FALSE;
+//	if(chunksize<0) return FALSE;
 	if(p->nWritePTR >= p->nSize) return FALSE;
-	i = chunksize - (p->nWritePTR % chunksize);
+//	i = chunksize - (p->nWritePTR % chunksize);
+//	if(time  > p->nLastTime) {
+//	    i = ((time - p->nLastTime) * uRate) / 1000000;
+//	} else {
+//	    i = ((p->nLastTime - time) * uRate) / 1000000;
+//	}
+	chunksize = maxchunk - (p->nWritePTR % maxchunk);
+
 	/*
 	 * オーバーフロー対策込
 	 */
-	RenderOpnSub(time,  i, bZero);
+	RenderOpnSub(time,  chunksize, bZero);
 	return TRUE;
 }
 
@@ -790,11 +822,16 @@ static BOOL FlushBeepSub(DWORD time,  BOOL bZero, int maxchunk)
 	if(pBeepBuf == NULL) return FALSE;
 	p = pBeepBuf;
 
-	if(chunksize<0) return FALSE;
+//	if(chunksize<0) return FALSE;
 	if(p->nWritePTR >= p->nSize) return FALSE;
 
-	chunksize = chunksize - (p->nWritePTR % chunksize);
+	chunksize = maxchunk - (p->nWritePTR % maxchunk);
 //	printf("Chunk: Add: %d to %d\n",p->nWritePTR, chunksize);
+//	if(time  > p->nLastTime) {
+//	    chunksize = ((time - p->nLastTime)  * uRate) / 1000000;
+//	} else {
+//	    chunksize = ((p->nLastTime - time) * uRate) / 1000000;
+//	}
 	/*
 	 * オーバーフロー対策込
 	 */
@@ -843,21 +880,29 @@ static DWORD RenderCMTSub(DWORD t, int samples, BOOL bZero)
  * TRUE : 埋めた
  * FALSE : 埋める必要がなかった
  */
-static BOOL FlushCMTSub(DWORD time,  BOOL bZero, int chunksize)
+static BOOL FlushCMTSub(DWORD time,  BOOL bZero, int maxchunk)
 {
 	struct SndBufType *p;
-	int i;
+	int chunksize;
 
-	if(pCMTBuf == NULL) return FALSE;
 	p = pCMTBuf;
+	if(pCMTBuf == NULL) return FALSE;
 
-	if(chunksize<0) return FALSE;
-	if(p->nWritePTR >= p->nSize) return FALSE;
-	i = chunksize - (p->nWritePTR % chunksize);
+	if(maxchunk<0) return FALSE;
+	chunksize = maxchunk - (p->nWritePTR % maxchunk);
+
+//	if(p->nWritePTR >= p->nSize) return FALSE;
+	//i = chunksize - (p->nWritePTR % chunksize);
+//	if(time  > p->nLastTime) {
+//	    i = ((time - p->nLastTime) * uRate ) / 1000000;
+//	} else {
+//	    i = ((p->nLastTime - time) * uRate ) / 1000000;
+//	}
+
 	/*
 	 * オーバーフロー対策込
 	 */
-	RenderCMTSub(time,  i, bZero);
+	RenderCMTSub(time,  chunksize, bZero);
 	return TRUE;
 }
 
@@ -956,7 +1001,12 @@ void opn_notify(BYTE reg, BYTE dat)
 	if(samples > 0) {
 		if(applySem) {
 			SDL_SemWait(applySem);
+            samples  = CalcSamples(pBeepBuf, time);
+			RenderBeepSub(time, samples, FALSE);
+            samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
+            samples  = CalcSamples(pCMTBuf, time);
+			RenderCMTSub(time, samples, FALSE);
 			SDL_SemPost(applySem);
 		}
 	}
@@ -1029,7 +1079,12 @@ void thg_notify(BYTE reg, BYTE dat)
 	if(samples > 0) {
 		if(applySem) {
 			SDL_SemWait(applySem);
+            samples  = CalcSamples(pBeepBuf, time);
+			RenderBeepSub(time, samples, FALSE);
+            samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
+            samples  = CalcSamples(pCMTBuf, time);
+			RenderCMTSub(time, samples, FALSE);
 			SDL_SemPost(applySem);
 		}
 	}
@@ -1099,7 +1154,12 @@ void whg_notify(BYTE reg, BYTE dat)
 	if(samples > 0) {
 		if(applySem) {
 			SDL_SemWait(applySem);
+            samples  = CalcSamples(pBeepBuf, time);
+			RenderBeepSub(time, samples, FALSE);
+            samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
+            samples  = CalcSamples(pCMTBuf, time);
+			RenderCMTSub(time, samples, FALSE);
 			SDL_SemPost(applySem);
 		}
 	}
@@ -1125,15 +1185,20 @@ void beep_notify(void)
 	if (!((beep_flag & speaker_flag) ^ bBeepFlag)) {
 		return;
 	}
-
-	samples  = CalcSamples(pBeepBuf, time);
+#if 1
+    samples  = CalcSamples(pBeepBuf, time);
 	if(samples > 0){
 		if(applySem) {
 			SDL_SemWait(applySem);
 			RenderBeepSub(time, samples, FALSE);
+            samples  = CalcSamples(pOpnBuf, time);
+			RenderOpnSub(time, samples, FALSE);
+            samples  = CalcSamples(pCMTBuf, time);
+			RenderCMTSub(time, samples, FALSE);
 			SDL_SemPost(applySem);
 		}
 	}
+#endif
 	if(DrvBeep) {
 		DrvBeep->ResetCounter(!bBeepFlag);
 		bBeepFlag = beep_flag & speaker_flag;
@@ -1146,7 +1211,7 @@ void beep_notify(void)
 void tape_notify(BOOL flag)
 {
 	int samples;
-	DWORD t = dwSoundTotal;
+	DWORD time = dwSoundTotal;
 
 	if (bTapeFlag == flag) {
 		return;
@@ -1154,12 +1219,18 @@ void tape_notify(BOOL flag)
 	if(!DrvCMT) return;
 	DrvCMT->SetState((BOOL)bTapeFlag);
 	DrvCMT->Enable(bTapeMon);
-	samples  = CalcSamples(pCMTBuf, t);
-	if(samples <= 0)return ;
-	if(applySem) {
-		SDL_SemWait(applySem);
-		RenderCMTSub(t, samples, FALSE);
-		SDL_SemPost(applySem);
+	samples  = CalcSamples(pCMTBuf, time);
+	if(samples > 0) {
+        if(applySem) {
+            SDL_SemWait(applySem);
+            samples  = CalcSamples(pBeepBuf, time);
+			RenderBeepSub(time, samples, FALSE);
+            samples  = CalcSamples(pOpnBuf, time);
+			RenderOpnSub(time, samples, FALSE);
+            samples  = CalcSamples(pCMTBuf, time);
+			RenderCMTSub(time, samples, FALSE);
+            SDL_SemPost(applySem);
+        }
 	}
 	bTapeFlag = flag;
 }
@@ -1229,15 +1300,13 @@ void ProcessSnd(BOOL bZero)
 	int chunksize;
 	int channels = 2;
 	BOOL bWrite = FALSE;
-	Sint16 *DataPtr[4];
 
 
-	chunksize = ((uTick* uRate) / 1000) / CHUNKS;
 
 	dwSndCount++;
 	if(dwSndCount >= (uTick / CHUNKS)) {
 		bWrite = TRUE;
-		dwSndCount = 0;
+//		dwSndCount = 0;
 	}
 
 	if (!bWrite) {
@@ -1246,57 +1315,69 @@ void ProcessSnd(BOOL bZero)
 		   */
 		   if (tape_motor && bTapeMon) {
 			   bWrite = TRUE;
-			   samples = CalcSamples(pCMTBuf, time);
-			   RenderCMTSub(time, samples, bZero);
 		   }
 		   /*
 		    * BEEP
 		    */
 		   if (beep_flag && speaker_flag) {
 			   bWrite = TRUE;
-			   samples = CalcSamples(pBeepBuf, time);
-			   RenderBeepSub(time, samples, bZero);
 		   }
 		   /*
 		    * どちらかがONなら、バッファ充填
 		    */
 		   if (bWrite) {
 		       // OPNについては不要か？必要か？
-//			   samples = CalcSamples(pOpnBuf, time);
-//			   RenderOpnSub(time, samples, bZero);
+		       if(applySem) {
+                SDL_SemWait(applySem);
+                samples = CalcSamples(pOpnBuf, time);
+                RenderOpnSub(time, samples, bZero);
+                samples = CalcSamples(pBeepBuf, time);
+                RenderBeepSub(time, samples, bZero);
+                samples = CalcSamples(pCMTBuf, time);
+                RenderCMTSub(time, samples, bZero);
+                SDL_SemPost(applySem);
+		       }
 		   }
 		   return;
 	  }
 
 	if(bWrite) {
+//    	chunksize = ((uTick * uRate) / 1000) / CHUNKS;
+
 		// フラッシュする
-		FlushOpnSub(time, bZero, chunksize);
-		FlushBeepSub(time, bZero, chunksize);
-		FlushCMTSub(time, bZero, chunksize);
-		DrvBeep->Enable(beep_flag & speaker_flag);
-		bBeepFlag = beep_flag & speaker_flag;
+		if(applySem) {
+//		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
+            SDL_SemWait(applySem);
+            chunksize = (dwSndCount * uRate) / 1000;
+            FlushOpnSub(time, bZero, chunksize);
+            FlushBeepSub(time, bZero, chunksize);
+            FlushCMTSub(time, bZero, chunksize);
 		/*
 		 * 演奏本体
 		 * 20110524 マルチスレッドにすると却って音飛びが悪くなるのでこれでいく。
 		 *          こちらの方がWAV取り込みに悪影響がでない（？？）
 		 */
 //	   SDL_LockAudio();
-		if(applySem) {
-//		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
-			SDL_SemWait(applySem);
-		        if(bWavCapture == TRUE) {
-			   Sint16 *p;
-			   p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
-//			   printf("Wrote: %d bytes \n", chunksize * channels * sizeof(Sint16));
-			   if(p == NULL) {
-				CloseCaptureSnd();
-				bWavCapture = FALSE;
-			   }
-			}
-			SetChunk(pOpnBuf , chunksize, CH_SND_OPN);
-			SetChunk(pBeepBuf , chunksize, CH_SND_BEEP);
-			SetChunk(pCMTBuf , chunksize, CH_SND_CMT);
-			SDL_SemPost(applySem);
+//       if(bWavCapture == TRUE){
+            {
+            Sint16 *p;
+
+            if(bWavCapture) {
+            p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
+//			    printf("Wrote: %d bytes \n", chunksize * channels * sizeof(Sint16));
+                if(p == NULL) {
+                    CloseCaptureSnd();
+                    bWavCapture = FALSE;
+                }
+            }
+        }
+        SetChunk(pOpnBuf , chunksize , CH_SND_OPN);
+        SetChunk(pBeepBuf , chunksize , CH_SND_BEEP);
+        SetChunk(pCMTBuf , chunksize , CH_SND_CMT);
+        DrvOPN->ResetRenderCounter();
+        DrvBeep->ResetRenderCounter();
+        DrvCMT->ResetRenderCounter();
+        SDL_SemPost(applySem);
 		}
 //		SDL_UnlockAudio();
 		dwSndCount = 0;

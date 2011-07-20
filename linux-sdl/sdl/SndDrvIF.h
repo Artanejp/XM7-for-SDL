@@ -55,7 +55,10 @@ public:
 	virtual int Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero) = 0; // OPNのみ？
 	virtual int Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero) = 0; // OPNのみ？
 	virtual void Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples) = 0; // OPNのみ？
+	virtual int GetRenderCounter(void) = 0;
+	virtual void ResetRenderCounter(void) = 0;
 protected:
+    int RenderCounter;
 };
 
 #endif /* SNDDRVIF_H_ */

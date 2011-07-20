@@ -316,6 +316,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 		if(bZero) {
 			memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
 			SDL_SemPost(RenderSem);
+            RenderCounter += ss2;
 			return ss2;
 		}
 
@@ -363,6 +364,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 		 */
 	}
 	SDL_SemPost(RenderSem);
+	RenderCounter += ss2;
 	return ss2;
 }
 
@@ -414,4 +416,14 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 	memset(q, 0x00 , samples * channels * sizeof(Sint16));
 	CopySoundBufferGeneric(p, q, (int)(samples * channels));
 
+}
+
+int SndDrvOpn::GetRenderCounter(void)
+{
+    return RenderCounter;
+}
+
+void SndDrvOpn::ResetRenderCounter(void)
+{
+    RenderCounter = 0;
 }

@@ -62,7 +62,8 @@ public:
 	int Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero);
 	int Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero);
 	void Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples);
-
+    int GetRenderCounter(void);
+	void ResetRenderCounter(void);
 protected:
 	UINT channels;
 	UINT srate;

@@ -87,3 +87,12 @@ int SndDrvTmpl::Render(Sint16 *pBuf, int start, int samples,  BOOL clear, BOOL b
 	return samples;
 }
 
+int SndDrvTmpl::GetRenderCounter(void)
+{
+//    return RenderCounter;
+}
+
+void SndDrvTmpl::ResetRenderCounter(void)
+{
+//   RenderCounter = 0;
+}

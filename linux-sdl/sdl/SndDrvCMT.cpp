@@ -279,6 +279,7 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	if(bZero) {
 		memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
 		SDL_SemPost(RenderSem);
+        RenderCounter += ss2;
 		return ss2;
 	}
 	/*
@@ -331,5 +332,16 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	 * 現在のテープ出力状態を保存
 	 */
 	bTapeFlag2 = bTapeFlag;
+	RenderCounter += ss2;
 	return ss2;
+}
+
+int SndDrvCMT::GetRenderCounter(void)
+{
+    return RenderCounter;
+}
+
+void SndDrvCMT::ResetRenderCounter(void)
+{
+    RenderCounter = 0;
 }

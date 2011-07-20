@@ -32,6 +32,9 @@ public:
 	void SetRate(int rate);
 	void SetRenderVolume(int level);
     int Render(Sint16 *pBuf, int start, int samples,  BOOL clear, BOOL bZero);
+    int GetRenderCounter(void);
+	void ResetRenderCounter(void);
+
 protected:
 	UINT channels;
 	UINT srate;

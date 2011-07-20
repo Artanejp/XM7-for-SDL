@@ -267,6 +267,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 		if(bZero) {
 			memset(wbuf, 0, sizeof(Sint16) * ss2 * channels);
 			SDL_SemPost(RenderSem);
+            RenderCounter += ss2;
 			return ss2;
 		}
 
@@ -312,6 +313,16 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 		}
 	}
 	SDL_SemPost(RenderSem);
+	RenderCounter += ss2;
 	return ss2;
 }
 
+int SndDrvBeep::GetRenderCounter(void)
+{
+    return RenderCounter;
+}
+
+void SndDrvBeep::ResetRenderCounter(void)
+{
+    RenderCounter = 0;
+}
