@@ -9,7 +9,10 @@ include ../config.mak
 
 	
 VIDEODRVSRC = \
-	api_draw.cpp api_scaler.cpp 
+	api_draw.cpp api_scaler.cpp \
+	api_vram8.cpp \
+	api_vram4096.cpp \
+	api_vram256k.cpp
 
 SNDDRVSRC = \
 	api_snd2.cpp api_wavwriter.cpp  \
@@ -69,7 +72,7 @@ xm7: ${OBJS_RELEASE} ${LIBS_RELEASE}
 	strip xm7
 
 xm7.debug: ${OBJS_DEBUG} ${LIBS_DEBUG}
-	$(CXX) -g ${LDFLAGS} -o xm7.debug $^ ${LIBS} ${LIBS_DEBUG}
+	$(CXX) -pg -g ${LDFLAGS} -o xm7.debug $^ ${LIBS} ${LIBS_DEBUG}
 
 
 
@@ -85,6 +88,17 @@ Release/api_draw.o: api_draw.cpp
 	
 Release/api_scaler.o: api_scaler.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/api_vram8.o: api_vram8.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/api_vram4096.o: api_vram4096.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/api_vram256k.o: api_vram256k.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+
 
 Release/api_snd2.o: api_snd2.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
@@ -138,6 +152,15 @@ Debug/api_draw.o: api_draw.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 	
 Debug/api_scaler.o: api_scaler.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/api_vram8.o: api_vram8.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/api_vram4096.o: api_vram4096.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/api_vram256k.o: api_vram256k.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/api_snd2.o: api_snd2.cpp

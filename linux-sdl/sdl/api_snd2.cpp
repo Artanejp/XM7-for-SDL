@@ -468,7 +468,7 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
 //    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 6) < 0) {
        printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
@@ -1247,6 +1247,7 @@ static void SetChunkSub(Mix_Chunk *p, Sint16 *buf, Uint32 len, int volume)
 
 	p->abuf = (Uint8 *)buf;
 	p->alen = len * sizeof(Sint16) * channels;
+//	p->alen = len * channels;
 	p->allocated = 1;
 	p->volume = (Uint8)volume;
 //	printf("Play: buf=%08x len=%d\n", p->abuf, p->alen);
@@ -1261,30 +1262,44 @@ static int SetChunk(struct SndBufType *p, int samples, int ch)
 
 	j = p->nSize - p->nReadPTR;
 	if(j > samples) {
+	        // 分割不要
 		j = samples;
-	}
-	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
-	Mix_PlayChannel(ch , p->mChunk[i], 0);
-	p->nReadPTR += j;
-	i++;
-	if(i >= p->nChunks) i = 0;
-	p->nChunkNo = i;
-	if(p->nReadPTR >= p->nSize) {
-		p->nReadPTR -= p->nSize;
-	}
-	j = samples - j;
-	if(j > 0) {
-		SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
-		Mix_PlayChannel(ch + p->nChunkNo % 2, p->mChunk[i], 0);
-		p->nReadPTR += j;
-		i++;
-		if(i >= p->nChunks) i = 0;
-		p->nChunkNo = i;
-		if(p->nReadPTR >= p->nSize) {
-			p->nReadPTR -= p->nSize;
+        	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
+   		Mix_PlayChannel(ch , p->mChunk[i], 0);
+        	p->nReadPTR += j;
+	        if(p->nReadPTR >= p->nSize) {
+		   p->nReadPTR = 0;
 		}
+	        i++;
+	        if(i >= p->nChunks) i = 0;
+	        p->nChunkNo = i;
+
+	} else {
+	     {
+        	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
+   		Mix_PlayChannel(ch , p->mChunk[i], 0);
+        	p->nReadPTR += j;
+	        if(p->nReadPTR >= p->nSize) {
+		   p->nReadPTR = 0;
+		}
+	        i++;
+	        if(i >= p->nChunks) i = 0;
+	        p->nChunkNo = i;
+	     }
+	     j = samples - j;
+	     if(j > 0) {
+        	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
+   		Mix_PlayChannel(ch, p->mChunk[i], 0);
+        	p->nReadPTR += j;
+	        if(p->nReadPTR >= p->nSize) {
+		   p->nReadPTR = 0;
+		}
+	        i++;
+	        if(i >= p->nChunks) i = 0;
+	        p->nChunkNo = i;
+	     }
 	}
-	return i;
+   return i;
 }
 
 
@@ -1342,7 +1357,7 @@ void ProcessSnd(BOOL bZero)
 	  }
 
 	if(bWrite) {
-//    	chunksize = ((uTick * uRate) / 1000) / CHUNKS;
+    	chunksize = ((uTick * uRate) / 1000) / CHUNKS;
 
 		// フラッシュする
 		if(applySem) {

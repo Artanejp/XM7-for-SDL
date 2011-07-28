@@ -42,6 +42,13 @@
 				</Linker>
 			</Target>
 		</Build>
+		<Compiler>
+			<Add option="-pg" />
+			<Add option="-g" />
+		</Compiler>
+		<Linker>
+			<Add option="-pg" />
+		</Linker>
 		<Unit filename="dbg_breakpoint.cpp" />
 		<Unit filename="dbg_disasm09.cpp" />
 		<Unit filename="dbg_fonts.cpp" />

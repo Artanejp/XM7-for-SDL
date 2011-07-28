@@ -4,14 +4,17 @@
 	<File name="device.h" open="0" top="0" tabpos="4">
 		<Cursor position="2716" topLine="111" />
 	</File>
+	<File name="disasm.c" open="1" top="0" tabpos="5">
+		<Cursor position="4270" topLine="272" />
+	</File>
 	<File name="fdc.c" open="1" top="0" tabpos="2">
 		<Cursor position="8739" topLine="304" />
 	</File>
 	<File name="keyboard.c" open="0" top="0" tabpos="0">
 		<Cursor position="40887" topLine="2635" />
 	</File>
-	<File name="m6809.c" open="0" top="0" tabpos="5">
-		<Cursor position="40255" topLine="1069" />
+	<File name="m6809.c" open="1" top="0" tabpos="4">
+		<Cursor position="12498" topLine="347" />
 	</File>
 	<File name="maincpu.c" open="0" top="0" tabpos="7">
 		<Cursor position="693" topLine="28" />
@@ -25,7 +28,7 @@
 	<File name="tools.c" open="0" top="0" tabpos="36">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="xm7.h" open="1" top="1" tabpos="1">
-		<Cursor position="226" topLine="4" />
+	<File name="xm7.h" open="1" top="0" tabpos="1">
+		<Cursor position="205" topLine="4" />
 	</File>
 </CodeBlocks_layout_file>

@@ -29,8 +29,8 @@ FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/
 
 LDFLAGS = 
 
-CC = gcc-4.5
-CXX = g++-4.5
+CC = gcc
+CXX = g++
 AR = ar
 
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
@@ -47,7 +47,7 @@ CFLAGS += `pkg-config --cflags sdl`
 #CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`
 
-CFLAGS_DEBUG = -g -O0 -export-dynamic
+CFLAGS_DEBUG = -pg -g -O0 -export-dynamic
 CFLAGS_DEBUG += $(CFLAGS)
 
 CFLAGS_RELEASE =  -O3 -export-dynamic
