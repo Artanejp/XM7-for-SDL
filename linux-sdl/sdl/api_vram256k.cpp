@@ -32,29 +32,6 @@ extern "C"
     extern void UnlockVram(void);
 }
 
-GLuint UpdateTexture256k(Uint32 *p, GLuint tid , int w, int h)
-{
-    GLuint ttid;
-
-    if((w < 0) || (h < 0)) return 0;
-    if(p == NULL) return 0;
-    if(tid == 0) {
-        glGenTextures(1, &ttid);
-    } else {
-        ttid = tid;
-    }
-    glBindTexture(GL_TEXTURE_2D, ttid);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 w, h,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 p);
-    return ttid;
-}
-
 static inline void putword(Uint32 *disp, Uint32 *cbuf)
 {
 		disp[0] = cbuf[7];
@@ -177,8 +154,6 @@ GLuint CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Ui
 			addr++;
 			}
 	}
-//   DiscardTexture(uVramTextureID);
-//   uVramTextureID = UpdateTexture256k(p, 0, 320, 200);
    UnlockVram();
    return uVramTextureID;
 }

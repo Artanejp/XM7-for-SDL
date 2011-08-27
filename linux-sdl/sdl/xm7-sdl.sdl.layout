@@ -25,28 +25,28 @@
 	<File name="SndDrvBeep.cpp" open="1" top="0" tabpos="3">
 		<Cursor position="5198" topLine="313" />
 	</File>
-	<File name="SndDrvBeep.h" open="1" top="0" tabpos="26">
+	<File name="SndDrvBeep.h" open="0" top="0" tabpos="26">
 		<Cursor position="1296" topLine="39" />
 	</File>
-	<File name="SndDrvCMT.cpp" open="1" top="0" tabpos="24">
+	<File name="SndDrvCMT.cpp" open="0" top="0" tabpos="24">
 		<Cursor position="5400" topLine="334" />
 	</File>
-	<File name="SndDrvCMT.h" open="1" top="0" tabpos="22">
+	<File name="SndDrvCMT.h" open="0" top="0" tabpos="22">
 		<Cursor position="1438" topLine="49" />
 	</File>
-	<File name="SndDrvIF.h" open="1" top="0" tabpos="23">
+	<File name="SndDrvIF.h" open="0" top="0" tabpos="23">
 		<Cursor position="1949" topLine="45" />
 	</File>
-	<File name="SndDrvOpn.cpp" open="1" top="0" tabpos="19">
+	<File name="SndDrvOpn.cpp" open="0" top="0" tabpos="19">
 		<Cursor position="8017" topLine="414" />
 	</File>
-	<File name="SndDrvOpn.h" open="1" top="0" tabpos="21">
+	<File name="SndDrvOpn.h" open="0" top="0" tabpos="21">
 		<Cursor position="1517" topLine="59" />
 	</File>
-	<File name="SndDrvTmpl.cpp" open="1" top="0" tabpos="25">
+	<File name="SndDrvTmpl.cpp" open="0" top="0" tabpos="25">
 		<Cursor position="1504" topLine="80" />
 	</File>
-	<File name="SndDrvTmpl.h" open="1" top="0" tabpos="20">
+	<File name="SndDrvTmpl.h" open="0" top="0" tabpos="20">
 		<Cursor position="719" topLine="23" />
 	</File>
 	<File name="SndDrvWav.cpp" open="1" top="0" tabpos="1">
@@ -56,10 +56,10 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="api_draw.cpp" open="1" top="0" tabpos="12">
-		<Cursor position="35408" topLine="1920" />
+		<Cursor position="3667" topLine="0" />
 	</File>
 	<File name="api_draw.h" open="1" top="0" tabpos="4">
-		<Cursor position="1233" topLine="68" />
+		<Cursor position="2097" topLine="86" />
 	</File>
 	<File name="api_js.h" open="1" top="0" tabpos="5">
 		<Cursor position="389" topLine="4" />
@@ -74,22 +74,22 @@
 		<Cursor position="3232" topLine="152" />
 	</File>
 	<File name="api_scaler.cpp" open="1" top="0" tabpos="13">
-		<Cursor position="3888" topLine="156" />
+		<Cursor position="2333" topLine="89" />
 	</File>
 	<File name="api_scaler.h" open="1" top="0" tabpos="14">
 		<Cursor position="1924" topLine="86" />
 	</File>
 	<File name="api_snd2.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="27992" topLine="1349" />
+		<Cursor position="27901" topLine="1312" />
 	</File>
 	<File name="api_vram256k.cpp" open="1" top="0" tabpos="16">
-		<Cursor position="4170" topLine="161" />
+		<Cursor position="607" topLine="21" />
 	</File>
 	<File name="api_vram4096.cpp" open="1" top="0" tabpos="17">
-		<Cursor position="1293" topLine="35" />
+		<Cursor position="364" topLine="13" />
 	</File>
 	<File name="api_vram8.cpp" open="1" top="0" tabpos="18">
-		<Cursor position="4526" topLine="171" />
+		<Cursor position="4121" topLine="155" />
 	</File>
 	<File name="build_config.h" open="0" top="0" tabpos="1">
 		<Cursor position="1512" topLine="84" />

@@ -130,11 +130,8 @@ extern Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
 extern GLuint uVramTextureID;
 
-extern GLuint UpdateTexture8(Uint32 *p, GLuint tid, int w, int h);
 extern GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode);
-extern GLuint UpdateTexture4096(Uint32 *p, GLuint tid , int w, int h);
 extern void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern GLuint UpdateTexture256k(Uint32 *p, GLuint tid , int w, int h);
 extern void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
 extern void DiscardTexture(GLuint tid);
 extern Uint32 *GetVirtualVram(void);
@@ -272,10 +269,9 @@ BOOL SelectDraw2(void)
 {
 #ifdef USE_AGAR
 		AG_Color nullcolor;
-		AG_Driver *drv;
-		AG_Rect rect;
-                AG_Widget *wid;
+		AG_Widget *wid;
 		SDL_Surface *p;
+		AG_Rect rect;
 #else // SDL
 		Uint32 nullcolor;
 		SDL_Surface *p;
@@ -292,7 +288,7 @@ BOOL SelectDraw2(void)
 		}
 #ifdef USE_AGAR
 //		if(agDriverOps == NULL) return FALSE;
-                if(GLDrawArea != NULL) {
+        if(GLDrawArea != NULL) {
 		   wid = AGWIDGET(GLDrawArea);
 		} else if(DrawArea != NULL) {
 		   wid = AGWIDGET(DrawArea);
@@ -376,35 +372,17 @@ extern GtkWidget       *gtkDrawArea;
 
 void ResizeWindow(int w, int h)
 {
-    char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
-    SDL_SysWMinfo sdlinfo;
+//    char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
+//    SDL_SysWMinfo sdlinfo;
 #ifdef USE_AGAR
             ResizeWindow_Agar(w, h);
 #else
-#if 0
-#ifdef USE_GTK
-            sprintf(EnvMainWindow, "SDL_WINDOWID=0x%08x",
-                    gdk_x11_drawable_get_xid(gtkDrawArea->window));
-            SDL_putenv(EnvMainWindow);
-//            SDL_InitSubSystem(SDL_INIT_VIDEO);
-#endif
             InitGL(w, h);
-#ifdef USE_GTK
-            gtk_widget_set_size_request(gtkDrawArea, w, h);
-            SDL_GetWMInfo(&sdlinfo);
-            gtk_socket_add_id(GTK_SOCKET(gtkDrawArea), sdlinfo.info.x11.window);
-#endif
-#else
-            InitGL(w, h);
-#endif
 #endif
 }
 
 static int DrawTaskMain(void *arg)
 {
-		SDL_Surface *p;
-
-
 		if(newResize) {
 			nDrawWidth = newDrawWidth;
 			nDrawHeight = newDrawHeight;
@@ -471,7 +449,6 @@ int DrawThreadMain(void *p)
 #endif
 {
 #ifdef USE_AGAR
-		Uint32 nDrawTick2;
 		nDrawTick1D = AG_GetTicks();
 #endif
 //		initsub();
@@ -579,6 +556,7 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 //			SDL_Flip(displayArea);
 		}
 		bOldFullScan = bFullScan;
+		return TRUE;
 }
 
 static void detachsub(void)
@@ -912,7 +890,6 @@ void	InitDraw(void)
 	 */
 void	CleanDraw(void)
 {
-		int reti;
 
 		DrawSHUTDOWN = TRUE;
 #ifdef USE_AGAR
@@ -968,12 +945,15 @@ static  BOOL Select640(void)
  * 全領域無効
  */
         nDrawTop = 0;
-        nDrawBottom = 400;
+        nDrawBottom = 200;
         nDrawLeft = 0;
         nDrawRight = 640;
         bPaletFlag = TRUE;
         SetDrawFlag(TRUE);
-
+        LockVram();
+        DiscardTexture(uVramTextureID);
+        uVramTextureID = 0;
+        UnlockVram();
 #if XM7_VER >= 3
 /*
  * デジタル/200ラインモード
@@ -1011,6 +991,10 @@ static  BOOL Select400l(void)
  * デジタル/400ラインモード
  */
         bMode = SCR_400LINE;
+        LockVram();
+        DiscardTexture(uVramTextureID);
+        uVramTextureID = 0;
+        UnlockVram();
         return TRUE;
 }
 
@@ -1026,9 +1010,9 @@ static  BOOL Select320(void)
  * 全領域無効
  */
         nDrawTop = 0;
-        nDrawBottom = 400;
+        nDrawBottom = 200;
         nDrawLeft = 0;
-        nDrawRight = 640;
+        nDrawRight = 320;
         bPaletFlag = TRUE;
         SetDrawFlag(TRUE);
 #if XM7_VER >= 3
@@ -1044,6 +1028,10 @@ static  BOOL Select320(void)
         bAnalog = TRUE;
 
 #endif				/*  */
+        LockVram();
+        DiscardTexture(uVramTextureID);
+        uVramTextureID = 0;
+        UnlockVram();
         return TRUE;
 }
 
@@ -1059,9 +1047,9 @@ static  BOOL Select256k()
  * 全領域無効
  */
         nDrawTop = 0;
-        nDrawBottom = 400;
+        nDrawBottom = 200;
         nDrawLeft = 0;
-        nDrawRight = 640;
+        nDrawRight = 320;
         bPaletFlag = TRUE;
         SetDrawFlag(TRUE);
 
@@ -1069,6 +1057,10 @@ static  BOOL Select256k()
  * アナログ(26万色)/200ラインモード
  */
         bMode = SCR_262144;
+        LockVram();
+        DiscardTexture(uVramTextureID);
+        uVramTextureID = 0;
+        UnlockVram();
         return TRUE;
 }
 
@@ -1078,7 +1070,6 @@ static  BOOL Select256k()
 BOOL SelectDraw(void)
 {
 	BOOL ret;
-	int reti;
 #ifdef USE_AGAR
 	AG_Driver *drv;
 	AG_Color nullcolor;
@@ -1302,7 +1293,6 @@ void RenderFullScan(void)
 
 #ifdef USE_AGAR
 	AG_Driver *drv;
-	AG_Color nullcolor;
 	AG_Surface *s;
 	AG_Widget *w;
     if(DrawArea != NULL) {
@@ -1377,9 +1367,6 @@ void RenderFullScan(void)
 void RenderSetOddLine(void)
 {
 	WORD u;
-	BYTE * p;
-	BYTE * q;
-	Uint32 pitch;
 
 #ifdef USE_AGAR
 	AG_Driver *drv;
@@ -1500,6 +1487,7 @@ int
 OnPaint(void)
 #endif
 {
+    return 1;
 }
 
 
@@ -1630,11 +1618,11 @@ void	ttlpalet_notify(void)
 void 	apalet_notify(void)
 {
 	bPaletFlag = TRUE;
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
-	SetDrawFlag(TRUE);
+//	nDrawTop = 0;
+//	nDrawBottom = 200;
+//	nDrawLeft = 0;
+//	nDrawRight = 320;
+//	SetDrawFlag(TRUE);
 }
 
 /*
@@ -1646,10 +1634,10 @@ void 	display_notify(void)
 	/*
 	 * 再描画
 	 */
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
+//	nDrawTop = 0;
+//	nDrawBottom = 400;
+//	nDrawLeft = 0;
+//	nDrawRight = 640;
 	bPaletFlag = TRUE;
 	bClearFlag = TRUE;
 	SetDrawFlag(TRUE);
@@ -1959,6 +1947,7 @@ void Palet320(void)
 	 if (!(multi_page & 0x40)) {
 		 amask |= 0x0f00;
 	 }
+     LockVram();
 	 for (i = 0; i < 4096; i++) {
 		 /*
 		  * 最下位から5bitづつB,G,R
@@ -1975,6 +1964,8 @@ void Palet320(void)
 		  }
 		  Palet320Sub(i, r, g, b, 255);
 	 }
+     UnlockVram();
+
 }
 
 
@@ -2002,7 +1993,6 @@ void Draw640All(void)
 	SDL_Surface *p;
 
 #ifdef USE_AGAR
-	AG_Driver *drv;
 	if(agDriverOps == NULL) return;
 	p = GetDrawSurface();
 #else
@@ -2083,8 +2073,8 @@ void Draw640All(void)
 			PutVramFunc(p, 0, 0, 640, 200, multi_page);
 		}
 	}
-    DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture8(GetVirtualVram(), 0, 640, 200);
+//    DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 200);
 
 	nDrawTop = 0;
 	nDrawBottom = 400;
@@ -2102,7 +2092,6 @@ void Draw400l(void)
 	SDL_Surface *p;
 	WORD wdtop, wdbtm;
 #ifdef USE_AGAR
-	AG_Driver *drv;
 	if(agDriverOps == NULL) return;
 	p = GetDrawSurface();
 #else
@@ -2183,8 +2172,8 @@ void Draw400l(void)
 			 PutVramFunc(p, 0, 0, 640, 400, multi_page);
 		 }
 	 }
-     DiscardTexture(uVramTextureID);
-     uVramTextureID = UpdateTexture8(GetVirtualVram(), 0, 640, 400);
+//    DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 400);
 	 nDrawTop = 0;
 	 nDrawBottom = 400;
 	 nDrawLeft = 0;
@@ -2280,8 +2269,8 @@ void Draw320(void)
 		}
 	}
 
-    DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture4096(GetVirtualVram(), 0, 320, 200);
+  //  DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
@@ -2305,8 +2294,6 @@ void Draw256k(void)
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	 } else {
-//        PutVramFunc = &Scaler_GL;
-//        PutVramFunc = &PutVram_AG_GL2;
           PutVramFunc = &PutVram_AG_GL2;
 	 }
 	nDrawTop = 0;
@@ -2334,8 +2321,8 @@ void Draw256k(void)
 	SetVramReader_256k();
 
 	PutVramFunc(p, 0, 0, 320, 200, multi_page);
-    DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture256k(GetVirtualVram(), 0, 320, 200);
+    //DiscardTexture(uVramTextureID);
+    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
 
 	nDrawTop = 0;
 	nDrawBottom = 200;

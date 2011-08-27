@@ -38,15 +38,13 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
  {
     Uint32 ds;
 //     if((index > 4095) || (index < 0)) return;
-//     LockVram();
 #ifdef SDL_LIL_ENDIAN
 	ds =r + (g << 8)+ (b << 16) + (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
     rgbAnalogGDI[index] = ds;
-//    UnlockVram();
- }
+}
 
 
 
@@ -72,26 +70,6 @@ static inline void putword2(Uint32 *disp, Uint32 *cbuf)
 		disp[5] = rgbAnalogGDI[cbuf[5]];
 		disp[6] = rgbAnalogGDI[cbuf[6]];
 		disp[7] = rgbAnalogGDI[cbuf[7]];
-}
-
-
-
-static void copy4096pal(Uint32 *p, int w, int h)
-{
-    int size = w * h;
-    int i;
-
-    for(i = 0; i < size; i+=8 ) {
-        pVram2[i] =    (Uint32) rgbAnalogGDI[p[0]];
-        pVram2[i + 1] =(Uint32) rgbAnalogGDI[p[1]];
-        pVram2[i + 2] =(Uint32) rgbAnalogGDI[p[2]];
-        pVram2[i + 3] =(Uint32) rgbAnalogGDI[p[3]];
-        pVram2[i + 4] =(Uint32) rgbAnalogGDI[p[4]];
-        pVram2[i + 5] =(Uint32) rgbAnalogGDI[p[5]];
-        pVram2[i + 6] =(Uint32) rgbAnalogGDI[p[6]];
-        pVram2[i + 7] =(Uint32) rgbAnalogGDI[p[7]];
-        p+=8;
-    }
 }
 
 
@@ -214,29 +192,6 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
 }
 
 
-GLuint UpdateTexture4096(Uint32 *p, GLuint tid , int w, int h)
-{
-    GLuint ttid;
-
-    if((w < 0) || (h < 0)) return 0;
-    if(p == NULL) return 0;
-    if(tid == 0) {
-        glGenTextures(1, &ttid);
-    } else {
-        ttid = tid;
-    }
-    glBindTexture(GL_TEXTURE_2D, ttid);
-//    copy4096pal(p, w, h);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 w, h,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 pVram2);
-    return ttid;
-}
 
 GLuint CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
 {
@@ -254,13 +209,11 @@ GLuint CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Ui
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * 40 + xx ;
 			getvram4096(addr, c);
-			disp = pVram2 + xx * 8 + 320 * yy;
+			disp = &p[xx * 8 + 320 * yy];
 			putword2(disp,  c);
 			addr++;
 			}
 	}
-//   DiscardTexture(uVramTextureID);
-//   uVramTextureID = UpdateTexture4096(p, 0, 320, 200);
    UnlockVram();
    return uVramTextureID;
 }

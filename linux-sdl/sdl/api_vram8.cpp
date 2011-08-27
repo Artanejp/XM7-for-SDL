@@ -54,7 +54,7 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     UnlockVram();
 }
 
-
+#if 0
 static inline void putword8(Uint32 *disp, Uint8 *cbuf)
 {
     disp[0] = cbuf[7] & 0x0f;
@@ -66,7 +66,19 @@ static inline void putword8(Uint32 *disp, Uint8 *cbuf)
     disp[6] = cbuf[1] & 0x0f;
     disp[7] = cbuf[0] & 0x0f;
 }
-
+#else
+static inline void putword8(Uint32 *disp, Uint8 *cbuf)
+{
+    disp[0] = rgbTTLGDI[cbuf[7] & 0x0f];
+    disp[1] = rgbTTLGDI[cbuf[6] & 0x0f];
+    disp[2] = rgbTTLGDI[cbuf[5] & 0x0f];
+    disp[3] = rgbTTLGDI[cbuf[4] & 0x0f];
+    disp[4] = rgbTTLGDI[cbuf[3] & 0x0f];
+    disp[5] = rgbTTLGDI[cbuf[2] & 0x0f];
+    disp[6] = rgbTTLGDI[cbuf[1] & 0x0f];
+    disp[7] = rgbTTLGDI[cbuf[0] & 0x0f];
+}
+#endif
 
 static inline void getvram_8to8(Uint32 addr, Uint8 *cbuf)
 {
@@ -181,7 +193,7 @@ GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * 80 + xx ;
 			getvram_8to8(addr, c);
-			disp = p + xx * 8 + 640 * yy;
+			disp = &p[xx * 8 + 640 * yy];
 			putword8(disp,  c);
 			addr++;
 			}

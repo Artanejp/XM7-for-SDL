@@ -135,16 +135,38 @@ static GLuint CreateTexture(AG_Surface *p)
 	return textureid;
 }
 
+static GLuint OSD_UpdateTexture(AG_Surface *p, GLuint tid)
+{
+    GLuint ttid;
+
+    if(tid == 0){
+        ttid = CreateTexture(p);
+    } else {
+        ttid = tid;
+        glBindTexture(GL_TEXTURE_2D, ttid);
+        /*
+        * 文字はスムージングしようよ(´・ω・｀)
+        */
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexSubImage2D(GL_TEXTURE_2D,
+			0,
+			0, 0,
+			p->w, p->h,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			p->pixels);
+
+
+    }
+    return ttid;
+}
+
 static void DiscardTextures(int n, GLuint *id)
 {
 	if(agDriverOps == NULL) return;
 	glDeleteTextures(n, id);
 
-}
-
-static void DiscardTexture(GLuint tid)
-{
-	DiscardTextures(1, &tid);
 }
 
 static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset_x, int offset_y, int w, int h)
@@ -587,8 +609,9 @@ static void DrawMainCaption(void)
 		AG_SurfaceFree(tmps);
 		AG_PopTextState();
 		strcpy(szOldCaption, szCaption);
-		DiscardTexture(tid_caption);
-		tid_caption =  CreateTexture(pCaption);
+		//DiscardTexture(tid_caption);
+		//tid_caption =  CreateTexture(pCaption);
+		tid_caption = OSD_UpdateTexture(pCaption, tid_caption);
 		DrawTexture(pCaption, pOSDCaption, tid_caption, 8 ,  800 - STAT_HEIGHT *2 - 4, STAT_WIDTH*2, STAT_HEIGHT*2);
 	}
 }
@@ -793,9 +816,9 @@ static void DrawDrive(AG_Widget *w, int drive)
 		  * 旧いテクスチャを破棄
 		  */
 
-		 for(i = 0; i < 3 ; i++) {
-			 DiscardTexture(tid_fd[drive][i]);
-		 }
+//		 for(i = 0; i < 3 ; i++) {
+//			 DiscardTexture(tid_fd[drive][i]);
+//		 }
 		 AG_PushTextState();
 		 AG_TextFont(pStatusFont);
 		 AG_TextColor(alpha);
@@ -808,14 +831,14 @@ static void DrawDrive(AG_Widget *w, int drive)
 		 tmp = AG_TextRender(outstr);
 		 AG_SurfaceBlit(tmp, &rect, pFDRead[drive], 0, 0);
 		 AG_SurfaceFree(tmp);
-		 tid_fd[drive][1] =  CreateTexture(pFDRead[drive]);
+		 tid_fd[drive][1] =  OSD_UpdateTexture(pFDRead[drive], tid_fd[drive][1]);
 
 		 AG_TextBGColor(b);
 		 AG_FillRect(pFDWrite[drive], &rect, b);
 		 tmp = AG_TextRender(outstr);
 		 AG_SurfaceBlit(tmp, &rect, pFDWrite[drive], 0, 0);
 		 AG_SurfaceFree(tmp);
-		 tid_fd[drive][2] =  CreateTexture(pFDWrite[drive]);
+		 tid_fd[drive][2] =  OSD_UpdateTexture(pFDWrite[drive], tid_fd[drive][2]);
 
 		 AG_TextColor(n);
 		 AG_TextBGColor(alpha);
@@ -823,7 +846,7 @@ static void DrawDrive(AG_Widget *w, int drive)
 		 tmp = AG_TextRender(outstr);
 		 AG_SurfaceBlit(tmp, &rect, pFDNorm[drive], 0, 0);
 		 AG_SurfaceFree(tmp);
-		 tid_fd[drive][0] =  CreateTexture(pFDNorm[drive]);
+		 tid_fd[drive][0] =  OSD_UpdateTexture(pFDNorm[drive], tid_fd[drive][0]);
 
 		 AG_PopTextState();
 		 memset(szOldDrive[drive], 0, 16);
@@ -896,9 +919,9 @@ static void DrawTape(void)
 		/*
 		 * カウンタ番号レンダリング(仮)
 		 */
-		for(i = 0; i < 3 ; i++) {
-			DiscardTexture(tid_cmt[i]);
-		}
+//		for(i = 0; i < 3 ; i++) {
+//			DiscardTexture(tid_cmt[i]);
+//		}
 		if(pStatusFont != NULL) {
 			AG_PushTextState();
 			AG_FillRect(pCMTRead, &rect, r);
@@ -912,7 +935,7 @@ static void DrawTape(void)
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
 			AG_SurfaceFree(tmp);
-			tid_cmt[1] =  CreateTexture(pCMTRead);
+			tid_cmt[1] =  OSD_UpdateTexture(pCMTRead, tid_cmt[1]);
 
 
 			AG_FillRect(pCMTWrite, &rect, b);
@@ -922,7 +945,7 @@ static void DrawTape(void)
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTWrite, 0, 0);
 			AG_SurfaceFree(tmp);
-			tid_cmt[2] =  CreateTexture(pCMTWrite);
+			tid_cmt[2] =  OSD_UpdateTexture(pCMTWrite, tid_cmt[2]);
 
 
 			AG_FillRect(pCMTNorm, &rect, alpha);
@@ -932,8 +955,7 @@ static void DrawTape(void)
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
 			AG_SurfaceFree(tmp);
-			tid_cmt[0] =  CreateTexture(pCMTNorm);
-
+			tid_cmt[0] =  OSD_UpdateTexture(pCMTNorm, tid_cmt[0]);
 			AG_PopTextState();
 		}
 		if ((nTape >= 10000) && (nTape < 30000)) {

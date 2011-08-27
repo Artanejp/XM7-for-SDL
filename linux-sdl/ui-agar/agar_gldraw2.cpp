@@ -46,13 +46,10 @@ extern Uint8 *vram_pb;
 extern Uint8 *vram_pr;
 extern Uint8 *vram_pg;
 
-extern GLuint UpdateTexture8(Uint32 *p, GLuint tid, int w, int h);
 extern GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode);
-extern GLuint UpdateTexture4096(Uint32 *p, GLuint tid , int w, int h);
 extern void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern GLuint UpdateTexture256k(Uint32 *p, GLuint tid , int w, int h);
 extern void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern void DiscardTexture(GLuint tid);
+//extern void DiscardTexture(GLuint tid);
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
@@ -204,6 +201,44 @@ Uint32 *GetVirtualVram(void)
     if(pVirtualVram == NULL) return NULL;
     return &(pVirtualVram->pVram[0][0]);
 }
+
+GLuint UpdateTexture(Uint32 *p, int w, int h)
+{
+    GLuint ttid;
+
+    if((w < 0) || (h < 0)) return 0;
+    if(p == NULL) return 0;
+
+    LockVram();
+    if(uVramTextureID == 0) {
+        glGenTextures(1, &ttid);
+        glBindTexture(GL_TEXTURE_2D, ttid);
+        glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 w, h,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 p);
+
+    } else {
+        ttid = uVramTextureID;
+        glBindTexture(GL_TEXTURE_2D, ttid);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                         0,  // level
+                         0, 0, // offset
+                         w, h,
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         p );
+    }
+    uVramTextureID = ttid;
+    UnlockVram();
+    return ttid;
+}
+
+
  // Create GL Handler(Main)
 void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 {
@@ -234,10 +269,12 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
     if(pp == NULL) return;
 	if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
 
-//    if(bClearFlag) {
-//        memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
-//        bClearFlag = FALSE;
-//    }
+    if(bClearFlag) {
+        LockVram();
+        memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
+        bClearFlag = FALSE;
+        UnlockVram();
+    }
 	switch (bMode) {
 	case SCR_400LINE:
         CreateVirtualVram8(pp, x, y, w, h, bMode);
@@ -271,36 +308,7 @@ void AGEventDrawGL2(AG_Event *event)
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
-
-
-if(bPaletFlag) { // パレットの変更があればテクスチャ差し替える
-    switch(bMode) {
-        case SCR_400LINE:
-            LockVram();
-            bPaletFlag = FALSE;
-            DiscardTexture(uVramTextureID);
-            uVramTextureID =  UpdateTexture8(p, 0 , 640, 400);
-            UnlockVram();
-            break;
-        case SCR_200LINE:
-            LockVram();
-            bPaletFlag = FALSE;
-            DiscardTexture(uVramTextureID);
-            uVramTextureID =  UpdateTexture8(p, 0 , 640, 200);
-            UnlockVram();
-            break;
-        case SCR_262144:
-            break;
-        case SCR_4096:
-//            LockVram();
-//            bPaletFlag = FALSE;
-//            DiscardTexture(uVramTextureID);
-//            uVramTextureID =  UpdateTexture4096(p, 0 , 320, 200);
-//            UnlockVram();
-            break;
-            }
-    }
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
+   glPushAttrib(GL_ALL_ATTRIB_BITS);
 //    glMatrixMode(GL_PROJECTION);
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);

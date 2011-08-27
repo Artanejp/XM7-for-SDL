@@ -14,12 +14,8 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
-				<Linker>
-					<Add option="-pg" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="obj/Release/libemugrph" prefix_auto="1" extension_auto="1" />

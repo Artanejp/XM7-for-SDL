@@ -1,70 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="AgarKbdInterface.cpp" open="1" top="0" tabpos="4">
+	<File name="AgarKbdInterface.cpp" open="1" top="0" tabpos="3">
 		<Cursor position="5972" topLine="220" />
 	</File>
-	<File name="AgarKbdInterface.h" open="1" top="0" tabpos="1">
+	<File name="AgarKbdInterface.h" open="0" top="0" tabpos="1">
 		<Cursor position="303" topLine="12" />
 	</File>
-	<File name="DrawAGNonGL.cpp" open="1" top="0" tabpos="11">
+	<File name="DrawAGNonGL.cpp" open="1" top="0" tabpos="8">
 		<Cursor position="6661" topLine="289" />
 	</File>
-	<File name="DrawAGNonGL.h" open="1" top="0" tabpos="18">
+	<File name="DrawAGNonGL.h" open="1" top="0" tabpos="14">
 		<Cursor position="719" topLine="22" />
 	</File>
-	<File name="agar_cfg.cpp" open="1" top="0" tabpos="2">
+	<File name="agar_cfg.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="21521" topLine="793" />
 	</File>
-	<File name="agar_cmd.cpp" open="1" top="0" tabpos="7">
+	<File name="agar_cmd.cpp" open="0" top="0" tabpos="7">
 		<Cursor position="1519" topLine="92" />
 	</File>
-	<File name="agar_draw.cpp" open="1" top="0" tabpos="6">
+	<File name="agar_draw.cpp" open="1" top="0" tabpos="5">
 		<Cursor position="302" topLine="16" />
 	</File>
-	<File name="agar_draw.h" open="1" top="0" tabpos="14">
-		<Cursor position="730" topLine="15" />
+	<File name="agar_draw.h" open="1" top="0" tabpos="11">
+		<Cursor position="730" topLine="5" />
 	</File>
-	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="10">
-		<Cursor position="5575" topLine="246" />
+	<File name="agar_gldraw.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="5946" topLine="279" />
 	</File>
-	<File name="agar_gldraw.h" open="1" top="0" tabpos="13">
-		<Cursor position="1807" topLine="43" />
+	<File name="agar_gldraw.h" open="1" top="0" tabpos="10">
+		<Cursor position="1967" topLine="55" />
 	</File>
-	<File name="agar_gldraw2.cpp" open="1" top="0" tabpos="17">
-		<Cursor position="1573" topLine="54" />
+	<File name="agar_gldraw2.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="1161" topLine="45" />
 	</File>
-	<File name="agar_gui_menu.cpp" open="1" top="0" tabpos="15">
+	<File name="agar_gui_menu.cpp" open="1" top="0" tabpos="12">
 		<Cursor position="1161" topLine="39" />
 	</File>
-	<File name="agar_gui_pref.cpp" open="1" top="0" tabpos="19">
+	<File name="agar_gui_pref.cpp" open="1" top="0" tabpos="15">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="agar_guicore.cpp" open="1" top="0" tabpos="8">
+	<File name="agar_guicore.cpp" open="1" top="0" tabpos="6">
 		<Cursor position="2828" topLine="124" />
 	</File>
-	<File name="agar_main.cpp" open="1" top="0" tabpos="5">
+	<File name="agar_main.cpp" open="1" top="0" tabpos="4">
 		<Cursor position="883" topLine="127" />
 	</File>
-	<File name="agar_osd.cpp" open="1" top="0" tabpos="16">
-		<Cursor position="16240" topLine="716" />
+	<File name="agar_osd.cpp" open="1" top="0" tabpos="13">
+		<Cursor position="23287" topLine="1024" />
 	</File>
-	<File name="agar_sch.cpp" open="1" top="0" tabpos="20">
+	<File name="agar_sch.cpp" open="1" top="0" tabpos="16">
 		<Cursor position="0" topLine="519" />
 	</File>
-	<File name="agar_sdl.cpp" open="1" top="0" tabpos="21">
+	<File name="agar_sdl.cpp" open="0" top="0" tabpos="21">
 		<Cursor position="0" topLine="61" />
 	</File>
 	<File name="agar_toolbox.cpp" open="0" top="0" tabpos="32">
 		<Cursor position="2694" topLine="187" />
 	</File>
-	<File name="agar_toolbox.h" open="1" top="0" tabpos="12">
+	<File name="agar_toolbox.h" open="1" top="0" tabpos="9">
 		<Cursor position="239" topLine="8" />
 	</File>
-	<File name="agar_ui_vkey.cpp" open="1" top="0" tabpos="9">
+	<File name="agar_ui_vkey.cpp" open="0" top="0" tabpos="9">
 		<Cursor position="12526" topLine="407" />
 	</File>
-	<File name="agar_xm7.h" open="1" top="0" tabpos="3">
+	<File name="agar_xm7.h" open="1" top="0" tabpos="2">
 		<Cursor position="1109" topLine="57" />
 	</File>
 </CodeBlocks_layout_file>

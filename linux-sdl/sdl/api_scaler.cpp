@@ -187,7 +187,7 @@ void init_scaler(void)
 {
 #ifdef USE_AGAR
 //	InitGL_AG_GL(80 * 8, 200);
-	SetVramReader_AG_GL(VramReader, 80, 200);
+	SetVramReader_GL2(VramReader, 80, 200);
 #else
     pSwScaler = NULL;
     // 最初は1x1にする
@@ -332,8 +332,7 @@ void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage)
      * Agar+OpenGLの場合、WidgetがViewPort設定するのでここでは
      * テクスチャのアップデートだけ。
      */
-    PutVram_AG_GL2(p, x, y, w, h, mpage);
-//    PutVram_AG_GL((AG_Surface *)p, x, y, w, h, mpage);
+//    PutVram_AG_GL2(p, x, y, w, h, mpage);
 #endif
 //	scalerGL->SetViewPort();
 }
