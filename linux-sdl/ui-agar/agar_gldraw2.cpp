@@ -317,7 +317,9 @@ void AGEventDrawGL2(AG_Event *event)
      * VRAMの表示:テクスチャ貼った四角形
      */
      if(uVramTextureID != 0) {
-      glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+       	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
         if(!bSmoosing) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -334,6 +336,7 @@ void AGEventDrawGL2(AG_Event *event)
         glEnd();
 //        UnlockVram();
      }
+    glDisable(GL_TEXTURE_2D);
 
      switch(bMode) {
         case SCR_400LINE:
@@ -347,8 +350,9 @@ void AGEventDrawGL2(AG_Event *event)
             break;
      }
     if((!bFullScan)  && (blanktextureid != 0)){
-       glBindTexture(GL_TEXTURE_2D, blanktextureid);
+//       glBindTexture(GL_TEXTURE_2D, blanktextureid);
     	width = 1.0f;
+    	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         glLineWidth(width);
         glBegin(GL_LINES);
     	for(i = 0; i < (h - 1); i++) {
@@ -359,7 +363,7 @@ void AGEventDrawGL2(AG_Event *event)
         glEnd();
     }
     glEnable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
     DrawOSDGL(glv);
-//    glDisable(GL_TEXTURE_2D);
     glPopAttrib();
 }

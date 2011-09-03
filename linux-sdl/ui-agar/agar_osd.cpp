@@ -174,8 +174,8 @@ static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset
 	if(bGLMode) {
 		float xend = (float)offset_x / 640.0f - 1.0f;
 		float xbegin = (float)(offset_x + w) / 640.0f - 1.0f;
-		float ybegin = (float) (h  + offset_y) / 400.0f - 1.0f;
-		float yend = (float)offset_y / 400.0f - 1.0f;
+		float ybegin = (float) (h  + offset_y - 1) / 400.0f - 1.0f;
+		float yend = (float)(offset_y - 1) / 400.0f - 1.0f;
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -208,7 +208,8 @@ static void DrawTape(void);
 
 void DrawOSDGL(AG_GLView *w)
 {
-
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
 	bGLMode = TRUE;
 	DrawCAP();
 	DrawKANA();
@@ -217,7 +218,9 @@ void DrawOSDGL(AG_GLView *w)
 	DrawDrive(AGWIDGET(w), 0);
 	DrawTape();
 	DrawMainCaption();
-
+    glDisable(GL_BLEND);
+    glColor4f(0, 0, 0, 0);
+    glDisable(GL_TEXTURE_2D);
 }
 
 void DrawOSDEv(AG_Event *event)
