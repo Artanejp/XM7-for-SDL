@@ -78,7 +78,6 @@
 		<Unit filename="agar_cmd.h" />
 		<Unit filename="agar_draw.cpp" />
 		<Unit filename="agar_draw.h" />
-		<Unit filename="agar_gldraw.cpp" />
 		<Unit filename="agar_gldraw.h" />
 		<Unit filename="agar_gldraw2.cpp" />
 		<Unit filename="agar_gui_menu.cpp" />

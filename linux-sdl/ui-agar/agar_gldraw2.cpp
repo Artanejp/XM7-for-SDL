@@ -23,9 +23,9 @@
 #include "device.h"
 
 
-//extern "C" {
-//    AG_GLView *GLDrawArea;
-//}
+extern "C" {
+    AG_GLView *GLDrawArea;
+}
 
 
 struct VirtualVram {
@@ -56,6 +56,8 @@ void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
     pGetVram = p;
 }
 
+
+
 extern "C" {
 
 void LockVram(void)
@@ -71,6 +73,19 @@ void UnlockVram(void)
 }
 
 }
+static void DiscardTextures(int n, GLuint *id)
+{
+	if(GLDrawArea == NULL) return;
+	if(agDriverOps == NULL) return;
+	glDeleteTextures(n, id);
+
+}
+
+void DiscardTexture(GLuint tid)
+{
+	DiscardTextures(1, &tid);
+}
+
 
 static void InitVirtualVram()
 {
@@ -238,6 +253,11 @@ GLuint UpdateTexture(Uint32 *p, int w, int h)
     return ttid;
 }
 
+void Flip_AG_GL(void)
+{
+	if(!InitVideo) return;
+//	SDL_GL_SwapBuffers();
+}
 
  // Create GL Handler(Main)
 void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
@@ -290,6 +310,28 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 		break;
 	}
 }
+
+
+/*
+ * Event Functins
+ */
+
+void AGEventOverlayGL(AG_Event *event)
+{
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
+}
+
+
+void AGEventScaleGL(AG_Event *event)
+{
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
+
+	glViewport(glv->wid.rView.x1, glv->wid.rView.y1 , glv->wid.rView.w, glv->wid.rView.h );
+    glLoadIdentity();
+    glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
+
+}
+
 
 /*
  * "Draw"イベントハンドラ
