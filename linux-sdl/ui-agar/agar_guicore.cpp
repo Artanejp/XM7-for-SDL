@@ -420,7 +420,7 @@ void InitInstance(void)
         AG_WidgetSetPosition(GLDrawArea, 0, 5);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
 
-        //AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
+        AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
 		bUseOpenGL = TRUE;

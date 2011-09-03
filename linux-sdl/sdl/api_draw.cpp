@@ -2074,7 +2074,7 @@ void Draw640All(void)
 		}
 	}
 //    DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 200);
+//    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 200);
 
 	nDrawTop = 0;
 	nDrawBottom = 400;
@@ -2173,7 +2173,7 @@ void Draw400l(void)
 		 }
 	 }
 //    DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 400);
+//    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 400);
 	 nDrawTop = 0;
 	 nDrawBottom = 400;
 	 nDrawLeft = 0;
@@ -2270,7 +2270,7 @@ void Draw320(void)
 	}
 
   //  DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
+//    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
@@ -2322,7 +2322,7 @@ void Draw256k(void)
 
 	PutVramFunc(p, 0, 0, 320, 200, multi_page);
     //DiscardTexture(uVramTextureID);
-    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
+//    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
 
 	nDrawTop = 0;
 	nDrawBottom = 200;

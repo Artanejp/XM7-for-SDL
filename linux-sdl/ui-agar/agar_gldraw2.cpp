@@ -326,9 +326,9 @@ void AGEventScaleGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
 
-	glViewport(glv->wid.rView.x1, glv->wid.rView.y1 , glv->wid.rView.w, glv->wid.rView.h );
-    glLoadIdentity();
-    glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
+	glViewport(glv->wid.rView.x1, glv->wid.rView.y1, glv->wid.rView.w, glv->wid.rView.h );
+//    glLoadIdentity();
+//    glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
 
 }
 
@@ -340,6 +340,7 @@ void AGEventDrawGL2(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
 	AG_Surface *pixvram ;
+	int w;
 	int h;
 	int i;
 	float width;
@@ -350,7 +351,30 @@ void AGEventDrawGL2(AG_Event *event)
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
-   glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+     switch(bMode) {
+        case SCR_400LINE:
+            w = 640;
+            h = 400;
+            break;
+        case SCR_200LINE:
+            w = 640;
+            h = 200;
+            break;
+        case SCR_262144:
+        case SCR_4096:
+        default:
+            w = 320;
+            h = 200;
+            break;
+     }
+     /*
+     * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
+     */
+    LockVram();
+    uVramTextureID = UpdateTexture(GetVirtualVram(), w, h);
+    UnlockVram();
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
@@ -369,26 +393,15 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        LockVram();
         glBegin(GL_POLYGON);
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -1.00f);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -1.00f);
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -1.00f);
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.00f);
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -0.99f);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -0.99f);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -0.99f);
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -0.99f);
         glEnd();
 //        UnlockVram();
      }
     glDisable(GL_TEXTURE_2D);
 
-     switch(bMode) {
-        case SCR_400LINE:
-            h = 400;
-            break;
-        case SCR_200LINE:
-        case SCR_262144:
-        case SCR_4096:
-        default:
-            h = 200;
-            break;
-     }
     if((!bFullScan)  && (blanktextureid != 0)){
     	width = 1.0f;
     	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);

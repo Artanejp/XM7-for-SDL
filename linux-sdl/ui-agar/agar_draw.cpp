@@ -83,7 +83,6 @@ void ResizeWindow_Agar(int w, int h)
 	if(DrawArea != NULL) {
 	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
 	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
-	   //InitDrawArea(w, h);
 	   LinkDrawArea(AGWIDGET(DrawArea));
 	   AG_Redraw(AGWIDGET(DrawArea));
 	}
@@ -99,7 +98,7 @@ void ResizeWindow_Agar(int w, int h)
 		AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
         AG_WidgetEnable(AGWIDGET(MenuBar));
         AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
-        hh = h + MenuBar->wid.h + 10;
+        hh = h + MenuBar->wid.h;
        	AG_ObjectLock(AGOBJECT(drv));
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
@@ -129,8 +128,7 @@ void ResizeWindow_Agar2(int w, int h)
 	}
 
 	ww = w;
-	hh = h;
-	hh = h - MenuBar->wid.h - 10;
+	hh = h - MenuBar->wid.h;
 	if(hh < 0) hh = 0;
 	if(DrawArea != NULL) {
         AG_WidgetSetSize(AGWIDGET(DrawArea), ww, hh);
