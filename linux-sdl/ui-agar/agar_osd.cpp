@@ -172,20 +172,19 @@ static void DiscardTextures(int n, GLuint *id)
 static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset_x, int offset_y, int w, int h)
 {
 	if(bGLMode) {
-		float xend = (float)offset_x / 640.0f - 1.0f;
-		float xbegin = (float)(offset_x + w) / 640.0f - 1.0f;
-		float ybegin = (float) (h  + offset_y - 1) / 400.0f - 1.0f;
-		float yend = (float)(offset_y - 1) / 400.0f - 1.0f;
+		float xbegin = (float)offset_x / 640.0f - 1.0f;
+		float xend = (float)(offset_x + w) / 640.0f - 1.0f;
+		float yend = 1.0f - (float) (h  + offset_y - 1) / 400.0f;
+		float ybegin = 1.0f - (float)(offset_y - 1) / 400.0f ;
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		glBindTexture(GL_TEXTURE_2D, tid);
 		glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(xend, yend, -0.95f);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(xend, ybegin, -0.95f);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(xbegin, yend, -0.95f);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(xbegin, ybegin, -0.95f);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.95f);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.95f);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.95f);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.95f);
 		glEnd();
 	} else {
 		AG_Rect rec;

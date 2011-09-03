@@ -85,7 +85,7 @@ static void FileMenu_BootMode(AG_Event *event)
 	char *label;
 	AG_Label *lbl;
 
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 230, 80);
 	label = gettext("Select mode (Notice: If select , reboot.)");
 	AG_WindowSetMinSize(w, 230, 80);

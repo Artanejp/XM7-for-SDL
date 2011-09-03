@@ -60,7 +60,6 @@ static void OnOpenTapeSubEv(AG_Event *event)
     AG_FileDlg *dlg = (AG_FileDlg *)AG_SELF();
     char  *sFilename = AG_STRING(1);
     AG_MenuItem *parent;
-
     OnOpenTapeSub(sFilename);
     KeyBoardSnoop(FALSE);
 }
@@ -75,13 +74,17 @@ static void OnTapeOpen(AG_Event *event)
 	dlgWin = AG_WindowNew(0);
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s", gettext("Open Tape Image"));
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[1]);
 	KeyBoardSnoop(TRUE);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "T77 CMT Image File", "*.t77,*.T77", OnOpenTapeSubEv, NULL);
+    AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
+
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+
     AG_WindowShow(dlgWin);
 
 }
@@ -176,7 +179,7 @@ static void OnTapeRec(AG_Event *event)
 		caption = gettext("Recording to Virtual Tape");
 	}
 
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 230, 80);
 	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
 	AG_WidgetSetSize(box, 230, 32);

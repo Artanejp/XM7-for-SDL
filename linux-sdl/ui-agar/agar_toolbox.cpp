@@ -83,7 +83,6 @@ void OnPushCancel(AG_Event *event)
 	AG_ObjectDetach(self->wid.window);
 }
 
-
     /*
      *  ステートロード処理
      */
@@ -149,9 +148,9 @@ void OnLoadStatus(AG_Event *event)
 {
     AG_Window *dlgWin;
     AG_FileDlg *dlg;
-    dlgWin = AG_WindowNew(0);
+    dlgWin = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     if(dlgWin == NULL) return;
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
@@ -222,10 +221,10 @@ void OnSaveAs(AG_Event *event)
 	 */
     AG_Window *dlgWin;
     AG_FileDlg *dlg;
-    dlgWin = AG_WindowNew(0);
+    dlgWin = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
 //    dlgWin = MainWindow;
     if(dlgWin == NULL) return;
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);

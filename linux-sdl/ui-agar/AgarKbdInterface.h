@@ -34,7 +34,7 @@ public:
 private:
 	struct XM7KeyCode KeyCodeTable2[256];
 	void InitLocalVar(void);
-	BOOL kbd_snooped;
+//	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
 };

@@ -165,7 +165,7 @@ void SDLKbdInterface::LoadKeyTable(void *pMap){
 }
 
 void SDLKbdInterface::InitLocalVar(void){
-	kbd_snooped = FALSE;
+//	kbd_snooped = FALSE;
 }
 
 
@@ -195,9 +195,9 @@ void SDLKbdInterface::OnPress(void *eventh)
 //    Uint8 scan = event->key.keysym.scancode;
     struct XM7KeyCode  *p = KeyCodeTable2;
 
-    if(kbd_snooped) {
+//    if(kbd_snooped) {
             //return SnoopedOnKeyPressedCallback(event);
-    }
+//    }
     //printf("Key SDL:%04x\n",code);
     for (i = 0; i < 255; i++) {
 	if (p[i].code == 0xffff)   break;

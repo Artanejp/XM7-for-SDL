@@ -417,7 +417,7 @@ static void OnSetVkey(AG_Event *event)
 	XM7KeyCode p ;
 	AG_Label *lbl;
 
-	w = AG_WindowNew(0);
+	w = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetCaption(w, "Assign Key as %s (%02x)", button->lbl->text, pushCode);
 	KeyBoardSnoop(TRUE);
 	box = AG_BoxNewVert(w, 0);

@@ -216,7 +216,7 @@ void AgarKbdInterface::GetKeyCode(Uint8 code, XM7KeyCode *p)
 
 
 void AgarKbdInterface::InitLocalVar(void){
-	kbd_snooped = FALSE;
+//	kbd_snooped = FALSE;
 }
 
 
@@ -234,9 +234,9 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
 //    Uint8 scan = event->key.keysym.scancode;
     struct XM7KeyCode  *p = KeyCodeTable2;
 
-    if(kbd_snooped) {
+//    if(kbd_snooped) {
             //return SnoopedOnKeyPressedCallback(event);
-    }
+//    }
     //printf("Key SDL:%04x\n",code);
     for (i = 0; i < 255; i++) {
 	if (p[i].code == 0xffff)   break;

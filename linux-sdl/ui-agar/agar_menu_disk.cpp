@@ -195,8 +195,8 @@ static void OnOpenDisk(AG_Event *event)
 	dlgWin = AG_WindowNew(0);
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
-//    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
+//    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	KeyBoardSnoop(TRUE);
@@ -205,6 +205,8 @@ static void OnOpenDisk(AG_Event *event)
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
 	AG_FileDlgAddType(dlg, "2D Disk Image File", "*.2d,*.2D", OnOpenDiskSubEv, NULL);
 	AG_FileDlgAddType(dlg, "VFD Disk Image File", "*.vfd,*.VFD", OnOpenDiskSubEv, NULL);
+    AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
     AG_WindowShow(dlgWin);
 }
@@ -217,7 +219,8 @@ static void OnOpenDiskBoth(AG_Event *event)
 	dlgWin = AG_WindowNew(0);
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s ", gettext("Open Disk Image Both"));
-	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC|AG_FILEDLG_CLOSEWIN);
+//	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC );
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	KeyBoardSnoop(TRUE);
@@ -226,6 +229,8 @@ static void OnOpenDiskBoth(AG_Event *event)
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskBothSubEv, NULL);
 	AG_FileDlgAddType(dlg, "2D Disk Image File", "*.2d,*.2D", OnOpenDiskBothSubEv, NULL);
 	AG_FileDlgAddType(dlg, "VFD Disk Image File", "*.vfd,*.VFD", OnOpenDiskBothSubEv, NULL);
+    AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
 	AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
 	AG_WindowShow(dlgWin);
 }
@@ -324,7 +329,7 @@ static void OnSelectDiskMedia(AG_Event *event)
 	}
 
 	caption = gettext("Select Disk Image on ");
-	w = AG_WindowNew(0);
+	w = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 250, 80);
 	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
 	AG_WidgetSetSize(box, 230, 32);

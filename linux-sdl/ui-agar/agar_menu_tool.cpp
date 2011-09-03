@@ -99,8 +99,7 @@ static void OnNewDisk(AG_Event *event)
 	if((InitialDir[0] == NULL) || strlen(InitialDir[0]) <= 0) {
 		strcpy(InitialDir[0], "./");
 	}
-
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT );
 	AG_WindowSetMinSize(w, 280, 120);
     AG_WindowSetPadding(w, 10, 10, 10, 10);
 	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
@@ -170,7 +169,7 @@ static void OnNewTape(AG_Event *event)
 		strcpy(InitialDir[1], "./");
 	}
 
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
     AG_WindowSetPadding(w, 10, 10, 10, 10);
 	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
@@ -230,7 +229,7 @@ static void OnGrpCapture(AG_Event *event)
 		strcpy(InitialDir[3], "./");
 	}
 
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
     KeyBoardSnoop(TRUE);
 	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
@@ -285,7 +284,7 @@ static void OnGrpCapture2(AG_Event *event)
 	}
 
     KeyBoardSnoop(TRUE);
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
 	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[3]);
@@ -351,7 +350,7 @@ static void OnWavCapture(AG_Event *event)
 	if((InitialDir[4] == NULL) || strlen(InitialDir[4]) <= 0) {
 		strcpy(InitialDir[4], "./");
 	}
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE );
+	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
 	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[4]);

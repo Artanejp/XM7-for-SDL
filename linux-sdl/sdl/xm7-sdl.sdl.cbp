@@ -41,7 +41,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="`sdl-config --cflags`" />
-			<Add option="`pkg-config --cflags gtk+-2.0`" />
+			<Add option="`pkg-config --cflags gtk+-3.0`" />
 			<Add option="`agar-config --cflags`" />
 			<Add option="-DUSE_OPENGL" />
 			<Add option="-DUSE_AGAR" />

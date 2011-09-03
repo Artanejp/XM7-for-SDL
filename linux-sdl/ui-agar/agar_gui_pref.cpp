@@ -389,7 +389,7 @@ void OnConfigEmulationMenu(AG_Event *event)
 
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
-	win= AG_WindowNew(0);
+	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(win, 320, 240);
     KeyBoardSnoop(TRUE);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
@@ -505,7 +505,7 @@ void OnConfigInputMenu(AG_Event *event)
 
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
-	win= AG_WindowNew(0);
+	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(win, 320, 240);
     KeyBoardSnoop(TRUE);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
@@ -676,7 +676,7 @@ void OnConfigSoundMenu(AG_Event *event)
 
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
-	win= AG_WindowNew(0);
+	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(win, 320, 240);
     KeyBoardSnoop(TRUE);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);

@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.cpp
+1315075186 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.cpp
 	"AgarKbdInterface.h"
 
-1306429058 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
+1315075162 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
 	"SDLKbdInterface.h"
 	<agar/core/types.h>
 	<agar/core.h>
@@ -1082,7 +1082,7 @@
 	<Ph.h>
 	"close_code.h"
 
-1307543947 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_xm7.h
+1315080846 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_xm7.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1350,7 +1350,7 @@
 	<agar/core.h>
 	<agar/gui.h>
 
-1309191107 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
+1315077501 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1385,7 +1385,7 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1307542673 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_menu.cpp
+1315080701 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_menu.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1407,7 +1407,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_pref.cpp
+1315078057 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gui_pref.cpp
 	<libintl.h>
 	<agar/core.h>
 	<agar/core/types.h>
@@ -1441,7 +1441,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1309192218 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
+1315077900 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1488,7 +1488,7 @@
 	"agar_gldraw.h"
 	"sdl_inifile.h"
 
-1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_about.cpp
+1315078057 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_about.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1510,7 +1510,7 @@
 	"agar_toolbox.h"
 	"agar_cmd.h"
 
-1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_disk.cpp
+1315080075 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_disk.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1531,7 +1531,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tape.cpp
+1315081296 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tape.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1552,7 +1552,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1306429058 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tool.cpp
+1315081296 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_menu_tool.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1574,7 +1574,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1315068588 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
+1315072743 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
 	<SDL.h>
 	<agar/core.h>
 	<agar/core/types.h>
@@ -1629,7 +1629,7 @@
 	<SDL.h>
 	"xm7.h"
 
-1306669730 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.cpp
+1315081296 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.cpp
 	<libintl.h>
 	<iconv.h>
 	<agar/core.h>
@@ -1650,7 +1650,7 @@
 	"api_kbd.h"
 	"agar_toolbox.h"
 
-1306516257 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_ui_vkey.cpp
+1315078808 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_ui_vkey.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>
@@ -1661,10 +1661,10 @@
 	"fdc.h"
 	"AgarKbdInterface.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLKbdInterface.h
+1315075186 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLKbdInterface.h
 	"KbdInterface.h"
 
-1306515962 /home/whatisthis/codeblocks/xm7-sdl/sdl/KbdInterface.h
+1315075298 /home/whatisthis/codeblocks/xm7-sdl/sdl/KbdInterface.h
 	<SDL.h>
 	"xm7.h"
 	"api_kbd.h"
@@ -1820,7 +1820,7 @@
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1315068499 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+1315073749 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>

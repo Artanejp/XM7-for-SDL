@@ -11,7 +11,7 @@ include ../config.mak
 #CFLAGS += -I../xm7-sdl/
 
 VIDEODRVSRC = \
-	agar_draw.cpp agar_gldraw.cpp agar_gldraw2.cpp \
+	agar_draw.cpp agar_gldraw2.cpp \
 	DrawAGNonGL.cpp
 
 INPUTSRC = \
@@ -60,8 +60,6 @@ Release/libui-agar.a: ${OBJS_RELEASE}
 Release/agar_draw.o: agar_draw.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-Release/agar_gldraw.o: agar_gldraw.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/agar_gldraw2.o: agar_gldraw2.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
@@ -119,9 +117,6 @@ Release/DrawAGNonGL.o: DrawAGNonGL.cpp
 
 #########
 Debug/agar_draw.o: agar_draw.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-Debug/agar_gldraw.o: agar_gldraw.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_gldraw2.o: agar_gldraw2.cpp

@@ -351,16 +351,14 @@ void AGEventDrawGL2(AG_Event *event)
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
    glPushAttrib(GL_ALL_ATTRIB_BITS);
-//    glMatrixMode(GL_PROJECTION);
+    glMatrixMode(GL_PROJECTION);
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
      if(uVramTextureID != 0) {
        	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-
         glBindTexture(GL_TEXTURE_2D, uVramTextureID);
         if(!bSmoosing) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -371,10 +369,10 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        LockVram();
         glBegin(GL_POLYGON);
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -0.99);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, -1.0f, -0.99);
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, 1.0f, -0.99);
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -0.99);
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -1.00f);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -1.00f);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -1.00f);
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.00f);
         glEnd();
 //        UnlockVram();
      }
@@ -392,7 +390,6 @@ void AGEventDrawGL2(AG_Event *event)
             break;
      }
     if((!bFullScan)  && (blanktextureid != 0)){
-//       glBindTexture(GL_TEXTURE_2D, blanktextureid);
     	width = 1.0f;
     	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         glLineWidth(width);

@@ -80,28 +80,9 @@ void ResizeWindow_Agar(int w, int h)
 	    if(MainWindow == NULL) return;
 	    drv = AGDRIVER(MainWindow);
 	}
-#if 0
-	switch(nAspect) {
-	case nAspect11:
-		if(w>h) {
-			h = (w * 5) / 8;
-		} else {
-			w = (h * 8) / 5;
-		}
-		break;
-	case nAspect43:
-		if(w>h) {
-			h = (w * 6) / 8;
-		} else {
-			w = (h * 8) / 6;
-		}
-		break;
-	}
-#endif
-
 	if(DrawArea != NULL) {
 	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
-	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h + 10);
+	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
 	   //InitDrawArea(w, h);
 	   LinkDrawArea(AGWIDGET(DrawArea));
 	   AG_Redraw(AGWIDGET(DrawArea));
@@ -109,7 +90,6 @@ void ResizeWindow_Agar(int w, int h)
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, w, h);
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
-        AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, MenuBar->wid.h + 10);
 	}
 	nDrawWidth = w;
 	nDrawHeight = h;
@@ -124,7 +104,8 @@ void ResizeWindow_Agar(int w, int h)
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
 	if(MainWindow) {
-		AG_WindowSetGeometry(MainWindow, 0,  MenuBar->wid.h + 10, w, h );
+//		AG_WindowSetGeometry(MainWindow, 0,  MenuBar->wid.h + 10, w, h );
+		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h );
         AG_Redraw(AGWIDGET(MainWindow));
 	}
 	if(AG_UsingGL(drv)) {
@@ -146,24 +127,6 @@ void ResizeWindow_Agar2(int w, int h)
 	    if(MainWindow == NULL) return;
 	    drv = AGDRIVER(MainWindow);
 	}
-#if 0
-	switch(nAspect) {
-	case nAspect11:
-		if(w>h) {
-			h = (w * 5) / 8;
-		} else {
-			w = (h * 8) / 5;
-		}
-		break;
-	case nAspect43:
-		if(w>h) {
-			h = (w * 6) / 8;
-		} else {
-			w = (h * 8) / 6;
-		}
-		break;
-	}
-#endif
 
 	ww = w;
 	hh = h;
@@ -171,7 +134,7 @@ void ResizeWindow_Agar2(int w, int h)
 	if(hh < 0) hh = 0;
 	if(DrawArea != NULL) {
         AG_WidgetSetSize(AGWIDGET(DrawArea), ww, hh);
-        AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, MenuBar->wid.h + 10);
+        AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
         //InitDrawArea(ww, hh);
         LinkDrawArea(AGWIDGET(DrawArea));
 	AG_Redraw(AGWIDGET(DrawArea));
@@ -179,14 +142,15 @@ void ResizeWindow_Agar2(int w, int h)
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, ww, hh);
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
-        AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, MenuBar->wid.h + 10);
+        AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
 	}
  	AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
  	nDrawWidth = w;
 	nDrawHeight = hh;
  	AG_WidgetEnable(AGWIDGET(MenuBar));
 	if(MainWindow) {
-		AG_WindowSetGeometry(MainWindow, 0, MenuBar->wid.h + 10 , w, hh);
+//		AG_WindowSetGeometry(MainWindow, 0, MenuBar->wid.h + 10 , w, hh);
+		AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
 	}
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
     printf("Resize to %d x %d\n", w, h);

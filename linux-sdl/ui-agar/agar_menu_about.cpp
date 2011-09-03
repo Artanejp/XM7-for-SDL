@@ -62,7 +62,7 @@ void OnAboutDialog(AG_Event *event)
 	char iconpath[1024];
 	char file[MAXPATHLEN];
 
-	win = AG_WindowNew(0);
+	win = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	if(win == NULL) return;
 	AG_WindowSetCaption(win, "%s", gettext("About XM7/SDL"));
 

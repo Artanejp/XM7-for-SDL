@@ -28,7 +28,7 @@ private:
 	//struct KeyCode2 KeyTableSDL[];
 	void InitLocalVar(void);
 //	void InitKeyTable(void);
-	BOOL kbd_snooped;
+//	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
 };

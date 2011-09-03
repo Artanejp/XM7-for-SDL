@@ -387,7 +387,7 @@ static void InitFont(void)
 
 void InitInstance(void)
 {
-	AG_Box *hb;
+	AG_HBox *hb;
 	AG_Window *win;
 	AG_Driver *drv;
 
@@ -396,11 +396,14 @@ void InitInstance(void)
     DrawArea = NULL;
 
 	InitFont();
-        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_NOBACKGROUND);
-//        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS );
-	AG_WindowSetGeometry (MainWindow, 0, 0, 640, 440);
+
+    MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND);
+	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
 
+    MenuBar = AG_MenuNew(AGWIDGET(MainWindow), AG_MENU_HFILL);
+	Create_AGMainBar(AGWIDGET(NULL));
+   	AG_WidgetSetPosition(MenuBar, 0, 0);
 	if(agDriverSw) {
 		drv = &agDriverSw->_inherit;
 	} else {
@@ -412,11 +415,12 @@ void InitInstance(void)
          * OpenGL Capability
          */
         GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
-        AG_WidgetSetSize(GLDrawArea, 640,440);
-        AG_GLViewSizeHint(GLDrawArea, 640, 440);
-        AG_WidgetSetPosition(GLDrawArea, 0, 0);
+        AG_WidgetSetSize(GLDrawArea, 640,400);
+        AG_GLViewSizeHint(GLDrawArea, 640, 400);
+        AG_WidgetSetPosition(GLDrawArea, 0, 5);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
-        AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
+
+        //AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
 		bUseOpenGL = TRUE;
@@ -436,12 +440,13 @@ void InitInstance(void)
 	if(DrawArea != NULL) {
 	    AG_WidgetShow(DrawArea);
 	}
-	AG_WindowShow(MainWindow);
 
+	AG_WindowShow(MainWindow);
+#if 0
     MenuBar = AG_MenuNewGlobal(0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
-
+#endif
 //	win = AG_GuiDebugger();
 //        AG_WindowShow(win);
 	AG_WidgetShow(AGWIDGET(MenuBar));
