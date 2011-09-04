@@ -16,11 +16,10 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
+#include "agar_vramutil.h"
 #include "agar_draw.h"
+#include "agar_glutil.h"
 
-extern "C" {
-extern AG_GLView *GLDrawArea;
-}
 extern BOOL EventSDL(AG_Driver *drv);
 extern BOOL EventGUI(AG_Driver *drv);
 extern void DrawOSDGL(AG_GLView *w);
@@ -35,21 +34,6 @@ extern void AGEventKeyPress_AG_GL(AG_Event *event);
 
 extern void InitGL_AG_GL(int w, int h);
 extern void Detach_AG_GL();
-
-extern "C" {
-extern void LockVram(void);
-extern void UnlockVram(void);
-}
-
-//extern void CalcPalette_AG_GL(Uint32 *palette, Uint32 src, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-//extern void SetVramReader_AG_GL(void p(Uint32, Uint32 *, Uint32), int w, int h);
-//extern void SetDrawArea_AG_GL(AG_Widget *p, int x, int y, int w, int h);
-extern void Flip_AG_GL(void);
-
-//extern void PutVram_AG_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
-extern AG_Surface *GetVramSurface_AG_GL();
-
 /*
  * agar_gldraw2.cpp
  */
@@ -62,9 +46,6 @@ extern void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 m
 extern void AGEventDrawGL2(AG_Event *event);
 extern void CalcPalette_8colors(Uint32 index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
 extern void CalcPalette_4096Colors(Uint32 index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
-extern GLuint UpdateTexture(Uint32 *p, int w, int h);
-extern void DiscardTexture(GLuint tid);
 extern  GLuint uVramTextureID;
-
 
 #endif /* AGAR_GLDRAW_H_ */

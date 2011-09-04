@@ -1363,7 +1363,7 @@
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1314453464 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
+1315138801 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1371,7 +1371,9 @@
 	"EmuAgarGL.h"
 	"api_draw.h"
 	"api_scaler.h"
+	"agar_vramutil.h"
 	"agar_draw.h"
+	"agar_glutil.h"
 
 1309021175 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.cpp
 	<SDL.h>
@@ -1574,7 +1576,7 @@
 	"api_draw.h"
 	"agar_toolbox.h"
 
-1315072743 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
+1315139358 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
 	<SDL.h>
 	<agar/core.h>
 	<agar/core/types.h>
@@ -1807,7 +1809,7 @@
 	"api_scaler.h"
 	"agar_xm7.h"
 
-1307546419 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.h
+1315138651 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.h
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
@@ -1815,12 +1817,13 @@
 	"EmuAgarGL.h"
 	"api_draw.h"
 	"api_scaler.h"
+	"agar_vramutil.h"
 	"agar_draw.h"
 	"agar_gldraw.h"
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1315083909 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+1315140863 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1836,4 +1839,54 @@
 	"display.h"
 	"subctrl.h"
 	"device.h"
+
+1315142520 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	"api_draw.h"
+	"api_scaler.h"
+	"api_vram.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+
+1315138866 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"api_scaler.h"
+	"agar_xm7.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+
+1315138866 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.cpp
+	"agar_glutil.h"
+
+1315139622 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.cpp
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"agar_vramutil.h"
+
+1315145125 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
+	<SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"api_scaler.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_xm7.h"
 

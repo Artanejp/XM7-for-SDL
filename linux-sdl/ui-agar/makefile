@@ -12,6 +12,7 @@ include ../config.mak
 
 VIDEODRVSRC = \
 	agar_draw.cpp agar_gldraw2.cpp \
+	agar_glutil.cpp \
 	DrawAGNonGL.cpp
 
 INPUTSRC = \
@@ -34,6 +35,7 @@ LOCALSRC = \
         agar_cmd.cpp agar_sch.cpp \
 	agar_main.cpp agar_sdl.cpp \
 	agar_osd.cpp \
+	agar_vramutil.cpp \
 	$(VIDEODRVSRC) \
 	$(INPUTSRC) \
 	$(UISRC)
@@ -60,9 +62,16 @@ Release/libui-agar.a: ${OBJS_RELEASE}
 Release/agar_draw.o: agar_draw.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-
 Release/agar_gldraw2.o: agar_gldraw2.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/agar_glutil.o: agar_glutil.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/agar_vramutil.o: agar_vramutil.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+
 
 Release/AgarKbdInterface.o: AgarKbdInterface.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
@@ -120,6 +129,12 @@ Debug/agar_draw.o: agar_draw.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_gldraw2.o: agar_gldraw2.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_glutil.o: agar_glutil.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_vramutil.o: agar_vramutil.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/AgarKbdInterface.o: AgarKbdInterface.cpp

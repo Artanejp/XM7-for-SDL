@@ -23,110 +23,14 @@
 #include "device.h"
 
 
-extern "C" {
-    AG_GLView *GLDrawArea;
-}
-
-
-struct VirtualVram {
-    Uint32 pVram[640][400];
-};
-
-Uint32 *pVram2;
 GLuint uVramTextureID;
 
-static struct VirtualVram *pVirtualVram;
-static GLuint blanktextureid;
-static BOOL InitVideo;
-static SDL_sem *pVideoSem;
 static void (*pGetVram)(Uint32, Uint32 *, Uint32);
 static int bModeOld;
-
-extern Uint8 *vram_pb;
-extern Uint8 *vram_pr;
-extern Uint8 *vram_pg;
-
-extern GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode);
-extern void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-//extern void DiscardTexture(GLuint tid);
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
     pGetVram = p;
-}
-
-
-
-extern "C" {
-
-void LockVram(void)
-{
-    if(pVideoSem == NULL) return;
-    SDL_SemWait(pVideoSem);
-}
-
-void UnlockVram(void)
-{
-    if(pVideoSem == NULL) return;
-    SDL_SemPost(pVideoSem);
-}
-
-}
-static void DiscardTextures(int n, GLuint *id)
-{
-	if(GLDrawArea == NULL) return;
-	if(agDriverOps == NULL) return;
-	glDeleteTextures(n, id);
-
-}
-
-void DiscardTexture(GLuint tid)
-{
-	DiscardTextures(1, &tid);
-}
-
-
-static void InitVirtualVram()
-{
-    if(pVirtualVram != NULL) return;
-    pVirtualVram = (struct VirtualVram *)malloc(sizeof(struct VirtualVram));
-    if(pVirtualVram == NULL) return;
-    pVram2 = (Uint32 *)malloc(640*400*sizeof(Uint32));
-    if(pVram2 == NULL) {
-        free(pVirtualVram);
-        pVirtualVram = NULL;
-    }
-
-   // Phase 1
-    memset(pVirtualVram, 0x00, sizeof(struct VirtualVram) );
-    memset(pVram2, 0x00, sizeof(640*400*sizeof(Uint32)));
-    // Phase 2
-    bModeOld = bMode;
-}
-
-static void InitBlankLine()
-{
-   Uint32 blank = 0x00000000;
-   if(blanktextureid == 0) {
-        glGenTextures(1, &blanktextureid);
-   }
-   glBindTexture(GL_TEXTURE_2D, blanktextureid);
-   glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 1, 1,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 &blank);
-}
-
-static void DetachBlankLine(void)
-{
-    if(blanktextureid == 0) return;
-   	glDeleteTextures(1, &blanktextureid);
-   	blanktextureid = 0;
 }
 
 static void DetachTexture(void)
@@ -154,12 +58,8 @@ static void DetachVirtualVram(void)
 void DetachGL_AG2(void)
 {
     DetachTexture();
-    DetachBlankLine();
     DetachVirtualVram();
-    if(pVideoSem != NULL) {
-    SDL_DestroySemaphore(pVideoSem);
-    pVideoSem = NULL;
-    }
+    DetachVramSemaphore();
     pGetVram = NULL;
 }
 
@@ -197,17 +97,12 @@ void InitGL_AG2(int w, int h)
              break;
      }
 
-	if(pVideoSem == NULL) {
-		pVideoSem = SDL_CreateSemaphore(1);
-		if(pVideoSem) SDL_SemPost(pVideoSem);
-	}
+	InitVramSemaphore();
 	uVramTextureID = 0;
-	blanktextureid = 0;
 	pVirtualVram = NULL;
 	pGetVram = NULL;
 
 	InitVirtualVram();
-    InitBlankLine();
 	return;
 }
 
@@ -215,48 +110,6 @@ Uint32 *GetVirtualVram(void)
 {
     if(pVirtualVram == NULL) return NULL;
     return &(pVirtualVram->pVram[0][0]);
-}
-
-GLuint UpdateTexture(Uint32 *p, int w, int h)
-{
-    GLuint ttid;
-
-    if((w < 0) || (h < 0)) return 0;
-    if(p == NULL) return 0;
-
-    LockVram();
-    if(uVramTextureID == 0) {
-        glGenTextures(1, &ttid);
-        glBindTexture(GL_TEXTURE_2D, ttid);
-        glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 w, h,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 p);
-
-    } else {
-        ttid = uVramTextureID;
-        glBindTexture(GL_TEXTURE_2D, ttid);
-        glTexSubImage2D(GL_TEXTURE_2D,
-                         0,  // level
-                         0, 0, // offset
-                         w, h,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         p );
-    }
-    uVramTextureID = ttid;
-    UnlockVram();
-    return ttid;
-}
-
-void Flip_AG_GL(void)
-{
-	if(!InitVideo) return;
-//	SDL_GL_SwapBuffers();
 }
 
  // Create GL Handler(Main)
@@ -372,7 +225,7 @@ void AGEventDrawGL2(AG_Event *event)
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
     LockVram();
-    uVramTextureID = UpdateTexture(GetVirtualVram(), w, h);
+    uVramTextureID = UpdateTexture(GetVirtualVram(), uVramTextureID, w, h);
     UnlockVram();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
@@ -402,7 +255,7 @@ void AGEventDrawGL2(AG_Event *event)
      }
     glDisable(GL_TEXTURE_2D);
 
-    if((!bFullScan)  && (blanktextureid != 0)){
+    if(!bFullScan){
     	width = 1.0f;
     	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         glLineWidth(width);

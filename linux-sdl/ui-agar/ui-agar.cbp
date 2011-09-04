@@ -80,6 +80,8 @@
 		<Unit filename="agar_draw.h" />
 		<Unit filename="agar_gldraw.h" />
 		<Unit filename="agar_gldraw2.cpp" />
+		<Unit filename="agar_glutil.cpp" />
+		<Unit filename="agar_glutil.h" />
 		<Unit filename="agar_gui_menu.cpp" />
 		<Unit filename="agar_gui_pref.cpp" />
 		<Unit filename="agar_guicore.cpp" />
@@ -94,6 +96,8 @@
 		<Unit filename="agar_toolbox.cpp" />
 		<Unit filename="agar_toolbox.h" />
 		<Unit filename="agar_ui_vkey.cpp" />
+		<Unit filename="agar_vramutil.cpp" />
+		<Unit filename="agar_vramutil.h" />
 		<Unit filename="agar_xm7.h" />
 		<Extensions>
 			<envvars set="default" />

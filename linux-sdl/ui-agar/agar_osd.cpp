@@ -162,12 +162,6 @@ static GLuint OSD_UpdateTexture(AG_Surface *p, GLuint tid)
     return ttid;
 }
 
-static void DiscardTextures(int n, GLuint *id)
-{
-	if(agDriverOps == NULL) return;
-	glDeleteTextures(n, id);
-
-}
 
 static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset_x, int offset_y, int w, int h)
 {
