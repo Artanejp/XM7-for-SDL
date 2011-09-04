@@ -4,7 +4,7 @@
  * (C) 2011 K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
-
+#if 0
 #include <SDL.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -17,22 +17,14 @@
 #include "display.h"
 #include "subctrl.h"
 #include "device.h"
+#endif
 
-
-extern  GLuint uVramTextureID;
-extern Uint32 *pVram2;
-extern Uint8 *vram_pb;
-extern Uint8 *vram_pr;
-extern Uint8 *vram_pg;
-
-extern void DiscardTexture(GLuint tid);
-extern "C"
-{
-    extern void LockVram(void);
-    extern void UnlockVram(void);
-}
-
-
+#include <SDL.h>
+//#include <GL/gl.h>
+//#include <GL/glext.h>
+#include "api_draw.h"
+#include "api_scaler.h"
+#include "api_vram.h"
 
 void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
  {
@@ -73,7 +65,7 @@ static inline void putword2(Uint32 *disp, Uint32 *cbuf)
 }
 
 
-static void getvram4096(Uint32 addr, Uint32 *cbuf)
+static void getvram_4096(Uint32 addr, Uint32 *cbuf)
 {
         Uint8            b[4],
                         r[4],
@@ -193,7 +185,7 @@ static void getvram4096(Uint32 addr, Uint32 *cbuf)
 
 
 
-GLuint CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
+void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
 {
 	int ww, hh;
 	int xx, yy;
@@ -201,19 +193,124 @@ GLuint CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Ui
 	Uint32 *disp;
 	Uint32 c[8];
 
-    if(p == NULL) return 0;
+    if(p == NULL) return;
 	LockVram();
 	ww = (w>>3) + (x>>3);
 	hh = h + y;
 	for(yy = y; yy < hh; yy++) {
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * 40 + xx ;
-			getvram4096(addr, c);
+			getvram_4096(addr, c);
 			disp = &p[xx * 8 + 320 * yy];
 			putword2(disp,  c);
 			addr++;
 			}
 	}
    UnlockVram();
-   return uVramTextureID;
+   return;
 }
+
+/*
+ * 8x8のピースをVRAMから作成する：VramLockしない事に注意
+ */
+void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
+{
+    Uint32 c[8];
+    Uint8 *disp = (Uint8 *)p;
+    Uint32 addr;
+
+    addr = y * 40 + x;
+    // Loop廃止(高速化)
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword2((Uint32 *)disp,  c);
+
+}
+
+/*
+ * 8x8のピースをVRAMから作成する(パレットなし)：VramLockしない事に注意
+ */
+void CreateVirtualVram4096_1Pcs_Nopal(Uint32 *p, int x, int y, int pitch, int mode)
+{
+    Uint32 c[8];
+    Uint8 *disp = (Uint8 *)p;
+    Uint32 addr;
+
+    addr = y * 40 + x;
+    // Loop廃止(高速化)
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_4096(addr, c);
+    putword((Uint32 *)disp,  c);
+
+}
+

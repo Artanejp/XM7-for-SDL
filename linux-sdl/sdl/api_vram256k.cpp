@@ -6,31 +6,10 @@
 
 
 #include <SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include "api_draw.h"
 #include "api_scaler.h"
-#include "agar_xm7.h"
-#include "agar_draw.h"
-#include "agar_gldraw.h"
-#include "xm7.h"
-#include "display.h"
-#include "subctrl.h"
-#include "device.h"
+#include "api_vram.h"
 
-
-extern  GLuint uVramTextureID;
-extern Uint32 *pVram2;
-extern Uint8 *vram_pb;
-extern Uint8 *vram_pr;
-extern Uint8 *vram_pg;
-
-extern void DiscardTexture(GLuint tid);
-extern "C"
-{
-    extern void LockVram(void);
-    extern void UnlockVram(void);
-}
 
 static inline void putword(Uint32 *disp, Uint32 *cbuf)
 {
@@ -44,7 +23,7 @@ static inline void putword(Uint32 *disp, Uint32 *cbuf)
 		disp[7] = cbuf[0];
 }
 
-static void getvram256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
+static void getvram_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
     Uint8           b[6],
                     r[6],
@@ -133,7 +112,7 @@ static void getvram256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 }
 
 
-GLuint CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
+void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
 {
 	int ww, hh;
 	int xx, yy;
@@ -141,19 +120,72 @@ GLuint CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Ui
 	Uint32 *disp;
 	Uint32 c[8];
 
-    if(p == NULL) return 0;
+    if(p == NULL) return;
 	LockVram();
 	ww = (w>>3) + (x>>3);
 	hh = h + y;
 	for(yy = y; yy < hh; yy++) {
 		for(xx = x>>3 ; xx < ww; xx++) {
 			addr = yy  * 40 + xx ;
-			getvram256k(addr, c, mpage);
+			getvram_256k(addr, c, mpage);
 			disp = &p[xx * 8 + 320 * yy];
 			putword(disp,  c);
 			addr++;
 			}
 	}
    UnlockVram();
-   return uVramTextureID;
+   return;
 }
+
+/*
+ * 8x8のピースをVRAMから作成する：VramLockしない事に注意
+ */
+void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage)
+{
+    Uint32 c[8];
+    Uint8 *disp = (Uint8 *)p;
+    Uint32 addr;
+
+    addr = y * 40 + x;
+    // Loop廃止(高速化)
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+    addr += 40;
+    disp += pitch;
+
+    getvram_256k(addr, c, mpage);
+    putword((Uint32 *)disp,  c);
+
+}
+

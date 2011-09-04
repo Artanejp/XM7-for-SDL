@@ -6,26 +6,11 @@
 
 
 #include <SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
+//#include <GL/gl.h>
+//#include <GL/glext.h>
 #include "api_draw.h"
 #include "api_scaler.h"
-#include "agar_xm7.h"
-#include "agar_draw.h"
-#include "agar_gldraw.h"
-#include "xm7.h"
-#include "display.h"
-#include "subctrl.h"
-#include "device.h"
-
-extern Uint32 *pVram2;
-extern  GLuint uVramTextureID;
-extern void DiscardTexture(GLuint tid);
-extern "C"
-{
-    extern void LockVram(void);
-    extern void UnlockVram(void);
-}
+#include "api_vram.h"
 
 Uint8 *vram_pb;
 Uint8 *vram_pr;
@@ -54,19 +39,18 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     UnlockVram();
 }
 
-#if 0
-static inline void putword8(Uint32 *disp, Uint8 *cbuf)
+static inline void putword(Uint32 *disp, Uint8 *cbuf)
 {
-    disp[0] = cbuf[7] & 0x0f;
-    disp[1] = cbuf[6] & 0x0f;
-    disp[2] = cbuf[5] & 0x0f;
-    disp[3] = cbuf[4] & 0x0f;
-    disp[4] = cbuf[3] & 0x0f;
-    disp[5] = cbuf[2] & 0x0f;
-    disp[6] = cbuf[1] & 0x0f;
-    disp[7] = cbuf[0] & 0x0f;
+    disp[0] = (Uint32)(cbuf[7] & 0x0f);
+    disp[1] = (Uint32)(cbuf[6] & 0x0f);
+    disp[2] = (Uint32)(cbuf[5] & 0x0f);
+    disp[3] = (Uint32)(cbuf[4] & 0x0f);
+    disp[4] = (Uint32)(cbuf[3] & 0x0f);
+    disp[5] = (Uint32)(cbuf[2] & 0x0f);
+    disp[6] = (Uint32)(cbuf[1] & 0x0f);
+    disp[7] = (Uint32)(cbuf[0] & 0x0f);
 }
-#else
+
 static inline void putword8(Uint32 *disp, Uint8 *cbuf)
 {
     disp[0] = rgbTTLGDI[cbuf[7] & 0x0f];
@@ -78,7 +62,6 @@ static inline void putword8(Uint32 *disp, Uint8 *cbuf)
     disp[6] = rgbTTLGDI[cbuf[1] & 0x0f];
     disp[7] = rgbTTLGDI[cbuf[0] & 0x0f];
 }
-#endif
 
 static inline void getvram_8to8(Uint32 addr, Uint8 *cbuf)
 {
@@ -108,62 +91,11 @@ void getvram_200l(Uint32 addr,Uint32 *p, Uint32 mpage)
   getvram_8to8(addr, (Uint8 *)p);
 }
 
-
-static void copy8to32(Uint32 *p, int w, int h)
-{
-    int size = w * h;
-    int i;
-    Uint32 *pp = p;
-
-    for(i = 0; i < size; i+=8 ) {
-        pVram2[i] =(Uint32) rgbTTLGDI[*pp & 0x0f];
-        pVram2[i + 1] =(Uint32) rgbTTLGDI[*(pp + 1) & 0x0f];
-        pVram2[i + 2] =(Uint32) rgbTTLGDI[*(pp + 2) & 0x0f];
-        pVram2[i + 3] =(Uint32) rgbTTLGDI[*(pp + 3) & 0x0f];
-        pVram2[i + 4] =(Uint32) rgbTTLGDI[*(pp + 4) & 0x0f];
-        pVram2[i + 5] =(Uint32) rgbTTLGDI[*(pp + 5) & 0x0f];
-        pVram2[i + 6] =(Uint32) rgbTTLGDI[*(pp + 6) & 0x0f];
-        pVram2[i + 7] =(Uint32) rgbTTLGDI[*(pp + 7) & 0x0f];
-        pp+=8;
-    }
-}
-
-/*
- * TextureをUpdateモードで作成する(8色, 16色パレット付き)
- */
-GLuint UpdateTexture8(Uint32 *p, GLuint tid, int w, int h)
-{
-    GLuint ttid;
-
-    if((w < 0) || (h < 0)) return 0;
-    if(p == NULL) return 0;
-    if(pVram2 == NULL) return 0;
-
-    if(tid == 0) {
-        glGenTextures(1, &ttid);
-    } else {
-        ttid = tid;
-    }
-    glBindTexture(GL_TEXTURE_2D, ttid);
-    copy8to32(p, w, h);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 w, h,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 pVram2);
-    return ttid;
-}
-
-GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
+void CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
 {
 	int ww, hh;
-	int vramwidth, vramheight;
 	int xx, yy;
 	Uint32 addr;
-	Uint8 *bitmap;
 	Uint32 *disp;
 	Uint8 c[8];
 
@@ -171,23 +103,19 @@ GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
 
     switch(mode) {
     case SCR_200LINE:
-        vramwidth = 640;
-        vramheight = 200;
         break;
     case SCR_400LINE:
-        vramwidth = 640;
-        vramheight = 400;
         break;
     default:
         UnlockVram();
-        return 0;
+        return;
         break;
     }
 	ww = (w>>3) + (x>>3);
 	hh = h + y;
 	if(p == NULL) {
 		UnlockVram();
-		return 0;
+		return;
 	}
 	for(yy = y; yy < hh; yy++) {
 		for(xx = x>>3 ; xx < ww; xx++) {
@@ -198,9 +126,112 @@ GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
 			addr++;
 			}
 	}
-//   DiscardTexture(uVramTextureID);
-//   uVramTextureID = UpdateTexture8(p, 0, vramwidth, vramheight);
    UnlockVram();
-   return uVramTextureID;
+   return;
 }
+
+/*
+ * 8x8のピースをVRAMから作成する：VramLockしない事に注意
+ */
+void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
+{
+    Uint8 c[8];
+    Uint8 *disp = (Uint8 *)p;
+    Uint32 addr;
+
+    addr = y * 80 + x;
+    // Loop廃止(高速化)
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword8((Uint32 *)disp,  c);
+
+}
+
+/*
+ * 8x8のピースをVRAMから作成する(パレットなし)：VramLockしない事に注意
+ */
+void CreateVirtualVram8_1Pcs_Nopal(Uint32 *p, int x, int y, int pitch, int mode)
+{
+    Uint8 c[8];
+    Uint8 *disp = (Uint8 *)p;
+    Uint32 addr;
+
+    addr = y * 80 + x;
+    // Loop廃止(高速化)
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+    addr += 80;
+    disp += pitch;
+
+    getvram_8to8(addr, c);
+    putword((Uint32 *)disp,  c);
+
+}
+
 

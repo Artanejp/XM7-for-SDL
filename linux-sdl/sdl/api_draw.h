@@ -59,6 +59,12 @@ extern "C"
 {
 #endif
 
+struct DrawPieces {
+    BOOL write[80][50];
+    BOOL DPaletteChanged;
+    BOOL APaletteChanged;
+    BOOL ForcaReDraw;
+};
 /* アスペクト */
 enum {
 	nAspect43 = 0, /* 4:3 */
@@ -74,8 +80,10 @@ extern int  RootVideoHeight; /* ルートウィンドウ最高高さ */
 
 extern DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 extern DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
+extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */
+
 // guchar pBitsGDI[400*640*3]; /* ビットデータ */
-extern BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
+//extern BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
 extern BOOL            bFullScan;		/* フルスキャン(Window) */
 extern BOOL            bDirectDraw;		/* 直接書き込みフラグ */
 extern SDL_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */

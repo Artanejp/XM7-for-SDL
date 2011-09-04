@@ -36,6 +36,7 @@ LOCALSRC = \
 	agar_main.cpp agar_sdl.cpp \
 	agar_osd.cpp \
 	agar_vramutil.cpp \
+	agar_svram.cpp \
 	$(VIDEODRVSRC) \
 	$(INPUTSRC) \
 	$(UISRC)
@@ -71,6 +72,8 @@ Release/agar_glutil.o: agar_glutil.cpp
 Release/agar_vramutil.o: agar_vramutil.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
+Release/agar_svram.o: agar_svram.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 Release/AgarKbdInterface.o: AgarKbdInterface.cpp
@@ -135,6 +138,9 @@ Debug/agar_glutil.o: agar_glutil.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/agar_vramutil.o: agar_vramutil.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/agar_svram.o: agar_svram.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 Debug/AgarKbdInterface.o: AgarKbdInterface.cpp

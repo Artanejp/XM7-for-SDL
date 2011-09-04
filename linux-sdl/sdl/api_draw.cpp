@@ -43,6 +43,7 @@
 #endif
 #include "sdl.h"
 
+#include "api_vram.h"
 #include "api_draw.h"
 #include "api_scaler.h"
 
@@ -54,6 +55,7 @@ extern AG_Window *MainWindow;
  */
 DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
+struct DrawPieces SDLDrawFlag;
 
 // guchar pBitsGDI[400*640*3]; /* ビットデータ */
 BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
@@ -130,11 +132,6 @@ extern Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
 extern GLuint uVramTextureID;
 
-extern GLuint CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode);
-extern void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern void DiscardTexture(GLuint tid);
-extern Uint32 *GetVirtualVram(void);
 
 
 /*
@@ -269,9 +266,9 @@ BOOL SelectDraw2(void)
 {
 #ifdef USE_AGAR
 		AG_Color nullcolor;
-		AG_Widget *wid;
 		SDL_Surface *p;
 		AG_Rect rect;
+		AG_Widget *wid;
 #else // SDL
 		Uint32 nullcolor;
 		SDL_Surface *p;
@@ -314,7 +311,6 @@ BOOL SelectDraw2(void)
 			nullcolor.g = 0;
 			nullcolor.b = 0;
 			nullcolor.a = 255;
-
 //			AG_FillRect(drv->sRef, &rect, nullcolor);
 //			AG_ObjectUnlock(wid);
 #else
@@ -328,6 +324,8 @@ BOOL SelectDraw2(void)
 			 */
 #ifdef USE_AGAR
 			//AG_DriverClose(drv);
+			bClearFlag = TRUE;
+			SDLDrawFlag.ForcaReDraw = TRUE;
 #else
 			if(realDrawArea != p) {
 				SDL_LockSurface(realDrawArea);
@@ -806,6 +804,8 @@ void	InitDraw(void)
 		bNowBPP = 24;
 		memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
 		memset(rgbAnalogGDI, 0, sizeof(rgbAnalogGDI));
+		memset((void *)&SDLDrawFlag, 0, sizeof(SDLDrawFlag));
+
 		nDrawTop = 0;
 		nDrawBottom = 400;
 		nDrawLeft = 0;
@@ -932,7 +932,17 @@ void	CleanDraw(void)
 	 */
 void SetDrawFlag(BOOL flag)
 {
-		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
+    int x;
+    int y;
+//		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
+    for(y = 0; y < 50 ; y++) {
+        for(x = 0; x < 80; x++){
+                SDLDrawFlag.write[x][y] = flag;
+        }
+    }
+    SDLDrawFlag.APaletteChanged = flag;
+    SDLDrawFlag.DPaletteChanged = flag;
+    SDLDrawFlag.ForcaReDraw = flag;
 }
 
 /*
@@ -1197,6 +1207,8 @@ if (mode320) {
 void AllClear(void)
 {
 	int            i;
+	int x;
+	int y;
 #ifdef USE_AGAR
 	AG_Color nullcolor;
 	AG_Rect rect;
@@ -1207,9 +1219,12 @@ void AllClear(void)
 	SDL_Surface *p;
 	SDL_Rect rect;
 #endif
-	for (i = 0; i < (80 * 50); i++) {
-		GDIDrawFlag[i] = 0;
-	}
+    for(y = 0; y < 50; y++) {
+        for (x = 0; x < 80; x++) {
+            SDLDrawFlag.write[x][y] = TRUE;
+        }
+        SDLDrawFlag.ForcaReDraw = TRUE;
+    }
 #ifdef USE_AGAR
     if(DrawArea != NULL) {
         drv = AGWIDGET(DrawArea)->drv;
@@ -1498,8 +1513,10 @@ OnPaint(void)
  */
 void vram_notify(WORD addr, BYTE dat)
 {
-	WORD x;
-	WORD y;
+	int x;
+	int y;
+	int xx;
+	int yy;
 
 	/*
 	 * y座標算出
@@ -1508,19 +1525,25 @@ void vram_notify(WORD addr, BYTE dat)
 	switch (bMode) {
 	case SCR_400LINE:
 		addr &= 0x7fff;
-		x = (WORD) ((addr % 80) << 3);
-		y = (WORD) (addr / 80);
+		x = addr % 80;
+		y = (addr / 80) >>3;
+		xx = (addr % 80) << 3;
+		yy = addr / 80;
 		break;
 	case SCR_262144:
 	case SCR_4096:
 		addr &= 0x1fff;
-		x = (WORD) ((addr % 40) << 4);
-		y = (WORD) ((addr / 40) << 1);
+		x = addr % 40;
+		y = (addr / 40) >> 3;
+		xx = (addr % 40) << 4;
+		yy = (addr / 40) << 1;
 		break;
 	case SCR_200LINE:
 		addr &= 0x3fff;
-		x = (WORD) ((addr % 80) << 3);
-		y = (WORD) ((addr / 80) << 1);
+		x = addr % 80;
+		y = (addr / 80) >>3;
+		xx = (addr % 80) << 3;
+		yy = (addr / 80) << 1;
 		break;
 	}
 
@@ -1542,34 +1565,38 @@ void vram_notify(WORD addr, BYTE dat)
 	/*
 	 * オーバーチェック
 	 */
-	if ((x >= 640) || (y >= 400)) {
+	if ((xx >= 640) || (yy >= 400)) {
 		return;
 	}
 
 	/*
 	 * 再描画フラグを設定
 	 */
-	GDIDrawFlag[(y >> 3) * 80 + (x >> 3)] = 1;
-
+//	GDIDrawFlag[(y >> 3) * 80 + (x >> 3)] = 1;
+//    if(!SDLDrawFlag.write[x][y]){
+        LockVram();
+        SDLDrawFlag.write[x][y] = TRUE;
+        UnlockVram();
+//    }
 	/*
 	 * 垂直方向更新
 	 */
-	if (nDrawTop > y) {
-		nDrawTop = y;
+	if (nDrawTop > yy) {
+		nDrawTop = yy;
 	}
-	if (nDrawBottom <= y) {
+	if (nDrawBottom <= yy) {
 
 #if XM7_VER >= 3
 		if (bMode == SCR_400LINE) {
-			nDrawBottom = (WORD) (y + 1);
+			nDrawBottom = (WORD) (yy + 1);
 		}
 
 		else {
-			nDrawBottom = (WORD) (y + 2);
+			nDrawBottom = (WORD) (yy + 2);
 		}
 
 #else				/*  */
-		nDrawBottom = (WORD) (y + 2);
+		nDrawBottom = (WORD) (yy + 2);
 
 #endif				/*  */
 	}
@@ -1577,10 +1604,10 @@ void vram_notify(WORD addr, BYTE dat)
 	/*
 	 * 水平方向更新
 	 */
-	if (nDrawLeft > x) {
-		nDrawLeft = x;
+	if (nDrawLeft > xx) {
+		nDrawLeft = xx;
 	}
-	if (nDrawRight <= x) {
+	if (nDrawRight <= xx) {
 
 #if XM7_VER >= 3
 		if (bMode & SCR_ANALOG) {
@@ -1589,11 +1616,11 @@ void vram_notify(WORD addr, BYTE dat)
 			if (bAnalog) {
 
 #endif				/*  */
-				nDrawRight = (WORD) (x + 16);
+				nDrawRight = (WORD) (xx + 16);
 			}
 
 			else {
-				nDrawRight = (WORD) (x + 8);
+				nDrawRight = (WORD) (xx + 8);
 			}
 		}
 
@@ -1610,6 +1637,7 @@ void	ttlpalet_notify(void)
 	 * 不要なレンダリングを抑制するため、領域設定は描画時に行う
 	 */
 	bPaletFlag = TRUE;
+	SDLDrawFlag.DPaletteChanged = TRUE;
 }
 
 /*
@@ -1618,6 +1646,7 @@ void	ttlpalet_notify(void)
 void 	apalet_notify(void)
 {
 	bPaletFlag = TRUE;
+	SDLDrawFlag.APaletteChanged = TRUE;
 //	nDrawTop = 0;
 //	nDrawBottom = 200;
 //	nDrawLeft = 0;
@@ -1662,6 +1691,8 @@ void window_notify(void)
 	WORD tmpDy1, tmpDy2;
 	BYTE * p;
 	int     i;
+	int x;
+	int y;
 
 	/*
 	 * 26万色モード時は何もしない
@@ -1791,14 +1822,15 @@ void window_notify(void)
 	/*
 	 * 再描画フラグを更新
 	 */
+#if 0
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
-		 p = &GDIDrawFlag[(nDrawTop >> 3) * 80 + (nDrawLeft >> 3)];
-		 for (i = (nDrawTop >> 3); i < ((nDrawBottom + 7) >> 3); i++) {
-			 memset(p, 1, (640 - 0) >> 3);
-			 p += 80;
-		 }
+	     for(y = (nDrawTop >> 3); y < ((nDrawBottom + 7) >> 3); y++) {
+	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) <<3); x ++){
+                SDLDrawFlag.write[x][y] = TRUE;
+	         }
+	     }
 	 }
-
+#endif
 	 /*
 	  * ウィンドウオープン状態を保存
 	  */
@@ -2027,7 +2059,8 @@ void Draw640All(void)
 	    PutVramFunc = &SwScaler;
 	} else {
 //		PutVramFunc = &Scaler_GL;
-        PutVramFunc = &PutVram_AG_GL2;
+//          PutVramFunc = &PutVram_AG_GL2;
+        PutVramFunc = &PutVram_AG_SP;
 	}
 	/*
 	 * レンダリング
@@ -2073,15 +2106,12 @@ void Draw640All(void)
 			PutVramFunc(p, 0, 0, 640, 200, multi_page);
 		}
 	}
-//    DiscardTexture(uVramTextureID);
-//    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 200);
-
 	nDrawTop = 0;
 	nDrawBottom = 400;
 	nDrawLeft = 0;
 	nDrawRight = 640;
 	//	bPaletFlag = FALSE;
-	SetDrawFlag(FALSE);
+	//SetDrawFlag(FALSE);
 }
 
 
@@ -2123,7 +2153,8 @@ void Draw400l(void)
 	  */
 #ifdef USE_AGAR
 //		PutVramFunc = &Scaler_GL;
-        PutVramFunc = &PutVram_AG_GL2;
+//          PutVramFunc = &PutVram_AG_GL2;
+    PutVramFunc = &PutVram_AG_SP;
 #else
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
@@ -2172,8 +2203,6 @@ void Draw400l(void)
 			 PutVramFunc(p, 0, 0, 640, 400, multi_page);
 		 }
 	 }
-//    DiscardTexture(uVramTextureID);
-//    uVramTextureID = UpdateTexture(GetVirtualVram(), 640, 400);
 	 nDrawTop = 0;
 	 nDrawBottom = 400;
 	 nDrawLeft = 0;
@@ -2200,22 +2229,18 @@ void Draw320(void)
 	/*
 	 * パレット設定
 	 */
-//	 if(!bUseOpenGL) {
-//	    PutVramFunc = &SwScaler;
-//	 } else {
-//        PutVramFunc = &Scaler_GL;
-    PutVramFunc = &PutVram_AG_GL2;
-//      PutVramFunc = &PutVram_AG_GL;
-//	 }
+//          PutVramFunc = &PutVram_AG_GL2;
+    PutVramFunc = &PutVram_AG_SP;
 	if(bPaletFlag) {
-	Palet320();
-	SetVramReader_4096();
-	nDrawTop = 0;
-	nDrawBottom = 200;
-	nDrawLeft = 0;
-	nDrawRight = 320;
-	SetDrawFlag(TRUE);
-	bPaletFlag = FALSE;
+        Palet320();
+        SDLDrawFlag.APaletteChanged = TRUE;
+        SetVramReader_4096();
+        nDrawTop = 0;
+        nDrawBottom = 200;
+        nDrawLeft = 0;
+        nDrawRight = 320;
+        SetDrawFlag(TRUE);
+        bPaletFlag = FALSE;
 	}
 	/*
 	 * クリア処理
@@ -2269,8 +2294,6 @@ void Draw320(void)
 		}
 	}
 
-  //  DiscardTexture(uVramTextureID);
-//    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;
@@ -2294,7 +2317,8 @@ void Draw256k(void)
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	 } else {
-          PutVramFunc = &PutVram_AG_GL2;
+//          PutVramFunc = &PutVram_AG_GL2;
+          PutVramFunc = &PutVram_AG_SP;
 	 }
 	nDrawTop = 0;
 	nDrawBottom = 200;
@@ -2321,8 +2345,6 @@ void Draw256k(void)
 	SetVramReader_256k();
 
 	PutVramFunc(p, 0, 0, 320, 200, multi_page);
-    //DiscardTexture(uVramTextureID);
-//    uVramTextureID = UpdateTexture(GetVirtualVram(), 320, 200);
 
 	nDrawTop = 0;
 	nDrawBottom = 200;

@@ -36,4 +36,6 @@ extern Uint8 *vram_pb;
 extern Uint8 *vram_pr;
 extern Uint8 *vram_pg;
 
+ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage);
+
 #endif // AGAR_VRAMUTIL_H_INCLUDED

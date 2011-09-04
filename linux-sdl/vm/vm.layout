@@ -4,7 +4,7 @@
 	<File name="device.h" open="0" top="0" tabpos="4">
 		<Cursor position="2716" topLine="111" />
 	</File>
-	<File name="disasm.c" open="1" top="1" tabpos="5">
+	<File name="disasm.c" open="1" top="0" tabpos="5">
 		<Cursor position="4270" topLine="272" />
 	</File>
 	<File name="fdc.c" open="1" top="0" tabpos="2">

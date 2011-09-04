@@ -1732,7 +1732,7 @@
 	"xm7.h"
 	"api_kbd.h"
 
-1306516519 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
+1315146771 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -1823,7 +1823,7 @@
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1315140863 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+1315156326 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1840,7 +1840,7 @@
 	"subctrl.h"
 	"device.h"
 
-1315142520 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
+1315149370 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1889,4 +1889,21 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 	"agar_xm7.h"
+
+1315158604 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_svram.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"api_scaler.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
 
