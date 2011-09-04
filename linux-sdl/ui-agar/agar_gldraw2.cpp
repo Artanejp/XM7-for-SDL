@@ -224,10 +224,13 @@ void AGEventDrawGL2(AG_Event *event)
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
-//    LockVram();
-    uVramTextureID = UpdateTexture(GetVirtualVram(), uVramTextureID, w, h);
+    LockVram();
+    if(bVramUpdateFlag) {
+        uVramTextureID = UpdateTexture(GetVirtualVram(), uVramTextureID, w, h);
+    }
+    bVramUpdateFlag = FALSE;
 //    SetDrawFlag(FALSE);
-//    UnlockVram();
+    UnlockVram();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
     glEnable(GL_TEXTURE_2D);

@@ -1823,7 +1823,7 @@
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1315156326 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+1315161862 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1840,7 +1840,7 @@
 	"subctrl.h"
 	"device.h"
 
-1315149370 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
+1315161996 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>

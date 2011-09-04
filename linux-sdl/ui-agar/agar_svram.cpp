@@ -72,6 +72,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
             }
         }
     }
+    bVramUpdateFlag = TRUE;
     UnlockVram();
 }
 
@@ -97,6 +98,7 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
             }
         }
     }
+    bVramUpdateFlag = TRUE;
     UnlockVram();
 }
 
@@ -122,6 +124,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
             }
         }
     }
+    bVramUpdateFlag = TRUE;
     UnlockVram();
 }
 

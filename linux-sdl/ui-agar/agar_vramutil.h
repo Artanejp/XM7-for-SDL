@@ -21,6 +21,7 @@ struct VirtualVram {
 extern struct VirtualVram *pVirtualVram;
 extern Uint32 *pVram2;
 extern BOOL InitVideo;
+extern BOOL bVramUpdateFlag;
 
 // Functions
 extern void InitVirtualVram();
