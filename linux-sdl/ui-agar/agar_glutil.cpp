@@ -7,9 +7,7 @@
 extern "C" {
     AG_GLView *GLDrawArea;
 }
-/*
- *　GL Utility Routines
- */
+
 GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
 {
     GLuint ttid;
@@ -18,6 +16,7 @@ GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
     if(p == NULL) return 0;
 
     LockVram();
+    ttid = texid;
     if(texid == 0) {
         glGenTextures(1, &ttid);
         glBindTexture(GL_TEXTURE_2D, ttid);
@@ -29,19 +28,30 @@ GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  p);
-
     } else {
-        ttid = texid;
-        glBindTexture(GL_TEXTURE_2D, ttid);
-        glTexSubImage2D(GL_TEXTURE_2D,
+#if 0 // texSubImage2D()で置き換えるとAgar側がちらつく(--;       
+       glBindTexture(GL_TEXTURE_2D, ttid);
+       glTexSubImage2D(GL_TEXTURE_2D,
                          0,  // level
                          0, 0, // offset
                          w, h,
                          GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          p );
+#else
+       glDeleteTextures(1, &texid);
+       glGenTextures(1, &ttid);
+       glBindTexture(GL_TEXTURE_2D, ttid);
+       glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 w, h,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 p);
+#endif
     }
-//    uVramTextureID = ttid;
     UnlockVram();
     return ttid;
 }

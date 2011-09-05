@@ -419,6 +419,7 @@ void InitInstance(void)
         AG_GLViewSizeHint(GLDrawArea, 640, 400);
         AG_WidgetSetPosition(GLDrawArea, 0, 5);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
+//        AG_GLViewDrawFn (GLDrawArea, AGEventDrawBlockedGL, NULL);
 
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);

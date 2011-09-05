@@ -940,6 +940,7 @@ void SetDrawFlag(BOOL flag)
                 SDLDrawFlag.write[x][y] = flag;
         }
     }
+    SDLDrawFlag.Drawn = flag;
     SDLDrawFlag.APaletteChanged = flag;
     SDLDrawFlag.DPaletteChanged = flag;
     SDLDrawFlag.ForcaReDraw = flag;
@@ -1224,7 +1225,7 @@ void AllClear(void)
             SDLDrawFlag.write[x][y] = TRUE;
         }
         SDLDrawFlag.ForcaReDraw = TRUE;
-    }
+        SDLDrawFlag.Drawn = TRUE;    }
 #ifdef USE_AGAR
     if(DrawArea != NULL) {
         drv = AGWIDGET(DrawArea)->drv;
@@ -1572,12 +1573,9 @@ void vram_notify(WORD addr, BYTE dat)
 	/*
 	 * 再描画フラグを設定
 	 */
-//	GDIDrawFlag[(y >> 3) * 80 + (x >> 3)] = 1;
-//    if(!SDLDrawFlag.write[x][y]){
         LockVram();
         SDLDrawFlag.write[x][y] = TRUE;
         UnlockVram();
-//    }
 	/*
 	 * 垂直方向更新
 	 */
@@ -2061,6 +2059,7 @@ void Draw640All(void)
 //		PutVramFunc = &Scaler_GL;
 //          PutVramFunc = &PutVram_AG_GL2;
         PutVramFunc = &PutVram_AG_SP;
+//        PutVramFunc = &PutVram_AG_Blocked;
 	}
 	/*
 	 * レンダリング
@@ -2155,6 +2154,7 @@ void Draw400l(void)
 //		PutVramFunc = &Scaler_GL;
 //          PutVramFunc = &PutVram_AG_GL2;
     PutVramFunc = &PutVram_AG_SP;
+//    PutVramFunc = &PutVram_AG_Blocked;
 #else
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
@@ -2231,6 +2231,7 @@ void Draw320(void)
 	 */
 //          PutVramFunc = &PutVram_AG_GL2;
     PutVramFunc = &PutVram_AG_SP;
+//    PutVramFunc = &PutVram_AG_Blocked;
 	if(bPaletFlag) {
         Palet320();
         SDLDrawFlag.APaletteChanged = TRUE;
@@ -2319,6 +2320,7 @@ void Draw256k(void)
 	 } else {
 //          PutVramFunc = &PutVram_AG_GL2;
           PutVramFunc = &PutVram_AG_SP;
+//          PutVramFunc = &PutVram_AG_Blocked;
 	 }
 	nDrawTop = 0;
 	nDrawBottom = 200;

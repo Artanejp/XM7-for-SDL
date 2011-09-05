@@ -94,6 +94,7 @@
 		<Unit filename="api_scaler.cpp" />
 		<Unit filename="api_scaler.h" />
 		<Unit filename="api_snd2.cpp" />
+		<Unit filename="api_vram.h" />
 		<Unit filename="api_vram256k.cpp" />
 		<Unit filename="api_vram4096.cpp" />
 		<Unit filename="api_vram8.cpp" />

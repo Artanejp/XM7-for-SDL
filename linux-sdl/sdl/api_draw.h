@@ -61,6 +61,7 @@ extern "C"
 
 struct DrawPieces {
     BOOL write[80][50];
+    BOOL Drawn;
     BOOL DPaletteChanged;
     BOOL APaletteChanged;
     BOOL ForcaReDraw;

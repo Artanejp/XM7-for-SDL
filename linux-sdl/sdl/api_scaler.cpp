@@ -230,6 +230,7 @@ void detachsub_scaler(void)
 #ifdef USE_OPENGL
 //	Detach_AG_GL();
 	DetachGL_AG2();
+//	DetachGL_AG_Blocked();
 #else
 	if(scalerGL != NULL) {
 		delete scalerGL;
@@ -249,6 +250,7 @@ void SetupGL(int w, int h)
 #ifdef USE_AGAR
 //	InitGL_AG_GL(w, h);
     InitGL_AG2(w, h);
+//    InitGL_AG_Blocked(w, h);
 #else
 	scalerGL->InitGL(w, h);
 	SDL_SemPost(DrawInitSem);
@@ -280,6 +282,7 @@ void InitGL(int w, int h)
     if(AG_UsingGL(drv)) {
 //        InitGL_AG_GL(w, h);
         InitGL_AG2(w, h);
+//        InitGL_AG_Blocked(w, h);
     } else {
         AG_ResizeDisplay(w, h);
     }

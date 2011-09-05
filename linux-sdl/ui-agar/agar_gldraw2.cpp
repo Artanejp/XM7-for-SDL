@@ -101,7 +101,6 @@ void InitGL_AG2(int w, int h)
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
 	pGetVram = NULL;
-
 	InitVirtualVram();
 	return;
 }
@@ -179,9 +178,9 @@ void AGEventScaleGL(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
 
-	glViewport(glv->wid.rView.x1, glv->wid.rView.y1, glv->wid.rView.w, glv->wid.rView.h );
-//    glLoadIdentity();
-//    glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
+   glViewport(glv->wid.rView.x1, glv->wid.rView.y1, glv->wid.rView.w, glv->wid.rView.h);
+    //glLoadIdentity();
+    //glOrtho(-1.0, 1.0,	1.0, -1.0, -1.0,  1.0);
 
 }
 
@@ -200,6 +199,9 @@ void AGEventDrawGL2(AG_Event *event)
 	float ybegin;
 	float yend;
 	Uint32 *p;
+	Uint32 *pp;
+	int x;
+	int y;
 
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
@@ -225,16 +227,19 @@ void AGEventDrawGL2(AG_Event *event)
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
     LockVram();
-    if(bVramUpdateFlag) {
-        uVramTextureID = UpdateTexture(GetVirtualVram(), uVramTextureID, w, h);
+    if(SDLDrawFlag.Drawn) {
+       uVramTextureID = UpdateTexture(p, uVramTextureID, w, h);
     }
-    bVramUpdateFlag = FALSE;
-//    SetDrawFlag(FALSE);
+//    memset(SDLDrawFlag.drawn, 0x00, sizeof(SDLDrawFlag.drawn));
+    SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
+
     glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+//    glDisable(GL_DEPTH_TEST);
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
@@ -257,6 +262,7 @@ void AGEventDrawGL2(AG_Event *event)
         glEnd();
 //        UnlockVram();
      }
+//    glEnable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);
 
     if(!bFullScan){
@@ -272,7 +278,9 @@ void AGEventDrawGL2(AG_Event *event)
         glEnd();
     }
     glEnable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
+ 
     DrawOSDGL(glv);
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
     glPopAttrib();
 }

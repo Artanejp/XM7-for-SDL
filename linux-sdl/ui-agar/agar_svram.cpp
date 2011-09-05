@@ -69,6 +69,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
                	p = &pp[(xx + (80 * yy <<3)) << 3];
                 CreateVirtualVram8_1Pcs(p, xx, yy << 3, (640 * sizeof(Uint32)), mode);
                 SDLDrawFlag.write[xx][yy] = FALSE;
+                SDLDrawFlag.Drawn = TRUE;
             }
         }
     }
@@ -95,6 +96,7 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
                 p = &pp[(xx  + (320 * yy))<<3];
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, (320 * sizeof(Uint32)), mode);
                 SDLDrawFlag.write[xx][yy] = FALSE;
+                SDLDrawFlag.Drawn = TRUE;
             }
         }
     }
@@ -121,6 +123,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
                 p = &pp[(xx + (320 * yy)) << 3];
                 CreateVirtualVram256k_1Pcs(p, xx, yy << 3, (320 * sizeof(Uint32)), mpage);
                 SDLDrawFlag.write[xx][yy] = FALSE;
+                SDLDrawFlag.Drawn = TRUE;
             }
         }
     }
