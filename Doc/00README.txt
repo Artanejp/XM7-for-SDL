@@ -1,13 +1,13 @@
 ****
-* FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux(amd64)
-*  Version 0.1r254 (αレベル / Agar / OpenGL)
+* FM-7/77/AV エミュレータ、XM7 V3.4L31 for SDL/Linux(amd64)
+*  Version 0.1r346 (βレベル / Agar / OpenGL)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2011.03.20 Artane.
+* 2011.09.06 Artane.
 * HP:
 * http://sky.geocities.jp/artanejp/
 * 仮設SVN:
@@ -25,10 +25,10 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 (*1) http://www.geocities.jp/kugimoto0715/ 
 
 2.SDL版の特徴
-・XM7 V3.4L30ベースです(但し、描画まわりやダイアログが出来ていない所も
+・XM7 V3.4L31ベースです(但し、描画まわりやダイアログが出来ていない所も
  ある)
-・SDLのダイレクト描画機能を使っている上に多少細工してあるのでそこそこ
-　高速です。
+・OpenGLの描画機能を使っているので、拡大してもそこそこ高速です。
+・
 ・SDL版オリジナル機能として、1280x800ドット描画機能を追加してあります。(*2)
 ・とうとう、AMD64ベースでのビルドが可能になりました＼(^o^)／
 　まだまだバグ取らないといけないですが(；´Д｀)
@@ -56,15 +56,17 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 ・GNU MAKE
 ・PKGCONFIG
 ・libtool
+・OpenGLのライブラリ
 などなど。
 
 以下は、デバッグ用に使っています。
-・eclipse (統合開発環境/  http://www.eclipse.org/ )
+・Code::Blocks (統合開発環境/  http://www.codeblocks.org/ )
 
-※r151あたりから、描画機能をlibemugrphに分離しています。(ライセンスを別にしたいので）
+※rr151あたりから、描画機能をlibemugrphに分離しています。(ライセンスを別にしたいので）
 　仕様が未だ固まっていない状態ですが…
 　r254から、libemugrphをstatic linkするようにしています。
-  
+※rr300前後から、XM7のエミュレーションコアをvm/　に、Agar依存部分をui_agar/に、本体をsdl/にそれぞれ分離しました。
+
 -- 以下、過去の話 --
 現状では6809エミュレーションをXM7添付のアセンブラコアで
 やっているので、ia32でしかビルドできません。（最終的にはCコア
@@ -77,15 +79,15 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
 4.つかいかた
 a.xm7の実行型式があるディレクトリィに、以下の物を入れます。
 
-a. usr.local.bin に移動して、
-$sudo install ./xm7_debug ./xm7_ /usr/local/bin
+a. bin に移動して、
+$sudo install ./xm7_debug ./xm7 /usr/local/bin
 
-b. usr.local.share.xm7 に移動して、
+b. resource に移動して、
 $sudo install -m 0777 -d /usr/local/share/xm7/
 $sudo install -m 0644 ./* /usr/local/share/xm7/
 
 c. libagarのインストール。AMD64についてはコンパイル済みバイナリを
-   libagar/amd64以下に添付してあります
+   libagar.r9027/ 以下に添付してあります。これを、/usr/local 以下にインストールしてください
 
 d. 以下のものを~/.xm7 に入れます。
 ・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM
