@@ -69,6 +69,7 @@ void InitGL_AG2(int w, int h)
 	Uint32 flags;
 	int bpp = 32;
 	int rgb_size[3];
+	char *ext;
 
 	if(InitVideo) return;
     InitVideo = TRUE;
@@ -96,7 +97,10 @@ void InitGL_AG2(int w, int h)
              rgb_size[2] = 8;
              break;
      }
-
+    /*
+     * GL 拡張の取得 20110907-
+     */
+    InitGLExtensionVars();
 	InitVramSemaphore();
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
@@ -104,6 +108,7 @@ void InitGL_AG2(int w, int h)
 	InitVirtualVram();
 	return;
 }
+
 
 Uint32 *GetVirtualVram(void)
 {
@@ -278,7 +283,7 @@ void AGEventDrawGL2(AG_Event *event)
         glEnd();
     }
     glEnable(GL_BLEND);
- 
+
     DrawOSDGL(glv);
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);

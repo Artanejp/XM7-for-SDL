@@ -29,7 +29,7 @@ GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
                  GL_UNSIGNED_BYTE,
                  p);
     } else {
-#if 0 // texSubImage2D()で置き換えるとAgar側がちらつく(--;       
+#if 0 // texSubImage2D()で置き換えるとAgar側がちらつく(--;
        glBindTexture(GL_TEXTURE_2D, ttid);
        glTexSubImage2D(GL_TEXTURE_2D,
                          0,  // level
@@ -75,3 +75,54 @@ void DiscardTexture(GLuint tid)
 	DiscardTextures(1, &tid);
 }
 
+extern "C" {
+// OpenGL状態変数
+BOOL bGL_ARB_IMAGING; // イメージ操作可能か？
+BOOL bGL_ARB_COPY_BUFFER;  // バッファ内コピー（高速化！）サポート
+BOOL bGL_EXT_INDEX_TEXTURE; // パレットモードに係わる
+BOOL bGL_EXT_COPY_TEXTURE; // テクスチャ間のコピー
+BOOL bGL_SGI_COLOR_TABLE; // パレットモード(SGI拡張)
+BOOL bGL_SGIS_PIXEL_TEXTURE; // テクスチャアップデート用
+BOOL bGL_EXT_PACKED_PIXEL; // PackedPixelを使ってアップデートを高速化？
+BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
+BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
+
+
+BOOL QueryGLExtensions(char *str)
+{
+    char *ext;
+    char *p;
+    int i;
+    int j;
+    int k;
+    int l;
+    int ll;
+
+    if(str == NULL) return FALSE;
+    ll = strlen(str);
+    if(ll <= 0) return FALSE;
+
+    ext =(char *)glGetString(GL_EXTENSIONS);
+    if(ext == NULL) return FALSE;
+    l = strlen(ext);
+    if(l <= 0) return FALSE;
+    p = ext;
+    for(i = 0; i < l ; ){
+        int j = strcspn(p, " ");
+        if((ll == j) && (strncmp(str, p, j) == 0)) {
+            return TRUE;
+        }
+        p += j;
+        p++;
+    }
+    return FALSE;
+}
+
+void InitGLExtensionVars(void)
+{
+    bGL_ARB_IMAGING = QueryGLExtensions("GL_ARB_imaging");
+    bGL_ARB_COPY_BUFFER = QueryGLExtensions("GL_ARB_copy_buffer");
+    bGL_EXT_INDEX_TEXTURE = QueryGLExtensions("GL_EXT_index_texture");
+    bGL_EXT_COPY_TEXTURE = QueryGLExtensions("GL_EXT_copy_textuure");
+}
+}
