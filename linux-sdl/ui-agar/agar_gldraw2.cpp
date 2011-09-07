@@ -10,8 +10,10 @@
 //#include <agar/gui/opengl.h>
 
 #include <SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <GL/glx.h>
+#include <GL/glxext.h>
+
+
 #include "api_draw.h"
 #include "api_scaler.h"
 #include "agar_xm7.h"
@@ -55,14 +57,80 @@ static void DetachVirtualVram(void)
     pVram2 = NULL;
 }
 
+static void DetachGridVertexs(void);
 void DetachGL_AG2(void)
 {
     DetachTexture();
     DetachVirtualVram();
+    DetachGridVertexs();
     DetachVramSemaphore();
     pGetVram = NULL;
 }
 
+// Grids
+static GLfloat *GridVertexs200l;
+static GLfloat *GridVertexs400l;
+static GLfloat MainTexcoods[4];
+
+// FBO API
+PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
+PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
+PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
+
+static void InitGridVertexsSub(int h, GLfloat *vertex)
+{
+  int i;
+  GLfloat ybegin;
+  int base;
+
+  if(vertex == NULL) return;
+  for(i = 0; i < (h - 1); i++){
+      base = i * 6;
+      ybegin = ((float)i  + 1.0f) * 2.0f / (float)h - 1.0f;
+      vertex[base] = -1.0f; // x
+      vertex[base + 1] = ybegin; // y
+      vertex[base + 2] = 0.98f; // z
+
+      vertex[base + 3] = 1.0f; // x
+      vertex[base + 4] = ybegin; // y
+      vertex[base + 5] = 0.98f; // z
+
+  }
+}
+
+static void InitGridVertexs(void)
+{
+    GridVertexs200l = (GLfloat *)malloc(200 * 6 * sizeof(GLfloat));
+    if(GridVertexs200l != NULL) {
+        InitGridVertexsSub(200, GridVertexs200l);
+    }
+    GridVertexs400l = (GLfloat *)malloc(400 * 6 * sizeof(GLfloat));
+    if(GridVertexs400l != NULL) {
+        InitGridVertexsSub(400, GridVertexs400l);
+    }
+}
+
+static void DetachGridVertexs(void)
+{
+    if(GridVertexs200l != NULL) {
+        free(GridVertexs200l);
+        GridVertexs200l = NULL;
+    }
+    if(GridVertexs400l != NULL) {
+        free(GridVertexs400l);
+        GridVertexs400l = NULL;
+    }
+}
+
+static void InitFBO(void)
+{
+    glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
+    if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+    glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)glXGetProcAddress((const GLubyte *)"glDrawArraysEXT");
+    if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+    glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glTexCoordPointerEXT");
+    if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+}
 
 void InitGL_AG2(int w, int h)
 {
@@ -100,13 +168,16 @@ void InitGL_AG2(int w, int h)
     /*
      * GL 拡張の取得 20110907-
      */
-    InitGLExtensionVars();
 	InitVramSemaphore();
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
 	pGetVram = NULL;
 	InitVirtualVram();
-	return;
+    InitGLExtensionVars();
+    InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
+               // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
+    InitGridVertexs(); // Grid初期化
+    return;
 }
 
 
@@ -207,10 +278,27 @@ void AGEventDrawGL2(AG_Event *event)
 	Uint32 *pp;
 	int x;
 	int y;
+    GLfloat TexCoords[4][2];
+    GLfloat Vertexs[4][3];
 
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
+
+
+    TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+    TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+    TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
+    TexCoords[2][1] = TexCoords[3][1] = 1.0f; // Yend
+            // Z Axis
+    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
+
+    Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
+    Vertexs[0][1] = Vertexs[1][1] = 1.0f;  // Yend
+    Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
+    Vertexs[2][1] = Vertexs[3][1] = -1.0f; // Ybegin
+
 
      switch(bMode) {
         case SCR_400LINE:
@@ -235,6 +323,7 @@ void AGEventDrawGL2(AG_Event *event)
     if(SDLDrawFlag.Drawn) {
        uVramTextureID = UpdateTexture(p, uVramTextureID, w, h);
     }
+
 //    memset(SDLDrawFlag.drawn, 0x00, sizeof(SDLDrawFlag.drawn));
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
@@ -259,12 +348,30 @@ void AGEventDrawGL2(AG_Event *event)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
 //        LockVram();
-        glBegin(GL_POLYGON);
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, -0.99f);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(1.0f, 1.0f, -0.99f);
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f, -1.0f, -0.99f);
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -0.99f);
-        glEnd();
+        if(bGL_EXT_VERTEX_ARRAY) {
+            glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
+            glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
+            glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
+            glEnable(GL_VERTEX_ARRAY_EXT);
+
+            glDrawArraysEXT(GL_POLYGON, 0, 4);
+            glDisable(GL_VERTEX_ARRAY_EXT);
+            glDisable(GL_TEXTURE_COORD_ARRAY_EXT);
+        } else {
+            glBegin(GL_POLYGON);
+            glTexCoord2f(TexCoords[0][0], TexCoords[0][1]);
+            glVertex3f(Vertexs[0][0], Vertexs[0][1], Vertexs[0][2]);
+
+            glTexCoord2f(TexCoords[1][0], TexCoords[1][1]);
+            glVertex3f(Vertexs[1][0], Vertexs[1][1], Vertexs[1][2]);
+
+            glTexCoord2f(TexCoords[2][0], TexCoords[2][1]);
+            glVertex3f(Vertexs[2][0], Vertexs[2][1], Vertexs[2][2]);
+
+            glTexCoord2f(TexCoords[3][0], TexCoords[3][1]);
+            glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
+            glEnd();
+        }
 //        UnlockVram();
      }
 //    glEnable(GL_DEPTH_TEST);
@@ -274,14 +381,40 @@ void AGEventDrawGL2(AG_Event *event)
     	width = 1.0f;
     	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         glLineWidth(width);
-        glBegin(GL_LINES);
-    	for(i = 0; i < (h - 1); i++) {
-    		ybegin = ((float)i  + 1.0f) * 2.0f / (float)h - 1.0f;
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, ybegin, -0.98);
-    		glTexCoord2f(1.0f, 1.0f); glVertex3f(1.0f , ybegin, -0.98);
-    	}
-        glEnd();
+        {
+           GLfloat *vertex;
+           int base;
+
+        switch(bMode) {
+        case SCR_400LINE:
+            vertex = GridVertexs400l;
+            break;
+        default:
+            vertex = GridVertexs200l;
+            break;
+        }
+        if(vertex == NULL) goto e1;
+
+        if(bGL_EXT_VERTEX_ARRAY) {
+                glVertexPointerEXT(3, GL_FLOAT, 0, (h - 1) * 2, vertex);
+                glEnable(GL_VERTEX_ARRAY_EXT);
+                glDrawArraysEXT(GL_LINES, 0, (h - 1) * 2);
+                glDisable(GL_VERTEX_ARRAY_EXT);
+        } else {
+            GLfloat *v;
+            // VERTEX_ARRAYなしの場合
+            glBegin(GL_LINES);
+            for(i = 0; i < (h - 1); i++) {
+                v = &vertex[i * 6];
+                glVertex3f(v[0], v[1], v[2]);
+                glVertex3f(v[3], v[4], v[5]);
+            }
+            glEnd();
+        }
     }
+
+    }
+e1:
     glEnable(GL_BLEND);
 
     DrawOSDGL(glv);

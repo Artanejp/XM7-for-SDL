@@ -1823,13 +1823,13 @@
 	"DrawAGNonGL.h"
 	<SDL.h>
 
-1315208427 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+1315426233 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
 	<SDL.h>
-	<GL/gl.h>
-	<GL/glext.h>
+	<GL/glx.h>
+	<GL/glxext.h>
 	"api_draw.h"
 	"api_scaler.h"
 	"agar_xm7.h"
@@ -1852,7 +1852,7 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1315365846 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.h
+1315384655 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -1866,7 +1866,7 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1315207343 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.cpp
+1315385455 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.cpp
 	"agar_glutil.h"
 
 1315161986 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.cpp

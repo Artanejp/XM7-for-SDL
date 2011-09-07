@@ -112,8 +112,8 @@ BOOL QueryGLExtensions(char *str)
         if((ll == j) && (strncmp(str, p, j) == 0)) {
             return TRUE;
         }
-        p += j;
-        p++;
+        p += (j + 1);
+        i += (j + 1);
     }
     return FALSE;
 }
@@ -123,6 +123,12 @@ void InitGLExtensionVars(void)
     bGL_ARB_IMAGING = QueryGLExtensions("GL_ARB_imaging");
     bGL_ARB_COPY_BUFFER = QueryGLExtensions("GL_ARB_copy_buffer");
     bGL_EXT_INDEX_TEXTURE = QueryGLExtensions("GL_EXT_index_texture");
-    bGL_EXT_COPY_TEXTURE = QueryGLExtensions("GL_EXT_copy_textuure");
+    bGL_EXT_COPY_TEXTURE = QueryGLExtensions("GL_EXT_copy_texture");
+    bGL_SGI_COLOR_TABLE = QueryGLExtensions("GL_SGI_color_table");
+    bGL_SGIS_PIXEL_TEXTURE = QueryGLExtensions("GL_SGIS_pixel_texture");
+    bGL_EXT_PACKED_PIXEL = QueryGLExtensions("GL_EXT_packed_pixel");
+    bGL_EXT_PALETTED_TEXTURE = QueryGLExtensions("GL_EXT_paletted_texture");
+    bGL_EXT_VERTEX_ARRAY = QueryGLExtensions("GL_EXT_vertex_array");
+
 }
 }

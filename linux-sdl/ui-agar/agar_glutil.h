@@ -22,6 +22,12 @@ extern  AG_GLView *GLDrawArea;
 extern BOOL bGL_ARB_IMAGING; // イメージ操作可能か？
 extern BOOL bGL_ARB_COPY_BUFFER;  // バッファ内コピー（高速化！）サポート
 extern BOOL bGL_EXT_INDEX_TEXTURE; // パレットモードに係わる
+extern BOOL bGL_EXT_COPY_TEXTURE; // テクスチャ間のコピー
+extern BOOL bGL_SGI_COLOR_TABLE; // パレットモード(SGI拡張)
+extern BOOL bGL_SGIS_PIXEL_TEXTURE; // テクスチャアップデート用
+extern BOOL bGL_EXT_PACKED_PIXEL; // PackedPixelを使ってアップデートを高速化？
+extern BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
+extern BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
 
 extern void InitGLExtensionVars(void);
 extern BOOL QueryGLExtensions(char *str);
