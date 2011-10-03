@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="GtkKbdInterface.cpp" open="1" top="0" tabpos="22">
+	<File name="GtkKbdInterface.cpp" open="1" top="0" tabpos="8">
 		<Cursor position="363" topLine="15" />
 	</File>
 	<File name="GtkKbdInterface.h" open="0" top="0" tabpos="15">
@@ -49,8 +49,8 @@
 	<File name="SndDrvTmpl.h" open="0" top="0" tabpos="20">
 		<Cursor position="719" topLine="23" />
 	</File>
-	<File name="SndDrvWav.cpp" open="0" top="0" tabpos="1">
-		<Cursor position="4166" topLine="193" />
+	<File name="SndDrvWav.cpp" open="1" top="0" tabpos="9">
+		<Cursor position="2263" topLine="100" />
 	</File>
 	<File name="SndDrvWav.h" open="0" top="0" tabpos="29">
 		<Cursor position="0" topLine="0" />
@@ -73,14 +73,14 @@
 	<File name="api_mouse.cpp" open="0" top="0" tabpos="15">
 		<Cursor position="3232" topLine="152" />
 	</File>
-	<File name="api_scaler.cpp" open="1" top="0" tabpos="17">
+	<File name="api_scaler.cpp" open="1" top="0" tabpos="7">
 		<Cursor position="5924" topLine="278" />
 	</File>
 	<File name="api_scaler.h" open="0" top="0" tabpos="14">
 		<Cursor position="1924" topLine="86" />
 	</File>
-	<File name="api_snd2.cpp" open="0" top="0" tabpos="2">
-		<Cursor position="27901" topLine="1312" />
+	<File name="api_snd2.cpp" open="1" top="1" tabpos="10">
+		<Cursor position="27090" topLine="1291" />
 	</File>
 	<File name="api_vram.h" open="1" top="0" tabpos="6">
 		<Cursor position="1349" topLine="0" />

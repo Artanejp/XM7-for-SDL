@@ -43,6 +43,7 @@ BOOL CheckDrawMode(void)
         for(y = 0; y < 50; y++){
             for(x = 0; x < 80 ; x++){
                 SDLDrawFlag.write[x][y] = TRUE;
+                SDLDrawFlag.read[x][y] = TRUE;
             }
         }
         UnlockVram();
@@ -65,10 +66,12 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
     LockVram();
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
-            if(SDLDrawFlag.write[xx][yy]) {
-               	p = &pp[(xx + (80 * yy <<3)) << 3];
-                CreateVirtualVram8_1Pcs(p, xx, yy << 3, (640 * sizeof(Uint32)), mode);
-                SDLDrawFlag.write[xx][yy] = FALSE;
+            if(SDLDrawFlag.read[xx][yy]) {
+                p = &pp[(xx  + (640 * yy))<<3];
+//                CreateVirtualVram8_1Pcs(p, xx, yy << 3, (640 * sizeof(Uint32)), mode);
+                CreateVirtualVram8_1Pcs(p, xx , yy << 3, 8 * sizeof(Uint32), mode);
+                SDLDrawFlag.write[xx][yy] = TRUE;
+                SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
         }
@@ -95,7 +98,7 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
             if(SDLDrawFlag.write[xx][yy]) {
                 p = &pp[(xx  + (320 * yy))<<3];
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, (320 * sizeof(Uint32)), mode);
-                SDLDrawFlag.write[xx][yy] = FALSE;
+//                SDLDrawFlag.write[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
         }
@@ -122,7 +125,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
             if(SDLDrawFlag.write[xx][yy]) {
                 p = &pp[(xx + (320 * yy)) << 3];
                 CreateVirtualVram256k_1Pcs(p, xx, yy << 3, (320 * sizeof(Uint32)), mpage);
-                SDLDrawFlag.write[xx][yy] = FALSE;
+//                SDLDrawFlag.write[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
         }

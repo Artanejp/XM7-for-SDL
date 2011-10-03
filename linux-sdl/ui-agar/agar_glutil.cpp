@@ -8,6 +8,38 @@ extern "C" {
     AG_GLView *GLDrawArea;
 }
 
+GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h)
+{
+//    glBindTexture(GL_TEXTURE_2D, texid);
+    glTexSubImage2D(GL_TEXTURE_2D, 0,
+                    x, y, w, h,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,(GLvoid *)p);
+}
+
+GLuint CreateNullTexture(int w, int h)
+{
+    GLuint ttid;
+    Uint32 *p;
+
+    p =(Uint32 *)malloc(w * h * sizeof(Uint32));
+    if(p == NULL) return 0;
+
+    memset(p, 0x00, w * h * sizeof(Uint32));
+    glGenTextures(1, &ttid);
+    glBindTexture(GL_TEXTURE_2D, ttid);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 w, h,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 p);
+    free(p);
+    return ttid;
+}
+
 GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
 {
     GLuint ttid;
@@ -88,7 +120,7 @@ BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
 BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
 
 
-BOOL QueryGLExtensions(char *str)
+BOOL QueryGLExtensions(const char *str)
 {
     char *ext;
     char *p;

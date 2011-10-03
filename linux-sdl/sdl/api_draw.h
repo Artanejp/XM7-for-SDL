@@ -60,6 +60,7 @@ extern "C"
 #endif
 
 struct DrawPieces {
+    BOOL read[80][50];
     BOOL write[80][50];
     BOOL Drawn;
     BOOL DPaletteChanged;

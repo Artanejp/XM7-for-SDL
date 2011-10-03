@@ -937,7 +937,8 @@ void SetDrawFlag(BOOL flag)
 //		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
     for(y = 0; y < 50 ; y++) {
         for(x = 0; x < 80; x++){
-                SDLDrawFlag.write[x][y] = flag;
+                SDLDrawFlag.read[x][y] = flag;
+//                SDLDrawFlag.write[x][y] = flag;
         }
     }
     SDLDrawFlag.Drawn = flag;
@@ -963,7 +964,7 @@ static  BOOL Select640(void)
         SetDrawFlag(TRUE);
         LockVram();
         DiscardTexture(uVramTextureID);
-        uVramTextureID = 0;
+        uVramTextureID = CreateNullTexture(640, 200);
         UnlockVram();
 #if XM7_VER >= 3
 /*
@@ -1004,7 +1005,8 @@ static  BOOL Select400l(void)
         bMode = SCR_400LINE;
         LockVram();
         DiscardTexture(uVramTextureID);
-        uVramTextureID = 0;
+        uVramTextureID = CreateNullTexture(640, 400);
+//        uVramTextureID = 0;
         UnlockVram();
         return TRUE;
 }
@@ -1041,7 +1043,8 @@ static  BOOL Select320(void)
 #endif				/*  */
         LockVram();
         DiscardTexture(uVramTextureID);
-        uVramTextureID = 0;
+        uVramTextureID = CreateNullTexture(320, 200);
+//        uVramTextureID = 0;
         UnlockVram();
         return TRUE;
 }
@@ -1070,7 +1073,8 @@ static  BOOL Select256k()
         bMode = SCR_262144;
         LockVram();
         DiscardTexture(uVramTextureID);
-        uVramTextureID = 0;
+//        uVramTextureID = 0;
+        uVramTextureID = CreateNullTexture(320, 200);
         UnlockVram();
         return TRUE;
 }
@@ -1222,7 +1226,8 @@ void AllClear(void)
 #endif
     for(y = 0; y < 50; y++) {
         for (x = 0; x < 80; x++) {
-            SDLDrawFlag.write[x][y] = TRUE;
+            SDLDrawFlag.read[x][y] = TRUE;
+//            SDLDrawFlag.write[x][y] = TRUE;
         }
         SDLDrawFlag.ForcaReDraw = TRUE;
         SDLDrawFlag.Drawn = TRUE;    }
@@ -1574,7 +1579,7 @@ void vram_notify(WORD addr, BYTE dat)
 	 * 再描画フラグを設定
 	 */
         LockVram();
-        SDLDrawFlag.write[x][y] = TRUE;
+        SDLDrawFlag.read[x][y] = TRUE;
         UnlockVram();
 	/*
 	 * 垂直方向更新
@@ -1824,7 +1829,7 @@ void window_notify(void)
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
 	     for(y = (nDrawTop >> 3); y < ((nDrawBottom + 7) >> 3); y++) {
 	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) <<3); x ++){
-                SDLDrawFlag.write[x][y] = TRUE;
+                SDLDrawFlag.read[x][y] = TRUE;
 	         }
 	     }
 	 }

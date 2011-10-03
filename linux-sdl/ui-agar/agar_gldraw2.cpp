@@ -77,6 +77,7 @@ PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
 PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
 PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
 
+
 static void InitGridVertexsSub(int h, GLfloat *vertex)
 {
   int i;
@@ -321,10 +322,30 @@ void AGEventDrawGL2(AG_Event *event)
      */
     LockVram();
     if(SDLDrawFlag.Drawn) {
-       uVramTextureID = UpdateTexture(p, uVramTextureID, w, h);
-    }
+       int xx;
+       int yy;
+       Uint32 *pu;
+       Uint32 *pq;
+       int ofset;
 
-//    memset(SDLDrawFlag.drawn, 0x00, sizeof(SDLDrawFlag.drawn));
+            if(uVramTextureID == 0){
+                uVramTextureID = CreateNullTexture(w, h);
+            }
+//           printf("DBG: Vram Texture Updated %08x\n");
+            glPushAttrib(GL_TEXTURE_BIT);
+            glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+            for(yy = 0; yy < (h >> 3); yy++) {
+                for(xx = 0; xx < (w >> 3); xx++) {
+//                    if(SDLDrawFlag.write[xx][yy]) {
+                        pu = &p[(xx  + (w * yy))<<3];
+                        UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
+//                    }
+                    SDLDrawFlag.write[xx][yy] = FALSE;
+                }
+            }
+            glPopAttrib();
+       //uVramTextureID = UpdateTexture(p, uVramTextureID, w, h);
+    }
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -348,8 +369,9 @@ void AGEventDrawGL2(AG_Event *event)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
 //        LockVram();
-        if(bGL_EXT_VERTEX_ARRAY) {
-            glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
+//        if(bGL_EXT_VERTEX_ARRAY) {
+        if(FALSE) {
+	   glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
             glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
             glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
             glEnable(GL_VERTEX_ARRAY_EXT);

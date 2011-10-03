@@ -30,10 +30,13 @@ extern BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
 extern BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
 
 extern void InitGLExtensionVars(void);
-extern BOOL QueryGLExtensions(char *str);
+extern BOOL QueryGLExtensions(const char *str);
 }
 
 extern GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h);
+extern GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h);
+extern GLuint CreateNullTexture(int w, int h);
+
 extern void Flip_AG_GL(void);
 extern void DiscardTextures(int n, GLuint *id);
 extern void DiscardTexture(GLuint id);
