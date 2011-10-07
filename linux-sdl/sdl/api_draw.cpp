@@ -1825,10 +1825,10 @@ void window_notify(void)
 	/*
 	 * 再描画フラグを更新
 	 */
-#if 0
+#if 1
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
 	     for(y = (nDrawTop >> 3); y < ((nDrawBottom + 7) >> 3); y++) {
-	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) <<3); x ++){
+	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) >>3); x ++){
                 SDLDrawFlag.read[x][y] = TRUE;
 	         }
 	     }

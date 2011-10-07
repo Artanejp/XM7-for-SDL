@@ -334,12 +334,14 @@ void AGEventDrawGL2(AG_Event *event)
 //           printf("DBG: Vram Texture Updated %08x\n");
             glPushAttrib(GL_TEXTURE_BIT);
             glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+            pu = p;
             for(yy = 0; yy < (h >> 3); yy++) {
                 for(xx = 0; xx < (w >> 3); xx++) {
 //                    if(SDLDrawFlag.write[xx][yy]) {
-                        pu = &p[(xx  + (w * yy))<<3];
-                        UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
+//                        pu = &p[(xx + w * yy) << 3 ];
+                        UpdateTexturePiece(pu, uVramTextureID,xx << 3, yy << 3, 8, 8);
 //                    }
+                    pu += 64;
                     SDLDrawFlag.write[xx][yy] = FALSE;
                 }
             }

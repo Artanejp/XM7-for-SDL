@@ -64,16 +64,16 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 	hh = (h + y) >> 3;
 
     LockVram();
+    p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
-            if(SDLDrawFlag.read[xx][yy]) {
-                p = &pp[(xx  + (640 * yy))<<3];
-//                CreateVirtualVram8_1Pcs(p, xx, yy << 3, (640 * sizeof(Uint32)), mode);
-                CreateVirtualVram8_1Pcs(p, xx , yy << 3, 8 * sizeof(Uint32), mode);
+//            if(SDLDrawFlag.read[xx][yy]) {
+                CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
-            }
+//            }
+        p += 64;
         }
     }
     bVramUpdateFlag = TRUE;
