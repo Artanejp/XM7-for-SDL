@@ -342,7 +342,7 @@ void AGEventDrawGL2(AG_Event *event)
        int ofset;
 
             if(uVramTextureID == 0){
-                uVramTextureID = CreateNullTexture(w, h);
+                uVramTextureID = CreateNullTexture(w + 2, h + 2);
             }
 //           printf("DBG: Vram Texture Updated %08x\n");
             glPushAttrib(GL_TEXTURE_BIT);
@@ -390,7 +390,6 @@ void AGEventDrawGL2(AG_Event *event)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
 //        LockVram();
-//        if(bGL_EXT_VERTEX_ARRAY) {
         if(bGL_EXT_VERTEX_ARRAY) {
             glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
             glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
@@ -439,10 +438,8 @@ void AGEventDrawGL2(AG_Event *event)
         if(vertex == NULL) goto e1;
 
         if(bGL_EXT_VERTEX_ARRAY) {
-//                glVertexPointerEXT(3, GL_FLOAT, 0, (h - 1) * 2, vertex);
                 glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
                 glEnable(GL_VERTEX_ARRAY_EXT);
-//                glDrawArraysEXT(GL_LINES, 0, (h - 1) * 2);
                 glDrawArraysEXT(GL_LINES, 0, h  * 2);
                 glDisable(GL_VERTEX_ARRAY_EXT);
         } else {

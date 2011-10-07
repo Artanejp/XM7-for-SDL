@@ -449,10 +449,10 @@ int DrawThreadMain(void *p)
 #ifdef USE_AGAR
 		nDrawTick1D = AG_GetTicks();
 #endif
-//		initsub();
+		initsub();
 //		ResizeWindow(640,480);
 		InitGL(640,480);
-//		nDrawCount = DrawCountSet(nDrawFPS);
+		nDrawCount = DrawCountSet(nDrawFPS);
    nDrawCount = 1000 / nDrawFPS + 1;
 		while(1) {
 #ifndef USE_AGAR
@@ -476,6 +476,7 @@ int DrawThreadMain(void *p)
 #endif
 			if(DrawSHUTDOWN) {
 				detachsub();
+			        DrawSHUTDOWN = FALSE;
 				return 0; /* シャットダウン期間 */
 			}
 #ifndef USE_OPENGL
@@ -873,9 +874,9 @@ void	InitDraw(void)
 #endif
 #ifdef USE_AGAR
 		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
-		if(!DrawThread) {
-			AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
-		}
+//		if(!DrawThread) {
+//			AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
+//		}
 #else
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
@@ -898,9 +899,10 @@ void	CleanDraw(void)
 		DrawSHUTDOWN = TRUE;
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
-		AG_ThreadJoin(DrawThread, NULL);
+//		AG_ThreadJoin(DrawThread, NULL);
 		AG_MutexDestroy(&DrawMutex);
 		AG_CondDestroy(&DrawCond);
+//                DrawThread = NULL;
 
 #else
 		if(DrawCond != NULL) {
@@ -1168,9 +1170,9 @@ BOOL SelectDraw(void)
 #ifdef USE_AGAR
 	 AG_MutexInit(&DrawMutex);
 	 AG_CondInit(&DrawCond);
-	 if(!DrawThread) {
+//	 if(!DrawThread) {
 		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
-	 }
+//	 }
 #else
 	 if(!DrawMutex) {
 		 DrawMutex = SDL_CreateMutex();
@@ -1829,7 +1831,7 @@ void window_notify(void)
 	/*
 	 * 再描画フラグを更新
 	 */
-#if 1
+#if 0
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
 	     for(y = (nDrawTop >> 3); y < ((nDrawBottom + 7) >> 3); y++) {
 	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) >>3); x ++){

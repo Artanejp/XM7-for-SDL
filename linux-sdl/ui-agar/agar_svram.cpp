@@ -100,13 +100,14 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
     LockVram();
     p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
-        for(xx = (x >> 3); xx < ww ; xx++, p += 64) {
+        for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
+	   p += 64;
         }
     }
     bVramUpdateFlag = TRUE;
@@ -141,7 +142,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
     UnlockVram();
 }
 
- void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
+void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 {
 	int xx, yy;
 	int hh, ww;
