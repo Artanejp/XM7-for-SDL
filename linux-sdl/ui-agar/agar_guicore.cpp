@@ -128,7 +128,7 @@ void AGDrawTaskEvent(BOOL flag)
 		nDrawTick2D = AG_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
-			AGDrawTaskMain();
+//			AGDrawTaskMain();
 			// ここにGUIの処理入れる
 			AG_LockVFS(&agDrivers);
 			if (agDriverSw) {
@@ -161,7 +161,7 @@ void AGDrawTaskEvent(BOOL flag)
 		     }
 		   AG_UnlockVFS(&agDrivers);
 		}	else if (AG_PendingEvents(drv) > 0){
-			AGDrawTaskMain();
+//			AGDrawTaskMain();
 			if(EventSDL(drv) == FALSE) return;
 			if(EventGUI(drv) == FALSE) return;
 		}

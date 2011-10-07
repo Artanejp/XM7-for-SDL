@@ -141,7 +141,6 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 
     addr = y * 80 + x;
     // Loop廃止(高速化)
-#if 1
     getvram_8to8(addr, c);
     putword8((Uint32 *)disp,  c);
     addr += 80;
@@ -179,17 +178,9 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 
     getvram_8to8(addr, c);
     putword8((Uint32 *)disp,  c);
-#else
-    // Pattern TEST
-    p[0] = 0xffffffff;
-    p[1] = 0xffffffff;
-    p[2] = 0xffffffff;
-    p[3] = 0xffffffff;
-    p[4] = 0xffffffff;
-    p[5] = 0xffffffff;
-    p[6] = 0xffffffff;
-    p[7] = 0xffffffff;
-#endif
+//    addr += 80;
+//    disp += pitch;
+
 }
 
 /*

@@ -13,6 +13,9 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif //_OPENMP
 
 #include "api_draw.h"
 #include "api_scaler.h"
@@ -82,18 +85,24 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
 {
   int i;
   GLfloat ybegin;
+  GLfloat yofset;
+  GLfloat yinc;
+  GLfloat y;
   int base;
 
+    yinc = 400.0f / (float)h;
+    ybegin = yinc / (float)h;
+    yofset = -1.0f + 41.0f / 440.0f;
   if(vertex == NULL) return;
-  for(i = 0; i < (h - 1); i++){
+  y = ybegin + yofset;
+  for(i = 0; i < h; i++, y += ybegin){
       base = i * 6;
-      ybegin = ((float)i  + 1.0f) * 2.0f / (float)h - 1.0f;
       vertex[base] = -1.0f; // x
-      vertex[base + 1] = ybegin; // y
+      vertex[base + 1] = y; // y
       vertex[base + 2] = 0.98f; // z
 
       vertex[base + 3] = 1.0f; // x
-      vertex[base + 4] = ybegin; // y
+      vertex[base + 4] = y; // y
       vertex[base + 5] = 0.98f; // z
 
   }
@@ -101,11 +110,11 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
 
 static void InitGridVertexs(void)
 {
-    GridVertexs200l = (GLfloat *)malloc(200 * 6 * sizeof(GLfloat));
+    GridVertexs200l = (GLfloat *)malloc(201 * 6 * sizeof(GLfloat));
     if(GridVertexs200l != NULL) {
         InitGridVertexsSub(200, GridVertexs200l);
     }
-    GridVertexs400l = (GLfloat *)malloc(400 * 6 * sizeof(GLfloat));
+    GridVertexs400l = (GLfloat *)malloc(401 * 6 * sizeof(GLfloat));
     if(GridVertexs400l != NULL) {
         InitGridVertexsSub(400, GridVertexs400l);
     }
@@ -286,19 +295,21 @@ void AGEventDrawGL2(AG_Event *event)
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
 
-
     TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
     TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
     TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
     TexCoords[2][1] = TexCoords[3][1] = 1.0f; // Yend
+
+    // OSD を外に追い出す
+    ybegin = 400.0f / 440.0f;
+    yend = 1.0f;
             // Z Axis
     Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
-
     Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
     Vertexs[0][1] = Vertexs[1][1] = 1.0f;  // Yend
     Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
-    Vertexs[2][1] = Vertexs[3][1] = -1.0f; // Ybegin
+    Vertexs[2][1] = Vertexs[3][1] = -ybegin; // Ybegin
 
 
      switch(bMode) {
@@ -322,10 +333,12 @@ void AGEventDrawGL2(AG_Event *event)
      */
     LockVram();
     if(SDLDrawFlag.Drawn) {
-       int xx;
-       int yy;
        Uint32 *pu;
        Uint32 *pq;
+       int xx;
+       int yy;
+       int ww;
+       int hh;
        int ofset;
 
             if(uVramTextureID == 0){
@@ -334,15 +347,21 @@ void AGEventDrawGL2(AG_Event *event)
 //           printf("DBG: Vram Texture Updated %08x\n");
             glPushAttrib(GL_TEXTURE_BIT);
             glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-            pu = p;
-            for(yy = 0; yy < (h >> 3); yy++) {
-                for(xx = 0; xx < (w >> 3); xx++) {
-//                    if(SDLDrawFlag.write[xx][yy]) {
-//                        pu = &p[(xx + w * yy) << 3 ];
-                        UpdateTexturePiece(pu, uVramTextureID,xx << 3, yy << 3, 8, 8);
-//                    }
-                    pu += 64;
-                    SDLDrawFlag.write[xx][yy] = FALSE;
+//            pu = p;
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(p, SDLDrawFlag) private(pu)
+//#endif       
+       ww = w >> 3;
+       hh = h >> 3;
+//       pu = p;
+       for(yy = 0; yy < hh; yy++) {
+               for(xx = 0; xx < ww; xx++) {
+		   pu = &p[(xx + yy * ww) * 64];
+                    if(SDLDrawFlag.write[xx][yy]) {
+                       UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
+		       SDLDrawFlag.write[xx][yy] = FALSE;
+                    }
+//		   pu += 64;
                 }
             }
             glPopAttrib();
@@ -372,8 +391,8 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        LockVram();
 //        if(bGL_EXT_VERTEX_ARRAY) {
-        if(FALSE) {
-	   glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
+        if(bGL_EXT_VERTEX_ARRAY) {
+            glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
             glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
             glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
             glEnable(GL_VERTEX_ARRAY_EXT);
@@ -398,7 +417,7 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        UnlockVram();
      }
-//    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);
 
     if(!bFullScan){
@@ -420,9 +439,11 @@ void AGEventDrawGL2(AG_Event *event)
         if(vertex == NULL) goto e1;
 
         if(bGL_EXT_VERTEX_ARRAY) {
-                glVertexPointerEXT(3, GL_FLOAT, 0, (h - 1) * 2, vertex);
+//                glVertexPointerEXT(3, GL_FLOAT, 0, (h - 1) * 2, vertex);
+                glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
                 glEnable(GL_VERTEX_ARRAY_EXT);
-                glDrawArraysEXT(GL_LINES, 0, (h - 1) * 2);
+//                glDrawArraysEXT(GL_LINES, 0, (h - 1) * 2);
+                glDrawArraysEXT(GL_LINES, 0, h  * 2);
                 glDisable(GL_VERTEX_ARRAY_EXT);
         } else {
             GLfloat *v;
@@ -439,10 +460,6 @@ void AGEventDrawGL2(AG_Event *event)
 
     }
 e1:
-    glEnable(GL_BLEND);
-
     DrawOSDGL(glv);
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
     glPopAttrib();
 }

@@ -46,6 +46,8 @@ CFLAGS += -I../libemugrph/ -I../ui-agar/ -I../sdl/ -I../vm/
 CFLAGS += `pkg-config --cflags sdl`
 #CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`
+# OpenMP
+CFLAGS += -fopenmp
 
 CFLAGS_DEBUG = -pg -g -O0 -export-dynamic
 CFLAGS_DEBUG += $(CFLAGS)

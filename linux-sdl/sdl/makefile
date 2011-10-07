@@ -56,6 +56,7 @@ LIBS +=  -lSDL_mixer -lSDL_ttf
 LIBS += -lGL -lGLU -lpthread
 LIBS += `agar-config --libs`
 LIBS += -ljpeg -lpng -lfreetype
+LIBS += -lgomp
 
 LIBS_RELEASE = ../libemugrph/Release/libemugrph.a
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a

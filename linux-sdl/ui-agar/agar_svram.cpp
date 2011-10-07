@@ -11,6 +11,11 @@
 #include <SDL.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif // _OPENMP
+
 #include "api_draw.h"
 #include "api_scaler.h"
 #include "agar_xm7.h"
@@ -67,13 +72,13 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
     p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
-//            if(SDLDrawFlag.read[xx][yy]) {
+            if(SDLDrawFlag.read[xx][yy]) {
                 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
-//            }
-        p += 64;
+            }
+	   p += 64;
         }
     }
     bVramUpdateFlag = TRUE;
@@ -93,12 +98,13 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
 	hh = (h + y) >> 3;
 
     LockVram();
+    p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
-        for(xx = (x >> 3); xx < ww ; xx++) {
-            if(SDLDrawFlag.write[xx][yy]) {
-                p = &pp[(xx  + (320 * yy))<<3];
-                CreateVirtualVram4096_1Pcs(p, xx, yy << 3, (320 * sizeof(Uint32)), mode);
-//                SDLDrawFlag.write[xx][yy] = FALSE;
+        for(xx = (x >> 3); xx < ww ; xx++, p += 64) {
+            if(SDLDrawFlag.read[xx][yy]) {
+                CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
+                SDLDrawFlag.write[xx][yy] = TRUE;
+                SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
         }
@@ -120,12 +126,13 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
 	hh = (h + y) >> 3;
 
     LockVram();
+    p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
-        for(xx = (x >> 3); xx < ww ; xx++) {
-            if(SDLDrawFlag.write[xx][yy]) {
-                p = &pp[(xx + (320 * yy)) << 3];
-                CreateVirtualVram256k_1Pcs(p, xx, yy << 3, (320 * sizeof(Uint32)), mpage);
-//                SDLDrawFlag.write[xx][yy] = FALSE;
+        for(xx = (x >> 3); xx < ww ; xx++, p+= 64) {
+            if(SDLDrawFlag.read[xx][yy]) {
+                CreateVirtualVram256k_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mpage);
+                SDLDrawFlag.read[xx][yy] = FALSE;
+                SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.Drawn = TRUE;
             }
         }

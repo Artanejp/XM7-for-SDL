@@ -452,7 +452,8 @@ int DrawThreadMain(void *p)
 //		initsub();
 //		ResizeWindow(640,480);
 		InitGL(640,480);
-		nDrawCount = DrawCountSet(nDrawFPS);
+//		nDrawCount = DrawCountSet(nDrawFPS);
+   nDrawCount = 1000 / nDrawFPS + 1;
 		while(1) {
 #ifndef USE_AGAR
 			if(DrawMutex == NULL) {
@@ -465,8 +466,10 @@ int DrawThreadMain(void *p)
 			}
 #endif
 #ifdef USE_AGAR
-			AG_MutexLock(&DrawMutex);
-			AG_CondWait(&DrawCond, &DrawMutex);
+//			AG_MutexLock(&DrawMutex);
+//			AG_CondWait(&DrawCond, &DrawMutex);
+		       nDrawCount = (100000 / nDrawFPS) / 100 + 1;
+		       AG_Delay(nDrawCount);
 #else
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);
@@ -482,15 +485,13 @@ int DrawThreadMain(void *p)
 #ifdef USE_AGAR
 			//if(DrawArea == NULL) continue;
 #endif
-			if(nDrawCount > 0) {
-				nDrawCount --;
-#ifdef USE_AGAR
-//				AGDrawTaskEvent(FALSE);
-#endif
-				continue;
-			} else {
-				nDrawCount = DrawCountSet(nDrawFPS);
-			}
+//			if(nDrawCount > 0) {
+//				nDrawCount --;
+//				continue;
+//			} else {
+			   //nDrawCount = DrawCountSet(nDrawFPS);
+//			   nDrawCount = 1000 / nDrawFPS + 1;
+//			}
 			DrawWaitFlag = TRUE;
 			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
@@ -858,6 +859,9 @@ void	InitDraw(void)
 		 */
 #ifdef USE_AGAR
         realDrawArea = GetDrawSurface();
+		AG_MutexInit(&DrawMutex);
+		AG_CondInit(&DrawCond);
+		AG_MutexUnlock(&DrawMutex);
 #else
 		realDrawArea = SDL_GetVideoSurface();
 		if(!DrawMutex) {
@@ -868,10 +872,10 @@ void	InitDraw(void)
 		}
 #endif
 #ifdef USE_AGAR
-//		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
-//		if(!DrawThread) {
-//			AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
-//		}
+		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
+		if(!DrawThread) {
+			AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
+		}
 #else
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
@@ -894,7 +898,7 @@ void	CleanDraw(void)
 		DrawSHUTDOWN = TRUE;
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
-//		AG_ThreadJoin(DrawThread, NULL);
+		AG_ThreadJoin(DrawThread, NULL);
 		AG_MutexDestroy(&DrawMutex);
 		AG_CondDestroy(&DrawCond);
 
@@ -938,7 +942,7 @@ void SetDrawFlag(BOOL flag)
     for(y = 0; y < 50 ; y++) {
         for(x = 0; x < 80; x++){
                 SDLDrawFlag.read[x][y] = flag;
-//                SDLDrawFlag.write[x][y] = flag;
+                SDLDrawFlag.write[x][y] = flag;
         }
     }
     SDLDrawFlag.Drawn = flag;
@@ -1164,9 +1168,9 @@ BOOL SelectDraw(void)
 #ifdef USE_AGAR
 	 AG_MutexInit(&DrawMutex);
 	 AG_CondInit(&DrawCond);
-//	 if(!DrawThread) {
-//		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
-//	 }
+	 if(!DrawThread) {
+		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
+	 }
 #else
 	 if(!DrawMutex) {
 		 DrawMutex = SDL_CreateMutex();

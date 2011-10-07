@@ -156,23 +156,22 @@ static GLuint OSD_UpdateTexture(AG_Surface *p, GLuint tid)
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
 			p->pixels);
-
-
     }
     return ttid;
 }
 
-
+/*
+* OSDを表示する実体
+* (1280x880) 空間で、(x, 878) - (x, 878 -h)に表示される
+*/
 static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset_x, int offset_y, int w, int h)
 {
 	if(bGLMode) {
 		float xbegin = (float)offset_x / 640.0f - 1.0f;
 		float xend = (float)(offset_x + w) / 640.0f - 1.0f;
-		float yend = 1.0f - (float) (h  + offset_y - 1) / 400.0f;
-		float ybegin = 1.0f - (float)(offset_y - 1) / 400.0f ;
+		float ybegin = -1.0f + (float)(h + 2) / 440.0f;
+		float yend = -1.0f + 2.0f / 440.0f;
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBindTexture(GL_TEXTURE_2D, tid);
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.95f);
@@ -201,9 +200,13 @@ static void DrawTape(void);
 
 void DrawOSDGL(AG_GLView *w)
 {
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
 	bGLMode = TRUE;
+    glPushAttrib(GL_ENABLE_BIT);
+    glPushAttrib(GL_TEXTURE_BIT);
+    glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
@@ -211,9 +214,12 @@ void DrawOSDGL(AG_GLView *w)
 	DrawDrive(AGWIDGET(w), 0);
 	DrawTape();
 	DrawMainCaption();
-    glDisable(GL_BLEND);
     glColor4f(0, 0, 0, 0);
-    glDisable(GL_TEXTURE_2D);
+
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+	glPopAttrib();
+	glPopAttrib();
 }
 
 void DrawOSDEv(AG_Event *event)
@@ -702,7 +708,7 @@ static void DrawDrive(AG_Widget *w, int drive)
 {
 	int            num;
 	int i;
-	char          *name;
+	char          name[128];
 	char          string[64];
 	char          utf8[256];
 	char		outstr[300];
@@ -736,16 +742,16 @@ static void DrawDrive(AG_Widget *w, int drive)
 	 /*
 	  * 名前取得
 	  */
-	 name = "";
+	 name[0] = '\0';
 	 utf8[0] = '\0';
 	 if (fdc_ready[drive] == FDC_TYPE_D77) {
-		 name = fdc_name[drive][fdc_media[drive]];
+		 strncpy(name, fdc_name[drive][fdc_media[drive]], 126);
 	 }
 	 if (fdc_ready[drive] == FDC_TYPE_2D) {
-		 name = "2D DISK";
+		 strcpy(name, "2D DISK");
 	 }
 	 if (fdc_ready[drive] == FDC_TYPE_VFD) {
-		 name = "VFD DISK";
+		 strcpy(name, "VFD DISK");
 	 }
 
 	 /*

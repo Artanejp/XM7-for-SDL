@@ -12,7 +12,7 @@ GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h)
 {
 //    glBindTexture(GL_TEXTURE_2D, texid);
     glTexSubImage2D(GL_TEXTURE_2D, 0,
-                    x, y, w, h,
+                    x, y + 1, w, h,
                     GL_RGBA,
                     GL_UNSIGNED_BYTE,(GLvoid *)p);
 }
@@ -22,16 +22,16 @@ GLuint CreateNullTexture(int w, int h)
     GLuint ttid;
     Uint32 *p;
 
-    p =(Uint32 *)malloc(w * h * sizeof(Uint32));
+    p =(Uint32 *)malloc((w + 2)* (h + 2)* sizeof(Uint32));
     if(p == NULL) return 0;
 
-    memset(p, 0x00, w * h * sizeof(Uint32));
+    memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
     glGenTextures(1, &ttid);
     glBindTexture(GL_TEXTURE_2D, ttid);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
-                 w, h,
+                 w, h + 2,
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,

@@ -72,6 +72,8 @@ SDL_Surface *GetDrawSurface(void)
 void ResizeWindow_Agar(int w, int h)
 {
 	int hh;
+	int ofset;
+
 	AG_Driver *drv;
 
 	if(agDriverSw) {
@@ -80,19 +82,20 @@ void ResizeWindow_Agar(int w, int h)
 	    if(MainWindow == NULL) return;
 	    drv = AGDRIVER(MainWindow);
 	}
+	ofset = (int)((float)h * (40.0f / 440.0f));
 	if(DrawArea != NULL) {
-	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h + ofset);
 	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
 	   LinkDrawArea(AGWIDGET(DrawArea));
 	   AG_Redraw(AGWIDGET(DrawArea));
 	}
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, w, h);
-        AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
+        AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h + ofset);
 	}
 	nDrawWidth = w;
 	nDrawHeight = h;
-	hh = h;
+	hh = h + ofset;
 	if(MenuBar) {
         AG_ObjectLock(AGOBJECT(drv));
 		AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
@@ -103,8 +106,7 @@ void ResizeWindow_Agar(int w, int h)
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
 	if(MainWindow) {
-//		AG_WindowSetGeometry(MainWindow, 0,  MenuBar->wid.h + 10, w, h );
-		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h );
+		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + ofset + MenuBar->wid.h );
         AG_Redraw(AGWIDGET(MainWindow));
 	}
 	if(AG_UsingGL(drv)) {
@@ -127,8 +129,10 @@ void ResizeWindow_Agar2(int w, int h)
 	    drv = AGDRIVER(MainWindow);
 	}
 
-	ww = w;
-	hh = h - MenuBar->wid.h;
+//	ww = w;
+//	hh = h - MenuBar->wid.h;
+    ww = w;
+    hh = h - MenuBar->wid.h;
 	if(hh < 0) hh = 0;
 	if(DrawArea != NULL) {
         AG_WidgetSetSize(AGWIDGET(DrawArea), ww, hh);
