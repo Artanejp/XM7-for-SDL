@@ -169,8 +169,7 @@ GetRapidJoy(int index, BOOL flag)
  *  ジョイスティック 拡張ボタン
  * デバイスより読み込み(連射つき)
  */
-static BYTE     FASTCALL
-GetRapidJoyExt(int index, BOOL flag)
+static BYTE FASTCALL GetRapidJoyExt(int index, BOOL flag)
 {
 	int            i;
 	BYTE bit;

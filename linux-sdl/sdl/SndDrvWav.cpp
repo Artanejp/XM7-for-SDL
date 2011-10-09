@@ -49,7 +49,7 @@ Uint8 *SndDrvWav::NewBuffer(int slot)
 //    bufSize = (chunkP->alen > ((ms * srate * channels) / 1000))?chunkP->alen:(ms * srate * channels) / 1000;
 	bufSize = chunkP->alen;
 	buf = (Uint8 *)malloc(bufSize);
-	if(buf[0] == NULL) return NULL; /* バッファ取得に失敗 */
+	if(buf == NULL) return NULL; /* バッファ取得に失敗 */
 	memset(buf, 0x00, bufSize); /* 初期化 */
 	chunk.abuf = buf;
 	chunk.alen = bufSize;

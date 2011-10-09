@@ -154,7 +154,7 @@ static SndDrvIF *DrvOPN;
 static SndDrvIF *DrvCMT;
 
 
-static char     *WavName[] = {
+static const char     *WavName[] = {
 		/* WAVファイル名 */
 		"RELAY_ON.WAV",
 		"RELAY_OFF.WAV",
@@ -627,7 +627,6 @@ static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
 void SetSoundVolume(void)
 {
 	int i;
-	int j;
 
 	SDL_SemWait(applySem);
 	/* FM音源/PSGボリューム設定 */
@@ -737,7 +736,7 @@ static DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int sam
 	}
 	p->nLastTime = ttime;
 	return j;
-   
+
 }
 
 
@@ -760,7 +759,7 @@ static BOOL FlushOpnSub(DWORD ttime,  BOOL bZero, int maxchunk)
 	if(maxchunk<0) return FALSE;
 	chunksize = maxchunk - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
-   
+
       if(RenderSub(pOpnBuf, DrvOPN, ttime, chunksize, bZero) != 0) {
 	 return TRUE;
       }
@@ -1264,7 +1263,7 @@ void ProcessSnd(BOOL bZero)
                 SDL_SemWait(applySem);
                 samples = CalcSamples(pOpnBuf, ttime);
                 RenderOpnSub(ttime, samples, bZero);
-			  
+
                 samples = CalcSamples(pBeepBuf, ttime);
                 RenderBeepSub(ttime, samples, bZero);
                 samples = CalcSamples(pCMTBuf, ttime);
@@ -1286,7 +1285,7 @@ void ProcessSnd(BOOL bZero)
 //	    chunksize = ttime - dwOldSound;
 //	    if(chunksize <= 0) chunksize = dwOldSound - ttime;
 //	    chunksize = (chunksize * uRate) / 1000000;
-	    
+
             FlushOpnSub(ttime, bZero, chunksize);
             FlushBeepSub(ttime, bZero, chunksize);
             FlushCMTSub(ttime, bZero, chunksize);

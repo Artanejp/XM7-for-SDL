@@ -360,8 +360,6 @@ int DrawThreadMain(void *p)
 			   //nDrawCount = DrawCountSet(nDrawFPS);
 //			   nDrawCount = 1000 / nDrawFPS + 1;
 //			}
-			DrawWaitFlag = TRUE;
-			DrawINGFlag = TRUE;
 #ifdef USE_AGAR
 			AGDrawTaskMain();
 #else

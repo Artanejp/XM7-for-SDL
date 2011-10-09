@@ -104,6 +104,7 @@
 		<Unit filename="api_wavwriter.h" />
 		<Unit filename="build_config.h" />
 		<Unit filename="cb.bmp" />
+		<Unit filename="draw_thread.cpp" />
 		<Unit filename="makefile" />
 		<Unit filename="sdl.h" />
 		<Unit filename="sdl_bar.h" />

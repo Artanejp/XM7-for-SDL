@@ -119,8 +119,7 @@ void InitMouse()
 /*
  *  マウス キャプチャ状態設定
  */
-void
-SetMouseCapture(BOOL en)
+void SetMouseCapture(BOOL en)
 {
 	int   x;
 	int   y;
@@ -287,14 +286,8 @@ mospos_request(BYTE * move_x, BYTE * move_y)
 /*
  *  マウス ポーリング
  */
-void            FASTCALL
-PollMos(void)
+void FASTCALL PollMos(void)
 {
-	int            x,
-	y,
-	lX,
-	lY;
-
 	/*
 	 * アクティベートチェック
 	 */
@@ -471,6 +464,7 @@ void OnMoveMouse(SDL_Event *event)
 	Sint16 xrel = event->motion.xrel;
 	Sint16 yrel = event->motion.yrel;
 	Uint8 state = event->motion.state;
+
 	nMouseX += (int)xrel;
 	nMouseY += (int)yrel;
 

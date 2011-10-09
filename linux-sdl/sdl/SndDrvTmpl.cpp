@@ -47,7 +47,7 @@ void SndDrvTmpl::SetChannels(int c)
 void SndDrvTmpl::Setup(int tick)
 {
 	UINT uChannels;
-	int i;
+
 	uStereo = nStereoOut %4;
 	uChannels = 2;
 	channels = uChannels;
@@ -89,10 +89,10 @@ int SndDrvTmpl::Render(Sint16 *pBuf, int start, int samples,  BOOL clear, BOOL b
 
 int SndDrvTmpl::GetRenderCounter(void)
 {
-//    return RenderCounter;
+    return counter;
 }
 
 void SndDrvTmpl::ResetRenderCounter(void)
 {
-//   RenderCounter = 0;
+   counter = 0;
 }

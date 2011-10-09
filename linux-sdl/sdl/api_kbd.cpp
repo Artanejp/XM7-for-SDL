@@ -412,11 +412,10 @@ Cur2Ten_Break(BYTE code)
 /*
  *  キーボード ポーリング
  */
-void
-PollKbd(void)
+void PollKbd(void)
 {
 	//    BYTE buf[256];
-	int            i;
+	unsigned int            i;
 	BYTE fm7;
 	BOOL bFlag;
 	static BYTE    key_last = 0;
