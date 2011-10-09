@@ -1,10 +1,10 @@
 /*
  *  FM-7 EMULATOR "XM7"  Copyright (C) 2004 GIMONS  [ XWIN
- * INIファイルアクセス ] 
- */  
-    
+ * INIファイルアクセス ]
+ */
+
 #ifdef _XWIN
-    
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -16,26 +16,26 @@
 #endif
 #include "sdl_inifile.h"
 
-    
+
     /*
-     *  INIファイル名 
-     */ 
+     *  INIファイル名
+     */
 static char     ini[MAXPATHLEN];
 
     /*
-     *  ＩＮＩファイル中の設定項目 
-     */ 
+     *  ＩＮＩファイル中の設定項目
+     */
 static char     entries[MAX_ENTRIES][MAX_LEN];
 
 /*
  *  INIファイル中の項目数
- */ 
+ */
 static int      max_entries = 0;
 static int     current_pos = 0;
 
 /*
- *  初期化 
- */ 
+ *  初期化
+ */
 void
 INI_init(char *inifile)
 {
@@ -43,10 +43,10 @@ INI_init(char *inifile)
    strcat(ini, inifile);
    max_entries = 0;
    current_pos = 0;
-} 
+}
 /*
- *  ＩＮＩファイルのロード 
- */ 
+ *  ＩＮＩファイルのロード
+ */
 BOOL INI_load(void)
 {
     FILE * fp;
@@ -65,8 +65,8 @@ BOOL INI_load(void)
 }
 
 /*
- * ＩＮＩファイルへのセーブ 
- */ 
+ * ＩＮＩファイルへのセーブ
+ */
 BOOL INI_save(void)
 {
     FILE * fp;
@@ -84,10 +84,9 @@ BOOL INI_save(void)
 
 
 /*
- *  セクションとキーに一致した値を取得 
- */ 
-char *
-INI_get(char *section, char *key)
+ *  セクションとキーに一致した値を取得
+ */
+char *INI_get(const char *section, const char *key)
 {
     char           secstr[MAX_LEN];
     char           keystr[MAX_LEN];
@@ -113,10 +112,9 @@ INI_get(char *section, char *key)
 
 
     /*
-     * セクションとキーに一致した値を設定 
-     */ 
-void
-INI_set(char *section, char *key, char *value)
+     * セクションとキーに一致した値を設定
+     */
+void INI_set(const char *section, const char *key, char *value)
 {
     char           secstr[MAX_LEN];
     char           keystr[MAX_LEN];
@@ -152,8 +150,7 @@ INI_set(char *section, char *key, char *value)
     max_entries++;
 }
 
-void
-debug(void)
+void debug(void)
 {
     int            i;
     printf("-----%d\n", max_entries);
@@ -164,10 +161,9 @@ debug(void)
 
 
     /*
-     *  セクションの削除 
-     */ 
-    void
-INI_clearSection(char *section)
+     *  セクションの削除
+     */
+void INI_clearSection(const char *section)
 {
     char           secstr[MAX_LEN];
     BOOL inner = FALSE;
@@ -197,10 +193,9 @@ INI_clearSection(char *section)
 
 
     /*
-     *  キーの削除 
-     */ 
-    void
-INI_clearKey(char *section, char *key)
+     *  キーの削除
+     */
+void INI_clearKey(const char *section, const char *key)
 {
     char           secstr[MAX_LEN];
     char           keystr[MAX_LEN];
@@ -230,9 +225,9 @@ INI_clearKey(char *section, char *key)
 
 
     /*
-     *  ブーリアン値を取得 
-     */ 
-    BOOL INI_getBool(char *section, char *key, BOOL value)
+     *  ブーリアン値を取得
+     */
+BOOL INI_getBool(const char *section, const char *key, BOOL value)
 {
     char          *str = INI_get(section, key);
     if (str == NULL || strcmp(str, "") == 0)
@@ -242,18 +237,16 @@ INI_clearKey(char *section, char *key)
 
 
     /*
-     *  ブーリアン値を設定 
-     */ 
-    void
-INI_setBool(char *section, char *key, BOOL value)
+     *  ブーリアン値を設定
+     */
+void INI_setBool(const char *section, const char *key, BOOL value)
 {
     INI_set(section, key, value == TRUE ? "1" : "0");
-} 
+}
     /*
-     *  整数値を取得 
-     */ 
-    int
-INI_getInt(char *section, char *key, int defvalue)
+     *  整数値を取得
+     */
+int INI_getInt(const char *section, const char *key, int defvalue)
 {
     char          *str = INI_get(section, key);
     if (str == NULL)
@@ -262,21 +255,19 @@ INI_getInt(char *section, char *key, int defvalue)
 }
 
 
-    /*
-     *  整数値を設定 
-     */ 
-    void
-INI_setInt(char *section, char *key, int value)
+/*
+*  整数値を設定
+*/
+void INI_setInt(const char *section, const char *key, int value)
 {
     char           str[16];
     sprintf(str, "%d", value);
     INI_set(section, key, str);
-} 
+}
     /*
-     *  文字列を取得 
-     */ 
-char           *
-INI_getString(char *section, char *key, char *defvalue)
+     *  文字列を取得
+     */
+char *INI_getString(const char *section, const char *key, char *defvalue)
 {
     char          *str = INI_get(section, key);
     if (str == NULL)
@@ -286,11 +277,10 @@ INI_getString(char *section, char *key, char *defvalue)
 
 
     /*
-     *  文字列を設定 
-     */ 
-void
-INI_setString(char *section, char *key, char *value)
+     *  文字列を設定
+     */
+void INI_setString(const char *section, const char *key, char *value)
 {
     INI_set(section, key, value);
-} 
+}
 #endif	/* _XWIN */

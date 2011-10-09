@@ -10,6 +10,7 @@ include ../config.mak
 	
 VIDEODRVSRC = \
 	api_draw.cpp api_scaler.cpp \
+	draw_thread.cpp \
 	api_vram8.cpp \
 	api_vram4096.cpp \
 	api_vram256k.cpp
@@ -86,7 +87,10 @@ Release/sdl_file.o: sdl_file.c
 
 Release/api_draw.o: api_draw.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-	
+
+Release/draw_thread.o: draw_thread.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
 Release/api_scaler.o: api_scaler.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
@@ -151,7 +155,10 @@ Debug/sdl_file.o: sdl_file.c
 
 Debug/api_draw.o: api_draw.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-	
+
+Debug/draw_thread.o: draw_thread.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
 Debug/api_scaler.o: api_scaler.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 

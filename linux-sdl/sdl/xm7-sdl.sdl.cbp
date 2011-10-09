@@ -13,9 +13,11 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg" />
 					<Add library="../libemugrph/obj/Debug/libemugrph.a" />
 					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
 					<Add library="../vm/obj/Debug/libxm7_vm.a" />

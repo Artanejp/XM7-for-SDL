@@ -14,13 +14,16 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-Wall" />
+					<Add option="-pg" />
 					<Add option="-g" />
 					<Add directory="." />
 					<Add directory="../vm/" />
 					<Add directory="/usr/include/SDL" />
 					<Add directory="../sdl" />
 				</Compiler>
+				<Linker>
+					<Add option="-pg" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="libxm7-debugger" prefix_auto="1" extension_auto="1" />
@@ -30,8 +33,8 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-Wall" />
 					<Add option="-O2" />
+					<Add option="-Wall" />
 					<Add directory="." />
 					<Add directory="../vm/" />
 					<Add directory="/usr/include/SDL" />
@@ -42,13 +45,6 @@
 				</Linker>
 			</Target>
 		</Build>
-		<Compiler>
-			<Add option="-pg" />
-			<Add option="-g" />
-		</Compiler>
-		<Linker>
-			<Add option="-pg" />
-		</Linker>
 		<Unit filename="dbg_breakpoint.cpp" />
 		<Unit filename="dbg_disasm09.cpp" />
 		<Unit filename="dbg_fonts.cpp" />

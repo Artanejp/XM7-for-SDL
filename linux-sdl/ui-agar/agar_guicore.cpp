@@ -45,7 +45,6 @@ extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
 extern void CreateStatus(void);
-extern int DrawThreadMain(void *);
 extern void DestroyStatus(void);
 
 extern void DrawOSDEv(AG_Event *e);
@@ -293,7 +292,7 @@ void MainLoop(int argc, char *argv[])
 	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
-	AG_initsub();
+	AG_DrawInitsub();
 
 	inf = SDL_GetVideoInfo();
         if(inf != NULL) {

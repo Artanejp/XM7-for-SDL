@@ -1086,7 +1086,7 @@
 	<glib-object.h>
 	<gdkconfig.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango.h
+1317768268 /usr/include/pango-1.0/pango/pango.h
 	<pango/pango-attributes.h>
 	<pango/pango-bidi-type.h>
 	<pango/pango-break.h>
@@ -1110,19 +1110,19 @@
 	<pango/pango-types.h>
 	<pango/pango-utils.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-attributes.h
+1317768268 /usr/include/pango-1.0/pango/pango-attributes.h
 	<pango/pango-font.h>
 	<glib-object.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-font.h
+1317768268 /usr/include/pango-1.0/pango/pango-font.h
 	<pango/pango-coverage.h>
 	<pango/pango-types.h>
 	<glib-object.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-coverage.h
+1317768268 /usr/include/pango-1.0/pango/pango-coverage.h
 	<glib.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-types.h
+1317768268 /usr/include/pango-1.0/pango/pango-types.h
 	<glib.h>
 	<glib-object.h>
 	<pango/pango-gravity.h>
@@ -1131,50 +1131,50 @@
 	<pango/pango-script.h>
 	<pango/pango-bidi-type.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-gravity.h
+1317768268 /usr/include/pango-1.0/pango/pango-gravity.h
 	<glib.h>
 	<pango/pango-matrix.h>
 	<pango/pango-script.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-matrix.h
+1317768268 /usr/include/pango-1.0/pango/pango-matrix.h
 	<glib.h>
 	<glib-object.h>
 	<pango/pango-types.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-script.h
+1317768268 /usr/include/pango-1.0/pango/pango-script.h
 	<glib.h>
 	<pango/pango-language.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-language.h
+1317768268 /usr/include/pango-1.0/pango/pango-language.h
 	<glib.h>
 	<glib-object.h>
 	<pango/pango-script.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-bidi-type.h
+1317768268 /usr/include/pango-1.0/pango/pango-bidi-type.h
 	<glib.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-break.h
+1317768268 /usr/include/pango-1.0/pango/pango-break.h
 	<glib.h>
 	<pango/pango-item.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-item.h
+1317768268 /usr/include/pango-1.0/pango/pango-item.h
 	<pango/pango-types.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-context.h
+1317768268 /usr/include/pango-1.0/pango/pango-context.h
 	<pango/pango-font.h>
 	<pango/pango-fontmap.h>
 	<pango/pango-attributes.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-fontmap.h
+1317768268 /usr/include/pango-1.0/pango/pango-fontmap.h
 	<pango/pango-font.h>
 	<pango/pango-fontset.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-fontset.h
+1317768268 /usr/include/pango-1.0/pango/pango-fontset.h
 	<pango/pango-coverage.h>
 	<pango/pango-types.h>
 	<glib-object.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-engine.h
+1317768268 /usr/include/pango-1.0/pango/pango-engine.h
 	<pango/pango-types.h>
 	<pango/pango-item.h>
 	<pango/pango-font.h>
@@ -1182,34 +1182,34 @@
 	<pango/pango-script.h>
 	<gmodule.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-glyph.h
+1317768268 /usr/include/pango-1.0/pango/pango-glyph.h
 	<pango/pango-types.h>
 	<pango/pango-item.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-enum-types.h
+1317768268 /usr/include/pango-1.0/pango/pango-enum-types.h
 	<glib-object.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-features.h
+1317768268 /usr/include/pango-1.0/pango/pango-features.h
 
-1313526136 /usr/include/pango-1.0/pango/pango-glyph-item.h
+1317768268 /usr/include/pango-1.0/pango/pango-glyph-item.h
 	<pango/pango-attributes.h>
 	<pango/pango-break.h>
 	<pango/pango-item.h>
 	<pango/pango-glyph.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-layout.h
+1317768268 /usr/include/pango-1.0/pango/pango-layout.h
 	<pango/pango-attributes.h>
 	<pango/pango-context.h>
 	<pango/pango-glyph-item.h>
 	<pango/pango-tabs.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-tabs.h
+1317768268 /usr/include/pango-1.0/pango/pango-tabs.h
 	<pango/pango-types.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-renderer.h
+1317768268 /usr/include/pango-1.0/pango/pango-renderer.h
 	<pango/pango-layout.h>
 
-1313526136 /usr/include/pango-1.0/pango/pango-utils.h
+1317768268 /usr/include/pango-1.0/pango/pango-utils.h
 	<stdio.h>
 	<glib.h>
 	<pango/pango-font.h>
@@ -1297,7 +1297,7 @@
 1314958183 /usr/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-enum-types.h
 	<glib-object.h>
 
-1313526136 /usr/include/pango-1.0/pango/pangocairo.h
+1317768268 /usr/include/pango-1.0/pango/pangocairo.h
 	<pango/pango.h>
 	<cairo.h>
 
@@ -3509,7 +3509,7 @@
 	"sdl.h"
 	"sdl_snd.h"
 
-1317980670 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
+1318129913 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3616,7 +3616,7 @@
 1306849143 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScale1x2.h
 	"EmuGrphScaleTmpl.h"
 
-1317649184 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
+1318129433 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3877,7 +3877,7 @@
 	"agar_xm7.h"
 	"sdl.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.c
+1318130308 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -3886,7 +3886,7 @@
 	"sdl.h"
 	"sdl_inifile.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.h
+1318130124 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.h
 
 1306855106 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
@@ -3951,7 +3951,7 @@
 	"api_scaler.h"
 	"api_vram.h"
 
-1317970084 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
+1317990439 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
 	<SDL.h>
 	"api_draw.h"
 	"api_scaler.h"
@@ -5190,4 +5190,30 @@
 
 1317151045 /usr/include/atk-1.0/atk/atkwindow.h
 	<atk/atkobject.h>
+
+1318129224 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
+	<gtk/gtk.h>
+	<gdk/gdk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"xm7.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"sdl.h"
+	"api_vram.h"
+	"api_draw.h"
+	"api_scaler.h"
 

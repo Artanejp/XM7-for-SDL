@@ -123,7 +123,7 @@ extern void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
 extern void VramReader_4096(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
 extern void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
 
-
+extern void ResizeWindow(int w, int h);
 extern BOOL SelectDraw(void);
 extern void AllClear(void);
 extern void RenderFullScan(void);
@@ -136,8 +136,11 @@ extern gint OnPaint(GtkWidget * widget, GdkEventExpose * event);
 extern int OnPaint(void);
 #endif
 
-
-
+extern BOOL Select640(void);
+extern BOOL Select400l(void);
+extern BOOL Select320(void);
+extern BOOL Select256k(void);
+extern void ChangeResolution(void);
 /*
  * XM7 NOTIFY APIs
  */
@@ -185,6 +188,14 @@ extern void ResizeWindow_Agar(int w, int h);
 extern void ResizeWindow_Agar2(int w, int h);
 extern void AGDrawTaskEvent(BOOL Flag);
 extern void AGDrawTaskMain(void);
-
+extern void *DrawThreadMain(void *p);
+extern void AG_DrawInitsub(void);
+extern void AG_DrawDetachsub(void);
+#else
+extern void SDL_DrawInitsub(void);
+extern void SDL_DrawDetachsub(void);
+extern int DrawThreadMain(void *p);
 #endif
+
+
 #endif /* API_DRAW_H_ */

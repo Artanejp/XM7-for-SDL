@@ -76,6 +76,7 @@ WORD 			nEmuFPS; /* エミュレーションFPS値 20110123 */
 WORD 			nAspect;  /* アスペクト比 20110123 */
 BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
 BOOL 			bSmoosing; /* スムージング処理する(GLのみ?) */
+BOOL            bOldFullScan;	/* クリアフラグ(過去) */
 
 BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 SDL_semaphore *DrawInitSem;
@@ -91,7 +92,6 @@ static BOOL     bAnalog;	/* アナログモードフラグ */
 
 #endif				/*  */
 static BYTE     bNowBPP;	/* 現在のビット深度 */
-static BOOL   bOldFullScan;	/* クリアフラグ */
 static WORD    nOldDrawWidth;
 static WORD    nOldDrawHeight;
 
@@ -109,10 +109,9 @@ static WORD    nWindowDy2;	/* ウィンドウ右下Y座標 */
 /*
  * マルチスレッド向け定義
  */
-static BOOL DrawINGFlag;
-static BOOL DrawSHUTDOWN;
-static BOOL DrawWaitFlag;
-static WORD nDrawCount;
+BOOL DrawINGFlag;
+BOOL DrawSHUTDOWN;
+BOOL DrawWaitFlag;
 
 #ifdef USE_AGAR
 AG_Cond DrawCond;
@@ -137,19 +136,6 @@ extern GLuint uVramTextureID;
 /*
  *  プロトタイプ宣言
  */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-static  BOOL Select640(void);
-static  BOOL Select400l(void);
-static  BOOL Select320(void);
-static  BOOL Select256k(void);
-static void ChangeResolution(void) ;
-#ifdef __cplusplus
-}
-#endif
-
 
 /*
  * ビデオドライバ関連
@@ -191,179 +177,6 @@ void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 		}
 }
 
-
-/*
- *  セレクトチェック
- */
-static BOOL SelectCheck(void)
-{
-
-#if XM7_VER >= 3
-	/*
-	 * 限りない手抜き(ォ
-	 */
-	if (bMode == screen_mode) {
-		return TRUE;
-	} else {
-		return FALSE;
-	}
-#else				/*  */
-/*
- * 320x200
- */
-	if (mode320) {
-		if (bAnalog) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	}
-
-	/*
-	 * 640x200
-	 */
-	if (!bAnalog) {
-		return TRUE;
-	} else {
-		return FALSE;
-	}
-#endif /*  */
-}
-
-/*
- * 描画は別スレッドで行う
- */
-static WORD DrawCountSet(WORD fps)
-{
-	DWORD intr;
-	DWORD wait;
-
-#if XM7_VER >= 3
-	if (screen_mode == SCR_400LINE) {
-#else
-		if (enable_400line && enable_400linecard) {
-#endif
-			/*
-			 * 400ライン(24kHzモード) 0.98ms + 16.4ms
-			 */
-			intr = 980 + 16400;
-		} else {
-			/*
-			 * 200ライン(15kHzモード) 1.91ms + 12.7ms
-			 */
-			intr = 1910 + 12700;
-		}
-		if(fps<= 0) fps=1;
-		wait = 1000000 / (DWORD)fps ;
-		wait = wait / intr + 1; /* 整数化 */
-		return (WORD) wait;
-}
-
-	/*
-	 *  セレクト(内部向き)
-	 */
-BOOL SelectDraw2(void)
-{
-#ifdef USE_AGAR
-		AG_Color nullcolor;
-		SDL_Surface *p;
-		AG_Rect rect;
-		AG_Widget *wid;
-#else // SDL
-		Uint32 nullcolor;
-		SDL_Surface *p;
-		SDL_Rect rect;
-#endif
-
-
-
-		/*
-		 * 一致しているかチェック
-		 */
-		if (SelectCheck()) {
-			return TRUE;
-		}
-#ifdef USE_AGAR
-//		if(agDriverOps == NULL) return FALSE;
-        if(GLDrawArea != NULL) {
-		   wid = AGWIDGET(GLDrawArea);
-		} else if(DrawArea != NULL) {
-		   wid = AGWIDGET(DrawArea);
-		} else {
-		   return FALSE;
-		}
-		p = GetDrawSurface();
-#else
-		p = SDL_GetVideoSurface();
-		if(p == NULL) return FALSE;
-#endif
-		rect.h = nDrawWidth;
-		rect.w = nDrawHeight;
-		rect.x = 0;
-		rect.y = 0;
-		if(!bUseOpenGL) {
-			/*
-			 * すべてクリア
-			 */
-#ifdef USE_AGAR
-//			AG_ObjectLock(wid);
-			nullcolor.r = 0;
-			nullcolor.g = 0;
-			nullcolor.b = 0;
-			nullcolor.a = 255;
-//			AG_FillRect(drv->sRef, &rect, nullcolor);
-//			AG_ObjectUnlock(wid);
-#else
-			SDL_LockSurface(p);
-			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
-			SDL_FillRect(p, &rect, nullcolor);
-			SDL_UnlockSurface(p);
-#endif
-			/*
-			 * すべてクリア
-			 */
-#ifdef USE_AGAR
-			//AG_DriverClose(drv);
-			bClearFlag = TRUE;
-			SDLDrawFlag.ForcaReDraw = TRUE;
-#else
-			if(realDrawArea != p) {
-				SDL_LockSurface(realDrawArea);
-				rect.h = realDrawArea->h;
-				rect.w = realDrawArea->w;
-				rect.x = 0;
-				rect.y = 0;
-				nullcolor = SDL_MapRGBA(realDrawArea->format, 0, 0, 0, 255);
-				SDL_FillRect(realDrawArea, &rect, nullcolor);
-				SDL_UnlockSurface(realDrawArea);
-			}
-#endif
-		}
-		bOldFullScan = bFullScan;
-		/*
-		 * セレクト
-		 */
-#if XM7_VER >= 3
-		switch (screen_mode) {
-		case SCR_400LINE:
-			return Select400l();
-		case SCR_262144:
-			return Select256k();
-		case SCR_4096:
-			return Select320();
-		default:
-			return Select640();
-		}
-
-#else				/*  */
-		if (mode320) {
-			return Select320();
-		}
-		return Select640();
-
-#endif				/*  */
-		return TRUE;
-}
 #ifdef USE_GTK
 extern GtkWidget       *gtkDrawArea;
 #endif
@@ -379,134 +192,28 @@ void ResizeWindow(int w, int h)
 #endif
 }
 
-static int DrawTaskMain(void *arg)
-{
-		if(newResize) {
-			nDrawWidth = newDrawWidth;
-			nDrawHeight = newDrawHeight;
-			ResizeWindow(nDrawWidth, nDrawHeight);
-//			SetupGL(nDrawWidth, nDrawHeight);
-			newResize = FALSE;
-		}
-		ChangeResolution();
-		SelectDraw2();
-#if XM7_VER >= 3
-		/*
-		 *    いずれかを使って描画
-		 */
-		SDL_SemWait(DrawInitSem);
-		switch (bMode) {
-		case SCR_400LINE:
-			Draw400l();
-			break;
-		case SCR_262144:
-			Draw256k();
-			break;
-		case SCR_4096:
-			Draw320();
-			break;
-		case SCR_200LINE:
-			Draw640All();
-			break;
-		}
-		SDL_SemPost(DrawInitSem);
-#else				/*  */
-		/*
-		 * どちらかを使って描画
-		 */
-		if (bAnalog) {
-			Draw320All();
-		}
-		else {
-			Draw640All();
-		}
-#endif				/*  */
-		//        SDL_UnlockSurface(p);
-		Flip();
-		return 0;
-}
-
 static void initsub(void);
 static void detachsub(void);
 
 #ifdef USE_AGAR
-void AG_initsub(void)
+void AG_DrawInitsub(void)
 {
 	initsub();
 }
-void AG_detachsub(void)
+void AG_DrawDetachsub(void)
+{
+	detachsub();
+}
+#else
+void SDL_DrawInitsub(void)
+{
+	initsub();
+}
+void SDL_DrawDetachsub(void)
 {
 	detachsub();
 }
 #endif
-
-#ifdef USE_AGAR
-void *DrawThreadMain(void *p)
-#else
-int DrawThreadMain(void *p)
-#endif
-{
-#ifdef USE_AGAR
-		nDrawTick1D = AG_GetTicks();
-#endif
-		initsub();
-//		ResizeWindow(640,480);
-		InitGL(640,480);
-		nDrawCount = DrawCountSet(nDrawFPS);
-   nDrawCount = 1000 / nDrawFPS + 1;
-		while(1) {
-#ifndef USE_AGAR
-			if(DrawMutex == NULL) {
-				SDL_Delay(1);
-				continue;
-			}
-			if(DrawCond == NULL) {
-				SDL_Delay(1);
-				continue;
-			}
-#endif
-#ifdef USE_AGAR
-//			AG_MutexLock(&DrawMutex);
-//			AG_CondWait(&DrawCond, &DrawMutex);
-		       nDrawCount = (100000 / nDrawFPS) / 100 + 1;
-		       AG_Delay(nDrawCount);
-#else
-			SDL_mutexP(DrawMutex);
-			SDL_CondWait(DrawCond, DrawMutex);
-#endif
-			if(DrawSHUTDOWN) {
-				detachsub();
-			        DrawSHUTDOWN = FALSE;
-				return 0; /* シャットダウン期間 */
-			}
-#ifndef USE_OPENGL
-			DrawStatus();
-#endif
-
-#ifdef USE_AGAR
-			//if(DrawArea == NULL) continue;
-#endif
-//			if(nDrawCount > 0) {
-//				nDrawCount --;
-//				continue;
-//			} else {
-			   //nDrawCount = DrawCountSet(nDrawFPS);
-//			   nDrawCount = 1000 / nDrawFPS + 1;
-//			}
-			DrawWaitFlag = TRUE;
-			DrawINGFlag = TRUE;
-#ifdef USE_AGAR
-			AGDrawTaskMain();
-#else
-			DrawTaskMain(NULL);
-#endif
-			DrawINGFlag = FALSE;
-			DrawWaitFlag = FALSE;
-			//while(DrawWaitFlag) SDL_Delay(1); /* 非表示期間 */
-		}
-}
-
-
 
 /*
  *  BITBLT
@@ -821,7 +528,6 @@ void	InitDraw(void)
 		nAspect = nAspectFree;
 		bSyncToVSYNC = TRUE;
 		bSmoosing = FALSE;
-		nDrawCount = DrawCountSet(nDrawFPS);
 
 		bFullScan = TRUE;
 		bPaletFlag = FALSE;
@@ -956,7 +662,7 @@ void SetDrawFlag(BOOL flag)
 /*
  *  640x200、デジタルモード セレクト
  */
-static  BOOL Select640(void)
+BOOL Select640(void)
 {
 
 /*
@@ -993,7 +699,7 @@ static  BOOL Select640(void)
     /*
      *  640x400、デジタルモード セレクト
      */
-static  BOOL Select400l(void)
+BOOL Select400l(void)
 {
 
 /*
@@ -1023,7 +729,7 @@ static  BOOL Select400l(void)
     /*
      *  320x200、アナログモード セレクト
      */
-static  BOOL Select320(void)
+BOOL Select320(void)
 {
 /*
  * 全領域無効
@@ -1060,7 +766,7 @@ static  BOOL Select320(void)
     /*
      *  320x200、26万色モード セレクト
      */
-static  BOOL Select256k()
+BOOL Select256k()
 {
 
 /*
@@ -1217,7 +923,6 @@ if (mode320) {
  */
 void AllClear(void)
 {
-	int            i;
 	int x;
 	int y;
 #ifdef USE_AGAR
@@ -1698,11 +1403,6 @@ void window_notify(void)
 	WORD tmpTop, tmpBottom;
 	WORD tmpDx1, tmpDx2;
 	WORD tmpDy1, tmpDy2;
-	BYTE * p;
-	int     i;
-	int x;
-	int y;
-
 	/*
 	 * 26万色モード時は何もしない
 	 */

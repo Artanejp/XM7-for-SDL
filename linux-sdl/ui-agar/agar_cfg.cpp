@@ -65,7 +65,9 @@ static const char *InitDirStr[] =
      */
 static void SetCfgFile(void)
 {
-    INI_init("XM7.INI");
+    char str[128];
+    strcpy(str, "XM7.INI");
+    INI_init(str);
 }
     /*
      *  設定データ データロード
@@ -84,23 +86,26 @@ static void SaveCfgFile(void)
     /*
      *  設定データ セクション名指定
      */
-static void SetCfgSection(char *section)
+static void SetCfgSection(const char *section)
 {
     ASSERT(section);
 
 	/*
 	 * セクション名設定
 	 */
-	pszSection = section;
+	pszSection =(char *)section;
 }
     /*
      *  設定データ ロード(文字列)
      */
-static BOOL LoadCfgString(char *key, char *buf, int length)
+static BOOL LoadCfgString(const char *key, char *buf, int length)
 {
     char          *dat;
+    char          str[128];
     ASSERT(key);
-    dat = INI_getString(pszSection, key, "");
+    strcpy(str, "");
+    dat = INI_getString(pszSection,(char *)key, str);
+
     if ((strlen(dat) == 0) || (strlen(dat) > (size_t)length)) {
 	return FALSE;
     }
@@ -112,24 +117,24 @@ static BOOL LoadCfgString(char *key, char *buf, int length)
 /*
  *  設定データ ロード(int)
  */
-static int LoadCfgInt(char *key, int def)
+static int LoadCfgInt(const char *key, int def)
 {
     ASSERT(key);
-    return INI_getInt(pszSection, key, def);
+    return INI_getInt(pszSection,(char *)key, def);
 }
 
 
     /*
      *  設定データ ロード(BOOL)
      */
-static BOOL LoadCfgBool(char *key, BOOL def)
+static BOOL LoadCfgBool(const char *key, BOOL def)
 {
     ASSERT(key);
 
 	/*
 	 * 読み込み
 	 */
-	return INI_getBool(pszSection, key, def);
+	return INI_getBool(pszSection,(char *)key, def);
 }
 
 
@@ -499,35 +504,35 @@ void LoadCfg(void)
     /*
      *  設定データ 削除
      */
-static void DeleteCfg(char *key)
+static void DeleteCfg(const char *key)
 {
     ASSERT(key);
-    INI_clearKey(pszSection, key);
+    INI_clearKey(pszSection,(char *)key);
 }
     /*
      *  設定データ セーブ(文字列)
      */
-static void SaveCfgString(char *key, char *string)
+static void SaveCfgString(const char *key, char *string)
 {
     ASSERT(key);
     ASSERT(string);
-    INI_setString(pszSection, key, string);
+    INI_setString(pszSection,(char *)key, string);
 }
     /*
      *  設定データ セーブ(４バイトint)
      */
-static void SaveCfgInt(char *key, int dat)
+static void SaveCfgInt(const char *key, int dat)
 {
     ASSERT(key);
-    INI_setInt(pszSection, key, dat);
+    INI_setInt(pszSection,(char *)key, dat);
 }
     /*
      *  設定データ セーブ(BOOL)
      */
-static void SaveCfgBool(char *key, BOOL dat)
+static void SaveCfgBool(const char *key, BOOL dat)
 {
     ASSERT(key);
-    INI_setBool(pszSection, key, dat);
+    INI_setBool(pszSection,(char *)key, dat);
 }
     /*
      *  設定データ セーブ
