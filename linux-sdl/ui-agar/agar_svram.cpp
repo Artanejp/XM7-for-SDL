@@ -69,16 +69,17 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 	hh = (h + y) >> 3;
 
     LockVram();
-    p = pp;
+//    p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
+                p = &pp[64 * (xx + 80 * yy)];
                 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
-	   p += 64;
+//	   p += 64;
         }
     }
     bVramUpdateFlag = TRUE;
@@ -98,16 +99,17 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
 	hh = (h + y) >> 3;
 
     LockVram();
-    p = pp;
+//    p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
+                p = &pp[64 * (xx + 40 * yy)];
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
-	   p += 64;
+//	   p += 64;
         }
     }
     bVramUpdateFlag = TRUE;
@@ -127,10 +129,11 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
 	hh = (h + y) >> 3;
 
     LockVram();
-    p = pp;
+//    p = pp;
     for(yy = (y >> 3); yy < hh ; yy++) {
-        for(xx = (x >> 3); xx < ww ; xx++, p+= 64) {
+        for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
+                p = &pp[64 * (xx + 40 * yy)];
                 CreateVirtualVram256k_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mpage);
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.write[xx][yy] = TRUE;
@@ -149,7 +152,6 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 	int addr;
 	int ofset;
 	int size;
-	Uint32 c[8];
 	Uint32 *pp;
 
 	// Test

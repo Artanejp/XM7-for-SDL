@@ -180,6 +180,7 @@ void AGDrawTaskMain(void)
 	if(((nDrawTick2E - nDrawTick1E)<fps) && (bMode == oldBMode)) return;
 	nDrawTick1E = nDrawTick2E;
 	oldBMode = bMode;
+	SelectDraw2();
 #if XM7_VER >= 3
 	switch (bMode) {
 	case SCR_400LINE:
@@ -206,7 +207,6 @@ void AGDrawTaskMain(void)
 		Draw640All();
 	}
 #endif				/*  */
-	SelectDraw2();
 //        if(DrvNonGL) {
 //	   DrvNonGL->Flip();
 //	}

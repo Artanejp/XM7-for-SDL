@@ -101,6 +101,7 @@ extern void Flip(void);
  */
 extern  void Scaler_GL(SDL_Surface *p, int x, int y, int w, int h, Uint32 mpage);
 extern  void SwScaler(SDL_Surface *p, int x, int y, int w, int h, Uint32 multip);
+extern  void SelectScaler(int w, int h);
 
 #ifdef __cplusplus
 }

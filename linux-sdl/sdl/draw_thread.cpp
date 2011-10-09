@@ -40,6 +40,7 @@
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
+#include "agar_glutil.h"
 #endif
 #include "sdl.h"
 
@@ -302,6 +303,11 @@ static int DrawTaskMain(void *arg)
 }
 
 #ifdef USE_AGAR
+extern AG_Mutex DrawMutex;
+extern AG_Cond DrawCond;
+#endif
+
+#ifdef USE_AGAR
 void *DrawThreadMain(void *p)
 #else
 int DrawThreadMain(void *p)
@@ -314,11 +320,14 @@ int DrawThreadMain(void *p)
         SDL_DrawInitsub();
 #endif
 //		ResizeWindow(640,480);
+//#ifndef USE_AGAR
 		InitGL(640,480);
-		//nDrawCount = DrawCountSet(nDrawFPS);
-        nDrawCount = (100000 / nDrawFPS) / 100 + 1;
+//#endif
+		nDrawCount = DrawCountSet(nDrawFPS);
+        //nDrawCount = (100000 / nDrawFPS) / 100 + 1;
 		while(1) {
-#ifndef USE_AGAR
+#ifdef USE_AGAR
+#else
 			if(DrawMutex == NULL) {
 				SDL_Delay(1);
 				continue;
@@ -329,10 +338,9 @@ int DrawThreadMain(void *p)
 			}
 #endif
 #ifdef USE_AGAR
-//			AG_MutexLock(&DrawMutex);
-//			AG_CondWait(&DrawCond, &DrawMutex);
-		       nDrawCount = (100000 / nDrawFPS) / 100 + 1;
-		       AG_Delay(nDrawCount);
+			AG_CondWait(&DrawCond, &DrawMutex);
+		    //   nDrawCount = (100000 / nDrawFPS) / 100 + 1;
+		    //   AG_Delay(nDrawCount);
 #else
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);
@@ -343,23 +351,25 @@ int DrawThreadMain(void *p)
 #else
                 SDL_DrawDetachsub();
 #endif
+//                DiscardTexture(uVramTextureID);
+//                uVramTextureID = 0;
                 DrawSHUTDOWN = FALSE;
 				return 0; /* シャットダウン期間 */
 			}
 #ifndef USE_OPENGL
-			DrawStatus();
+//			DrawStatus();
 #endif
 
 #ifdef USE_AGAR
 			//if(DrawArea == NULL) continue;
 #endif
-//			if(nDrawCount > 0) {
-//				nDrawCount --;
-//				continue;
-//			} else {
-			   //nDrawCount = DrawCountSet(nDrawFPS);
+			if(nDrawCount > 0) {
+				nDrawCount --;
+				continue;
+			} else {
+			   nDrawCount = DrawCountSet(nDrawFPS);
 //			   nDrawCount = 1000 / nDrawFPS + 1;
-//			}
+			}
 #ifdef USE_AGAR
 			AGDrawTaskMain();
 #else
@@ -367,7 +377,6 @@ int DrawThreadMain(void *p)
 #endif
 			DrawINGFlag = FALSE;
 			DrawWaitFlag = FALSE;
-			//while(DrawWaitFlag) SDL_Delay(1); /* 非表示期間 */
 		}
 }
 

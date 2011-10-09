@@ -23,6 +23,13 @@ void SetVram_200l(Uint8 *p)
     vram_pr = p + 0x8000;
 }
 
+void SetVram_400l(Uint8 *p)
+{
+    vram_pb = p + 0;
+    vram_pg = p + 0x10000;
+    vram_pr = p + 0x8000;
+}
+
 
 void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
@@ -81,9 +88,12 @@ static inline void getvram_8to8(Uint32 addr, Uint8 *cbuf)
         cbuf[7] =   ((cb & 0x80) >> 7) + ((cr & 0x80) >> 6) + ((cg & 0x80) >> 5);
 }
 
+
+
 void getvram_400l(Uint32 addr,Uint32 *p, Uint32 mpage)
 {
   getvram_8to8(addr, (Uint8 *)p);
+//   VramReader_400l(addr, p,  mpage);
 }
 
 void getvram_200l(Uint32 addr,Uint32 *p, Uint32 mpage)
@@ -140,6 +150,7 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     Uint32 addr;
 
     addr = y * 80 + x;
+
     // Loop廃止(高速化)
     getvram_8to8(addr, c);
     putword8((Uint32 *)disp,  c);

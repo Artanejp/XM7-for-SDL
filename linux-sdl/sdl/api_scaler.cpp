@@ -182,6 +182,122 @@ void SetVramReader_256k(void)
 	}
 }
 
+static void SelectScaler200l(int w, int h)
+{
+    	if(bFullScan) {
+		switch(nDrawWidth) {
+		case 1280:
+            pSwScaler = new EmuGrphScale2x4;
+            break;
+        case 640:
+            pSwScaler = new EmuGrphScale1x2;
+            break;
+		default:
+            pSwScaler = new EmuGrphScale1x1;
+			break;
+			}
+		} else {
+			switch(nDrawWidth) {
+			case 1280:
+                pSwScaler = new EmuGrphScale2x4i;
+                break;
+			case 640:
+	            pSwScaler = new EmuGrphScale1x2i;
+                break;
+			default:
+	            pSwScaler = new EmuGrphScale1x1;
+				break;
+			}
+		}
+}
+
+
+static void SelectScaler400l(int w, int h)
+{
+    	if(bFullScan) {
+		switch(nDrawWidth) {
+		case 1280:
+            pSwScaler = new EmuGrphScale2x2;
+            break;
+        case 640:
+            pSwScaler = new EmuGrphScale1x1;
+            break;
+		default:
+            pSwScaler = new EmuGrphScale1x1;
+			break;
+			}
+		} else {
+			switch(nDrawWidth) {
+			case 1280:
+                pSwScaler = new EmuGrphScale2x2i;
+                break;
+			case 640:
+	            pSwScaler = new EmuGrphScale1x1;
+                break;
+			default:
+	            pSwScaler = new EmuGrphScale1x1;
+				break;
+			}
+		}
+}
+
+static void SelectScaler320(int w, int h)
+{
+    	if(bFullScan) {
+		switch(nDrawWidth) {
+		case 1280:
+            pSwScaler = new EmuGrphScale4x4;
+            break;
+        case 640:
+            pSwScaler = new EmuGrphScale2x2;
+            break;
+		default:
+            pSwScaler = new EmuGrphScale1x1;
+			break;
+			}
+		} else {
+			switch(nDrawWidth) {
+			case 1280:
+                pSwScaler = new EmuGrphScale4x4i;
+                break;
+			case 640:
+	            pSwScaler = new EmuGrphScale2x2i;
+                break;
+			default:
+	            pSwScaler = new EmuGrphScale1x1;
+				break;
+			}
+		}
+}
+
+/*
+ * Select Scaler
+ */
+void SelectScaler(int w, int h)
+{
+    if(pSwScaler != NULL) {
+        delete pSwScaler;
+        pSwScaler = NULL;
+    }
+	switch (bMode) {
+	case SCR_400LINE:
+		SelectScaler400l(w, h);
+		SetVramReader_400l();
+		break;
+	case SCR_262144:
+		SelectScaler320(w, h);
+		SetVramReader_256k();
+		break;
+	case SCR_4096:
+		SelectScaler320(w, h);
+		SetVramReader_4096();
+		break;
+	case SCR_200LINE:
+		SelectScaler200l(w, h);
+		SetVramReader_200l();
+		break;
+	}
+}
 
 void init_scaler(void)
 {

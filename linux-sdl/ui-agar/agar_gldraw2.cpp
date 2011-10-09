@@ -72,7 +72,6 @@ void DetachGL_AG2(void)
 
 // Grids
 static GLfloat *GridVertexs200l;
-static GLfloat *GridVertexs400l;
 static GLfloat MainTexcoods[4];
 
 // FBO API
@@ -114,10 +113,6 @@ static void InitGridVertexs(void)
     if(GridVertexs200l != NULL) {
         InitGridVertexsSub(200, GridVertexs200l);
     }
-    GridVertexs400l = (GLfloat *)malloc(401 * 6 * sizeof(GLfloat));
-    if(GridVertexs400l != NULL) {
-        InitGridVertexsSub(400, GridVertexs400l);
-    }
 }
 
 static void DetachGridVertexs(void)
@@ -125,10 +120,6 @@ static void DetachGridVertexs(void)
     if(GridVertexs200l != NULL) {
         free(GridVertexs200l);
         GridVertexs200l = NULL;
-    }
-    if(GridVertexs400l != NULL) {
-        free(GridVertexs400l);
-        GridVertexs400l = NULL;
     }
 }
 
@@ -290,49 +281,65 @@ void AGEventDrawGL2(AG_Event *event)
 	int y;
     GLfloat TexCoords[4][2];
     GLfloat Vertexs[4][3];
+    GLfloat TexCoords2[4][2];
+    GLfloat Vertexs2[4][3];
 
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
 
-    TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
-    TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
-
-    TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
-    TexCoords[2][1] = TexCoords[3][1] = 1.0f; // Yend
 
     // OSD を外に追い出す
     ybegin = 400.0f / 440.0f;
     yend = 1.0f;
             // Z Axis
-    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
-    Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
-    Vertexs[0][1] = Vertexs[1][1] = 1.0f;  // Yend
-    Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
-    Vertexs[2][1] = Vertexs[3][1] = -ybegin; // Ybegin
-
 
      switch(bMode) {
         case SCR_400LINE:
             w = 640;
             h = 400;
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 400.0f / 402.0f; // Yend
             break;
         case SCR_200LINE:
             w = 640;
             h = 200;
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 402.0f; // Yend
             break;
         case SCR_262144:
         case SCR_4096:
         default:
             w = 320;
             h = 200;
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+            TexCoords[2][0] = TexCoords[1][0] = 0.5f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 402.0f; // Yend
             break;
      }
+    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
+    Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
+    Vertexs[0][1] = Vertexs[1][1] = yend;  // Yend
+    Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
+    Vertexs[2][1] = Vertexs[3][1] = -ybegin; // Ybegin
+
+
+    if(uVramTextureID == 0) {
+        uVramTextureID = CreateNullTexture(640, 402); //  ドットゴーストを防ぐ
+        }
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
     LockVram();
-    if(SDLDrawFlag.Drawn) {
+    if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
        Uint32 *pu;
        Uint32 *pq;
        int xx;
@@ -341,31 +348,23 @@ void AGEventDrawGL2(AG_Event *event)
        int hh;
        int ofset;
 
-            if(uVramTextureID == 0){
-                uVramTextureID = CreateNullTexture(w + 2, h + 2);
-            }
-//           printf("DBG: Vram Texture Updated %08x\n");
             glPushAttrib(GL_TEXTURE_BIT);
             glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-//            pu = p;
 //#ifdef _OPENMP
 //       #pragma omp parallel for shared(p, SDLDrawFlag) private(pu)
-//#endif       
+//#endif
        ww = w >> 3;
        hh = h >> 3;
-//       pu = p;
        for(yy = 0; yy < hh; yy++) {
                for(xx = 0; xx < ww; xx++) {
-		   pu = &p[(xx + yy * ww) * 64];
                     if(SDLDrawFlag.write[xx][yy]) {
-                       UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
-		       SDLDrawFlag.write[xx][yy] = FALSE;
+                    pu = &p[(xx + yy * ww) * 64];
+                    UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
+                    SDLDrawFlag.write[xx][yy] = FALSE;
                     }
-//		   pu += 64;
                 }
             }
             glPopAttrib();
-       //uVramTextureID = UpdateTexture(p, uVramTextureID, w, h);
     }
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
@@ -391,12 +390,13 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        LockVram();
         if(bGL_EXT_VERTEX_ARRAY) {
-            glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
-            glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
             glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
             glEnable(GL_VERTEX_ARRAY_EXT);
 
+            glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
+            glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
             glDrawArraysEXT(GL_POLYGON, 0, 4);
+
             glDisable(GL_VERTEX_ARRAY_EXT);
             glDisable(GL_TEXTURE_COORD_ARRAY_EXT);
         } else {
@@ -421,7 +421,6 @@ void AGEventDrawGL2(AG_Event *event)
 
     if(!bFullScan){
     	width = 1.0f;
-    	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         glLineWidth(width);
         {
            GLfloat *vertex;
@@ -429,14 +428,15 @@ void AGEventDrawGL2(AG_Event *event)
 
         switch(bMode) {
         case SCR_400LINE:
-            vertex = GridVertexs400l;
+//            vertex = GridVertexs200l;
+            goto e1;
             break;
         default:
             vertex = GridVertexs200l;
             break;
         }
         if(vertex == NULL) goto e1;
-
+    	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         if(bGL_EXT_VERTEX_ARRAY) {
                 glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
                 glEnable(GL_VERTEX_ARRAY_EXT);

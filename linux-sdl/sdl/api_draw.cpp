@@ -335,123 +335,7 @@ void ResizeGL(int w, int h)
 	newResize = TRUE;
 }
 
-static void SelectScaler200l(int w, int h)
-{
-    	if(bFullScan) {
-		switch(nDrawWidth) {
-		case 1280:
-            pSwScaler = new EmuGrphScale2x4;
-            break;
-        case 640:
-            pSwScaler = new EmuGrphScale1x2;
-            break;
-		default:
-            pSwScaler = new EmuGrphScale1x1;
-			break;
-			}
-		} else {
-			switch(nDrawWidth) {
-			case 1280:
-                pSwScaler = new EmuGrphScale2x4i;
-                break;
-			case 640:
-	            pSwScaler = new EmuGrphScale1x2i;
-                break;
-			default:
-	            pSwScaler = new EmuGrphScale1x1;
-				break;
-			}
-		}
-}
 
-
-static void SelectScaler400l(int w, int h)
-{
-    	if(bFullScan) {
-		switch(nDrawWidth) {
-		case 1280:
-            pSwScaler = new EmuGrphScale2x2;
-            break;
-        case 640:
-            pSwScaler = new EmuGrphScale1x1;
-            break;
-		default:
-            pSwScaler = new EmuGrphScale1x1;
-			break;
-			}
-		} else {
-			switch(nDrawWidth) {
-			case 1280:
-                pSwScaler = new EmuGrphScale2x2i;
-                break;
-			case 640:
-	            pSwScaler = new EmuGrphScale1x1;
-                break;
-			default:
-	            pSwScaler = new EmuGrphScale1x1;
-				break;
-			}
-		}
-}
-
-static void SelectScaler320(int w, int h)
-{
-    	if(bFullScan) {
-		switch(nDrawWidth) {
-		case 1280:
-            pSwScaler = new EmuGrphScale4x4;
-            break;
-        case 640:
-            pSwScaler = new EmuGrphScale2x2;
-            break;
-		default:
-            pSwScaler = new EmuGrphScale1x1;
-			break;
-			}
-		} else {
-			switch(nDrawWidth) {
-			case 1280:
-                pSwScaler = new EmuGrphScale4x4i;
-                break;
-			case 640:
-	            pSwScaler = new EmuGrphScale2x2i;
-                break;
-			default:
-	            pSwScaler = new EmuGrphScale1x1;
-				break;
-			}
-		}
-}
-
-/*
- * Select Scaler
- */
-void SelectScaler(int w, int h)
-{
-    if(pSwScaler != NULL) {
-        delete pSwScaler;
-        pSwScaler = NULL;
-    }
-	switch (bMode) {
-	case SCR_400LINE:
-		SelectScaler400l(w, h);
-		SetVramReader_400l();
-		break;
-	case SCR_262144:
-		SelectScaler320(w, h);
-		SetVramReader_256k();
-		break;
-	case SCR_4096:
-		SelectScaler320(w, h);
-		SetVramReader_4096();
-		break;
-	case SCR_200LINE:
-		SelectScaler200l(w, h);
-		SetVramReader_200l();
-		break;
-	}
-
-}
 
 
 /*
@@ -474,7 +358,7 @@ void ChangeResolution(void)
 #endif
         /*
          * KILL Thread
-         */
+  い       */
         SDL_SemWait(DrawInitSem);
 #ifdef USE_AGAR
         ResizeWindow_Agar(nDrawWidth, nDrawHeight);
@@ -580,9 +464,6 @@ void	InitDraw(void)
 #endif
 #ifdef USE_AGAR
 		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
-//		if(!DrawThread) {
-//			AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
-//		}
 #else
 		if(!DrawThread) {
 			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
@@ -593,6 +474,10 @@ void	InitDraw(void)
 			DrawInitSem = SDL_CreateSemaphore(1);
 			SDL_SemPost(DrawInitSem);
 		}
+		/*
+		 *  VRAMテクスチャ生成
+		 */
+		 uVramTextureID = 0;
 }
 
 
@@ -605,7 +490,7 @@ void	CleanDraw(void)
 		DrawSHUTDOWN = TRUE;
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
-//		AG_ThreadJoin(DrawThread, NULL);
+		AG_ThreadJoin(DrawThread, NULL);
 		AG_MutexDestroy(&DrawMutex);
 		AG_CondDestroy(&DrawCond);
 //                DrawThread = NULL;
@@ -674,10 +559,6 @@ BOOL Select640(void)
         nDrawRight = 640;
         bPaletFlag = TRUE;
         SetDrawFlag(TRUE);
-        LockVram();
-        DiscardTexture(uVramTextureID);
-        uVramTextureID = CreateNullTexture(640, 200);
-        UnlockVram();
 #if XM7_VER >= 3
 /*
  * デジタル/200ラインモード
@@ -715,11 +596,6 @@ BOOL Select400l(void)
  * デジタル/400ラインモード
  */
         bMode = SCR_400LINE;
-        LockVram();
-        DiscardTexture(uVramTextureID);
-        uVramTextureID = CreateNullTexture(640, 400);
-//        uVramTextureID = 0;
-        UnlockVram();
         return TRUE;
 }
 
@@ -753,11 +629,6 @@ BOOL Select320(void)
         bAnalog = TRUE;
 
 #endif				/*  */
-        LockVram();
-        DiscardTexture(uVramTextureID);
-        uVramTextureID = CreateNullTexture(320, 200);
-//        uVramTextureID = 0;
-        UnlockVram();
         return TRUE;
 }
 
@@ -783,11 +654,6 @@ BOOL Select256k()
  * アナログ(26万色)/200ラインモード
  */
         bMode = SCR_262144;
-        LockVram();
-        DiscardTexture(uVramTextureID);
-//        uVramTextureID = 0;
-        uVramTextureID = CreateNullTexture(320, 200);
-        UnlockVram();
         return TRUE;
 }
 
@@ -874,10 +740,10 @@ BOOL SelectDraw(void)
 #endif
 	 bOldFullScan = bFullScan;
 #ifdef USE_AGAR
-	 AG_MutexInit(&DrawMutex);
-	 AG_CondInit(&DrawCond);
+//	 AG_MutexInit(&DrawMutex);
+//	 AG_CondInit(&DrawCond);
 //	 if(!DrawThread) {
-		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
+//		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
 //	 }
 #else
 	 if(!DrawMutex) {
@@ -938,7 +804,7 @@ void AllClear(void)
     for(y = 0; y < 50; y++) {
         for (x = 0; x < 80; x++) {
             SDLDrawFlag.read[x][y] = TRUE;
-//            SDLDrawFlag.write[x][y] = TRUE;
+            SDLDrawFlag.write[x][y] = TRUE;
         }
         SDLDrawFlag.ForcaReDraw = TRUE;
         SDLDrawFlag.Drawn = TRUE;    }
@@ -1212,11 +1078,9 @@ void OnDraw(void)
  */
 
 #ifdef USE_GTK
-gint
-OnPaint(GtkWidget * widget, GdkEventExpose * event)
+gint OnPaint(GtkWidget * widget, GdkEventExpose * event)
 #else
-int
-OnPaint(void)
+int OnPaint(void)
 #endif
 {
     return 1;
@@ -1403,6 +1267,7 @@ void window_notify(void)
 	WORD tmpTop, tmpBottom;
 	WORD tmpDx1, tmpDx2;
 	WORD tmpDy1, tmpDy2;
+	int x, y;
 	/*
 	 * 26万色モード時は何もしない
 	 */
@@ -1527,11 +1392,10 @@ void window_notify(void)
 	if (tmpBottom > nDrawBottom) {
 		nDrawBottom = tmpBottom;
 	}
-
+#if 0
 	/*
 	 * 再描画フラグを更新
 	 */
-#if 0
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
 	     for(y = (nDrawTop >> 3); y < ((nDrawBottom + 7) >> 3); y++) {
 	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) >>3); x ++){
@@ -1539,6 +1403,13 @@ void window_notify(void)
 	         }
 	     }
 	 }
+#else
+	     for(y = 0; y < 50; y++) {
+	         for(x = 0; x < 80; x ++){
+                SDLDrawFlag.read[x][y] = TRUE;
+	         }
+	     }
+
 #endif
 	 /*
 	  * ウィンドウオープン状態を保存
@@ -1767,10 +1638,7 @@ void Draw640All(void)
 	if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	} else {
-//		PutVramFunc = &Scaler_GL;
-//          PutVramFunc = &PutVram_AG_GL2;
         PutVramFunc = &PutVram_AG_SP;
-//        PutVramFunc = &PutVram_AG_Blocked;
 	}
 	/*
 	 * レンダリング
@@ -1820,8 +1688,6 @@ void Draw640All(void)
 	nDrawBottom = 400;
 	nDrawLeft = 0;
 	nDrawRight = 640;
-	//	bPaletFlag = FALSE;
-	//SetDrawFlag(FALSE);
 }
 
 
@@ -1862,10 +1728,7 @@ void Draw400l(void)
 	  * レンダリング
 	  */
 #ifdef USE_AGAR
-//		PutVramFunc = &Scaler_GL;
-//          PutVramFunc = &PutVram_AG_GL2;
     PutVramFunc = &PutVram_AG_SP;
-//    PutVramFunc = &PutVram_AG_Blocked;
 #else
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
@@ -1905,7 +1768,7 @@ void Draw400l(void)
 			 /* ハードウェアウインドウ外下部 */
 			 if (nDrawBottom  > window_dy2) {
 				 vramhdr_400l->SetVram(vram_dptr, 80, 400);
-                 SetVram_200l(vram_dptr);
+                 SetVram_200l(vram_bdptr);
 				 PutVramFunc(p, 0 , wdbtm, 640, nDrawBottom - wdbtm, multi_page);
 			 }
 		 } else { // ハードウェアウィンドウ開いてない
@@ -1940,9 +1803,7 @@ void Draw320(void)
 	/*
 	 * パレット設定
 	 */
-//          PutVramFunc = &PutVram_AG_GL2;
     PutVramFunc = &PutVram_AG_SP;
-//    PutVramFunc = &PutVram_AG_Blocked;
 	if(bPaletFlag) {
         Palet320();
         SDLDrawFlag.APaletteChanged = TRUE;
@@ -2029,9 +1890,7 @@ void Draw256k(void)
 	 if(!bUseOpenGL) {
 	    PutVramFunc = &SwScaler;
 	 } else {
-//          PutVramFunc = &PutVram_AG_GL2;
           PutVramFunc = &PutVram_AG_SP;
-//          PutVramFunc = &PutVram_AG_Blocked;
 	 }
 	nDrawTop = 0;
 	nDrawBottom = 200;

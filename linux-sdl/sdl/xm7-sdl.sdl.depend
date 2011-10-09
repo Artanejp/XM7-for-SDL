@@ -3488,13 +3488,13 @@
 
 1306445600 /home/whatisthis/codeblocks/xm7-sdl/vm//opn.h
 
-1311156931 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvTmpl.cpp
+1318142049 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvTmpl.cpp
 	<SDL/SDL.h>
 	<SDL/SDL_mixer.h>
 	"xm7.h"
 	"SndDrvTmpl.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvWav.cpp
+1318141635 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvWav.cpp
 	<SDL/SDL.h>
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_rwops.h>
@@ -3509,7 +3509,7 @@
 	"sdl.h"
 	"sdl_snd.h"
 
-1318129913 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
+1318177521 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3643,7 +3643,7 @@
 	"EmuGrph4096c.h"
 	"EmuGrph256kc.h"
 
-1307973624 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
+1318154672 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
 	<SDL.h>
 	<SDL_syswm.h>
 	<SDL_opengl.h>
@@ -3729,7 +3729,7 @@
 	<stdlib.h>
 	"EmuGrphScale1x2.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.cpp
+1318141653 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.cpp
 	<X11/Xlib.h>
 	<memory.h>
 	<SDL/SDL.h>
@@ -3748,7 +3748,7 @@
 	"api_kbd.h"
 	"api_js.h"
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.cpp
+1318141706 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.cpp
 	<X11/Xlib.h>
 	<gtk/gtk.h>
 	<gdk/gdkx.h>
@@ -3778,7 +3778,7 @@
 	<agar/core.h>
 	<agar/gui.h>
 
-1306429480 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_mouse.cpp
+1318141772 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_mouse.cpp
 	<X11/Xlib.h>
 	<gtk/gtk.h>
 	<gdk/gdkx.h>
@@ -3804,13 +3804,13 @@
 	"api_mouse.h"
 	"gtk_propkeyboard.h"
 
-1315206952 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.cpp
+1318154579 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.cpp
 	"agar_gldraw.h"
 	<SDL.h>
 	"api_draw.h"
 	"api_scaler.h"
 
-1314184564 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
+1318141840 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
 	<machine/soundcard.h>
 	<linux/soundcard.h>
 	<stdlib.h>
@@ -3951,7 +3951,7 @@
 	"api_scaler.h"
 	"api_vram.h"
 
-1317990439 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
+1318176522 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
 	<SDL.h>
 	"api_draw.h"
 	"api_scaler.h"
@@ -5191,7 +5191,7 @@
 1317151045 /usr/include/atk-1.0/atk/atkwindow.h
 	<atk/atkobject.h>
 
-1318131426 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
+1318168846 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -5212,6 +5212,7 @@
 	"agar_xm7.h"
 	"agar_draw.h"
 	"agar_gldraw.h"
+	"agar_glutil.h"
 	"sdl.h"
 	"api_vram.h"
 	"api_draw.h"
