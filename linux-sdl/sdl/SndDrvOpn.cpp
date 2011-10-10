@@ -142,7 +142,7 @@ SndDrvOpn::SndDrvOpn(void) {
 	SDL_SemPost(RenderSem);
 	pOPN = new FM::OPN[3];
 
-//	InitOpn();
+	InitOpn();
 }
 
 void SndDrvOpn::DeleteOpn(void)
@@ -403,6 +403,8 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 	WORD *q;
 
 	if((samples <= 0) || (ofset < 0))return;
+        if(RenderSem == NULL) return;
+        SDL_SemWait(RenderSem);
 
 	p = (DWORD *)src;
 	p = &(p[ofset * channels]);
@@ -415,7 +417,7 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 
 	memset(q, 0x00 , samples * channels * sizeof(Sint16));
 	CopySoundBufferGeneric(p, q, (int)(samples * channels));
-
+        SDL_SemPost(RenderSem);
 }
 
 int SndDrvOpn::GetRenderCounter(void)

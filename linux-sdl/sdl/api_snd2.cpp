@@ -412,26 +412,26 @@ static void CloseSnd(void)
 	/*
 	 * ドライバの抹消
 	 */
-	if(DrvOPN) {
-		delete DrvOPN;
-		DrvOPN = NULL;
-	}
-	if(DrvCMT) {
-		delete DrvCMT;
-		DrvCMT = NULL;
-	}
-	if(DrvBeep) {
-		delete DrvBeep;
-		DrvBeep = NULL;
-	}
-	if(DrvPSG) {
-		delete DrvPSG;
-		DrvPSG = NULL;
-	}
-	if(DrvWav) {
-		delete[] DrvWav;
-		DrvWav = NULL;
-	}
+//	if(DrvOPN) {
+//		delete DrvOPN;
+//		DrvOPN = NULL;
+//	}
+//	if(DrvCMT) {
+//		delete DrvCMT;
+//		DrvCMT = NULL;
+//	}
+//	if(DrvBeep) {
+//		delete DrvBeep;
+//		DrvBeep = NULL;
+//	}
+//	if(DrvPSG) {
+//		delete DrvPSG;
+//		DrvPSG = NULL;
+//	}
+//	if(DrvWav) {
+//		delete[] DrvWav;
+//		DrvWav = NULL;
+//	}
 
 }
 
@@ -477,7 +477,7 @@ BOOL SelectSnd(void)
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
 	Mix_Volume(-1,iTotalVolume);
 
-    bSndEnable = TRUE;
+        bSndEnable = TRUE;
 	uTick = nSoundBuffer;
 	members = (nSampleRate * nSoundBuffer) / 1000;
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
@@ -488,11 +488,19 @@ BOOL SelectSnd(void)
 	/*
 	 * レンダリングドライバの設定
 	 */
-	DrvOPN = new SndDrvOpn ;
-	DrvBeep = new SndDrvBeep ;
-	DrvWav = new SndDrvWav[WAV_CHANNELS] ;
-	DrvCMT= new SndDrvCMT ;
-
+        if(DrvOPN == NULL) {
+	   DrvOPN = new SndDrvOpn ;
+	}
+        if(DrvBeep == NULL) {
+	   DrvBeep = new SndDrvBeep ;
+	}
+        if(DrvWav == NULL) {
+	   DrvWav = new SndDrvWav[WAV_CHANNELS] ;
+	}
+        if(DrvCMT == NULL) {
+	   DrvCMT= new SndDrvCMT ;
+	}
+   
 
 	if(DrvOPN) {
 		DrvOPN->SetRate(uRate);
@@ -522,10 +530,8 @@ void ApplySnd(void)
 	 */
 
 	if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
-			(bMode == bFMHQmode) && (uStereo == nStereoOut) &&
-			(nFMVol == nFMVolume) && (nPSGVol == nPSGVolume) &&
-			(nBeepVol == nBeepVolume) && (nCMTVol == nCMTVolume) &&
-			(nWavVol == nWaveVolume) && (uChanSep == uChSeparation)) {
+			(bMode == bFMHQmode) && (uStereo == nStereoOut)) {
+	
 		return;
 	}
 	/* 音声プロパティとOPNが衝突しないようにするためのセマフォ初期化 */
@@ -535,17 +541,26 @@ void ApplySnd(void)
 	 */
 	if (uRate != 0) {
 	   CloseSnd();
+	} else {
+	   SDL_SemPost(applySem);
+	   return;
 	}
+   
 
 	/*
 	 * 再セレクト
 	 */
 	SelectSnd();
         SDL_SemPost(applySem);
+   
 	// BEEPについて、SelectSnd()し直しても音声継続するようにする
 	bBeepFlag = !bBeepFlag;
 	beep_notify();
 	tape_notify(!bTapeFlag);
+        opn_notify(0xff, 0);
+        thg_notify(0xff, 0);
+        whg_notify(0xff, 0);
+
 }
 
 static struct WavDesc *WavDescCapture; // 取り込みバッファ
@@ -756,7 +771,7 @@ static BOOL FlushOpnSub(DWORD ttime,  BOOL bZero, int maxchunk)
         int chunksize;
 
         if(p == NULL) return FALSE;
-	if(maxchunk<0) return FALSE;
+	if(maxchunk <= 0) return FALSE;
 	chunksize = maxchunk - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
 
@@ -787,7 +802,7 @@ static BOOL FlushBeepSub(DWORD ttime,  BOOL bZero, int maxchunk)
 	struct SndBufType *p = pBeepBuf;
 	int chunksize;
         if(p == NULL) return FALSE;
-	if(maxchunk<0) return FALSE;
+	if(maxchunk <= 0) return FALSE;
 
 	chunksize = maxchunk - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
@@ -816,7 +831,7 @@ static BOOL FlushCMTSub(DWORD ttime,  BOOL bZero, int maxchunk)
 	int chunksize;
 
         if(p == NULL) return FALSE;
-	if(maxchunk<0) return FALSE;
+	if(maxchunk <= 0) return FALSE;
 	chunksize = maxchunk - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
 	/*
@@ -916,14 +931,14 @@ void opn_notify(BYTE reg, BYTE dat)
 //	 AddSnd(FALSE, FALSE);
 	if(samples > 0) {
 		if(applySem) {
-			SDL_SemWait(applySem);
+//			SDL_SemWait(applySem);
             samples  = CalcSamples(pBeepBuf, time);
 			RenderBeepSub(time, samples, FALSE);
             samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
             samples  = CalcSamples(pCMTBuf, time);
 			RenderCMTSub(time, samples, FALSE);
-			SDL_SemPost(applySem);
+//			SDL_SemPost(applySem);
 		}
 	}
 
@@ -994,14 +1009,14 @@ void thg_notify(BYTE reg, BYTE dat)
 	 */
 	if(samples > 0) {
 		if(applySem) {
-			SDL_SemWait(applySem);
+//			SDL_SemWait(applySem);
             samples  = CalcSamples(pBeepBuf, time);
 			RenderBeepSub(time, samples, FALSE);
             samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
             samples  = CalcSamples(pCMTBuf, time);
 			RenderCMTSub(time, samples, FALSE);
-			SDL_SemPost(applySem);
+//			SDL_SemPost(applySem);
 		}
 	}
 	/*
@@ -1069,14 +1084,14 @@ void whg_notify(BYTE reg, BYTE dat)
 //	AddSnd(FALSE, FALSE);
 	if(samples > 0) {
 		if(applySem) {
-			SDL_SemWait(applySem);
+//			SDL_SemWait(applySem);
             samples  = CalcSamples(pBeepBuf, time);
 			RenderBeepSub(time, samples, FALSE);
             samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
             samples  = CalcSamples(pCMTBuf, time);
 			RenderCMTSub(time, samples, FALSE);
-			SDL_SemPost(applySem);
+//			SDL_SemPost(applySem);
 		}
 	}
 	 /*
@@ -1105,13 +1120,13 @@ void beep_notify(void)
     samples  = CalcSamples(pBeepBuf, time);
 	if(samples > 0){
 		if(applySem) {
-			SDL_SemWait(applySem);
+//			SDL_SemWait(applySem);
 			RenderBeepSub(time, samples, FALSE);
             samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
             samples  = CalcSamples(pCMTBuf, time);
 			RenderCMTSub(time, samples, FALSE);
-			SDL_SemPost(applySem);
+//			SDL_SemPost(applySem);
 		}
 	}
 #endif
@@ -1138,14 +1153,14 @@ void tape_notify(BOOL flag)
 	samples  = CalcSamples(pCMTBuf, time);
 	if(samples > 0) {
         if(applySem) {
-            SDL_SemWait(applySem);
+//            SDL_SemWait(applySem);
             samples  = CalcSamples(pBeepBuf, time);
 			RenderBeepSub(time, samples, FALSE);
             samples  = CalcSamples(pOpnBuf, time);
 			RenderOpnSub(time, samples, FALSE);
             samples  = CalcSamples(pCMTBuf, time);
 			RenderCMTSub(time, samples, FALSE);
-            SDL_SemPost(applySem);
+//            SDL_SemPost(applySem);
         }
 	}
 	bTapeFlag = flag;
@@ -1260,7 +1275,7 @@ void ProcessSnd(BOOL bZero)
 		   if (bWrite) {
 		       // OPNについては不要か？必要か？
 		       if(applySem) {
-                SDL_SemWait(applySem);
+                //SDL_SemWait(applySem);
                 samples = CalcSamples(pOpnBuf, ttime);
                 RenderOpnSub(ttime, samples, bZero);
 
@@ -1268,7 +1283,7 @@ void ProcessSnd(BOOL bZero)
                 RenderBeepSub(ttime, samples, bZero);
                 samples = CalcSamples(pCMTBuf, ttime);
                 RenderCMTSub(ttime, samples, bZero);
-                SDL_SemPost(applySem);
+                //SDL_SemPost(applySem);
 		       }
 		   }
 		   return;
@@ -1311,9 +1326,10 @@ void ProcessSnd(BOOL bZero)
         SetChunk(pOpnBuf , chunksize , CH_SND_OPN);
         SetChunk(pBeepBuf , chunksize , CH_SND_BEEP);
         SetChunk(pCMTBuf , chunksize , CH_SND_CMT);
-        DrvOPN->ResetRenderCounter();
-        DrvBeep->ResetRenderCounter();
-        DrvCMT->ResetRenderCounter();
+		   
+        if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
+        if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
+        if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();
         SDL_SemPost(applySem);
 		}
 //		SDL_UnlockAudio();
