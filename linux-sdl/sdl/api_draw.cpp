@@ -1392,13 +1392,13 @@ void window_notify(void)
 	if (tmpBottom > nDrawBottom) {
 		nDrawBottom = tmpBottom;
 	}
-#if 0
+#if 1
 	/*
 	 * 再描画フラグを更新
 	 */
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
-	     for(y = (nDrawTop >> 3); y < ((nDrawBottom + 7) >> 3); y++) {
-	         for(x = (nDrawLeft >> 3); x < ((nDrawRight + 7) >>3); x ++){
+	     for(y = nDrawTop >> 3; y < ((nDrawBottom + 7) >> 3); y++) {
+	         for(x = nDrawLeft >> 3; x < (nDrawRight >>3); x ++){
                 SDLDrawFlag.read[x][y] = TRUE;
 	         }
 	     }
@@ -1695,12 +1695,14 @@ void Draw400l(void)
 {
 
 	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
-	SDL_Surface *p;
 	WORD wdtop, wdbtm;
+
 #ifdef USE_AGAR
+	SDL_Surface *p;
 	if(agDriverOps == NULL) return;
 	p = GetDrawSurface();
 #else
+	SDL_Surface *p;
 	p = SDL_GetVideoSurface();
 #endif
 	/*
@@ -1709,13 +1711,13 @@ void Draw400l(void)
 	SetVramReader_400l();
 	if (bPaletFlag) {
 		Palet640();
-		nDrawTop = 0;
-		nDrawBottom = 400;
-		nDrawLeft = 0;
-		nDrawRight = 640;
-		SetDrawFlag(TRUE);
 	}
 
+        if (bClearFlag) {
+	       AllClear();
+	}
+   
+	
 
 	/*
 	 * クリア処理
@@ -1742,46 +1744,48 @@ void Draw400l(void)
 		 if(window_open) { // ハードウェアウインドウ開いてる
 			 if (nDrawTop < window_dy1) {
 				 vramhdr_400l->SetVram(vram_dptr, 80, 400);
-                 SetVram_200l(vram_dptr);
-				 PutVramFunc(p, 0, nDrawTop, 640, window_dy1, multi_page);
+			         SetVram_200l(vram_dptr);
+				 PutVramFunc(p, 0, nDrawTop, 640, window_dy1 - nDrawTop, multi_page);
 			 }
 			 /* ウィンドウ内の描画 */
 			 if (nDrawTop > window_dy1) {
 				 wdtop = nDrawTop;
-			 }
-			 else {
+			 } else {
 				 wdtop = window_dy1;
 			 }
 
 			 if (nDrawBottom < window_dy2) {
 				 wdbtm = nDrawBottom;
-			 }
-			 else {
+			 } else {
 				 wdbtm = window_dy2;
 			 }
 
 			 if (wdbtm > wdtop) {
 				 vramhdr_400l->SetVram(vram_bdptr, 80, 400);
-                SetVram_200l(vram_bdptr);
-				 PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
+			         SetVram_200l(vram_bdptr);
+			         PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
 			 }
 			 /* ハードウェアウインドウ外下部 */
 			 if (nDrawBottom  > window_dy2) {
 				 vramhdr_400l->SetVram(vram_dptr, 80, 400);
-                 SetVram_200l(vram_bdptr);
+			         SetVram_200l(vram_dptr);
 				 PutVramFunc(p, 0 , wdbtm, 640, nDrawBottom - wdbtm, multi_page);
 			 }
 		 } else { // ハードウェアウィンドウ開いてない
-			 vramhdr_400l->SetVram(vram_dptr, 80, 400);
-             SetVram_200l(vram_dptr);
-			 PutVramFunc(p, 0, 0, 640, 400, multi_page);
+            vramhdr_400l->SetVram(vram_dptr, 80, 400);
+            SetVram_200l(vram_dptr);
+            PutVramFunc(p, 0, 0, 640, 400, multi_page);
 		 }
 	 }
-	 nDrawTop = 0;
-	 nDrawBottom = 400;
-	 nDrawLeft = 0;
-	 nDrawRight = 640;
-	 bPaletFlag = FALSE;
+         if (bPaletFlag) {
+            nDrawTop = 0;
+            nDrawBottom = 400;
+            nDrawLeft = 0;
+            nDrawRight = 640;
+	    SetDrawFlag(TRUE);
+	 }
+   
+         bPaletFlag = FALSE;
 	 //SetDrawFlag(FALSE);
 
 }
