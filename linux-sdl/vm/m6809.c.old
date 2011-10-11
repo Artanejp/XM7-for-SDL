@@ -76,11 +76,11 @@
 #include "xm7.h"
 #define INLINE inline
 
-//#define BIG_SWITCH 1
+#define BIG_SWITCH 1
 /* Enable big switch statement for the main opcodes */
-//#ifndef BIG_SWITCH
-//#define BIG_SWITCH  1
-//#endif
+#ifndef BIG_SWITCH
+#define BIG_SWITCH  1
+#endif
 
 #define VERBOSE 0
 
@@ -232,22 +232,16 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 #define SET_Z(a)		if(!a)SEZ
 #define SET_Z8(a)		SET_Z((BYTE)a)
 #define SET_Z16(a)		SET_Z((WORD)a)
-//#define SET_N8(a)		CC|=((a&0x80)>>4)
-//#define SET_N16(a)		CC|=((a&0x8000)>>12)
-#define SET_N8(a)       if(a & 0x80)CC|=CC_N 
-#define SET_N16(a)       if(a & 0x8000)CC|=CC_N 
-   
-//#define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
-#define SET_H(a,b,r)	if((a^b^r)&0x10)CC|=CC_H
-//#define SET_C8(a)		CC|=((a&0x100)>>8)
-//#define SET_C16(a)		CC|=((a&0x10000)>>16)
-#define SET_C8(a)		if(a&0x0100)CC|=CC_C
-#define SET_C16(a)		if(a&0x010000)CC|=CC_C
-#define SET_V8(a,b,r)	if((a^b^r^(r>>1))&0x80)CC|=CC_V
-#define SET_V16(a,b,r)	if((a^b^r^(r>>1))&0x8000)CC|=CC_V
+#define SET_N8(a)		CC|=((a&0x80)>>4)
+#define SET_N16(a)		CC|=((a&0x8000)>>12)
+#define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
+#define SET_C8(a)		CC|=((a&0x100)>>8)
+#define SET_C16(a)		CC|=((a&0x10000)>>16)
+#define SET_V8(a,b,r)	CC|=(((a^b^r^(r>>1))&0x80)>>6)
+#define SET_V16(a,b,r)	CC|=(((a^b^r^(r>>1))&0x8000)>>14)
 
-#define SET_FLAGS8I(a)		{CC|=flags8i[a&0xff];}
-#define SET_FLAGS8D(a)		{CC|=flags8d[a&0xff];}
+#define SET_FLAGS8I(a)		{CC|=flags8i[(a)&0xff];}
+#define SET_FLAGS8D(a)		{CC|=flags8d[(a)&0xff];}
 
 /* combos */
 #define SET_NZ8(a)			{SET_N8(a);SET_Z8(a);}
@@ -260,6 +254,7 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 
 #define SET_NZVC8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
 #define SET_NZVC16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
+#define SET_NZV8(t)             {SET_
    
 
 #define NXORV			(((CC&CC_N)^((CC&CC_V)<<2)) !=0)

@@ -210,14 +210,15 @@ OP_HANDLER( sync_09 ) // Rename 20101110
 	
 	// SYNC命令初めて
 	m68_state->intr |= INTR_SYNC_IN;
-	m68_state->intr &= 0xffbf;
+//	m68_state->intr &= 0xffbf;
+	m68_state->intr &= ~INTR_SYNC_OUT;
 	PC -= 1; // 次のサイクルも同じ命令
 	return;
      } else {
 	// SYNC実行中
     	 if((m68_state->intr & INTR_SYNC_OUT) != 0) {
     		 // 割込が来たのでSYNC抜ける
-    		 m68_state->intr &= 0xff9f;
+    		 m68_state->intr &= ~(INTR_SYNC_OUT | INTR_SYNC_IN);
     		 return;
     	 }
     	 PC -= 1;  // 割込こないと次のサイクルも同じ命令
@@ -240,9 +241,9 @@ OP_HANDLER( trap )
 /* $16 LBRA relative ----- */
 OP_HANDLER( lbra )
 {
-	IMMWORD(EAD);
-	PC += EAD;
-
+//	IMMWORD(EAD);
+//	PC += EAD;
+        LBRANCH(m68_state, TRUE);
 }
 
 /* $17 LBSR relative ----- */
@@ -324,12 +325,15 @@ OP_HANDLER( exg )
 	BYTE tb;
 
 	IMMBYTE(tb);
-	if( (tb^(tb>>4)) & 0x08 )	/* HJB 990225: mixed 8/16 bit case? */
-	{
-		/* transfer $ff to both registers */
-		t1 = t2 = 0xffff;
-	}
-	else
+   /*
+    * 20111011: 16bit vs 16Bitの演算にする(XM7/ cpu_x86.asmより
+    */
+//	if( (tb^(tb>>4)) & 0x08 )	/* HJB 990225: mixed 8/16 bit case? */
+//	{
+//		/* transfer $ff to both registers */
+//		t1 = t2 = 0xffff;
+//	}
+//	else
 	{
 		switch(tb>>4) {
 			case  0: t1 = D;  break;
@@ -365,10 +369,10 @@ OP_HANDLER( exg )
 		case  3: U = t2;  break;
 		case  4: S = t2;  m68_state->intr |= INTR_SLOAD; break;
 		case  5: PC = t2; break;
-		case  8: A = t2;  break;
-		case  9: B = t2;  break;
-		case 10: CC = t2; break;
-		case 11: DP = t2; break;
+		case  8: A = t2 & 0x00ff;  break;
+		case  9: B = t2 & 0x00ff;  break;
+		case 10: CC = t2 & 0x00ff; break;
+		case 11: DP = t2 & 0x00ff; break;
 	}
 	switch(tb&15) {
 		case  0: D = t1;  break;
@@ -377,10 +381,10 @@ OP_HANDLER( exg )
 		case  3: U = t1;  break;
 		case  4: S = t1;  m68_state->intr |= INTR_SLOAD; break;
 		case  5: PC = t1; break;
-		case  8: A = t1;  break;
-		case  9: B = t1;  break;
-		case 10: CC = t1; break;
-		case 11: DP = t1; break;
+		case  8: A = t1 & 0x00ff;  break;
+		case  9: B = t1 & 0x00ff;  break;
+		case 10: CC = t1 & 0x00ff; break;
+		case 11: DP = t1 & 0x00ff; break;
 	}
 }
 
@@ -391,12 +395,15 @@ OP_HANDLER( tfr )
 	WORD t;
 
 	IMMBYTE(tb);
-	if( (tb^(tb>>4)) & 0x08 )	/* HJB 990225: mixed 8/16 bit case? */
-	{
-		/* transfer $ff to register */
-		t = 0xffff;
-        }
-	else
+   /*
+    * 20111011: 16bit vs 16Bitの演算にする(XM7/ cpu_x86.asmより)
+    */
+//	if( (tb^(tb>>4)) & 0x08 )	/* HJB 990225: mixed 8/16 bit case? */
+//	{
+//		/* transfer $ff to register */
+//		t = 0xffff;
+//      }
+//	else
 	{
 		switch(tb>>4) {
 			case  0: t = D;  break;
@@ -419,35 +426,39 @@ OP_HANDLER( tfr )
 		case  3: U = t;  break;
 		case  4: S = t;  m68_state->intr |= INTR_SLOAD; break;
 		case  5: PC = t; break;
-		case  8: A = t;  break;
-		case  9: B = t;  break;
-		case 10: CC = t; break;
-		case 11: DP = t; break;
+		case  8: A = t & 0x00ff;  break;
+		case  9: B = t & 0x00ff;  break;
+		case 10: CC = t & 0x00ff; break;
+		case 11: DP = t & 0x00ff; break;
     }
 }
 
 /* $20 BRA relative ----- */
 OP_HANDLER( bra )
 {
-	BYTE t;
-	IMMBYTE(t);
-	PC += SIGNED(t);
+//	BYTE t;
+//	IMMBYTE(t);
+//	PC += SIGNED(t);
 	/* JB 970823 - speed up busy loops */
 //	if( t == 0xfe )
 //		if( m68_state->icount > 0 ) m68_state->icount = 0;
+        BRANCH(m68_state, TRUE);
+
 }
 
 /* $21 BRN relative ----- */
 OP_HANDLER( brn )
 {
-	BYTE t;
-	IMMBYTE(t);
+//	BYTE t;
+//	IMMBYTE(t);
+	BRANCH(m68_state, FALSE);
 }
 
 /* $1021 LBRN relative ----- */
 OP_HANDLER( lbrn )
 {
-	IMMWORD(EAD);
+//	IMMWORD(EAD);
+	LBRANCH(m68_state, FALSE);
 }
 
 /* $22 BHI relative ----- */
@@ -501,8 +512,7 @@ OP_HANDLER( lbcs )
 /* $26 BNE relative ----- */
 OP_HANDLER( bne )
 {
-	int cond=!(CC&CC_Z);
-	BRANCH(m68_state, cond  );
+	BRANCH(m68_state, !(CC&CC_Z)  );
 }
 
 /* $1026 LBNE relative ----- */
@@ -742,10 +752,10 @@ OP_HANDLER( abx )
 /* $3B RTI inherent ##### */
 OP_HANDLER( rti )
 {
-	BYTE t;
+//	BYTE t;
 	PULLBYTE(CC);
-	t = CC & CC_E;		/* HJB 990225: entire state saved? */
-	if(t)
+//	t = CC & CC_E;		/* HJB 990225: entire state saved? */
+	if(CC & CC_E)
 	{
 		m68_state->cycle += 9;
 		PULLBYTE(A);
@@ -763,6 +773,7 @@ OP_HANDLER( rti )
 OP_HANDLER( cwai )
 {
 	BYTE t;
+   
     if(m68_state->intr & INTR_CWAI_IN){
 	/* CWAI実行中 */
        if(m68_state->intr & INTR_CWAI_OUT) {
@@ -779,6 +790,16 @@ OP_HANDLER( cwai )
 first:
      IMMBYTE(t);
      CC = CC & t;
+     	CC |= CC_E; 		/* HJB 990225: save entire state */
+	PUSHWORD(pPC);
+	PUSHWORD(pU);
+	PUSHWORD(pY);
+	PUSHWORD(pX);
+	PUSHBYTE(DP);
+	PUSHBYTE(B);
+	PUSHBYTE(A);
+	PUSHBYTE(CC);
+
      m68_state->intr = (m68_state->intr | INTR_CWAI_IN) & 0xfeff;
      PC -= 2;
      return;
@@ -952,7 +973,7 @@ OP_HANDLER( dcca )
 	SET_FLAGS8D(A);
         s = CC;
         s >>= 2;
-        s=~s;
+        s=~s; // 20111011
         s=s & 0x01;
         CC = s | CC;
 }
@@ -1094,7 +1115,7 @@ OP_HANDLER( dccb )
 	SET_FLAGS8D(B);
         s = CC;
         s >>= 2;
-        s=~s;
+        s=~s; // 20111011
         s=s & 0x01;
         CC = s | CC;
 }
@@ -1251,7 +1272,7 @@ OP_HANDLER( dcc_ix )
 	SET_FLAGS8D(t);
         s = CC;
         s >>= 2;
-        s=~s;
+        s=~s; // 20111011
         s=s & 0x01;
         CC = s | CC;
 	WM(EAD,t);
@@ -1395,7 +1416,7 @@ OP_HANDLER( dcc_ex )
 	SET_FLAGS8D(t);
         s = CC;
         s >>= 2;
-        s=~s;
+        s=~s; // 20111011
         s=s & 0x01;
         CC = s | CC;
 	WM(EA,t);
@@ -1548,10 +1569,17 @@ OP_HANDLER( sta_im )
  */
 OP_HANDLER( flag8_im )
 {
-	BYTE t;
+#if 0
+   BYTE t;
    IMMBYTE(t);
    CLR_NZV;
    CC |= 0x08;
+#else
+	CLR_NZV;
+	SET_NZ8(A);
+	IMM8;
+	WM(EAD,A);
+#endif
 }
 
 
@@ -1673,9 +1701,16 @@ OP_HANDLER( stx_im )
  */
 OP_HANDLER( flag16_im )
 {
+#if 0   
    IMM16;
    CLR_NZV;
    CC |= 0x08;
+#else
+   CLR_NZV;
+   SET_NZ16(X);
+   IMM16;
+   WM16(m68_state, EAD, X);
+#endif
 }
 
 
