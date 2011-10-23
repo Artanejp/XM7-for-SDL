@@ -350,11 +350,11 @@ void AGEventDrawGL2(AG_Event *event)
 
             glPushAttrib(GL_TEXTURE_BIT);
             glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-//#ifdef _OPENMP
-//       #pragma omp parallel for shared(p, SDLDrawFlag) private(pu)
-//#endif
        ww = w >> 3;
        hh = h >> 3;
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu)
+//#endif
        for(yy = 0; yy < hh; yy++) {
                for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
@@ -367,7 +367,7 @@ void AGEventDrawGL2(AG_Event *event)
             glPopAttrib();
     }
     glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
-   
+
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
     glPushAttrib(GL_ALL_ATTRIB_BITS);

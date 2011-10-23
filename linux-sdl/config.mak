@@ -49,11 +49,19 @@ CFLAGS += `agar-config --cflags`
 # OpenMP
 CFLAGS += -fopenmp
 
-CFLAGS_DEBUG = -pg -g -O0 -export-dynamic
+CFLAGS_DEBUG = -pg -g -O0 
 CFLAGS_DEBUG += $(CFLAGS)
 
-CFLAGS_RELEASE =  -O3 -export-dynamic
-#CFLAGS_RELEASE += -msse4a -mabm -m3dnow
+CFLAGS_RELEASE =  -O3 -funroll-loops 
+#CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
+#CFLAGS_RELEASE += -pthread
+
+# Architecture Depend Flag
+CFLAGS_RELEASE += -march=amdfam10
+CFLAGS_RELEASE += -minline-all-stringops
+
+
 CFLAGS_RELEASE += $(CFLAGS)
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN

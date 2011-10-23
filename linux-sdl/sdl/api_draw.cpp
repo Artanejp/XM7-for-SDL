@@ -1392,7 +1392,6 @@ void window_notify(void)
 	if (tmpBottom > nDrawBottom) {
 		nDrawBottom = tmpBottom;
 	}
-#if 1
 	/*
 	 * 再描画フラグを更新
 	 */
@@ -1403,14 +1402,6 @@ void window_notify(void)
 	         }
 	     }
 	 }
-#else
-	     for(y = 0; y < 50; y++) {
-	         for(x = 0; x < 80; x ++){
-                SDLDrawFlag.read[x][y] = TRUE;
-	         }
-	     }
-
-#endif
 	 /*
 	  * ウィンドウオープン状態を保存
 	  */
@@ -1716,8 +1707,8 @@ void Draw400l(void)
         if (bClearFlag) {
 	       AllClear();
 	}
-   
-	
+
+
 
 	/*
 	 * クリア処理
@@ -1784,7 +1775,7 @@ void Draw400l(void)
             nDrawRight = 640;
 	    SetDrawFlag(TRUE);
 	 }
-   
+
          bPaletFlag = FALSE;
 	 //SetDrawFlag(FALSE);
 

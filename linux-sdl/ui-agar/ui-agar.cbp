@@ -53,6 +53,7 @@
 		</Build>
 		<Compiler>
 			<Add option="`pkg-config --cflags sdl`" />
+			<Add option="-fopenmp" />
 			<Add option="-DXM7_VER=3" />
 			<Add option="-DUSE_OPENGL" />
 			<Add option="-DUSE_AGAR" />

@@ -58,14 +58,14 @@ extern SDL_semaphore   *DrawInitSem;
 extern "C"
 {
 #endif
-
+typedef uint8_t BOOL8; //
 struct DrawPieces {
-    BOOL read[80][50];
-    BOOL write[80][50];
-    BOOL Drawn;
-    BOOL DPaletteChanged;
-    BOOL APaletteChanged;
-    BOOL ForcaReDraw;
+    BOOL8 read[80][50]; // Bit Compression
+    BOOL8 write[80][50]; // Bit Compression
+    BOOL8 Drawn;
+    BOOL8 DPaletteChanged;
+    BOOL8 APaletteChanged;
+    BOOL8 ForcaReDraw;
 };
 /* アスペクト */
 enum {

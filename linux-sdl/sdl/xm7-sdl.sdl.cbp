@@ -45,6 +45,7 @@
 			<Add option="`sdl-config --cflags`" />
 			<Add option="`pkg-config --cflags gtk+-3.0`" />
 			<Add option="`agar-config --cflags`" />
+			<Add option="-fopenmp" />
 			<Add option="-DUSE_OPENGL" />
 			<Add option="-DUSE_AGAR" />
 			<Add option="-DMOUSE" />
@@ -65,6 +66,7 @@
 			<Add library="rt" />
 			<Add library="SDL_mixer" />
 			<Add library="SDL_ttf" />
+			<Add library="gomp" />
 		</Linker>
 		<Unit filename="GtkKbdInterface.cpp" />
 		<Unit filename="GtkKbdInterface.h" />
@@ -126,13 +128,14 @@
 				<search_path add="../ui-agar" />
 				<search_path add="../libemugrph" />
 				<search_path add="../vm" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/gui" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/au" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/dev" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/math" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/rg" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/vg" />
-				<search_path add="/home/whatisthis/src/agar-svn-head.r8996/core" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/gui" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/au" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/dev" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/math" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/rg" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/vg" />
+				<search_path add="/home/whatisthis/src/agar-svn-head/core" />
+				<search_path add="../xm7-debugger" />
 			</debugger>
 		</Extensions>
 	</Project>
