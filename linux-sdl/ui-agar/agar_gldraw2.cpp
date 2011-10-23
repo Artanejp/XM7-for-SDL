@@ -366,6 +366,8 @@ void AGEventDrawGL2(AG_Event *event)
             }
             glPopAttrib();
     }
+    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+   
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -416,6 +418,7 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        UnlockVram();
      }
+    glBindTexture(GL_TEXTURE_2D, 0); // 20111023
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);
 
