@@ -25,6 +25,7 @@ UISRC = \
 	agar_gui_menu.cpp \
 	agar_menu_disk.cpp \
 	agar_menu_tape.cpp \
+	agar_menu_debug.cpp \
 	agar_menu_tool.cpp \
 	agar_menu_about.cpp \
 	agar_gui_pref.cpp 
@@ -96,7 +97,10 @@ Release/agar_menu_disk.o: agar_menu_disk.cpp
 	
 Release/agar_menu_tape.o: agar_menu_tape.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-	
+
+Release/agar_menu_debug.o: agar_menu_debug.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
 Release/agar_menu_tool.o: agar_menu_tool.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
@@ -163,7 +167,10 @@ Debug/agar_menu_disk.o: agar_menu_disk.cpp
 	
 Debug/agar_menu_tape.o: agar_menu_tape.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-	
+
+Debug/agar_menu_debug.o: agar_menu_debug.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
 Debug/agar_menu_tool.o: agar_menu_tool.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 

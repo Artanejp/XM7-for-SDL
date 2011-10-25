@@ -90,6 +90,7 @@
 		<Unit filename="agar_guicore.cpp" />
 		<Unit filename="agar_main.cpp" />
 		<Unit filename="agar_menu_about.cpp" />
+		<Unit filename="agar_menu_debug.cpp" />
 		<Unit filename="agar_menu_disk.cpp" />
 		<Unit filename="agar_menu_tape.cpp" />
 		<Unit filename="agar_menu_tool.cpp" />

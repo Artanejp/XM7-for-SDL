@@ -40,6 +40,7 @@ extern void Create_Drive0Menu(AG_MenuItem *self);
 extern void Create_Drive1Menu(AG_MenuItem *self);
 extern void Create_TapeMenu(AG_MenuItem *self);
 extern void Create_ToolsMenu(AG_MenuItem *parent);
+extern void Create_DebugMenu(AG_MenuItem *parent);
 extern void Create_AboutMenu(AG_MenuItem *self);
 extern void OnPushCancel(AG_Event *event);
 extern void KeyBoardSnoop(BOOL t);
@@ -139,13 +140,19 @@ void Create_AGMainBar(AG_Widget *Parent)
 	AG_LockVFS(AGOBJECT(MenuBar));
 	item = AG_MenuNode(MenuBar->root , "File", NULL);
 	Create_FileMenu(item);
+
 	item = AG_MenuNode(MenuBar->root, "Drive 1", NULL);
 	Create_Drive1Menu(item);
+
 	item = AG_MenuNode(MenuBar->root, "Drive 0", NULL);
 	Create_Drive0Menu(item);
+
  	item = AG_MenuNode(MenuBar->root, "Tape", NULL);
 	Create_TapeMenu(item);
+
  	item = AG_MenuNode(MenuBar->root, "Debug", NULL);
+    Create_DebugMenu(item);
+
  	item = AG_MenuNode(MenuBar->root, "Tools", NULL);
  	Create_ToolsMenu(item);
  	item = AG_MenuNode(MenuBar->root, "Help", NULL);
