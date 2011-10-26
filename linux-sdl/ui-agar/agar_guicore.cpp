@@ -208,6 +208,7 @@ void MainLoop(int argc, char *argv[])
 	int c;
 	char *drivers = NULL;
 	char *optArg;
+        char strbuf[2048];
 	const SDL_VideoInfo *inf;
 	SDL_Surface *s;
 
@@ -215,11 +216,9 @@ void MainLoop(int argc, char *argv[])
 	AG_InitCore("xm7", AG_VERBOSE);
 
 	AG_ConfigLoad();
-    AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s:.", getenv("HOME"), getenv("HOME"), FONTPATH);
-    AG_SetString(agConfig, "font.face", UI_FONT);
-    AG_SetInt(agConfig, "font.size", UI_PT);
-
-    while ((c = AG_Getopt(argc, argv, "?d:w:h:ft:T:c:T:F:S:l:s:i:", &optArg, NULL))
+        AG_SetInt(agConfig, "font.size", UI_PT);
+   
+    while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {
               switch (c) {
               case 'd':
@@ -228,6 +227,10 @@ void MainLoop(int argc, char *argv[])
               case 'f':
                       /* Force full screen */
                       AG_SetBool(agConfig, "view.full-screen", 1);
+                      break;
+              case 'W':
+                      /* Force Window */
+                      AG_SetBool(agConfig, "view.full-screen", 0);
                       break;
               case 'T':
                       /* Set an alternate font directory */
@@ -239,7 +242,15 @@ void MainLoop(int argc, char *argv[])
                       break;
               case 'S':
                   /* Set an alternate font face */
-                  AG_SetString(agConfig, "font.size", optArg);
+                  AG_SetInt(agConfig, "font.size", atoi(optArg));
+                  break;
+              case 'o':
+                  /* Set an alternate font face */
+                  AG_SetString(agConfig, "osdfont.face", optArg);
+                  break;
+              case 'O':
+                  /* Set an alternate font face */
+                  AG_SetInt(agConfig, "osdfont.size", atoi(optArg));
                   break;
               case 'l':
                   /* Set an alternate font face */
@@ -260,14 +271,30 @@ void MainLoop(int argc, char *argv[])
                   break;
           case '?':
           default:
-                  printf("%s [-vgsDdfR] [-d driver] [-r fps] [-t fontspec] "
+                  printf("%s [-v] [-f|-W] [-d driver] [-r fps] [-t fontspec] "
                          "[-w width] [-h height] "
-                		  "[-F font.face] [-S font.size] "
-                         "[-T font-path]\n",
+                	 "[-F font.face] [-S font.size]"
+			 "[-o osd-font.face] [-O osd-font.size]"
+			 "[-s SavePath] [-l LoadPath] "
+                         "[-T font-path]\n\n"
+			 "Usage:\n"
+			 "-f : FullScreen\n-W:Window Mode\n",
                          agProgName);
                   exit(0);
           }
     }
+    AG_GetString(agConfig, "font.face", strbuf, 511);
+    if(strlen(strbuf) <= 0) 
+    {
+        AG_SetString(agConfig, "font.face", UI_FONT);
+    }
+   
+    AG_GetString(agConfig, "font-path", strbuf, 2047);
+    if(strlen(strbuf) <= 0) 
+    {
+     AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s:.", getenv("HOME"), getenv("HOME"), FONTPATH);
+    }
+   
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug

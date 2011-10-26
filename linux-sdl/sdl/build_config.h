@@ -43,8 +43,13 @@
 #define UI_FONT "ipagui.ttf"
 #endif
 
+#ifndef STAT_PT
 #define STAT_PT 24
+#endif
+
+#ifndef UI_PT
 #define UI_PT  18
+#endif
 
 /*
  * GUIレイアウト

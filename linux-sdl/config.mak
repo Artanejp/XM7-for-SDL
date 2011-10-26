@@ -21,11 +21,16 @@ SVNVER = `svnversion`
 
 
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること
-UI_FONT           = ipagp.ttf
+UI_FONT            = ipagp.ttf
+UI_PT              = 13
+
 STAT_FONT          = ipagp.ttf
+STAT_PT            = 24
+
 VFD_FONT           = ipagui.ttf
 CMT_FONT           = ipagui.ttf
-FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki:.:./.xm7
+FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki/:.:./.xm7/:./xm7/:
+
 
 LDFLAGS = 
 
@@ -36,6 +41,7 @@ AR = ar
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
+CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
 
 ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
