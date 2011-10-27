@@ -148,6 +148,8 @@ void LoadCfg(void)
     char           string[128];
     char           dir[MAXPATHLEN];
     char           InitDir[MAXPATHLEN];
+    int            sym;
+    int            mod;
     BOOL flag;
 
     static const int JoyTable[] =
@@ -312,22 +314,23 @@ void LoadCfg(void)
     configdat.bArrow8Dir = LoadCfgBool("Arrow8Dir", TRUE);
     flag = FALSE;
 
+   	GetDefMapAG(configdat.KeyMap);
+
  /* キーマップ読み込み */
     for (i=0; i<256; i++) {
     		sprintf(string, "Key%d", i);
-    		j = i;
-    		configdat.KeyMap[j].code = (BYTE)LoadCfgInt(string, 0);
-
-    		if (configdat.KeyMap[j].code != 0) {
-    			flag = TRUE;
-    		}
+    		sym = LoadCfgInt(string, -1);
+    		sprintf(string, "Mod%d", i);
+    		mod = LoadCfgInt(string, -1);
+            if(sym == -1) continue; // Assume Unused
+       		configdat.KeyMap[i].pushCode = i;
+            configdat.KeyMap[i].code = sym;
+            configdat.KeyMap[i].mod = mod;
+            flag = TRUE;
     }
  /*
  キーマップ設定なき時はデフォルトキーマップ。
  */
-    if (!flag) {
-    	GetDefMapAG(configdat.KeyMap);
-    }
 /*
  * JoyStickセクション
  */
@@ -610,8 +613,11 @@ void SaveCfg(void)
 
     for (i=0; i<256; i++) {
     		GetKeyCodeAG(i, (void *)&p);
+    		if(p.code == -1) continue; // Unused
        		sprintf(string, "Key%d", p.pushCode);
        		SaveCfgInt(string, p.code);
+       		sprintf(string, "Mod%d", p.pushCode);
+       		SaveCfgInt(string, p.mod);
     }
 
 /*
@@ -798,7 +804,7 @@ void ApplyCfg(void)
     bTenCursor = configdat.bTenCursor;
     bArrow8Dir = configdat.bArrow8Dir;
     for (i=0; i<256; i++) {
-    	if(configdat.KeyMap[i].pushCode == 0) continue;
+    	if(configdat.KeyMap[i].code == -1) continue;
             SetKeyCodeAG(configdat.KeyMap[i].pushCode ,configdat.KeyMap[i].code, configdat.KeyMap[i].mod);
     }
 

@@ -132,7 +132,11 @@ void AgarKbdInterface::InitKeyTable(void){
 	int i;
 
 	memset(KeyCodeTable2, 0, sizeof(KeyCodeTable2));
-
+	for(i = 0; i<256 ; i++)
+	{
+	    KeyCodeTable2[i].code = -1;
+	    KeyCodeTable2[i].mod = -1;
+	}
 	for(i = 0; i<256 ; i++)
 	{
 		if(KeyTableAG[i].sym == 0xffff) break;
@@ -161,6 +165,7 @@ void AgarKbdInterface::LoadKeyTable(void *pMap){
 	struct XM7KeyCode *p = (struct XM7KeyCode *)pMap;
 	for(i = 0; i<256 ; i++)
 	{
+	    if(p[i].code == -1) continue;
 		KeyCodeTable2[i].code = p[i].code;
 		KeyCodeTable2[i].mod = p[i].mod;
 		KeyCodeTable2[i].pushCode = p[i].pushCode;
@@ -174,6 +179,7 @@ void AgarKbdInterface::SaveKeyTable(void *pMap){
 	struct XM7KeyCode *p = (struct XM7KeyCode *)pMap;
 	for(i = 0; i<256 ; i++)
 	{
+	    if(KeyCodeTable2[i].code == -1) continue; // Unused
 		p[i].code = KeyCodeTable2[i].code;
 		p[i].mod = KeyCodeTable2[i].mod;
 		p[i].pushCode = KeyCodeTable2[i].pushCode;
@@ -209,8 +215,8 @@ void AgarKbdInterface::GetKeyCode(Uint8 code, XM7KeyCode *p)
 			return;
 		}
 	}
-	p->mod = 0;
-	p->code = 0;
+	p->mod = -1;
+	p->code = -1;
 	p->pushCode = 0;
 }
 

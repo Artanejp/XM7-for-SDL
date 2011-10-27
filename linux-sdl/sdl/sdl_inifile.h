@@ -11,7 +11,7 @@
      * 定数、型定義
      */
 #define MAX_LEN 256
-#define MAX_ENTRIES 256
+#define MAX_ENTRIES 512 // 20111027
 
     /*
      * 初期化

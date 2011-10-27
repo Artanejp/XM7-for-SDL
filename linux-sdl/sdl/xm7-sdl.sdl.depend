@@ -2303,7 +2303,7 @@
 	<memwatch.h>
 	<assert.h>
 
-1306515607 /home/whatisthis/codeblocks/xm7-sdl/sdl/build_config.h
+1319636549 /home/whatisthis/codeblocks/xm7-sdl/sdl/build_config.h
 
 1319302948 /usr/local/include/agar/agar/core.h
 	<agar/core/core_begin.h>
@@ -3901,7 +3901,7 @@
 	"sdl.h"
 	"sdl_inifile.h"
 
-1318130124 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.h
+1319710072 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_inifile.h
 
 1306855106 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScaleTmpl.h
 	<SDL/SDL.h>
@@ -5275,4 +5275,9 @@
 
 1319237314 /usr/include/glib-2.0/gio/gdbusobjectmanagerserver.h
 	<gio/giotypes.h>
+
+1319237311 /usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h
+	<glib/gmacros.h>
+	<limits.h>
+	<float.h>
 
