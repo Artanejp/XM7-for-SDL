@@ -1027,7 +1027,6 @@ static BOOL fdc_writetrk(void)
 	if (sectors != 16) {
 	    return FALSE;
 	}
-
 	/*
 	 * 本来はC,H,Nなどチェックすべき
 	 */

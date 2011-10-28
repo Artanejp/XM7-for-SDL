@@ -93,9 +93,7 @@ void OnDiskProtect(AG_Event *event)
 	LockVM();
     if (fdc_writep[Drive]) {
 	fdc_setwritep(Drive, FALSE);
-    }
-
-    else {
+    } else {
 	fdc_setwritep(Drive, TRUE);
     }
     ResetSch();

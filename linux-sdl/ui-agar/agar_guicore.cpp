@@ -159,7 +159,9 @@ void AGDrawTaskEvent(BOOL flag)
 			  }
 		     }
 		   AG_UnlockVFS(&agDrivers);
-		}	else if (AG_PendingEvents(drv) > 0){
+//		}	else if (AG_PendingEvents(drv) > 0){
+		}	// Process Event per 1Ticks;
+		if (AG_PendingEvents(drv) > 0){
 //			AGDrawTaskMain();
 			if(EventSDL(drv) == FALSE) return;
 			if(EventGUI(drv) == FALSE) return;
@@ -217,7 +219,7 @@ void MainLoop(int argc, char *argv[])
 
 	AG_ConfigLoad();
         AG_SetInt(agConfig, "font.size", UI_PT);
-   
+
     while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {
               switch (c) {
@@ -284,17 +286,17 @@ void MainLoop(int argc, char *argv[])
           }
     }
     AG_GetString(agConfig, "font.face", strbuf, 511);
-    if(strlen(strbuf) <= 0) 
+    if(strlen(strbuf) <= 0)
     {
         AG_SetString(agConfig, "font.face", UI_FONT);
     }
-   
+
     AG_GetString(agConfig, "font-path", strbuf, 2047);
-    if(strlen(strbuf) <= 0) 
+    if(strlen(strbuf) <= 0)
     {
      AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s:.", getenv("HOME"), getenv("HOME"), FONTPATH);
     }
-   
+
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
