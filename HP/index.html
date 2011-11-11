@@ -13,17 +13,22 @@
 <BR>
 Sorry, under construction and Japanese only,Yet...<BR>
 <BR>
+<A HREF="ELECTRONICS/">NEW: 電子工作のページ</A><BR>
 <BR>
 <B>現在のリリースは、<BR>
-*  Version 0.2r310 (OpenGL+Agar仕様  / βレベル) May 27,2011<BR>
+*  Version 0.2r346 (OpenGL+Agar仕様  / βレベル) Sep 06,2011<BR>
 *  Version 0.1r129 (αレベル) Oct 26,2010<BR>
 です。</B><BR>
 解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
 <BR>
 ・ダウンロード：<BR>
 <A
-HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.2r310.7z">
-ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r310 少し？Unstableだがたぶんうごくはずだ)</A><BR>
+HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.2r346-libagar9027.7z">
+本体ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r346 少し？Unstableだがたぶんうごくはずだ)</A><BR>
+<BR>
+<A
+HREF="http://sky.geocities.jp/artanejp/agar-svn-head.r9027.src.7z">
+libagar svn r9027のソースコード</A><BR>
 <BR>
 <A
 HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
@@ -34,6 +39,8 @@ HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
 <BR>
 <BR>
 <H2>変更点:</H2>
+-
+<B>差分描画に対応。表示時のCPU負担が激減しました（たぶん）(NEW!)</B><BR>
 - <B>BEEP音で音楽を鳴らすようなソフトの音楽が再現出来るようになった</B>…かも？(NEW!)</BR>
 - 音声出力を大幅にSDL_mixer依存にした<BR>
 - スクリーン内表示に<del>SDL_ttf</del>AGARを使用<BR>
@@ -78,7 +85,7 @@ HREF="http://sky.geocities.jp/artanejp/agar-svn-head.r8929.7z">1.4.1SVN8929以�
 target="_blank">IPA Gothic(V3)</A>が必要です。</B>システムにないときは$HOMEかカレントディレクトリィに置いてください(NEW!)<BR>
 - bin/xm7 と bin/xm7.debug  を/usr/local/bin などにinstall<BR>
 - resource/ 以下を /usr/local/share/xm7 にインストール<BR>
-- libagar.bin/ 以下を/usr/local あたりにInstall (※ Agarとのヴァージョン整合性の問題があるので必ずやること)<BR>
+- libagar.r9027/ 以下を/usr/local あたりにInstall (※ Agarとのヴァージョン整合性の問題があるので必ずやること)<BR>
 - sudo ldconfigする
 
 <BR>
