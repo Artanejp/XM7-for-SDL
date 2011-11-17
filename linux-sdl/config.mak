@@ -64,7 +64,7 @@ CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 #CFLAGS_RELEASE += -pthread
 
 # Architecture Depend Flag
-CFLAGS_RELEASE += -march=amdfam10
+#CFLAGS_RELEASE += -march=amdfam10
 CFLAGS_RELEASE += -minline-all-stringops
 
 

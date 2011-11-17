@@ -44,7 +44,7 @@
 
 #define          LOCALVER         "SDL/Agar/OpenGL 0.2β"
 
-#define	DATE		"2011/05/27"
+#define	DATE		"2011/11/17"
 //#define	DATE		"2011/04/23"
 
 /*
