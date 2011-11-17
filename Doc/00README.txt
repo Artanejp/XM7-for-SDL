@@ -1,15 +1,15 @@
 ****
-* FM-7/77/AV エミュレータ、XM7 V3.4L31 for SDL/Linux(amd64)
-*  Version 0.1r346 (βレベル / Agar / OpenGL)
+* FM-7/77/AV エミュレータ、XM7 V3.4L40 for SDL/Linux(amd64)
+*  Version 0.1r369 (βレベル / Agar / OpenGL)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010 K.Ohta 
 *
-* 2011.09.06 Artane.
+* 2011.11.17 Artane.
 * HP:
-* http://sky.geocities.jp/artanejp/
+* http://sky.geocities.jp/artanejp/XM7-SDL/
 * 仮設SVN:
 * http://xm7-sdl.unfuddle.com/
 
@@ -24,8 +24,11 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 (*0) http://retropc.net/ryu/xm7/
 (*1) http://www.geocities.jp/kugimoto0715/ 
 
-2.SDL版の特徴
-・XM7 V3.4L31ベースです(但し、描画まわりやダイアログが出来ていない所も
+2.Changelog
+  r369 : CPU周りのBugFix , 表示レイアウトの見直し、その他BugFix多数 (2011/11/17)
+
+3.SDL版の特徴
+・XM7 V3.4L40ベースです(但し、描画まわりやダイアログが出来ていない所も
  ある)
 ・OpenGLの描画機能を使っているので、拡大してもそこそこ高速です。
 ・
@@ -44,14 +47,14 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 (*2) PC-88エミュレータであるQuasi88に同等の機能があったので…
 (*3) SDLMESS http://rbelmont.mameworld.info/?page_id=163
 
-3.ビルド
+4.ビルド
  以下の物が、必要です。
 ・SDL1.2以上
 ・U*ix系OSの場合にはX Window Systemと開発環境、FontConfigなどなど。
 ・GCC 4
 ・SDL_ttf
 ・SDL_mixer ( http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer )
-・AGAR ( http://www.libagar.org/ )
+・AGAR ( http://www.libagar.org/ SVN r9049以降推奨)
 ・IPA ゴシック一式(ビルド時に変更可能)
 ・GNU MAKE
 ・PKGCONFIG
@@ -76,7 +79,7 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
 -- ここまで --
 
 
-4.つかいかた
+5.つかいかた
 a.xm7の実行型式があるディレクトリィに、以下の物を入れます。
 
 a. bin に移動して、
@@ -87,7 +90,7 @@ $sudo install -m 0777 -d /usr/local/share/xm7/
 $sudo install -m 0644 ./* /usr/local/share/xm7/
 
 c. libagarのインストール。AMD64についてはコンパイル済みバイナリを
-   libagar.r9027/ 以下に添付してあります。これを、/usr/local 以下にインストールしてください
+   libagar/ 以下に添付してあります。これを、/usr/local 以下にインストールしてください
 
 d. 以下のものを~/.xm7 に入れます。
 ・FM-77AVEXのROMイメージ、もしくはAppolo氏製の互換ROM
@@ -101,12 +104,12 @@ e.
 
 *** 動くことを願っています(ぉぃ ***
 
-5. SVNのおさそい
+6. SVNのおさそい
 現在、SVNリポジトリを使用してソースコードを管理しています。
 但し、管理権限の関係があるので公開されてるかどうかわかりません（いいかげんでごめんなさい）
 $ svn co http://xm7-sdl.unfuddle.com/svn/xm7-sdl_xm7-sdl-linux/linux-sdl
 
-5.TIPS
+7.TIPS
 
 a.GNU/Linuxの場合、サウンドドライバとしてALSAを使っていると音飛びなどが
 目立つと思います。
@@ -123,7 +126,7 @@ hogeはユーザ名など。
 
 
 c.WAVファイル、ROMファイルを~/.xm7/にコピーしたのに動かないときは、
-　これらファイルの大文字小文字を見直してください。
+　これらファイルの大文字小文字を見直してください。(※r369現在、WAV演奏機能は殺してあります)
 
 d.Agar使用に伴い、フォントを検索します。が、IPAゴシックのipag*.ttfが必要なのは同じです＿|￣|●
   かえる必要があるときはMakefileもしくはbuildconfig.hを弄ってください
