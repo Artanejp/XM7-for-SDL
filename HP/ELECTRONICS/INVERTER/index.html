@@ -1,0 +1,182 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>DEVELOPMENT PAGE</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>インバータを使った高効率LED照明装置(改版1+a)</H3>
+<BR>
+<H4>きっかけ</H4>
+&nbsp;東日本大震災で、当日全面停電してしまってジャンク箱から引っ張り出したAMラジオと
+辛うじてつながってる携帯電話経由のTwitterだけで心細く過ごしていたのを教訓に、
+計画停電が云々された時点で手持ちであった白色LEDと抵抗、単四型エネループ四本で
+間に合わせの照明を作って、計画停電となったらラジオつけて細々と読書して時間つぶししておりました。<BR>
+&nbsp;そうなると人間欲が出てくるもので、もう少し明るい照明が欲しいな…となりました。<BR>
+<BR>
+&nbsp; そんなおり、秋月電子通商のWEBページを見ると、<A
+HREF="http://akizukidenshi.com/catalog/g/gI-03709/">放熱器に付けられた1Wの白色LED</A>やら、
+<A HREF="http://akizukidenshi.com/catalog/g/gI-02392/">1.5Aまで流せる3.3V固定のインバータIC</A>とかあるよねぇ
+<BR>
+…これはやるしかないか<BR>
+<BR>
+<BR>
+と一念発起したのが確か2011年の6月。<BR>
+&nbsp; その後、部品を逐次備蓄したりだなんだ（貧乏なのさ）で結局半年近く計画を寝かしていましたが、機が熟した（？）ので、１０月末から
+とりかかったのでした。<BR>
+<H4>注意</H4>
+&nbsp; この工作は、スイッチング電源回路や表面実装部品に慣れてない人がやると非常に難しいと思います。<BR>
+&nbsp; 普通の人？は3.3V吐き出す出来合いのD/Dコンバータモジュールと抵抗器を組み合わせて、効率が低くても気軽にできる道を選ぶべきです。<BR>
+<H4>回路</H4>
+<BR>
+<IMG SRC="./LED-INVERTER-v1.png" ALT="v1回路図"><BR>
+インバータ回路図(v1.01a 2011-11-17) CC-BY-SA表示追加<BR>
+<A
+HREF="./LED-INVERTER-v1.sch.gz">gEDA形式の回路図データ(gzip圧縮)</A><BR>
+<A HREF="CC-BY-SA-88x31.png"> このアイコン(CC-BY-SA表示)
+<IMG SRC="CC-BY-SA-88x31.png">も必要です</A><BR>
+<BR>
+&nbsp; <A HREF="http://www.national.com/pf/LM/LM2651.html">LM2651MTC-3.3</A>と言う、最高97%の効率を実現できるスイッチング式レギュレータを使って、
+同じくVF=3.3VのパワーLED(OPTOSUPPLY社製)を駆動しています。<BR>
+&nbsp; 回路定数などは、メーカのデータシートに準拠しています。<BR>
+&nbsp;
+電池で供給された4.8Vの電力は、レギュレータを通じて3.3V,300mA前後に変換されます。
+&nbsp; この時、普通の三端子レギュレータのように電圧の差がそのまま熱になる(約66%しか使えない）のではなく、
+スイッチング方式で変換されるので非常に高い効率の電力変換が行われています。(97%は無理でも85%以上にはしたい…）<BR>
+(以下、あとでかく)<BR>
+<BR>
+<H4>工作</H4>
+<BR>
+1.まえがき<BR>
+&nbsp; LM2651はTSSOPと言う非常に小さくて、ピン間隔が狭い(0.65mm)ICです。しかも、電力ICなので発熱が予想される
+…さて、どうしようか。と言う所から始まりました。<BR>
+&nbsp; 常道ならばプリント基板を作るべきなのだが、しかし、そんな金など何処にもない。<BR>
+&nbsp; 秋月に寄った後、部品屋を眺めていたら、変換基板と一緒に銅箔テープ(サンハヤト
+T-30C)が売られていました。何たる神の啓示＼(^o^)／<BR>
+<BR>
+2.基板についての基本的考え方<BR>
+・変換基板と2.54ピッチの万能基板の組み合わせで作る。<BR>
+・ICやその周辺につけないといけないSBDは表面実装品でなおかつ変換基板上につける。<BR>
+・ICの熱的問題軽減と過渡的・電力的問題解決のためにのために、変換基板上に銅箔で放熱を兼ねたグランドパターンなどを構築する（！）<BR>
+・ICと銅箔の間は熱伝導両面テープで熱的に結合させる<BR>
+・その他の部品は基本的に万能基板につけるが、パターンなど気をつける。又、ベタアースを銅箔テープで構築する<BR>
+・ベタアースと変換基板上のグランドは結合する。但し、ループを形成しないように気をつける<BR>
+・ケミコンは、マザーボードなどで使われる長寿命・低ESRの物を意図的に使う<BR>
+<BR>
+3.製作<BR>
+<IMG SRC="./PA302629.JPG" ALT="銅箔を貼った変換基板"><BR>
+&nbsp; まず、変換基板（ダイセン電子工業 D016）に銅箔テープを切り貼りしていきます。<BR>
+&nbsp; 変換基板は、SSOPのパターン<u>のみ</u>が一面に描かれてるものを使って下さい。
+他のICのパターンが同じ面にあるものは使えません。(例：秋月で売ってる変換基板とか）。
+基本的には、<BR>
+・PGND面は広く取る<BR>
+・AGNDも広くとるが、現状ではPGNDと接続しない<BR>
+・PIN,SWについても可能な限り広く取る。<BR>
+・変換基板のパターンは細すぎて電力的にも誘導成分を持つ意味でもよろしくないので気をつける<BR>
+<BR>
+<IMG SRC="./PA302632.JPG" ALT="変換基板にハンダ付け"><BR>
+&nbsp;
+次に、変換基板のパターンと銅箔をハンダで接続し、同時に銅箔上でICの足が乗る所に予備ハンダします。ICのパッケージが乗る所はなるべくハンダ付けしないこと。<BR>
+<BR>
+&nbsp; ここまで終わったら、テスターの導通チェックモードを使って、各ピン（これは、変換基板上のスルーホールに出ている）の短絡や断線を調べます。<BR>
+&nbsp; ポイントは、<BR>
+・ICのデータシートで違う名前の足が短絡してないこと<BR>
+・ICのデータシートで同じ名前の足が導通していること<BR>
+・PGNDパターンを複数の銅箔で作った場合は、銅箔の間をハンダ付けで接続すること<BR>
+<BR>
+<IMG SRC="./PA302633.JPG" ALT="ICの裏側"><BR>
+&nbsp;
+ICをはんだ付けする前に、ICの裏側に熱伝導性両面テープを小さく切って貼ります。
+これは、ソフマップなどのPC自作コーナーで売られてるCPUとCPUクーラーの間に貼る「熱伝導両面テープ」などの商品名で売られてます。<BR>
+<BR>
+<IMG SRC="./PA302634.JPG" ALT="ICはんだ付けする"><BR>
+&nbsp;
+ICをハンダ付けします。<u>ハンダ付けする前に、ICの裏側に貼った両面テープの保護テープを剥がしましょう</u>。
+その上で、変換基板の上にICをおいたら上から軽く押さえつけて、テープとICと銅箔を密着させること。<BR>
+又、ハンダ付けした後で、再度テスターで短絡チェックなどを行うこと。<BR>
+<BR>
+<IMG SRC="./PA302636.JPG" ALT="SBDはんだ付けする"><BR>
+<IMG SRC="./PA302639.JPG" ALT="SBDもう一枚"><BR>
+&nbsp;
+SBD(HR502A)をSWとPGNDの間にハンダ付けします。 
+なるべく電気的な距離を短くすべきとデータシートで指摘されてるので、そこに十分に配慮して下さい。<BR>
+<BR>
+<IMG SRC="./PA302641.JPG" ALT="一旦保管"><BR>
+&nbsp; テスターでの検査が終わったら、変換基板は静電防止袋に入れて保管しましょう。<BR>
+&nbsp; 代用フロンなどの基板用洗浄剤を持ってる方は、ここで一度変換基板のフラックスを洗浄したほうがいいかもしれません。<BR>
+<BR>
+&nbsp;
+次に、本体基板を組み立てます。<BR>
+<BR>
+&nbsp;最初に、変換基板に「足」を付けます。この変換基板は穴径が小さいので通常のピンヘッダだと通らないかも知れない
+…その場合は、メッキ線（0.5Φ以下？）で足を作ってハンダ付けして下さい。<BR>
+又、この変換基板は両面スルーホールなので、十分にハンダが浸透するように気をつけて下さい。
+<BR>
+<IMG SRC="./PB092734.JPG" ALT="一旦保管"><BR>
+&nbsp;次に、裏面に銅箔でパターンを構築します。（写真は完成後のものです…済まぬ）<BR>
+&nbsp; 銅箔間の接続は、必ずハンダ付けで行うこと。<BR>
+<BR>
+&nbsp;
+変換基板→その他部品の順で、背の小さい順番にハンダ付けします（結構重要）<BR>
+<BR>
+&nbsp; ハンダ付けした部品間を銅箔やメッキ線で配線します。<BR>
+&nbsp;変換基板のPGNDについては、万能基板裏側に構築したベタアースとメッキ線で接続・ハンダ付けしましょう。
+とまれ、電気的熱的に十分結合してることが重要です。<BR>
+<BR>
+…<BR>
+<IMG SRC="./PB092728.JPG" ALT="基板完成"><BR>
+&nbsp; 何とか完成しました。が、(配線チェックした後の最初の通電で）最初からLED繋ぐのではなく、
+5Ω5W程度のセメント抵抗をダミー負荷にして電流電圧などを測ります。<BR>
+<BR>
+&nbsp;
+もし、オシロスコープなどの測定器がある方は、この段階でノイズやリップルなどを見て、回路定数やパターンを調整しましょう。<BR>
+<BR>
+&nbsp; ここまでうまく行ったら、1WのLEDをつなぎます。<BR>
+<BR>
+<IMG SRC="./PB092730.JPG" ALT="全体図２"><BR>
+<IMG SRC="./PB092731.JPG" ALT="全体図１"><BR>
+<IMG SRC="./PB092729.JPG" ALT="完成!"><BR>
+&nbsp; 完成です＼(^o^)／<BR>
+<BR>
+<BR>
+以下、製作中の図やら何やら乗っける予定（は未定）<BR>
+<BR>
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">LED-INVERTER</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 11 Nov.2011 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
