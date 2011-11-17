@@ -387,8 +387,8 @@ static void (*const m6809_main[0x100])(cpu6809_t *) = {
 /*          0xX0,   0xX1,     0xX2,    0xX3,    0xX4,    0xX5,    0xX6,    0xX7,
             0xX8,   0xX9,     0xXA,    0xXB,    0xXC,    0xXD,    0xXE,    0xXF   */
 
-/* 0x0X */  neg_di, neg_di, ngc_di,com_di, lsr_di, lsr_di,ror_di, asr_di,
-            asl_di, rol_di, dec_di, dcc_di,inc_di, tst_di, jmp_di, clr_di,
+/* 0x0X */  neg_di, neg_di, ngc_di, com_di, lsr_di, lsr_di, ror_di, asr_di,
+            asl_di, rol_di, dec_di, dcc_di, inc_di, tst_di, jmp_di, clr_di,
 
 /* 0x1X */  pref10, pref11, nop,	sync_09,	trap,trap,lbra,	lbsr,
             aslcc_in,daa,	orcc,	nop, andcc,	sex,	exg,	tfr,

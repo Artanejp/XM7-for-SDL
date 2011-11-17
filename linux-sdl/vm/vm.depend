@@ -1571,3 +1571,14 @@
 	<string.h>
 	<SDL/SDL.h>
 
+1319713412 source:/home/whatisthis/codeblocks/xm7-sdl/vm/fdc.c
+	<string.h>
+	<stdlib.h>
+	<sys/types.h>
+	"xm7.h"
+	"device.h"
+	"fdc.h"
+	"mainetc.h"
+	"dmac.h"
+	"event.h"
+

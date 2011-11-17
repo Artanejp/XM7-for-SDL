@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="device.h" open="0" top="0" tabpos="4">
-		<Cursor position="2716" topLine="111" />
+	<File name="device.h" open="1" top="0" tabpos="25">
+		<Cursor position="4337" topLine="181" />
 	</File>
 	<File name="disasm.c" open="0" top="0" tabpos="5">
 		<Cursor position="4270" topLine="272" />
 	</File>
-	<File name="fdc.c" open="0" top="0" tabpos="2">
-		<Cursor position="8739" topLine="304" />
+	<File name="fdc.c" open="1" top="0" tabpos="22">
+		<Cursor position="15206" topLine="305" />
 	</File>
 	<File name="keyboard.c" open="0" top="0" tabpos="0">
 		<Cursor position="40887" topLine="2635" />
 	</File>
-	<File name="m6809.c" open="1" top="1" tabpos="1">
+	<File name="m6809.c" open="1" top="0" tabpos="1">
 		<Cursor position="12498" topLine="1101" />
 	</File>
 	<File name="main.c" open="0" top="0" tabpos="0">
@@ -22,7 +22,7 @@
 	<File name="maincpu.c" open="1" top="0" tabpos="2">
 		<Cursor position="728" topLine="31" />
 	</File>
-	<File name="mainmem.c" open="1" top="0" tabpos="5">
+	<File name="mainmem.c" open="1" top="0" tabpos="4">
 		<Cursor position="15061" topLine="787" />
 	</File>
 	<File name="subcpu.c" open="0" top="0" tabpos="6">
@@ -31,8 +31,8 @@
 	<File name="submem.c" open="0" top="0" tabpos="3">
 		<Cursor position="6824" topLine="363" />
 	</File>
-	<File name="system.c" open="0" top="0" tabpos="0">
-		<Cursor position="16808" topLine="948" />
+	<File name="system.c" open="1" top="0" tabpos="24">
+		<Cursor position="8403" topLine="464" />
 	</File>
 	<File name="tools.c" open="0" top="0" tabpos="36">
 		<Cursor position="0" topLine="0" />

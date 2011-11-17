@@ -234,9 +234,9 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 #define SET_Z16(a)		SET_Z((WORD)a)
 //#define SET_N8(a)		CC|=((a&0x80)>>4)
 //#define SET_N16(a)		CC|=((a&0x8000)>>12)
-#define SET_N8(a)       if(a & 0x80)CC|=CC_N 
-#define SET_N16(a)       if(a & 0x8000)CC|=CC_N 
-   
+#define SET_N8(a)       if(a & 0x80)CC|=CC_N
+#define SET_N16(a)       if(a & 0x8000)CC|=CC_N
+
 //#define SET_H(a,b,r)	CC|=(((a^b^r)&0x10)<<1)
 #define SET_H(a,b,r)	if((a^b^r)&0x10)CC|=CC_H
 //#define SET_C8(a)		CC|=((a&0x100)>>8)
@@ -260,7 +260,7 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 
 #define SET_NZVC8(a,b,r)	{SET_N8(r);SET_Z8(r);SET_V8(a,b,r);SET_C8(r);}
 #define SET_NZVC16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
-   
+
 
 #define NXORV			(((CC&CC_N)^((CC&CC_V)<<2)) !=0)
 
@@ -295,11 +295,11 @@ INLINE void WRITEW(cpu6809_t *t, WORD addr, WORD data)
 #define EXTWORD(w) {EXTENDED;w=RM16(m68_state, EA);}
 
 /* macros for branch instructions */
-INLINE void
-BRANCH(cpu6809_t *m68_state, int f)
+INLINE void BRANCH(cpu6809_t *m68_state, int f)
 {
 	BYTE t;
-        IMMBYTE(t);
+    IMMBYTE(t);
+
 	if( f )
 	{
 		if(t >= 0x80) {
@@ -310,8 +310,7 @@ BRANCH(cpu6809_t *m68_state, int f)
 	}
 }
 
-INLINE void
- LBRANCH(cpu6809_t *m68_state,int f)
+INLINE void LBRANCH(cpu6809_t *m68_state,int f)
  {
 	WORD t;
 	IMMWORD(t);
@@ -351,22 +350,22 @@ static void cpu_reset(cpu6809_t *m68_state)
 //	cpu6809_t *m68_state = get_safe_token(device);
 
 	m68_state->intr = 0;
-        D = 0;
-        X = 0;
-        Y = 0;
-        U = 0;
-        S = 0;
+    D = 0;
+    X = 0;
+    Y = 0;
+    U = 0;
+    S = 0;
 	DP = 0;			/* Reset direct page register */
 
 	CC = CC_II | CC_IF;        /* IRQ + FIRQ disabled */
 
-        m68_state->cycle = 0;
-        m68_state->total = 0;
-        m68_state->ea = 0;
-        m68_state->intr = 0x0000;
+    m68_state->cycle = 0;
+    m68_state->total = 0;
+    m68_state->ea = 0;
+    m68_state->intr = 0x0000;
 	m68_state->pc = RM16(m68_state, 0xfffe);
 #ifdef CPU_DEBUG
-   printf("DEBUG: Reset %04x %02x\n",m68_state->pc ,READB(m68_state, m68_state->pc));
+    printf("DEBUG: Reset %04x %02x\n",m68_state->pc ,READB(m68_state, m68_state->pc));
 #endif
 
 	UpdateState(m68_state);
@@ -385,7 +384,7 @@ static void cpu_reset(cpu6809_t *m68_state)
 static void cpu_nmi(cpu6809_t *m68_state)
 {
    //printf("NMI occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfffc),S);
-	m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
+   m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
    CC |= CC_E;
    PUSHWORD(pPC);
    PUSHWORD(pU);
@@ -395,9 +394,9 @@ static void cpu_nmi(cpu6809_t *m68_state)
    PUSHBYTE(B);
    PUSHBYTE(A);
    PUSHBYTE(CC);
-   CC |= 0x50;
+   CC = CC | CC_II | CC_IF;  // 0x50
    PC = RM16(m68_state, 0xfffc);
-   m68_state->intr &= 0xfffe; /* NMIクリア */
+   m68_state->intr &= ~INTR_NMI; // 0xfffe /* NMIクリア */
 }
 
 
@@ -417,14 +416,14 @@ static void cpu_firq(cpu6809_t *m68_state)
       PUSHBYTE(B);
       PUSHBYTE(A);
       PUSHBYTE(CC);
-      CC |= 0x50;
+      CC = CC | CC_II | CC_IF;
       PC = RM16(m68_state, 0xfff6);
    } else {
       /* NORMAL */
       CC &= ~CC_E;
       PUSHWORD(pPC);
       PUSHBYTE(CC);
-      CC |= 0x50;
+      CC = CC | CC_II | CC_IF;
       PC = RM16(m68_state, 0xfff6);
 //      m68state->intr &= 0xfffd;
    }
@@ -458,7 +457,7 @@ static void cpu_exec(cpu6809_t *m68_state)
    /*
     * Check HALT State
     */
-   if(intr & 0x8000) {
+   if(intr & INTR_HALT) { // 0x8000
         READB(m68_state, PC);
 	    m68_state->cycle = 2;
         PC++;
@@ -468,7 +467,7 @@ static void cpu_exec(cpu6809_t *m68_state)
     * Check Interrupt
     */
 check_nmi:
-   if((intr & 0x0007) != 0) {
+   if((intr & (INTR_NMI | INTR_FIRQ | INTR_IRQ)) != 0) { // 0x0007
 	   if((intr & INTR_NMI) == 0) goto check_firq;
 	   m68_state->intr |= INTR_SYNC_OUT;
 	   if((intr & INTR_SLOAD) != 0) {
@@ -483,42 +482,39 @@ check_nmi:
 		goto check_ok;
 	}
 
-
-
 check_firq:
-   if((intr & INTR_FIRQ) != 0)
-     {
-	m68_state->intr |= INTR_SYNC_OUT;
-	if((cc & CC_IF) != 0) goto check_irq;
-	cpu_firq(m68_state);
-	cpu_execline(m68_state);
-	cycle = 10;
-	goto int_cycle;
-     }
+    if((intr & INTR_FIRQ) != 0) {
+        m68_state->intr |= INTR_SYNC_OUT;
+        if((cc & CC_IF) != 0) goto check_irq;
+        cpu_firq(m68_state);
+        cpu_execline(m68_state);
+        cycle = 10;
+        goto int_cycle;
+    }
 
 check_irq:
-   if((intr & INTR_IRQ) != 0)
-     {
-	m68_state->intr |= INTR_SYNC_OUT;
-	if((cc & CC_II) != 0) goto check_ok;
-	cpu_irq(m68_state);
-	cpu_execline(m68_state);
-	cycle = 19;
-	cc |= CC_II;
-	goto int_cycle;
-     }
+    if((intr & INTR_IRQ) != 0) {
+        m68_state->intr |= INTR_SYNC_OUT;
+        if((cc & CC_II) != 0) goto check_ok;
+        cpu_irq(m68_state);
+        cpu_execline(m68_state);
+        cycle = 19;
+        cc |= CC_II;
+        goto int_cycle;
+    }
    /*
     * NO INTERRUPT
     */
 check_ok:
    cpu_execline(m68_state);
    return;
-
+    /*
+    * INTERRUPT
+    */
 int_cycle:
-   if((m68_state->intr & INTR_CWAI_IN) == 0)
-     {
-	m68_state->cycle += cycle;
-     }
+   if((m68_state->intr & INTR_CWAI_IN) == 0) {
+        m68_state->cycle += cycle;
+    }
     return;
 }
 
@@ -526,52 +522,49 @@ int_cycle:
 static void cpu_execline(cpu6809_t *m68_state)
 {
         BYTE ireg;
-
 //			debugger_instruction_hook(device, PCD);
-
             ireg = ROP(PC);
             fetch_op = ireg;
 	        PC++;
             m68_state->cycle = cycles1[ireg];
 #if BIG_SWITCH
-
             switch( ireg )
 			{
-			case 0x00: neg_di(m68_state);    break;
-			case 0x01: neg_di(m68_state);    break;	/* undocumented */
+			case 0x00: neg_di(m68_state);   break;
+			case 0x01: neg_di(m68_state);   break;	/* undocumented */
 			case 0x02: ngc_di(m68_state);   break; /* undocumented */
-			case 0x03: com_di(m68_state);    break;
-			case 0x04: lsr_di(m68_state);    break;
+			case 0x03: com_di(m68_state);   break;
+			case 0x04: lsr_di(m68_state);   break;
 			case 0x05: lsr_di(m68_state);   break; /* Undefined */
-			case 0x06: ror_di(m68_state);    break;
-			case 0x07: asr_di(m68_state);    break;
-			case 0x08: asl_di(m68_state);    break;
-			case 0x09: rol_di(m68_state);    break;
-			case 0x0a: dec_di(m68_state);    break;
+			case 0x06: ror_di(m68_state);   break;
+			case 0x07: asr_di(m68_state);   break;
+			case 0x08: asl_di(m68_state);   break;
+			case 0x09: rol_di(m68_state);   break;
+			case 0x0a: dec_di(m68_state);   break;
 			case 0x0b: dcc_di(m68_state);   break; /* undocumented */
-			case 0x0c: inc_di(m68_state);    break;
-			case 0x0d: tst_di(m68_state);    break;
-			case 0x0e: jmp_di(m68_state);    break;
-			case 0x0f: clr_di(m68_state);    break;
-			case 0x10: pref10(m68_state);					 break;
-			case 0x11: pref11(m68_state);					 break;
-			case 0x12: nop(m68_state);	    break;
-			case 0x13: sync_09(m68_state);	    break; // Rename 20101110
-			case 0x14: trap(m68_state);   break;
-			case 0x15: trap(m68_state);   break;
-			case 0x16: lbra(m68_state);	    break;
-			case 0x17: lbsr(m68_state);	    break;
-			case 0x18: aslcc_in(m68_state);   break; /* undocumented */
-			case 0x19: daa(m68_state);	    break;
-			case 0x1a: orcc(m68_state);	    break;
-			case 0x1b: nop(m68_state);   break; /* undocumented */
-			case 0x1c: andcc(m68_state);     break;
-			case 0x1d: sex(m68_state);	    break;
-			case 0x1e: exg(m68_state);	    break;
-			case 0x1f: tfr(m68_state);	    break;
-			case 0x20: bra(m68_state);	    break;
-			case 0x21: brn(m68_state);	    break;
-			case 0x22: bhi(m68_state);	    break;
+			case 0x0c: inc_di(m68_state);   break;
+			case 0x0d: tst_di(m68_state);   break;
+			case 0x0e: jmp_di(m68_state);   break;
+			case 0x0f: clr_di(m68_state);   break;
+			case 0x10: pref10(m68_state);   break;
+			case 0x11: pref11(m68_state);   break;
+			case 0x12: nop(m68_state);      break;
+			case 0x13: sync_09(m68_state);  break; // Rename 20101110
+			case 0x14: trap(m68_state);     break;
+			case 0x15: trap(m68_state);     break;
+			case 0x16: lbra(m68_state);     break;
+			case 0x17: lbsr(m68_state);     break;
+			case 0x18: aslcc_in(m68_state); break; /* undocumented */
+			case 0x19: daa(m68_state);      break;
+			case 0x1a: orcc(m68_state);     break;
+			case 0x1b: nop(m68_state);      break; /* undocumented */
+			case 0x1c: andcc(m68_state);    break;
+			case 0x1d: sex(m68_state);      break;
+			case 0x1e: exg(m68_state);      break;
+			case 0x1f: tfr(m68_state);      break;
+			case 0x20: bra(m68_state);      break;
+			case 0x21: brn(m68_state);      break;
+			case 0x22: bhi(m68_state);      break;
 			case 0x23: bls(m68_state);	    break;
 			case 0x24: bcc(m68_state);	    break;
 			case 0x25: bcs(m68_state);	    break;
