@@ -1,43 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="device.h" open="1" top="0" tabpos="25">
+	<File name="device.h" open="0" top="0" tabpos="25">
 		<Cursor position="4337" topLine="181" />
 	</File>
 	<File name="disasm.c" open="0" top="0" tabpos="5">
 		<Cursor position="4270" topLine="272" />
 	</File>
-	<File name="fdc.c" open="1" top="0" tabpos="22">
+	<File name="fdc.c" open="1" top="0" tabpos="5">
 		<Cursor position="15206" topLine="305" />
 	</File>
 	<File name="keyboard.c" open="0" top="0" tabpos="0">
 		<Cursor position="40887" topLine="2635" />
 	</File>
 	<File name="m6809.c" open="1" top="0" tabpos="1">
-		<Cursor position="12498" topLine="1101" />
+		<Cursor position="14210" topLine="463" />
+	</File>
+	<File name="m6809ops.h" open="1" top="0" tabpos="7">
+		<Cursor position="42205" topLine="2916" />
+	</File>
+	<File name="m6809tbl.h" open="1" top="0" tabpos="8">
+		<Cursor position="18475" topLine="378" />
 	</File>
 	<File name="main.c" open="0" top="0" tabpos="0">
 		<Cursor position="0" topLine="17" />
 	</File>
 	<File name="maincpu.c" open="1" top="0" tabpos="2">
-		<Cursor position="728" topLine="31" />
+		<Cursor position="693" topLine="32" />
 	</File>
 	<File name="mainmem.c" open="1" top="0" tabpos="4">
 		<Cursor position="15061" topLine="787" />
 	</File>
-	<File name="subcpu.c" open="0" top="0" tabpos="6">
-		<Cursor position="707" topLine="28" />
+	<File name="subcpu.c" open="1" top="1" tabpos="9">
+		<Cursor position="679" topLine="241" />
 	</File>
 	<File name="submem.c" open="0" top="0" tabpos="3">
 		<Cursor position="6824" topLine="363" />
 	</File>
-	<File name="system.c" open="1" top="0" tabpos="24">
+	<File name="system.c" open="1" top="0" tabpos="6">
 		<Cursor position="8403" topLine="464" />
 	</File>
 	<File name="tools.c" open="0" top="0" tabpos="36">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="xm7.h" open="1" top="0" tabpos="3">
-		<Cursor position="9777" topLine="389" />
+		<Cursor position="2589" topLine="126" />
 	</File>
 </CodeBlocks_layout_file>

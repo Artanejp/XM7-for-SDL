@@ -500,7 +500,7 @@ BOOL SelectSnd(void)
         if(DrvCMT == NULL) {
 	   DrvCMT= new SndDrvCMT ;
 	}
-   
+
 
 	if(DrvOPN) {
 		DrvOPN->SetRate(uRate);
@@ -531,7 +531,7 @@ void ApplySnd(void)
 
 	if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
 			(bMode == bFMHQmode) && (uStereo == nStereoOut)) {
-	
+
 		return;
 	}
 	/* 音声プロパティとOPNが衝突しないようにするためのセマフォ初期化 */
@@ -545,14 +545,14 @@ void ApplySnd(void)
 	   SDL_SemPost(applySem);
 	   return;
 	}
-   
+
 
 	/*
 	 * 再セレクト
 	 */
 	SelectSnd();
         SDL_SemPost(applySem);
-   
+
 	// BEEPについて、SelectSnd()し直しても音声継続するようにする
 	bBeepFlag = !bBeepFlag;
 	beep_notify();
@@ -595,45 +595,76 @@ static Sint16 *Mix16(struct SndBufType *q, int chunksize)
 	Sint16 *p;
 	Sint16 *buf;
 	int channels = 2;
+	int size;
 
-    buf = &(q->pBuf[q->nWritePTR * channels]);
-	if(buf == NULL) return NULL;
+    if(q == NULL) return NULL;
 	if(chunksize <= 0) return NULL;
 
-	DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
-	DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
-	DataPtr[2] = &(pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels]);
-	DataPtr[3] = NULL;
-	memset(buf, 0x00, chunksize * channels * sizeof(Sint16));
-	p = WavMix(DataPtr, buf , 3, chunksize * channels);
-	pCaptureBuf->nWritePTR += chunksize * channels;
-    if(pCaptureBuf->nWritePTR >= pCaptureBuf->nSize) pCaptureBuf->nWritePTR = 0;
-
+    while(chunksize > 0) {
+        buf = &(q->pBuf[q->nWritePTR * channels]);
+        if(buf == NULL) return NULL;
+        DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
+        DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
+        DataPtr[2] = &(pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels]);
+        DataPtr[3] = NULL;
+        if(q->nSize > (q->nWritePTR + chunksize)) {
+            size = q->nSize - q->nWritePTR;
+        } else {
+            size = chunksize;
+        }
+		memset(buf, 0x00, size * channels * sizeof(Sint16));
+        p = WavMix(DataPtr, buf , 3, size * channels);
+        q->nWritePTR += size * channels;
+        if(q->nWritePTR >= q->nSize) q->nWritePTR = 0;
+        pBeepBuf->nReadPTR += size * channels;
+        if(pBeepBuf->nReadPTR > pBeepBuf->nSize) pBeepBuf->nReadPTR = 0;
+        pCMTBuf->nReadPTR += size * channels;
+        if(pCMTBuf->nReadPTR > pCMTBuf->nSize) pCMTBuf->nReadPTR = 0;
+        pOpnBuf->nReadPTR += size * channels;
+        if(pOpnBuf->nReadPTR > pOpnBuf->nSize) pOpnBuf->nReadPTR = 0;
+        chunksize -= size;
+    }
     return p;
 }
 
-static Sint16 *PutCaptureSnd(struct WavDesc *desc, Sint16 *buf, int chunksize)
+static Sint16 *PutCaptureSnd(struct WavDesc *desc, int chunksize)
 {
 	Sint16 *p;
 	Sint16 *DataPtr[4];
+	Sint16 *buf;
 	int channels = 2;
+	int size;
 
-	if(buf == NULL) return NULL;
 	if(chunksize <= 0) return NULL;
 
-	DataPtr[0] = &(pBeepBuf->pBuf[pBeepBuf->nReadPTR * channels]);
-	DataPtr[1] = &(pCMTBuf->pBuf[pCMTBuf->nReadPTR * channels]);
-	DataPtr[2] = &(pOpnBuf->pBuf[pOpnBuf->nReadPTR * channels]);
-	DataPtr[3] = NULL;
-	memset(buf, 0x00, chunksize * channels * sizeof(Sint16));
-	p = WavMix(DataPtr, buf , 3, chunksize * channels);
-	pCaptureBuf->nWritePTR += chunksize * channels;
-    if(pCaptureBuf->nWritePTR >= pCaptureBuf->nSize) pCaptureBuf->nWritePTR = 0;
+    p = Mix16(pCaptureBuf, chunksize);
+	if((p != NULL) && (bWavCapture)) {
+	    int size2;
+	    int readptr2 = pCaptureBuf->nReadPTR;
+	    int writeptr2 = 0;
+	    int count = 0;
 
+        buf =(Sint16 *)malloc(channels * chunksize * sizeof(Sint16));
+        if(buf == NULL) return NULL;
 
-	if(p) {
-       WriteWavDataSint16(desc, p , chunksize * channels);
-	}
+        size = pCaptureBuf->nWritePTR - readptr2;
+        if(size < 0) size += pCaptureBuf->nSize;
+        while(size > 0){
+            if((readptr2 + size) >= pCaptureBuf->nSize) {
+                size2 = pCaptureBuf->nSize - pCaptureBuf->nWritePTR;
+            } else {
+                size2 = size;
+            }
+            memcpy(&buf[writeptr2], &(pCaptureBuf->pBuf[readptr2]) , size2 * sizeof(Sint16));
+            writeptr2 += size2;
+            readptr2 += size2;
+            if(readptr2 >= pCaptureBuf->nSize) readptr2 = 0;
+            count += size2;
+            size -= size2;
+        }
+        WriteWavDataSint16(desc, buf , count * channels);
+        free(buf);
+    }
    return p;
 }
 /*
@@ -1185,53 +1216,40 @@ static void SetChunkSub(Mix_Chunk *p, Sint16 *buf, Uint32 len, int volume)
 }
 
 
-static int SetChunk(struct SndBufType *p, int samples, int ch)
+static int SetChunk(struct SndBufType *p, int ch)
 {
 	int i = p->nChunkNo;
 	int j;
 	int channels = 2;
+    int samples;
 
-	j = p->nSize - p->nReadPTR;
-	if(j > samples) {
+    if(p->nWritePTR > p->nReadPTR) {
+        samples = p->nSize + p->nReadPTR - p->nWritePTR;
+    } else{
+        samples = p->nReadPTR - p->nWritePTR;
+    }
+    while(samples > 0) {
+        j = p->nSize - p->nReadPTR;
+        if(j > samples) {
 	        // 分割不要
-		j = samples;
-        	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
-   		Mix_PlayChannel(ch , p->mChunk[i], 0);
-        	p->nReadPTR += j;
-	        if(p->nReadPTR >= p->nSize) {
+            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, 127);
+            Mix_PlayChannel(ch , p->mChunk[i], 0);
+            p->nReadPTR += samples;
+            samples = 0;
+        } else {
+            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
+            Mix_PlayChannel(ch , p->mChunk[i], 0);
+            p->nReadPTR += j;
+            samples -= j;
+        }
+        if(p->nReadPTR >= p->nSize) {
 		   p->nReadPTR = 0;
 		}
-	        i++;
-	        if(i >= p->nChunks) i = 0;
-	        p->nChunkNo = i;
-
-	} else {
-
-	     {
-        	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
-   		Mix_PlayChannel(ch , p->mChunk[i], 0);
-        	p->nReadPTR += j;
-	        if(p->nReadPTR >= p->nSize) {
-		   p->nReadPTR = 0;
-		}
-	        i++;
-	        if(i >= p->nChunks) i = 0;
-	        p->nChunkNo = i;
-	     }
-	   j = samples - j;
-	     if(j > 0) {
-        	SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
-   		Mix_PlayChannel(ch, p->mChunk[i], 0);
-        	p->nReadPTR += j;
-	        if(p->nReadPTR >= p->nSize) {
-		   p->nReadPTR = 0;
-		}
-	        i++;
-	        if(i >= p->nChunks) i = 0;
-	        p->nChunkNo = i;
-	     }
-	}
-   return i;
+        i++;
+        if(i >= p->nChunks) i = 0;
+        p->nChunkNo = i;
+    }
+    return i;
 }
 
 
@@ -1247,9 +1265,6 @@ void ProcessSnd(BOOL bZero)
 	int chunksize;
 	int channels = 2;
 	BOOL bWrite = FALSE;
-
-
-
 	dwSndCount++;
 	if(dwSndCount >= (uTick / CHUNKS)) {
 		bWrite = TRUE;
@@ -1287,20 +1302,16 @@ void ProcessSnd(BOOL bZero)
 		       }
 		   }
 		   return;
-	  }
+    }
 
-	if(bWrite) {
-//    	chunksize = ((uTick * uRate) / 1000) / CHUNKS;
+    if(bWrite) {
+//    	chunksize = ((dwSndCount * uRate) / 1000) / CHUNKS;
 
 		// フラッシュする
-		if(applySem) {
+        if(applySem) {
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
             SDL_SemWait(applySem);
             chunksize = (dwSndCount * uRate) / 1000;
-//	    chunksize = ttime - dwOldSound;
-//	    if(chunksize <= 0) chunksize = dwOldSound - ttime;
-//	    chunksize = (chunksize * uRate) / 1000000;
-
             FlushOpnSub(ttime, bZero, chunksize);
             FlushBeepSub(ttime, bZero, chunksize);
             FlushCMTSub(ttime, bZero, chunksize);
@@ -1310,31 +1321,37 @@ void ProcessSnd(BOOL bZero)
 		 *          こちらの方がWAV取り込みに悪影響がでない（？？）
 		 */
 //	   SDL_LockAudio();
+#if 0
 //       if(bWavCapture == TRUE){
             {
-            Sint16 *p;
-
-            if(bWavCapture) {
-            p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
+                Sint16 *p;
+                if(bWavCapture) {
+//            p = PutCaptureSnd(WavDescCapture, pCaptureBuf->pBuf, chunksize);
+                    p = PutCaptureSnd(WavDescCapture, chunksize);
 //			    printf("Wrote: %d bytes \n", chunksize * channels * sizeof(Sint16));
-                if(p == NULL) {
-                    CloseCaptureSnd();
-                    bWavCapture = FALSE;
+                    if(p == NULL) {
+                        CloseCaptureSnd();
+                        bWavCapture = FALSE;
+                    }
+                } else {
+                    p = Mix16(pCaptureBuf, chunksize);
                 }
+//                if(p != NULL) {
+//                    SetChunk(pCaptureBuf , CH_SND_OPN);
+//                }
             }
-        }
-        SetChunk(pOpnBuf , chunksize , CH_SND_OPN);
-        SetChunk(pBeepBuf , chunksize , CH_SND_BEEP);
-        SetChunk(pCMTBuf , chunksize , CH_SND_CMT);
-		   
+#endif
+        SetChunk(pOpnBuf ,  CH_SND_OPN);
+        SetChunk(pBeepBuf , CH_SND_BEEP);
+        SetChunk(pCMTBuf , CH_SND_CMT);
         if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
         if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
         if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();
-        SDL_SemPost(applySem);
-		}
+            SDL_SemPost(applySem);
+        }
 //		SDL_UnlockAudio();
-		dwSndCount = 0;
-		dwOldSound = ttime;
+	dwSndCount = 0;
+	dwOldSound = ttime;
 	}
 }
 
