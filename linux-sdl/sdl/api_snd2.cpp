@@ -877,10 +877,6 @@ static BOOL FlushCMTSub(DWORD ttime,  BOOL bZero, int maxchunk)
 /*
  * XXX Notify系関数…VM上の仮想デバイスに変化があったとき呼び出される
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static int CalcSamples(struct SndBufType *p, DWORD time)
 {
 	uint64_t time2;
@@ -903,8 +899,86 @@ static int CalcSamples(struct SndBufType *p, DWORD time)
 	return samples;
 }
 
+static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
+{
+	DWORD time = dwSoundTotal;
+	int samples = CalcSamples(pOpnBuf, time);
+    BYTE r;
+
+    if(sdrv == NULL) return;
+    if((opnch != OPN_STD) && (opnch != OPN_WHG) && (opnch != OPN_THG)) return;
+	if (opn_scale[opnch] != nScale[opnch]) {
+		nScale[opnch] = opn_scale[opnch];
+		switch (opn_scale[opnch]) {
+		case 2:
+			sdrv->SetReg(opnch, 0x2f, 0);
+			break;
+		case 3:
+            sdrv->SetReg(opnch, 0x2e, 0);
+			break;
+		case 6:
+            sdrv->SetReg(opnch, 0x2d, 0);
+			break;
+		}
+	}
+
+	/*
+	 * Ch3動作モードチェック
+	 */
+	if (reg == 0x27) {
+		if (sdrv->GetCh3Mode(opnch) == dat) {
+			return;
+		}
+		sdrv->SetCh3Mode(opnch, dat);
+	}
+
+	/*
+	 * 0xffレジスタはチェック
+	 */
+	if (reg == 0xff) {
+		/*
+		 * スレッド間の逆方向チェックやるか？
+		 */
+		r = sdrv->GetReg(opnch, 0x27);
+		if ((r & 0xc0) != 0x80) {
+			return;
+		}
+	}
+
+	/*
+	 * サウンド合成
+	 */
+	if(samples > 0) {
+		if(applySem) {
+//			SDL_SemWait(applySem);
+            samples  = CalcSamples(pBeepBuf, time);
+			RenderBeepSub(time, samples, FALSE);
+            samples  = CalcSamples(pOpnBuf, time);
+			RenderOpnSub(time, samples, FALSE);
+            samples  = CalcSamples(pCMTBuf, time);
+			RenderCMTSub(time, samples, FALSE);
+//			SDL_SemPost(applySem);
+		}
+	}
+
+	/*
+	 * 出力
+	 */
+    sdrv->SetReg(opnch, (uint8) reg, (uint8) dat);
+}
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
 void opn_notify(BYTE reg, BYTE dat)
 {
+#if 1
+    OpnNotifySub(reg, dat, DrvOPN, OPN_STD);
+#else
 	DWORD time = dwSoundTotal;
 	int samples = CalcSamples(pOpnBuf, time);
 	BYTE r;
@@ -977,11 +1051,14 @@ void opn_notify(BYTE reg, BYTE dat)
 	 * 出力
 	 */
     DrvOPN->SetReg(OPN_STD, (uint8) reg, (uint8) dat);
-
+#endif
 }
 
 void thg_notify(BYTE reg, BYTE dat)
 {
+#if 1
+    OpnNotifySub(reg, dat, DrvOPN, OPN_THG);
+#else
 	DWORD time = dwSoundTotal;
 	int samples = CalcSamples(pOpnBuf, time);
 	BYTE r;
@@ -1054,11 +1131,14 @@ void thg_notify(BYTE reg, BYTE dat)
 	 * 出力
 	 */
 	    DrvOPN->SetReg(OPN_THG, (uint8) reg, (uint8) dat);
-
+#endif
 }
 
 void whg_notify(BYTE reg, BYTE dat)
 {
+#if 1
+    OpnNotifySub(reg, dat, DrvOPN, OPN_WHG);
+#else
 	DWORD time = dwSoundTotal;
 	int samples = CalcSamples(pOpnBuf, time);
 	BYTE r;
@@ -1129,7 +1209,7 @@ void whg_notify(BYTE reg, BYTE dat)
 	 * 出力
 	 */
 	DrvOPN->SetReg(OPN_WHG, reg, dat);
-
+#endif
 
 }
 
