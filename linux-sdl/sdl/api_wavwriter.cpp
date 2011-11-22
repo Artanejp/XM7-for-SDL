@@ -6,9 +6,8 @@
  */
 #include "api_wavwriter.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif
+   
 	/*
 	 * WAVを書きこむ（開始）
 	 */
@@ -17,9 +16,6 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	struct WavDesc *w;
 	struct WavHeader *h;
 	int result;
-#if 0
-	FILE *file;
-#endif
 
 	if(path == NULL) return NULL;
 
@@ -28,17 +24,7 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	memset((void *)w, 0x00, sizeof(struct WavDesc));
 	h = &(w->header);
 	// Open File
-#if 0
-	file = fopen(path, "wb");
-	if(file == NULL) {
-		fclose(file);
-		goto err;
-	}
-
-	w->file = SDL_RWFromFP(file, 1);
-#else
         w->file = SDL_RWFromFile(path,  "wb");
-#endif
 	if(w->file == NULL) goto err;
 	// RIFF ヘッダ開始
 	h->ID1[0] = 'R';
@@ -237,8 +223,6 @@ Sint16 *WavMix(Sint16 **srcs, Sint16 *dst, int members, int bufSize)
 }
 
 
-#ifdef __cplusplus
 }
-#endif
 
 // EOF
