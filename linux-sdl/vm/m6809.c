@@ -816,6 +816,7 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	case 0x0d: EA=X+13; 											   break;
 	case 0x0e: EA=X+14; 											   break;
 	case 0x0f: EA=X+15; 											   break;
+
 	case 0x10: EA=X-16; 											   break;
 	case 0x11: EA=X-15; 											   break;
 	case 0x12: EA=X-14; 											   break;

@@ -3152,6 +3152,7 @@ OP_HANDLER( pref10 )
 	PC++;
 	switch( ireg2 )
 	{
+		case 0x20: lbra(m68_state);		m68_state->cycle=5;	break; // 20111217
 		case 0x21: lbrn(m68_state);		m68_state->cycle=5;	break;
 		case 0x22: lbhi(m68_state);		m68_state->cycle=5;	break;
 		case 0x23: lbls(m68_state);		m68_state->cycle=5;	break;
