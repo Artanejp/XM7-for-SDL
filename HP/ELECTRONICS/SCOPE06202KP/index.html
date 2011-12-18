@@ -1,0 +1,128 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>DEVELOPMENT PAGE</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>オシロスコープキットを作る(2011-12-18)</H3>
+<BR>
+<H3>きっかけ</H3>
+&nbsp; 前回作った<A
+HREF="../INVERTER/">LED照明</A>、やっぱしリップルやノイズがどの程度か気になります。<BR>
+<B>オシロスコープは欲しい、しかし二万円台の安ものすら買える金が無い…</B><BR>
+とおもいつつ、秋月電子通商のページを見てたら、<A
+HREF="http://akizukidenshi.com/catalog/g/gK-03144/">簡易なものが４千円で！！</A>これは買ってみるしか無い。<BR>
+<BR>
+<H3>概要</H3>
+&nbsp; このキットは、中国の<A
+HREF="http://www.jyetech.com/">JYE
+Tech社</A>が開発した非常に簡易なオシロスコープです。<BR>
+&nbsp;今回は、既にメーカ生産が終わってる<A
+HREF="http://www.jyetech.com/Products/LcdScope/e062.php">06202KP</A>を作りました。<B>７００円安かったので(^_^；</B><BR>
+&nbsp; 現行生産モデルで秋月電子から入手できるのは<A
+HREF="http://www.jyetech.com/Products/LcdScope/e062C.php">06204KP</A>です。（<A
+HREF="http://akizukidenshi.com/catalog/g/gK-04279/">秋月電子通商での販売ページ</A>）<BR>
+<BR>
+<H3>注意</H3>
+&nbsp; このキットは（たぶん）４層スルーホール基板ですので、ハンダ付けにスルーホール基板固有のコツが要ります。
+表面実装部品が実装済みではあるものの、基板の出来がいまいちで製作に骨が折れます。<BR>
+&nbsp;
+そして、何より後から改造しないと厳しいところも多々あるのでスルーホールでのハンダ除去に自信がある人以外お奨めできないです。<BR>
+&nbsp; （かくいう私も液晶の２０ピンコネクタを取っては付けてを繰り返してて、スルーホール壊せないので一回一時間以上掛けるという…)<BR>
+&nbsp;
+温度調整型のはんだごて一本か、もしくは15W程度の通常のはんだごて以外に
+70W前後のベタアースハンダ付け用の高熱量はんだごてを併用する事を強く薦めます。
+<B>又、テスターは必須です。</B><BR>
+<BR>
+<h3>もくじ(Work in Progress)</H3>
+<BR>
+<A HREF="#KAIZO">・改造</A><BR>
+&nbsp;&nbsp; <A HREF="#KAIZO1">1.電源系の改造</A><BR>
+&nbsp;&nbsp; <A HREF="#KAIZO2">2.電圧コンバータ系の改造(現在進行形)</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<A NAME="KAIZO"></A>
+<H3>改造</H3>
+&nbsp; オシロキット内部の基準信号のデータを見ると、方形波の上下で液晶１ドット分（大体0.2V）程度のブレやヒゲらしきものが見えてきます。
+&nbsp; これを改善しようというのが目的。
+<A NAME="KAIZO1"></A>
+<H4>1.電源系の改造</H4>
+<BR>
+<A HREF="06202-Mod_Power.sch.gz">
+<IMG SRC="06202-Mod_Power.png" ALT="電源系改造回路図"><BR>
+電源系改造回路図（リンク先にgSCH形式の回路図)</A>
+<BR>
+&nbsp; 
+まずは、元電源であるスイッチング電源やその他の機器のノイズが混入してることを疑いました。<BR>
+&nbsp; そこで、<BR>
+・３端子レギュレータにかかってるスパイクノイズの除去のために３端子の入出力に0.1μFのセラミックを追加<BR>
+・入出力のコンデンサを手持ちの低ESRかつ大きめの容量の品に交換<BR>
+&nbsp; と言う感じでやって見ました…
+<IMG SRC="PC162974.JPG" ALT="実際の改造1"><BR>
+<IMG SRC="PC162975.JPG" ALT="実際の改造2"><BR>
+<IMG SRC="PC172976.JPG" ALT="実際の改造3"><BR>
+<IMG SRC="PC172977.JPG" ALT="実際の改造4"><BR>
+&nbsp; が、<B>若干しか改善してない(?_?)<BR><BR>
+これは、別の所が原因だ。
+液晶のハンダをプチプチ一時間以上掛けて除去して液晶を外し、更にコンデンサの片方がベタアース直結同然でハンダがなかなかとれないので７０Ｗのコテまで持ちだしたのに、なんという徒労だったのか＿|￣|●<BR>
+</B>でも、この改造自体は元のキットについてきた安物臭プンプンのケミコンからのリプレースによる電源系の強化・長寿命化の目論見でもあるので、残すことにしました。<BR>
+<BR>
+<A NAME="KAIZO2"></A>
+<H4>2.電圧コンバータ系の改造(現在進行形)</H4>
+<A HREF="06202-Mod_VolCnv_01.sch.gz">
+<IMG SRC="06202-Mod_VolCnv_01.png" ALT="電圧コンバータ部回路図　©JYE
+TECH"><BR>
+電圧コンバータ回路図©JYE TECH（リンク先にgSCH形式の回路図)</A>
+<BR>
+&nbsp; オシロスコープへの入力を増幅してADコンバータに届ける信号を増幅するオペアンプの性能を発揮するために負の電源電圧を作ってやる必要があります。<BR>
+&nbsp; 本キットでは、CPUで作られたタイミングパルスを使って、チョッパ式の電圧変換を行いマイナス側の電源を作っています。<BR>
+&nbsp; <B>従って、この電圧の質が悪いとADコンバータの入力がブレて・結果として問題にしてる現象が起きるのだろうと考えました</B><BR>
+<BR>
+&nbsp; 今後のプランは<BR>
+①Maximやリニアテクノロジー辺りが出してる電圧コンバータICに置き換える。多分、パターンカットなしで三部品の除去と小基板の追加で済む<BR>
+②L1とL3の強化・C14,15,18の低ESR化・C15,18に並列に0.1μF程度をつける<BR>
+&nbsp;
+のいづれかにします。どちらも作業的には一長一短あるので少し考えて部品買い溜めます（＾＿＾；<BR>
+<BR>
+<HR>
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">LED-INVERTER</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 18 Dec.2011 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
