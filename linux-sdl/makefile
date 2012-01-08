@@ -10,13 +10,13 @@ SVNVER = `svnversion`
 
 include config.mak
 
-.PHONY: clean Release Debug libemugrph-debug ui-agar-debug vm-debug libemugrph-release ui-release vm-release
+.PHONY: clean Release Debug libemugrph-debug ui-agar-debug vm-debug libemugrph-release ui-release vm-release debugger-debug debugger-release
 all: Release Debug
 
-Release: ui-agar-release libemugrph-release vm-release
+Release: ui-agar-release libemugrph-release vm-release debugger-release
 	make -C sdl xm7
 
-Debug: ui-agar-debug libemugrph-debug vm-debug
+Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug
 	make -C sdl xm7.debug
 
 
@@ -38,6 +38,11 @@ vm-release:
 vm-debug:
 	make -C vm Debug/libxm7_vm.a
 
+debugger-release:
+	make -C xm7-debugger Release/libxm7_debug.a
+
+debugger-debug:
+	make -C xm7-debugger Debug/libxm7_debug.a
 
 
 
@@ -54,5 +59,6 @@ clean:
 	make -C vm clean
 	make -C ui-agar clean
 	make -C libemugrph clean
+	make -C xm7-debugger clean
 	make -C sdl clean
 	

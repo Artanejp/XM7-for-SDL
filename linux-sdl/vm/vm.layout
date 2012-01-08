@@ -13,14 +13,14 @@
 	<File name="keyboard.c" open="0" top="0" tabpos="0">
 		<Cursor position="40887" topLine="2635" />
 	</File>
-	<File name="m6809.c" open="1" top="0" tabpos="1">
-		<Cursor position="14210" topLine="463" />
+	<File name="m6809.c" open="1" top="1" tabpos="1">
+		<Cursor position="15497" topLine="517" />
 	</File>
 	<File name="m6809ops.h" open="1" top="0" tabpos="7">
-		<Cursor position="42205" topLine="2916" />
+		<Cursor position="48369" topLine="3225" />
 	</File>
 	<File name="m6809tbl.h" open="1" top="0" tabpos="8">
-		<Cursor position="18475" topLine="378" />
+		<Cursor position="9485" topLine="225" />
 	</File>
 	<File name="main.c" open="0" top="0" tabpos="0">
 		<Cursor position="0" topLine="17" />
@@ -31,7 +31,7 @@
 	<File name="mainmem.c" open="1" top="0" tabpos="4">
 		<Cursor position="15061" topLine="787" />
 	</File>
-	<File name="subcpu.c" open="1" top="1" tabpos="9">
+	<File name="subcpu.c" open="1" top="0" tabpos="9">
 		<Cursor position="679" topLine="241" />
 	</File>
 	<File name="submem.c" open="0" top="0" tabpos="3">
