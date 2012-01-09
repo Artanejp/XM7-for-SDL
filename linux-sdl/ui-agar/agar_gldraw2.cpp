@@ -19,6 +19,8 @@
 
 #include "api_draw.h"
 #include "api_scaler.h"
+#include "api_kbd.h"
+
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
@@ -462,4 +464,21 @@ void AGEventDrawGL2(AG_Event *event)
 e1:
     DrawOSDGL(glv);
     glPopAttrib();
+}
+
+void AGEventKeyUpGL(AG_Event *event)
+{
+    int key = AG_INT(1);
+    int mod = AG_INT(2);
+    Uint32 ucs = AG_ULONG(3);
+	OnKeyReleaseAG(key, mod, ucs);
+}
+
+void AGEventKeyDownGL(AG_Event *event)
+{
+    int key = AG_INT(1);
+    int mod = AG_INT(2);
+    Uint32 ucs = AG_ULONG(3);
+	OnKeyPressAG(key, mod, ucs);
+
 }

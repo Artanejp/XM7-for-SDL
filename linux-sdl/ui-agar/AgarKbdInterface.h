@@ -37,6 +37,8 @@ private:
 //	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
+	Uint32 oldsym;
+	Uint32 oldmod;
 };
 
 #endif /* AGARKBDINTERFACE_H_ */

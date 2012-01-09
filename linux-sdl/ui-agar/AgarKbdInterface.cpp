@@ -11,6 +11,8 @@ AgarKbdInterface::AgarKbdInterface() {
 	// TODO Auto-generated constructor stub
 	InitLocalVar();
 	InitKeyTable();
+	oldsym = 0x00;
+	oldmod = 0x00;
 // LoadKeyTable:
 }
 
@@ -141,7 +143,30 @@ void AgarKbdInterface::InitKeyTable(void){
 	{
 		if(KeyTableAG[i].sym == 0xffff) break;
 		KeyCodeTable2[i].code = KeyTableAG[i].sym;
-		KeyCodeTable2[i].mod = AG_KEYMOD_NONE;
+
+		switch(KeyCodeTable2[i].code) {
+		    case AG_KEY_LSHIFT:
+	    		KeyCodeTable2[i].mod = AG_KEYMOD_LSHIFT;
+                break;
+		    case AG_KEY_RSHIFT:
+	    		KeyCodeTable2[i].mod = AG_KEYMOD_RSHIFT;
+                break;
+		    case AG_KEY_LCTRL:
+	    		KeyCodeTable2[i].mod = AG_KEYMOD_LCTRL;
+                break;
+		    case AG_KEY_RCTRL:
+	    		KeyCodeTable2[i].mod = AG_KEYMOD_RCTRL;
+                break;
+		    case AG_KEY_LALT:
+	    		KeyCodeTable2[i].mod = AG_KEYMOD_LALT;
+                break;
+		    case AG_KEY_RALT:
+	    		KeyCodeTable2[i].mod = AG_KEYMOD_RALT;
+                break;
+            default:
+                KeyCodeTable2[i].mod = AG_KEYMOD_NONE;
+                break;
+		}
 		KeyCodeTable2[i].pushCode = KeyTableAG[i].code;
 	}
 	/*
@@ -243,14 +268,39 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
 //    if(kbd_snooped) {
             //return SnoopedOnKeyPressedCallback(event);
 //    }
-    //printf("Key SDL:%04x\n",code);
+//    printf("Key Agar:%04x %04x\n",code, modifier);
+
+
     for (i = 0; i < 255; i++) {
-	if (p[i].code == 0xffff)   break;
-	if (code == (Uint32)p[i].code){
-			PushKeyData(p[i].pushCode, 0x80); /* Make */
-			break;
+        if (p[i].code == 0xffff)   break;
+        if (code == (Uint32)p[i].code){
+            PushKeyData(p[i].pushCode, 0x80); /* Make */
+            break;
 		}
     }
+//    if(oldmod != modifier) {
+        if((modifier & AG_KEYMOD_LSHIFT) != 0) {
+            PushKeyData(0x53, 0x80); /* Make */
+        }
+        if((modifier & AG_KEYMOD_RSHIFT) != 0) {
+            PushKeyData(0x54, 0x80); /* Make */
+        }
+        if((modifier & AG_KEYMOD_LCTRL) != 0) {
+            PushKeyData(0x52, 0x80); /* Make */
+        }
+        if((modifier & AG_KEYMOD_RCTRL) != 0) {
+            PushKeyData(0x5a, 0x80); /* Make */
+        }
+        if((modifier & AG_KEYMOD_LALT) != 0) {
+            PushKeyData(0x55, 0x80); /* Make */
+        }
+        if((modifier & AG_KEYMOD_RALT) != 0) {
+            PushKeyData(0x58, 0x80); /* Make */
+        }
+//    }
+    oldmod = modifier;
+    oldsym = code;
+
     return;
 }
 
@@ -262,6 +312,26 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
     Uint32 code = (Uint32)sym;
     struct XM7KeyCode *p = KeyCodeTable2;
 
+//    if(oldmod != modifier) {
+        if((modifier & AG_KEYMOD_LSHIFT) == 0) {
+            PushKeyData(0x53, 0x00); /* Make */
+        }
+        if((modifier & AG_KEYMOD_RSHIFT) == 0) {
+            PushKeyData(0x54, 0x00); /* Make */
+        }
+        if((modifier & AG_KEYMOD_LCTRL) == 0) {
+            PushKeyData(0x52, 0x00); /* Make */
+        }
+        if((modifier & AG_KEYMOD_RCTRL) == 0) {
+            PushKeyData(0x5a, 0x00); /* Make */
+        }
+        if((modifier & AG_KEYMOD_LALT) == 0) {
+            PushKeyData(0x55, 0x00); /* Make */
+        }
+        if((modifier & AG_KEYMOD_RALT) == 0) {
+            PushKeyData(0x58, 0x00); /* Make */
+        }
+//    }
     for (i = 0; i < 255; i++) {
     	if (p[i].code == 0xffff)   break;
     	if (code == (Uint32)p[i].code){
@@ -269,6 +339,8 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
     			break;
     		}
     }
+    oldmod = modifier;
+    oldsym = code;
 
 	/*
 	 * F11押下の場合はマウスキャプチャフラグを反転させてモード切り替え->メニューにする

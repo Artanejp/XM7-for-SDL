@@ -66,6 +66,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	int h;
 		/* Retrieve the next queued event. */
 			switch (ev->type) {
+#if 0
 			case AG_DRIVER_KEY_UP:
 				if(	!bKeyboardSnooped) {
 					OnKeyReleaseAG(ev->data.key.ks, 0, ev->data.key.ucs);
@@ -76,6 +77,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 					OnKeyPressAG(ev->data.key.ks, 0, ev->data.key.ucs);
 				}
 				break;
+#endif
 			case AG_DRIVER_VIDEORESIZE:
 				w = ev->data.videoresize.w;
 				h = ev->data.videoresize.h;
@@ -451,7 +453,8 @@ void InitInstance(void)
         AG_WidgetSetPosition(GLDrawArea, 0, 5);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
 //        AG_GLViewDrawFn (GLDrawArea, AGEventDrawBlockedGL, NULL);
-
+        AG_GLViewKeydownFn (GLDrawArea, AGEventKeyDownGL, NULL);
+        AG_GLViewKeyupFn (GLDrawArea, AGEventKeyUpGL, NULL);
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
