@@ -166,6 +166,9 @@ void AGDrawTaskEvent(BOOL flag)
 			if(EventSDL(drv) == FALSE) return;
 			if(EventGUI(drv) == FALSE) return;
 		}
+		// 20120109 - Timer Event
+        if (AG_TIMEOUTS_QUEUED())
+                AG_ProcessTimeouts(AG_GetTicks());
 		AG_Delay(1);
 	}
 }
