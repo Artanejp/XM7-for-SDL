@@ -37,6 +37,7 @@ private:
 //	BOOL kbd_snooped;
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
+	struct SpecialKey ToggleMenu;
 	Uint32 oldsym;
 	Uint32 oldmod;
 };

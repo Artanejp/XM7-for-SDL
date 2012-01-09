@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1326098375 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.cpp
+1326109220 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.cpp
 	"AgarKbdInterface.h"
 
-1326100118 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
+1326108510 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
 	"SDLKbdInterface.h"
 	<agar/core/types.h>
 	<agar/core.h>
@@ -1701,7 +1701,7 @@
 	"device.h"
 	"agar_vramutil.h"
 
-1326097210 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
+1326108308 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
 	<SDL.h>
 	<libintl.h>
 	<agar/core.h>

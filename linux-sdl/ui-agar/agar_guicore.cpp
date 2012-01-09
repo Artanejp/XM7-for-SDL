@@ -66,18 +66,28 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	int h;
 		/* Retrieve the next queued event. */
 			switch (ev->type) {
-#if 0
 			case AG_DRIVER_KEY_UP:
-				if(	!bKeyboardSnooped) {
-					OnKeyReleaseAG(ev->data.key.ks, 0, ev->data.key.ucs);
-				}
+                if(GLDrawArea != NULL) {
+                    if(	AG_WidgetIsFocused(AGWIDGET(GLDrawArea)) != 0) {
+                        OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
+                    }
+                } else if(DrawArea != NULL) {
+                    if(	AG_WidgetIsFocused(AGWIDGET(DrawArea)) != 0) {
+                        OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
+                    }
+                }
 				break;
 			case AG_DRIVER_KEY_DOWN:
-				if(!bKeyboardSnooped) {
-					OnKeyPressAG(ev->data.key.ks, 0, ev->data.key.ucs);
-				}
+                if(GLDrawArea != NULL) {
+                    if(	AG_WidgetIsFocused(AGWIDGET(GLDrawArea)) != 0) {
+                        OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
+                    }
+                } else if(DrawArea != NULL) {
+                    if(	AG_WidgetIsFocused(AGWIDGET(DrawArea)) != 0) {
+                        OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
+                    }
+                }
 				break;
-#endif
 			case AG_DRIVER_VIDEORESIZE:
 				w = ev->data.videoresize.w;
 				h = ev->data.videoresize.h;
@@ -437,6 +447,7 @@ void InitInstance(void)
     MenuBar = AG_MenuNew(AGWIDGET(MainWindow), AG_MENU_HFILL);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
+
 	if(agDriverSw) {
 		drv = &agDriverSw->_inherit;
 	} else {
@@ -471,21 +482,18 @@ void InitInstance(void)
 	CreateStatus();
 	if(GLDrawArea != NULL) {
 	    AG_WidgetShow(GLDrawArea);
-	}
-	if(DrawArea != NULL) {
+	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
+	} else if(DrawArea != NULL) {
 	    AG_WidgetShow(DrawArea);
+        AG_WidgetFocus(AGWIDGET(DrawArea));
 	}
 
 	AG_WindowShow(MainWindow);
-#if 0
-    MenuBar = AG_MenuNewGlobal(0);
-	Create_AGMainBar(AGWIDGET(NULL));
-   	AG_WidgetSetPosition(MenuBar, 0, 0);
-#endif
 //	win = AG_GuiDebugger();
 //        AG_WindowShow(win);
 	AG_WidgetShow(AGWIDGET(MenuBar));
-	AG_WidgetFocus(AGWIDGET(MenuBar));
+//	AG_WidgetFocus(AGWIDGET(MenuBar));
+
 }
 
 /*

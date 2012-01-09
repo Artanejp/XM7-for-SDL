@@ -178,7 +178,10 @@ void AgarKbdInterface::InitKeyTable(void){
 	 *    リセットキーの初期値はPF12
 	 */
 	ResetKey.sym = AG_KEY_F12;
-	ResetKey.mod = AG_KEYMOD_NONE;
+	ResetKey.mod = AG_KEYMOD_LSHIFT;
+
+    ToggleMenu.sym = AG_KEY_F12;
+    ToggleMenu.sym = AG_KEYMOD_NONE;
 
 }
 
@@ -278,6 +281,7 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
             break;
 		}
     }
+#if 0
 //    if(oldmod != modifier) {
         if((modifier & AG_KEYMOD_LSHIFT) != 0) {
             PushKeyData(0x53, 0x80); /* Make */
@@ -298,11 +302,16 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
             PushKeyData(0x58, 0x80); /* Make */
         }
 //    }
+#endif
     oldmod = modifier;
     oldsym = code;
 
     return;
 }
+
+extern AG_Menu *MenuBar;
+extern AG_GLView *GLDrawArea;
+extern AG_Box *DrawArea;
 
 void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
 {
@@ -312,6 +321,7 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
     Uint32 code = (Uint32)sym;
     struct XM7KeyCode *p = KeyCodeTable2;
 
+#if 0
 //    if(oldmod != modifier) {
         if((modifier & AG_KEYMOD_LSHIFT) == 0) {
             PushKeyData(0x53, 0x00); /* Make */
@@ -331,6 +341,7 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
         if((modifier & AG_KEYMOD_RALT) == 0) {
             PushKeyData(0x58, 0x00); /* Make */
         }
+#endif
 //    }
     for (i = 0; i < 255; i++) {
     	if (p[i].code == 0xffff)   break;
@@ -360,11 +371,25 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
 	/*
 	 * F12押下の場合はVMリセット
 	 */
-//	if ((code == ResetKey.sym) && (modifier == ResetKey.mod)) {
-	if (code == ResetKey.sym) {
+	if ((code == ResetKey.sym) && (modifier == ResetKey.mod)) {
+//	if (code == ResetKey.sym) {
 		LockVM();
 		system_reset();
 		UnlockVM();
+    }
+    if((code == ToggleMenu.sym) && (modifier == ToggleMenu.mod))
+    {
+        if(MenuBar != NULL) {
+            if(AG_WidgetIsFocused(MenuBar)) {
+                if(GLDrawArea != NULL) {
+                    AG_WidgetFocus(GLDrawArea);
+                } else if(DrawArea != NULL) {
+                    AG_WidgetFocus(DrawArea);
+                }
+            } else {
+                AG_WidgetFocus(AGWIDGET(MenuBar));
+            }
+        }
     }
 }
 
