@@ -49,7 +49,7 @@ extern void DestroyStatus(void);
 
 extern void DrawOSDEv(AG_Event *e);
 
-static BOOL bKeyboardSnooped;
+//static BOOL bKeyboardSnooped;
 
 
 
@@ -57,46 +57,54 @@ static BOOL bKeyboardSnooped;
 
 void KeyBoardSnoop(BOOL Flag)
 {
-	bKeyboardSnooped = Flag;
+//	bKeyboardSnooped = Flag;
 }
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
 	int w;
 	int h;
-		/* Retrieve the next queued event. */
-			switch (ev->type) {
-			case AG_DRIVER_KEY_UP:
-                if(GLDrawArea != NULL) {
-                    if(	AG_WidgetIsFocused(AGWIDGET(GLDrawArea)) != 0) {
-                        OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
-                    }
-                } else if(DrawArea != NULL) {
-                    if(	AG_WidgetIsFocused(AGWIDGET(DrawArea)) != 0) {
-                        OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
-                    }
-                }
-				break;
-			case AG_DRIVER_KEY_DOWN:
-                if(GLDrawArea != NULL) {
-                    if(	AG_WidgetIsFocused(AGWIDGET(GLDrawArea)) != 0) {
-                        OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
-                    }
-                } else if(DrawArea != NULL) {
-                    if(	AG_WidgetIsFocused(AGWIDGET(DrawArea)) != 0) {
-                        OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
-                    }
-                }
-				break;
-			case AG_DRIVER_VIDEORESIZE:
-				w = ev->data.videoresize.w;
-				h = ev->data.videoresize.h;
-				ResizeWindow_Agar2(w, h);
-				break;
-			default:
-				break;
-			}
-			if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
+	BOOL bi;
+
+	bi = FALSE;
+#if 0
+	if(GLDrawArea != NULL) {
+        if(AG_WidgetIsFocused(AGWIDGET(GLDrawArea)) != 0) {
+            bi = TRUE;
+        }
+    } else if(DrawArea != NULL) {
+        if(	AG_WidgetIsFocused(AGWIDGET(DrawArea)) != 0) {
+            bi = TRUE;
+        }
+    }
+#else
+    if(MainWindow != NULL) {
+        if(AG_WindowIsFocused(MainWindow)) {
+            bi = TRUE;
+        }
+    }
+#endif
+	/* Retrieve the next queued event. */
+	switch (ev->type) {
+	case AG_DRIVER_KEY_UP:
+        if(bi) {
+            OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
+        }
+    break;
+	case AG_DRIVER_KEY_DOWN:
+        if(bi) {
+            OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
+        }
+    break;
+	case AG_DRIVER_VIDEORESIZE:
+		w = ev->data.videoresize.w;
+		h = ev->data.videoresize.h;
+		ResizeWindow_Agar2(w, h);
+		break;
+	default:
+		break;
+	}
+	if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
 		//	if(drv == NULL) return;
 		/* Forward the event to Agar. */
 		return TRUE;
@@ -207,7 +215,6 @@ void ProcessKeyUp(AG_Event *event)
 	int mod = AG_INT(2);
 	Uint32  unicode = (Uint32)AG_ULONG(3);
 	OnKeyReleaseAG(sym, mod, unicode);
-
 }
 
 extern void AG_initsub(void);
@@ -233,7 +240,7 @@ void MainLoop(int argc, char *argv[])
 	AG_InitCore("xm7", AG_VERBOSE);
 
 	AG_ConfigLoad();
-        AG_SetInt(agConfig, "font.size", UI_PT);
+    AG_SetInt(agConfig, "font.size", UI_PT);
 
     while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {
@@ -333,7 +340,7 @@ void MainLoop(int argc, char *argv[])
     InitGL(640, 400);
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
-	bKeyboardSnooped = FALSE;
+//	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	AG_DrawInitsub();
@@ -440,7 +447,7 @@ void InitInstance(void)
 
 	InitFont();
 
-    MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND);
+    MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
 	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
 
@@ -469,7 +476,9 @@ void InitInstance(void)
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
+
 		bUseOpenGL = TRUE;
+		DrawArea = NULL;
     } else {
         // Non-GL
         DrawArea = AG_BoxNewVert(AGWIDGET(MainWindow), AG_BOX_HORIZ);
@@ -478,6 +487,7 @@ void InitInstance(void)
         InitDrawArea(640,400);
         LinkDrawArea(AGWIDGET(DrawArea));
         bUseOpenGL = FALSE;
+        GLDrawArea = NULL;
     }
 	CreateStatus();
 	if(GLDrawArea != NULL) {
@@ -489,10 +499,10 @@ void InitInstance(void)
 	}
 
 	AG_WindowShow(MainWindow);
+	AG_WindowFocus(MainWindow);
 //	win = AG_GuiDebugger();
 //        AG_WindowShow(win);
 	AG_WidgetShow(AGWIDGET(MenuBar));
-//	AG_WidgetFocus(AGWIDGET(MenuBar));
 
 }
 

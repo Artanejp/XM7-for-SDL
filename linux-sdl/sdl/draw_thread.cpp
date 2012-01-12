@@ -48,9 +48,6 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
-#ifdef USE_AGAR
-extern AG_Window *MainWindow;
-#endif
 
 #ifdef USE_AGAR
 extern void AG_DrawInitsub(void);

@@ -54,6 +54,18 @@ AG_Menu *MenuBar;
 }
 
 
+void RaiseMenu(AG_Event *event)
+{
+    if(MenuBar != NULL) {
+        AG_WidgetFocus(AGWIDGET(MenuBar));
+    }
+}
+
+void UnraiseMenu(AG_Event *event)
+{
+    if(MainWindow == NULL) return;
+    AG_WindowFocus(MainWindow);
+}
 
 void AgarGuiMenuInit(AG_Widget *Parent)
 {
@@ -126,9 +138,6 @@ void Create_FileMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent , gettext("Quit"), NULL, OnDestroy, NULL);
 }
 
-
-
-
 void Create_AGMainBar(AG_Widget *Parent)
 {
 	AG_MenuItem *item;
@@ -159,6 +168,9 @@ void Create_AGMainBar(AG_Widget *Parent)
  	item = AG_MenuNode(MenuBar->root, "About", NULL);
  	Create_AboutMenu(item);
 	AG_UnlockVFS(AGOBJECT(MenuBar));
-}
+	// F12 -> Menu 閉じる
+	AG_ActionFn(AGWIDGET(MenuBar), "close-menu", UnraiseMenu, NULL);
+    AG_ActionOnKeyDown(AGWIDGET(MenuBar), AG_KEY_F12, AG_KEYMOD_NONE, "close-menu");
 
+}
 

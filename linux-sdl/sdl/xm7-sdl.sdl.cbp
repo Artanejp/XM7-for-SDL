@@ -21,6 +21,7 @@
 					<Add library="../libemugrph/obj/Debug/libemugrph.a" />
 					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
 					<Add library="../vm/obj/Debug/libxm7_vm.a" />
+					<Add library="../xm7-debugger/libxm7-debugger.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">

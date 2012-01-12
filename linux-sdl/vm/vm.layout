@@ -4,8 +4,8 @@
 	<File name="device.h" open="0" top="0" tabpos="25">
 		<Cursor position="4337" topLine="181" />
 	</File>
-	<File name="disasm.c" open="0" top="0" tabpos="5">
-		<Cursor position="4270" topLine="272" />
+	<File name="disasm.c" open="1" top="0" tabpos="27">
+		<Cursor position="20663" topLine="236" />
 	</File>
 	<File name="fdc.c" open="1" top="0" tabpos="5">
 		<Cursor position="15206" topLine="305" />
@@ -13,14 +13,14 @@
 	<File name="keyboard.c" open="0" top="0" tabpos="0">
 		<Cursor position="40887" topLine="2635" />
 	</File>
-	<File name="m6809.c" open="1" top="1" tabpos="1">
-		<Cursor position="15497" topLine="517" />
+	<File name="m6809.c" open="1" top="0" tabpos="1">
+		<Cursor position="41750" topLine="1104" />
 	</File>
 	<File name="m6809ops.h" open="1" top="0" tabpos="7">
-		<Cursor position="48369" topLine="3225" />
+		<Cursor position="44235" topLine="3069" />
 	</File>
 	<File name="m6809tbl.h" open="1" top="0" tabpos="8">
-		<Cursor position="9485" topLine="225" />
+		<Cursor position="9485" topLine="429" />
 	</File>
 	<File name="main.c" open="0" top="0" tabpos="0">
 		<Cursor position="0" topLine="17" />
