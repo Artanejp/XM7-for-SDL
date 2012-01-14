@@ -16,6 +16,9 @@
 
 #include <libintl.h>
 #include <iconv.h>
+
+#include <sys/stat.h>
+
 #include <agar/core.h>
 #include <agar/gui.h>
 
@@ -34,6 +37,7 @@
 #include "sdl.h"
 #endif
 #include "agar_cmd.h"
+
 #include "sdl_prop.h"
 #include "sdl_snd.h"
 #include "sdl_sch.h"
@@ -46,8 +50,8 @@ extern void KeyBoardSnoop(BOOL Flag);
 
 
 static Disk   disk[2][FDC_MEDIAS];
-static char     StatePath[MAXPATHLEN];
-static char    DiskTitle[16 + 1];
+static char   StatePath[MAXPATHLEN];
+static char   DiskTitle[16 + 1];
 static BOOL    DiskMedia;
 static BOOL    DiskFormat;
 
@@ -97,12 +101,11 @@ void StateLoad(char *path)
 	     */
 	    system_reset();
     }
-    if (state != STATELOAD_SUCCESS) {
-    }
 
-    else {
-	strcpy(StatePath, path);
-	SetMachineVersion();
+    if (state != STATELOAD_SUCCESS) {
+    } else {
+        strcpy(StatePath, path);
+        SetMachineVersion();
     }
 }
 
@@ -164,13 +167,19 @@ void OnLoadStatus(AG_Event *event)
 
 void OnQuickLoad(AG_Event *event)
 {
-#if 0
-	if(strlen(s) <= 0){
-		OnLoadStatus();
-		return;
-	}
-	OnLoadStatusSub(s);
-#endif
+    struct stat st;
+    char stmp[MAXPATHLEN];
+
+    stmp[0] = '\0';
+	if(strlen(StatePath) > 0){
+	    strcpy(stmp, StatePath);
+	    if(stat(stmp, &st) == 0) {
+            OnLoadStatusSub(stmp);
+            return;
+	    }
+    }
+    OnLoadStatus(event);
+    return;
 }
 
 
@@ -238,13 +247,16 @@ void OnSaveAs(AG_Event *event)
 
 void OnQuickSave(AG_Event *event)
 {
-#if 0
-	if(strlen(s) <= 0){
-		OnSaveAs();
-		return;
+    char stmp[MAXPATHLEN];
+
+    stmp[0] ='\0';
+	if(strlen(StatePath) > 0){
+	    strcpy(stmp, StatePath);
+        OnSaveStatusSub(stmp);
+        return;
 	}
-	OnSaveStatusSub(s);
-#endif
+	OnSaveAs(event);
+	return;
 }
 
 
@@ -259,224 +271,6 @@ void OnQuickSave(AG_Event *event)
 
 
 /*-[ ヘルプメニュー ]-----------------------------------------------------*/
-
-#if 0
-
-
-/*-[ デバッグメニュー ]-----------------------------------------------------*/
-
-    /*
-     *  デバッグメニュー更新
-     */
-void
-OnDebugPopup(GtkWidget * widget, gpointer data)
-{
-    if (run_flag) {
-	gtk_widget_set_sensitive(debug_restart, FALSE);
-	gtk_widget_set_sensitive(debug_stop, TRUE);
-    } else {
-	gtk_widget_set_sensitive(debug_restart, TRUE);
-	gtk_widget_set_sensitive(debug_stop, FALSE);
-    }
-}
-
-/*
- * 逆アセンブル
- */
-void
-OnMainDisAsmPopup(GtkWidget * widget, gpointer data)
-{
-	if(disasm_main_flag)
-	{
-		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
-		disasm_main_flag = FALSE;
-	} else {
-		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
-		disasm_main_flag = TRUE;
-	}
-}
-
-void
-OnSubDisAsmPopup(GtkWidget * widget, gpointer data)
-{
-	if(disasm_sub_flag)
-	{
-		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
-		disasm_sub_flag = FALSE;
-	} else {
-		//gtk_widget_set_sensitive(debug_disasm_main, FALSE);
-		disasm_sub_flag = TRUE;
-	}
-}
-
-
-
-    /*
-     *  VFD→D77変換(V)
-     */
-static void
-OnVFD2D77(GtkWidget * widget, gpointer data)
-{
-    char          *p;
-    FileSelectDialog sdlg, ddlg;
-    DiskTitleDialog tdlg;
-    char           src[MAXPATHLEN];
-    char           dst[MAXPATHLEN];
-
-	/*
-	 * ファイル選択
-	 */
-	sdlg = OpenFileSelectDialog(InitialDir[0]);
-    if (sdlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(src, sdlg.sFilename);
-
-	/*
-	 * タイトル入力
-	 */
-	tdlg = OpenDiskTitleDialog();
-    if (tdlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(DiskTitle, tdlg.sTitle);
-
-	/*
-	 * ファイル選択
-	 */
-	ddlg = OpenFileSelectDialog(InitialDir[0]);
-    if (ddlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(dst, ddlg.sFilename);
-
-	/*
-	 * 作成
-	 */
-	LockVM();
-    StopSnd();
-    if (conv_vfd_to_d77(src, dst, DiskTitle)) {
-    }
-    PlaySnd();
-    ResetSch();
-    UnlockVM();
-    p = strrchr(ddlg.sFilename, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-	strcpy(InitialDir[0], ddlg.sFilename);
-    }
-}
-
-
-    /*
-     *  2D→D77変換(2)
-     */
-static void
-On2D2D77(GtkWidget * widget, gpointer data)
-{
-    char          *p;
-    FileSelectDialog sdlg, ddlg;
-    DiskTitleDialog tdlg;
-    char           src[MAXPATHLEN];
-    char           dst[MAXPATHLEN];
-
-	/*
-	 * ファイル選択
-	 */
-	sdlg = OpenFileSelectDialog(InitialDir[0]);
-    if (sdlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(src, sdlg.sFilename);
-
-	/*
-	 * タイトル入力
-	 */
-	tdlg = OpenDiskTitleDialog();
-    if (tdlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(DiskTitle, tdlg.sTitle);
-
-	/*
-	 * ファイル選択
-	 */
-	ddlg = OpenFileSelectDialog(InitialDir[0]);
-    if (ddlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(dst, ddlg.sFilename);
-
-	/*
-	 * 作成
-	 */
-	LockVM();
-    StopSnd();
-    if (conv_2d_to_d77(src, dst, DiskTitle)) {
-    }
-    PlaySnd();
-    ResetSch();
-    UnlockVM();
-    p = strrchr(ddlg.sFilename, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-	strcpy(InitialDir[0], ddlg.sFilename);
-    }
-}
-
-
-    /*
-     *  VTP→T77変換(P)
-     */
-static void
-OnVTP2T77(GtkWidget * widget, gpointer data)
-{
-    char          *p;
-    FileSelectDialog sdlg, ddlg;
-    char           src[MAXPATHLEN];
-    char           dst[MAXPATHLEN];
-
-	/*
-	 * ファイル選択
-	 */
-	sdlg = OpenFileSelectDialog(InitialDir[1]);
-    if (sdlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(src, sdlg.sFilename);
-
-	/*
-	 * ファイル選択
-	 */
-	ddlg = OpenFileSelectDialog(InitialDir[1]);
-    if (ddlg.bResult != DLG_OK) {
-	return;
-    }
-    strcpy(dst, ddlg.sFilename);
-
-	/*
-	 * 作成
-	 */
-	LockVM();
-    StopSnd();
-    if (conv_vtp_to_t77(src, dst)) {
-    }
-    PlaySnd();
-    ResetSch();
-    UnlockVM();
-    p = strrchr(ddlg.sFilename, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-	strcpy(InitialDir[1], ddlg.sFilename);
-    }
-}
-
-
-
-/*-[ ツールメニュー ]-------------------------------------------------------*/
-
-
-#endif
 /*
  *  メニューバーの生成
  */
