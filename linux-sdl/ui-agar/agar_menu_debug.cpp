@@ -33,6 +33,7 @@ extern "C" {
 #include "api_draw.h"
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
+#include "../xm7-debugger/memread.h"
 
 extern void OnPushCancel(AG_Event *event);
 extern void KeyBoardSnoop(BOOL t);
@@ -60,7 +61,7 @@ struct MemDumpWid {
     int lines;
     int cpu;
 
-    volatile BYTE FASTCALL (*rf)(WORD);
+    BYTE (*rf)(WORD);
     void FASTCALL (*wf)(WORD, BYTE);
     BOOL (Seek)(WORD);
     BOOL (ReadSec)(WORD);
@@ -107,7 +108,7 @@ static BOOL sanity_hexa(char *s, int *v)
 extern void DBG_HexDumpMemory(char *str, Uint8 *buf, WORD Segment, WORD addr, int bytes, BOOL SegFlag, BOOL AddrFlag);
 extern int DBG_DisAsm1op(int cpuno, Uint16 pc, char *s, Uint8 *membuf);
 
-static void DumpMem(AG_Textbox *t, WORD addr, volatile BYTE FASTCALL (*rf)(WORD), int w, int h);
+static void DumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), int w, int h);
 
 
 
@@ -189,7 +190,7 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
     return mp->to_tick;
 }
 
-static void ReadMemLine(Uint8 *p, WORD addr, volatile BYTE FASTCALL (*rf)(WORD), int w)
+static void ReadMemLine(Uint8 *p, WORD addr, BYTE (*rf)(WORD), int w)
 {
     WORD i;
     if(w <= 0) return;
@@ -199,7 +200,7 @@ static void ReadMemLine(Uint8 *p, WORD addr, volatile BYTE FASTCALL (*rf)(WORD),
     }
 }
 
-static void DumpMem(AG_Textbox *t, WORD addr, volatile BYTE FASTCALL (*rf)(WORD), int w, int h)
+static void DumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), int w, int h)
 {
     char *stmp;
     Uint8 *buf;
@@ -226,7 +227,7 @@ static void DumpMem(AG_Textbox *t, WORD addr, volatile BYTE FASTCALL (*rf)(WORD)
     free(buf);
 }
 
-static void CreateDumpMem(AG_Textbox *t, WORD addr, volatile BYTE FASTCALL (*rf)(WORD), void FASTCALL (*wf)(WORD, BYTE), int w, int h)
+static void CreateDumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), void FASTCALL (*wf)(WORD, BYTE), int w, int h)
 {
     char *stmp;
     int i;
@@ -323,7 +324,7 @@ static void CreateDump(AG_Event *event)
     int disasm = AG_INT(2);
     DWORD addr;
 
-    volatile BYTE FASTCALL (*readFunc)(WORD);
+    BYTE (*readFunc)(WORD);
     void FASTCALL (*writeFunc)(WORD, BYTE);
     AG_Textbox *addrVar;
     AG_Textbox *dumpVar;
@@ -363,7 +364,7 @@ static void CreateDump(AG_Event *event)
             addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "MAIN MEM ADDR =");
             AG_TextboxSizeHint(addrVar, "XXXXXXXXXX");
             AG_TextboxPrintf(addrVar, "%04x", addr);
-            readFunc = mainmem_readb;
+            readFunc = rb_main;
             writeFunc = mainmem_writeb;
             mp->cpu = MAINCPU;
             break;
@@ -371,7 +372,7 @@ static void CreateDump(AG_Event *event)
             addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "SUB  MEM ADDR =");
             AG_TextboxSizeHint(addrVar, "XXXXXXXXXX");
             AG_TextboxPrintf(addrVar, "%04x", addr);
-            readFunc = submem_readb;
+            readFunc = rb_sub;
             writeFunc = submem_writeb;
             mp->cpu = SUBCPU;
             break;

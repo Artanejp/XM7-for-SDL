@@ -60,7 +60,7 @@ BYTE           *boot_mmr;	/* ブート(隠し)   $200 */
 
 #if XM7_VER >= 2
 BYTE           *init_rom;	/* イニシエータROM $2000 */
-BOOL            initrom_en;	/* イニシエータROMイネーブルフラグ 
+BOOL            initrom_en;	/* イニシエータROMイネーブルフラグ
 				 */
 #endif
 
@@ -71,7 +71,7 @@ BOOL            initrom_en;	/* イニシエータROMイネーブルフラグ
 static BYTE *patch_branewboottfr; /* 新ブート転送用処理へのBRA命令 */
 static BYTE *patch_jmpnewboot;	/* 新ブートへのJMP命令 */
 static BYTE     ioaccess_count;	/* I/O領域アクセスカウンタ */
-static BOOL     ioaccess_flag;	/* I/Oアクセスウェイト調整フラグ 
+static BOOL     ioaccess_flag;	/* I/Oアクセスウェイト調整フラグ
 				 */
 
 
@@ -79,14 +79,13 @@ static BOOL     ioaccess_flag;	/* I/Oアクセスウェイト調整フラグ
  *      メインCPUメモリ
  *      初期化
  */
-BOOL            FASTCALL
-mainmem_init(void)
+BOOL FASTCALL mainmem_init(void)
 {
     int             i;
     BYTE           *p;
 
     /*
-     * 一度、全てクリア 
+     * 一度、全てクリア
      */
     mainram_a = NULL;
     mainram_b = NULL;
@@ -111,7 +110,7 @@ mainmem_init(void)
     boot_ram = NULL;
 
     /*
-     * RAM 
+     * RAM
      */
     mainram_a = (BYTE *) malloc(0x8000);
     if (mainram_a == NULL) {
@@ -127,7 +126,7 @@ mainmem_init(void)
     }
 
     /*
-     * BASIC ROM, I/O 
+     * BASIC ROM, I/O
      */
     basic_rom = (BYTE *) malloc(0x7c00);
     if (basic_rom == NULL) {
@@ -145,7 +144,7 @@ mainmem_init(void)
     }
 
     /*
-     * 拡張RAM、イニシエータROM 
+     * 拡張RAM、イニシエータROM
      */
 #if XM7_VER >= 2
     extram_a = (BYTE *) malloc(0x10000);
@@ -164,7 +163,7 @@ mainmem_init(void)
     }
 #else
     /*
-     * V1 (400Line Set,192KB) 
+     * V1 (400Line Set,192KB)
      */
     extram_a = (BYTE *) malloc(0x30000);
     if (extram_a == NULL) {
@@ -173,7 +172,7 @@ mainmem_init(void)
 #endif
 
     /*
-     * ブートROM/RAM 
+     * ブートROM/RAM
      */
 #if XM7_VER == 1
     boot_bas = (BYTE *) malloc(0x200);
@@ -209,7 +208,7 @@ mainmem_init(void)
     }
 
     /*
-     * ROMファイル読み込み 
+     * ROMファイル読み込み
      */
     if (!file_load(FBASIC_ROM, basic_rom, 0x7c00)) {
 #if XM7_VER == 1
@@ -230,7 +229,7 @@ mainmem_init(void)
     }
 
     /*
-     * 高速起動モード(旧ブート) 
+     * 高速起動モード(旧ブート)
      */
 #if 1
     for (i = 0; i < 2; i++) {
@@ -289,7 +288,7 @@ mainmem_init(void)
     }
 
     /*
-     * 高速起動モード(旧ブート) 
+     * 高速起動モード(旧ブート)
      */
     for (i = 0; i < 5; i++) {
 	switch (i) {
@@ -325,10 +324,10 @@ mainmem_init(void)
 #endif
 
     /*
-     * ブートRAMクリア 
+     * ブートRAMクリア
      */
     /*
-     * (女神転生対策・リセット時に全領域を初期化しなくなったため) 
+     * (女神転生対策・リセット時に全領域を初期化しなくなったため)
      */
     memset(boot_ram, 0, 0x200);
 
@@ -345,8 +344,7 @@ mainmem_init(void)
  *      メインCPUメモリ
  *      クリーンアップ
  */
-void            FASTCALL
-mainmem_cleanup(void)
+void FASTCALL mainmem_cleanup(void)
 {
     ASSERT(mainram_a);
     ASSERT(mainram_b);
@@ -374,7 +372,7 @@ mainmem_cleanup(void)
     ASSERT(boot_ram);
 
     /*
-     * 初期化途中で失敗した場合を考慮 
+     * 初期化途中で失敗した場合を考慮
      */
     if (mainram_a) {
 	free(mainram_a);
@@ -441,14 +439,14 @@ void            FASTCALL
 mainmem_reset(void)
 {
     /*
-     * I/O空間・I/Oアクセスカウンタ初期化 
+     * I/O空間・I/Oアクセスカウンタ初期化
      */
     memset(main_io, 0xff, 0x0100);
     ioaccess_count = 0;
     ioaccess_flag = FALSE;
 
     /*
-     * BASICモードであれば、F-BASIC ROMをイネーブル 
+     * BASICモードであれば、F-BASIC ROMをイネーブル
      */
     if (boot_mode == BOOT_BASIC) {
 	basicrom_en = TRUE;
@@ -460,44 +458,44 @@ mainmem_reset(void)
     if (fm7_ver >= 2) {
 	/*
 	 * AV/40EXモード :
-	 * イニシエータON、ブートRAM書き込み可 
+	 * イニシエータON、ブートRAM書き込み可
 	 */
 	initrom_en = TRUE;
 	bootram_rw = TRUE;
     } else {
 	/*
 	 * FM-7モード :
-	 * イニシエータOFF、ブートRAM書き込み禁止 
+	 * イニシエータOFF、ブートRAM書き込み禁止
 	 */
 	initrom_en = FALSE;
 	bootram_rw = FALSE;
     }
 
     /*
-     * ブートRAM セットアップ 
+     * ブートRAM セットアップ
      */
     /*
-     * 割り込みベクタ以外を一旦すべてクリア(女神転生対策) 
+     * 割り込みベクタ以外を一旦すべてクリア(女神転生対策)
      */
     memset(boot_ram, 0, 0x1f0);
 
     /*
-     * FM-7モード時にはブートRAMの内容を転送する 
+     * FM-7モード時にはブートRAMの内容を転送する
      */
     mainmem_transfer_boot();
 
     /*
-     * イニシエータROM ハードウェアバージョン 
+     * イニシエータROM ハードウェアバージョン
      */
     switch (fm7_ver) {
     case 1:
 	/*
-	 * FM-7 
+	 * FM-7
 	 */
 	break;
     case 2:
 	/*
-	 * FM77AV 
+	 * FM77AV
 	 */
 	memset(&init_rom[0x0b0e], 0xff, 6);
 	/* イニシエータがFM77AV相当の動作となるようにパッチ */
@@ -510,7 +508,7 @@ mainmem_reset(void)
 #if XM7_VER >= 3
     case 3:
 	/*
-	 * FM77AV40EX 
+	 * FM77AV40EX
 	 */
 	init_rom[0xb0e] = '4';
 	init_rom[0xb0f] = '0';
@@ -529,7 +527,7 @@ mainmem_reset(void)
     }
 #else
     /*
-     * ブート領域書き込み禁止 
+     * ブート領域書き込み禁止
      */
     bootram_rw = FALSE;
 #endif
@@ -539,8 +537,7 @@ mainmem_reset(void)
  *      FM-7モード用 ブートRAM転送
  */
 #if XM7_VER >= 2
-void            FASTCALL
-mainmem_transfer_boot(void)
+void FASTCALL mainmem_transfer_boot(void)
 {
     if (fm7_ver < 2) {
 	if (boot_mode == BOOT_BASIC) {
@@ -557,14 +554,13 @@ mainmem_transfer_boot(void)
 /*
  *      I/Oアクセス時のメモリレディ処理
  */
-static void     FASTCALL
-mainmem_iowait(void)
+static void FASTCALL mainmem_iowait(void)
 {
     BYTE            tmp;
 
 #if XM7_VER == 1
     /*
-     * 1.2MHzモードではI/Oウェイトがかからない 
+     * 1.2MHzモードではI/Oウェイトがかからない
      */
     if (lowspeed_mode) {
 	return;
@@ -572,7 +568,7 @@ mainmem_iowait(void)
 #endif
 
     /*
-     * クロック引き延ばしに必要なI/Oアクセス回数を設定 
+     * クロック引き延ばしに必要なI/Oアクセス回数を設定
      */
 #if XM7_VER >= 3
     if ((mmr_flag || twr_flag) && !mmr_fastmode && ioaccess_flag) {
@@ -580,19 +576,19 @@ mainmem_iowait(void)
     if ((mmr_flag || twr_flag) && ioaccess_flag) {
 #endif
 	/*
-	 * MMRオン(2回目) 3回のアクセスで1サイクル 
+	 * MMRオン(2回目) 3回のアクセスで1サイクル
 	 */
 	tmp = 3;
     } else {
 	/*
 	 * MMRオフ/高速モード/MMRオン(1回目)
-	 * 2回のアクセスで1サイクル 
+	 * 2回のアクセスで1サイクル
 	 */
 	tmp = 2;
     }
 
     /*
-     * 規定回数以上のI/Oアクセスがあれば、クロックを引き延ばす 
+     * 規定回数以上のI/Oアクセスがあれば、クロックを引き延ばす
      */
     if (++ioaccess_count >= tmp) {
 	maincpu.total++;
@@ -607,17 +603,16 @@ mainmem_iowait(void)
  *      メインCPUメモリ
  *      １バイト取得
  */
-volatile BYTE            FASTCALL
-mainmem_readb(WORD addr)
+volatile BYTE FASTCALL mainmem_readb(WORD addr)
 {
     BYTE            dat;
 
     /*
-     * MMR, TWRチェック 
+     * MMR, TWRチェック
      */
     if (mmr_flag || twr_flag) {
 	/*
-	 * MMR、TWRを通す 
+	 * MMR、TWRを通す
 	 */
 	if (mmr_extrb(&addr, &dat)) {
 	    return dat;
@@ -625,7 +620,7 @@ mainmem_readb(WORD addr)
     }
 
     /*
-     * メインRAM(表) 
+     * メインRAM(表)
      */
 #if XM7_VER >= 2
     if (addr < 0x6000) {
@@ -645,7 +640,7 @@ mainmem_readb(WORD addr)
 #endif
 
     /*
-     * BASIC ROM or メインRAM(裏) 
+     * BASIC ROM or メインRAM(裏)
      */
     if (addr < 0xfc00) {
 	if (basicrom_en) {
@@ -661,14 +656,14 @@ mainmem_readb(WORD addr)
     }
 
     /*
-     * メインROMの直後 
+     * メインROMの直後
      */
     if (addr < 0xfc80) {
 	return mainram_b[addr - 0x8000];
     }
 
     /*
-     * 共有RAM 
+     * 共有RAM
      */
     if (addr < 0xfd00) {
 	if (subhalt_flag) {
@@ -679,12 +674,12 @@ mainmem_readb(WORD addr)
     }
 
     /*
-     * ブートROM/RAM 
+     * ブートROM/RAM
      */
 #if XM7_VER >= 2
     if ((addr >= 0xfffe) && (initrom_en)) {
 	/*
-	 * リセットベクタ 
+	 * リセットベクタ
 	 */
 	mainmem_iowait();
 	return init_rom[addr - 0xe000];
@@ -700,13 +695,13 @@ mainmem_readb(WORD addr)
 	if (((addr >= 0xffe0) && (addr < 0xfffe)) ||
 	    ((fm_subtype == FMSUB_FM77) && bootram_rw)) {
 	    /*
-	     * FM-77 RAM 
+	     * FM-77 RAM
 	     */
 	    return boot_ram[addr - 0xfe00];
 	} else {
 	    if (fm_subtype == FMSUB_FM8) {
 		/*
-		 * FM-8 BOOT ROM 
+		 * FM-8 BOOT ROM
 		 */
 		if (boot_mode == BOOT_BASIC) {
 		    return boot_bas8[addr - 0xfe00];
@@ -715,7 +710,7 @@ mainmem_readb(WORD addr)
 		}
 	    } else {
 		/*
-		 * FM-7 BOOT ROM 
+		 * FM-7 BOOT ROM
 		 */
 		if (boot_mode == BOOT_BASIC) {
 		    return boot_bas[addr - 0xfe00];
@@ -799,17 +794,16 @@ mainmem_readb(WORD addr)
  *      １バイト取得(I/Oなし)
  */
 //BYTE            FASTCALL
-volatile BYTE
-mainmem_readbnio(WORD addr)
+volatile BYTE mainmem_readbnio(WORD addr)
 {
     BYTE            dat;
 
     /*
-     * MMR, TWRチェック 
+     * MMR, TWRチェック
      */
     if (mmr_flag || twr_flag) {
 	/*
-	 * MMR、TWRを通す 
+	 * MMR、TWRを通す
 	 */
 	if (mmr_extbnio(&addr, &dat)) {
 	    return dat;
@@ -817,7 +811,7 @@ mainmem_readbnio(WORD addr)
     }
 
     /*
-     * メインRAM(表) 
+     * メインRAM(表)
      */
 #if XM7_VER >= 2
     if (addr < 0x6000) {
@@ -837,7 +831,7 @@ mainmem_readbnio(WORD addr)
 #endif
 
     /*
-     * BASIC ROM or メインRAM(裏) 
+     * BASIC ROM or メインRAM(裏)
      */
     if (addr < 0xfc00) {
 	if (basicrom_en) {
@@ -853,14 +847,14 @@ mainmem_readbnio(WORD addr)
     }
 
     /*
-     * メインROMの直後 
+     * メインROMの直後
      */
     if (addr < 0xfc80) {
 	return mainram_b[addr - 0x8000];
     }
 
     /*
-     * 共有RAM 
+     * 共有RAM
      */
     if (addr < 0xfd00) {
 	if (subhalt_flag) {
@@ -871,12 +865,12 @@ mainmem_readbnio(WORD addr)
     }
 
     /*
-     * ブートROM/RAM 
+     * ブートROM/RAM
      */
 #if XM7_VER >= 2
     if ((addr >= 0xfffe) && (initrom_en)) {
 	/*
-	 * リセットベクタ 
+	 * リセットベクタ
 	 */
 	return init_rom[addr - 0xe000];
     }
@@ -907,7 +901,7 @@ mainmem_readbnio(WORD addr)
     }
 
     /*
-     * I/O空間 
+     * I/O空間
      */
     ASSERT((addr >= 0xfd00) && (addr < 0xfe00));
     return main_io[addr - 0xfd00];
@@ -917,15 +911,14 @@ mainmem_readbnio(WORD addr)
  *      メインCPUメモリ
  *      １バイト書き込み
  */
-void            FASTCALL
-mainmem_writeb(WORD addr, BYTE dat)
+void FASTCALL mainmem_writeb(WORD addr, BYTE dat)
 {
     /*
-     * MMR, TWRチェック 
+     * MMR, TWRチェック
      */
     if (mmr_flag || twr_flag) {
 	/*
-	 * MMR、TWRを通す 
+	 * MMR、TWRを通す
 	 */
 	if (mmr_extwb(&addr, dat)) {
 	    return;
@@ -933,7 +926,7 @@ mainmem_writeb(WORD addr, BYTE dat)
     }
 
     /*
-     * メインRAM(表) 
+     * メインRAM(表)
      */
 #if XM7_VER >= 2
     if (addr < 0x6000) {
@@ -954,12 +947,12 @@ mainmem_writeb(WORD addr, BYTE dat)
 #endif
 
     /*
-     * BASIC ROM or メインRAM(裏) 
+     * BASIC ROM or メインRAM(裏)
      */
     if (addr < 0xfc00) {
 	if (basicrom_en) {
 	    /*
-	     * ROM内RCBでBIOSを呼び出すケース 
+	     * ROM内RCBでBIOSを呼び出すケース
 	     */
 	    return;
 	} else {
@@ -969,7 +962,7 @@ mainmem_writeb(WORD addr, BYTE dat)
     }
 
     /*
-     * メインROMの直後 
+     * メインROMの直後
      */
     if (addr < 0xfc80) {
 	mainram_b[addr - 0x8000] = dat;
@@ -977,7 +970,7 @@ mainmem_writeb(WORD addr, BYTE dat)
     }
 
     /*
-     * 共有RAM 
+     * 共有RAM
      */
     if (addr < 0xfd00) {
 	if (subhalt_flag) {
@@ -985,14 +978,14 @@ mainmem_writeb(WORD addr, BYTE dat)
 	    return;
 	} else {
 	    /*
-	     * BASE09対策 
+	     * BASE09対策
 	     */
 	    return;
 	}
     }
 
     /*
-     * ブートRAM 
+     * ブートRAM
      */
     if (addr >= 0xfe00) {
 #if XM7_VER >= 2
@@ -1008,7 +1001,7 @@ mainmem_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * ブートワークRAM、ベクタ 
+	 * ブートワークRAM、ベクタ
 	 */
 	if ((addr >= 0xffe0) && (addr < 0xfffe)) {
 	    boot_ram[addr - 0xfe00] = dat;
@@ -1066,13 +1059,13 @@ mainmem_writeb(WORD addr, BYTE dat)
 	return;
     }
 #endif
-       
+
 #ifdef RSC
 	if (rs232c_writeb(addr, dat)) {
 		return;
 	}
 #endif
-       
+
 #if XM7_VER >= 3
     if (dmac_writeb(addr, dat)) {
 	return;
@@ -1091,8 +1084,7 @@ mainmem_writeb(WORD addr, BYTE dat)
  *      メインCPUメモリ
  *      セーブ
  */
-BOOL            FASTCALL
-mainmem_save(int fileh)
+BOOL FASTCALL mainmem_save(int fileh)
 {
     if (!file_write(fileh, mainram_a, 0x8000)) {
 	return FALSE;
@@ -1147,7 +1139,7 @@ mainmem_save(int fileh)
     }
 #if XM7_VER >= 3
     /*
-     * Ver8拡張 
+     * Ver8拡張
      */
     if (!file_write(fileh, &init_rom[0x0b0e], 3)) {
 	return FALSE;
@@ -1161,11 +1153,10 @@ mainmem_save(int fileh)
  *      メインCPUメモリ
  *      ロード
  */
-BOOL            FASTCALL
-mainmem_load(int fileh, int ver)
+BOOL FASTCALL mainmem_load(int fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -1262,7 +1253,7 @@ mainmem_load(int fileh, int ver)
     }
 #if XM7_VER >= 3
     /*
-     * Ver8拡張 
+     * Ver8拡張
      */
     if (ver >= 800) {
 	if (!file_read(fileh, &init_rom[0x0b0e], 3)) {

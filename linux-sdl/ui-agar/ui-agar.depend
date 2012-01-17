@@ -1659,9 +1659,10 @@
 	"subctrl.h"
 	"device.h"
 
-1315081296 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.cpp
+1326532999 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_toolbox.cpp
 	<libintl.h>
 	<iconv.h>
+	<sys/stat.h>
 	<agar/core.h>
 	<agar/gui.h>
 	"xm7.h"
