@@ -12,7 +12,9 @@
 #include "agar_vramutil.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
-#include "DrawAGNonGL.h"
+#include "agar_sdldraw.h"
+
+//#include "DrawAGNonGL.h"
 
 #include <SDL.h>
 
@@ -24,7 +26,7 @@ extern "C" {
 }
 
 extern Uint32 nDrawTick1E;
-extern DrawAGNonGL *DrvNonGL;
+
 
 extern void InitDrawArea(int w, int h);
 extern void DetachDrawArea(void);
