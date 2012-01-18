@@ -42,7 +42,6 @@ extern "C" {
 char            ModuleDir[MAXPATHLEN];	/* XM7実行モジュールディレクトリ  */
 
 SDL_Surface     *drawArea = NULL;       /* スクリーン描画エリア */
-SDL_Surface     *displayArea = NULL;
 int             nErrorCode;             /* エラーコード */
 BOOL            bMenuLoop;	      /* メニューループ中 */
 BOOL            bCloseReq;              /* 終了要求フラグ */

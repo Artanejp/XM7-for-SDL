@@ -49,6 +49,9 @@
 		<Unit filename="dbg_disasm09.cpp" />
 		<Unit filename="dbg_fonts.cpp" />
 		<Unit filename="dbg_memdump.cpp" />
+		<Unit filename="memaccess.cpp" />
+		<Unit filename="memdef.h" />
+		<Unit filename="memread.h" />
 		<Extensions>
 			<code_completion>
 				<search_path add="../vm" />

@@ -91,8 +91,10 @@ typedef unsigned int UINT;
         extern GtkWidget        *gtkDrawArea;
         extern GtkBuilder       *gbuilderMain;
 #endif
+#ifndef USE_AGAR
         extern SDL_Surface      *drawArea;	     /* スクリーン描画エリア */
         extern SDL_Surface      *displayArea;           /* スクリーン表示エリア */
+#endif
         extern char             InitialDir[5][MAXPATHLEN]; /* 初期ディレクトリ */
         extern int              nErrorCode;             /* エラーコード */
         extern BOOL             bMenuLoop;              /* メニューループ中 */

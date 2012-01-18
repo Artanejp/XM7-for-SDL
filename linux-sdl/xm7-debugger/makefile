@@ -10,7 +10,8 @@ include ../config.mak
 COMMONSRC = \
 	dbg_breakpoint.cpp \
 	dbg_disasm09.cpp \
-	dbg_memdump.cpp
+	dbg_memdump.cpp \
+	memaccess.cpp
 	
 .SUFFIXES: .c .cpp .asm .o
 
@@ -44,6 +45,9 @@ Debug/dbg_memdump.o: dbg_memdump.cpp
 Debug/dbg_fonts.o: dbg_fonts.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
+Debug/memaccess.o: memaccess.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
 Release/dbg_breakpoint.o: dbg_breakpoint.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
@@ -53,7 +57,10 @@ Release/dbg_disasm09.o: dbg_disasm09.cpp
 Release/dbg_memdump.o: dbg_memdump.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
-release/dbg_fonts.o: dbg_fonts.cpp
+Release/dbg_fonts.o: dbg_fonts.cpp
+	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Release/memaccess.o: memaccess.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 .asm.o:

@@ -4,10 +4,10 @@
 	<File name="device.h" open="0" top="0" tabpos="25">
 		<Cursor position="4337" topLine="181" />
 	</File>
-	<File name="disasm.c" open="1" top="0" tabpos="27">
-		<Cursor position="20663" topLine="236" />
+	<File name="disasm.c" open="1" top="0" tabpos="7">
+		<Cursor position="20663" topLine="0" />
 	</File>
-	<File name="fdc.c" open="1" top="0" tabpos="5">
+	<File name="fdc.c" open="1" top="0" tabpos="4">
 		<Cursor position="15206" topLine="305" />
 	</File>
 	<File name="keyboard.c" open="0" top="0" tabpos="0">
@@ -16,10 +16,10 @@
 	<File name="m6809.c" open="1" top="0" tabpos="1">
 		<Cursor position="41750" topLine="1104" />
 	</File>
-	<File name="m6809ops.h" open="1" top="0" tabpos="7">
-		<Cursor position="44235" topLine="3069" />
+	<File name="m6809ops.h" open="0" top="0" tabpos="7">
+		<Cursor position="44235" topLine="8" />
 	</File>
-	<File name="m6809tbl.h" open="1" top="0" tabpos="8">
+	<File name="m6809tbl.h" open="0" top="0" tabpos="8">
 		<Cursor position="9485" topLine="429" />
 	</File>
 	<File name="main.c" open="0" top="0" tabpos="0">
@@ -28,17 +28,26 @@
 	<File name="maincpu.c" open="1" top="0" tabpos="2">
 		<Cursor position="693" topLine="32" />
 	</File>
-	<File name="mainmem.c" open="1" top="0" tabpos="4">
-		<Cursor position="15061" topLine="787" />
+	<File name="mainetc.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="142" />
 	</File>
-	<File name="subcpu.c" open="1" top="0" tabpos="9">
+	<File name="mainmem.c" open="0" top="0" tabpos="4">
+		<Cursor position="15180" topLine="788" />
+	</File>
+	<File name="mmr.c" open="1" top="0" tabpos="8">
+		<Cursor position="2800" topLine="127" />
+	</File>
+	<File name="mmr.h" open="1" top="0" tabpos="9">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="subcpu.c" open="1" top="0" tabpos="6">
 		<Cursor position="679" topLine="241" />
 	</File>
-	<File name="submem.c" open="0" top="0" tabpos="3">
-		<Cursor position="6824" topLine="363" />
+	<File name="submem.c" open="1" top="1" tabpos="10">
+		<Cursor position="3535" topLine="165" />
 	</File>
-	<File name="system.c" open="1" top="0" tabpos="6">
-		<Cursor position="8403" topLine="464" />
+	<File name="system.c" open="1" top="0" tabpos="5">
+		<Cursor position="8403" topLine="373" />
 	</File>
 	<File name="tools.c" open="0" top="0" tabpos="36">
 		<Cursor position="0" topLine="0" />

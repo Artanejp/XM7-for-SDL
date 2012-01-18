@@ -13,7 +13,7 @@ include ../config.mak
 VIDEODRVSRC = \
 	agar_draw.cpp agar_gldraw2.cpp \
 	agar_glutil.cpp \
-	DrawAGNonGL.cpp
+
 
 INPUTSRC = \
 	AgarKbdInterface.cpp \

@@ -88,7 +88,9 @@ extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */
 //extern BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
 extern BOOL            bFullScan;		/* フルスキャン(Window) */
 extern BOOL            bDirectDraw;		/* 直接書き込みフラグ */
+#ifndef USE_AGAR
 extern SDL_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
+#endif
 extern WORD            nDrawTop;			/* 描画範囲上 */
 extern WORD            nDrawBottom;		/* 描画範囲下 */
 extern WORD            nDrawLeft;		/* 描画範囲左 */

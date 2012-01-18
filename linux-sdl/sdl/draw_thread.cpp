@@ -316,15 +316,10 @@ int DrawThreadMain(void *p)
 #else
         SDL_DrawInitsub();
 #endif
-//		ResizeWindow(640,480);
-//#ifndef USE_AGAR
 		InitGL(640,480);
-//#endif
 		nDrawCount = DrawCountSet(nDrawFPS);
-        //nDrawCount = (100000 / nDrawFPS) / 100 + 1;
 		while(1) {
-#ifdef USE_AGAR
-#else
+#ifndef USE_AGAR
 			if(DrawMutex == NULL) {
 				SDL_Delay(1);
 				continue;
@@ -336,8 +331,6 @@ int DrawThreadMain(void *p)
 #endif
 #ifdef USE_AGAR
 			AG_CondWait(&DrawCond, &DrawMutex);
-		    //   nDrawCount = (100000 / nDrawFPS) / 100 + 1;
-		    //   AG_Delay(nDrawCount);
 #else
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);
@@ -348,24 +341,15 @@ int DrawThreadMain(void *p)
 #else
                 SDL_DrawDetachsub();
 #endif
-//                DiscardTexture(uVramTextureID);
-//                uVramTextureID = 0;
                 DrawSHUTDOWN = FALSE;
 				return 0; /* シャットダウン期間 */
 			}
-#ifndef USE_OPENGL
-//			DrawStatus();
-#endif
 
-#ifdef USE_AGAR
-			//if(DrawArea == NULL) continue;
-#endif
 			if(nDrawCount > 0) {
 				nDrawCount --;
 				continue;
 			} else {
 			   nDrawCount = DrawCountSet(nDrawFPS);
-//			   nDrawCount = 1000 / nDrawFPS + 1;
 			}
 #ifdef USE_AGAR
 			AGDrawTaskMain();

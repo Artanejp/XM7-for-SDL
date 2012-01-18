@@ -322,7 +322,7 @@ void MainLoop(int argc, char *argv[])
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
-//    drivers = "sdlfb:width=1280:height=880:depth=32";
+    drivers = "sdlfb:width=1280:height=880:depth=32";
 	/*
 	 * Agar のメインループに入る
 	 */
@@ -337,16 +337,14 @@ void MainLoop(int argc, char *argv[])
                 return;
         }
     }
-    InitGL(640, 400);
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
-//	bKeyboardSnooped = FALSE;
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	AG_DrawInitsub();
 
 	inf = SDL_GetVideoInfo();
-        if(inf != NULL) {
+    if(inf != NULL) {
 	   RootVideoWidth = inf->current_w;
 	   RootVideoHeight = inf->current_h;
 	} else {
@@ -476,27 +474,23 @@ void InitInstance(void)
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
-
 		bUseOpenGL = TRUE;
 		DrawArea = NULL;
+	    AG_WidgetShow(GLDrawArea);
+	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
+        CreateStatus();
     } else {
         // Non-GL
         DrawArea = AG_BoxNewVert(AGWIDGET(MainWindow), AG_BOX_HORIZ);
         AG_WidgetSetSize(DrawArea, 640,400);
         AG_WidgetSetPosition(DrawArea, 0, 0);
-        InitDrawArea(640,400);
+//        InitDrawArea(640,400);
         LinkDrawArea(AGWIDGET(DrawArea));
         bUseOpenGL = FALSE;
         GLDrawArea = NULL;
-    }
-	CreateStatus();
-	if(GLDrawArea != NULL) {
-	    AG_WidgetShow(GLDrawArea);
-	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
-	} else if(DrawArea != NULL) {
 	    AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
-	}
+    }
 
 	AG_WindowShow(MainWindow);
 	AG_WindowFocus(MainWindow);

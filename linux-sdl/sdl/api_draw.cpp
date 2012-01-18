@@ -241,9 +241,7 @@ BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 		/*
 		 * データ転送
 		 */
-#ifdef USE_AGAR
-    displayArea = GetDrawSurface();
-#else
+#ifndef USE_AGAR
 	displayArea = SDL_GetVideoSurface();
 #endif
 		/*
@@ -364,9 +362,8 @@ void ChangeResolution(void)
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
 #endif
 #endif
-#ifdef USE_AGAR
-    displayArea = realDrawArea = GetDrawSurface();
-#else
+
+#ifndef USE_AGAR
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
 #endif
@@ -446,7 +443,7 @@ void	InitDraw(void)
 		 * 直接書き込み→間接書き込み
 		 */
 #ifdef USE_AGAR
-        realDrawArea = GetDrawSurface();
+//        realDrawArea = GetDrawSurface();
 		AG_MutexInit(&DrawMutex);
 		AG_CondInit(&DrawCond);
 		AG_MutexUnlock(&DrawMutex);

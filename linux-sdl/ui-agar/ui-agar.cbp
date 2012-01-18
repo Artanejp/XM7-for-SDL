@@ -73,8 +73,6 @@
 		</Linker>
 		<Unit filename="AgarKbdInterface.cpp" />
 		<Unit filename="AgarKbdInterface.h" />
-		<Unit filename="DrawAGNonGL.cpp" />
-		<Unit filename="DrawAGNonGL.h" />
 		<Unit filename="agar_cfg.cpp" />
 		<Unit filename="agar_cfg.h" />
 		<Unit filename="agar_cmd.cpp" />

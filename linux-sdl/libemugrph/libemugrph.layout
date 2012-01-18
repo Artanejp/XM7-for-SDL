@@ -4,11 +4,14 @@
 	<File name="EmuAgarGL.cpp" open="0" top="0" tabpos="1">
 		<Cursor position="8515" topLine="374" />
 	</File>
-	<File name="EmuAgarGL.h" open="0" top="0" tabpos="8">
-		<Cursor position="463" topLine="16" />
+	<File name="EmuAgarGL.h" open="1" top="0" tabpos="24">
+		<Cursor position="463" topLine="26" />
 	</File>
-	<File name="EmuGLUtils.h" open="0" top="0" tabpos="9">
-		<Cursor position="348" topLine="10" />
+	<File name="EmuGLUtils.cpp" open="1" top="0" tabpos="23">
+		<Cursor position="531" topLine="25" />
+	</File>
+	<File name="EmuGLUtils.h" open="1" top="0" tabpos="22">
+		<Cursor position="348" topLine="17" />
 	</File>
 	<File name="EmuGrph256kc.cpp" open="0" top="0" tabpos="15">
 		<Cursor position="2975" topLine="116" />

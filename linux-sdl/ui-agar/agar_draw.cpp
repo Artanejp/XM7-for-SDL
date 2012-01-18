@@ -15,14 +15,13 @@
 
 #include "agar_draw.h"
 #include "agar_gldraw.h"
-#include "DrawAGNonGL.h"
+//#include "DrawAGNonGL.h"
 
 #include <SDL.h>
 
 extern BYTE bMode;
 Uint32 nDrawTick1E;
 static BYTE oldBMode;
-DrawAGNonGL *DrvNonGL;
 
 extern "C" {
     AG_Box *DrawArea;
@@ -30,43 +29,27 @@ extern "C" {
 
 void InitDrawArea(int w, int h)
 {
-    DrvNonGL = new DrawAGNonGL;
-    if(DrvNonGL != NULL) {
-        DrvNonGL->InitDraw(w, h);
-    }
 }
 
 void DetachDrawArea(void)
 {
-    if(DrvNonGL)
-    {
-        delete DrvNonGL;
-        DrvNonGL = NULL;
-    }
 }
 
 
 void LinkDrawArea(AG_Widget *w)
 {
-
     if(w == NULL) return;
-    if(DrvNonGL == NULL) return;
-    DrvNonGL->LinkVram(w);
 }
 
 void UnlinkDrawArea(AG_Widget *w)
 {
-
     if(w == NULL) return;
-    if(DrvNonGL == NULL) return;
-    DrvNonGL->UnlinkVram(w);
 }
 
 
 SDL_Surface *GetDrawSurface(void)
 {
-    if(DrvNonGL == NULL) return NULL;
-    return DrvNonGL->GetSDLSurface();
+    return NULL;
 }
 
 void ResizeWindow_Agar(int w, int h)
@@ -108,14 +91,17 @@ void ResizeWindow_Agar(int w, int h)
 	if(MainWindow) {
 		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + ofset + MenuBar->wid.h );
         AG_Redraw(AGWIDGET(MainWindow));
+        AG_WindowFocus(MainWindow);
 	}
-	if(AG_UsingGL(drv)) {
+	if(AG_UsingGL(drv) && (agDriverSw != NULL)) {
         AG_ResizeDisplay(w, hh);
 	}
     printf("Resize to %d x %d\n", w, hh);
 //    AG_Redraw(AGWIDGET(MenuBar));
 }
-
+/*
+* Resize (Window only)
+*/
 void ResizeWindow_Agar2(int w, int h)
 {
 	int hh;
@@ -129,17 +115,14 @@ void ResizeWindow_Agar2(int w, int h)
 	    drv = AGDRIVER(MainWindow);
 	}
 
-//	ww = w;
-//	hh = h - MenuBar->wid.h;
     ww = w;
     hh = h - MenuBar->wid.h;
 	if(hh < 0) hh = 0;
 	if(DrawArea != NULL) {
         AG_WidgetSetSize(AGWIDGET(DrawArea), ww, hh);
         AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
-        //InitDrawArea(ww, hh);
         LinkDrawArea(AGWIDGET(DrawArea));
-	AG_Redraw(AGWIDGET(DrawArea));
+        AG_Redraw(AGWIDGET(DrawArea));
 	}
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, ww, hh);
@@ -151,15 +134,11 @@ void ResizeWindow_Agar2(int w, int h)
 	nDrawHeight = hh;
  	AG_WidgetEnable(AGWIDGET(MenuBar));
 	if(MainWindow) {
-//		AG_WindowSetGeometry(MainWindow, 0, MenuBar->wid.h + 10 , w, hh);
 		AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-	}
-//    AG_WidgetFocus(AGWIDGET(MenuBar));
-    printf("Resize to %d x %d\n", w, h);
-    if(MainWindow) {
         AG_Redraw(AGWIDGET(MainWindow));
-    }
-// 	AG_Redraw(AGWIDGET(MenuBar));
+        AG_WindowFocus(MainWindow);
+	}
+    printf("Resize to %d x %d\n", w, h);
 }
 
 
