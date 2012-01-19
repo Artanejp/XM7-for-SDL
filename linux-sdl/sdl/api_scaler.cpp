@@ -359,26 +359,24 @@ void detachsub_scaler(void)
 	}
 }
 
-void SetupGL(int w, int h)
+void InitNonGL(int w, int h)
 {
-#ifdef USE_OPENGL
-	SDL_SemWait(DrawInitSem);
-#ifdef USE_AGAR
-//	InitGL_AG_GL(w, h);
-    InitGL_AG2(w, h);
-//    InitGL_AG_Blocked(w, h);
-#else
-	scalerGL->InitGL(w, h);
-	SDL_SemPost(DrawInitSem);
-#endif
-	SDL_SemPost(DrawInitSem);
-#else
-#ifdef USE_AGAR
+	Uint32 flags;
+	char *ext;
 
-#else
-	SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE);
-#endif
-#endif
+	if(InitVideo) return;
+    InitVideo = TRUE;
+
+    vram_pb = NULL;
+    vram_pg = NULL;
+    vram_pr = NULL;
+
+	flags = SDL_RESIZABLE;
+
+	InitVramSemaphore();
+	pVirtualVram = NULL;
+	InitVirtualVram();
+    return;
 }
 
 
@@ -400,6 +398,7 @@ void InitGL(int w, int h)
         InitGL_AG2(w, h);
 //        InitGL_AG_Blocked(w, h);
     } else {
+        InitNonGL(w, h);
         AG_ResizeDisplay(w, h);
     }
     SDL_SemPost(DrawInitSem);

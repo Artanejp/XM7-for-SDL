@@ -55,29 +55,29 @@
 	<File name="SndDrvWav.h" open="0" top="0" tabpos="29">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="api_draw.cpp" open="1" top="0" tabpos="26">
-		<Cursor position="7865" topLine="376" />
+	<File name="api_draw.cpp" open="0" top="0" tabpos="26">
+		<Cursor position="35246" topLine="1863" />
 	</File>
-	<File name="api_draw.h" open="1" top="0" tabpos="1">
+	<File name="api_draw.h" open="0" top="0" tabpos="1">
 		<Cursor position="2047" topLine="84" />
 	</File>
 	<File name="api_js.h" open="0" top="0" tabpos="5">
 		<Cursor position="389" topLine="4" />
 	</File>
-	<File name="api_kbd.cpp" open="1" top="0" tabpos="2">
+	<File name="api_kbd.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="13930" topLine="0" />
 	</File>
-	<File name="api_kbd.h" open="1" top="0" tabpos="3">
+	<File name="api_kbd.h" open="0" top="0" tabpos="3">
 		<Cursor position="1878" topLine="80" />
 	</File>
 	<File name="api_mouse.cpp" open="0" top="0" tabpos="15">
 		<Cursor position="2832" topLine="131" />
 	</File>
-	<File name="api_scaler.cpp" open="1" top="0" tabpos="31">
-		<Cursor position="7913" topLine="386" />
+	<File name="api_scaler.cpp" open="0" top="0" tabpos="31">
+		<Cursor position="7612" topLine="361" />
 	</File>
-	<File name="api_scaler.h" open="1" top="0" tabpos="30">
-		<Cursor position="1637" topLine="89" />
+	<File name="api_scaler.h" open="0" top="0" tabpos="30">
+		<Cursor position="1636" topLine="89" />
 	</File>
 	<File name="api_snd2.cpp" open="0" top="0" tabpos="10">
 		<Cursor position="27090" topLine="1291" />
@@ -86,27 +86,27 @@
 		<Cursor position="1349" topLine="0" />
 	</File>
 	<File name="api_vram256k.cpp" open="0" top="0" tabpos="3">
-		<Cursor position="1561" topLine="55" />
+		<Cursor position="609" topLine="24" />
 	</File>
 	<File name="api_vram4096.cpp" open="0" top="0" tabpos="2">
-		<Cursor position="5555" topLine="201" />
+		<Cursor position="2168" topLine="82" />
 	</File>
-	<File name="api_vram8.cpp" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+	<File name="api_vram8.cpp" open="1" top="1" tabpos="0">
+		<Cursor position="2655" topLine="166" />
 	</File>
 	<File name="build_config.h" open="0" top="0" tabpos="1">
 		<Cursor position="1512" topLine="84" />
 	</File>
 	<File name="draw_thread.cpp" open="0" top="0" tabpos="2">
-		<Cursor position="4057" topLine="218" />
+		<Cursor position="5577" topLine="308" />
 	</File>
-	<File name="sdl.h" open="1" top="0" tabpos="34">
+	<File name="sdl.h" open="0" top="0" tabpos="34">
 		<Cursor position="2049" topLine="88" />
 	</File>
-	<File name="sdl_bar.h" open="1" top="0" tabpos="37">
+	<File name="sdl_bar.h" open="0" top="0" tabpos="37">
 		<Cursor position="457" topLine="21" />
 	</File>
-	<File name="sdl_inifile.c" open="1" top="0" tabpos="4">
+	<File name="sdl_inifile.c" open="0" top="0" tabpos="4">
 		<Cursor position="137" topLine="30" />
 	</File>
 	<File name="sdl_inifile.h" open="0" top="0" tabpos="6">

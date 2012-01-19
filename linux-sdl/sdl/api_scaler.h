@@ -92,9 +92,9 @@ extern void SetVramReader_256k(void);
 /*
  * 描画関連
  */
-extern void SetupGL(int w, int h);
 extern void InitGL(int w, int h);
 extern void Flip(void);
+extern void InitNonGL(int w, int h);
 
 /*
  * スケーラ

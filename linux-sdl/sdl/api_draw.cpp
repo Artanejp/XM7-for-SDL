@@ -1619,12 +1619,7 @@ void Draw640All(void)
 	if (bClearFlag) {
 		AllClear();
 	}
-
-	if(!bUseOpenGL) {
-	    PutVramFunc = &SwScaler;
-	} else {
-        PutVramFunc = &PutVram_AG_SP;
-	}
+    PutVramFunc = &PutVram_AG_SP;
 	/*
 	 * レンダリング
 	 */
@@ -1876,11 +1871,7 @@ void Draw256k(void)
 	if(p == NULL) return;
 #endif
 
-	 if(!bUseOpenGL) {
-	    PutVramFunc = &SwScaler;
-	 } else {
-          PutVramFunc = &PutVram_AG_SP;
-	 }
+    PutVramFunc = &PutVram_AG_SP;
 	nDrawTop = 0;
 	nDrawBottom = 200;
 	nDrawLeft = 0;

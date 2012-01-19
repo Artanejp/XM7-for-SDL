@@ -212,7 +212,7 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 		drv = AGWIDGET(GLDrawArea)->drv;
 	}
 	if(drv == NULL) return;
-	if(AG_UsingGL(drv) == 0) return; // Non-GL
+//	if(AG_UsingGL(drv) == 0) return; // Non-GL
 
     if(pVirtualVram == NULL) return;
     pp = &(pVirtualVram->pVram[0][0]);

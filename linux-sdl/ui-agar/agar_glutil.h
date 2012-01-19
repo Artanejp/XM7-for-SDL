@@ -17,7 +17,9 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 extern  AG_GLView *GLDrawArea;
 extern BOOL bGL_ARB_IMAGING; // イメージ操作可能か？
 extern BOOL bGL_ARB_COPY_BUFFER;  // バッファ内コピー（高速化！）サポート
@@ -31,8 +33,10 @@ extern BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張
 
 extern void InitGLExtensionVars(void);
 extern BOOL QueryGLExtensions(const char *str);
+#ifdef __cplusplus
 }
-
+#endif
+#ifdef __cplusplus
 extern GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h);
 extern GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h);
 extern GLuint CreateNullTexture(int w, int h);
@@ -40,6 +44,6 @@ extern GLuint CreateNullTexture(int w, int h);
 extern void Flip_AG_GL(void);
 extern void DiscardTextures(int n, GLuint *id);
 extern void DiscardTexture(GLuint id);
-
+#endif
 
 #endif // AGAR_GLUTIL_H_INCLUDED

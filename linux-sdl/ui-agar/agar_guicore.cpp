@@ -32,6 +32,7 @@ extern "C" {
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 #include "agar_gldraw.h"
+#include "agar_sdldraw.h"
 
 extern "C" {
 void InitInstance(void);
@@ -67,23 +68,11 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	BOOL bi;
 
 	bi = FALSE;
-#if 0
-	if(GLDrawArea != NULL) {
-        if(AG_WidgetIsFocused(AGWIDGET(GLDrawArea)) != 0) {
-            bi = TRUE;
-        }
-    } else if(DrawArea != NULL) {
-        if(	AG_WidgetIsFocused(AGWIDGET(DrawArea)) != 0) {
-            bi = TRUE;
-        }
-    }
-#else
     if(MainWindow != NULL) {
         if(AG_WindowIsFocused(MainWindow)) {
             bi = TRUE;
         }
     }
-#endif
 	/* Retrieve the next queued event. */
 	switch (ev->type) {
 	case AG_DRIVER_KEY_UP:
@@ -322,7 +311,7 @@ void MainLoop(int argc, char *argv[])
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
-//    drivers = "sdlfb:width=1280:height=880:depth=32";
+    drivers = "sdlfb:width=1280:height=880:depth=32";
 	/*
 	 * Agar のメインループに入る
 	 */
@@ -445,6 +434,9 @@ void InitInstance(void)
 
 	InitFont();
 
+	//  最初にカスタムウイジェットをつける
+    AG_RegisterClass(&XM7_SDLViewClass);
+
     MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
 	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
@@ -481,10 +473,10 @@ void InitInstance(void)
         CreateStatus();
     } else {
         // Non-GL
-        DrawArea = AG_BoxNewVert(AGWIDGET(MainWindow), AG_BOX_HORIZ);
+        DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
         AG_WidgetSetSize(DrawArea, 640,400);
         AG_WidgetSetPosition(DrawArea, 0, 0);
-//        InitDrawArea(640,400);
+        InitDrawArea(640,400);
         LinkDrawArea(AGWIDGET(DrawArea));
         bUseOpenGL = FALSE;
         GLDrawArea = NULL;

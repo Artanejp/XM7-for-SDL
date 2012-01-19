@@ -1,5 +1,11 @@
-/*	Public domain	*/
-
+/*
+* FM-7 Emulator "XM7"
+* Virtual Vram Display(Agar widget version)
+* (C) 2012 K.Ohta <whatisthis.sowhat@gmail.com>
+* History:
+* Jan 18,2012 From demos/customwidget/mywidget.[c|h]
+*
+*/
 /*
  * Implementation of a typical Agar widget which uses surface mappings to
  * efficiently draw surfaces, regardless of the underlying graphics system.
@@ -12,6 +18,10 @@
 #include <agar/gui.h>
 
 #include "agar_sdldraw.h"
+#include "api_vram.h"
+#include "api_draw.h"
+//#include "api_scaler.h"
+#include "api_kbd.h"
 
 /*
  * This is a generic constructor function. It is completely optional, but
@@ -23,16 +33,18 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
 	XM7_SDLView *my;
 
 	/* Create a new instance of the MyWidget class */
-	my = malloc(sizeof(XM7_SDLViewNew));
+	my = malloc(sizeof(XM7_SDLView));
 	AG_ObjectInit(my, &XM7_SDLViewClass);
 
 	/* Set some constructor arguments */
 	my->param = param;
-        my->Surface = src;
 
 	/* Attach the object to the parent (no-op if parent is NULL) */
 	AG_ObjectAttach(parent, my);
-
+    if(src != NULL) {
+        my->Surface = src;
+        my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+    }
 	return (my);
 }
 
@@ -41,7 +53,7 @@ void XM7_SDLViewLinkSurface(void *p, AG_Surface *src)
    XM7_SDLView *my = p;
    my->Surface = src;
    my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
-   
+
 }
 
 AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
@@ -49,7 +61,7 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
    XM7_SDLView *my = p;
    AG_Surface *src;
    AG_PixelFormat fmt;
-   
+
    fmt.BitsPerPixel = 32;
    fmt.BytesPerPixel = 4;
 #ifdef AG_BIG_ENDIAN
@@ -72,10 +84,11 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
    fmt.Bloss = 0;
    fmt.Aloss = 0;
    fmt.palette = NULL;
-   
-   
+
+
    src = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, 0);
-   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+//   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+
    if(src != NULL) my->Surface = src;
    return src;
 }
@@ -102,12 +115,99 @@ AG_Surface *XM7_SDLViewGetSrcSurface(void *p)
    return NULL;
 }
 
+
+static void pVram2RGB(int x, int y, Uint32 *dst, int pitch)
+{
+    int yy;
+    int xx;
+    Uint32 *dbase = dst;
+    int of;
+    for(yy = 0; yy < 8; yy++){
+        of = y + yy;
+        dbase = &dst[yy * pitch];
+        *dbase++ = pVirtualVram->pVram[of][x] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 1] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 2] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 3] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 4] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 5] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 6] | 0xff000000;
+        *dbase++ = pVirtualVram->pVram[of][x + 7] | 0xff000000;
+    }
+
+}
 void XM7_SDLViewUpdateSrc(void *p)
 {
    XM7_SDLView *my = p;
-   if(my != NULL) {
-	AG_WidgetUpdateSurface(my, my->mySurface);
+   Uint8 *pb;
+   Uint32 *disp;
+   int w;
+   int h;
+   int ww;
+   int hh;
+   int xx;
+   int yy;
+   int pitch;
+   int bpp;
+
+
+   if(my == NULL) return;
+   if(my->Surface == NULL) return;
+   w = my->Surface->w;
+   h = my->Surface->h;
+
+   if(pVirtualVram == NULL) return;
+   switch(bMode){
+    case SCR_200LINE:
+        ww = 640;
+        hh = 200;
+        break;
+    case SCR_400LINE:
+        ww = 640;
+        hh = 400;
+        break;
+    default:
+        ww = 320;
+        hh = 200;
+        break;
    }
+    if(w < ww){
+       ww = w;
+    }
+    if(h  < hh){
+        hh = h ;
+    }
+    pb = my->Surface->pixels;
+    pitch = my->Surface->pitch;
+    bpp = my->Surface->format->BytesPerPixel;
+
+    LockVram();
+    for(xx = 0 ; xx < (ww >> 3); xx++) {
+        for(yy = 0; yy < hh; yy++) {
+			disp =(Uint32 *)&pb[(xx << 3) * bpp + yy * pitch ];
+			*disp = pVirtualVram->pVram[yy][xx << 3];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 1];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 2];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 3];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 4];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 5];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 6];
+			disp++;
+			*disp = pVirtualVram->pVram[yy][(xx << 3) + 7];
+			disp++;
+
+			}
+	}
+    my->mySurface = AG_WidgetMapSurface(my, my->Surface);
+	AG_WidgetUpdateSurface(my, my->mySurface);
+    UnlockVram();
+
 }
 
 
@@ -124,14 +224,19 @@ void XM7_SDLViewUpdateSrc(void *p)
 static void SizeRequest(void *p, AG_SizeReq *r)
 {
 	XM7_SDLView *my = p;
-	
+
 	if (my->mySurface == -1) {
 		/*
 		 * We can use AG_TextSize() to return the dimensions of rendered
 		 * text, without rendering it.
 		 */
-		AG_TextFont(AG_FetchFont(NULL, 24, 0));
-		AG_TextSize("Custom widget!", &r->w, &r->h);
+		 if(my->Surface != NULL){
+		     r->w = my->Surface->w;
+		     r->h = my->Surface->h;
+		 } else {
+		     r->w = 0;
+		     r->h = 0;
+		 }
 	} else {
 		/*
 		 * We can use the geometry of the rendered surface. The
@@ -149,15 +254,14 @@ static void SizeRequest(void *p, AG_SizeReq *r)
  * widgets, but other widgets generally use it to check if the allocated
  * geometry can be handled by Draw().
  */
-static int
-SizeAllocate(void *p, const AG_SizeAlloc *a)
+static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 {
 	XM7_SDLView *my = p;
 
 	/* If we return -1, Draw() will not be called. */
 	if (a->w < 5 || a->h < 5)
 		return (-1);
-	
+
 	printf("Allocated %dx%d pixels\n", a->w, a->h);
 	return (0);
 }
@@ -170,29 +274,29 @@ SizeAllocate(void *p, const AG_SizeAlloc *a)
 static void Draw(void *p)
 {
 	XM7_SDLView *my = p;
-	
+	AG_Color c;
+
+
 	/*
 	 * Draw a box spanning the widget area. In order to allow themeing,
 	 * you would generally use a STYLE() call here instead, see AG_Style(3)
 	 * for more information on styles.
 	 */
-        
-	AG_DrawBox(my,
-	    AG_RECT(0, 0, AGWIDGET(my)->w, AGWIDGET(my)->h), 1,
-	    agColors[BUTTON_COLOR]);
-
+    XM7_SDLViewUpdateSrc(p);
+//    {
+//        int i;
+//        Uint32 *p = my->Surface->pixels;
+//        for(i = 0; i < (my->Surface->w * my->Surface->h); i++){
+//            p[i] = 0xffffffff;
+//        }
+//    }
 	/*
 	 * Render some text into a new surface. In OpenGL mode, the
 	 * AG_WidgetMapSurface() call involves a texture upload.
 	 */
-	if (my->mySurface == -1) {
-		AG_TextFont(AG_FetchFont(NULL, 24, 0));
-		my->mySurface = AG_WidgetMapSurface(my,
-		    AG_TextRender("Custom widget!"));
-	}
 
 	/* Blit the mapped surface at [0,0]. */
-	AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
+	AG_WidgetBlit(my, my->Surface, 0, 0);
 }
 
 /* Mouse motion event handler */
@@ -277,7 +381,7 @@ static void Init(void *obj)
 	 * Here we register handlers for the common AG_Window(3) events.
 	 */
          my->Surface = NULL;
-   
+
 	AG_SetEvent(my, "mouse-button-up", MouseButtonUp, NULL);
 	AG_SetEvent(my, "mouse-button-down", MouseButtonDown, NULL);
 	AG_SetEvent(my, "mouse-motion", MouseMotion, NULL);

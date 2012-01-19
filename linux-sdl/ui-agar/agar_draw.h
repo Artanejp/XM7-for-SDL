@@ -17,14 +17,18 @@
 //#include "DrawAGNonGL.h"
 
 #include <SDL.h>
-
+#include "agar_sdldraw.h"
+#ifdef __cplusplus
 extern "C" {
-    extern AG_Box *DrawArea;
+#endif
+    extern XM7_SDLView *DrawArea;
     extern AG_Window *MainWindow;
     extern AG_Menu  *MenuBar;
     extern void DrawStatus(void);
+#ifdef __cplusplus
 }
-
+#endif
+#ifdef __cplusplus
 extern Uint32 nDrawTick1E;
 
 
@@ -34,4 +38,5 @@ extern void LinkDrawArea(AG_Widget *w);
 extern SDL_Surface *GetDrawSurface(void);
 extern void ResizeWindow_Agar(int w, int h);
 extern void AGDrawTaskMain(void);
+#endif
 #endif // AGAR_DRAW_H_INCLUDED

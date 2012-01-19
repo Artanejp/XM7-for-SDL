@@ -15,6 +15,7 @@
 
 #include "agar_draw.h"
 #include "agar_gldraw.h"
+#include "agar_sdldraw.h"
 //#include "DrawAGNonGL.h"
 
 #include <SDL.h>
@@ -24,15 +25,21 @@ Uint32 nDrawTick1E;
 static BYTE oldBMode;
 
 extern "C" {
-    AG_Box *DrawArea;
+XM7_SDLView *DrawArea;
 }
 
 void InitDrawArea(int w, int h)
 {
+    if(DrawArea == NULL) return;
+    XM7_SDLViewSurfaceNew(DrawArea, w, h);
+    AG_WidgetSetSize(DrawArea, w, h);
 }
 
 void DetachDrawArea(void)
 {
+    if(DrawArea == NULL) return;
+    XM7_SDLViewSurfaceDetach(DrawArea);
+    AG_ObjectDetach(AGOBJECT(DrawArea));
 }
 
 
