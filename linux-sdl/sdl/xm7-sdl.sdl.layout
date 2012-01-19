@@ -91,7 +91,7 @@
 	<File name="api_vram4096.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="2168" topLine="82" />
 	</File>
-	<File name="api_vram8.cpp" open="1" top="1" tabpos="0">
+	<File name="api_vram8.cpp" open="1" top="0" tabpos="1">
 		<Cursor position="2655" topLine="166" />
 	</File>
 	<File name="build_config.h" open="0" top="0" tabpos="1">

@@ -311,7 +311,7 @@ void MainLoop(int argc, char *argv[])
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
-    drivers = "sdlfb:width=1280:height=880:depth=32";
+//    drivers = "sdlfb:width=1280:height=880:depth=32";
 	/*
 	 * Agar のメインループに入る
 	 */

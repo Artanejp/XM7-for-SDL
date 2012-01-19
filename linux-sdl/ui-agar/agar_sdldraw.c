@@ -87,7 +87,7 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
 
 
    src = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, 0);
-//   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
 
    if(src != NULL) my->Surface = src;
    return src;
@@ -194,6 +194,8 @@ void XM7_SDLViewUpdateSrc(void *p)
     src = &(pVirtualVram->pVram[0][0]);
 
     LockVram();
+    AG_SurfaceLock(my->Surface);
+
     for(yy = 0 ; yy < hh; yy+=8) {
         for(xx = 0; xx < ww; xx+=8) {
 /*
@@ -212,8 +214,9 @@ void XM7_SDLViewUpdateSrc(void *p)
                 }
 			}
 	}
-    my->mySurface = AG_WidgetMapSurface(my, my->Surface);
-	AG_WidgetUpdateSurface(my, my->mySurface);
+	AG_SurfaceUnlock(my->Surface);
+    my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
+//	AG_WidgetUpdateSurface(my, my->mySurface);
     UnlockVram();
 
 }
@@ -291,13 +294,6 @@ static void Draw(void *p)
 	 * for more information on styles.
 	 */
     XM7_SDLViewUpdateSrc(p);
-//    {
-//        int i;
-//        Uint32 *p = my->Surface->pixels;
-//        for(i = 0; i < (my->Surface->w * my->Surface->h); i++){
-//            p[i] = 0xffffffff;
-//        }
-//    }
 	/*
 	 * Render some text into a new surface. In OpenGL mode, the
 	 * AG_WidgetMapSurface() call involves a texture upload.
@@ -388,7 +384,7 @@ static void Init(void *obj)
 	 *
 	 * Here we register handlers for the common AG_Window(3) events.
 	 */
-         my->Surface = NULL;
+     my->Surface = NULL;
 
 	AG_SetEvent(my, "mouse-button-up", MouseButtonUp, NULL);
 	AG_SetEvent(my, "mouse-button-down", MouseButtonDown, NULL);
@@ -397,6 +393,20 @@ static void Init(void *obj)
 	AG_SetEvent(my, "key-down", KeyDown, NULL);
 }
 
+static void Detach(void *obj)
+{
+    XM7_SDLView *my = obj;
+    if(my == NULL) return;
+    if(my->Surface != NULL){
+        LockVram();
+        AG_WidgetUnmapSurface(my, my->mySurface);
+//        AG_SurfaceLock(my->Surface);
+        AG_SurfaceFree(my->Surface);
+        my->Surface = NULL;
+        my->mySurface = -1;
+        UnlockVram();
+    }
+}
 /*
  * This structure describes our widget class. It inherits from AG_ObjectClass.
  * Any of the function members may be NULL. See AG_Widget(3) for details.
@@ -407,7 +417,7 @@ AG_WidgetClass XM7_SDLViewClass = {
 		sizeof(XM7_SDLView),	/* Size of structure */
 		{ 0,0 },		/* Version for load/save */
 		Init,			/* Initialize dataset */
-		NULL,			/* Free dataset */
+		Detach,			/* Free dataset */
 		NULL,			/* Destroy widget */
 		NULL,			/* Load widget (for GUI builder) */
 		NULL,			/* Save widget (for GUI builder) */
