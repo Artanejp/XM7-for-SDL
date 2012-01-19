@@ -116,23 +116,32 @@ AG_Surface *XM7_SDLViewGetSrcSurface(void *p)
 }
 
 
-static void pVram2RGB(int x, int y, Uint32 *dst, int pitch)
+static void pVram2RGB(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y)
 {
-    int yy;
-    int xx;
-    Uint32 *dbase = dst;
+    Uint32 *dbase;
+    Uint32 *dsrc = src;
+    Uint8 *pb = (Uint8 *)dst;
     int of;
+    int pitch;
+    int yy;
+
+//    of = x + y * 640;
+    of = 0;
+    dbase = (Uint32 *)(pb + x  * my->Surface->format->BytesPerPixel
+                        + y * my->Surface->pitch);
+    pitch = my->Surface->pitch / sizeof(Uint32);
+
     for(yy = 0; yy < 8; yy++){
-        of = y + yy;
-        dbase = &dst[yy * pitch];
-        *dbase++ = pVirtualVram->pVram[of][x] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 1] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 2] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 3] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 4] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 5] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 6] | 0xff000000;
-        *dbase++ = pVirtualVram->pVram[of][x + 7] | 0xff000000;
+        dbase[0] = dsrc[of];
+        dbase[1] = dsrc[of + 1];
+        dbase[2] = dsrc[of + 2];
+        dbase[3] = dsrc[of + 3];
+        dbase[4] = dsrc[of + 4];
+        dbase[5] = dsrc[of + 5];
+        dbase[6] = dsrc[of + 6];
+        dbase[7] = dsrc[of + 7];
+        dbase += pitch;
+        of += 8;
     }
 
 }
@@ -141,6 +150,7 @@ void XM7_SDLViewUpdateSrc(void *p)
    XM7_SDLView *my = p;
    Uint8 *pb;
    Uint32 *disp;
+   Uint32 *src;
    int w;
    int h;
    int ww;
@@ -149,6 +159,7 @@ void XM7_SDLViewUpdateSrc(void *p)
    int yy;
    int pitch;
    int bpp;
+   int of;
 
 
    if(my == NULL) return;
@@ -177,31 +188,28 @@ void XM7_SDLViewUpdateSrc(void *p)
     if(h  < hh){
         hh = h ;
     }
-    pb = my->Surface->pixels;
+    pb = (Uint8 *)(my->Surface->pixels);
     pitch = my->Surface->pitch;
     bpp = my->Surface->format->BytesPerPixel;
+    src = &(pVirtualVram->pVram[0][0]);
 
     LockVram();
-    for(xx = 0 ; xx < (ww >> 3); xx++) {
-        for(yy = 0; yy < hh; yy++) {
-			disp =(Uint32 *)&pb[(xx << 3) * bpp + yy * pitch ];
-			*disp = pVirtualVram->pVram[yy][xx << 3];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 1];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 2];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 3];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 4];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 5];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 6];
-			disp++;
-			*disp = pVirtualVram->pVram[yy][(xx << 3) + 7];
-			disp++;
-
+    for(yy = 0 ; yy < hh; yy+=8) {
+        for(xx = 0; xx < ww; xx+=8) {
+/*
+*  Virtual VRAM -> Real Surface:
+*                disp = (Uint32 *)(pb + xx  * bpp + yy * pitch);
+*                of = (xx % 8) + (xx / 8) * (8 * 8)
+*                    + (yy % 8) * 8 + (yy / 8) * 640 * 8;
+*                *disp = src[of];
+** // xx,yy = 1scale(not 8)
+*/
+                if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
+                    disp = (Uint32 *)pb;
+                    of = (xx *8) + yy * ww;
+                    pVram2RGB(my, &src[of], disp, xx, yy);
+                    SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
+                }
 			}
 	}
     my->mySurface = AG_WidgetMapSurface(my, my->Surface);
