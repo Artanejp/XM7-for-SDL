@@ -220,6 +220,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
     LockVram();
     AG_SurfaceLock(my->Surface);
 
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
+#endif
     for(yy = 0 ; yy < hh; yy+=8) {
         for(xx = 0; xx < ww; xx+=8) {
 /*

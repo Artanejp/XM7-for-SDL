@@ -355,8 +355,9 @@ void AGEventDrawGL2(AG_Event *event)
             glBindTexture(GL_TEXTURE_2D, uVramTextureID);
        ww = w >> 3;
        hh = h >> 3;
+
 //#ifdef _OPENMP
-//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu)
+//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh, yy) private(pu, xx)
 //#endif
        for(yy = 0; yy < hh; yy++) {
                for(xx = 0; xx < ww; xx++) {

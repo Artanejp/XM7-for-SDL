@@ -45,6 +45,9 @@ BOOL CheckDrawMode(void)
 
     if(t){
         LockVram();
+#ifdef _OPENMP
+       #pragma omp parallel for shared(SDLDrawFlag) private(x)
+#endif
         for(y = 0; y < 50; y++){
             for(x = 0; x < 80 ; x++){
                 SDLDrawFlag.write[x][y] = TRUE;
@@ -70,6 +73,9 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 
     LockVram();
 //    p = pp;
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+#endif
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
@@ -100,6 +106,9 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
 
     LockVram();
 //    p = pp;
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+#endif
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
@@ -130,6 +139,9 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
 
     LockVram();
 //    p = pp;
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww) private(p, xx)
+#endif
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
