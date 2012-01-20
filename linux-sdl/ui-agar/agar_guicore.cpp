@@ -71,7 +71,10 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
         if(AG_WindowIsFocused(MainWindow)) {
             bi = TRUE;
         }
+    } else {
+	return FALSE;
     }
+
 	/* Retrieve the next queued event. */
 	switch (ev->type) {
 	case AG_DRIVER_KEY_UP:
@@ -440,7 +443,8 @@ void OnDestroy(AG_Event *event)
          * 仮想マシン クリーンアップ
          */
         system_cleanup();
-        AG_QuitGUI();
+        //AG_QuitGUI();
+        AG_Destroy();
 }
 
 static void InitFont(void)
@@ -468,9 +472,9 @@ void InitInstance(void)
 	}
 	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-
-    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-    MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
+        AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
+        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+        MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
 	AG_WindowShow(MainWindow);

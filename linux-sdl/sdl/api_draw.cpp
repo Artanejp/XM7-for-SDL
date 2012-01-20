@@ -417,8 +417,9 @@ void	CleanDraw(void)
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
 		AG_ThreadJoin(DrawThread, NULL);
-		AG_MutexDestroy(&DrawMutex);
-		AG_CondDestroy(&DrawCond);
+   
+//		AG_MutexDestroy(&DrawMutex);
+//		AG_CondDestroy(&DrawCond);
 //                DrawThread = NULL;
 
 #else
