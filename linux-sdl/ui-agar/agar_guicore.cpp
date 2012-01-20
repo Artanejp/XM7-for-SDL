@@ -74,7 +74,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
     } else {
 	return FALSE;
     }
-
+   if(drv == NULL) return FALSE;
 	/* Retrieve the next queued event. */
 	switch (ev->type) {
 	case AG_DRIVER_KEY_UP:
@@ -188,7 +188,7 @@ void AGDrawTaskEvent(BOOL flag)
             if (AG_PendingEvents(drv) > 0){
 //			    AGDrawTaskMain();
                 if(EventSDL(drv) == FALSE) return;
-                if(EventGUI(drv) == FALSE) return;
+//                if(EventGUI(drv) == FALSE) return;
             }
         } else { // Multi windows
        		AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver)
@@ -196,9 +196,15 @@ void AGDrawTaskEvent(BOOL flag)
                     if (AG_PendingEvents(drv) > 0){
 //			        AGDrawTaskMain();
                     if(EventSDL(drv) == FALSE) return;
-                    if(EventGUI(drv) == FALSE) return;
+//                    if(EventGUI(drv) == FALSE) return;
                 }
              }
+        if (AG_TIMEOUTS_QUEUED())
+                AG_ProcessTimeouts(AG_GetTicks());
+	   AG_Delay(1);
+	   
+		
+	
         }
 		// 20120109 - Timer Event
         if (AG_TIMEOUTS_QUEUED())
@@ -444,7 +450,8 @@ void OnDestroy(AG_Event *event)
          */
         system_cleanup();
         //AG_QuitGUI();
-        AG_Destroy();
+//        AG_Delay(1000); // Config Saveの時間を稼ぐ
+        AG_Quit();
 }
 
 static void InitFont(void)
