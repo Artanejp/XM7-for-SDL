@@ -88,6 +88,11 @@ extern void     OnCreate(AG_Widget *parent);
         extern BOOL             bFMTV151;               /* チャンネルコールエミュレーション */
 #endif	/*  */
 
+// Macros
+#ifndef AGDRIVER_IS_GLX
+#define AGDRIVER_IS_GLX(drv) \
+        (strcmp("glx", AGDRIVER_CLASS(drv)->name) == 0)
+#endif
 #ifdef __cplusplus
 }
 #endif	/*  */

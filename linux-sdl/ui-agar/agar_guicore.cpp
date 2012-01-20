@@ -18,6 +18,9 @@ extern "C" {
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #include "agar_cfg.h"
+#include "agar_toolbox.h"
+#include "agar_gldraw.h"
+#include "agar_sdlview.h"
 #else
 #include "sdl.h"
 #include "sdl_cfg.h"
@@ -30,9 +33,6 @@ extern "C" {
 #include "sdl_inifile.h"
 #include "api_draw.h"
 //#include "sdl_gtkdlg.h"
-#include "agar_toolbox.h"
-#include "agar_gldraw.h"
-#include "agar_sdldraw.h"
 
 extern "C" {
 void InitInstance(void);
@@ -118,6 +118,15 @@ void AGDrawTaskEvent(BOOL flag)
 	AG_Window *win;
 	AG_Driver *drv;
 	Uint32 fps;
+	Uint32 oldfps = nDrawFPS;
+
+    if(nDrawFPS > 2) {
+        if(DrawArea != NULL) {
+            AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+        } else if(GLDrawArea != NULL){
+            AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
+        }
+    }
 
 	for(;;) {
 		if(nDrawFPS > 2) {
@@ -125,14 +134,18 @@ void AGDrawTaskEvent(BOOL flag)
 		} else {
 			fps = 500;
 		}
-		if(agDriverSw) {
-			drv = &agDriverSw->_inherit;
-		}
-		if(drv == NULL) {
-			AG_Delay(10);
-			continue;
-		}
-
+//		if(drv == NULL) {
+//			AG_Delay(10);
+//			continue;
+//		}
+        if(oldfps != nDrawFPS){ // FPS Change 20120120
+                oldfps = nDrawFPS;
+                if(DrawArea != NULL) {
+                    AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+                } else if(GLDrawArea != NULL){
+                    AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
+                }
+        }
 		nDrawTick2D = AG_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
@@ -140,6 +153,7 @@ void AGDrawTaskEvent(BOOL flag)
 			// ここにGUIの処理入れる
 			AG_LockVFS(&agDrivers);
 			if (agDriverSw) {
+                drv = &agDriverSw->_inherit;
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
 				AG_FOREACH_WINDOW(win, agDriverSw) {
@@ -170,11 +184,22 @@ void AGDrawTaskEvent(BOOL flag)
 		   AG_UnlockVFS(&agDrivers);
 //		}	else if (AG_PendingEvents(drv) > 0){
 		}	// Process Event per 1Ticks;
-		if (AG_PendingEvents(drv) > 0){
-//			AGDrawTaskMain();
-			if(EventSDL(drv) == FALSE) return;
-			if(EventGUI(drv) == FALSE) return;
-		}
+        if(agDriverSw) { // Single Window
+            if (AG_PendingEvents(drv) > 0){
+//			    AGDrawTaskMain();
+                if(EventSDL(drv) == FALSE) return;
+                if(EventGUI(drv) == FALSE) return;
+            }
+        } else { // Multi windows
+       		AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver)
+                {
+                    if (AG_PendingEvents(drv) > 0){
+//			        AGDrawTaskMain();
+                    if(EventSDL(drv) == FALSE) return;
+                    if(EventGUI(drv) == FALSE) return;
+                }
+             }
+        }
 		// 20120109 - Timer Event
         if (AG_TIMEOUTS_QUEUED())
                 AG_ProcessTimeouts(AG_GetTicks());
@@ -311,7 +336,10 @@ void MainLoop(int argc, char *argv[])
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
-//    drivers = "sdlfb:width=1280:height=880:depth=32";
+#ifdef _XM7_FB_DEBUG
+    drivers = "sdlgl:width=1280:height=880:depth=32";
+//    drivers = "glx";
+#endif
 	/*
 	 * Agar のメインループに入る
 	 */
@@ -426,7 +454,7 @@ void InitInstance(void)
 {
 	AG_HBox *hb;
 	AG_Window *win;
-	AG_Driver *drv;
+//	AG_Driver *drv;
 
 
     GLDrawArea = NULL;
@@ -436,31 +464,32 @@ void InitInstance(void)
 
 	//  最初にカスタムウイジェットをつける
     AG_RegisterClass(&XM7_SDLViewClass);
-
-    MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
+	if(agDriverSw) {
+        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
+	} else {
+        MainWindow = AG_WindowNew(AG_WINDOW_DIALOG );
+	}
 	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
 
-    MenuBar = AG_MenuNew(AGWIDGET(MainWindow), AG_MENU_HFILL);
+    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+    MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
+	AG_WindowShow(MainWindow);
+	AG_WindowFocus(MainWindow);
 
-	if(agDriverSw) {
-		drv = &agDriverSw->_inherit;
-	} else {
-	    drv = AGDRIVER(MainWindow);
-	}
+    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
 
-    if(AG_UsingGL(drv) != 0) {
+    if(AG_UsingGL(NULL) != 0) {
         /*
          * OpenGL Capability
          */
-        GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
+        GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
         AG_WidgetSetSize(GLDrawArea, 640,400);
         AG_GLViewSizeHint(GLDrawArea, 640, 400);
-        AG_WidgetSetPosition(GLDrawArea, 0, 5);
+//        AG_WidgetSetPosition(GLDrawArea, 0, 5);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
-//        AG_GLViewDrawFn (GLDrawArea, AGEventDrawBlockedGL, NULL);
         AG_GLViewKeydownFn (GLDrawArea, AGEventKeyDownGL, NULL);
         AG_GLViewKeyupFn (GLDrawArea, AGEventKeyUpGL, NULL);
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
@@ -473,21 +502,22 @@ void InitInstance(void)
         CreateStatus();
     } else {
         // Non-GL
-        DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
+//        DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
+        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         AG_WidgetSetSize(DrawArea, 640,400);
-        AG_WidgetSetPosition(DrawArea, 0, 0);
+//        AG_WidgetSetPosition(DrawArea, 0, 0);
         InitDrawArea(640,400);
         LinkDrawArea(AGWIDGET(DrawArea));
         bUseOpenGL = FALSE;
         GLDrawArea = NULL;
+        XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, NULL);
+
 	    AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
     }
 
-	AG_WindowShow(MainWindow);
-	AG_WindowFocus(MainWindow);
-//	win = AG_GuiDebugger();
-//        AG_WindowShow(win);
+	win = AG_GuiDebugger();
+    AG_WindowShow(win);
 	AG_WidgetShow(AGWIDGET(MenuBar));
 
 }

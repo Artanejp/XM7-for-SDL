@@ -6,7 +6,7 @@
  */
 
 #include "AgarKbdInterface.h"
-#include "agar_sdldraw.h"
+#include "agar_sdlview.h"
 
 AgarKbdInterface::AgarKbdInterface() {
 	// TODO Auto-generated constructor stub

@@ -393,7 +393,7 @@ void InitGL(int w, int h)
         return;
     }
     SDL_SemWait(DrawInitSem);
-    if(AG_UsingGL(drv)) {
+    if(AG_UsingGL(NULL)) {
 //        InitGL_AG_GL(w, h);
         InitGL_AG2(w, h);
 //        InitGL_AG_Blocked(w, h);

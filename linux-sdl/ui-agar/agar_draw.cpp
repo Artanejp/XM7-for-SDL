@@ -13,9 +13,10 @@
 #include "api_draw.h"
 #include "api_scaler.h"
 
+#include "agar_xm7.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
-#include "agar_sdldraw.h"
+#include "agar_sdlview.h"
 //#include "DrawAGNonGL.h"
 
 #include <SDL.h>
@@ -100,7 +101,7 @@ void ResizeWindow_Agar(int w, int h)
         AG_Redraw(AGWIDGET(MainWindow));
         AG_WindowFocus(MainWindow);
 	}
-	if(AG_UsingGL(drv) && (agDriverSw != NULL)) {
+	if(AG_UsingGL(NULL)) {
         AG_ResizeDisplay(w, hh);
 	}
     printf("Resize to %d x %d\n", w, hh);

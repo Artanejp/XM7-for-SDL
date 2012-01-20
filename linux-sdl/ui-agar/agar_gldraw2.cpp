@@ -292,7 +292,8 @@ void AGEventDrawGL2(AG_Event *event)
 
 
     // OSD を外に追い出す
-    ybegin = 400.0f / 440.0f;
+//    ybegin = 400.0f / 440.0f;
+    ybegin = 400.0f/460.0f;
     yend = 1.0f;
             // Z Axis
 

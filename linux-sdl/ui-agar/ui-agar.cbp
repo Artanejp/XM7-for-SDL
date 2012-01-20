@@ -61,6 +61,7 @@
 			<Add option="-DMR2" />
 			<Add option="-DFDDSND" />
 			<Add option="-D_XWIN" />
+			<Add option="-D_XM7_FB_DEBUG" />
 			<Add directory="." />
 			<Add directory=".." />
 			<Add directory="../vm" />
@@ -98,7 +99,7 @@
 		<Unit filename="agar_sdldraw.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="agar_sdldraw.h" />
+		<Unit filename="agar_sdlview.h" />
 		<Unit filename="agar_svram.cpp" />
 		<Unit filename="agar_toolbox.cpp" />
 		<Unit filename="agar_toolbox.h" />

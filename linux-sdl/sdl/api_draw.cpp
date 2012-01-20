@@ -658,22 +658,22 @@ BOOL SelectDraw(void)
 {
 	BOOL ret;
 #ifdef USE_AGAR
-	AG_Driver *drv;
+//	AG_Driver *drv;
 	AG_Color nullcolor;
 	AG_Rect rect;
 	AG_Widget *w;
 
-    if(DrawArea != NULL) {
-        drv = AGWIDGET(DrawArea)->drv;
-        if(drv == NULL) return FALSE;
-        w = AGWIDGET(DrawArea);
-    } else if(GLDrawArea != NULL) {
-        drv = AGWIDGET(GLDrawArea)->drv;
-        if(drv == NULL) return FALSE;
-        w = AGWIDGET(GLDrawArea);
-    } else {
-        return FALSE;
-    }
+//    if(DrawArea != NULL) {
+//        drv = AGWIDGET(DrawArea)->drv;
+//        if(drv == NULL) return FALSE;
+//        w = AGWIDGET(DrawArea);
+//    } else if(GLDrawArea != NULL) {
+//        drv = AGWIDGET(GLDrawArea)->drv;
+//        if(drv == NULL) return FALSE;
+//        w = AGWIDGET(GLDrawArea);
+//    } else {
+//        return FALSE;
+//    }
 #else
 	SDL_Surface *p;
 	Uint32 nullcolor;
@@ -689,7 +689,7 @@ BOOL SelectDraw(void)
 	rect.y = 0;
 	DrawSHUTDOWN = FALSE;
 #ifdef USE_AGAR
-	if(drv == NULL) return TRUE;
+//	if(drv == NULL) return TRUE;
 #else
 	if(p == NULL) return TRUE;
 #endif
@@ -698,14 +698,15 @@ BOOL SelectDraw(void)
 	 */
 	 if(!bUseOpenGL) {
 #ifdef USE_AGAR
-		 AG_ObjectLock(w);
+    if(DrawArea != NULL) {
+		 AG_ObjectLock(DrawArea);
 		 nullcolor.r = 0;
 		 nullcolor.g = 0;
 		 nullcolor.b = 0;
 		 nullcolor.a = 255;
-
-		 AG_FillRect(drv->sRef, &rect, nullcolor);
-		 AG_ObjectUnlock(w);
+         AG_FillRect(AGWIDGET(DrawArea)->drv->sRef , &rect, nullcolor);
+		 AG_ObjectUnlock(DrawArea);
+    }
 #else
 		 SDL_LockSurface(p);
 		 nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);

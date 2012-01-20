@@ -25,9 +25,11 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 	AG_Driver *drv = obj;
 	SDL_Event ev = *event;
 
-	if(agDriverSw) {
-		drv = &agDriverSw->_inherit;
-	}
+//	if(agDriverSw) {
+//		drv = &agDriverSw->_inherit;
+//	} else {
+//
+//	}
 
 	switch (ev.type) {
 	case SDL_MOUSEMOTION:

@@ -12,12 +12,11 @@
 #include "agar_vramutil.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
-#include "agar_sdldraw.h"
+#include "agar_sdlview.h"
 
 //#include "DrawAGNonGL.h"
 
 #include <SDL.h>
-#include "agar_sdldraw.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

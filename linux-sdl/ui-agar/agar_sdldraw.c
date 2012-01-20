@@ -14,10 +14,8 @@
  * inheritance, see demos/objsystem.
  */
 
-#include <agar/core.h>
-#include <agar/gui.h>
 
-#include "agar_sdldraw.h"
+#include "agar_sdlview.h"
 #include "api_vram.h"
 #include "api_draw.h"
 //#include "api_scaler.h"
@@ -38,6 +36,10 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
 
 	/* Set some constructor arguments */
 	my->param = param;
+	my->draw_ev = NULL;
+
+	my->Surface = NULL;
+	my->mySurface = -1;
 
 	/* Attach the object to the parent (no-op if parent is NULL) */
 	AG_ObjectAttach(parent, my);
@@ -85,7 +87,12 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
    fmt.Aloss = 0;
    fmt.palette = NULL;
 
-
+    if(my->mySurface != -1){
+        AG_WidgetUnmapSurface(my, my->mySurface);
+        if(my->Surface != NULL){
+            AG_SurfaceFree(my->Surface);
+        }
+    }
    src = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, 0);
    my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
 
@@ -145,9 +152,26 @@ static void pVram2RGB(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y)
     }
 
 }
-void XM7_SDLViewUpdateSrc(void *p)
+
+// Resist Draw Function
+void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...)
 {
-   XM7_SDLView *my = p;
+    /*
+    * Function must be void foo(AG_Event *) .
+    */
+    XM7_SDLView *my = p;
+
+    AG_ObjectLock(my);
+    my->draw_ev = AG_SetEvent(my, NULL,fn , NULL);
+    AG_EVENT_GET_ARGS(my->draw_ev, fmt);
+    AG_ObjectUnlock(my);
+
+}
+
+
+void XM7_SDLViewUpdateSrc(AG_Event *event)
+{
+   XM7_SDLView *my = AG_SELF();
    Uint8 *pb;
    Uint32 *disp;
    Uint32 *src;
@@ -215,8 +239,8 @@ void XM7_SDLViewUpdateSrc(void *p)
 			}
 	}
 	AG_SurfaceUnlock(my->Surface);
-    my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
-//	AG_WidgetUpdateSurface(my, my->mySurface);
+//    my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
+	AG_WidgetUpdateSurface(my, my->mySurface);
     UnlockVram();
 
 }
@@ -285,22 +309,23 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 static void Draw(void *p)
 {
 	XM7_SDLView *my = p;
-	AG_Color c;
-
-
 	/*
 	 * Draw a box spanning the widget area. In order to allow themeing,
 	 * you would generally use a STYLE() call here instead, see AG_Style(3)
 	 * for more information on styles.
 	 */
-    XM7_SDLViewUpdateSrc(p);
+	 if(my->draw_ev != NULL){
+        my->draw_ev->handler(my->draw_ev);
+	 }
 	/*
 	 * Render some text into a new surface. In OpenGL mode, the
 	 * AG_WidgetMapSurface() call involves a texture upload.
 	 */
 
 	/* Blit the mapped surface at [0,0]. */
-	AG_WidgetBlit(my, my->Surface, 0, 0);
+	if(my->Surface != NULL) {
+	    AG_WidgetBlit(my, my->Surface, 0, 0);
+	}
 }
 
 /* Mouse motion event handler */
