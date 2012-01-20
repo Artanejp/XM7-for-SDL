@@ -134,10 +134,6 @@ void AGDrawTaskEvent(BOOL flag)
 		} else {
 			fps = 500;
 		}
-//		if(drv == NULL) {
-//			AG_Delay(10);
-//			continue;
-//		}
         if(oldfps != nDrawFPS){ // FPS Change 20120120
                 oldfps = nDrawFPS;
                 if(DrawArea != NULL) {
@@ -153,7 +149,7 @@ void AGDrawTaskEvent(BOOL flag)
 			// ここにGUIの処理入れる
 			AG_LockVFS(&agDrivers);
 			if (agDriverSw) {
-                drv = &agDriverSw->_inherit;
+			   drv = &agDriverSw->_inherit;
 				/* With single-window drivers (e.g., sdlfb). */
 				AG_BeginRendering(agDriverSw);
 				AG_FOREACH_WINDOW(win, agDriverSw) {
@@ -185,6 +181,8 @@ void AGDrawTaskEvent(BOOL flag)
 //		}	else if (AG_PendingEvents(drv) > 0){
 		}	// Process Event per 1Ticks;
         if(agDriverSw) { // Single Window
+	   drv = &agDriverSw->_inherit;
+	   
             if (AG_PendingEvents(drv) > 0){
 //			    AGDrawTaskMain();
                 if(EventSDL(drv) == FALSE) return;

@@ -22,7 +22,7 @@
 	<File name="agar_gldraw.h" open="0" top="0" tabpos="8">
 		<Cursor position="1035" topLine="34" />
 	</File>
-	<File name="agar_gldraw2.cpp" open="1" top="0" tabpos="5">
+	<File name="agar_gldraw2.cpp" open="1" top="0" tabpos="4">
 		<Cursor position="8716" topLine="355" />
 	</File>
 	<File name="agar_glutil.cpp" open="0" top="0" tabpos="6">
@@ -37,8 +37,8 @@
 	<File name="agar_gui_pref.cpp" open="0" top="0" tabpos="13">
 		<Cursor position="18687" topLine="671" />
 	</File>
-	<File name="agar_guicore.cpp" open="1" top="0" tabpos="4">
-		<Cursor position="11142" topLine="470" />
+	<File name="agar_guicore.cpp" open="1" top="0" tabpos="3">
+		<Cursor position="11142" topLine="457" />
 	</File>
 	<File name="agar_main.cpp" open="0" top="0" tabpos="24">
 		<Cursor position="2669" topLine="118" />
@@ -67,14 +67,11 @@
 	<File name="agar_sdl.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="2564" topLine="100" />
 	</File>
-	<File name="agar_sdldraw.c" open="1" top="1" tabpos="1">
+	<File name="agar_sdldraw.c" open="1" top="0" tabpos="1">
 		<Cursor position="4951" topLine="334" />
 	</File>
-	<File name="agar_sdldraw.h" open="1" top="0" tabpos="3">
-		<Cursor position="528" topLine="7" />
-	</File>
-	<File name="agar_svram.cpp" open="0" top="0" tabpos="1">
-		<Cursor position="2542" topLine="103" />
+	<File name="agar_svram.cpp" open="1" top="1" tabpos="5">
+		<Cursor position="3834" topLine="160" />
 	</File>
 	<File name="agar_toolbox.cpp" open="0" top="0" tabpos="4">
 		<Cursor position="4499" topLine="0" />
