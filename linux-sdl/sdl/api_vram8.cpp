@@ -9,7 +9,7 @@
 //#include <GL/gl.h>
 //#include <GL/glext.h>
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 #include "api_vram.h"
 
 Uint8 *vram_pb;

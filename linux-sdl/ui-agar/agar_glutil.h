@@ -11,7 +11,7 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 #include "agar_xm7.h"
 #include "agar_vramutil.h"
 #include "agar_draw.h"

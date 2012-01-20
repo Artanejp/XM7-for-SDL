@@ -3524,7 +3524,7 @@
 	"sdl.h"
 	"sdl_snd.h"
 
-1327036018 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
+1327069868 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3548,7 +3548,6 @@
 	"sdl.h"
 	"api_vram.h"
 	"api_draw.h"
-	"api_scaler.h"
 
 1326114026 /usr/include/SDL/SDL_opengl.h
 	"SDL_config.h"
@@ -3572,13 +3571,12 @@
 
 1306429230 /home/whatisthis/codeblocks/xm7-sdl/vm//display.h
 
-1326276296 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
+1327067779 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw.h
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
 	<agar/gui/opengl.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"agar_vramutil.h"
 	"agar_draw.h"
 	"agar_glutil.h"
@@ -3630,7 +3628,7 @@
 1306849143 /home/whatisthis/codeblocks/xm7-sdl//libemugrph/EmuGrphScale1x2.h
 	"EmuGrphScaleTmpl.h"
 
-1326888147 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
+1327069982 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.h
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3651,11 +3649,6 @@
 	"xm7.h"
 	"agar_xm7.h"
 	"sdl.h"
-	"api_scaler.h"
-	"EmuGrphLib.h"
-	"EmuGrph400l.h"
-	"EmuGrph4096c.h"
-	"EmuGrph256kc.h"
 
 1326940947 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_scaler.h
 	<SDL.h>
@@ -3917,13 +3910,12 @@
 	"sdl_snd.h"
 	<vector>
 
-1327030033 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.h
+1327069198 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.h
 	<agar/core/types.h>
 	<agar/core.h>
 	<agar/gui.h>
 	<agar/gui/opengl.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"agar_vramutil.h"
 	"agar_draw.h"
 	"agar_gldraw.h"
@@ -3940,18 +3932,16 @@
 	"api_scaler.h"
 	"agar_xm7.h"
 
-1315144466 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram256k.cpp
+1327067923 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram256k.cpp
 	<SDL.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"api_vram.h"
 
-1315144918 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram4096.cpp
+1327067923 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram4096.cpp
 	<SDL.h>
 	<GL/gl.h>
 	<GL/glext.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"agar_xm7.h"
 	"agar_draw.h"
 	"agar_gldraw.h"
@@ -3961,13 +3951,11 @@
 	"device.h"
 	<SDL.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"api_vram.h"
 
-1318176522 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
+1327067923 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
 	<SDL.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"api_vram.h"
 
 1311867640 /usr/lib/x86_64-linux-gnu/gtk-2.0/include/gdkconfig.h
@@ -5168,19 +5156,18 @@
 	<X11/Xlib.h>
 	<X11/Xutil.h>
 
-1326936603 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
+1327067923 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
 	<SDL.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"api_vram.h"
 	"agar_xm7.h"
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1326936603 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.h
+1327067923 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_glutil.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -5188,18 +5175,16 @@
 	<GL/gl.h>
 	<GL/glext.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"agar_xm7.h"
 	"agar_vramutil.h"
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1315145125 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
+1327067923 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
 	<SDL.h>
 	<GL/gl.h>
 	<GL/glext.h>
 	"api_draw.h"
-	"api_scaler.h"
 	"xm7.h"
 	"display.h"
 	"subctrl.h"
@@ -5211,7 +5196,7 @@
 1318200384 /usr/include/atk-1.0/atk/atkwindow.h
 	<atk/atkobject.h>
 
-1326941378 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
+1327070006 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -5236,7 +5221,6 @@
 	"sdl.h"
 	"api_vram.h"
 	"api_draw.h"
-	"api_scaler.h"
 
 1326893126 /usr/include/glib-2.0/glib/ghmac.h
 	<glib/gtypes.h>

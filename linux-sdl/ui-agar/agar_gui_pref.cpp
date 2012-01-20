@@ -45,7 +45,7 @@
 #include "sdl_bar.h"
 #include "xm7.h"
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 
 extern "C" {
 static configdat_t localconfig;

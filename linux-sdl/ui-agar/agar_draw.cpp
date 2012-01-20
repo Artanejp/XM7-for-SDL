@@ -11,7 +11,7 @@
 #include <agar/gui/opengl.h>
 //#include "EmuAgarGL.h"
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 
 #include "agar_xm7.h"
 #include "agar_draw.h"
@@ -35,6 +35,48 @@ void InitDrawArea(int w, int h)
     XM7_SDLViewSurfaceNew(DrawArea, w, h);
     AG_WidgetSetSize(DrawArea, w, h);
 }
+
+void InitGL(int w, int h)
+{
+    AG_Driver *drv;
+
+    if(agDriverSw) {
+        drv = &agDriverSw->_inherit;
+    } else if(MainWindow != NULL) {
+        drv = AGDRIVER(MainWindow);
+    } else {
+        return;
+    }
+    SDL_SemWait(DrawInitSem);
+    if(AG_UsingGL(NULL)) {
+        InitGL_AG2(w, h);
+    } else {
+        InitNonGL(w, h);
+        AG_ResizeDisplay(w, h);
+    }
+    SDL_SemPost(DrawInitSem);
+}
+
+void InitNonGL(int w, int h)
+{
+	Uint32 flags;
+	char *ext;
+
+	if(InitVideo) return;
+    InitVideo = TRUE;
+
+    vram_pb = NULL;
+    vram_pg = NULL;
+    vram_pr = NULL;
+
+	flags = SDL_RESIZABLE;
+
+	InitVramSemaphore();
+	pVirtualVram = NULL;
+	InitVirtualVram();
+    return;
+}
+
 
 void DetachDrawArea(void)
 {
@@ -194,9 +236,6 @@ void AGDrawTaskMain(void)
 		Draw640All();
 	}
 #endif				/*  */
-//        if(DrvNonGL) {
-//	   DrvNonGL->Flip();
-//	}
 		/* Render the Agar windows */
 }
 

@@ -13,10 +13,16 @@ include config.mak
 .PHONY: clean Release Debug libemugrph-debug ui-agar-debug vm-debug libemugrph-release ui-release vm-release debugger-debug debugger-release
 all: Release Debug
 
-Release: ui-agar-release libemugrph-release vm-release debugger-release
+#Release: ui-agar-release libemugrph-release vm-release debugger-release
+#	make -C sdl xm7
+#
+#Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug
+#	make -C sdl xm7.debug
+
+Release: ui-agar-release vm-release debugger-release
 	make -C sdl xm7
 
-Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug
+Debug: ui-agar-debug vm-debug debugger-debug
 	make -C sdl xm7.debug
 
 

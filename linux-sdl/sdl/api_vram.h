@@ -9,7 +9,7 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 
 #include "xm7.h"
 #include "display.h"

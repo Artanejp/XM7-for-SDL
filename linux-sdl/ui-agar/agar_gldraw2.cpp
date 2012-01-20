@@ -18,7 +18,7 @@
 #endif //_OPENMP
 
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 #include "api_kbd.h"
 
 #include "agar_xm7.h"
@@ -32,13 +32,15 @@
 
 GLuint uVramTextureID;
 
-static void (*pGetVram)(Uint32, Uint32 *, Uint32);
+//static void (*pGetVram)(Uint32, Uint32 *, Uint32);
 static int bModeOld;
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
-    pGetVram = p;
+//    pGetVram = p;
 }
+
+
 
 static void DetachTexture(void)
 {
@@ -69,7 +71,7 @@ void DetachGL_AG2(void)
     DetachVirtualVram();
     DetachGridVertexs();
     DetachVramSemaphore();
-    pGetVram = NULL;
+//    pGetVram = NULL;
 }
 
 // Grids
@@ -174,7 +176,7 @@ void InitGL_AG2(int w, int h)
 	InitVramSemaphore();
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
-	pGetVram = NULL;
+//	pGetVram = NULL;
 	InitVirtualVram();
     InitGLExtensionVars();
     InitFBO(); // 拡張の有無を調べてからFBOを初期化する。

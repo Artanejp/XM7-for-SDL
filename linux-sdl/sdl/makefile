@@ -9,11 +9,12 @@ include ../config.mak
 
 	
 VIDEODRVSRC = \
-	api_draw.cpp api_scaler.cpp \
+	api_draw.cpp \
 	draw_thread.cpp \
 	api_vram8.cpp \
 	api_vram4096.cpp \
 	api_vram256k.cpp
+#api_scaler.cpp 	
 
 SNDDRVSRC = \
 	api_snd2.cpp api_wavwriter.cpp  \
@@ -59,12 +60,12 @@ LIBS += `agar-config --libs`
 LIBS += -ljpeg -lpng -lfreetype
 LIBS += -lgomp
 
-LIBS_RELEASE = ../libemugrph/Release/libemugrph.a
+#LIBS_RELEASE = ../libemugrph/Release/libemugrph.a
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a
 LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a
 
-LIBS_DEBUG = ../libemugrph/Debug/libemugrph.a
+#LIBS_DEBUG = ../libemugrph/Debug/libemugrph.a
 LIBS_DEBUG += ../ui-agar/Debug/libui-agar.a
 LIBS_DEBUG += ../vm/Debug/libxm7_vm.a
 LIBS_DEBUG += ../xm7-debugger/Debug/libxm7_debug.a

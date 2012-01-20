@@ -46,7 +46,7 @@
 
 #include "api_vram.h"
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 
 
 #ifdef USE_AGAR
@@ -64,14 +64,6 @@ extern BOOL   bOldFullScan;
 extern BOOL DrawINGFlag;
 extern BOOL DrawSHUTDOWN;
 extern BOOL DrawWaitFlag;
-
-/*
- * ビデオドライバ関連
- */
-extern EmuGrphLib *vramhdr;
-extern EmuGrph400l *vramhdr_400l;
-extern EmuGrph4096c *vramhdr_4096;
-extern EmuGrph256kc *vramhdr_256k;
 
 /*
  * Local Variables

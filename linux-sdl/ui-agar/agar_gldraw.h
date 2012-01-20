@@ -14,7 +14,7 @@
 #include <agar/gui/opengl.h>
 //#include "EmuAgarGL.h"
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 
 #include "agar_vramutil.h"
 #include "agar_draw.h"

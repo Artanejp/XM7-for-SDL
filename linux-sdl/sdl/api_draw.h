@@ -46,11 +46,7 @@
 
 
 #ifdef __cplusplus
-#include "api_scaler.h"
-#include "EmuGrphLib.h"
-#include "EmuGrph400l.h"
-#include "EmuGrph4096c.h"
-#include "EmuGrph256kc.h"
+//#include "api_scaler.h"
 extern SDL_semaphore   *DrawInitSem;
 #endif
 
@@ -119,11 +115,6 @@ extern BYTE bMode;
 extern void InitDraw(void);
 extern void CleanDraw(void);
 
-
-extern void VramReader(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
-extern void VramReader_400l(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
-extern void VramReader_4096(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
-extern void VramReader_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage);
 
 extern void ResizeWindow(int w, int h);
 extern BOOL SelectDraw(void);
@@ -198,6 +189,7 @@ extern void SDL_DrawInitsub(void);
 extern void SDL_DrawDetachsub(void);
 extern int DrawThreadMain(void *p);
 #endif
+extern void Flip(void);
 
 
 #endif /* API_DRAW_H_ */

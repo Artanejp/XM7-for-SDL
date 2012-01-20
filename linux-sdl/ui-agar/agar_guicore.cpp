@@ -38,7 +38,6 @@ extern "C" {
 void InitInstance(void);
 void OnDestroy(AG_Event *event);
 void OnDestroy2(void);
-extern void InitGL(int w, int h);
 }
 
 Uint32 nDrawTick1D;
@@ -182,7 +181,7 @@ void AGDrawTaskEvent(BOOL flag)
 		}	// Process Event per 1Ticks;
         if(agDriverSw) { // Single Window
 	   drv = &agDriverSw->_inherit;
-	   
+
             if (AG_PendingEvents(drv) > 0){
 //			    AGDrawTaskMain();
                 if(EventSDL(drv) == FALSE) return;

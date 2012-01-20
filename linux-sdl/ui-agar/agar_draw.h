@@ -7,7 +7,7 @@
 #include <agar/gui/opengl.h>
 //#include "EmuAgarGL.h"
 #include "api_draw.h"
-#include "api_scaler.h"
+//#include "api_scaler.h"
 
 #include "agar_vramutil.h"
 #include "agar_draw.h"
@@ -32,6 +32,8 @@ extern Uint32 nDrawTick1E;
 
 
 extern void InitDrawArea(int w, int h);
+extern void InitGL(int w, int h);
+extern void InitNonGL(int w, int h);
 extern void DetachDrawArea(void);
 extern void LinkDrawArea(AG_Widget *w);
 extern SDL_Surface *GetDrawSurface(void);
