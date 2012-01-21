@@ -29,12 +29,6 @@ extern "C" {
 XM7_SDLView *DrawArea;
 }
 
-void InitDrawArea(int w, int h)
-{
-    if(DrawArea == NULL) return;
-    XM7_SDLViewSurfaceNew(DrawArea, w, h);
-    AG_WidgetSetSize(DrawArea, w, h);
-}
 
 void InitGL(int w, int h)
 {
@@ -52,7 +46,7 @@ void InitGL(int w, int h)
         InitGL_AG2(w, h);
     } else {
         InitNonGL(w, h);
-        AG_ResizeDisplay(w, h);
+//        AG_ResizeDisplay(w, h);
     }
     SDL_SemPost(DrawInitSem);
 }
@@ -86,15 +80,7 @@ void DetachDrawArea(void)
 }
 
 
-void LinkDrawArea(AG_Widget *w)
-{
-    if(w == NULL) return;
-}
 
-void UnlinkDrawArea(AG_Widget *w)
-{
-    if(w == NULL) return;
-}
 
 
 SDL_Surface *GetDrawSurface(void)
@@ -117,9 +103,13 @@ void ResizeWindow_Agar(int w, int h)
 	}
 	ofset = (int)((float)h * (40.0f / 440.0f));
 	if(DrawArea != NULL) {
+        AG_SizeAlloc a;
+	    a.x = 0;
+	    a.y = 0;
+	    a.w = w;
+	    a.h = h + ofset;
 	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h + ofset);
-	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
-	   LinkDrawArea(AGWIDGET(DrawArea));
+	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 	   AG_Redraw(AGWIDGET(DrawArea));
 	}
 	if(GLDrawArea != NULL) {
@@ -164,29 +154,44 @@ void ResizeWindow_Agar2(int w, int h)
 	    if(MainWindow == NULL) return;
 	    drv = AGDRIVER(MainWindow);
 	}
-
     ww = w;
-    hh = h - MenuBar->wid.h;
+    if(MenuBar != NULL) {
+        hh = h - MenuBar->wid.h;
+    }
 	if(hh < 0) hh = 0;
 	if(DrawArea != NULL) {
-        AG_WidgetSetSize(AGWIDGET(DrawArea), ww, hh);
-        AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
-        LinkDrawArea(AGWIDGET(DrawArea));
-        AG_Redraw(AGWIDGET(DrawArea));
+        AG_SizeAlloc a;
+	    a.x = 0;
+	    a.y = 0;
+	    a.w = ww;
+	    a.h = hh;
+
+	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
+        AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
+        if(MainWindow) {
+            AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+            AG_Redraw(AGWIDGET(MainWindow));
+            AG_WindowFocus(MainWindow);
+        }
 	}
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, ww, hh);
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
         AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
+        if(MainWindow) {
+            AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+            AG_Redraw(AGWIDGET(MainWindow));
+            AG_WindowFocus(MainWindow);
+        }
 	}
- 	AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
  	nDrawWidth = w;
 	nDrawHeight = hh;
  	AG_WidgetEnable(AGWIDGET(MenuBar));
-	if(MainWindow) {
-		AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-        AG_Redraw(AGWIDGET(MainWindow));
-        AG_WindowFocus(MainWindow);
+	if(MenuBar != NULL) {
+        AG_ObjectLock(AGOBJECT(drv));
+        AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
+        AG_ObjectUnlock(AGOBJECT(drv));
 	}
     printf("Resize to %d x %d\n", w, h);
 }

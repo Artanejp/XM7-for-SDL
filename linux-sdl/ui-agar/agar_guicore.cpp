@@ -191,20 +191,13 @@ void AGDrawTaskEvent(BOOL flag)
 //                if(EventGUI(drv) == FALSE) return;
             }
         } else { // Multi windows
-       		AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver)
-                {
+       		AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
                     if (AG_PendingEvents(drv) > 0){
 //			        AGDrawTaskMain();
                     if(EventSDL(drv) == FALSE) return;
 //                    if(EventGUI(drv) == FALSE) return;
                 }
              }
-        if (AG_TIMEOUTS_QUEUED())
-                AG_ProcessTimeouts(AG_GetTicks());
-	   AG_Delay(1);
-	   
-		
-	
         }
 		// 20120109 - Timer Event
         if (AG_TIMEOUTS_QUEUED())
@@ -343,7 +336,7 @@ void MainLoop(int argc, char *argv[])
     run_flag = TRUE;
     // Debug
 #ifdef _XM7_FB_DEBUG
-    drivers = "sdlgl:width=1280:height=880:depth=32";
+    drivers = "sdlfb:width=1280:height=880:depth=32";
 //    drivers = "glx";
 #endif
 	/*
@@ -375,7 +368,7 @@ void MainLoop(int argc, char *argv[])
 	   RootVideoHeight = 400;
 	}
 
-	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+	ResizeWindow_Agar(640, 400);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();
 	nDrawTick1E = AG_GetTicks();
@@ -477,13 +470,17 @@ void InitInstance(void)
 	} else {
         MainWindow = AG_WindowNew(AG_WINDOW_DIALOG );
 	}
-	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
+//	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
+	AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-        AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
-        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-        MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
+    AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
+    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+    MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
+	AG_WidgetShow(AGWIDGET(MenuBar));
+
+
 	AG_WindowShow(MainWindow);
 	AG_WindowFocus(MainWindow);
 
@@ -510,23 +507,19 @@ void InitInstance(void)
         CreateStatus();
     } else {
         // Non-GL
-//        DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
         DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
-        AG_WidgetSetSize(DrawArea, 640,400);
-//        AG_WidgetSetPosition(DrawArea, 0, 0);
-        InitDrawArea(640,400);
-        LinkDrawArea(AGWIDGET(DrawArea));
+        XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, NULL);
+        XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
+        AG_WidgetSetSize(DrawArea, 640, 400);
         bUseOpenGL = FALSE;
         GLDrawArea = NULL;
-        XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, NULL);
-
 	    AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
+        ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }
 
 	win = AG_GuiDebugger();
     AG_WindowShow(win);
-	AG_WidgetShow(AGWIDGET(MenuBar));
 
 }
 

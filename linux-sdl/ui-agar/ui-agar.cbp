@@ -96,7 +96,8 @@
 		<Unit filename="agar_osd.cpp" />
 		<Unit filename="agar_sch.cpp" />
 		<Unit filename="agar_sdl.cpp" />
-		<Unit filename="agar_sdldraw.c">
+		<Unit filename="agar_sdlscaler.cpp" />
+		<Unit filename="agar_sdlview.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="agar_sdlview.h" />

@@ -40,6 +40,7 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
 
 	my->Surface = NULL;
 	my->mySurface = -1;
+	my->forceredraw = 1;
 
 	/* Attach the object to the parent (no-op if parent is NULL) */
 	AG_ObjectAttach(parent, my);
@@ -93,8 +94,9 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
             AG_SurfaceFree(my->Surface);
         }
     }
-   src = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, 0);
-   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+    src = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, 0);
+    my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+    my->forceredraw = 1;
 
    if(src != NULL) my->Surface = src;
    return src;
@@ -152,6 +154,7 @@ static void SizeRequest(void *p, AG_SizeReq *r)
 {
 	XM7_SDLView *my = p;
 
+    AG_ObjectLock(my);
 	if (my->mySurface == -1) {
 		/*
 		 * We can use AG_TextSize() to return the dimensions of rendered
@@ -173,6 +176,7 @@ static void SizeRequest(void *p, AG_SizeReq *r)
 		r->w = AGWIDGET_SURFACE(my,my->mySurface)->w;
 		r->h = AGWIDGET_SURFACE(my,my->mySurface)->h;
 	}
+    AG_ObjectUnlock(my);
 }
 
 /*
@@ -181,14 +185,29 @@ static void SizeRequest(void *p, AG_SizeReq *r)
  * widgets, but other widgets generally use it to check if the allocated
  * geometry can be handled by Draw().
  */
+static void Draw(void *p);
+
 static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 {
 	XM7_SDLView *my = p;
 
+	if(my == NULL) return;
+    if(my->Surface == NULL) return;
 	/* If we return -1, Draw() will not be called. */
 	if (a->w < 5 || a->h < 5)
 		return (-1);
 
+    AG_ObjectLock(my);
+    if((my->Surface->w != a->w) || (my->Surface->h != a->h)) {
+        if(my->Surface != NULL) {
+//            AG_SurfaceLock(my->Surface);
+            XM7_SDLViewSurfaceDetach(my);
+        }
+    }
+    my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
+//    AG_SurfaceUnlock(my->Surface);
+    AG_ObjectUnlock(my);
+//    Draw(my); // Dirty?
 	printf("Allocated %dx%d pixels\n", a->w, a->h);
 	return (0);
 }
@@ -206,6 +225,7 @@ static void Draw(void *p)
 	 * you would generally use a STYLE() call here instead, see AG_Style(3)
 	 * for more information on styles.
 	 */
+    AG_ObjectLock(my);
 	 if(my->draw_ev != NULL){
         my->draw_ev->handler(my->draw_ev);
 	 }
@@ -218,6 +238,7 @@ static void Draw(void *p)
 	if(my->Surface != NULL) {
 	    AG_WidgetBlit(my, my->Surface, 0, 0);
 	}
+    AG_ObjectUnlock(my);
 }
 
 /* Mouse motion event handler */

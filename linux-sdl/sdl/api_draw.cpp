@@ -288,7 +288,7 @@ void ChangeResolution(void)
   い       */
         SDL_SemWait(DrawInitSem);
 #ifdef USE_AGAR
-        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+//        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 #else
 #ifdef USE_GTK
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
@@ -417,7 +417,7 @@ void	CleanDraw(void)
 #ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
 		AG_ThreadJoin(DrawThread, NULL);
-   
+
 //		AG_MutexDestroy(&DrawMutex);
 //		AG_CondDestroy(&DrawCond);
 //                DrawThread = NULL;

@@ -31,11 +31,8 @@ extern "C" {
 extern Uint32 nDrawTick1E;
 
 
-extern void InitDrawArea(int w, int h);
 extern void InitGL(int w, int h);
 extern void InitNonGL(int w, int h);
-extern void DetachDrawArea(void);
-extern void LinkDrawArea(AG_Widget *w);
 extern SDL_Surface *GetDrawSurface(void);
 extern void ResizeWindow_Agar(int w, int h);
 extern void AGDrawTaskMain(void);

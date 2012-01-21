@@ -37,6 +37,7 @@ typedef struct  XM7_SDLView {
 	int mySurface;			/* Surface handle */
 	AG_Surface *Surface;   // Internal Surface(DirectDrawing)
 	AG_Event *draw_ev;     // draw handler event
+	int forceredraw;
 	const char *param;		/* Some parameter */
 } XM7_SDLView;
 

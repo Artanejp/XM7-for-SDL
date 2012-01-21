@@ -18,7 +18,6 @@
 				</Compiler>
 				<Linker>
 					<Add option="-pg" />
-					<Add library="../libemugrph/obj/Debug/libemugrph.a" />
 					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
 					<Add library="../vm/obj/Debug/libxm7_vm.a" />
 					<Add library="../xm7-debugger/libxm7-debugger.a" />
@@ -35,7 +34,6 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="../libemugrph/obj/Release/libemugrph.a" />
 					<Add library="../ui-agar/obj/Release/libui-agar.a" />
 					<Add library="../vm/obj/Release/libxm7_vm.a" />
 				</Linker>
@@ -96,8 +94,6 @@
 		<Unit filename="api_kbd.h" />
 		<Unit filename="api_mouse.cpp" />
 		<Unit filename="api_mouse.h" />
-		<Unit filename="api_scaler.cpp" />
-		<Unit filename="api_scaler.h" />
 		<Unit filename="api_snd2.cpp" />
 		<Unit filename="api_vram.h" />
 		<Unit filename="api_vram256k.cpp" />
@@ -127,7 +123,6 @@
 			<lib_finder disable_auto="1" />
 			<debugger>
 				<search_path add="../ui-agar" />
-				<search_path add="../libemugrph" />
 				<search_path add="../vm" />
 				<search_path add="/home/whatisthis/src/agar-svn-head/gui" />
 				<search_path add="/home/whatisthis/src/agar-svn-head/au" />

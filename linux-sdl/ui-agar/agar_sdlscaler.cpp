@@ -60,7 +60,6 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    int bpp;
    int of;
 
-
    if(my == NULL) return;
    if(my->Surface == NULL) return;
    w = my->Surface->w;
@@ -81,12 +80,6 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         hh = 200;
         break;
    }
-    if(w < ww){
-       ww = w;
-    }
-    if(h  < hh){
-        hh = h ;
-    }
     pb = (Uint8 *)(my->Surface->pixels);
     pitch = my->Surface->pitch;
     bpp = my->Surface->format->BytesPerPixel;
@@ -94,6 +87,14 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 
     LockVram();
     AG_SurfaceLock(my->Surface);
+    if(my->forceredraw != 0){
+        for(yy = 0; yy < hh; yy += 8) {
+            for(xx = 0; xx < ww; xx +=8 ){
+                SDLDrawFlag.write[xx >> 3][yy >> 3] = TRUE;
+            }
+        }
+        my->forceredraw = 0;
+    }
 
 #ifdef _OPENMP
        #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
@@ -108,6 +109,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 *                *disp = src[of];
 ** // xx,yy = 1scale(not 8)
 */
+            if(xx >= w) continue;
                 if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
                     disp = (Uint32 *)pb;
                     of = (xx *8) + yy * ww;
@@ -115,6 +117,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
                     SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
                 }
 			}
+			if(yy >= h) continue;
 	}
 	AG_SurfaceUnlock(my->Surface);
 //    my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);

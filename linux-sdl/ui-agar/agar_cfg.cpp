@@ -829,6 +829,7 @@ void ApplyCfg(void)
 
     display_notify();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+//	ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
 
 
 /*
