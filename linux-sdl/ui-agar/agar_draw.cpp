@@ -102,13 +102,18 @@ void ResizeWindow_Agar(int w, int h)
 	    drv = AGDRIVER(MainWindow);
 	}
 	ofset = (int)((float)h * (40.0f / 440.0f));
+	if(MainWindow) {
+		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + ofset + MenuBar->wid.h );
+        AG_Redraw(AGWIDGET(MainWindow));
+        AG_WindowFocus(MainWindow);
+	}
 	if(DrawArea != NULL) {
         AG_SizeAlloc a;
 	    a.x = 0;
 	    a.y = 0;
 	    a.w = w;
 	    a.h = h + ofset;
-	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h + ofset);
+//	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h + ofset);
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 	   AG_Redraw(AGWIDGET(DrawArea));
 	}
@@ -127,11 +132,6 @@ void ResizeWindow_Agar(int w, int h)
         hh = h + MenuBar->wid.h;
        	AG_ObjectLock(AGOBJECT(drv));
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
-	}
-	if(MainWindow) {
-		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + ofset + MenuBar->wid.h );
-        AG_Redraw(AGWIDGET(MainWindow));
-        AG_WindowFocus(MainWindow);
 	}
 	if(AG_UsingGL(NULL)) {
         AG_ResizeDisplay(w, hh);
@@ -165,25 +165,24 @@ void ResizeWindow_Agar2(int w, int h)
 	    a.y = 0;
 	    a.w = ww;
 	    a.h = hh;
-
-	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+//        if(MainWindow) {
+//            AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+//            AG_Redraw(AGWIDGET(MainWindow));
+//            AG_WindowFocus(MainWindow);
+//        }
+//	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-        AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
-        if(MainWindow) {
-            AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-            AG_Redraw(AGWIDGET(MainWindow));
-            AG_WindowFocus(MainWindow);
-        }
+       AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
 	}
 	if(GLDrawArea != NULL) {
-        AG_GLViewSizeHint(GLDrawArea, ww, hh);
-        AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
-        AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
         if(MainWindow) {
             AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
             AG_Redraw(AGWIDGET(MainWindow));
             AG_WindowFocus(MainWindow);
         }
+        AG_GLViewSizeHint(GLDrawArea, ww, hh);
+        AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
+        AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
 	}
  	nDrawWidth = w;
 	nDrawHeight = hh;
@@ -193,7 +192,7 @@ void ResizeWindow_Agar2(int w, int h)
         AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
         AG_ObjectUnlock(AGOBJECT(drv));
 	}
-    printf("Resize to %d x %d\n", w, h);
+    printf("Resize2 to %d x %d\n", w, h);
 }
 
 

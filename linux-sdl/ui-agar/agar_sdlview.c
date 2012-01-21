@@ -113,6 +113,7 @@ void XM7_SDLViewSurfaceDetach(void *p)
       my->Surface = NULL;
       my->mySurface = -1;
    }
+   printf("XM7_SDLViewSurfaceDetach()\n");
 }
 
 AG_Surface *XM7_SDLViewGetSrcSurface(void *p)
@@ -199,16 +200,38 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 
     AG_ObjectLock(my);
     if((my->Surface->w != a->w) || (my->Surface->h != a->h)) {
+        AG_Rect r;
+        AG_Color c;
         if(my->Surface != NULL) {
-//            AG_SurfaceLock(my->Surface);
-            XM7_SDLViewSurfaceDetach(my);
+            AG_SurfaceLock(my->Surface);
+            if(AG_SurfaceResize(my->Surface, a->w, a->h) < 0) {
+                AG_SurfaceUnlock(my->Surface);
+                return (-1);
+            }
+            AG_SurfaceUnlock(my->Surface);
+            printf("XM7_SDLView::SizeAllocate() : Resized %dx%d pixels\n", a->w, a->h);
+        } else {
+            my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
+            printf("XM7_SDLView::SizeAllocate() : Allocated %dx%d pixels\n", a->w, a->h);
+            if(my->Surface == NULL) return -1;
         }
+        my->forceredraw = 1;
+        // Clear
+        r.x = 0;
+        r.y = 0;
+        r.w = a->w;
+        r.h = a->h;
+        c.a = 255;
+        c.r = 0;
+        c.g = 0;
+        c.b = 0;
+        AG_SurfaceLock(my->Surface);
+        AG_FillRect(my->Surface, &r, c);
+        AG_SurfaceUnlock(my->Surface);
     }
-    my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
 //    AG_SurfaceUnlock(my->Surface);
     AG_ObjectUnlock(my);
-//    Draw(my); // Dirty?
-	printf("Allocated %dx%d pixels\n", a->w, a->h);
+    Draw(my); // Dirty?
 	return (0);
 }
 

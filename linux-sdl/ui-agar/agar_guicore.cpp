@@ -368,7 +368,7 @@ void MainLoop(int argc, char *argv[])
 	   RootVideoHeight = 400;
 	}
 
-	ResizeWindow_Agar(640, 400);
+//	ResizeWindow_Agar(640, 400);
 	newResize = FALSE;
 	nDrawTick1D = AG_GetTicks();
 	nDrawTick1E = AG_GetTicks();

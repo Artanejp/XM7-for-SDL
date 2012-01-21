@@ -44,23 +44,8 @@ extern AG_Menu *ToolBarMenu;
         extern void OnSaveAs(void);
         extern void OnQuickSave(char *s);
         extern void OnDiskPopup(AG_Event *event);
-#if 0
-        extern void    OnDiskOpen(GtkWidget * widget, gpointer data);
-        extern void    OnDiskBoth(GtkWidget * widget, gpointer data);
-        extern void    CreateFileMenu(GtkBuilder *gbuilder);
-#endif
         extern void    CreateDiskMenu_0 (void);
         extern void    CreateDiskMenu_1 (void);
-#if 0
-        extern void    OnTapePopup(GtkWidget * widget, gpointer data);
-        extern void    OnTapeOpen(GtkWidget * widget, gpointer data);
-        extern void    CreateTapeMenu(GtkBuilder *gbuilder);
-        extern void    CreateHelpMenu(GtkWidget * widget, gpointer data);
-        extern void    OnVersion(GtkWidget * widget, gpointer data);
-        extern void    OnDebugPopup(GtkWidget * widget, gpointer data);
-        extern void    CreateDebugmenu(GtkWidget *menu_bar, GtkAccelGroup *accel_group);
-        extern void    OnToolPopup(GtkWidget * widget, gpointer data);
-#endif
         extern void    CreateMenu(void);
 
 #endif
