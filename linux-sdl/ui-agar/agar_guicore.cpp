@@ -195,7 +195,7 @@ void AGDrawTaskEvent(BOOL flag)
                     if (AG_PendingEvents(drv) > 0){
 //			        AGDrawTaskMain();
                     if(EventSDL(drv) == FALSE) return;
-//                    if(EventGUI(drv) == FALSE) return;
+                    if(EventGUI(drv) == FALSE) return;
                 }
              }
         }
@@ -442,8 +442,6 @@ void OnDestroy(AG_Event *event)
          * 仮想マシン クリーンアップ
          */
         system_cleanup();
-        //AG_QuitGUI();
-//        AG_Delay(1000); // Config Saveの時間を稼ぐ
         AG_Quit();
 }
 
@@ -487,7 +485,8 @@ void InitInstance(void)
     hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
 
     if(AG_UsingGL(NULL) != 0) {
-        /*
+//    if(0) {
+          /*
          * OpenGL Capability
          */
         GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
