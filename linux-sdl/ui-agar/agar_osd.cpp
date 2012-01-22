@@ -167,15 +167,13 @@ static void InitVFDMessages(AG_Widget *parent)
     p = AG_SurfaceNew(AG_SURFACE_PACKED, rect.w, rect.h, &fmt, AG_SRCALPHA);
     AG_FillRect(p, NULL, col);
     pwCaption = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE, p);
-    AG_WidgetSetSize(pwCaption, VFD_WIDTH * 2, height);
-    dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
-    for(i = 0; i < 2 ; i++) {
-        pwFD[i] = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE, p);
-        AG_WidgetSetSize(pwFD[i], 150, height);
+    AG_WidgetSetSize(pwCaption, 200, height);
+    //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
+    for(i = 1; i >= 0 ; i--) {
+        pwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pFDNorm[i]);
     }
-    pwCMT = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE, p);
-    AG_WidgetSetSize(pwCMT, 100, height);
-//   AG_SurfaceFree(p);
+    pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pCMTNorm);
+   AG_SurfaceFree(p);
 }
 
 
@@ -191,11 +189,8 @@ static void InitBox(AG_Widget *parent)
     InitVFDMessages(parent);
 
     pwCAPS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pCapsOff);
-    AG_WidgetSetSize(pwCAPS, 40, height);
     pwINS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pInsOff);
-    AG_WidgetSetSize(pwINS, 40, height);
     pwKana = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pKanaOff);
-    AG_WidgetSetSize(pwKana, 40, height);
 }
 
 static int LinkSurface(void)
@@ -210,11 +205,11 @@ static int LinkSurface(void)
 
     // Caption
    nwCaption = 0;
-   AG_PixmapReplaceSurface(pwCaption, nwCaption, pCaption);
+   nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
    AG_PixmapUpdateCurrentSurface(pwCaption);
 	AG_WidgetShow(pwCaption);
     // FD
-    for(i = 0; i < 2 ; i++) {
+   for(i = 0; i < 2 ; i++) {
 		nwFD[i][ID_EMPTY] = 0;
 		nwFD[i][ID_IN] = AG_PixmapAddSurface(pwFD[i], pFDNorm[i]);
 		nwFD[i][ID_READ] = AG_PixmapAddSurface(pwFD[i], pFDRead[i]);
@@ -226,7 +221,7 @@ static int LinkSurface(void)
     nwCMT[ID_IN] = AG_PixmapAddSurface(pwCMT, pCMTNorm);
     nwCMT[ID_READ] = AG_PixmapAddSurface(pwCMT, pCMTRead);
     nwCMT[ID_WRITE] = AG_PixmapAddSurface(pwCMT, pCMTWrite);
-	AG_WidgetShow(pwCMT);
+   AG_WidgetShow(pwCMT);
 
     // CAPS
     nwCaps[ID_OFF] = 0;
@@ -261,93 +256,11 @@ GLfloat LedAlpha;
 GLfloat FDDAlpha;
 
 
-static GLuint CreateTexture(AG_Surface *p)
-{
-	Uint8 *pix;
-	GLuint textureid;
-	int w;
-	int h;
-
-	if(agDriverOps == NULL) return 0;
-	if(p == NULL) return 0;
-	w = p->w;
-	h = p->h;
-	pix = (Uint8 *)p->pixels;
-
-	glGenTextures(1, &textureid);
-	glBindTexture(GL_TEXTURE_2D, textureid);
-	/*
-	 * 文字はスムージングしようよ(´・ω・｀)
-	 */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D,
-			0,
-			GL_RGBA,
-			w, h,
-			0,
-			GL_RGBA,
-			GL_UNSIGNED_BYTE,
-			pix);
-
-	return textureid;
-}
-
-static GLuint OSD_UpdateTexture(AG_Surface *p, GLuint tid)
-{
-    GLuint ttid;
-
-    if(tid == 0){
-        ttid = CreateTexture(p);
-    } else {
-        ttid = tid;
-        glBindTexture(GL_TEXTURE_2D, ttid);
-        /*
-        * 文字はスムージングしようよ(´・ω・｀)
-        */
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexSubImage2D(GL_TEXTURE_2D,
-			0,
-			0, 0,
-			p->w, p->h,
-			GL_RGBA,
-			GL_UNSIGNED_BYTE,
-			p->pixels);
-    }
-    return ttid;
-}
 
 /*
 * OSDを表示する実体
 * (1280x880) 空間で、(x, 878) - (x, 878 -h)に表示される
 */
-static void DrawTexture(AG_Surface *from, AG_Surface *to, GLuint tid, int offset_x, int offset_y, int w, int h)
-{
-	if(bGLMode) {
-		float xbegin = (float)offset_x / 640.0f - 1.0f;
-		float xend = (float)(offset_x + w) / 640.0f - 1.0f;
-		float ybegin = -1.0f + (float)(h + 2) / 440.0f;
-		float yend = -1.0f + 2.0f / 440.0f;
-
-		glBindTexture(GL_TEXTURE_2D, tid);
-		glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(xend, yend, -0.95f);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(xend, ybegin, -0.95f);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(xbegin, yend, -0.95f);
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(xbegin, ybegin, -0.95f);
-		glEnd();
-	} else {
-		AG_Rect rec;
-		if((from == NULL) || (to == NULL)) return;
-		rec.h = (to->h > h)?h:to->h;
-		rec.w = (to->w > w)?w:to->w;
-		rec.x = 0;
-		rec.y = 0;
-		AG_SurfaceBlit(from, &rec, to, offset_x, offset_y);
-	}
-
-}
 
 static void DrawCAP(void);
 static void DrawINS(void);
@@ -359,40 +272,11 @@ static void DrawTape(void);
 void DrawOSDGL(AG_GLView *w)
 {
     return;
-	bGLMode = TRUE;
-    glPushAttrib(GL_ENABLE_BIT);
-    glPushAttrib(GL_TEXTURE_BIT);
-    glEnable(GL_BLEND);
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	DrawCAP();
-	DrawKANA();
-	DrawINS();
-	DrawDrive(AGWIDGET(w), 1);
-	DrawDrive(AGWIDGET(w), 0);
-	DrawTape();
-	DrawMainCaption();
-    glColor4f(0, 0, 0, 0);
-
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
-	glPopAttrib();
-	glPopAttrib();
 }
 
 void DrawOSDEv(AG_Event *event)
 {
     return;
-	AG_GLView *glv = (AG_GLView *)AG_SELF();
-
-	//	DrawMainCaption();
-	//    DrawCAP();
-	//    DrawKANA();
-	//    DrawINS();
-	DrawDrive(AGWIDGET(glv), 1);
-	DrawDrive(AGWIDGET(glv), 0);
-	//    DrawTape();
 }
 
 /*-[ ステータスバー ]-------------------------------------------------------*/
@@ -553,7 +437,7 @@ void CreateStatus(AG_Widget *parent)
 
 	AG_FillRect(pCMTRead, &rec, r);
 	AG_FillRect(pCMTWrite, &rec, b);
-	AG_FillRect(pCMTNorm, &rec, alpha);
+	AG_FillRect(pCMTNorm, &rec, black);
 
 	rec.x = 0;
 	rec.y = 0;
@@ -778,13 +662,12 @@ static void DrawMainCaption(void)
 		AG_SurfaceFree(tmps);
 		AG_PopTextState();
 		strcpy(szOldCaption, szCaption);
-		//DiscardTexture(tid_caption);
-		//tid_caption =  CreateTexture(pCaption);
-//		tid_caption = OSD_UpdateTexture(pCaption, tid_caption);
-//		DrawTexture(pCaption, pOSDCaption, tid_caption, 8 ,  800 - STAT_HEIGHT *2 - 4, STAT_WIDTH*2, STAT_HEIGHT*2);
-	   AG_PixmapReplaceSurface(pwCaption, nwCaption, pCaption);
-	   AG_PixmapUpdateCurrentSurface(pwCaption);
-	   AG_WidgetShow(pwCaption);
+	   if(pwCaption != NULL) {
+	      AG_PixmapSetSurface(pwCaption, nwCaption);
+	      AG_PixmapUpdateSurface(pwCaption, nwCaption);
+	      AG_Redraw(pwCaption);
+	   }
+	   
 	}
 }
 
@@ -840,9 +723,7 @@ static void DrawKANA(void)
     if(pwKana == NULL) return;
 	if (nKANA) {
 	   AG_PixmapSetSurface(pwKana, nwKana[ID_ON]);
-//		DrawTexture(pKanaOn, pOSDKana, tid_kana_on, 1280 - LED_WIDTH*2 - 4,  800 - LED_HEIGHT*2 - 4 , LED_WIDTH*2, LED_HEIGHT*2);
 	} else {
-//		DrawTexture(pKanaOff, pOSDKana, tid_kana_off, 1280 - LED_WIDTH*2 - 4,  800 - LED_HEIGHT*2 - 4, LED_WIDTH*2, LED_HEIGHT*2);
 	   AG_PixmapSetSurface(pwKana, nwKana[ID_OFF]);
 	}
      AG_Redraw(pwKana);
@@ -872,10 +753,8 @@ static void DrawINS(void)
     if(pwINS == NULL) return;
 	if (nINS) {
 	   AG_PixmapSetSurface(pwINS, nwIns[ID_ON]);
-//		DrawTexture(pInsOn, pOSDIns, tid_ins_on, 1280 - LED_WIDTH * 6 - 4,  800 - LED_HEIGHT*2- 4, LED_WIDTH*2, LED_HEIGHT*2);
 	} else {
 	   AG_PixmapSetSurface(pwINS, nwIns[ID_OFF]);
-//		DrawTexture(pInsOff, pOSDIns, tid_ins_off, 1280 - LED_WIDTH * 6 - 4,  800 - LED_HEIGHT*2 - 4, LED_WIDTH*2, LED_HEIGHT*2);
 	}
      AG_Redraw(pwINS);
 }
@@ -1000,7 +879,8 @@ static void DrawDrive(int drive)
 //		 for(i = 0; i < 3 ; i++) {
 //			 DiscardTexture(tid_fd[drive][i]);
 //		 }
-		 AG_PushTextState();
+	        AG_ObjectLock(pwFD[drive]);
+		AG_PushTextState();
 		 AG_TextFont(pStatusFont);
 		 AG_TextColor(alpha);
 		 AG_TextBGColor(r);
@@ -1012,44 +892,40 @@ static void DrawDrive(int drive)
 		 tmp = AG_TextRender(outstr);
 		 AG_SurfaceBlit(tmp, &rect, pFDRead[drive], 0, 0);
 		 AG_SurfaceFree(tmp);
-//		 tid_fd[drive][1] =  OSD_UpdateTexture(pFDRead[drive], tid_fd[drive][1]);
-	    AG_PixmapReplaceSurface(pwFD[drive], nwFD[drive][ID_READ], pFDRead[drive]);
-	    AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_READ]);
 
 		 AG_TextBGColor(b);
 		 AG_FillRect(pFDWrite[drive], &rect, b);
 		 tmp = AG_TextRender(outstr);
 		 AG_SurfaceBlit(tmp, &rect, pFDWrite[drive], 0, 0);
 		 AG_SurfaceFree(tmp);
-//		 tid_fd[drive][2] =  OSD_UpdateTexture(pFDWrite[drive], tid_fd[drive][2]);
-	    AG_PixmapReplaceSurface(pwFD[drive], nwFD[drive][ID_WRITE], pFDWrite[drive]);
-	    AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
 
 		 AG_TextColor(n);
-		 AG_TextBGColor(alpha);
-		 AG_FillRect(pFDNorm[drive], &rect, alpha);
+		 AG_TextBGColor(black);
+		 AG_FillRect(pFDNorm[drive], &rect, black);
 		 tmp = AG_TextRender(outstr);
 		 AG_SurfaceBlit(tmp, &rect, pFDNorm[drive], 0, 0);
 		 AG_SurfaceFree(tmp);
-//		 tid_fd[drive][0] =  OSD_UpdateTexture(pFDNorm[drive], tid_fd[drive][0]);
-	    AG_PixmapReplaceSurface(pwFD[drive], nwFD[drive][ID_IN], pFDNorm[drive]);
-	    AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_IN]);
+
+	    if(pwFD[drive] != NULL) {
+	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_IN]);
+	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_READ]);
+	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
+	    }
+        AG_ObjectUnlock(pwFD[drive]);
+	    
 
 		 AG_PopTextState();
 		 memset(szOldDrive[drive], 0, 16);
 		 strncpy(szOldDrive[drive], szDrive[drive], 16);
 	 }
 	 if (nDrive[drive] == FDC_ACCESS_READ) {
-//		 DrawTexture(pFDRead[drive], pOSDFD, tid_fd[drive][1], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
 	    AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_READ]);
 	 } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-//		 DrawTexture(pFDWrite[drive], pOSDFD, tid_fd[drive][2], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
 	    AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
 	 } else {
-//		 DrawTexture(pFDNorm[drive], pOSDFD, tid_fd[drive][0], STAT_WIDTH*2 + 16 + (VFD_WIDTH + 8) * (1 - drive) * 2, 800 - VFD_HEIGHT*2 - 4, VFD_WIDTH*2, VFD_HEIGHT*2);
 	    AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_IN]);
 	 }
-	 AG_WidgetShow(pwFD[drive]);
+	   AG_Redraw(pwFD[drive]);
 }
 
 
@@ -1115,7 +991,9 @@ static void DrawTape(void)
 //		}
 		if(pStatusFont != NULL) {
 			AG_PushTextState();
-			AG_FillRect(pCMTRead, &rect, r);
+		   AG_ObjectLock(pwCMT);
+
+		   AG_FillRect(pCMTRead, &rect, r);
 			rect.x = 0;
 			rect.y = 0;
 			rect.h = CMT_HEIGHT * 2;
@@ -1126,7 +1004,7 @@ static void DrawTape(void)
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
 			AG_SurfaceFree(tmp);
-			tid_cmt[1] =  OSD_UpdateTexture(pCMTRead, tid_cmt[1]);
+
 
 
 			AG_FillRect(pCMTWrite, &rect, b);
@@ -1136,30 +1014,41 @@ static void DrawTape(void)
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTWrite, 0, 0);
 			AG_SurfaceFree(tmp);
-			tid_cmt[2] =  OSD_UpdateTexture(pCMTWrite, tid_cmt[2]);
 
 
-			AG_FillRect(pCMTNorm, &rect, alpha);
+
+			AG_FillRect(pCMTNorm, &rect, black);
 			AG_TextFont(pStatusFont);
 			AG_TextColor(n);
-			AG_TextBGColor(alpha);
+			AG_TextBGColor(black);
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
 			AG_SurfaceFree(tmp);
-			tid_cmt[0] =  OSD_UpdateTexture(pCMTNorm, tid_cmt[0]);
+		   if(pwCMT != NULL) {
+		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
+		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
+		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
+		   }
+		   
+		      AG_ObjectUnlock(pwCMT);
+
 			AG_PopTextState();
 		}
+	}
 		if ((nTape >= 10000) && (nTape < 30000)) {
 			if (nTape >= 20000) {
-				DrawTexture(pCMTWrite, pOSDCMT, tid_cmt[2], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+			   AG_PixmapSetSurface(pwCMT, nwCMT[ID_WRITE]);
+				//DrawTexture(pCMTWrite, pOSDCMT, tid_cmt[2], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
 			}   else {
-				DrawTexture(pCMTRead, pOSDCMT, tid_cmt[1], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+			   AG_PixmapSetSurface(pwCMT, nwCMT[ID_READ]);
+				//DrawTexture(pCMTRead, pOSDCMT, tid_cmt[1], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
 			}
 		} else {
-			DrawTexture(pCMTNorm, pOSDCMT, tid_cmt[0], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+			//DrawTexture(pCMTNorm, pOSDCMT, tid_cmt[0], 1280 - LED_WIDTH * 6 - CMT_WIDTH * 2 - 8 , 800 - CMT_HEIGHT*2 - 4,  CMT_WIDTH * 2, CMT_HEIGHT * 2);
+			   AG_PixmapSetSurface(pwCMT, nwCMT[ID_IN]);
 		}
+	   AG_Redraw(pwCMT);
 		nOldTape = nTape;
-	}
 
 
 }
@@ -1171,13 +1060,13 @@ static void DrawTape(void)
 void DrawStatus(void)
 {
 //#ifndef USE_OPENGL
-//	DrawMainCaption();
+	DrawMainCaption();
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
-//	DrawDrive(0);
-//	DrawDrive(1);
-//	DrawTape();
+	DrawDrive(0);
+	DrawDrive(1);
+	DrawTape();
 	nInitialDrawFlag = FALSE;
 //#else
 //	nInitialDrawFlag = FALSE;
