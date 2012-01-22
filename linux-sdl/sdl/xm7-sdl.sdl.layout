@@ -73,12 +73,6 @@
 	<File name="api_mouse.cpp" open="0" top="0" tabpos="15">
 		<Cursor position="2832" topLine="131" />
 	</File>
-	<File name="api_scaler.cpp" open="0" top="0" tabpos="31">
-		<Cursor position="7612" topLine="361" />
-	</File>
-	<File name="api_scaler.h" open="0" top="0" tabpos="30">
-		<Cursor position="1636" topLine="89" />
-	</File>
 	<File name="api_snd2.cpp" open="0" top="0" tabpos="10">
 		<Cursor position="27090" topLine="1291" />
 	</File>

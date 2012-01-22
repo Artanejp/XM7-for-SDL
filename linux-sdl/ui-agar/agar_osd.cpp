@@ -346,64 +346,48 @@ void CreateStatus(AG_Widget *parent)
 	AG_TextFont(pStatusFont);
 	AG_TextColor(black);
 	AG_TextBGColor(r);
-	pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
+
+        pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
 	AG_FillRect(pInsOn, NULL, r);
 	tmps = AG_TextRender("Ins");
 	AG_SurfaceBlit(tmps, NULL, pInsOn, 4, 0);
 	AG_SurfaceFree(tmps);
-//	tid_ins_on = CreateTexture(pInsOn);
-	//    	AG_SurfaceFree(pInsOn);
-	//    	pInsOn = NULL;
 
 	pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
 	AG_FillRect(pCapsOn, NULL, r);
 	tmps = AG_TextRender("CAP");
 	AG_SurfaceBlit(tmps, NULL, pCapsOn, 1, 0);
 	AG_SurfaceFree(tmps);
-//	tid_caps_on = CreateTexture(pCapsOn);
-	//        AG_SurfaceFree(pCapsOn);
-	//        pCapsOn = NULL;
 
 	pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
 	AG_FillRect(pKanaOn, NULL, r);
 	tmps = AG_TextRender("カナ");
 	AG_SurfaceBlit(tmps, NULL, pKanaOn, 8, 0);
 	AG_SurfaceFree(tmps);
-//	tid_kana_on = CreateTexture(pKanaOn);
-	//    	AG_SurfaceFree(pKanaOn);
-	//    	pKanaOn = NULL;
 
 	AG_TextColor(n);
-	AG_TextBGColor(alpha);
+	AG_TextBGColor(black);
 
 	pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
-	AG_FillRect(pInsOff, NULL, alpha);
+	AG_FillRect(pInsOff, NULL, black);
 	tmps = AG_TextRender("Ins");
 	AG_SurfaceBlit(tmps, NULL, pInsOff, 4, 0);
 	AG_SurfaceFree(tmps);
-//	tid_ins_off = CreateTexture(pInsOff);
-	//    	AG_SurfaceFree(pInsOff);
-	//    	pInsOff = NULL;
 
 	pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH * 2, LED_HEIGHT * 2,  &fmt, AG_SRCALPHA);
-	AG_FillRect(pCapsOff, NULL, alpha);
+	AG_FillRect(pCapsOff, NULL, black);
 	tmps = AG_TextRender("CAP");
 	AG_SurfaceBlit(tmps, NULL, pCapsOff, 1, 0);
 	AG_SurfaceFree(tmps);
-//	tid_caps_off = CreateTexture(pCapsOff);
-	//        AG_SurfaceFree(pCapsOff);
-	//        pCapsOff = NULL;
 
 
 	pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , LED_WIDTH *2, LED_HEIGHT * 2, &fmt, AG_SRCALPHA);
-	AG_FillRect(pKanaOff, NULL, alpha);
+	AG_FillRect(pKanaOff, NULL, black);
 	tmps = AG_TextRender("カナ");
 	AG_SurfaceBlit(tmps, NULL, pKanaOff, 8, 0);
 	AG_SurfaceFree(tmps);
-//	tid_kana_off = CreateTexture(pKanaOff);
-	//    	AG_SurfaceFree(pKanaOff);
-	//    	pKanaOff = NULL;
-	AG_PopTextState();
+
+       AG_PopTextState();
 
 	AG_PushTextState();
 	AG_TextFont(pStatusFont);
@@ -445,7 +429,7 @@ void CreateStatus(AG_Widget *parent)
 	rec.h = STAT_HEIGHT * 2;
 
 	pCaption = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-	AG_FillRect(pCaption, &rec,  alpha);
+	AG_FillRect(pCaption, &rec,  black);
 
 	AG_PopTextState();
 
@@ -651,8 +635,8 @@ static void DrawMainCaption(void)
 		AG_PushTextState();
 		AG_TextFont(pStatusFont);
 		AG_TextColor(n);
-		AG_TextBGColor(alpha);
-		AG_FillRect(pCaption, NULL, alpha);
+		AG_TextBGColor(black);
+		AG_FillRect(pCaption, NULL, black);
 		tmps = AG_TextRender(szCaption);
 		rect.x = 0;
 		rect.y = 0;
@@ -1020,8 +1004,8 @@ static void DrawTape(void)
 
 			AG_FillRect(pCMTNorm, &rect, n);
 			AG_TextFont(pStatusFont);
-			AG_TextColor(black);
-			AG_TextBGColor(n);
+			AG_TextColor(n);
+			AG_TextBGColor(black);
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
 			AG_SurfaceFree(tmp);
