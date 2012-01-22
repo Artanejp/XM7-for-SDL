@@ -982,7 +982,8 @@ static void DrawTape(void)
 	else {
 		sprintf(string, "%s%04d", protect, nTape % 10000);
 	}
-	if(nOldTape != nTape) {
+       if(pwCMT == NULL) return;
+	if((nOldTape != nTape)  || (nTape == 0)){
 		/*
 		 * カウンタ番号レンダリング(仮)
 		 */
@@ -1017,10 +1018,10 @@ static void DrawTape(void)
 
 
 
-			AG_FillRect(pCMTNorm, &rect, black);
+			AG_FillRect(pCMTNorm, &rect, n);
 			AG_TextFont(pStatusFont);
-			AG_TextColor(n);
-			AG_TextBGColor(black);
+			AG_TextColor(black);
+			AG_TextBGColor(n);
 			tmp = AG_TextRender(string);
 			AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
 			AG_SurfaceFree(tmp);
@@ -1049,8 +1050,6 @@ static void DrawTape(void)
 		}
 	   AG_Redraw(pwCMT);
 		nOldTape = nTape;
-
-
 }
 
 /*
