@@ -44,7 +44,7 @@ Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
-extern void CreateStatus(void);
+extern void CreateStatus(AG_Widget *parent);
 extern void DestroyStatus(void);
 
 extern void DrawOSDEv(AG_Event *e);
@@ -336,7 +336,7 @@ void MainLoop(int argc, char *argv[])
     run_flag = TRUE;
     // Debug
 #ifdef _XM7_FB_DEBUG
-    drivers = "sdlfb:width=1280:height=880:depth=32";
+    drivers = "sdlgl:width=1280:height=880:depth=32";
 //    drivers = "glx";
 #endif
 	/*
@@ -345,7 +345,7 @@ void MainLoop(int argc, char *argv[])
 //    SDL_Init(SDL_INIT_VIDEO);
 
     if(drivers == NULL)  {
-    	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF |
+    	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
     			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
     } else {
         if (AG_InitGraphics(drivers) == -1) {
@@ -452,6 +452,7 @@ static void InitFont(void)
 void InitInstance(void)
 {
 	AG_HBox *hb;
+        AG_VBox *vb;
 	AG_Window *win;
 //	AG_Driver *drv;
 
@@ -473,11 +474,11 @@ void InitInstance(void)
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
     AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
     hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-    MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
+//    vb = AG_VBoxNew(AGWIDGET(MainWindow), 0);
+   MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
 	AG_WidgetShow(AGWIDGET(MenuBar));
-
 
 	AG_WindowShow(MainWindow);
 	AG_WindowFocus(MainWindow);
@@ -503,7 +504,6 @@ void InitInstance(void)
 		DrawArea = NULL;
 	    AG_WidgetShow(GLDrawArea);
 	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
-        CreateStatus();
     } else {
         // Non-GL
         DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
@@ -515,6 +515,12 @@ void InitInstance(void)
 	    AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
+    }
+    {
+       hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+        pStatusBar = AG_BoxNewHoriz(hb, AG_BOX_HFILL);
+        CreateStatus(AGWIDGET(pStatusBar));
+        AG_WidgetShow(pStatusBar);
     }
 
 	win = AG_GuiDebugger();

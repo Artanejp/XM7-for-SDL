@@ -22,6 +22,7 @@
 #include <SDL.h>
 
 extern BYTE bMode;
+
 Uint32 nDrawTick1E;
 static BYTE oldBMode;
 
@@ -101,7 +102,7 @@ void ResizeWindow_Agar(int w, int h)
 	    if(MainWindow == NULL) return;
 	    drv = AGDRIVER(MainWindow);
 	}
-	ofset = (int)((float)h * (40.0f / 440.0f));
+	ofset = 40;
 	if(MainWindow) {
 		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + ofset + MenuBar->wid.h );
         AG_Redraw(AGWIDGET(MainWindow));
@@ -112,14 +113,15 @@ void ResizeWindow_Agar(int w, int h)
 	    a.x = 0;
 	    a.y = 0;
 	    a.w = w;
-	    a.h = h + ofset;
+	    a.h = h;
 //	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h + ofset);
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 	   AG_Redraw(AGWIDGET(DrawArea));
 	}
 	if(GLDrawArea != NULL) {
         AG_GLViewSizeHint(GLDrawArea, w, h);
-        AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h + ofset);
+//        AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h + ofset);
+        AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
 	}
 	nDrawWidth = w;
 	nDrawHeight = h;
@@ -129,14 +131,15 @@ void ResizeWindow_Agar(int w, int h)
 		AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
         AG_WidgetEnable(AGWIDGET(MenuBar));
         AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
-        hh = h + MenuBar->wid.h;
+        hh = hh + MenuBar->wid.h;
        	AG_ObjectLock(AGOBJECT(drv));
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
-	if(AG_UsingGL(NULL)) {
-        AG_ResizeDisplay(w, hh);
+
+	if(AG_UsingGL(NULL) ) {
+	   AG_ResizeDisplay(w, hh);
 	}
-    printf("Resize to %d x %d\n", w, hh);
+    printf("Resize to %d x %d\n", w, hh );
 //    AG_Redraw(AGWIDGET(MenuBar));
 }
 /*
@@ -147,6 +150,7 @@ void ResizeWindow_Agar2(int w, int h)
 	int hh;
 	int ww;
 	AG_Driver *drv;
+        int ofset = 40;
 
 	if(agDriverSw) {
 	    drv = &agDriverSw->_inherit;
@@ -158,6 +162,7 @@ void ResizeWindow_Agar2(int w, int h)
     if(MenuBar != NULL) {
         hh = h - MenuBar->wid.h;
     }
+    hh = hh - ofset;
 	if(hh < 0) hh = 0;
 	if(DrawArea != NULL) {
         AG_SizeAlloc a;
@@ -165,18 +170,12 @@ void ResizeWindow_Agar2(int w, int h)
 	    a.y = 0;
 	    a.w = ww;
 	    a.h = hh;
-//        if(MainWindow) {
-//            AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-//            AG_Redraw(AGWIDGET(MainWindow));
-//            AG_WindowFocus(MainWindow);
-//        }
-//	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
        AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
 	}
 	if(GLDrawArea != NULL) {
         if(MainWindow) {
-            AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+            AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
             AG_Redraw(AGWIDGET(MainWindow));
             AG_WindowFocus(MainWindow);
         }

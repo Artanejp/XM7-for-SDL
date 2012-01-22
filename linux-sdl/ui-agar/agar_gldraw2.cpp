@@ -95,7 +95,8 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
 
     yinc = 400.0f / (float)h;
     ybegin = yinc / (float)h;
-    yofset = -1.0f + 41.0f / 440.0f;
+//    yofset = -1.0f + 41.0f / 440.0f;
+    yofset = -1.0f + 40.0f / 400.0f;
   if(vertex == NULL) return;
   y = ybegin + yofset;
   for(i = 0; i < h; i++, y += ybegin){
@@ -293,9 +294,9 @@ void AGEventDrawGL2(AG_Event *event)
    if(p == NULL) return;
 
 
-    // OSD を外に追い出す
-//    ybegin = 400.0f / 440.0f;
-    ybegin = 400.0f/460.0f;
+
+    ybegin = 1.0f;
+//    ybegin = 400.0f/460.0f;
     yend = 1.0f;
             // Z Axis
 

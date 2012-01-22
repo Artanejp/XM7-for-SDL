@@ -1,3 +1,12 @@
+/*
+* FM-7 Emulator "XM7"
+* Virtual Vram Display(Agar widget version)
+* (C) 2012 K.Ohta <whatisthis.sowhat@gmail.com>
+* License: CC-BY-SA
+* History:
+* Jan 18,2012 From demos/customwidget/mywidget.[c|h]
+*
+*/
 #ifndef __XM7_SDL_VIEW
 #define __XM7_SDL_VIEW
 
