@@ -13,8 +13,8 @@
 	<File name="agar_cmd.cpp" open="0" top="0" tabpos="7">
 		<Cursor position="2418" topLine="164" />
 	</File>
-	<File name="agar_draw.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="1242" topLine="176" />
+	<File name="agar_draw.cpp" open="1" top="1" tabpos="1">
+		<Cursor position="3339" topLine="148" />
 	</File>
 	<File name="agar_draw.h" open="0" top="0" tabpos="14">
 		<Cursor position="823" topLine="22" />
@@ -38,7 +38,7 @@
 		<Cursor position="18687" topLine="671" />
 	</File>
 	<File name="agar_guicore.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="11142" topLine="457" />
+		<Cursor position="8701" topLine="331" />
 	</File>
 	<File name="agar_main.cpp" open="0" top="0" tabpos="24">
 		<Cursor position="2669" topLine="118" />
@@ -58,14 +58,20 @@
 	<File name="agar_menu_tool.cpp" open="0" top="0" tabpos="6">
 		<Cursor position="9149" topLine="351" />
 	</File>
-	<File name="agar_osd.cpp" open="1" top="1" tabpos="5">
-		<Cursor position="21118" topLine="920" />
+	<File name="agar_osd.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="15176" topLine="686" />
 	</File>
 	<File name="agar_sch.cpp" open="0" top="0" tabpos="7">
 		<Cursor position="4620" topLine="267" />
 	</File>
 	<File name="agar_sdl.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="2564" topLine="100" />
+	</File>
+	<File name="agar_sdlscaler.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="2044" topLine="93" />
+	</File>
+	<File name="agar_sdlview.c" open="1" top="0" tabpos="8">
+		<Cursor position="6456" topLine="254" />
 	</File>
 	<File name="agar_svram.cpp" open="1" top="0" tabpos="4">
 		<Cursor position="3834" topLine="160" />

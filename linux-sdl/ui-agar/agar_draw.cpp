@@ -26,6 +26,8 @@ extern BYTE bMode;
 Uint32 nDrawTick1E;
 static BYTE oldBMode;
 
+extern void ResizeStatus(int w, int h);
+
 extern "C" {
 XM7_SDLView *DrawArea;
 }
@@ -92,7 +94,8 @@ SDL_Surface *GetDrawSurface(void)
 void ResizeWindow_Agar(int w, int h)
 {
 	int hh;
-	int ofset;
+	int ww;
+//	int ofset;
 
 	AG_Driver *drv;
 
@@ -102,30 +105,64 @@ void ResizeWindow_Agar(int w, int h)
 	    if(MainWindow == NULL) return;
 	    drv = AGDRIVER(MainWindow);
 	}
-	ofset = 40;
+//	ofset = 40;
 	if(MainWindow) {
-		AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + ofset + MenuBar->wid.h );
+        if(pStatusBar != NULL) {
+            AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + AGWIDGET(pStatusBar)->h + MenuBar->wid.h );
+        } else {
+            AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + MenuBar->wid.h );
+        }
         AG_Redraw(AGWIDGET(MainWindow));
         AG_WindowFocus(MainWindow);
 	}
 	if(DrawArea != NULL) {
         AG_SizeAlloc a;
+        AG_SizeReq r;
+        AG_Window *win;
+
+        win = AG_ParentWindow(DrawArea);
+        if(win == NULL) return;
+        AG_WidgetSizeReq(AGWIDGET(win), &r);
+        hh = h;
+        ww = w;
+//        if(pStatusBar) {
+//            hh = hh  - pStatusBar->wid.h;
+//        }
+//        if(MenuBar){
+//            hh = hh - MenuBar->wid.h;
+//            AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
+//        }
 	    a.x = 0;
 	    a.y = 0;
-	    a.w = w;
-	    a.h = h;
-//	   AG_WidgetSetSize(AGWIDGET(DrawArea), w, h + ofset);
+	    a.w = ww;
+	    a.h = hh;
+        nDrawWidth = ww;
+        nDrawHeight = hh;
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-	   AG_Redraw(AGWIDGET(DrawArea));
+       AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
+       AG_WidgetSetSize(DrawArea, ww, hh);
+       if(pStatusBar){
+           AG_Rect rc;
+           rc.w = w;
+           rc.h = AGWIDGET(pStatusBar)->h;
+           rc.x = 0;
+           rc.y = AGWIDGET(DrawArea)->y + AGWIDGET(DrawArea)->h;
+            AG_WidgetSetGeometry(pStatusBar, rc);
+            ResizeStatus(w, AGWIDGET(pStatusBar)->h);
+       }
+       if(MainWindow) {
+           AG_Redraw(AGWIDGET(MainWindow));
+       }
 	}
 	if(GLDrawArea != NULL) {
+	    hh = h;
+	    ww = w;
+
         AG_GLViewSizeHint(GLDrawArea, w, h);
 //        AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h + ofset);
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
+        //ResizeStatus(w, AGWIDGET(pStatusBar)->h);
 	}
-	nDrawWidth = w;
-	nDrawHeight = h;
-	hh = h + ofset;
 	if(MenuBar) {
         AG_ObjectLock(AGOBJECT(drv));
 		AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
@@ -135,9 +172,11 @@ void ResizeWindow_Agar(int w, int h)
        	AG_ObjectLock(AGOBJECT(drv));
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
-
-	if(AG_UsingGL(NULL) ) {
-	   AG_ResizeDisplay(w, hh);
+    if(pStatusBar) {
+        hh = hh + pStatusBar->wid.h;
+    }
+	if(AG_UsingGL(NULL)) {
+	   AG_ResizeDisplay(ww, hh);
 	}
     printf("Resize to %d x %d\n", w, hh );
 //    AG_Redraw(AGWIDGET(MenuBar));
@@ -150,47 +189,63 @@ void ResizeWindow_Agar2(int w, int h)
 	int hh;
 	int ww;
 	AG_Driver *drv;
-        int ofset = 80;
 
-	if(agDriverSw) {
-	    drv = &agDriverSw->_inherit;
-	} else {
-	    if(MainWindow == NULL) return;
-	    drv = AGDRIVER(MainWindow);
-	}
-    ww = w;
-    if(MenuBar != NULL) {
-        hh = h - MenuBar->wid.h;
-    }
-//    hh = hh - ofset;
-	if(hh < 0) hh = 0;
+
 	if(DrawArea != NULL) {
         AG_SizeAlloc a;
+        AG_SizeReq r;
+        AG_Window *win;
+
+        win = AG_ParentWindow(DrawArea);
+        if(win == NULL) return;
+        AG_WidgetSizeReq(AGWIDGET(win), &r);
+        hh = h;
+        ww = w;
+        if(pStatusBar) {
+            hh = hh - pStatusBar->wid.h;
+        }
+        if(MenuBar){
+            hh = hh - MenuBar->wid.h;
+            AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
+        }
 	    a.x = 0;
 	    a.y = 0;
 	    a.w = ww;
-	    a.h = hh - ofset;
+	    a.h = hh;
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
        AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
+       AG_WidgetSetSize(DrawArea, ww, hh);
+       if(pStatusBar){
+           ResizeStatus(ww, pStatusBar->wid.h);
+       }
+       if(MainWindow) {
+           AG_Redraw(AGWIDGET(MainWindow));
+       }
 	}
 	if(GLDrawArea != NULL) {
+        AG_SizeReq r;
+
+        hh = h;
+        ww = w;
+        if(pStatusBar) {
+            hh = hh - pStatusBar->wid.h;
+        }
+        if(MenuBar){
+            hh = hh - MenuBar->wid.h;
+            AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
+        }
         //if(MainWindow) {
         //    AG_WindowSetGeometry(MainWindow, 0, 0, ww, hh);
         //    AG_Redraw(AGWIDGET(MainWindow));
         //    AG_WindowFocus(MainWindow);
         //}
-        AG_GLViewSizeHint(GLDrawArea, ww, hh - ofset);
+        AG_GLViewSizeHint(GLDrawArea, ww, hh);
         AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
-        AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh - ofset);
+        AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
+        //ResizeStatus(w, AGWIDGET(pStatusBar)->h);
 	}
  	nDrawWidth = w;
 	nDrawHeight = hh;
- 	AG_WidgetEnable(AGWIDGET(MenuBar));
-	if(MenuBar != NULL) {
-        AG_ObjectLock(AGOBJECT(drv));
-        AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
-        AG_ObjectUnlock(AGOBJECT(drv));
-	}
     printf("Resize2 to %d x %d\n", w, h);
 }
 

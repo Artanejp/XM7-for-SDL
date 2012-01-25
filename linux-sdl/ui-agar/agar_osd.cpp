@@ -182,7 +182,7 @@ static void InitBox(AG_Widget *parent)
     int i;
 
     int height;
-   
+
     height = 20;
 
     if(parent == NULL) return;
@@ -647,11 +647,12 @@ static void DrawMainCaption(void)
 		AG_PopTextState();
 		strcpy(szOldCaption, szCaption);
 	   if(pwCaption != NULL) {
+          AG_ObjectLock(pwCaption);
 	      AG_PixmapSetSurface(pwCaption, nwCaption);
 	      AG_PixmapUpdateSurface(pwCaption, nwCaption);
 	      AG_Redraw(pwCaption);
+          AG_ObjectUnlock(pwCaption);
 	   }
-	   
 	}
 }
 
@@ -896,7 +897,7 @@ static void DrawDrive(int drive)
 	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
 	    }
         AG_ObjectUnlock(pwFD[drive]);
-	    
+
 
 		 AG_PopTextState();
 		 memset(szOldDrive[drive], 0, 16);
@@ -1014,7 +1015,7 @@ static void DrawTape(void)
 		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
 		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
 		   }
-		   
+
 		      AG_ObjectUnlock(pwCMT);
 
 			AG_PopTextState();
@@ -1066,6 +1067,47 @@ void DrawStatusForce(void)
 	DrawStatus();
 }
 
+void ResizeStatus(int w, int h)
+{
+    int i;
+    int total =  STAT_WIDTH * 2 + VFD_WIDTH * 2 * 3 + LED_WIDTH * 2 * 3;
+    int pos = 0;
+    float wLed = (LED_WIDTH * 2) / total;
+    float wCMT = (VFD_WIDTH * 2) / total;
+    float wFD = (VFD_WIDTH * 2) / total;
+    float wCaption = (STAT_WIDTH * 2) / total;
+
+    AG_WidgetSetSize(pwCaption, (int)(wCaption * w), h);
+    AG_WidgetSetPosition(pwINS, pos, 0);
+    AG_Redraw(pwCaption);
+    pos += (int)(wCaption * w);
+
+   for(i = 1; i >= 0 ; i--){
+       AG_WidgetSetSize(pwFD[i], (int)(wFD * w), h);
+       AG_WidgetSetPosition(pwFD[i], pos, 0);
+       AG_Redraw(pwFD[i]);
+       pos += (int)(wFD * w);
+    }
+    AG_WidgetSetSize(pwCMT, (int)(wCMT * w), h);
+    AG_WidgetSetPosition(pwCMT, pos, 0);
+    AG_Redraw(pwCMT);
+    pos += (int)(wCMT * w);
+
+    AG_WidgetSetSize(pwCAPS, (int)(wLed * w), h);
+    AG_WidgetSetPosition(pwCAPS, pos, 0);
+    AG_Redraw(pwCAPS);
+    pos += (int)(wLed * w);
+
+    AG_WidgetSetSize(pwINS, (int)(wLed * w), h);
+    AG_WidgetSetPosition(pwINS, pos, 0);
+    AG_Redraw(pwINS);
+    pos += (int)(wLed * w);
+
+    AG_WidgetSetSize(pwKana, (int)(wLed * w), h);
+    AG_WidgetSetPosition(pwKana, pos, 0);
+    AG_Redraw(pwKana);
+    pos += (int)(wLed * w);
+}
 
 /*
  *  再描画

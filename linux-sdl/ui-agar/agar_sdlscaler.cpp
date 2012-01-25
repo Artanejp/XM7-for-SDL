@@ -80,6 +80,8 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         hh = 200;
         break;
    }
+   if(ww >= w) ww = (w / 8) * 8;
+   if(hh >= h) hh = (h / 8) * 8;
     pb = (Uint8 *)(my->Surface->pixels);
     pitch = my->Surface->pitch;
     bpp = my->Surface->format->BytesPerPixel;

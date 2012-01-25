@@ -1533,13 +1533,13 @@
 	<SDL.h>
 	"xm7.h"
 
-1327171991 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlscaler.cpp
+1327494271 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlscaler.cpp
 	"agar_sdlview.h"
 	"api_vram.h"
 	"api_draw.h"
 	"api_kbd.h"
 
-1327207138 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlview.c
+1327487277 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlview.c
 	"agar_sdlview.h"
 	"api_vram.h"
 	"api_draw.h"
@@ -1601,4 +1601,101 @@
 	"subctrl.h"
 	"device.h"
 	"agar_vramutil.h"
+
+1327493487 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_draw.cpp
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"api_draw.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	<SDL.h>
+
+1327224838 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_gldraw2.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<GL/glx.h>
+	<GL/glxext.h>
+	<omp.h>
+	"api_draw.h"
+	"api_kbd.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+
+1327494399 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_guicore.cpp
+	<SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"agar_toolbox.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	"sdl.h"
+	"sdl_cfg.h"
+	"sdl_bar.h"
+	"api_kbd.h"
+	"sdl_sch.h"
+	"sdl_snd.h"
+	"sdl_inifile.h"
+	"api_draw.h"
+
+1327222433 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sch.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	"xm7.h"
+	"tapelp.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"mouse.h"
+	"agar_xm7.h"
+	"sdl.h"
+	"sdl_bar.h"
+	"sdl_sch.h"
+	"sdl_snd.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_draw.h"
+
+1327493750 source:/home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_osd.cpp
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"xm7.h"
+	"keyboard.h"
+	"tapelp.h"
+	"display.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_gldraw.h"
+	"sdl.h"
+	"sdl_bar.h"
+	"sdl_sch.h"
+	"api_draw.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	<iconv.h>
 

@@ -452,7 +452,7 @@ static void InitFont(void)
 void InitInstance(void)
 {
 	AG_HBox *hb;
-        AG_VBox *vb;
+    AG_VBox *vb;
 	AG_Window *win;
 //	AG_Driver *drv;
 
@@ -473,9 +473,10 @@ void InitInstance(void)
 	AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
     AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
-    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+//    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
 //    vb = AG_VBoxNew(AGWIDGET(MainWindow), 0);
-   MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
+//   MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
+    MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
 	AG_WidgetShow(AGWIDGET(MenuBar));
@@ -483,17 +484,14 @@ void InitInstance(void)
 	AG_WindowShow(MainWindow);
 	AG_WindowFocus(MainWindow);
 
-    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-
     if(AG_UsingGL(NULL) != 0) {
-//    if(0) {
           /*
          * OpenGL Capability
          */
-        GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
+//        GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
+        GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
         AG_WidgetSetSize(GLDrawArea, 640,400);
         AG_GLViewSizeHint(GLDrawArea, 640, 400);
-//        AG_WidgetSetPosition(GLDrawArea, 0, 5);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
         AG_GLViewKeydownFn (GLDrawArea, AGEventKeyDownGL, NULL);
         AG_GLViewKeyupFn (GLDrawArea, AGEventKeyUpGL, NULL);
@@ -506,7 +504,8 @@ void InitInstance(void)
 	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
     } else {
         // Non-GL
-        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
+//        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
+        DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
         AG_WidgetSetSize(DrawArea, 640, 400);
@@ -517,8 +516,8 @@ void InitInstance(void)
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }
     {
-       hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-        pStatusBar = AG_BoxNewHoriz(hb, AG_BOX_HFILL);
+//        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
         CreateStatus(AGWIDGET(pStatusBar));
         AG_WidgetShow(pStatusBar);
     }
