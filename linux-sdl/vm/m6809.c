@@ -793,7 +793,135 @@ static void cpu_execline(cpu6809_t *m68_state)
 
 //    return cycles ;   /* NS 970908 */
 }
+#if 1
+// fetch_effective_address ($80-$FF)
+INLINE void fetchsub_IDX(cpu6809_t *m68_state, WORD upper, WORD lower)
+{
+   WORD indirect = (upper & 0x01);
+   WORD *reg;
+   
+   switch((upper >> 1) & 0x03){ // $8-$f >> 1 = $4 - $7 : delete bit2 
+    case 0: // $8x,$9x
+      reg = &(X);
+      break;
+    case 1: // $ax,$bx
+      reg = &(Y);
+      break;
+    case 2: // $cx,$dx
+      reg = &(U);
+      break;
+    case 3: // $ex,$fx
+      reg = &(S);
+      break;
+   }
+   
+   switch(lower) {
+    case 0: // ,r+ 
+      EA = *reg;
+      *reg = *reg + 1;
+      break;
+    case 1: // ,r++
+      EA = *reg;
+      *reg = *reg + 2;
+      break;
+    case 2: // ,-r
+      *reg = *reg - 1;
+      EA = *reg;
+      break;
+    case 3: // ,--r
+      *reg = *reg - 2;
+      EA = *reg;
+      break;
+    case 4: // ,r
+      EA = *reg;
+      break;
+    case 5: // b,r
+      EA = *reg + SIGNED(B);
+      break;
+    case 6: // a,r
+    case 7:
+      EA = *reg + SIGNED(A);
+      break;
+    case 8: // $xx,r
+      IMMBYTE(EA);
+      EA = *reg + SIGNED(EA);
+      break;
+    case 9: // $xxxx, r
+      IMMWORD(EAP);
+      EA = EA + *reg;
+      break;
+    case 0x0a: // Undocumented
+      EA = PC;
+      EA++;
+      EA |= 0x00ff;
+      break;
+    case 0x0b: // D,r
+      EA = *reg + D;
+      break;
+    case 0x0c: // xx,pc
+      IMMBYTE(EA);
+      EA = PC + SIGNED(EA);
+      break;
+    case 0x0d: // xxxx,pc
+      IMMWORD(EAP);
+      EA = EA + PC;
+      break;
+    case 0x0e: // Undocumented
+      EA = 0xffff;
+      break;
+    case 0x0f:
+      IMMWORD(EAP);
+      break;
+   }
+   // $9x,$bx,$dx,$fx = INDIRECT
+   if(indirect != 0) {
+      EAD = RM16(m68_state, EAD);
+   }
+}
 
+// fetch_effective_address ($00-$7F)
+INLINE void fetch_effective_address( cpu6809_t *m68_state )
+{
+   BYTE postbyte;
+   WORD upper,lower;
+   
+   IMMBYTE(postbyte);
+   upper = (postbyte >> 4) & 0x0f;
+   lower = postbyte & 0x0f;
+   switch(upper){
+    case 0x00:
+      EA = X + lower;
+      break;
+    case 0x01:
+      EA = X - 16 + lower;
+      break;
+    case 0x02:
+      EA = Y + lower;
+      break;
+    case 0x03:
+      EA = Y - 16 + lower;
+      break;
+    case 0x04:
+      EA = U + lower;
+      break;
+    case 0x05:
+      EA = U - 16 + lower;
+      break;
+    case 0x06:
+      EA = S + lower;
+      break;
+    case 0x07:
+      EA = S - 16 + lower;
+      break;
+    default:
+      fetchsub_IDX(m68_state, upper, lower);
+      break;
+   }
+   m68_state->cycle += index_cycle_em[postbyte];
+   
+}
+
+#else
 INLINE void fetch_effective_address( cpu6809_t *m68_state )
 {
 	BYTE postbyte;
@@ -1073,7 +1201,7 @@ INLINE void fetch_effective_address( cpu6809_t *m68_state )
 	}
    m68_state->cycle += index_cycle_em[postbyte];
 }
-
+#endif 
 
 
 //extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
