@@ -4,26 +4,9 @@
  * (C) 2011 K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
-#if 0
-#include <SDL.h>
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include "api_draw.h"
-//#include "api_scaler.h"
-#include "agar_xm7.h"
-#include "agar_draw.h"
-#include "agar_gldraw.h"
-#include "xm7.h"
-#include "display.h"
-#include "subctrl.h"
-#include "device.h"
-#endif
 
 #include <SDL.h>
-//#include <GL/gl.h>
-//#include <GL/glext.h>
 #include "api_draw.h"
-//#include "api_scaler.h"
 #include "api_vram.h"
 
 void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
@@ -182,7 +165,6 @@ static void getvram_4096(Uint32 addr, Uint32 *cbuf)
     	+ ((g[0] & 0x80) << 1) + ((g[1] & 0x80) << 2) +
     	((g[2] & 0x80) << 3) + ((g[3] & 0x80) << 4);
 }
-
 
 
 void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
