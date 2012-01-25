@@ -459,10 +459,22 @@ void SetDrawFlag(BOOL flag)
     int x;
     int y;
 //		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
-    for(y = 0; y < 50 ; y++) {
-        for(x = 0; x < 80; x++){
+#ifdef _OPENMP
+       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
+#endif
+   for(y = 0; y < 50 ; y++) {
+        for(x = 0; x < 80; x+=4){
                 SDLDrawFlag.read[x][y] = flag;
                 SDLDrawFlag.write[x][y] = flag;
+
+	        SDLDrawFlag.read[x+1][y] = flag;
+                SDLDrawFlag.write[x+1][y] = flag;
+
+                SDLDrawFlag.read[x+2][y] = flag;
+                SDLDrawFlag.write[x+2][y] = flag;
+
+                SDLDrawFlag.read[x+3][y] = flag;
+                SDLDrawFlag.write[x+3][y] = flag;
         }
     }
     SDLDrawFlag.Drawn = flag;
