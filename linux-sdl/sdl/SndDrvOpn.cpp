@@ -31,20 +31,35 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         if (t == NULL) {
                 return;
         }
-        i = (size / 4) * 4;
-        for (j = 0; j < i; j += 4) {
-                tmp1 = p[j];
-                t[j] = (Sint16) tmp1 ;
-                tmp1 = p[j + 1];
-                t[j + 1] = (Sint16) tmp1;
-                tmp1 = p[j + 2];
-                t[j + 2] = (Sint16) tmp1 ;
-                tmp1 = p[j + 3];
-                t[j + 3] = (Sint16) tmp1;
+        i = (size / 8) * 8;
+        for (j = 0; j < i; j += 8) {
+                tmp1 = *p++;
+                *t++ = (Sint16) tmp1 ;
+	   
+                tmp1 = *p++;
+	        *t++ = (Sint16) tmp1 ;
+ 
+	        tmp1 = *p++;
+                *t++ = (Sint16) tmp1 ;
+
+                tmp1 = *p++;
+                *t++ = (Sint16) tmp1 ;
+
+	        tmp1 = *p++;
+	        *t++ = (Sint16) tmp1 ;
+	   
+                tmp1 = *p++;
+                *t++ = (Sint16) tmp1 ;
+
+	        tmp1 = *p++;
+                *t++ = (Sint16) tmp1 ;
+
+	        tmp1 = *p++;
+                *t++ = (Sint16) tmp1 ;
         }
         for (j = i; j < size; j++) {
-                tmp1 = p[j];
-                t[j] = (Sint16)tmp1;
+                tmp1 = *p++;
+	        *t++ = (Sint16) tmp1 ;
         }
 }
 
