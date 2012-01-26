@@ -58,16 +58,25 @@ CFLAGS += -fopenmp
 CFLAGS_DEBUG = -pg -g -O0 
 CFLAGS_DEBUG += $(CFLAGS)
 
-CFLAGS_RELEASE =  -O3 -funroll-loops 
-#CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
-CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
+CXXFLAGS_RELEASE =  -O3
+CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+#CFLAGS_RELEASE += -pthread
+
+#CFLAGS_RELEASE =  -O3
+CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+#CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 #CFLAGS_RELEASE += -pthread
 
 # Architecture Depend Flag
-#CFLAGS_RELEASE += -march=amdfam10
-CFLAGS_RELEASE += -minline-all-stringops -msse -msse2
+CFLAGS_RELEASE += -march=amdfam10
+CFLAGS_RELEASE += -minline-all-stringops
+
+CXXFLAGS_RELEASE += -march=amdfam10
+CXXFLAGS_RELEASE += -minline-all-stringops 
+
 
 
 CFLAGS_RELEASE += $(CFLAGS)
+CXXFLAGS_RELEASE += $(CFLAGS)
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN

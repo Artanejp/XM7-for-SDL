@@ -13,6 +13,7 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-Wall" />
 					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
@@ -99,6 +100,9 @@
 		<Unit filename="api_vram256k.cpp" />
 		<Unit filename="api_vram4096.cpp" />
 		<Unit filename="api_vram8.cpp" />
+		<Unit filename="api_vramvec.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="api_wavwriter.cpp" />
 		<Unit filename="api_wavwriter.h" />
 		<Unit filename="build_config.h" />

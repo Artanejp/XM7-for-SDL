@@ -3468,7 +3468,7 @@
 
 1306446803 /home/whatisthis/codeblocks/xm7-sdl/vm//tapelp.h
 
-1318247582 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
+1327506228 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
 	"SndDrvOpn.h"
 
 1311156628 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.h
@@ -3524,7 +3524,7 @@
 	"sdl.h"
 	"sdl_snd.h"
 
-1327175171 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
+1327596419 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_draw.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -3937,23 +3937,12 @@
 	"api_draw.h"
 	"api_vram.h"
 
-1327067923 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram4096.cpp
-	<SDL.h>
-	<GL/gl.h>
-	<GL/glext.h>
-	"api_draw.h"
-	"agar_xm7.h"
-	"agar_draw.h"
-	"agar_gldraw.h"
-	"xm7.h"
-	"display.h"
-	"subctrl.h"
-	"device.h"
+1327559239 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram4096.cpp
 	<SDL.h>
 	"api_draw.h"
 	"api_vram.h"
 
-1327067923 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
+1327561737 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram8.cpp
 	<SDL.h>
 	"api_draw.h"
 	"api_vram.h"
@@ -5156,7 +5145,7 @@
 	<X11/Xlib.h>
 	<X11/Xutil.h>
 
-1327067923 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
+1327559650 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_vramutil.h
 	<agar/core.h>
 	<agar/core/types.h>
 	<agar/gui.h>
@@ -5180,7 +5169,7 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1327067923 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
+1327596383 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
 	<SDL.h>
 	<GL/gl.h>
 	<GL/glext.h>
@@ -5196,7 +5185,7 @@
 1318200384 /usr/include/atk-1.0/atk/atkwindow.h
 	<atk/atkobject.h>
 
-1327070006 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
+1327594136 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/draw_thread.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -5304,4 +5293,9 @@
 1327207138 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlview.h
 	<agar/core.h>
 	<agar/gui.h>
+
+1327596775 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vramvec.c
+	<SDL.h>
+	"api_draw.h"
+	"api_vram.h"
 

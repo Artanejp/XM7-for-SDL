@@ -82,73 +82,73 @@ xm7.debug: ${OBJS_DEBUG} ${LIBS_DEBUG}
 
 
 Release/sdl_inifile.o: sdl_inifile.c
-	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) -O3 ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 	
 Release/sdl_file.o: sdl_file.c
-	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+	$(CC) -O3 ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 
 Release/api_draw.o: api_draw.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/draw_thread.o: draw_thread.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_scaler.o: api_scaler.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_vram8.o: api_vram8.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_vram4096.o: api_vram4096.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_vram256k.o: api_vram256k.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_vramvec.o: api_vramvec.c
 	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 
 Release/api_snd2.o: api_snd2.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/api_wavwriter.o: api_wavwriter.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Release/SndDrvTmpl.o: SndDrvTmpl.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvOpn.o: SndDrvOpn.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvWav.o: SndDrvWav.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvBeep.o: SndDrvBeep.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SndDrvCMT.o: SndDrvCMT.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 Release/api_kbd.o: api_kbd.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/api_js.o: api_js.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/api_mouse.o: api_mouse.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SDLKbdInterface.o: SDLKbdInterface.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/SDLJoyInterface.o: SDLJoyInterface.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/KbdInterface.o: KbdInterface.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 

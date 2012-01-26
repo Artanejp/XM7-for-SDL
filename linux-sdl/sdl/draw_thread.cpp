@@ -144,10 +144,7 @@ static BOOL SelectCheck(void)
 BOOL SelectDraw2(void)
 {
 #ifdef USE_AGAR
-        AG_Widget *wid;
-        AG_Color nullcolor;
-        AG_Rect rect;
-        SDL_Surface *p;
+    AG_Widget *wid;
 #else // SDL
 		Uint32 nullcolor;
 		SDL_Surface *p;
@@ -171,28 +168,19 @@ BOOL SelectDraw2(void)
 		} else {
 		   return FALSE;
 		}
-		p = GetDrawSurface();
 #else
 		p = SDL_GetVideoSurface();
 		if(p == NULL) return FALSE;
-#endif
 		rect.h = nDrawWidth;
 		rect.w = nDrawHeight;
 		rect.x = 0;
 		rect.y = 0;
+#endif
 		if(!bUseOpenGL) {
 			/*
 			 * すべてクリア
 			 */
-#ifdef USE_AGAR
-//			AG_ObjectLock(wid);
-			nullcolor.r = 0;
-			nullcolor.g = 0;
-			nullcolor.b = 0;
-			nullcolor.a = 255;
-//			AG_FillRect(drv->sRef, &rect, nullcolor);
-//			AG_ObjectUnlock(wid);
-#else
+#ifndef USE_AGAR
 			SDL_LockSurface(p);
 			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
 			SDL_FillRect(p, &rect, nullcolor);
@@ -244,6 +232,7 @@ BOOL SelectDraw2(void)
 		return TRUE;
 }
 
+#ifndef USE_AGAR
 static int DrawTaskMain(void *arg)
 {
 		if(newResize) {
@@ -290,6 +279,7 @@ static int DrawTaskMain(void *arg)
 		Flip();
 		return 0;
 }
+#endif /* !USE_AGAR */
 
 #ifdef USE_AGAR
 extern AG_Mutex DrawMutex;

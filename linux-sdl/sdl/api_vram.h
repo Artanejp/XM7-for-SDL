@@ -52,8 +52,9 @@ extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int m
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef uint16_t v4si __attribute__((vector_size(16)));
-typedef uint16_t v8si __attribute__((vector_size(32)));
+typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
+typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(16)));
+
 
 typedef union {
      v4si v;
@@ -81,6 +82,9 @@ static inline void putword2_vec(Uint32 *disp, v4hi cbuf)
    disp[7] = rgbAnalogGDI[cbuf.s[7]];
 }
 
+extern void initvramtbl_8_vec(void);
+extern void initvramtbl_4096_vec(void);
+
 extern void getvram_8_vec(Uint32 addr, v4hi *cbuf);
 static inline void  putword8_vec(Uint32 *disp, v4hi *p)
 {
@@ -94,7 +98,7 @@ static inline void  putword8_vec(Uint32 *disp, v4hi *p)
     disp[7] = rgbTTLGDI[p->s[7]];
 }
 
-   
+
 enum {
    PLAINB0 = 0,
    PLAINB1,
@@ -116,11 +120,11 @@ enum {
    PLAING,
    PLAINW
 };
-   
-	
+
+
 #ifdef __cplusplus
 }
 #endif
-   
-   
+
+
 #endif // API_VRAM_H_INCLUDED

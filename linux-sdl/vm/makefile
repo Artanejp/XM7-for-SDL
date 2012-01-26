@@ -52,6 +52,7 @@ OBJS = $(patsubst %.c,%.o,$(CSRCS))
 OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
+CFLAGS_RELEASE += -O3
 
 all:	Release/libxm7_vm.a Debug/libxm7_vm.a 
 
@@ -149,16 +150,16 @@ Release/m6809.o: m6809.c m6809ops.h m6809tbl.h
 	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/opna.o: opna.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/psg.o: psg.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/fmgen.o: fmgen.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 	
 Release/juliet.o: juliet.cpp
-	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 
 Debug/aluline.o: aluline.c

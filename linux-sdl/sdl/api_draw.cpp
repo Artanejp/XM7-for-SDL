@@ -404,6 +404,8 @@ void	InitDraw(void)
 		 *  VRAMテクスチャ生成
 		 */
 		 uVramTextureID = 0;
+		 initvramtbl_8_vec();
+		 initvramtbl_4096_vec();
 }
 
 
