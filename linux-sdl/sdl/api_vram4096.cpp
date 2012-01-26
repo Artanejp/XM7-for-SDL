@@ -9,6 +9,8 @@
 #include "api_draw.h"
 #include "api_vram.h"
 
+
+
 void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
  {
     Uint32 ds;
@@ -166,6 +168,7 @@ static void getvram_4096(Uint32 addr, Uint32 *cbuf)
     	((g[2] & 0x80) << 3) + ((g[3] & 0x80) << 4);
 }
 
+				    
 
 void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage)
 {
@@ -197,50 +200,51 @@ void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint
  */
 void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
-    Uint32 c[8];
+//    Uint32 c[8];
+    v4hi c;
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
 
     addr = y * 40 + x;
     // Loop廃止(高速化)
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096(addr, c);
-    putword2((Uint32 *)disp,  c);
+    getvram_4096_vec(addr, &c);
+    putword2_vec((Uint32 *)disp,  c);
 
 }
 

@@ -13,8 +13,8 @@ VIDEODRVSRC = \
 	draw_thread.cpp \
 	api_vram8.cpp \
 	api_vram4096.cpp \
-	api_vram256k.cpp
-#api_scaler.cpp 	
+	api_vram256k.cpp \
+	api_vramvec.c 	
 
 SNDDRVSRC = \
 	api_snd2.cpp api_wavwriter.cpp  \
@@ -106,6 +106,8 @@ Release/api_vram4096.o: api_vram4096.cpp
 Release/api_vram256k.o: api_vram256k.cpp
 	$(CXX) ${CFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
+Release/api_vramvec.o: api_vramvec.c
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 
 Release/api_snd2.o: api_snd2.cpp
@@ -173,6 +175,10 @@ Debug/api_vram4096.o: api_vram4096.cpp
 
 Debug/api_vram256k.o: api_vram256k.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+Debug/api_vramvec.o: api_vramvec.c
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+
 
 Debug/api_snd2.o: api_snd2.cpp
 	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
