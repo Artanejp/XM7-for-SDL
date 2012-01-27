@@ -12,57 +12,42 @@
 /*
 * Definition of Convertsion Tables.
 */
-v4hi aPlaneG[256];
-v4hi aPlaneR[256];
-v4hi aPlaneB[256];
 
-v4hi aPlaneB0[256];
-v4hi aPlaneB1[256];
-v4hi aPlaneB2[256];
-v4hi aPlaneB3[256];
+static v4hi aPlaneB0[256];
+static v4hi aPlaneB1[256];
+static v4hi aPlaneB2[256];
+static v4hi aPlaneB3[256];
 
-v4hi aPlaneR0[256];
-v4hi aPlaneR1[256];
-v4hi aPlaneR2[256];
-v4hi aPlaneR3[256];
+static v4hi aPlaneR0[256];
+static v4hi aPlaneR1[256];
+static v4hi aPlaneR2[256];
+static v4hi aPlaneR3[256];
 
-v4hi aPlaneG0[256];
-v4hi aPlaneG1[256];
-v4hi aPlaneG2[256];
-v4hi aPlaneG3[256];
+static v4hi aPlaneG0[256];
+static v4hi aPlaneG1[256];
+static v4hi aPlaneG2[256];
+static v4hi aPlaneG3[256];
 
 
 static inline void initvramtblsub_vec(int x, v4hi *p)
 {
     int shift;
-    int mask = 0x80;
-    p->s[0] = (mask & x)>>7;
-    mask >>= 1;
-    p->s[1] = (mask & x)>>6;
-    mask >>= 1;
-    p->s[2] = (mask & x)>>5;
-    mask >>= 1;
-    p->s[3] = (mask & x)>>4;
-    mask >>= 1;
-    p->s[4] = (mask & x)>>3;
-    mask >>= 1;
-    p->s[5] = (mask & x)>>2;
-    mask >>= 1;
-    p->s[6] = (mask & x)>>1;
-    mask >>= 1;
-    p->s[7] = (mask & x);
+    v4si mask =(v4si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+    p->v = (v4si){x,x,x,x,x,x,x,x};
+
+    p->v = p->v & mask;
+    p->s[0] >>= 7;
+    p->s[1] >>= 6;
+    p->s[2] >>= 5;
+    p->s[3] >>= 4;
+    p->s[4] >>= 3;
+    p->s[5] >>= 2;
+    p->s[6] >>= 1;
+//    p->s[7] >>= 0;
 }
 
 void initvramtbl_8_vec(void)
 {
-    int i;
-    v4si shift = (v4si){1,1,1,1,1,1,1,1};
-
-    for(i = 0; i < 256; i++){
-        initvramtblsub_vec(i, &aPlaneB[i]);
-        aPlaneR[i].v = aPlaneB[i].v << shift;
-        aPlaneG[i].v = aPlaneR[i].v << shift;
-    }
 }
 
 void initvramtbl_4096_vec(void)
@@ -195,8 +180,8 @@ void getvram_8_vec(Uint32 addr, v4hi *cbuf)
         cbuf->s[1] = vshift8(&dat);
         cbuf->s[0] = vshift8(&dat);
 #else
-    cbuf->v =   aPlaneB[dat.s[PLAINB]].v +
-                aPlaneR[dat.s[PLAINR]].v +
-                aPlaneG[dat.s[PLAING]].v;
+    cbuf->v =   aPlaneB0[dat.s[PLAINB]].v +
+                aPlaneB1[dat.s[PLAINR]].v +
+                aPlaneB2[dat.s[PLAING]].v;
 #endif
 }

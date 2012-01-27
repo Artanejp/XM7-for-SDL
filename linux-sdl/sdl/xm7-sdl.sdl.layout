@@ -37,8 +37,8 @@
 	<File name="SndDrvIF.h" open="0" top="0" tabpos="23">
 		<Cursor position="1949" topLine="45" />
 	</File>
-	<File name="SndDrvOpn.cpp" open="0" top="0" tabpos="19">
-		<Cursor position="8017" topLine="414" />
+	<File name="SndDrvOpn.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="7528" topLine="400" />
 	</File>
 	<File name="SndDrvOpn.h" open="0" top="0" tabpos="21">
 		<Cursor position="1517" topLine="59" />
@@ -56,7 +56,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="api_draw.cpp" open="0" top="0" tabpos="26">
-		<Cursor position="35246" topLine="1863" />
+		<Cursor position="9091" topLine="0" />
 	</File>
 	<File name="api_draw.h" open="0" top="0" tabpos="1">
 		<Cursor position="2047" topLine="84" />
@@ -73,8 +73,8 @@
 	<File name="api_mouse.cpp" open="0" top="0" tabpos="15">
 		<Cursor position="2832" topLine="131" />
 	</File>
-	<File name="api_snd2.cpp" open="0" top="0" tabpos="10">
-		<Cursor position="27090" topLine="1291" />
+	<File name="api_snd2.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="13433" topLine="646" />
 	</File>
 	<File name="api_vram.h" open="0" top="0" tabpos="6">
 		<Cursor position="1349" topLine="0" />

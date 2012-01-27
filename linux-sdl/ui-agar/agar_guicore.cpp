@@ -332,7 +332,7 @@ void MainLoop(int argc, char *argv[])
     run_flag = TRUE;
     // Debug
 #ifdef _XM7_FB_DEBUG
-    drivers = "sdlgl:width=1280:height=880:depth=32";
+    drivers = "sdlfb:width=1280:height=880:depth=32";
 //    drivers = "glx";
 #endif
 	/*

@@ -82,8 +82,8 @@ static inline void putword2_vec(Uint32 *disp, v4hi cbuf)
    disp[7] = rgbAnalogGDI[cbuf.s[7]];
 }
 
-extern void initvramtbl_8_vec(void);
-extern void initvramtbl_4096_vec(void);
+extern __volatile__ void initvramtbl_8_vec(void);
+extern __volatile__ void initvramtbl_4096_vec(void);
 
 extern void getvram_8_vec(Uint32 addr, v4hi *cbuf);
 static inline void  putword8_vec(Uint32 *disp, v4hi *p)
