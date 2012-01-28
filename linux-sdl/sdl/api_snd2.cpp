@@ -500,7 +500,9 @@ void  SetSoundVolume2(UINT uSp, int nFM, int nPSG,
 
 void SetTotalVolume(int vol)
 {
-   
+   if(vol < 0) vol = 0;
+   if(vol > 128) vol = 127;
+   iTotalVolume = vol;
 }
 
 /*
@@ -764,12 +766,12 @@ static int SetChunk(struct SndBufType *p, int ch)
         j = p->nSize - p->nReadPTR;
         if(j > samples) {
 	        // 分割不要
-            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, 127);
+            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
             Mix_PlayChannel(ch , p->mChunk[i], 0);
             p->nReadPTR += samples;
             samples = 0;
         } else {
-            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, 127);
+            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, iTotalVolume);
             Mix_PlayChannel(ch , p->mChunk[i], 0);
             p->nReadPTR += j;
             samples -= j;
