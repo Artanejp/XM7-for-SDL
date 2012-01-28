@@ -4,10 +4,11 @@
  * Takegami Copyright (C) 2004 GIMONS  [ XWIN サウンド ] 
  */  
     
-#ifdef _XWIN
 
-#ifndef _xw_snd_h_
-#define _xw_snd_h_
+
+#ifndef _api_snd_h_
+#define _api_snd_h_
+#include "xm7.h"
     
 /*
  *  定数定義 
@@ -23,6 +24,15 @@
 #define WAVEVOLUME_DEFAULT              -6      /* 各種効果音ボリュームデフォルト値 */
 
     
+#ifdef __cplusplus
+#include "SndDrvIF.h"
+#include "SndDrvBeep.h"
+#include "SndDrvWav.h"
+#include "SndDrvOpn.h"
+#include "SndDrvCMT.h"
+
+#endif
+
 #ifdef __cplusplus
 extern          "C" {
     
@@ -96,96 +106,128 @@ void        CleanFDDSnd(void);
 /*
  *  主要ワーク 
  */            
-extern UINT     nSampleRate;
-             
 /*
  * サンプルレート(Hz、0で無し) 
  */            
-extern UINT     nSoundBuffer;
-                   
+extern UINT     nSampleRate;
+             
 /*
  * サウンドバッファ(ダブル、ms) 
  */            
-extern BOOL     bFMHQmode;
-                   
+extern UINT     nSoundBuffer;
+/*
+ * 出力モード
+ */
+extern UINT    nStereoOut;
+
 /*
  * FM高品質合成モード 
+ */            
+extern BOOL     bFMHQmode;                  
+
+/*
+ * BEEP周波数(Hz) 
  */            
 extern UINT     nBeepFreq;
                    
 /*
- * BEEP周波数(Hz) 
+ * WAVキャプチャファイルハンドル 
  */            
 extern int      hWavCapture;
                    
 /*
- * WAVキャプチャファイルハンドル 
+ * WAVキャプチャ開始後 
  */            
 extern BOOL     bWavCapture;
                    
-/*
- * WAVキャプチャ開始後 
- */            
-extern UINT     nStereoOut;
-                   
-/*
- * 出力モード 
- */            
-extern BOOL     bForceStereo;
                    
 /*
  * 強制ステレオ出力 
  */            
-extern BOOL     bTapeMon;
+extern BOOL     bForceStereo;
                    
 /*
  * テープ音モニタ 
  */            
-extern UINT     uClipCount;
-                  
+extern BOOL     bTapeMon;
+                   
 /*
  * クリッピングカウンタ 
  */            
-#define SND_MAX_BANK 8
-                  
-#define SND_FIFO_SIZE (96000 * sizeof(WORD) * 2 * 1000)/1000
-typedef enum { XM7_SND_FMBOARD = 0,	/* 富士通標準FM音源カード  */ 
-               XM7_SND_FM_WHG = 1, /* WHG拡張FM音源 */ 
-               XM7_SND_FM_THG = 2, /* THG拡張FM音源 */ 
-               XM7_SND_MAIN = 3, XM7_SND_BEEP = 4, /* BEEP */ 
-               XM7_SND_PSG = 5, /* PSG */ 
-               XM7_SND_TAPE = 6, /* テープ音声 */ 
-               /*
-                * ここからWAVデータです 
-                */ 
-               XM7_SND_WAV_RELAY_ON = 7, /* リレーON */ 
-               XM7_SND_WAV_RELAY_OFF = 8, /* リレーOFF */ 
-               XM7_SND_WAV_FDD = 9, /* FDDシーク */ 
-               XM7_SND_END = 10 
-} SndChannels;
+extern UINT     uClipCount;
+
+
                
 /*
  * 音楽演奏用データパッケージ 
  */            
                    
-#ifdef FDDSND
-extern int             nFMVolume;                                          /* FM音源ボリューム */
-extern int             nPSGVolume;                                         /* PSGボリューム */
-extern int             nBeepVolume;                                        /* BEEP音ボリューム */
-extern int             nCMTVolume;                                         /* CMT音モニタボリューム */
-extern int             nWaveVolume;                                        /* 各種効果音ボリューム */
-extern int             iTotalVolume;	/* 全体ボリューム */
-extern UINT            uChSeparation;
+extern int             nFMVolume;      /* FM音源ボリューム */
+extern int             nPSGVolume;     /* PSGボリューム */
+extern int             nBeepVolume;    /* BEEP音ボリューム */
+extern int             nCMTVolume;     /* CMT音モニタボリューム */
+extern int             nWaveVolume;    /* 各種効果音ボリューム */
+extern int             iTotalVolume;   /* 全体ボリューム */
+extern UINT            uChSeparation;  /* チャンネルセパレーション */
 
                    
 /*
- * シーク音量 
- */            
+ * 定数など
+ */
+#define CHUNKS 2
+#define WAV_CHANNELS 5
+enum {
+	CH_SND_BEEP = 0,
+	CH_SND_CMT = 2,
+	CH_SND_OPN = 4,
+	CH_WAV_RELAY_ON = 6,
+	CH_WAV_RELAY_OFF,
+	CH_WAV_FDDSEEK,
+	CH_WAV_RESERVE1,
+	CH_WAV_RESERVE2,
+	CH_CHANNELS
+};
+enum {
+	GROUP_SND_BEEP = 0,
+	GROUP_SND_CMT ,
+	GROUP_SND_OPN ,
+	GROUP_SND_SFX
+};
+
+struct SndBufType {
+	Sint32 *pBuf32;
+	Sint16 *pBuf;
+	Uint32 nSize;
+	Uint32 nReadPTR;
+	Uint32 nWritePTR;
+	int nHeadChunk;
+	int nLastChunk;
+	DWORD nLastTime;
+	int nChunks;
+	int nChunkNo;
+	Mix_Chunk **mChunk; /* Chunkの配列へのポインタ */
+} ;
+
+     
                   
-#endif				/*  */
+//#define SND_FIFO_SIZE (96000 * sizeof(WORD) * 2 * 1000)/1000
 #ifdef __cplusplus
 }              
 #endif				/*  */
-               
-#endif	/* _xw_snd_h_ */
-#endif	/* _XWIN */
+
+#ifdef __cplusplus
+/* snd_buffer.cpp */
+extern struct SndBufType *InitBufferDesc(void);
+extern void DetachBufferDesc(struct SndBufType *p);
+extern void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32);
+extern void DetachBuffer(struct SndBufType *p);
+extern int CopyChunk(struct SndBufType *p, Sint16 *buf, int offset);
+
+extern int SndCalcSamples(struct SndBufType *p, DWORD ttime);
+extern DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, BOOL bZero);
+extern BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
+extern BOOL FlushBeepSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
+extern BOOL FlushCMTSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
+#endif
+
+#endif	/* _api_snd_h_ */
