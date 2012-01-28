@@ -74,7 +74,7 @@
 //#include "debugger.h"
 //#include "m6809.h"
 #include "xm7.h"
-#define INLINE inline
+#define INLINE __inline__
 
 //#define BIG_SWITCH 1
 /* Enable big switch statement for the main opcodes */
