@@ -32,36 +32,19 @@ Debug/libxm7_debug.a: ${OBJS_DEBUG}
 Release/libxm7_debug.a: ${OBJS_RELEASE}
 	ar crv $@ ${OBJS_RELEASE}
 
+Release/%.o: %.c
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+
+Release/%.o: %.cpp
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Debug/%.o: %.c
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+
+Debug/%.o: %.cpp
+	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
 	
-Debug/dbg_breakpoint.o: dbg_breakpoint.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-Debug/dbg_disasm09.o: dbg_disasm09.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-	
-Debug/dbg_memdump.o: dbg_memdump.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-Debug/dbg_fonts.o: dbg_fonts.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-Debug/memaccess.o: memaccess.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-Release/dbg_breakpoint.o: dbg_breakpoint.cpp
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-
-Release/dbg_disasm09.o: dbg_disasm09.cpp
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-	
-Release/dbg_memdump.o: dbg_memdump.cpp
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-
-Release/dbg_fonts.o: dbg_fonts.cpp
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-
-Release/memaccess.o: memaccess.cpp
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 .asm.o:
 	nasm ${ASFLAGS} $<
