@@ -27,7 +27,7 @@
 #endif
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
-#include "sdl_bar.h"
+#include "agar_osd.h"
 
 
 configdat_t configdat;	/* コンフィグ用データ */

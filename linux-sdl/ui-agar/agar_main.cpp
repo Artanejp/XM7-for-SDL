@@ -19,7 +19,7 @@
 #include "tapelp.h"
 #include "keyboard.h"
 #include "agar_xm7.h"
-#include "sdl_bar.h"
+#include "agar_osd.h"
 
 #include "api_draw.h"
 #include "api_kbd.h"

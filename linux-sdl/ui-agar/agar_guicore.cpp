@@ -21,12 +21,12 @@ extern "C" {
 #include "agar_toolbox.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
+#include "agar_osd.h"
 #else
 #include "sdl.h"
 #include "sdl_cfg.h"
 #endif
 
-#include "sdl_bar.h"
 #include "api_kbd.h"
 //#include "sdl_sch.h"
 //#include "sdl_snd.h"
