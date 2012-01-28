@@ -25,12 +25,12 @@ extern "C" {
 #include "sdl_cfg.h"
 #endif
 
-#include "sdl_bar.h"
-#include "api_kbd.h"
+//#include "sdl_bar.h"
+//#include "api_kbd.h"
 #include "sdl_sch.h"
-#include "sdl_snd.h"
-#include "sdl_inifile.h"
-#include "api_draw.h"
+//#include "sdl_snd.h"
+//#include "sdl_inifile.h"
+//#include "api_draw.h"
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 #include "../xm7-debugger/memread.h"

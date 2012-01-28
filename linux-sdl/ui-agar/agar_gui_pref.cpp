@@ -37,14 +37,15 @@
 #else
 #include "sdl.h"
 #endif
+
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
-#include "sdl_prop.h"
-#include "sdl_sch.h"
-#include "sdl_snd.h"
-#include "sdl_bar.h"
+//#include "sdl_prop.h"
+//#include "sdl_sch.h"
+//#include "sdl_snd.h"
+//#include "sdl_bar.h"
 #include "xm7.h"
-#include "api_draw.h"
+//#include "api_draw.h"
 //#include "api_scaler.h"
 
 extern "C" {

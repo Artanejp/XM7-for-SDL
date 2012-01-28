@@ -43,10 +43,10 @@
 #include "agar_cmd.h"
 #include "agar_toolbox.h"
 
-#include "sdl_snd.h"
-#include "sdl_sch.h"
-#include "api_kbd.h"
-#include "api_js.h"
+//#include "sdl_snd.h"
+//#include "sdl_sch.h"
+//#include "api_kbd.h"
+//#include "api_js.h"
 
 
 #ifdef USE_GTK

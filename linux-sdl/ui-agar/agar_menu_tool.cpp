@@ -33,11 +33,11 @@ extern "C" {
 #include "sdl_cfg.h"
 #endif
 
-#include "sdl_bar.h"
-#include "api_kbd.h"
-#include "sdl_sch.h"
-#include "sdl_snd.h"
-#include "sdl_inifile.h"
+//#include "sdl_bar.h"
+//#include "api_kbd.h"
+//#include "sdl_sch.h"
+//#include "sdl_snd.h"
+//#include "sdl_inifile.h"
 #include "api_draw.h"
 #include "agar_toolbox.h"
 

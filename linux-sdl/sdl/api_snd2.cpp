@@ -32,7 +32,7 @@
 #include "opn.h"
 #include "sdl.h"
 #include "sdl_sch.h"
-#include "sdl_snd.h"
+#include "api_snd.h"
 
 #include "api_wavwriter.h"
 

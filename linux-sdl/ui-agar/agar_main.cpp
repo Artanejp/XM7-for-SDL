@@ -20,13 +20,15 @@
 #include "keyboard.h"
 #include "agar_xm7.h"
 #include "sdl_bar.h"
+
 #include "api_draw.h"
 #include "api_kbd.h"
 #include "api_js.h"
 #include "api_mouse.h"
+#include "api_snd.h"
 
 #include "sdl_sch.h"
-#include "sdl_snd.h"
+
 #include "agar_cfg.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"

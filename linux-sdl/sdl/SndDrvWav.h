@@ -13,9 +13,9 @@
 
 #include "xm7.h"
 #include "sdl.h"
-#include "sdl_snd.h"
+//#include "sdl_snd.h"
 
-//#include "SndDrvTmpl.h"
+#include "SndDrvIF.h"
 
 #define WAV_SLOT 3
 

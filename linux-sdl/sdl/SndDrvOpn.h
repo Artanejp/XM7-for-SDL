@@ -19,8 +19,8 @@
 #include "opn.h"
 #include "psg.h"
 #include "sdl.h"
-#include "sdl_sch.h"
-#include "sdl_snd.h"
+//#include "sdl_sch.h"
+//#include "sdl_snd.h"
 
 
 #include <vector>

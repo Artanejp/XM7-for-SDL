@@ -39,7 +39,7 @@
 #include "agar_cmd.h"
 
 #include "sdl_prop.h"
-#include "sdl_snd.h"
+#include "api_snd.h"
 #include "sdl_sch.h"
 #include "api_kbd.h"
 

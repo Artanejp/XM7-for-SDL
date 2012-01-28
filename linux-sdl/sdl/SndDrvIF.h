@@ -16,7 +16,7 @@
 
 #include "xm7.h"
 #include "sdl.h"
-#include "sdl_snd.h"
+#include "api_snd.h"
 #include <vector>
 
 #define DEFAULT_SLOT 8

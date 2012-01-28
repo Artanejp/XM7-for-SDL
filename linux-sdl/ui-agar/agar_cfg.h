@@ -8,6 +8,23 @@
 #ifndef AGAR_CFG_H_
 #define AGAR_CFG_H_
 #include "KbdInterface.h"
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#else
+#include "sdl.h"
+#endif
+#include "sdl_inifile.h"
+#include "agar_cfg.h"
+
+#include "sdl_prop.h"
+#include "sdl_sch.h"
+
+#include "api_snd.h"
+#include "api_kbd.h"
+#include "api_js.h"
+#include "api_mouse.h"
+#include "api_draw.h"
+
 
 #ifdef __cplusplus
 extern          "C" {
