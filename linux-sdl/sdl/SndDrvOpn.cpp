@@ -6,6 +6,7 @@
  */
 
 #include "SndDrvOpn.h"
+#include "api_snd.h"
 
 static int              l_vol[3][4] = {
 		{	16,	23,	 9,	16	},

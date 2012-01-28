@@ -10,6 +10,26 @@
 #define _api_snd_h_
 #include "xm7.h"
     
+#include "device.h"
+#include "mainetc.h"
+#include "opn.h"
+#include "tapelp.h"
+#include "cisc.h"
+#include "opna.h"
+#include "psg.h"
+#include "opn.h"
+#include "sdl.h"
+#include "sdl_sch.h"
+
+#include "api_wavwriter.h"
+
+    
+#include "SndDrvIF.h"
+
+#ifdef __cplusplus
+extern          "C" {
+    
+#endif				/*  */
 /*
  *  定数定義 
  */ 
@@ -22,21 +42,7 @@
 #define BEEPVOLUME_DEFAULT              -24     /* BEEP音ボリュームデフォルト値 */
 #define CMTVOLUME_DEFAULT               -24     /* CMT音モニタボリュームデフォルト値 */
 #define WAVEVOLUME_DEFAULT              -6      /* 各種効果音ボリュームデフォルト値 */
-
-    
-#ifdef __cplusplus
-#include "SndDrvIF.h"
-#include "SndDrvBeep.h"
-#include "SndDrvWav.h"
-#include "SndDrvOpn.h"
-#include "SndDrvCMT.h"
-
-#endif
-
-#ifdef __cplusplus
-extern          "C" {
-    
-#endif				/*  */
+   
 /*
  *  主要エントリ 
  */ 
@@ -215,7 +221,6 @@ struct SndBufType {
 }              
 #endif				/*  */
 
-#ifdef __cplusplus
 /* snd_buffer.cpp */
 extern struct SndBufType *InitBufferDesc(void);
 extern void DetachBufferDesc(struct SndBufType *p);
@@ -228,6 +233,4 @@ extern DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int sam
 extern BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
 extern BOOL FlushBeepSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
 extern BOOL FlushCMTSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
-#endif
-
 #endif	/* _api_snd_h_ */

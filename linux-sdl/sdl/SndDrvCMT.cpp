@@ -6,6 +6,7 @@
  */
 
 #include "SndDrvCMT.h"
+#include "api_snd.h"
 
 namespace {
 static	BOOL bTapeFlag2;

@@ -11,7 +11,7 @@
 #include "xm7.h"
 
 #include "SndDrvWav.h"
-
+#include "api_snd.h"
 
 SndDrvWav::SndDrvWav() {
 	// TODO Auto-generated constructor stub

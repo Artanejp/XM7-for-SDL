@@ -9,7 +9,7 @@
 #include <SDL/SDL_mixer.h>
 #include "xm7.h"
 #include "SndDrvBeep.h"
-
+#include "api_snd.h"
 
 SndDrvBeep::SndDrvBeep() {
 	// TODO Auto-generated constructor stub
