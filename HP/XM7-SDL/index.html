@@ -24,7 +24,7 @@ Sorry, under construction and Japanese only,Yet...<BR>
 &nbsp; <A HREF="http://sky.geocities.jp/artanejp/">最初に戻る</A><BR>
 <BR>
 <B>現在のリリースは、<BR>
-*  Version 0.2r369 (OpenGL+Agar仕様  / βレベル) Nov 17,2011<BR>
+*  Version 0.2r423 (OpenGL or SDLFB+Agar仕様  / βレベル) Feb 03,2012<BR>
 *  Version 0.1r129 (αレベル) Oct 26,2010<BR>
 です。</B><BR>
 解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
@@ -32,8 +32,8 @@ Sorry, under construction and Japanese only,Yet...<BR>
 <BR>
 <H2>ダウンロード：</H2>
 <A
-HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-sdl-linux-amd64.0.2r369.7z">
-本体ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r369 少し？Unstableだがたぶんうごくはずだ)</A><BR>
+HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-sdl-linux-amd64.0.2r423.7z">
+本体ソースコード+GNU/Linux amd64バイナリ(OpenGL or SDLFB r423　Agarソースコード付き。バグを取って少しの機能追加でRCかγになるはずだ)</A><BR>
 <BR>
 <A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/agar-svn-head.r9049.src.7z">
 libagar svn r9049のソースコード</A><BR>
@@ -47,10 +47,14 @@ libagar svn r9049のソースコード</A><BR>
 <BR>
 <A NAME="changelogs"></A>
 <H2>変更点:</H2>
-- <B>フォントをコマンドラインから設定できるようにした(NEW!)</B><BR>
-- <B>キーボードアサインが記録されていないことの改善(NEW!)</B><BR>
-- <B>CPUのTFR/EXG命令が正常に動いていなかったことの修正(NEW!)</B><BR>
-- <B>CPUのflags[8|16]命令の正常化（本当か？)(NEW!)</B><BR>
+- <B>"10 20"未定義命令をLBRAと解釈してない問題の解決（他にバグ無いよね？）(NEW!)</B><BR>
+- <B>LEDランプやステータスをWidgetで実装しなおした(GL版は表示がバグってるけどagar側の問題っぽい)(NEW!)</B><BR>
+- <B><A HREF="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html">GCCのVector拡張</A>を使って描画や音声に関する転送や演算の高速化(MEW!)。
+但し、組み込み関数やアセンブラは未だ使っていません</B><BR>
+- <B>↑の件に絡んで、コンパイル環境をgcc-4.4系列に戻した（※4.5以上や4.2以下では正当なビルドができない可能性がある）(NEW!)</B><BR>
+- <B>OPEN MPによる、マルチスレッド描画の実装(NEW!)</B><BR>
+- <B>OpenGLを使わないレンダラを実装した。起動時にコマンドラインに -d sdlfb と入れて下さい(NEW!)</B><BR>
+- 但し、-d sdlfbでは物理面での横320ドット表示が未だ落ちます(NEW!)<BR>
 - <B>その他、雑多なBugFix(NEW!)</B><BR>
 <BR>
 <H2>過去の変更点:</H2>
@@ -59,6 +63,10 @@ libagar svn r9049のソースコード</A><BR>
 - <B>GTKを捨てて、AGAR GUIツールキット ( <A HREF="http://www.libagar.org/"
 target="_blank">http://www.libagar.org/</A>)に置き換えた</B><BR>
 - <B>基本的に、OpenGL専用です(が、これからNonGLな描画機構も作る（｀・ω・´）)</B><BR>
+- <B>フォントをコマンドラインから設定できるようにした</B><BR>
+- <B>キーボードアサインが記録されていないことの改善</B><BR>
+- <B>CPUのTFR/EXG命令が正常に動いていなかったことの修正</B><BR>
+- <B>CPUのflags[8|16]命令の正常化（本当か？)</B><BR>
 <BR>
 - 差分描画に対応。表示時のCPU負担が激減しました（たぶん)<BR>
 - BEEP音で音楽を鳴らすようなソフトの音楽が再現出来るようになった…かも？</BR>
@@ -85,12 +93,16 @@ etc...<BR>
 - <A HREF="http://tomatoma.s54.xrea.com/">XM7'</A> や <A HREF="http://motor.geocities.jp/a160_1930/FM-7/XM7LP/">XM7LP</A>の機能取り込み<B>
 - GUIの完全移植<BR>
 - <del>要らないソースコードの整理</del><BR>
+- マトモなデバッガの開発（多分一から作る羽目になる）<BR>
+- MINGWかSYGWINでWindowsビルドが出来るようにする<BR>
+- ARM対応<BR>
+- 何につけてももう少しの高速化<BR>
+- MPU/OS依存コードを組み込めるようにする（特に描画やFM音源レンダリングの高速化）<BR>
 - モジュール化の推進（部品の再利用や改良を促進する）とライブラリへの分離<BR>
 - 縮小表示レンダラの作成(OpenGLに任せる?！)<BR>
 - タイミングの不確定要素の排除<BR>
 - デバッガの作成<BR>
-- ARM対応（？？）<BR>
-- 品質向上<BR>
+- <B>品質向上！</B><BR>
 - *nix向けインストーラ作る（´・ω・｀）<BR>
 etc...<BR>
 <BR>
@@ -112,6 +124,11 @@ HREF="http://www.libagar.org/"target="_blank">AGAR</A>1.4.1以降とOpenGL,SDL,S
 <HR>
 <A NAME="older"></A>
 <H2>旧版:</H2>
+<BR>
+<H5>Version 0.2r369 Nov 17,2011</H5>
+<A
+HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-sdl-linux-amd64.0.2r369.7z">
+本体ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r369 少し？Unstableだがたぶんうごくはずだ)</A><BR>
 <BR>
 <H5>Version 0.1r346 Sep 06,2011</H5>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.2r346-libagar9027.7z">
