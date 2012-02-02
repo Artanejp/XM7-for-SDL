@@ -51,7 +51,6 @@ OBJS = $(patsubst %.c,%.o,$(CSRCS))
 OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
-CFLAGS_RELEASE += -O3
 
 .SUFFIXES: .o .c .cc .cpp 
 

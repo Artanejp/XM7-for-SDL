@@ -60,13 +60,13 @@
 /*
  * Embedの場合にはサイズと表示レイアウトを変更する必要がある？
  */
-#define LED_WIDTH 26
+#define LED_WIDTH 20
 #define LED_HEIGHT 14
 
 #define VFD_WIDTH 120
 #define VFD_HEIGHT 14
 
-#define CMT_WIDTH 44
+#define CMT_WIDTH 70
 #define CMT_HEIGHT 14
 
 #define STAT_WIDTH 260

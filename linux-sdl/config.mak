@@ -25,7 +25,7 @@ UI_FONT            = ipagp.ttf
 UI_PT              = 13
 
 STAT_FONT          = ipagp.ttf
-STAT_PT            = 24
+STAT_PT            = 18
 
 VFD_FONT           = ipagui.ttf
 CMT_FONT           = ipagui.ttf
@@ -34,8 +34,10 @@ FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/
 
 LDFLAGS = 
 
-CC = gcc
-CXX = g++
+#CC = gcc
+#CXX = g++
+CC = gcc-4.4
+CXX = g++-4.4
 AR = ar
 
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
@@ -62,7 +64,7 @@ CXXFLAGS_RELEASE =  -O3
 CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -pthread
 
-#CFLAGS_RELEASE =  -O3
+CFLAGS_RELEASE =  -O3
 CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 #CFLAGS_RELEASE += -pthread

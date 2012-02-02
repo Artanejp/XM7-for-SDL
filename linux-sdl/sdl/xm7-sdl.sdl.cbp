@@ -95,6 +95,7 @@
 		<Unit filename="api_kbd.h" />
 		<Unit filename="api_mouse.cpp" />
 		<Unit filename="api_mouse.h" />
+		<Unit filename="api_snd.h" />
 		<Unit filename="api_snd2.cpp" />
 		<Unit filename="api_vram.h" />
 		<Unit filename="api_vram256k.cpp" />
@@ -121,6 +122,7 @@
 		<Unit filename="sdl_prop.h" />
 		<Unit filename="sdl_sch.h" />
 		<Unit filename="sdl_snd.h" />
+		<Unit filename="snd_buffer.cpp" />
 		<Extensions>
 			<envvars />
 			<code_completion />

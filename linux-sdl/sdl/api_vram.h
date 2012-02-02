@@ -60,6 +60,7 @@ typedef union {
      v4si v;
      uint32_t i[4];
      uint16_t s[8];
+     uint8_t  b[16];
 } v4hi;
 
 
@@ -67,6 +68,7 @@ typedef union {
      v8si v;
      uint32_t i[8];
      uint16_t s[16];
+     uint8_t  b[32];
 } v8hi;
 
 extern void getvram_4096_vec(Uint32 addr, v4hi *cbuf);

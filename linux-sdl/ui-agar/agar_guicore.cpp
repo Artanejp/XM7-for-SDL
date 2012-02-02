@@ -44,10 +44,6 @@ Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
-extern void CreateStatus(AG_Widget *parent);
-extern void DestroyStatus(void);
-
-extern void DrawOSDEv(AG_Event *e);
 
 //static BOOL bKeyboardSnooped;
 
@@ -332,7 +328,7 @@ void MainLoop(int argc, char *argv[])
     run_flag = TRUE;
     // Debug
 #ifdef _XM7_FB_DEBUG
-    drivers = "sdlfb:width=1280:height=880:depth=32";
+drivers = "sdlfb:width=1280:height=880:depth=32";
 //    drivers = "glx";
 #endif
 	/*
@@ -373,33 +369,6 @@ void MainLoop(int argc, char *argv[])
 //	AG_Quit();
 }
 
-
-
-void Create_DebugMenu(void)
-{
-
-}
-
-void Create_ToolsMenu(void)
-{
-
-}
-
-void Create_HelpMenu(void)
-{
-
-}
-
-void Create_AboutMenu(void)
-{
-
-}
-
-
-void Destroy_AGMainBar(void)
-{
-
-}
 
 #ifdef __cplusplus
 extern "C" {
@@ -502,7 +471,7 @@ void InitInstance(void)
         // Non-GL
 //        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
-        XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, NULL);
+        XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
         AG_WidgetSetSize(DrawArea, 640, 400);
         bUseOpenGL = FALSE;
@@ -514,12 +483,13 @@ void InitInstance(void)
     {
 //        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
         pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+//        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), 0);
         CreateStatus(AGWIDGET(pStatusBar));
         AG_WidgetShow(pStatusBar);
     }
 
-	win = AG_GuiDebugger();
-    AG_WindowShow(win);
+//	win = AG_GuiDebugger();
+//    AG_WindowShow(win);
 
 }
 

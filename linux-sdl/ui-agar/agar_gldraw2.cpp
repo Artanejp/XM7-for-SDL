@@ -76,6 +76,7 @@ void DetachGL_AG2(void)
 
 // Grids
 static GLfloat *GridVertexs200l;
+static GLfloat *GridVertexs400l;
 static GLfloat MainTexcoods[4];
 
 // FBO API
@@ -93,13 +94,12 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
   GLfloat y;
   int base;
 
-    yinc = 400.0f / (float)h;
-    ybegin = yinc / (float)h;
-//    yofset = -1.0f + 41.0f / 440.0f;
-    yofset = -1.0f + 40.0f / 400.0f;
+    yinc = 2.0f / ((float)h - 1.0f);
+    ybegin = 1.0f;
+    yofset = -3.0f / 402.0f;
   if(vertex == NULL) return;
   y = ybegin + yofset;
-  for(i = 0; i < h; i++, y += ybegin){
+  for(i = 0; i < h; i++, y -= yinc){
       base = i * 6;
       vertex[base] = -1.0f; // x
       vertex[base + 1] = y; // y
@@ -116,8 +116,13 @@ static void InitGridVertexs(void)
 {
     GridVertexs200l = (GLfloat *)malloc(201 * 6 * sizeof(GLfloat));
     if(GridVertexs200l != NULL) {
-        InitGridVertexsSub(200, GridVertexs200l);
+        InitGridVertexsSub(201, GridVertexs200l);
     }
+    GridVertexs400l = (GLfloat *)malloc(401 * 6 * sizeof(GLfloat));
+    if(GridVertexs400l != NULL) {
+        InitGridVertexsSub(401, GridVertexs400l);
+    }
+
 }
 
 static void DetachGridVertexs(void)
@@ -125,6 +130,10 @@ static void DetachGridVertexs(void)
     if(GridVertexs200l != NULL) {
         free(GridVertexs200l);
         GridVertexs200l = NULL;
+    }
+    if(GridVertexs400l != NULL) {
+        free(GridVertexs400l);
+        GridVertexs400l = NULL;
     }
 }
 
@@ -304,31 +313,31 @@ void AGEventDrawGL2(AG_Event *event)
         case SCR_400LINE:
             w = 640;
             h = 400;
-            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
-            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f / 642.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f / 402.0f; // Ybegin
 
-            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 400.0f / 402.0f; // Yend
+            TexCoords[2][0] = TexCoords[1][0] = 642.0f / 642.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 402.0f / 402.0f; // Yend
             break;
         case SCR_200LINE:
             w = 640;
             h = 200;
-            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
-            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f / 642.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f / 402.0f; // Ybegin
 
-            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 402.0f; // Yend
+            TexCoords[2][0] = TexCoords[1][0] = 642.0f / 642.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 201.0f / 402.0f; // Yend
             break;
         case SCR_262144:
         case SCR_4096:
         default:
             w = 320;
             h = 200;
-            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
-            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+            TexCoords[0][0] = TexCoords[3][0] = 1.0f / 642.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 1.0f / 402.0f; // Ybegin
 
-            TexCoords[2][0] = TexCoords[1][0] = 0.5f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 402.0f; // Yend
+            TexCoords[2][0] = TexCoords[1][0] = 321.0f / 642.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 201.0f / 402.0f; // Yend
             break;
      }
     Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
@@ -339,7 +348,7 @@ void AGEventDrawGL2(AG_Event *event)
 
 
     if(uVramTextureID == 0) {
-        uVramTextureID = CreateNullTexture(640, 402); //  ドットゴーストを防ぐ
+        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         }
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
@@ -430,7 +439,9 @@ void AGEventDrawGL2(AG_Event *event)
     glDisable(GL_TEXTURE_2D);
 
     if(!bFullScan){
-    	width = 1.0f;
+        int sh = AGWIDGET(glv)->h;
+    	width = (float)sh / 800.0f * 1.5f;
+    	if(width < 0.70f) goto e1;
         glLineWidth(width);
         {
            GLfloat *vertex;
@@ -438,7 +449,6 @@ void AGEventDrawGL2(AG_Event *event)
 
         switch(bMode) {
         case SCR_400LINE:
-//            vertex = GridVertexs200l;
             goto e1;
             break;
         default:

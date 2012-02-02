@@ -108,5 +108,5 @@ install: all
 
 .PHONY: clean
 clean:
-	rm -f xm7.dbg xm7 *.o *~ Debug/*.o Release/*.o
+	rm -f xm7.debug xm7 *.o *~ Debug/*.o Release/*.o
 
