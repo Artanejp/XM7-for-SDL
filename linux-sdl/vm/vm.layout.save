@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="device.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="fdc.c" open="1" top="0" tabpos="2">
+		<Cursor position="8805" topLine="303" />
+	</File>
+	<File name="m6809.c" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="submem.c" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="xm7.h" open="1" top="0" tabpos="1">
+		<Cursor position="268" topLine="797" />
+	</File>
+</CodeBlocks_layout_file>
