@@ -26,12 +26,6 @@ Debug: ui-agar-debug vm-debug debugger-debug
 	make -C sdl xm7.debug
 
 
-libemugrph-release:
-	make -C libemugrph Release/libemugrph.a
-
-libemugrph-debug:
-	make -C libemugrph Debug/libemugrph.a
-
 ui-agar-release:
 	make -C ui-agar Release/libui-agar.a
 
@@ -64,7 +58,6 @@ install: all
 clean:
 	make -C vm clean
 	make -C ui-agar clean
-	make -C libemugrph clean
 	make -C xm7-debugger clean
 	make -C sdl clean
 	
