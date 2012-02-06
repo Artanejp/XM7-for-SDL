@@ -186,7 +186,20 @@ void SndDrvOpn::SetChannels(int c)
 void SndDrvOpn::SetRate(int rate)
 {
 	srate = rate;
+        SetRate(0, OPN_CLOCK * 100, rate, bFMHQmode);
+        SetRate(1, OPN_CLOCK * 100, rate, bFMHQmode);
+        SetRate(2, OPN_CLOCK * 100, rate, bFMHQmode);
 }
+
+
+
+void SndDrvOpn::SetRate(int ch, unsigned int clk, int rate, BOOL hq)
+{
+   if(pOPN != NULL) {
+	   pOPN[ch].SetRate(clk, rate, hq);
+   }
+}
+
 
 void SndDrvOpn::SetRenderVolume(int level)
 {

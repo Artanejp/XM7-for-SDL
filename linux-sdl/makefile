@@ -10,21 +10,27 @@ SVNVER = `svnversion`
 
 include config.mak
 
-.PHONY: clean Release Debug libemugrph-debug ui-agar-debug vm-debug libemugrph-release ui-release vm-release debugger-debug debugger-release
+.PHONY: clean Release Debug libfmgen008-debug ui-agar-debug vm-debug libfmgen008-release ui-release vm-release debugger-debug debugger-release
 all: Release Debug
 
 #Release: ui-agar-release libemugrph-release vm-release debugger-release
 #	make -C sdl xm7
 #
-#Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug
+#Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug libfmgen009-debug
 #	make -C sdl xm7.debug
 
-Release: ui-agar-release vm-release debugger-release
+Release: ui-agar-release vm-release debugger-release libfmgen008-release
 	make -C sdl xm7
 
-Debug: ui-agar-debug vm-debug debugger-debug
+Debug: ui-agar-debug vm-debug debugger-debug libfmgen008-debug
 	make -C sdl xm7.debug
 
+
+libfmgen008-release:
+	make -C fmgen Release/libfmgen008.a
+
+libfmgen008-debug:
+	make -C fmgen Debug/libfmgen008.a
 
 ui-agar-release:
 	make -C ui-agar Release/libui-agar.a
@@ -58,6 +64,7 @@ install: all
 clean:
 	make -C vm clean
 	make -C ui-agar clean
+	make -C fmgen clean
 	make -C xm7-debugger clean
 	make -C sdl clean
 	

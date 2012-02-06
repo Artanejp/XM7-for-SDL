@@ -12,12 +12,14 @@
     
 #include "device.h"
 #include "mainetc.h"
-#include "opn.h"
 #include "tapelp.h"
-#include "cisc.h"
-#include "opna.h"
-#include "psg.h"
+#include "../fmgen/cisc.h"
+#include "../fmgen/opna.h"
+#include "../fmgen/psg.h"
 #include "opn.h"
+
+
+
 #include "sdl.h"
 #include "sdl_sch.h"
 

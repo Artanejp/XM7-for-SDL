@@ -77,6 +77,7 @@ private:
 	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
+        void SetRate(int ch, unsigned int clk, int rate, BOOL hq);
 	UINT counter;
 	int nScale; /* プリスケーラ */
 	UINT uChanSep;

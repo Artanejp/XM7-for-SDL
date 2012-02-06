@@ -35,12 +35,13 @@ COMMONSRC = \
 	tapelp.c \
 	tools.c \
 	ttlpalet.c \
-	opna.cpp \
-	psg.cpp \
-	fmgen.cpp \
 	juliet.cpp \
 	vm_sub.c \
 	m6809.c
+
+#	opna.cpp \
+#	psg.cpp \
+#	fmgen.cpp \
 
 .SUFFIXES: .c .cpp .asm .o
 

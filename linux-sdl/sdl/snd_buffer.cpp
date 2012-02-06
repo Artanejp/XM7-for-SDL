@@ -25,12 +25,6 @@
 #include "xm7.h"
 #include "device.h"
 #include "mainetc.h"
-#include "opn.h"
-#include "tapelp.h"
-#include "cisc.h"
-#include "opna.h"
-#include "psg.h"
-#include "opn.h"
 #include "sdl.h"
 #include "sdl_sch.h"
 

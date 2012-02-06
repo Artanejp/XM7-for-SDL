@@ -26,10 +26,6 @@
 #include "mainetc.h"
 #include "opn.h"
 #include "tapelp.h"
-#include "cisc.h"
-#include "opna.h"
-#include "psg.h"
-#include "opn.h"
 #include "sdl.h"
 #include "sdl_sch.h"
 #include "api_snd.h"
@@ -192,6 +188,8 @@ void InitSnd(void)
 	pBeepBuf = InitBufferDesc();
 	pCMTBuf = InitBufferDesc();
 	pCaptureBuf = InitBufferDesc();
+
+
 }
 
 /*
@@ -335,21 +333,34 @@ BOOL SelectSnd(void)
 	 */
         if(DrvOPN == NULL) {
 	   DrvOPN = new SndDrvOpn ;
+	   if(DrvOPN) {
+		DrvOPN->SetRate(uRate);
+		DrvOPN->Setup(uTick);
+	   }
 	}
         if(DrvBeep == NULL) {
 	   DrvBeep = new SndDrvBeep ;
+	   if(DrvBeep) {
+		DrvBeep->SetRate(uRate);
+		DrvBeep->Setup(uTick);
+	   }
+	
 	}
         if(DrvWav == NULL) {
 	   DrvWav = new SndDrvWav[WAV_CHANNELS] ;
 	}
         if(DrvCMT == NULL) {
 	   DrvCMT= new SndDrvCMT ;
+	   if(DrvCMT) {
+		DrvCMT->SetRate(uRate);
+		DrvCMT->Setup(uTick);
+	   }
+	   
 	}
 
 
 	if(DrvOPN) {
 		DrvOPN->SetRate(uRate);
-		DrvOPN->Setup(uTick);
 		DrvOPN->Enable(TRUE);
 		DrvOPN->SetRenderVolume(OPN_STD, nFMVolume, nPSGVolume);
 		DrvOPN->SetRenderVolume(OPN_WHG, nFMVolume, nPSGVolume);
@@ -357,13 +368,11 @@ BOOL SelectSnd(void)
 	}
 	if(DrvBeep) {
 		DrvBeep->SetRate(uRate);
-		DrvBeep->Setup(uTick);
 		DrvBeep->Enable(FALSE);
 	        DrvBeep->SetRenderVolume(nBeepVolume);
 	}
 	if(DrvCMT) {
 		DrvCMT->SetRate(uRate);
-		DrvCMT->Setup(uTick);
 		DrvCMT->Enable(TRUE);
 	        DrvCMT->SetRenderVolume(nCMTVolume);
 	}
