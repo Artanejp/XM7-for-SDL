@@ -7,12 +7,12 @@
 #ifndef FM_GEN_H
 #define FM_GEN_H
 
-//#include "types.h"
+#include "types.h"
 
 // ---------------------------------------------------------------------------
 //	èoóÕÉTÉìÉvÉãÇÃå^
 //
-#define FM_SAMPLETYPE	int32				// int16 or int32
+#define FM_SAMPLETYPE	int32_t				// int16 or int32
 
 // ---------------------------------------------------------------------------
 //	íËêîÇªÇÃÇP
@@ -36,7 +36,7 @@ namespace FM
 {	
 	//	Types ----------------------------------------------------------------
 	typedef FM_SAMPLETYPE	Sample;
-	typedef int32 			ISample;
+	typedef int32_t		ISample;
 
 	enum OpType { typeN=0, typeM=1 };
 
@@ -181,8 +181,8 @@ namespace FM
 
 	//	friends --------------------------------------------------------------
 		friend class Channel4;
-		friend void __stdcall FM_NextPhase(Operator* op);
-
+//		friend void __stdcall FM_NextPhase(Operator* op);
+		friend void FM_NextPhase(Operator* op);
 	public:
 		int		dbgopout_;
 		int		dbgpgout_;

@@ -1,7 +1,8 @@
 //	$Id: file.cpp,v 1.6 1999/12/28 11:14:05 cisc Exp $
 
 #include "headers.h"
-#include "File.h"
+//#include "File.h"
+#include "file.h"
 
 // ---------------------------------------------------------------------------
 //	ç\íz/è¡ñ≈

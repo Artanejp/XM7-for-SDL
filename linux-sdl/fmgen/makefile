@@ -8,7 +8,6 @@ XM7_VER		= 3
 include ../config.mak
 
 COMMONSRC = \
-	file.cpp \
 	fmgen.cpp \
 	fmtimer.cpp \
 	opm.cpp \
