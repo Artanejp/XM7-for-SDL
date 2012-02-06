@@ -10,6 +10,8 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
+#include "types.h"
 
 #ifdef _MSC_VER
 	#undef max

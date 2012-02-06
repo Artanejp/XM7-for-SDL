@@ -3,6 +3,7 @@
 #if !defined(__fmgen_file_h)
 #define __fmgen_file_h
 
+#include <stdio.h>
 #include "types.h"
 
 // ---------------------------------------------------------------------------
@@ -51,7 +52,7 @@ public:
 	void SetLogicalOrigin(int32 origin) { lorigin = origin; }
 
 private:
-	HANDLE hfile;
+	file_t hfile;
 	uint flags;
 	uint32 lorigin;
 	Error error;

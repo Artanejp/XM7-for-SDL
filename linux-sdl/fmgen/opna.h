@@ -7,6 +7,7 @@
 #ifndef FM_OPNA_H
 #define FM_OPNA_H
 
+#include "types.h"
 #include "fmgen.h"
 #include "fmtimer.h"
 #include "psg.h"
