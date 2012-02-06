@@ -2,7 +2,7 @@
 #define __win32_types_h
 #include <types.h>
 #include <stdint.h>
-//  �Œ蒷�^�Ƃ�
+//  固定長型とか
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
