@@ -9,8 +9,6 @@ include ../config.mak
 
 COMMONSRC = \
 	fmgen.cpp \
-	fmtimer.cpp \
-	opm.cpp \
 	opna.cpp \
 	psg.cpp
 
