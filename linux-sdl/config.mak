@@ -65,15 +65,15 @@ CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -pthread
 
 CFLAGS_RELEASE =  -O3
-CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 #CFLAGS_RELEASE += -pthread
 
 # Architecture Depend Flag
-#CFLAGS_RELEASE += -march=amdfam10
+CFLAGS_RELEASE += -march=amdfam10
 CFLAGS_RELEASE += -minline-all-stringops
 
-#CXXFLAGS_RELEASE += -march=amdfam10
+CXXFLAGS_RELEASE += -march=amdfam10
 CXXFLAGS_RELEASE += -minline-all-stringops 
 
 

@@ -259,7 +259,7 @@ void SndDrvOpn::SetRenderVolume(int ch, int fm, int psg)
 	/* FM音源/PSGボリューム設定 */
 		if (pOPN != NULL) {
 			pOPN[ch].SetVolumeFM(fm );
-			pOPN[ch].psg.SetVolume(psg);
+			pOPN[ch].SetVolumePSG(psg);
 		}
 		SetLRVolume();
 }
@@ -334,12 +334,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 		return 0;
 	}
 	SDL_SemWait(RenderSem);
-//	if((start <= 0) && (clear!=TRUE)){
-//		memset(pBuf32, 0x00, (ms * srate * channels * sizeof(Sint32)) / 1000);
-//	}
-//	if(clear)  {
-	   memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
-//	}
+        memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
 
 	if(enable) {
 		if(bZero) {
@@ -358,7 +353,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 			if (thg_use) {
 				pOPN[OPN_THG].Mix((int32*)q, ss2);
 			}
-			if ((!thg_use) && (fm7_ver == 1) ) {
+			if ((!thg_use) && (fm7_ver == 1) ) { // PSG
 				pOPN[OPN_STD].psg.Mix((int32*)q, ss2);
 			}
 		} else {
@@ -366,7 +361,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 			if (!whg_use && !thg_use) {
 				/* WHG/THGを使用していない(強制モノラル) */
 				pOPN[OPN_STD].Mix2((int32*)q, ss2, 16, 16);
-				if (fm7_ver == 1) {
+				if (fm7_ver == 1) { // PSG
 					pOPN[OPN_STD].psg.Mix2((int32*)q, ss2, 16, 16);
 				}
 			}
@@ -382,7 +377,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 					pOPN[OPN_THG].Mix2((int32*)q, ss2,
 							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
 				}
-				else if (fm7_ver == 1){
+				else if (fm7_ver == 1){  // PSG
 					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
 				}
 			}

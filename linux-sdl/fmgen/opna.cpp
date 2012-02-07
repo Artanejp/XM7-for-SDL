@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 //	$Id: opna.cpp,v 1.58 2002/05/31 09:45:20 cisc Exp $
 
-#include "cisc.h"
+#include "misc.h"
 #include "opna.h"
 #include "fmgeninl.h"
 
@@ -422,6 +422,8 @@ void OPN::Mix(Sample* buffer, int nsamples)
 	}
 }
 
+
+   
 //	合成(2ch)
 void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 {
@@ -473,8 +475,6 @@ void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 				s = INTERPOLATE(mb, delta);
 				*buffer++ += ((s * vol_l) >> 4);
 				*buffer++ += ((s * vol_r) >> 4);
-
-
 			}
 			mixdelta = delta;
 		}
@@ -485,7 +485,7 @@ void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 				if (actch & 0x01) x = ch[0].Calc(); else x = 0;
 				if (actch & 0x04) y = ch[1].Calc(); else y = 0;
 				if (actch & 0x10) z = ch[2].Calc(); else z = 0;
-
+			   		
 				s = x + y + z;
 				rcnt = (rcnt + 1) & 0x1ff;
 				rbuf[0][rcnt] = x << (FM_ISHIFT + 3);
@@ -496,10 +496,12 @@ void OPN::Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r)
 				*buffer++ += ((s * vol_l) >> 4);
 				*buffer++ += ((s * vol_r) >> 4);
 			}
+		   
 		}
 	}
 }
 
+   
 #undef IStoSample
 
 #endif // BUILD_OPN

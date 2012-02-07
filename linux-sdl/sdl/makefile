@@ -65,14 +65,14 @@ LIBS += -lgomp
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a
 LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a
-LIBS_RELEASE += ../fmgen/Release/libfmgen008.a
+LIBS_RELEASE += ../fmgen/Release/libfmgen007a.a
 
 
 #LIBS_DEBUG = ../libemugrph/Debug/libemugrph.a
 LIBS_DEBUG += ../ui-agar/Debug/libui-agar.a
 LIBS_DEBUG += ../vm/Debug/libxm7_vm.a
 LIBS_DEBUG += ../xm7-debugger/Debug/libxm7_debug.a
-LIBS_DEBUG += ../fmgen/Debug/libfmgen008.a
+LIBS_DEBUG += ../fmgen/Debug/libfmgen007a.a
 
 
 all:	xm7 xm7.debug
