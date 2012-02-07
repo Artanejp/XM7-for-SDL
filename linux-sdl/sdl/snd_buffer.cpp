@@ -164,15 +164,6 @@ static void CopyChunkSub(Sint16 *buf, Sint16 *src, int count)
 
     if(s == NULL) return;
     if(b == NULL) return;
-#if 0
-   for(i = 0; i < count; i++) {
-        dw = (Sint32)s[i];
-        dw += (Sint32)b[i];
-        if(dw > 32767) dw = 32768;
-        if(dw < -32767) dw = 32767;
-        b[i] = (Sint16)dw;
-    }
-#else
    hb = (v4hi *)buf;
    hs = (v4hi *)src;
    
@@ -187,7 +178,6 @@ static void CopyChunkSub(Sint16 *buf, Sint16 *src, int count)
         dw += (Sint32)b[i];
         b[i] = (Sint16)dw;
     }
-#endif
    
 }
 
@@ -230,6 +220,94 @@ int CopyChunk(struct SndBufType *p, Sint16 *buf, int offset)
     }
     return i;
 }
+
+/*
+* レンダリングしたバッファをコピーする(WAVキャプチャ用)
+*/
+int MoveChunk(struct SndBufType *p, Sint16 *buf, int offset)
+{
+    int i = p->nChunkNo;
+    int j;
+    int count = 0;
+    int channels = 2;
+    int samples;
+
+    if(buf == NULL) return -1;
+    if(offset < 0) offset = 0;
+
+    if(p->nWritePTR > (p->nReadPTR + offset)) {
+        samples = p->nSize + p->nReadPTR + offset - p->nWritePTR;
+    } else{
+        samples = p->nReadPTR + offset - p->nWritePTR;
+    }
+    while(samples > 0) {
+        j = p->nSize - p->nReadPTR;
+        if(j > samples) {
+	        // 分割不要
+	    CopyChunkSub(&buf[count * channels + offset], &p->pBuf[(p->nReadPTR + count) * channels], samples * channels);
+	    count += samples;
+	    p->nReadPTR += samples;
+            samples = 0;
+        } else {
+	    CopyChunkSub(&buf[count * channels + offset], &p->pBuf[(p->nReadPTR + count)* channels], j * channels);
+	    p->nReadPTR += j;
+	    if(p->nReadPTR >= p->nSize) p->nReadPTR = 0;
+	    count += j;
+            samples -= j;
+        }
+        if(count >= p->nSize) {
+		   count = 0;
+	}
+        i++;
+        if(i >= p->nChunks) i = 0;
+    }
+    return i;
+}
+
+int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOOL bZero)
+{
+   int i;
+   int j;
+   int k;
+   int toWrite;
+   int toRead;
+   
+   if(dst == NULL) return -1;
+   if(src == NULL) return -1;
+   toRead = src->nWritePTR - src->nReadPTR;
+   if(toRead < 0) { // Wrap
+      toRead = src->nSize - src->nWritePTR + src->nReadPTR;
+   }
+   if(toRead <= 0) return 0;
+   toWrite = dst->nReadPTR - dst->nWritePTR;
+   if(toWrite < 0){
+      toWrite = dst->nSize - dst->nReadPTR + dst->nWritePTR;
+   }
+   if(toRead > toWrite) {
+      toRead = toWrite; // Shrink
+   }
+   i = toRead;
+   k = dst->nWritePTR;
+   do {
+       if(i <= 0) break;
+       if(i < (dst->nSize - k)) {
+	  j = i;
+       } else {
+	  j =  dst->nSize - k;
+       }
+       if(bZero) {
+	   memset(&(dst->pBuf[k]), 0x00, j);
+       }
+       MoveChunk(src, &(dst->pBuf[k]), 0);
+       if(inc) dst->nWritePTR += j;
+       if(dst->nWritePTR >= dst->nSize) dst->nWritePTR = 0;
+       k += j;
+       if(k > dst->nSize) k = 0;
+      i -= j;
+   } while(1);
+   return toRead;
+}
+
 
 /*
  * 

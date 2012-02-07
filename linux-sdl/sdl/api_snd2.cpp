@@ -87,7 +87,8 @@ static struct SndBufType *pOpnBuf;
 static struct SndBufType *pBeepBuf;
 static struct SndBufType *pCMTBuf;
 static struct SndBufType *pCaptureBuf;
-
+static struct  SndBufType *pSoundBuf;
+static SDL_AudioSpec *pAudioSpec;
 /*
  * OPN内部変数
  */
@@ -126,6 +127,7 @@ static const char     *WavName[] = {
 #endif  /* */
 };
 
+static void SDLAudioCallback(void *userdata, Uint8 *stream, int len);
 
 /*
  *  初期化
@@ -188,8 +190,8 @@ void InitSnd(void)
 	pBeepBuf = InitBufferDesc();
 	pCMTBuf = InitBufferDesc();
 	pCaptureBuf = InitBufferDesc();
-
-
+        pSoundBuf = InitBufferDesc();
+        pAudioSpec =(SDL_AudioSpec *) malloc(sizeof(SDL_AudioSpec));
 }
 
 /*
@@ -222,6 +224,9 @@ void CleanSnd(void)
 		SDL_DestroySemaphore(applySem);
 		applySem = NULL;
 	}
+ 	DetachBufferDesc(pSoundBuf);
+	pSoundBuf = NULL;
+
         bSndExit = FALSE;
 	DetachBufferDesc(pCaptureBuf);
 	pCaptureBuf = NULL;
@@ -231,7 +236,13 @@ void CleanSnd(void)
 	/*
 	 * ドライバの抹消(念の為)
 	 */
-	if(DrvOPN) {
+        if(pAudioSpec != NULL) {
+	   free(pAudioSpec);
+	   pAudioSpec = NULL;
+	}
+   
+	
+        if(DrvOPN) {
 		delete DrvOPN;
 		DrvOPN = NULL;
 	}
@@ -262,6 +273,7 @@ static void CloseSnd(void)
 {
 	if(bSndEnable) {
 		Mix_CloseAudio();
+//		SDL_CloseAudio();
 		/*
 		 * もしもWAV取り込んでいたら、強制終了
 		 */
@@ -274,6 +286,7 @@ static void CloseSnd(void)
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
 		DetachBuffer(pCaptureBuf);
+		DetachBuffer(pSoundBuf);
 		bSndEnable = FALSE;
 	}
 }
@@ -282,6 +295,10 @@ BOOL SelectSnd(void)
 {
 
 	int members;
+        int freq;
+        Uint16 format;
+        int channels;
+//        SDL_AudioSpec desired;
 
 	/*
 	 * パラメータを設定
@@ -312,13 +329,16 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
         dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
-    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+        Mix_QuerySpec(&freq, &format, &channels);
+    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSampleRate * nSoundBuffer) / 1000 ) < 0) {
+//    if (Mix_OpenAudio(uRate, AUDIO_S16SYS, 2, uBufSize / ((8 * freq) / uRate) ) < 0) {
        printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
 	Mix_AllocateChannels(CH_CHANNELS);
 	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
 	Mix_Volume(-1,iTotalVolume);
+	
 
         bSndEnable = TRUE;
 	uTick = nSoundBuffer;
@@ -328,6 +348,15 @@ BOOL SelectSnd(void)
 	SetupBuffer(pOpnBuf, members, TRUE, TRUE);
 
 	SetupBuffer(pCaptureBuf, members * 4, TRUE, FALSE);
+//	SetupBuffer(pSoundBuf, members * 4, TRUE, FALSE);
+//        if(pAudioSpec == NULL) pAudioSpec =(SDL_AudioSpec *) malloc(sizeof(SDL_AudioSpec));
+//        desired.format = AUDIO_S16SYS;
+//        desired.channels= 2;
+//        desired.freq = nSampleRate;
+//        desired.samples = members;
+//        desired.callback = SDLAudioCallback;
+//        desired.userdata = (void *)pSoundBuf;
+//        SDL_OpenAudio(&desired, pAudioSpec);
 	/*
 	 * レンダリングドライバの設定
 	 */
@@ -743,6 +772,42 @@ int SndCalcSamples(struct SndBufType *p, DWORD ttime)
 	return samples;
 }
 
+static void SDLAudioCallback(void *userdata, Uint8 *stream, int len)
+{
+   int i;
+   int j;
+   struct SndBufType *p;
+   if(userdata == NULL) return;
+   p = (struct SndBufType *)userdata;
+   
+   if(len <= 0) return;
+   i = p->nReadPTR - p->nWritePTR;
+   if(i < 0) i = p->nSize - i;
+   if(i > len) i = len;
+   if(applySem == NULL) {
+      p->nReadPTR += i;
+      if(p->nReadPTR > p->nSize) p->nReadPTR = 0;
+      return;
+   }
+   
+   SDL_SemWait(applySem);
+   while(i > 0)
+     {
+	if((p->nReadPTR + i) >p->nSize) {
+	   j = p->nSize - p->nReadPTR;
+	} else {
+	   j = i;
+	}
+	SDL_MixAudio(stream, (Uint8 *)&(p->pBuf[p->nReadPTR]), j, iTotalVolume);
+	p->nReadPTR += j;
+	if(p->nReadPTR > p->nSize) p->nReadPTR = 0;
+	i -= j;
+     }
+   SDL_SemPost(applySem);
+      
+   
+}
+
 /*
  * ChunkをSetする
  */
@@ -816,6 +881,21 @@ static BOOL SndWavWrite(struct WavDesc *h, int chunksize, int channels)
    return FALSE;
 }
 
+
+/*
+ * WAV書き込み
+ */
+static void SndWrite(void)
+{
+//	SDL_LockAudio();
+        MoveChunkChunk(pSoundBuf, pOpnBuf, FALSE, TRUE);
+        MoveChunkChunk(pSoundBuf, pBeepBuf, FALSE, FALSE);
+        MoveChunkChunk(pSoundBuf, pCMTBuf, TRUE, FALSE);
+//	SDL_UnlockAudio();   
+        SDL_PauseAudio(0);
+//        SetChunk(pSoundBuf, CH_SND_OPN);
+}
+
 /*
  * 1msごとにスケジューラから呼び出されるhook
  */
@@ -830,7 +910,6 @@ void ProcessSnd(BOOL bZero)
 	dwSndCount++;
 	if(dwSndCount >= (uTick / CHUNKS)) {
 		bWrite = TRUE;
-//		dwSndCount = 0;
 	}
 
 	if (!bWrite) {
@@ -867,7 +946,6 @@ void ProcessSnd(BOOL bZero)
     }
 
     if(bWrite) {
-//    	chunksize = ((dwSndCount * uRate) / 1000) / CHUNKS;
 
 		// フラッシュする
         if(applySem) {
@@ -895,6 +973,7 @@ void ProcessSnd(BOOL bZero)
         SetChunk(pOpnBuf ,  CH_SND_OPN);
         SetChunk(pBeepBuf , CH_SND_BEEP);
         SetChunk(pCMTBuf , CH_SND_CMT);
+//	SndWrite();
         if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
         if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
         if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();
