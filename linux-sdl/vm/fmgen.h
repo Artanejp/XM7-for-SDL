@@ -7,7 +7,7 @@
 #ifndef FM_GEN_H
 #define FM_GEN_H
 
-#include "cisc.h"
+#include "misc.h"
 
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
@@ -34,13 +34,13 @@
 // ---------------------------------------------------------------------------
 
 namespace FM
-{	
+{
 	//	Types ----------------------------------------------------------------
 	typedef FM_SAMPLETYPE	Sample;
 	typedef int32 			ISample;
 
 	enum OpType { typeN=0, typeM=1 };
-	
+
 	void StoreSample(ISample& dest, int data);
 
 	class Chip;
@@ -53,7 +53,7 @@ namespace FM
 		void	SetChip(Chip* chip) { chip_ = chip; }
 
 		static void FASTCALL	MakeTimeTable(uint ratio);
-		
+
 		ISample	Calc(ISample in);
 		ISample	CalcL(ISample in);
 		ISample CalcFB(uint fb);
@@ -83,17 +83,17 @@ namespace FM
 		void	SetAMON(bool on);
 		void	SetMS(uint ms);
 		void	Mute(bool);
-		
+
 		static void SetAML(uint l);
 		static void SetPML(uint l);
 
 		int		Out() { return out_; }
 
-		int		dbgGetIn2() { return in2_; } 
-		
+		int		dbgGetIn2() { return in2_; }
+
 	private:
 		typedef uint32 Counter;
-		
+
 		Chip*	chip_;
 		ISample	out_, out2_;
 		ISample in2_;
@@ -112,7 +112,7 @@ namespace FM
 
 	//	Envelop Generator ---------------------------------------------------
 		enum	EGPhase { next, attack, decay, sustain, release, off, hold };
-		
+
 		void	FASTCALL EGCalc();
 		void	EGStep();
 		void	FASTCALL ShiftPhase(EGPhase nextphase);
@@ -122,7 +122,7 @@ namespace FM
 		int		FBCalc(int fb);
 		ISample LogToLin(uint a);
 
-		
+
 		OpType	type_;		// OP の種類 (M, N...)
 		uint	bn_;		// Block/Note
 		int		eg_level_;	// EG の出力値
@@ -144,7 +144,7 @@ namespace FM
 		EGPhase	eg_phase_;
 		uint*	ams_;
 		uint	ms_;
-		
+
 		uint	tl_;			// Total Level	 (0-127)
 		uint	tl_latch_;		// Total Level Latch (for CSM mode)
 		uint	ar_;			// Attack Rate   (0-63)
@@ -159,7 +159,7 @@ namespace FM
 		bool	amon_;			// enable Amplitude Modulation
 		bool	param_changed_;	// パラメータが更新された
 		bool	mute_;			// オペレータ別のミュート状態
-		
+
 	//	Tables ---------------------------------------------------------------
 		static Counter rate_table[16];
 		static uint32 multable[4][16];
@@ -187,7 +187,7 @@ namespace FM
 		int		dbgopout_;
 		int		dbgpgout_;
 	};
-	
+
 	//	4-op Channel ---------------------------------------------------------
 	class Channel4
 	{
@@ -195,7 +195,7 @@ namespace FM
 		Channel4();
 		void SetChip(Chip* chip);
 		void FASTCALL SetType(OpType type);
-		
+
 		ISample FASTCALL Calc();
 		ISample FASTCALL CalcL();
 		ISample FASTCALL CalcN(uint noise);
@@ -210,7 +210,7 @@ namespace FM
 		void SetMS(uint ms);
 		void Mute(bool);
 		void Refresh();
-		
+
 	private:
 		static const uint8 fbtable[8];
 		uint	fb;

@@ -89,7 +89,7 @@ static struct SndBufType *pBeepBuf;
 static struct SndBufType *pCMTBuf;
 static struct SndBufType *pCaptureBuf;
 static struct  SndBufType *pSoundBuf;
-static SDL_AudioSpec *pAudioSpec;
+
 /*
  * OPN内部変数
  */
@@ -193,8 +193,8 @@ void InitSnd(void)
 	pBeepBuf = InitBufferDesc();
 	pCMTBuf = InitBufferDesc();
 	pCaptureBuf = InitBufferDesc();
-    pSoundBuf = InitBufferDesc();
-    pAudioSpec =(SDL_AudioSpec *) malloc(sizeof(SDL_AudioSpec));
+
+
 }
 
 /*
@@ -230,8 +230,6 @@ void CleanSnd(void)
 		SDL_DestroySemaphore(applySem);
 		applySem = NULL;
 	}
- 	DetachBufferDesc(pSoundBuf);
-	pSoundBuf = NULL;
 
     bSndExit = TRUE;
 	DetachBufferDesc(pCaptureBuf);
@@ -241,10 +239,6 @@ void CleanSnd(void)
 	/*
 	 * ドライバの抹消(念の為)
 	 */
-    if(pAudioSpec != NULL) {
-        free(pAudioSpec);
-        pAudioSpec = NULL;
-	}
 
 
     if(DrvOPN) {
@@ -291,7 +285,6 @@ static void CloseSnd(void)
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
 		DetachBuffer(pCaptureBuf);
-		DetachBuffer(pSoundBuf);
 		bSndEnable = FALSE;
 	}
 }
@@ -303,7 +296,6 @@ BOOL SelectSnd(void)
     int freq;
     Uint16 format;
     int channels;
-    SDL_AudioSpec desired;
 
 	/*
 	 * パラメータを設定
@@ -353,8 +345,8 @@ BOOL SelectSnd(void)
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
 	SetupBuffer(pOpnBuf, members, TRUE, TRUE);
 	SetupBuffer(pCaptureBuf, members *2, TRUE, FALSE);
-//        nSndBank = 0;
-	SetupBuffer(pSoundBuf, members * 2, TRUE, FALSE);
+//        nSndBank = 
+
 	/*
 	 * レンダリングドライバの設定
 	 */
@@ -555,7 +547,7 @@ void StopSnd(void)
  */
 static DWORD RenderOpnSub(DWORD ttime, int samples, BOOL bZero)
 {
-   return RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
+   return RenderSub(pOpnBuf, DrvOPN, ttime, samples / 2, bZero);
 }
 
 
@@ -894,7 +886,7 @@ void ProcessSnd(BOOL bZero)
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
             SDL_SemWait(applySem);
             chunksize = (dwSndCount * uRate) / 1000;
-            FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
+	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
             FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize * channels);
             FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize * channels);
 		/*

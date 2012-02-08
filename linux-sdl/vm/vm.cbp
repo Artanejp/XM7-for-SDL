@@ -52,6 +52,7 @@
 			<Add directory="../libemugrph/" />
 			<Add directory="../ui-agar/" />
 			<Add directory="/usr/local/include/agar" />
+			<Add directory="../fmgen" />
 		</Compiler>
 		<Unit filename="aluline.c">
 			<Option compilerVar="CC" />
@@ -79,9 +80,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="fdc.h" />
-		<Unit filename="fmgen.cpp" />
-		<Unit filename="fmgen.h" />
-		<Unit filename="fmgeninl.h" />
 		<Unit filename="jcard.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -140,10 +138,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="opn.h" />
-		<Unit filename="opna.cpp" />
-		<Unit filename="opna.h" />
-		<Unit filename="psg.cpp" />
-		<Unit filename="psg.h" />
 		<Unit filename="romeo.h" />
 		<Unit filename="rtc.c">
 			<Option compilerVar="CC" />

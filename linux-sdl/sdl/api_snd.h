@@ -234,6 +234,7 @@ extern int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL i
 
 extern int SndCalcSamples(struct SndBufType *p, DWORD ttime);
 extern DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, BOOL bZero);
+extern DWORD RenderSub2(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, BOOL bZero);
 extern BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
 extern BOOL FlushBeepSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
 extern BOOL FlushCMTSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);

@@ -380,19 +380,6 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 			return ss2;
 		}
 
-		if (channels == 1) {
-			/* モノラル */
-			pOPN[OPN_STD].Mix((int32*)q, ss2);
-			if (whg_use){
-				pOPN[OPN_WHG].Mix((int32*)q, ss2);
-			}
-			if (thg_use) {
-				pOPN[OPN_THG].Mix((int32*)q, ss2);
-			}
-			if ((!thg_use) && (fm7_ver == 1) ) { // PSG
-				pOPN[OPN_STD].psg.Mix((int32*)q, ss2);
-			}
-		} else {
 			/* ステレオ */
 			if (!whg_use && !thg_use) {
 				/* WHG/THGを使用していない(強制モノラル) */
@@ -417,7 +404,6 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
 				}
 			}
-		}
 //      	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
 		/*
 		 * ここにレンダリング関数ハンドリング
@@ -444,7 +430,7 @@ int SndDrvOpn::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZe
 	}
 
 	free(pBuf32);
-	return r;
+	return r * 2;
 }
 
 int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
@@ -453,8 +439,8 @@ int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOO
 	if(pBuf32 == NULL) return 0;
 	if(pBuf == NULL) return 0;
 	r = Render32(pBuf32, start, sSamples, clear, bZero);
-	if(r > 0) Copy32(pBuf32, pBuf, start, sSamples);
-	return r;
+	if(r > 0) Copy32(pBuf32, pBuf, start, r);
+	return r * 2;
 }
 
 void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)

@@ -353,6 +353,42 @@ DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, B
 
 }
 
+// For OPN
+DWORD RenderSub2(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, BOOL bZero)
+{
+   int j;
+   if(p == NULL) return 0;
+   if(drv == NULL) return 0;
+   if(samples <= 0) return 0;
+
+	j = (samples / 2) *2;
+
+	if((j * 2 + p->nWritePTR) >= p->nSize){
+		// バッファオーバフローの時は分割する
+		int k;
+
+		k = p->nSize - p->nWritePTR;
+		if(k > 0) {
+			drv->Render(p->pBuf32, p->pBuf, p->nWritePTR , k / 2,  FALSE, bZero);
+			j = j - k;
+		}
+		p->nWritePTR = 0;
+		if(j > 0) {
+			drv->Render(p->pBuf32, p->pBuf, 0, j / 2, FALSE, bZero);
+			p->nWritePTR = j;
+		}
+	} else {
+		if(j > 0) {
+			drv->Render(p->pBuf32, p->pBuf, p->nWritePTR, j / 2,  FALSE, bZero);
+			p->nWritePTR = p->nWritePTR + j;
+			if(p->nWritePTR >= p->nSize) p->nWritePTR = 0;
+		}
+	}
+	p->nLastTime = ttime;
+	return j;
+
+}
+
 
 BOOL FlushCMTSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk)
 {
