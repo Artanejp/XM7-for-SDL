@@ -223,7 +223,7 @@ void SndDrvCMT::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 
 int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL bZero)
 {
-	int		dat;
+	sint32		dat;
 	int      i;
 	int    tmp;
 	int 	sSamples = uSamples;
@@ -266,7 +266,7 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	 * 出力状態が変化した場合、波形補間を開始する
 	 */
 	if (bTapeFlag != bTapeFlag2) {
-		if (!uTapeDelta) {
+		if (uTapeDelta == 0) {
 			uTapeDelta = 1;
 		} else {
 			uTapeDelta = (BYTE) (tmp - uTapeDelta + 1);
@@ -280,7 +280,7 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	if(bZero) {
 		memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16));
 		SDL_SemPost(RenderSem);
-        RenderCounter += ss2;
+	   RenderCounter += ss2;
 		return ss2;
 	}
 	/*
@@ -288,11 +288,11 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	 */
 	for (i = 0; i < ss2; i++) {
 
-		if (uTapeDelta) {
+		if (uTapeDelta > 0) {
 			/*
 			 * 波形補間あり
 			 */
-			dat = (0x1000 / tmp) * uTapeDelta;
+			dat = (level / tmp) * uTapeDelta;
 			if (bTapeFlag) {
 				dat = dat - level;
 			} else {

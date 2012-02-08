@@ -22,6 +22,7 @@
 					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
 					<Add library="../vm/obj/Debug/libxm7_vm.a" />
 					<Add library="../xm7-debugger/libxm7-debugger.a" />
+					<Add library="../fmgen/obj/Debug/libfmgen007a.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -37,6 +38,8 @@
 					<Add option="-s" />
 					<Add library="../ui-agar/obj/Release/libui-agar.a" />
 					<Add library="../vm/obj/Release/libxm7_vm.a" />
+					<Add library="../xm7-debugger/obj/Release/libxm7-debugger.a" />
+					<Add library="../fmgen/obj/Release/libfmgen007.a" />
 				</Linker>
 			</Target>
 		</Build>
@@ -57,6 +60,7 @@
 			<Add directory="../vm/" />
 			<Add directory="../libemugrph" />
 			<Add directory="../ui-agar" />
+			<Add directory="../fmgen" />
 		</Compiler>
 		<Linker>
 			<Add option="`sdl-config --libs`" />

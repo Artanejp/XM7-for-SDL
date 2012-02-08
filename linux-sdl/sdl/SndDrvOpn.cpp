@@ -7,6 +7,15 @@
 
 #include "SndDrvOpn.h"
 #include "api_snd.h"
+typedef union {
+    int16_t __attribute__ ((vector_size(16))) v;
+    uint8_t  b[16];
+    int8_t bs[16];
+    int16_t ws[8];
+    uint16_t s[8];
+    int32_t dws[4];
+    uint32_t dw[4];
+} v8si;
 
 static int              l_vol[3][4] = {
 		{	16,	23,	 9,	16	},
@@ -19,48 +28,78 @@ static int r_vol[3][4] = {
 		{	16,	16,	16,	 9	},
 };
 
+static inline Sint16 _clamp(Sint32 b)
+{
+    if(b < -0x8000) return -0x8000;
+    if(b > 0x7fff) return 0x7fff;
+    return (Sint16) b;
+}
+
+
 void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 {
-        int         i, j;
-        Sint32       *p = (Sint32 *) from;
-        Sint16       *t = (Sint16 *) to;
-        Sint32       tmp1;
+    int         i, j;
+    Sint32       *p = (Sint32 *) from;
+    Sint16       *t = (Sint16 *) to;
+    register Sint32       tmp1;
+//    v8si  *h, *l, tmp2, tmp3;
 
-        if (p == NULL) {
-                return;
-        }
-        if (t == NULL) {
-                return;
-        }
-        i = (size / 8) * 8;
-        for (j = 0; j < i; j += 8) {
-                tmp1 = *p++;
-                *t++ = (Sint16) tmp1 ;
-	   
-                tmp1 = *p++;
-	        *t++ = (Sint16) tmp1 ;
- 
-	        tmp1 = *p++;
-                *t++ = (Sint16) tmp1 ;
+    if (p == NULL) {
+        return;
+    }
+    if (t == NULL) {
+        return;
+    }
+//    h = (v8si *)p;
+//    l = (v8si *)t;
+    i = (size / 8) * 8;
+    for (j = 0; j < i; j += 8) {
+#if 1
+        tmp1 = p[0];
+        t[0] = _clamp(tmp1);
 
-                tmp1 = *p++;
-                *t++ = (Sint16) tmp1 ;
+        tmp1 = p[1];
+        t[1] = _clamp(tmp1);
 
-	        tmp1 = *p++;
-	        *t++ = (Sint16) tmp1 ;
-	   
-                tmp1 = *p++;
-                *t++ = (Sint16) tmp1 ;
+        tmp1 = p[2];
+        t[2] = _clamp(tmp1);
 
-	        tmp1 = *p++;
-                *t++ = (Sint16) tmp1 ;
+        tmp1 = p[3];
+        t[3] = _clamp(tmp1);
 
-	        tmp1 = *p++;
-                *t++ = (Sint16) tmp1 ;
+        tmp1 = p[4];
+        t[4] = _clamp(tmp1);
+
+        tmp1 = p[5];
+        t[5] = _clamp(tmp1);
+
+        tmp1 = p[6];
+        t[6] = _clamp(tmp1);
+
+        tmp1 = p[7];
+        t[7] = _clamp(tmp1);
+        p += 8;
+        t += 8;
+#else
+        tmp2 = *h;
+        tmp3.s[0] =_clamp(tmp2.dws[0]);
+        tmp3.s[1] =_clamp(tmp2.dws[1]);
+        tmp3.s[2] =_clamp(tmp2.dws[2]);
+        tmp3.s[3] =_clamp(tmp2.dws[3]);
+        h++;
+        tmp2 = *h;
+        tmp2.s[4] =_clamp(tmp2.dws[0]);
+        tmp2.s[5] =_clamp(tmp2.dws[1]);
+        tmp2.s[6] =_clamp(tmp2.dws[2]);
+        tmp2.s[7] =_clamp(tmp2.dws[3]);
+        h++;
+        *l = tmp3;
+        l++;
+#endif
         }
         for (j = i; j < size; j++) {
-                tmp1 = *p++;
-	        *t++ = (Sint16) tmp1 ;
+            tmp1 = *p++;
+	        *t++ = _clamp(tmp1);
         }
 }
 
@@ -186,9 +225,9 @@ void SndDrvOpn::SetChannels(int c)
 void SndDrvOpn::SetRate(int rate)
 {
 	srate = rate;
-        SetRate(0, OPN_CLOCK * 100, rate, bFMHQmode);
-        SetRate(1, OPN_CLOCK * 100, rate, bFMHQmode);
-        SetRate(2, OPN_CLOCK * 100, rate, bFMHQmode);
+    SetRate(0, OPN_CLOCK * 100, rate, bFMHQmode);
+    SetRate(1, OPN_CLOCK * 100, rate, bFMHQmode);
+    SetRate(2, OPN_CLOCK * 100, rate, bFMHQmode);
 }
 
 
@@ -234,8 +273,6 @@ void SndDrvOpn::ResetCounter(BOOL flag)
 {
 
 }
-
-
 /*
  * ボリューム設定: XM7/Win32 v3.4L30より
  */
@@ -296,15 +333,14 @@ void SndDrvOpn::Setup(int tick)
 	enable = FALSE;
 	counter = 0;
 
-
     if(tick > 0) {
 	   ms = (UINT)tick;
-	  } else {
+	} else {
 	   ms = nSoundBuffer;
-	  }
-	uChanSep = uChSeparation;
-   InitOpn();
-   return;
+	}
+    uChanSep = uChSeparation;
+    InitOpn();
+    return;
 }
 
 void SndDrvOpn::Setup(int tick, int opno)
@@ -427,12 +463,11 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 	WORD *q;
 
 	if((samples <= 0) || (ofset < 0))return;
-        if(RenderSem == NULL) return;
-        SDL_SemWait(RenderSem);
+    if(RenderSem == NULL) return;
+    SDL_SemWait(RenderSem);
 
 	p = (DWORD *)src;
 	p = &(p[ofset * channels]);
-
 	q = (WORD *)dst;
 	q = &(q[ofset * channels]);
 //	if(ofset <= 0){
@@ -441,7 +476,7 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 
 	memset(q, 0x00 , samples * channels * sizeof(Sint16));
 	CopySoundBufferGeneric(p, q, (int)(samples * channels));
-        SDL_SemPost(RenderSem);
+    SDL_SemPost(RenderSem);
 }
 
 int SndDrvOpn::GetRenderCounter(void)

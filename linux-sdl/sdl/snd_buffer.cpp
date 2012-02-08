@@ -166,7 +166,7 @@ static void CopyChunkSub(Sint16 *buf, Sint16 *src, int count)
     if(b == NULL) return;
    hb = (v4hi *)buf;
    hs = (v4hi *)src;
-   
+
    ic = (count / 8) << 3;
    for(i = 0; i < ic ; i+=8){
       hb->v = hb->v + hs->v;
@@ -178,7 +178,7 @@ static void CopyChunkSub(Sint16 *buf, Sint16 *src, int count)
         dw += (Sint32)b[i];
         b[i] = (Sint16)dw;
     }
-   
+
 }
 
 /*
@@ -271,7 +271,7 @@ int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOO
    int k;
    int toWrite;
    int toRead;
-   
+
    if(dst == NULL) return -1;
    if(src == NULL) return -1;
    toRead = src->nWritePTR - src->nReadPTR;
@@ -279,13 +279,13 @@ int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOO
       toRead = src->nSize - src->nWritePTR + src->nReadPTR;
    }
    if(toRead <= 0) return 0;
-   toWrite = dst->nReadPTR - dst->nWritePTR;
-   if(toWrite < 0){
-      toWrite = dst->nSize - dst->nReadPTR + dst->nWritePTR;
-   }
-   if(toRead > toWrite) {
-      toRead = toWrite; // Shrink
-   }
+//   toWrite = dst->nReadPTR - dst->nWritePTR;
+//   if(toWrite <= 0){
+//      toWrite = dst->nSize - dst->nReadPTR + dst->nWritePTR;
+//   }
+//   if(toRead > toWrite) {
+//      toRead = toWrite; // Shrink
+//   }
    i = toRead;
    k = dst->nWritePTR;
    do {
@@ -302,7 +302,7 @@ int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOO
        if(inc) dst->nWritePTR += j;
        if(dst->nWritePTR >= dst->nSize) dst->nWritePTR = 0;
        k += j;
-       if(k > dst->nSize) k = 0;
+       if(k >= dst->nSize) k = 0;
       i -= j;
    } while(1);
    return toRead;
@@ -310,7 +310,7 @@ int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOO
 
 
 /*
- * 
+ *
  */
 
 /*
@@ -361,7 +361,7 @@ BOOL FlushCMTSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, 
         if(p == NULL) return FALSE;
         if(drv == NULL) return FALSE;
 	if(maxchunk <= 0) return FALSE;
-	chunksize = maxchunk - (p->nWritePTR % maxchunk);
+	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
 	/*
 	 * オーバーフロー対策込
@@ -384,7 +384,7 @@ BOOL FlushBeepSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero,
         if(drv == NULL) return FALSE;
 	if(maxchunk <= 0) return FALSE;
 
-	chunksize = maxchunk - (p->nWritePTR % maxchunk);
+	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
 	/*
 	 * オーバーフロー対策込
@@ -402,7 +402,7 @@ BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, 
         if(p == NULL) return FALSE;
         if(drv == NULL) return FALSE;
 	if(maxchunk <= 0) return FALSE;
-	chunksize = maxchunk - (p->nWritePTR % maxchunk);
+	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
 
       if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
