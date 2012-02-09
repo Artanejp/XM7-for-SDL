@@ -30,7 +30,7 @@ static int r_vol[3][4] = {
 
 static inline Sint16 _clamp(Sint32 b)
 {
-    if(b < -0x8000) return -0x8000;
+   if(b < -0x8000) return -0x8000;
     if(b > 0x7fff) return 0x7fff;
     return (Sint16) b;
 }
