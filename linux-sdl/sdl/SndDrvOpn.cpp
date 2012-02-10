@@ -30,7 +30,7 @@ static int r_vol[3][4] = {
 
 static inline Sint16 _clamp(Sint32 b)
 {
-   if(b < -0x8000) return -0x8000;
+    if(b < -0x7fff) return -0x7fff;
     if(b > 0x7fff) return 0x7fff;
     return (Sint16) b;
 }
@@ -42,7 +42,7 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     Sint32       *p = (Sint32 *) from;
     Sint16       *t = (Sint16 *) to;
     register Sint32       tmp1;
-//    v8si  *h, *l, tmp2, tmp3;
+    v8si  *h, *l, tmp2, tmp3;
 
     if (p == NULL) {
         return;
@@ -50,37 +50,10 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     if (t == NULL) {
         return;
     }
-//    h = (v8si *)p;
-//    l = (v8si *)t;
+    h = (v8si *)p;
+    l = (v8si *)t;
     i = (size / 8) * 8;
     for (j = 0; j < i; j += 8) {
-#if 1
-        tmp1 = p[0];
-        t[0] = _clamp(tmp1);
-
-        tmp1 = p[1];
-        t[1] = _clamp(tmp1);
-
-        tmp1 = p[2];
-        t[2] = _clamp(tmp1);
-
-        tmp1 = p[3];
-        t[3] = _clamp(tmp1);
-
-        tmp1 = p[4];
-        t[4] = _clamp(tmp1);
-
-        tmp1 = p[5];
-        t[5] = _clamp(tmp1);
-
-        tmp1 = p[6];
-        t[6] = _clamp(tmp1);
-
-        tmp1 = p[7];
-        t[7] = _clamp(tmp1);
-        p += 8;
-        t += 8;
-#else
         tmp2 = *h;
         tmp3.s[0] =_clamp(tmp2.dws[0]);
         tmp3.s[1] =_clamp(tmp2.dws[1]);
@@ -88,18 +61,19 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         tmp3.s[3] =_clamp(tmp2.dws[3]);
         h++;
         tmp2 = *h;
-        tmp2.s[4] =_clamp(tmp2.dws[0]);
-        tmp2.s[5] =_clamp(tmp2.dws[1]);
-        tmp2.s[6] =_clamp(tmp2.dws[2]);
-        tmp2.s[7] =_clamp(tmp2.dws[3]);
+        tmp3.s[4] =_clamp(tmp2.dws[0]);
+        tmp3.s[5] =_clamp(tmp2.dws[1]);
+        tmp3.s[6] =_clamp(tmp2.dws[2]);
+        tmp3.s[7] =_clamp(tmp2.dws[3]);
         h++;
         *l = tmp3;
         l++;
-#endif
         }
+        p = (Sint32 *)h;
+        t = (Sint16 *)t;
         for (j = i; j < size; j++) {
             tmp1 = *p++;
-	        *t++ = _clamp(tmp1);
+	    *t++ = _clamp(tmp1);
         }
 }
 
@@ -414,6 +388,9 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 	return ss2;
 }
 
+
+
+
 int SndDrvOpn::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
 {
 	int r;
@@ -430,7 +407,7 @@ int SndDrvOpn::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZe
 	}
 
 	free(pBuf32);
-	return r * 2;
+	return r;
 }
 
 int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
@@ -438,9 +415,10 @@ int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOO
 	int r;
 	if(pBuf32 == NULL) return 0;
 	if(pBuf == NULL) return 0;
-	r = Render32(pBuf32, start, sSamples, clear, bZero);
+
+        r = Render32(pBuf32, start, sSamples, clear, bZero);
 	if(r > 0) Copy32(pBuf32, pBuf, start, r);
-	return r * 2;
+	return r;
 }
 
 void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)

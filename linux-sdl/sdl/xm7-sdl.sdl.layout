@@ -22,14 +22,14 @@
 	<File name="SDLKbdInterface.h" open="0" top="0" tabpos="7">
 		<Cursor position="596" topLine="23" />
 	</File>
-	<File name="SndDrvBeep.cpp" open="0" top="0" tabpos="3">
-		<Cursor position="5198" topLine="313" />
+	<File name="SndDrvBeep.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="4444" topLine="271" />
 	</File>
-	<File name="SndDrvBeep.h" open="0" top="0" tabpos="26">
-		<Cursor position="1296" topLine="39" />
+	<File name="SndDrvBeep.h" open="1" top="0" tabpos="7">
+		<Cursor position="471" topLine="18" />
 	</File>
 	<File name="SndDrvCMT.cpp" open="0" top="0" tabpos="24">
-		<Cursor position="5400" topLine="334" />
+		<Cursor position="854" topLine="44" />
 	</File>
 	<File name="SndDrvCMT.h" open="0" top="0" tabpos="22">
 		<Cursor position="1438" topLine="49" />
@@ -37,8 +37,8 @@
 	<File name="SndDrvIF.h" open="0" top="0" tabpos="23">
 		<Cursor position="1949" topLine="45" />
 	</File>
-	<File name="SndDrvOpn.cpp" open="0" top="0" tabpos="8">
-		<Cursor position="7528" topLine="400" />
+	<File name="SndDrvOpn.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="7829" topLine="403" />
 	</File>
 	<File name="SndDrvOpn.h" open="0" top="0" tabpos="21">
 		<Cursor position="1517" topLine="59" />
@@ -73,10 +73,13 @@
 	<File name="api_mouse.cpp" open="0" top="0" tabpos="15">
 		<Cursor position="2832" topLine="131" />
 	</File>
-	<File name="api_snd2.cpp" open="0" top="0" tabpos="7">
-		<Cursor position="4563" topLine="182" />
+	<File name="api_snd.h" open="1" top="0" tabpos="4">
+		<Cursor position="3459" topLine="176" />
 	</File>
-	<File name="api_vram.h" open="1" top="0" tabpos="3">
+	<File name="api_snd2.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="11745" topLine="558" />
+	</File>
+	<File name="api_vram.h" open="0" top="0" tabpos="3">
 		<Cursor position="3133" topLine="57" />
 	</File>
 	<File name="api_vram256k.cpp" open="0" top="0" tabpos="3">
@@ -85,11 +88,17 @@
 	<File name="api_vram4096.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="2168" topLine="82" />
 	</File>
-	<File name="api_vram8.cpp" open="1" top="0" tabpos="1">
+	<File name="api_vram8.cpp" open="0" top="0" tabpos="1">
 		<Cursor position="2655" topLine="232" />
 	</File>
-	<File name="api_vramvec.c" open="1" top="0" tabpos="2">
+	<File name="api_vramvec.c" open="0" top="0" tabpos="2">
 		<Cursor position="1668" topLine="77" />
+	</File>
+	<File name="api_wavwriter.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="1970" topLine="59" />
+	</File>
+	<File name="api_wavwriter.h" open="1" top="0" tabpos="6">
+		<Cursor position="1936" topLine="96" />
 	</File>
 	<File name="build_config.h" open="0" top="0" tabpos="1">
 		<Cursor position="1512" topLine="84" />
@@ -108,5 +117,8 @@
 	</File>
 	<File name="sdl_inifile.h" open="0" top="0" tabpos="6">
 		<Cursor position="256" topLine="16" />
+	</File>
+	<File name="snd_buffer.cpp" open="1" top="1" tabpos="3">
+		<Cursor position="2977" topLine="144" />
 	</File>
 </CodeBlocks_layout_file>

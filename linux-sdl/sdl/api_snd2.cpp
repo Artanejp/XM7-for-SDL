@@ -328,7 +328,7 @@ BOOL SelectSnd(void)
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
     //Mix_QuerySpec(&freq, &format, &channels);
-    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSampleRate * nSoundBuffer) / 4000 ) < 0) {
+    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 16)< 0) {
 //    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
@@ -547,7 +547,8 @@ void StopSnd(void)
  */
 static DWORD RenderOpnSub(DWORD ttime, int samples, BOOL bZero)
 {
-   return RenderSub(pOpnBuf, DrvOPN, ttime, samples / 2, bZero);
+//   printf("SND:OPN@%d %d\n", ttime, samples);
+   return RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
 }
 
 
@@ -789,11 +790,13 @@ static int SetChunk(struct SndBufType *p, int ch)
         j = p->nSize - p->nReadPTR;
         if(j > samples) {
 	        // 分割不要
+//	    printf("SND:DBG:CHUNK:%d Size=%d\n", ch, samples);
             SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
             Mix_PlayChannel(ch , p->mChunk[i], 0);
             p->nReadPTR += samples;
             samples = 0;
         } else {
+//	    printf("SND:DBG:CHUNK:%d Size=%d\n", ch, j);
             SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, iTotalVolume);
             Mix_PlayChannel(ch , p->mChunk[i], 0);
             p->nReadPTR += j;
@@ -874,7 +877,7 @@ void ProcessSnd(BOOL bZero)
                 samples = SndCalcSamples(pBeepBuf, ttime);
                 RenderBeepSub(ttime, samples, bZero);
                 samples = SndCalcSamples(pCMTBuf, ttime);
-                RenderCMTSub(ttime, samples * 2, bZero);
+                RenderCMTSub(ttime, samples, bZero);
                 SDL_SemPost(applySem);
 		       }
 		   }
@@ -886,7 +889,7 @@ void ProcessSnd(BOOL bZero)
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
             SDL_SemWait(applySem);
             chunksize = (dwSndCount * uRate) / 1000;
-	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
+	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize * channels);
             FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize * channels);
             FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize * channels);
 		/*
@@ -908,7 +911,7 @@ void ProcessSnd(BOOL bZero)
         SetChunk(pBeepBuf , CH_SND_BEEP);
         SetChunk(pCMTBuf , CH_SND_CMT);
 //	SndWrite();
-        if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
+//        if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
 //        if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
 //        if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();
         SDL_SemPost(applySem);

@@ -38,6 +38,7 @@ namespace FM
 	//	Types ----------------------------------------------------------------
 	typedef FM_SAMPLETYPE	Sample;
 	typedef int32 			ISample;
+//	typedef int16 			ISample;
 
 	enum OpType { typeN=0, typeM=1 };
 	

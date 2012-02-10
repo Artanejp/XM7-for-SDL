@@ -115,15 +115,18 @@ void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32)
 {
     int size;
     int channels = 2;
+    void *pv;
 
 	if(p == NULL) return;
 	if(flag16) {
 		size = (members + 1) * sizeof(Sint16) * channels;
-		p->pBuf = (Sint16 *)malloc(size);
-		if(p->pBuf) {
-			memset(p->pBuf, 0x00, size);
-			p->nSize = members;
-		}
+	        if(posix_memalign(&pv, 16, size) == 0) {
+//		p->pBuf = (Sint16 *)malloc(size);
+		p->pBuf = (Sint16 *)pv;
+		memset(p->pBuf, 0x00, size);
+		p->nSize = members;
+	    }
+	   
 	}
 	if(flag32) {
 		size = (members + 1) * sizeof(Sint32) * channels;
@@ -434,13 +437,16 @@ BOOL FlushBeepSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero,
 BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk)
 {
         int chunksize;
+        int j;
 
         if(p == NULL) return FALSE;
         if(drv == NULL) return FALSE;
 	if(maxchunk <= 0) return FALSE;
-	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
+        j = p->nWritePTR;
+        if(j >= p->nSize) j = 0;
+	chunksize = maxchunk  - (j % maxchunk);
         if(chunksize <= 0) return TRUE;
-
+//        printf("SND:OPN_FLUSH@%d %d\n", ttime, chunksize);
       if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
 	 return TRUE;
       }
