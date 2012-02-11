@@ -44,13 +44,13 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	h->fmt.HEADID[3] = ' ';
 	// 以下、エンディアンで数値を変える(一般的なWavヘッダはLittle Endian のため)
 	//h->fmt.Size = EndianChangeUint32(0x10);  // フォーマットヘッダサイズ=16Bytes
-	h->fmt.Size = EndianChangeUint32(16);  // フォーマットヘッダサイズ=24Bytes
+	h->fmt.Size = EndianChangeUint32(sizeof(struct WavPCMFmtDesc) - 8);  // フォーマットヘッダサイズ=24Bytes
         h->fmt.FmtType = EndianChangeUint16(0x0001); //
 	h->fmt.Channels = EndianChangeUint16(0x0002); // 2ch
 	h->fmt.SampleRate = EndianChangeUint32(nSampleRate); //
 	h->fmt.Speed = EndianChangeUint32(nSampleRate * 2 * sizeof(Sint16));
 	h->fmt.SampleBits = EndianChangeUint16(16);
-//	h->fmt.ExtraSize = EndianChangeUint16(0);
+	h->fmt.ExtraSize = EndianChangeUint16(0);
 	// データ本体
 	h->DATAID[0] = 'd';
 	h->DATAID[1] = 'a';
@@ -85,7 +85,7 @@ BOOL EndWriteWavData(WavDesc *desc)
 	desc->header.totalSize = EndianChangeUint32(desc->totalSize);
 	desc->header.DataSize = EndianChangeUint32(desc->dataSize);
 	if(desc->file) {
-#if 0
+#if 1
 	        seekPtr = 4;
 		result = desc->file->seek(desc->file, seekPtr, SEEK_SET);
 		if(result != seekPtr) goto err;
@@ -129,10 +129,12 @@ BOOL EndWriteWavData(WavDesc *desc)
  */
 int WriteWavDataSint16(struct WavDesc *desc, Sint16 *data, int size)
 {
-	int s = size * sizeof(Sint16);
+	int s;
 	int result;
-
-	result = desc->file->write(desc->file, (void *)data, sizeof(Sint16), size);
+   
+        size = (size / 2 )*2; // align 4bytes(2words)
+        s = size * sizeof(Sint16);
+        result = desc->file->write(desc->file, (void *)data, sizeof(Sint16), size);
 	if(result != size){
 		//SDL_RWclose(desc->file);
 	        printf("ERR: Writing WAV file.\n");

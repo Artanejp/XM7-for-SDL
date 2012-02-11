@@ -49,9 +49,10 @@ struct WavPCMFmtDesc {
 	uint32_t SampleRate;
 	uint32_t Speed; // Bytes per second.
 	uint16_t SampleBits;
-//	uint16_t ExtraSize; // Extra Area
+	uint16_t ExtraSize; // Extra Area
 	// End of Format Header
-};
+} __attribute__ ((packed));
+
 
 struct WavHeader {
 	char ID1[4]; // = {'R', 'I', 'F', 'F'};
@@ -60,7 +61,8 @@ struct WavHeader {
 	struct WavPCMFmtDesc fmt;
 	char DATAID[4]; // = {'d', 'a', 't', 'a'};
 	uint32_t DataSize; //
-	};
+} __attribute__ ((packed));
+
 
 struct WavDesc {
 	struct WavHeader header;

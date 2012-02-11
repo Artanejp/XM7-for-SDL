@@ -829,7 +829,8 @@ static BOOL SndWavWrite(struct WavDesc *h, int channels)
       z = CopyChunk(pBeepBuf, wavbuf, 0);
       if(x < y) x = y;
       if(x < z) x = z;
-      WriteWavDataSint16(h, wavbuf, x * channels);
+//      WriteWavDataSint16(h, wavbuf, x * channels);
+      WriteWavDataSint16(h, wavbuf, x);
 //      free(wavbuf);
       return TRUE;
    }
