@@ -325,7 +325,7 @@ BOOL SelectSnd(void)
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
     //Mix_QuerySpec(&freq, &format, &channels);
-    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 1000)< 0) {
+    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 4000)< 0) {
 //    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
@@ -576,7 +576,7 @@ static DWORD RenderCMTSub(DWORD ttime, int samples, BOOL bZero)
 static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 {
 	DWORD ttime = dwSoundTotal;
-   int samples = SndCalcSamples(pOpnBuf, ttime);
+   int samples;
     BYTE r;
 
     if(sdrv == NULL) return;
@@ -622,17 +622,15 @@ static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 	/*
 	 * サウンド合成
 	 */
-	if(samples > 0) {
-		if(applySem) {
+   if(applySem) {
 //			SDL_SemWait(applySem);
-//            samples  = SndCalcSamples(pBeepBuf, ttime);
-//			RenderBeepSub(ttime, samples, FALSE);
-//            samples  = SndCalcSamples(pOpnBuf, ttime);
-			RenderOpnSub(ttime, samples, FALSE);
-//           samples  = SndCalcSamples(pCMTBuf, ttime);
-//			RenderCMTSub(ttime, samples, FALSE);
+        samples  = SndCalcSamples(pOpnBuf, ttime);
+        RenderOpnSub(ttime, samples, FALSE);
+        samples  = SndCalcSamples(pBeepBuf, ttime);
+	RenderBeepSub(ttime, samples * 2, FALSE);
+        samples  = SndCalcSamples(pCMTBuf, ttime);
+	RenderCMTSub(ttime, samples * 2, FALSE);
 //			SDL_SemPost(applySem);
-		}
 	}
 
 	/*
@@ -678,18 +676,17 @@ void beep_notify(void)
 		return;
 	}
 #if 1
-    samples  = SndCalcSamples(pBeepBuf, ttime);
-	if(samples > 0){
+
 		if(applySem) {
-//			SDL_SemWait(applySem);
-			RenderBeepSub(ttime, samples, FALSE);
-//            samples  = SndCalcSamples(pOpnBuf, ttime);
-//			RenderOpnSub(ttime, samples, FALSE);
-//            samples  = SndCalcSamples(pCMTBuf, ttime);
-//			RenderCMTSub(ttime, samples, FALSE);
+		//	SDL_SemWait(applySem);
+		   samples  = SndCalcSamples(pBeepBuf, ttime);
+		   RenderBeepSub(ttime, samples * 2, FALSE);
+		   samples  = SndCalcSamples(pOpnBuf, ttime);
+		   RenderOpnSub(ttime, samples, FALSE);
+		   samples  = SndCalcSamples(pCMTBuf, ttime);
+		   RenderCMTSub(ttime, samples * 2, FALSE);
 //			SDL_SemPost(applySem);
 		}
-	}
 #endif
 	if(DrvBeep) {
 		DrvBeep->ResetCounter(!bBeepFlag);
@@ -711,19 +708,18 @@ void tape_notify(BOOL flag)
 	if(!DrvCMT) return;
 	DrvCMT->SetState((BOOL)bTapeFlag);
 	DrvCMT->Enable(bTapeMon);
-	samples  = SndCalcSamples(pCMTBuf, ttime);
-	if(samples > 0) {
+
         if(applySem) {
 //            SDL_SemWait(applySem);
-//            samples  = SndCalcSamples(pBeepBuf, ttime);
-//			RenderBeepSub(ttime, samples, FALSE);
-//            samples  = SndCalcSamples(pOpnBuf, ttime);
-//			RenderOpnSub(ttime, samples, FALSE);
-//            samples  = SndCalcSamples(pCMTBuf, ttime);
-			RenderCMTSub(ttime, samples * 2, FALSE);
+	   samples  = SndCalcSamples(pCMTBuf, ttime);
+	   RenderCMTSub(ttime, samples * 2, FALSE);
+           samples  = SndCalcSamples(pBeepBuf, ttime);
+	   RenderBeepSub(ttime, samples * 2, FALSE);
+           samples  = SndCalcSamples(pOpnBuf, ttime);
+	   RenderOpnSub(ttime, samples, FALSE);
 //            SDL_SemPost(applySem);
         }
-	}
+
 	bTapeFlag = flag;
 }
 
@@ -875,11 +871,11 @@ void ProcessSnd(BOOL bZero)
 		       // OPNについては不要か？必要か？
 		       if(applySem) {
                 SDL_SemWait(applySem);
-                //samples = SndCalcSamples(pOpnBuf, ttime);
-                //RenderOpnSub(ttime, samples  , bZero);
+                samples = SndCalcSamples(pOpnBuf, ttime);
+                RenderOpnSub(ttime, samples, bZero);
 
                 samples = SndCalcSamples(pBeepBuf, ttime);
-                RenderBeepSub(ttime, samples, bZero);
+                RenderBeepSub(ttime, samples * 2, bZero);
                 samples = SndCalcSamples(pCMTBuf, ttime);
                 RenderCMTSub(ttime, samples * 2, bZero);
                 SDL_SemPost(applySem);
