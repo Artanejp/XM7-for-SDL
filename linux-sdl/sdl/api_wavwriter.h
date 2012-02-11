@@ -49,7 +49,7 @@ struct WavPCMFmtDesc {
 	uint32_t SampleRate;
 	uint32_t Speed; // Bytes per second.
 	uint16_t SampleBits;
-	uint16_t ExtraSize; // Extra Area
+//	uint16_t ExtraSize; // Extra Area
 	// End of Format Header
 };
 

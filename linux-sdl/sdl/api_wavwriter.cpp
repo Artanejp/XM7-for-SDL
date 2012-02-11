@@ -31,19 +31,26 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	h->ID1[1] = 'I';
 	h->ID1[2] = 'F';
 	h->ID1[3] = 'F';
-	// Format ID
+        // ID2
+        h->ID2[0] = 'W';
+	h->ID2[1] = 'A';
+	h->ID2[2] = 'V';
+	h->ID2[3] = 'E';
+
+        // Format ID
 	h->fmt.HEADID[0] = 'f';
 	h->fmt.HEADID[1] = 'm';
 	h->fmt.HEADID[2] = 't';
 	h->fmt.HEADID[3] = ' ';
 	// 以下、エンディアンで数値を変える(一般的なWavヘッダはLittle Endian のため)
-	h->fmt.Size = EndianChangeUint32(0x10);  // フォーマットヘッダサイズ=16Bytes
-	h->fmt.FmtType = EndianChangeUint16(0x0001); //
+	//h->fmt.Size = EndianChangeUint32(0x10);  // フォーマットヘッダサイズ=16Bytes
+	h->fmt.Size = EndianChangeUint32(16);  // フォーマットヘッダサイズ=24Bytes
+        h->fmt.FmtType = EndianChangeUint16(0x0001); //
 	h->fmt.Channels = EndianChangeUint16(0x0002); // 2ch
 	h->fmt.SampleRate = EndianChangeUint32(nSampleRate); //
 	h->fmt.Speed = EndianChangeUint32(nSampleRate * 2 * sizeof(Sint16));
 	h->fmt.SampleBits = EndianChangeUint16(16);
-	h->fmt.ExtraSize = EndianChangeUint16(0);
+//	h->fmt.ExtraSize = EndianChangeUint16(0);
 	// データ本体
 	h->DATAID[0] = 'd';
 	h->DATAID[1] = 'a';
@@ -58,7 +65,10 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 success:
 	return w;
 err:
-	if(w->file) SDL_RWclose(w->file);
+       if(w->file) {
+	   SDL_RWclose(w->file);
+//	   SDL_FreeRW(w->file);
+	}
         printf("ERR: Open file to write %s\n",path);
 	free(w);
 	return NULL;
@@ -70,28 +80,44 @@ BOOL EndWriteWavData(WavDesc *desc)
 	int result;
 	int seekPtr;
 
+
 	if(desc == NULL) return FALSE;
 	desc->header.totalSize = EndianChangeUint32(desc->totalSize);
 	desc->header.DataSize = EndianChangeUint32(desc->dataSize);
 	if(desc->file) {
-		seekPtr = 4;
+#if 0
+	        seekPtr = 4;
 		result = desc->file->seek(desc->file, seekPtr, SEEK_SET);
 		if(result != seekPtr) goto err;
 		result = desc->file->write(desc->file, &(desc->header.totalSize), sizeof(uint32_t), 1);
 		if(result != 1) goto err;
 
 		seekPtr = sizeof(struct WavHeader) - sizeof(uint32_t);
-		result = desc->file->seek(desc->file, seekPtr, SEEK_SET);
+	        result = desc->file->seek(desc->file, seekPtr, SEEK_SET);
 		if(result != seekPtr) goto err;
 		result = desc->file->write(desc->file, &(desc->header.DataSize), sizeof(uint32_t), 1);
 		if(result != 1) goto err;
-	success:
-		desc->file->close(desc->file);
+#else
+	        result = desc->file->seek(desc->file, 0, SEEK_SET);
+		if(result != 0) goto err;
+		result = desc->file->write(desc->file, &(desc->header), sizeof(struct WavHeader), 1);
+		if(result != 1) goto err;
+#endif
+       success:
+	        printf("DBG: Success Writing TotalSize = %08x DataSize = %08x.\n", desc->header.totalSize, desc->header.DataSize);
+	        if(desc->file) {
+		   SDL_RWclose(desc->file);
+//		   SDL_FreeRW(desc->file);
+		}
+//		desc->file->close(desc->file);
 		free(desc);
 		return TRUE;
 	err:
-		desc->file->close(desc->file);
-		free(desc);
+	        if(desc->file) {
+		   SDL_RWclose(desc->file);
+//		   SDL_FreeRW(desc->file);
+		}
+//		free(desc);
 		return FALSE;
 	}
 	// そもそもファイルポインタがないのだからFAILで返す

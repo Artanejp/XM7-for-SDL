@@ -337,6 +337,7 @@ static void OnWavCapture(AG_Event *event)
 	 */
 	if(bWavCapture) {
 		LockVM();
+	        bWavCapture = FALSE;
 		CloseCaptureSnd();
 		UnlockVM();
 		// ダイアログ表示入れる？

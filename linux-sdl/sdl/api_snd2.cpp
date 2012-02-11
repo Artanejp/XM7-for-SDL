@@ -451,9 +451,13 @@ void CloseCaptureSnd(void)
 {
 //   if(WavSem == NULL) return;
 //   SDL_SemWait(WavSem);
-   bWavCapture = FALSE;
-   EndWriteWavData(WavDescCapture);
-   WavDescCapture = NULL;
+   if(WavDescCapture != NULL) {
+      printf("DBG:End Wav Write\n");
+      bWavCapture = FALSE;
+      EndWriteWavData(WavDescCapture);
+      WavDescCapture = NULL;
+   }
+   
 //   SDL_SemPost(WavSem);
 }
 
@@ -812,7 +816,7 @@ static int SetChunk(struct SndBufType *p, int ch)
 /*
  * WAV書き込み
  */
-static BOOL SndWavWrite(struct WavDesc *h, int chunksize, int channels)
+static BOOL SndWavWrite(struct WavDesc *h, int channels)
 {
    Sint16 *wavbuf;
    int x, y, z;
@@ -898,11 +902,11 @@ void ProcessSnd(BOOL bZero)
 		 */
 //	   SDL_LockAudio();
         if(bWavCapture){
-            SndWavWrite(WavDescCapture, chunksize, channels);
-        } else {
-            if(bWavCaptureOld) {
-                CloseCaptureSnd();
-            }
+            SndWavWrite(WavDescCapture, channels);
+//        } else {
+//            if(bWavCaptureOld) {
+//                CloseCaptureSnd();
+//            }
         }
         bWavCaptureOld = bWavCapture;
         SetChunk(pOpnBuf ,  CH_SND_OPN);
