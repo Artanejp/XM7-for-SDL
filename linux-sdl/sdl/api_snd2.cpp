@@ -193,8 +193,6 @@ void InitSnd(void)
 	pBeepBuf = InitBufferDesc();
 	pCMTBuf = InitBufferDesc();
 	pCaptureBuf = InitBufferDesc();
-
-
 }
 
 /*
@@ -234,7 +232,6 @@ void CleanSnd(void)
     bSndExit = TRUE;
 	DetachBufferDesc(pCaptureBuf);
 	pCaptureBuf = NULL;
-
 
 	/*
 	 * ドライバの抹消(念の為)
@@ -328,23 +325,22 @@ BOOL SelectSnd(void)
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
     //Mix_QuerySpec(&freq, &format, &channels);
-    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 16)< 0) {
-//    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+//    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 16)< 0) {
+    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
 	Mix_AllocateChannels(CH_CHANNELS);
-	Mix_GroupChannels(CH_WAV_RELAY_ON, CH_WAV_RESERVE2, GROUP_SND_SFX);
 	Mix_Volume(-1,iTotalVolume);
 
 
     bSndEnable = TRUE;
 	uTick = nSoundBuffer;
-	members = (nSampleRate * nSoundBuffer) / 1000 * 2;
+	members = (nSampleRate * nSoundBuffer) / 1000 * 4;
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
-	SetupBuffer(pOpnBuf, members, TRUE, TRUE);
-	SetupBuffer(pCaptureBuf, members *2, TRUE, FALSE);
+	SetupBuffer(pOpnBuf, members * 2, TRUE, TRUE);
+	SetupBuffer(pCaptureBuf, members, TRUE, FALSE);
 //        nSndBank = 
 
 	/*
@@ -576,7 +572,7 @@ static DWORD RenderCMTSub(DWORD ttime, int samples, BOOL bZero)
 static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 {
 	DWORD ttime = dwSoundTotal;
-	int samples = SndCalcSamples(pOpnBuf, ttime);
+   int samples = SndCalcSamples(pOpnBuf, ttime);
     BYTE r;
 
     if(sdrv == NULL) return;
@@ -625,12 +621,12 @@ static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 	if(samples > 0) {
 		if(applySem) {
 //			SDL_SemWait(applySem);
-            samples  = SndCalcSamples(pBeepBuf, ttime);
-			RenderBeepSub(ttime, samples, FALSE);
-            samples  = SndCalcSamples(pOpnBuf, ttime);
+//            samples  = SndCalcSamples(pBeepBuf, ttime);
+//			RenderBeepSub(ttime, samples, FALSE);
+//            samples  = SndCalcSamples(pOpnBuf, ttime);
 			RenderOpnSub(ttime, samples, FALSE);
-            samples  = SndCalcSamples(pCMTBuf, ttime);
-			RenderCMTSub(ttime, samples, FALSE);
+ //           samples  = SndCalcSamples(pCMTBuf, ttime);
+//			RenderCMTSub(ttime, samples, FALSE);
 //			SDL_SemPost(applySem);
 		}
 	}
@@ -683,10 +679,10 @@ void beep_notify(void)
 		if(applySem) {
 //			SDL_SemWait(applySem);
 			RenderBeepSub(ttime, samples, FALSE);
-            samples  = SndCalcSamples(pOpnBuf, ttime);
-			RenderOpnSub(ttime, samples, FALSE);
-            samples  = SndCalcSamples(pCMTBuf, ttime);
-			RenderCMTSub(ttime, samples, FALSE);
+//            samples  = SndCalcSamples(pOpnBuf, ttime);
+//			RenderOpnSub(ttime, samples, FALSE);
+//            samples  = SndCalcSamples(pCMTBuf, ttime);
+//			RenderCMTSub(ttime, samples, FALSE);
 //			SDL_SemPost(applySem);
 		}
 	}
@@ -715,12 +711,12 @@ void tape_notify(BOOL flag)
 	if(samples > 0) {
         if(applySem) {
 //            SDL_SemWait(applySem);
-            samples  = SndCalcSamples(pBeepBuf, ttime);
-			RenderBeepSub(ttime, samples, FALSE);
-            samples  = SndCalcSamples(pOpnBuf, ttime);
-			RenderOpnSub(ttime, samples, FALSE);
-            samples  = SndCalcSamples(pCMTBuf, ttime);
-			RenderCMTSub(ttime, samples, FALSE);
+//            samples  = SndCalcSamples(pBeepBuf, ttime);
+//			RenderBeepSub(ttime, samples, FALSE);
+//            samples  = SndCalcSamples(pOpnBuf, ttime);
+//			RenderOpnSub(ttime, samples, FALSE);
+//            samples  = SndCalcSamples(pCMTBuf, ttime);
+			RenderCMTSub(ttime, samples * 2, FALSE);
 //            SDL_SemPost(applySem);
         }
 	}
@@ -788,15 +784,15 @@ static int SetChunk(struct SndBufType *p, int ch)
     }
     while(samples > 0) {
         j = p->nSize - p->nReadPTR;
-        if(j > samples) {
+        if(j >= samples) {
 	        // 分割不要
-//	    printf("SND:DBG:CHUNK:%d Size=%d\n", ch, samples);
+//	    printf("SND:DBG:CHUNK:%d #%d Size=%d\n", ch, i, samples);
             SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
             Mix_PlayChannel(ch , p->mChunk[i], 0);
             p->nReadPTR += samples;
             samples = 0;
         } else {
-//	    printf("SND:DBG:CHUNK:%d Size=%d\n", ch, j);
+//	    printf("SND:DBG:CHUNK:%d #%d Size=%d\n", ch, i, j);
             SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, iTotalVolume);
             Mix_PlayChannel(ch , p->mChunk[i], 0);
             p->nReadPTR += j;
@@ -819,15 +815,18 @@ static int SetChunk(struct SndBufType *p, int ch)
 static BOOL SndWavWrite(struct WavDesc *h, int chunksize, int channels)
 {
    Sint16 *wavbuf;
+   int x, y, z;
 
-   wavbuf = (Sint16 *)malloc(chunksize * channels * sizeof(Sint16));
+   wavbuf = pCaptureBuf->pBuf;
    if(wavbuf != NULL) {
-      memset(wavbuf, 0x00, chunksize * channels * sizeof(Sint16));
-      CopyChunk(pOpnBuf, wavbuf, 0);
-      CopyChunk(pCMTBuf, wavbuf, 0);
-      CopyChunk(pBeepBuf, wavbuf, 0);
-      WriteWavDataSint16(h, wavbuf, chunksize * channels);
-      free(wavbuf);
+      memset(wavbuf, 0x00, pCaptureBuf->nSize * channels * sizeof(Sint16));
+      x = CopyChunk(pOpnBuf, wavbuf, 0);
+      y = CopyChunk(pCMTBuf, wavbuf, 0);
+      z = CopyChunk(pBeepBuf, wavbuf, 0);
+      if(x < y) x = y;
+      if(x < z) x = z;
+      WriteWavDataSint16(h, wavbuf, x * channels);
+//      free(wavbuf);
       return TRUE;
    }
    return FALSE;
@@ -871,13 +870,13 @@ void ProcessSnd(BOOL bZero)
 		       // OPNについては不要か？必要か？
 		       if(applySem) {
                 SDL_SemWait(applySem);
-                samples = SndCalcSamples(pOpnBuf, ttime);
-                RenderOpnSub(ttime, samples  , bZero);
+                //samples = SndCalcSamples(pOpnBuf, ttime);
+                //RenderOpnSub(ttime, samples  , bZero);
 
                 samples = SndCalcSamples(pBeepBuf, ttime);
                 RenderBeepSub(ttime, samples, bZero);
                 samples = SndCalcSamples(pCMTBuf, ttime);
-                RenderCMTSub(ttime, samples, bZero);
+                RenderCMTSub(ttime, samples * 2, bZero);
                 SDL_SemPost(applySem);
 		       }
 		   }
@@ -906,11 +905,9 @@ void ProcessSnd(BOOL bZero)
             }
         }
         bWavCaptureOld = bWavCapture;
-
         SetChunk(pOpnBuf ,  CH_SND_OPN);
         SetChunk(pBeepBuf , CH_SND_BEEP);
         SetChunk(pCMTBuf , CH_SND_CMT);
-//	SndWrite();
 //        if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
 //        if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
 //        if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();

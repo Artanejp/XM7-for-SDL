@@ -27,31 +27,17 @@
 #include "mainetc.h"
 #include "sdl.h"
 #include "sdl_sch.h"
+#include "types.h"
 
 #include "api_snd.h"
 #include "api_wavwriter.h"
+
 
 #include "SndDrvIF.h"
 #include "SndDrvBeep.h"
 #include "SndDrvWav.h"
 #include "SndDrvOpn.h"
 #include "SndDrvCMT.h"
-//#include "util_ringbuffer.h"
-
-typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
-typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(16)));
-typedef union {
-     v4si v;
-     uint32_t i[4];
-     uint16_t s[8];
-} v4hi;
-
-
-typedef union {
-     v8si v;
-     uint32_t i[8];
-     uint16_t s[16];
-} v8hi;
 
 
 /*
@@ -131,7 +117,8 @@ void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32)
 	if(flag32) {
 		size = (members + 1) * sizeof(Sint32) * channels;
 		p->pBuf32 = (Sint32 *)malloc(size);
-		if(p->pBuf32) {
+	        if(posix_memalign(&pv, 16, size) == 0) {
+		        p->pBuf32 = (Sint32 *)pv;
 			memset(p->pBuf32, 0x00, size);
 			p->nSize = members;
 		}
@@ -193,7 +180,8 @@ int CopyChunk(struct SndBufType *p, Sint16 *buf, int offset)
 	int j;
 	int count = 0;
 	int channels = 2;
-    int samples;
+        int samples;
+        int r;
 
     if(buf == NULL) return -1;
     if(offset < 0) offset = 0;
@@ -203,6 +191,7 @@ int CopyChunk(struct SndBufType *p, Sint16 *buf, int offset)
     } else{
         samples = p->nReadPTR + offset - p->nWritePTR;
     }
+    r = samples;
     while(samples > 0) {
         j = p->nSize - p->nReadPTR;
         if(j > samples) {
@@ -221,7 +210,8 @@ int CopyChunk(struct SndBufType *p, Sint16 *buf, int offset)
         i++;
         if(i >= p->nChunks) i = 0;
     }
-    return i;
+//    return i;
+    return r;
 }
 
 /*
@@ -234,6 +224,7 @@ int MoveChunk(struct SndBufType *p, Sint16 *buf, int offset)
     int count = 0;
     int channels = 2;
     int samples;
+    int r;
 
     if(buf == NULL) return -1;
     if(offset < 0) offset = 0;
@@ -243,6 +234,7 @@ int MoveChunk(struct SndBufType *p, Sint16 *buf, int offset)
     } else{
         samples = p->nReadPTR + offset - p->nWritePTR;
     }
+    r = samples;
     while(samples > 0) {
         j = p->nSize - p->nReadPTR;
         if(j > samples) {
@@ -264,7 +256,7 @@ int MoveChunk(struct SndBufType *p, Sint16 *buf, int offset)
         i++;
         if(i >= p->nChunks) i = 0;
     }
-    return i;
+    return r;
 }
 
 int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOOL bZero)
@@ -338,22 +330,24 @@ DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, B
 		if(k > 0) {
 			drv->Render(p->pBuf32, p->pBuf, p->nWritePTR , k,  FALSE, bZero);
 			j = j - k;
+//		   printf("SND:DBG:RENDER:%08x Size=%d\n", p->pBuf, k);
 		}
 		p->nWritePTR = 0;
 		if(j > 0) {
 			drv->Render(p->pBuf32, p->pBuf, 0, j, FALSE, bZero);
 			p->nWritePTR = j;
+//		   printf("SND:DBG:RENDER:%08x Size=%d\n", p->pBuf, j);
 		}
 	} else {
 		if(j > 0) {
 			drv->Render(p->pBuf32, p->pBuf, p->nWritePTR, j,  FALSE, bZero);
 			p->nWritePTR += j;
 			if(p->nWritePTR >= p->nSize) p->nWritePTR -= p->nSize;
+//		       printf("SND:DBG:RENDER:%08x Size=%d\n", p->pBuf, j);
 		}
 	}
 	p->nLastTime = ttime;
 	return j;
-
 }
 
 // For OPN

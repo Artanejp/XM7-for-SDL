@@ -7,15 +7,7 @@
 
 #include "SndDrvOpn.h"
 #include "api_snd.h"
-typedef union {
-    int16_t __attribute__ ((vector_size(16))) v;
-    uint8_t  b[16];
-    int8_t bs[16];
-    int16_t ws[8];
-    uint16_t s[8];
-    int32_t dws[4];
-    uint32_t dw[4];
-} v8si;
+#include "types.h"
 
 static int              l_vol[3][4] = {
 		{	16,	23,	 9,	16	},
@@ -42,7 +34,7 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     Sint32       *p = (Sint32 *) from;
     Sint16       *t = (Sint16 *) to;
     register Sint32       tmp1;
-    v8si  *h, *l, tmp2, tmp3;
+    v4hi  *h, *l, tmp2, tmp3;
 
     if (p == NULL) {
         return;
@@ -50,30 +42,31 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     if (t == NULL) {
         return;
     }
-    h = (v8si *)p;
-    l = (v8si *)t;
+    h = (v4hi *)p;
+    l = (v4hi *)t;
     i = (size / 8) * 8;
     for (j = 0; j < i; j += 8) {
         tmp2 = *h;
-        tmp3.s[0] =_clamp(tmp2.dws[0]);
-        tmp3.s[1] =_clamp(tmp2.dws[1]);
-        tmp3.s[2] =_clamp(tmp2.dws[2]);
-        tmp3.s[3] =_clamp(tmp2.dws[3]);
+        tmp3.ss[0] =_clamp(tmp2.si[0]);
+        tmp3.ss[1] =_clamp(tmp2.si[1]);
+        tmp3.ss[2] =_clamp(tmp2.si[2]);
+        tmp3.ss[3] =_clamp(tmp2.si[3]);
         h++;
         tmp2 = *h;
-        tmp3.s[4] =_clamp(tmp2.dws[0]);
-        tmp3.s[5] =_clamp(tmp2.dws[1]);
-        tmp3.s[6] =_clamp(tmp2.dws[2]);
-        tmp3.s[7] =_clamp(tmp2.dws[3]);
+        tmp3.ss[4] =_clamp(tmp2.si[0]);
+        tmp3.ss[5] =_clamp(tmp2.si[1]);
+        tmp3.ss[6] =_clamp(tmp2.si[2]);
+        tmp3.ss[7] =_clamp(tmp2.si[3]);
         h++;
         *l = tmp3;
         l++;
         }
-        p = (Sint32 *)h;
-        t = (Sint16 *)t;
+//        p = (Sint32 *)h;
+//        t = (Sint16 *)t;
+        if(i >= size) return;
         for (j = i; j < size; j++) {
-            tmp1 = *p++;
-	    *t++ = _clamp(tmp1);
+            tmp1 = p[j];
+	    t[j] = _clamp(tmp1);
         }
 }
 
@@ -198,7 +191,7 @@ void SndDrvOpn::SetChannels(int c)
 
 void SndDrvOpn::SetRate(int rate)
 {
-	srate = rate;
+    srate = rate;
     SetRate(0, OPN_CLOCK * 100, rate, bFMHQmode);
     SetRate(1, OPN_CLOCK * 100, rate, bFMHQmode);
     SetRate(2, OPN_CLOCK * 100, rate, bFMHQmode);

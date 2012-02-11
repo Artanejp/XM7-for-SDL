@@ -232,17 +232,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 
 	if(pBuf == NULL) return 0;
 	channels = 2;
-#if 0
-	if(start > s) return 0; /* 開始点にデータなし */
-	if((sSamples + start) >s) {
-		ss2 = s - start;
-	} else {
-		ss2 = sSamples;
-	}
-	if(ss2 <= 0) return 0;
-#else
 	ss2 = sSamples;
-#endif
 	if(RenderSem == NULL) return 0;
 
 	SDL_SemWait(RenderSem);

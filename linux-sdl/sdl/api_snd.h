@@ -186,20 +186,14 @@ extern UINT            uChSeparation;  /* チャンネルセパレーション *
 #define WAV_CHANNELS 5
 enum {
 	CH_SND_BEEP = 0,
-	CH_SND_CMT = 2,
-	CH_SND_OPN = 4,
-	CH_WAV_RELAY_ON = 6,
+	CH_SND_CMT ,
+	CH_SND_OPN ,
+	CH_WAV_RELAY_ON ,
 	CH_WAV_RELAY_OFF,
 	CH_WAV_FDDSEEK,
 	CH_WAV_RESERVE1,
 	CH_WAV_RESERVE2,
 	CH_CHANNELS
-};
-enum {
-	GROUP_SND_BEEP = 0,
-	GROUP_SND_CMT ,
-	GROUP_SND_OPN ,
-	GROUP_SND_SFX
 };
 
 struct SndBufType {

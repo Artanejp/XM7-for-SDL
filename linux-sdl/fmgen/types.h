@@ -28,15 +28,25 @@ typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(16)));
 typedef union 
 {
         v4si v;
+
         uint32_t i[4];
         uint16_t s[8];
+        uint8    b[16];
+        int32_t si[4];
+        int16_t ss[8];
+        int8_t  sb[16];
 } v4hi;
 
 typedef union 
 {
         v8si v;
+        
         uint32_t i[8];
         uint16_t s[16];
+        uint8    b[32];
+        int32_t si[8];
+        int16_t ss[16];
+        int8_t  sb[32];
 } v8hi;
 
 #endif // __gcc_types_h

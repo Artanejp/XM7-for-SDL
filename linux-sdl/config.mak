@@ -9,8 +9,9 @@
 OPTION		= -DMOUSE -DMR2 -DFDDSND
 OPTION          += -DUSE_OPENGL
 #OPTION		= -DMOUSE -DMR2
-#OPTION		+= -DUSE_GTKOPTION		+= -DUSE_GTKOPTION		+= -DUSE_GTKOPTION		+= -DUSE_GTK
 OPTION		+= -DUSE_AGAR
+# IF SET Little endian
+OPTION		+= -D_M_IX86
 
 INSTALL          = install -c 
 PREFIX           = /usr/local
