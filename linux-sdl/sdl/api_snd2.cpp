@@ -325,8 +325,8 @@ BOOL SelectSnd(void)
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
     //Mix_QuerySpec(&freq, &format, &channels);
-//    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 16)< 0) {
-    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
+    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 1000)< 0) {
+//    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
@@ -339,7 +339,7 @@ BOOL SelectSnd(void)
 	members = (nSampleRate * nSoundBuffer) / 1000 * 4;
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
-	SetupBuffer(pOpnBuf, members * 2, TRUE, TRUE);
+	SetupBuffer(pOpnBuf, members , TRUE, TRUE);
 	SetupBuffer(pCaptureBuf, members, TRUE, FALSE);
 //        nSndBank = 
 
@@ -629,7 +629,7 @@ static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 //			RenderBeepSub(ttime, samples, FALSE);
 //            samples  = SndCalcSamples(pOpnBuf, ttime);
 			RenderOpnSub(ttime, samples, FALSE);
- //           samples  = SndCalcSamples(pCMTBuf, ttime);
+//           samples  = SndCalcSamples(pCMTBuf, ttime);
 //			RenderCMTSub(ttime, samples, FALSE);
 //			SDL_SemPost(applySem);
 		}
@@ -893,9 +893,9 @@ void ProcessSnd(BOOL bZero)
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
             SDL_SemWait(applySem);
             chunksize = (dwSndCount * uRate) / 1000;
-	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize * channels);
-            FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize * channels);
-            FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize * channels);
+	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize * 2);
+            FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize * 2);
+            FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize * 2);
 		/*
 		 * 演奏本体
 		 * 20110524 マルチスレッドにすると却って音飛びが悪くなるのでこれでいく。

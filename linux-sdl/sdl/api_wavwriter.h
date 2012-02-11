@@ -114,24 +114,6 @@ extern int WriteWavDataSint16(struct WavDesc *desc, Sint16 *data, int size);
  */
 extern int WriteWavDataByte(struct WavDesc *desc, Uint8 *data, int size);
 
-/*
- * WAVの合成(クリッピング付き)
- */
-extern Sint16 *WavMixClip(Sint16 **srcs, Sint16 *dst, int members, int bufSize, Sint16 clipping);
-/*
- * WAVの合成(クリッピングなし)
- */
-extern Sint16 *WavMix(Sint16 **srcs, Sint16 *dst, int members, int bufSize);
-
-
-
-/*
- * Mix_ChunkでのWAVの書き込み
- */
-#ifdef _USE_SDL_MIXER
-extern int WriteWavDataMixChunk(struct WavDesc *desc, Mix_Chunk *data);
-#endif
-
 #ifdef __cplusplus
 }
 #endif
