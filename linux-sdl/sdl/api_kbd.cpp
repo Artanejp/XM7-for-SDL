@@ -12,6 +12,7 @@ extern "C" {
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
 #endif
+
 #include <memory.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -32,10 +33,6 @@ extern "C" {
 #include "api_kbd.h"
 #include "KbdInterface.h"
 #include "SDLKbdInterface.h"
-#ifdef USE_GTK
-#include "GtkKbdInterface.h"
-#include "gtk_propkeyboard.h"
-#endif
 #ifdef USE_AGAR
 #include "AgarKbdInterface.h"
 #endif
@@ -71,9 +68,6 @@ static BOOL bCursorGrabbed;
 /*
  * ドライバクラス
  */
-#ifdef USE_GTK
-static GtkKbdInterface *GTKDrv;
-#endif
 #ifdef USE_AGAR
 static AgarKbdInterface *AGARDrv;
 #endif
@@ -118,9 +112,6 @@ InitKbd(void)
 	/*
 	 * ここにドライバー作成する
 	 */
-#ifdef USE_GTK
-	GTKDrv = new GtkKbdInterface();
-#endif
 #ifdef USE_AGAR
 	AGARDrv = new AgarKbdInterface();
 #endif
@@ -179,9 +170,6 @@ InitKbd(void)
 void            FASTCALL
 CleanKbd(void)
 {
-#ifdef USE_GTK
-	if(GTKDrv != NULL) delete GTKDrv;
-#endif
 #ifdef USE_AGAR
 	if(AGARDrv != NULL) delete AGARDrv;
 #endif
@@ -666,31 +654,6 @@ GetKbd(BYTE * pBuf)
  * ここから先、Toolkit依存Wrapper
  */
 /**[ アクションイベント ]***********************************************/
-
-#ifdef USE_GTK
-    /*
-     *  キープレスアクション
-     */
-gboolean OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
-		    gpointer data)
-{
-	if(GTKDrv == NULL) return FALSE;
-	GTKDrv->OnPress((void *)event);
-    return TRUE;
-}
-
-
-/*
- *  キーリリースアクション
- */
-gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
-		gpointer data)
-{
-	if(GTKDrv == NULL) return FALSE;
-	GTKDrv->OnRelease((void *)event);
-    return TRUE;
-}
-#endif
 
 /*
  * SDL
