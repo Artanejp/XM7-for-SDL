@@ -627,7 +627,7 @@ static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
         samples  = SndCalcSamples(pOpnBuf, ttime);
         RenderOpnSub(ttime, samples, FALSE);
         samples  = SndCalcSamples(pBeepBuf, ttime);
-	RenderBeepSub(ttime, samples * 2, FALSE);
+	RenderBeepSub(ttime, samples , FALSE);
         samples  = SndCalcSamples(pCMTBuf, ttime);
 	RenderCMTSub(ttime, samples * 2, FALSE);
 //			SDL_SemPost(applySem);
@@ -680,7 +680,7 @@ void beep_notify(void)
 		if(applySem) {
 		//	SDL_SemWait(applySem);
 		   samples  = SndCalcSamples(pBeepBuf, ttime);
-		   RenderBeepSub(ttime, samples * 2, FALSE);
+		   RenderBeepSub(ttime, samples , FALSE);
 		   samples  = SndCalcSamples(pOpnBuf, ttime);
 		   RenderOpnSub(ttime, samples, FALSE);
 		   samples  = SndCalcSamples(pCMTBuf, ttime);
@@ -689,7 +689,7 @@ void beep_notify(void)
 		}
 #endif
 	if(DrvBeep) {
-		DrvBeep->ResetCounter(!bBeepFlag);
+//		DrvBeep->ResetCounter(!bBeepFlag);
 		bBeepFlag = beep_flag & speaker_flag;
 		DrvBeep->Enable(bBeepFlag);
 	} else {
@@ -714,7 +714,7 @@ void tape_notify(BOOL flag)
 	   samples  = SndCalcSamples(pCMTBuf, ttime);
 	   RenderCMTSub(ttime, samples * 2, FALSE);
            samples  = SndCalcSamples(pBeepBuf, ttime);
-	   RenderBeepSub(ttime, samples * 2, FALSE);
+	   RenderBeepSub(ttime, samples , FALSE);
            samples  = SndCalcSamples(pOpnBuf, ttime);
 	   RenderOpnSub(ttime, samples, FALSE);
 //            SDL_SemPost(applySem);
