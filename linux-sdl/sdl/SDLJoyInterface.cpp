@@ -39,7 +39,6 @@ SDL_Joystick *JoyEntry;
  * b5 ボタン1
  *
  */
-BYTE nJoyRaw;
 
 /*
  * nJoyRawExt構成
@@ -52,53 +51,45 @@ BYTE nJoyRaw;
  *
  */
 
-BYTE nJoyRawExt;
-
-Uint8 XAXIS;
-Uint8 YAXIS;
-
-
-Uint8 BUTTON0;
-Uint8 BUTTON1;
-Uint8 BUTTON2;
-Uint8 BUTTON3;
-int JoyIndex;
-
-
 
 SDLJoyInterface::SDLJoyInterface() {
-	// TODO Auto-generated constructor stub
+   Uint8 i;
+        // TODO Auto-generated constructor stub
 	JoyEntry = NULL;
-	nJoyRaw = 0x00;
-	nJoyRawExt = 0x00;
-
+	nJoyRawAxis = 0x00000000;
+	nJoyRawButton = 0x00000000;
+        *JoyName = '\0';
 	YAXIS = 1;
 	XAXIS = 0;
-	BUTTON0 = 0;
-	BUTTON1 = 1;
-	BUTTON2 = 2;
-	BUTTON3 = 3;
+	for(i = 0; i < 16; i++) BUTTON[i] = i;
 	JoyIndex = -1;
 }
 
 SDLJoyInterface::~SDLJoyInterface() {
 	// TODO Auto-generated destructor stub
-		Close();
-		nJoyRaw = 0x00;
-		nJoyRawExt = 0x00;
-
+	Close();
+	nJoyRawAxis = 0x00000000;
+	nJoyRawButton = 0x00000000;
+        *JoyName = '\0';
 }
+
 
 
 
 SDL_Joystick *SDLJoyInterface::Open(int physNo )
 {
-	if(SDL_WasInit(SDL_INIT_JOYSTICK) == 0) {
-		SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-	}
-	if(SDL_JoystickOpened(physNo) != 0) return NULL; /* 既に使用されてる */
+    if(SDL_WasInit(SDL_INIT_JOYSTICK) == 0) {
+       SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+    }
+    if(SDL_JoystickOpened(physNo) != 0) return NULL; /* 既に使用されてる */
     JoyEntry = SDL_JoystickOpen(physNo);
-	if(JoyEntry != NULL) JoyIndex = physNo;
+    Buttons = 0;
+    if(JoyEntry != NULL) {
+       JoyIndex = physNo;
+       Buttons = SDL_JoystickNumButtons(JoyEntry);
+       if(Buttons > 6) Buttons = 6;
+       if(SDL_JoystickName(physNo) != NULL) strncpy(JoyName, SDL_JoystickName(physNo),127);
+    }
     return JoyEntry;
 }
 
@@ -121,10 +112,11 @@ SDL_Joystick *SDLJoyInterface::Open(char *name)
 		if(s == NULL) continue;
 		if(strcmp(s,name) != 0) continue;
 		if(SDL_JoystickOpened(i) != 0) return NULL; /* 既に使用されてる */
-			JoyEntry = SDL_JoystickOpen(i);
-			if(JoyEntry != NULL) JoyIndex = i;
-			return JoyEntry;
-		}
+		JoyEntry = SDL_JoystickOpen(i);
+		if(JoyEntry != NULL) JoyIndex = i;
+	        strncpy(JoyName, s, 127);
+		return JoyEntry;
+	}
 	return NULL;
 }
 
@@ -144,7 +136,17 @@ SDL_Joystick *SDLJoyInterface::GetEntry(void)
 
 int SDLJoyInterface::GetIndex(void)
 {
-	return JoyIndex;
+        if(JoyEntry != NULL) {
+	   JoyIndex = SDL_JoystickIndex(JoyEntry);
+	} else {
+	   JoyIndex = -1;
+	}
+        return JoyIndex;
+}
+
+char *SDLJoyInterface::GetName(void)
+{
+	return JoyName;
 }
 
 
@@ -177,10 +179,10 @@ BOOL SDLJoyInterface::UnRegEvent(void)
 /*
  *  ジョイスティック デバイスより読み込み
  */
-BYTE SDLJoyInterface::GetJoy( BOOL flag)
+DWORD SDLJoyInterface::GetJoyAxis( BOOL flag)
 {
-	BYTE code = 0;
-	code = nJoyRaw;	/* いい加減だが… */
+	DWORD code = 0;
+	code = nJoyRawAxis;	/* いい加減だが… */
 	// printf("JS: code = %04x\n",code);
 	return code;
 }
@@ -189,11 +191,11 @@ BYTE SDLJoyInterface::GetJoy( BOOL flag)
  *  ジョイスティック デバイスより読み込み(拡張ボタン)
  */
 
-BYTE SDLJoyInterface::GetJoyExt( BOOL flag)
+DWORD SDLJoyInterface::GetJoyButton( BOOL flag)
 {
-	BYTE code = 0;
-	code = nJoyRawExt;	/* いい加減だが… */
-	// printf("JS: code = %04x\n",code);
+	DWORD code = 0;
+	code = nJoyRawButton;	/* いい加減だが… */
+	//printf("JS: code = %08x\n",code);
 	return code;
 }
 
@@ -208,22 +210,10 @@ void SDLJoyInterface::SetYAXIS(Uint8 val)
 	YAXIS = val;
 }
 
-void SDLJoyInterface::SetBUTTON0(Uint8 val)
+void SDLJoyInterface::SetBUTTON(Uint8 idx, Uint8 val)
 {
-	BUTTON0 = val;
-}
-
-void SDLJoyInterface::SetBUTTON1(Uint8 val)
-{
-	BUTTON1 = val;
-}
-void SDLJoyInterface::SetBUTTON2(Uint8 val)
-{
-	BUTTON2 = val;
-}
-void SDLJoyInterface::SetBUTTON3(Uint8 val)
-{
-	BUTTON3 = val;
+   if(idx > Buttons) return;
+	BUTTON[idx] = val;
 }
 
 Uint8 SDLJoyInterface::GetXAXIS(void)
@@ -236,32 +226,19 @@ Uint8 SDLJoyInterface::GetYAXIS(void)
 	return YAXIS;
 }
 
-Uint8 SDLJoyInterface::GetBUTTON0(void)
+Uint8 SDLJoyInterface::GetBUTTON(Uint8 idx)
 {
-	return BUTTON0;
+   if(idx > Buttons) return 0;
+	return BUTTON[idx];
 }
 
-Uint8 SDLJoyInterface::GetBUTTON1(void)
-{
-	return BUTTON1;
-}
-
-Uint8 SDLJoyInterface::GetBUTTON2(void)
-{
-	return BUTTON2;
-}
-
-Uint8 SDLJoyInterface::GetBUTTON3(void)
-{
-	return BUTTON3;
-}
 
 void SDLJoyInterface::OnMove(SDL_Event *ev)
 {
 	Uint8 axis = ev->jaxis.axis;
 	Sint16 value = ev->jaxis.value;
 	Uint8 num = ev->jaxis.which;
-	BYTE code = 0;
+	DWORD code = 0;
 
 	if(num != SDL_JoystickIndex(JoyEntry)) {
 			return;
@@ -276,16 +253,16 @@ void SDLJoyInterface::OnMove(SDL_Event *ev)
 		} else if (value < -256) {
 			code = 0x01;	/* 上 */
 		}
-		nJoyRaw &= 0xfc;
-		nJoyRaw |= code;
+		nJoyRawAxis &= 0xfc;
+		nJoyRawAxis |= code;
 	} else if(axis == XAXIS) {
 		if (value > 256) {
 			code = 0x08;	/* 右 */
 		} else if (value < -256) {
 			code = 0x04;	/* 左 */
 		}
-		nJoyRaw &= 0xf3;
-		nJoyRaw |= code;
+		nJoyRawAxis &= 0xf3;
+		nJoyRawAxis |= code;
 	}
 	return;
 }
@@ -294,7 +271,8 @@ void SDLJoyInterface::OnPress(SDL_Event *ev)
 {
 	Uint8 num = ev->jbutton.which;
 	Uint8 button = ev->jbutton.button;
-	int            code = 0;
+	DWORD            code;
+        int i;
 
 	/*
 	 * JS番号探知
@@ -304,21 +282,15 @@ void SDLJoyInterface::OnPress(SDL_Event *ev)
 	}
 
 	/*
-	 * ボタンは0,1のみ(暫定)
+	 * ボタンは0~16(MAX)
 	 */
-	if(button == BUTTON1) {			/* ボタン1? */
-		code = 0x20;
-		nJoyRaw |= code;
-	} else if(button == BUTTON0) {			/* ボタン0? */
-		code = 0x10;
-		nJoyRaw |= code;
-	} else if(button ==BUTTON3) {			/* ボタン1? */
-		code = 0x20;
-		nJoyRawExt |= code;
-	} else if(button ==BUTTON2) {			/* ボタン1? */
-		code = 0x10;
-		nJoyRawExt |= code;
-	}
+        code = 0x00010000;
+        for(i = 0; i < Buttons; i++) { 
+	   if(button == i) {
+		nJoyRawButton |= code;
+	   }
+	   code <<= 1;
+	}	
 	return;
 }
 
@@ -326,7 +298,8 @@ void SDLJoyInterface::OnRelease(SDL_Event *ev)
 {
 	Uint8 num = ev->jbutton.which;
 	Uint8 button = ev->jbutton.button;
-	int            code = 0;
+	DWORD            code;
+        int i;
 
 	/*
 	 * JS番号探知
@@ -336,21 +309,15 @@ void SDLJoyInterface::OnRelease(SDL_Event *ev)
 	}
 
 	/*
-	 * ボタンは0,1のみ(暫定)
+	 * ボタンは0~15(MAX)
 	 */
-	if(button == BUTTON1) {			/* ボタン1? */
-		code = 0x20;
-		nJoyRaw &= ~code;
-	} else if(button == BUTTON0) {			/* ボタン0? */
-		code = 0x10;
-		nJoyRaw &= ~code;
-	} else if(button ==BUTTON3) {			/* ボタン1? */
-		code = 0x20;
-		nJoyRawExt &= ~code;
-	} else if(button ==BUTTON2) {			/* ボタン1? */
-		code = 0x10;
-		nJoyRawExt &= ~code;
-	}
+        code = 0x00010000;
+        for(i = 0; i < Buttons; i++) { 
+	   if(button == i) {
+		nJoyRawButton &= ~code;
+	   }
+	   code <<= 1;
+	}	
 
 	return;
 

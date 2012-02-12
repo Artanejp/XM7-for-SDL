@@ -23,25 +23,21 @@ public:
 
 	void SetXAXIS(Uint8 val);
 	void SetYAXIS(Uint8 val);
-	void SetBUTTON0(Uint8 val);
-	void SetBUTTON1(Uint8 val);
-	void SetBUTTON2(Uint8 val);
-	void SetBUTTON3(Uint8 val);
+	void SetBUTTON(Uint8 idx, Uint8 val);
 
 
 	Uint8 GetXAXIS(void);
 	Uint8 GetYAXIS(void);
-	Uint8 GetBUTTON0(void);
-	Uint8 GetBUTTON1(void);
-	Uint8 GetBUTTON2(void);
-	Uint8 GetBUTTON3(void);
+	Uint8 GetBUTTON(Uint8 idx);
 
-	BYTE GetJoy(BOOL flag);
-	BYTE GetJoyExt(BOOL flag);
+	DWORD GetJoyAxis(BOOL flag);
+	DWORD GetJoyButton(BOOL flag);
 
 	SDL_Joystick *GetEntry(void);
 	int GetIndex(void);
-	BOOL Check(void);
+	char *GetName(void);
+
+        BOOL Check(void);
 	BOOL RegEvent(void);
 	BOOL UnRegEvent(void);
 
@@ -52,16 +48,15 @@ public:
 
 private:
 	SDL_Joystick *JoyEntry;
+        char JoyName[128];
 	int JoyIndex;
-	BYTE nJoyRaw;
-	BYTE nJoyRawExt;
+	DWORD nJoyRawButton;
+        DWORD nJoyRawAxis;
+//	BYTE nJoyRawExt;
 	Uint8 XAXIS;
 	Uint8 YAXIS;
-	Uint8 BUTTON0;
-	Uint8 BUTTON1;
-	Uint8 BUTTON2;
-	Uint8 BUTTON3;
-
+        int  Buttons;
+        Uint8 BUTTON[16];
 };
 
 #endif /* SDLJOYINTERFACE_H_ */

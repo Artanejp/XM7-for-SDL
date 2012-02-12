@@ -11,13 +11,18 @@
 #include "xm7.h"
 #include "api_kbd.h"
 
+#define _JOY_MAX_BUTTONS 12 // 2-16
+#define _JOY_MAX_AXIS    2 // 2-16
+#define _JOY_MAX_PLUG    2 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+extern int            nJoyType [_JOY_MAX_PLUG];	/* ジョイスティックタイプ */
+extern int            nJoyRapid[_JOY_MAX_PLUG][_JOY_MAX_BUTTONS];	/* 連射タイプ */
+extern int            nJoyCode [_JOY_MAX_PLUG][_JOY_MAX_AXIS * 4 + _JOY_MAX_BUTTONS + 1];	/* 生成コード */
 
-extern int            nJoyType[2];	/* ジョイスティックタイプ */
-extern int            nJoyRapid[2][2];	/* 連射タイプ */
-extern int            nJoyCode[2][7];	/* 生成コード */
 extern BYTE FASTCALL joy_request(BYTE no);
 extern BOOL FASTCALL InitJoy(void);
 extern void FASTCALL PollJoy(void);
