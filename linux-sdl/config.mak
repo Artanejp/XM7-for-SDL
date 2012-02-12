@@ -35,10 +35,10 @@ FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/
 
 LDFLAGS = 
 
-CC = gcc
-CXX = g++
-#CC = gcc-4.4
-#CXX = g++-4.4
+#CC = gcc
+#CXX = g++
+CC = gcc-4.4
+CXX = g++-4.4
 AR = ar
 
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
