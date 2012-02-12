@@ -57,9 +57,15 @@ LIBS +=  -lSDL_mixer -lSDL_ttf
 #LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
 
 LIBS += -lGL -lGLU -lpthread
-LIBS += `agar-config --libs`
 LIBS += -ljpeg -lpng -lfreetype
 LIBS += -lgomp
+
+
+## Uncomment below if you *not* wish static-link agar.
+#LIBS += `agar-config --libs`
+
+## Uncomment below if you wish static-link agar.
+LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a /usr/local/lib/libag_dev.a -lXinerama
 
 #LIBS_RELEASE = ../libemugrph/Release/libemugrph.a
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
