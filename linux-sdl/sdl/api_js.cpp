@@ -34,11 +34,11 @@ extern "C" {
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "api_js.h"
-
+#include <vector>
 
 int            nJoyType [_JOY_MAX_PLUG];	/* ジョイスティックタイプ */
 int            nJoyRapid[_JOY_MAX_PLUG][_JOY_MAX_BUTTONS];	/* 連射タイプ */
-int            nJoyCode [_JOY_MAX_PLUG][_JOY_MAX_AXIS * 4 + _JOY_MAX_BUTTONS + 1];	/* 生成コード */   
+int            nJoyCode [_JOY_MAX_PLUG][_JOY_MAX_AXIS * 4 + _JOY_MAX_BUTTONS + 1];	/* 生成コード */
 //BYTE nJoyRaw[MAX_SDL_JOY];
 
 static DWORD   joydat[3];	/* ジョイスティックデータ */
@@ -51,8 +51,294 @@ static DWORD   joytime2;	/* ジョイスティックポーリング時間	 */
 static BOOL    joyplugged[2];	/* ジョイスティック接続フラグ	 */
 static SDLJoyInterface *SDLDrv; /* SDL JSドライバー */
 static DWORD nJoyKeyCode[MAX_SDL_JOY][12 + _JOY_MAX_BUTTONS]; /* ジョイスティックキーコードアサイン */
+static std::vector<JSActionIndexClass> *pJoyActions;
+
+static DWORD FASTCALL PollJoyCode(int code);
+/*
+* Class 定義
+*/
+JSActionIndexClass::JSActionIndexClass()
+{
+}
+JSActionIndexClass::~JSActionIndexClass(void)
+{
+    int i;
+    int num = act.size();
+    for(i = num - 1; i >= 0; i--){
+        if(&act[i] != NULL) delete &act[i];
+        act.pop_back();
+    }
+}
+
+int JSActionIndexClass::AddAction(JSActionClass *p, BOOL isJoyKey, Uint16 PushCode)
+{
+    if(p == NULL) return -1;
+    p->SetAction(isJoyKey, PushCode);
+    act.push_back(*p);
+    return act.size() - 1;
+}
+
+BOOL JSActionIndexClass::SetAction(int num, BOOL isJoyKey, Uint16 PushCode)
+{
+    std::vector<JSActionClass>::iterator p;
+    if(act.size() <= num) return FALSE;
+    p = act.begin();
+    p += num;
+    p->SetAction(isJoyKey, PushCode);
+    return TRUE;
+}
+
+void JSActionIndexClass::DelAction(void)
+{
+    act.pop_back();
+}
+
+int JSActionIndexClass::GetActionSize(void)
+{
+   return act.size();
+}
+
+JSActionClass *JSActionIndexClass::GetAction(int num)
+{
+    return &act[num];
+}
 
 
+BOOL JSActionClass::ButtonDown(void)
+{
+    if(isJoyKey){
+		PushKeyData(KeyPushCode, 0x80);
+    } else {
+        PollJoyCode(JsPushCode);
+    }
+    return TRUE;
+}
+
+BOOL JSActionClass::ButtonUp(void)
+{
+    if(isJoyKey){
+		PushKeyData(KeyPushCode, 0x80);
+    } else {
+        PollJoyCode(JsPushCode);
+    }
+    return TRUE;
+}
+
+void JSActionClass::SetAction(BOOL JoyKey, Uint16 Code)
+{
+    if(JoyKey){
+        isJoyKey = TRUE;
+        KeyPushCode = Code;
+//        JsPushCode = 0x00;
+    } else{
+        isJoyKey = TRUE;
+//        KeyPushCode = 0x0000;
+        JsPushCode = (Uint8) Code;
+    }
+}
+
+void JSActionClass::SetAxis(int no, int code)
+{
+    AxisNo = no;
+    AxisCode = code;
+    Button = -1;
+}
+void JSActionClass::SetButton(int button)
+{
+    AxisNo = -1;
+    AxisCode = -1;
+    Button = button;
+}
+
+BOOL JSActionClass::IsMatchButton(int button)
+{
+    if(Button == button) return TRUE;
+    return FALSE;
+}
+
+BOOL JSActionClass::IsMatchAxis(int no, int Code)
+{
+    if((AxisNo == no) && (AxisCode == Code)) return TRUE;
+    return FALSE;
+}
+JSActionClass::JSActionClass()
+{
+
+}
+
+JSActionClass::~JSActionClass()
+{
+
+}
+
+
+static void InitJoySub(int index)
+{
+    int num;
+    if(pJoyActions == NULL){
+        pJoyActions =new std::vector<JSActionIndexClass>;
+    }
+}
+
+static void DetachJoySub(int index)
+{
+    int num;
+    int i;
+    if(pJoyActions != NULL){
+        num = pJoyActions->size();
+        for(i = num - 1 ; i >= 0; i--){
+            pJoyActions->pop_back();
+        }
+        delete pJoyActions;
+    }
+}
+
+static void JoyPlugOn(SDL_Joystick *js)
+{
+    JSActionIndexClass *p;
+    int axis;
+    int buttons;
+    int num;
+    int i;
+
+    if(pJoyActions == NULL) return;
+    if(js == NULL) return;
+
+    p = new JSActionIndexClass;
+    pJoyActions->push_back(*p);
+
+    axis = SDL_JoystickNumAxes(js);
+    buttons = SDL_JoystickNumButtons(js);
+    for(i = 0; i < axis / 2; i++){
+        JSActionClass *q;
+        q = new JSActionClass; // 上
+        q->SetAxis(i, 0x01);
+        q->SetAction(TRUE, 0x3b); // JoyKey
+        p->AddAction(q, FALSE, 0x70); // Normal
+
+        q = new JSActionClass; // 下
+        q->SetAxis(i, 0x02);
+        q->SetAction(TRUE, 0x43); // JoyKey
+        p->AddAction(q, FALSE, 0x71);
+
+        q = new JSActionClass; // 左
+        q->SetAxis(i, 0x04);
+        q->SetAction(TRUE, 0x3e); // JoyKey
+        p->AddAction(q, FALSE, 0x72);
+
+        q = new JSActionClass; // 右
+        q->SetAxis(i, 0x08);
+        q->SetAction(TRUE, 0x40); // JoyKey
+        p->AddAction(q, FALSE, 0x73);
+
+        q = new JSActionClass;
+        q->SetAxis(i, 0x05);
+        q->SetAction(TRUE, 0x3a); // JoyKey
+        p->AddAction(q, FALSE, 0x00); // 左上
+
+        q = new JSActionClass;
+        q->SetAxis(i, 0x09);
+        q->SetAction(TRUE, 0x3c); // JoyKey
+        p->AddAction(q, FALSE, 0x00); // 右上
+
+        q = new JSActionClass;
+        q->SetAxis(i, 0x06);
+        q->SetAction(TRUE, 0x42); // JoyKey
+        p->AddAction(q, FALSE, 0x00); // 左下
+
+        q = new JSActionClass;
+        q->SetAxis(i, 0x0a);
+        q->SetAction(TRUE, 0x44); // JoyKey
+        p->AddAction(q, FALSE, 0x00); // 右下
+
+
+        q = new JSActionClass;
+        q->SetAxis(i, 0x00);
+        q->SetAction(TRUE, 0x3f); // JoyKey
+        p->AddAction(q, FALSE, 0x00); // 真ん中
+    }
+    for(i = 0; i < buttons; i++){
+        JSActionClass *q;
+        q = new JSActionClass;
+        switch(i){
+            case 0:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x35); // JoyKey(SP)
+                p->AddAction(q, FALSE, 0x74); //ボタン1
+                break;
+            case 1:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x5c); // JoyKey(Break)
+                p->AddAction(q, FALSE, 0x75); //ボタン2
+                break;
+            case 2:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x2a); // JoyKey(Z)
+                p->AddAction(q, FALSE, 0x74); //ボタン1
+                break;
+            case 3:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x2b); // JoyKey(X)
+                p->AddAction(q, FALSE, 0x75); //ボタン2
+                break;
+            case 4:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x2c); // JoyKey(C)
+                p->AddAction(q, FALSE, 0x00); //なし
+                break;
+            case 5:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x56); // JoyKey(GRPH:Xanadu)
+                p->AddAction(q, FALSE, 0x00);
+                break;
+            case 6:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x53); // JoyKey(LSHIFT)
+                p->AddAction(q, FALSE, 0x00);
+                break;
+            case 7:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x46); // JoyKey(KP0:Delphis)
+                p->AddAction(q, FALSE, 0x00);
+                break;
+            case 8:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x01); // JoyKey(ESC)
+                p->AddAction(q, FALSE, 0x00);
+                break;
+            case 9:
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x45); // JoyKey(KP_ENTER)
+                p->AddAction(q, FALSE, 0x00);
+                break;
+            default: // これ以上多いボタンはとりあえず無効
+                q->SetButton(i); //とりあえずどちらかにアサイン
+                q->SetAction(TRUE, 0x00); // JoyKey(KP0:Delphis)
+                p->AddAction(q, FALSE, 0x00);
+                break;
+
+        }
+    }
+}
+
+static void JoyPlugOff(SDL_Joystick *js)
+{
+    int num;
+    int i;
+    int j;
+    std::vector<JSActionIndexClass>::iterator p;
+    JSActionClass *q;
+
+    if(js == NULL) return;
+    num = SDL_JoystickIndex(js);
+    p = pJoyActions->begin();
+    p+= num;
+    j = p->GetActionSize();
+    for(i = j -1; i >= 0; i--) {
+        delete p->GetAction(i);
+        p->DelAction();
+    }
+}
 /*
  *  ジョイスティック
  * 連射カウンタテーブル(片側、20ms単位)
@@ -188,14 +474,14 @@ static DWORD FASTCALL GetAxis(int index, BOOL flag)
    if(SDLDrv == NULL) return 0x00000000; /* ドライバ初期化前にはダミー返す */
    return SDLDrv[index].GetJoyAxis(flag);
 }
-   
+
 void InitJoyCode(int *p)
 {
 	p[0] = 0x70; // 上
 	p[1] = 0x71; // 下
 	p[2] = 0x72; // 左
 	p[3] = 0x73; // 右
-	p[4] = 0x00; // 
+	p[4] = 0x00; //
 	p[5] = 0x74; // ボタン1
 	p[6] = 0x75; // ボタン2
         p[7] = 0x77; // リザーブ
@@ -311,9 +597,9 @@ static DWORD  FASTCALL PollJoySub(int index, DWORD axis, DWORD dat)
 		if ((joybkaxis[index] & 0x0f) != 0) {
 			ret |= PollJoyCode(nJoyCode[index][4]);
 		}
-	} 
+	}
         joybkaxis[index] = axis;
-   
+
 	/*
 	 * ボタン
 	 */
@@ -339,9 +625,8 @@ static DWORD  FASTCALL PollJoySub(int index, DWORD axis, DWORD dat)
 	return ret;
 }
 
-static void PollJoyKbdSub(int index, DWORD axis, DWORD dat, BYTE MakeBreak)
+static void PollJoyKbdAxis(int index, DWORD axis, BYTE MakeBreak)
 {
-   DWORD db;
    switch(axis & 0x0f)
 	{
 	case 1: /* 上 */
@@ -373,77 +658,18 @@ static void PollJoyKbdSub(int index, DWORD axis, DWORD dat, BYTE MakeBreak)
 		PushKeyData(nJoyKeyCode[index][4], MakeBreak);
 		break;
 	}
-        db =  (dat & 0xffff0000) >> 16;
-        switch(db) {
-	case 0x01: 
-		PushKeyData(nJoyKeyCode[index][5], MakeBreak);
-		break;
-	case 0x02: 
-		PushKeyData(nJoyKeyCode[index][6], MakeBreak);
-		break;
-	case 0x04: 
-		PushKeyData(nJoyKeyCode[index][12], MakeBreak);
-		break;
-	case 0x08: 
-		PushKeyData(nJoyKeyCode[index][13], MakeBreak);
-		break;
-	case 0x10: 
-		PushKeyData(nJoyKeyCode[index][14], MakeBreak);
-		break;
-	case 0x20: 
-		PushKeyData(nJoyKeyCode[index][15], MakeBreak);
-		break;
-	}
-   
 //        printf("DBG:Joy:Button 0x%08x\n", axis);
-	   
-
 }
 
-/*
- *  ジョイスティック ポーリング(キーボード)
- */
-static void PollJoyKbd(int index, DWORD axis, DWORD dat)
+static void PollJoyKbdButton(int index, DWORD dat)
 {
-	DWORD bit;
-	BYTE diff;
-	int            i;
+    DWORD diff;
+    DWORD bit;
+    int i;
 
-
-	/*
-	 * 上下左右
-	 */
-
-	bit = 0x00000001;
-	diff = axis ^ joybkaxis[index];
-	if(diff != 0) {
-		/*
-		 * 前キーbreak
-		 */
-		PollJoyKbdSub(index, joybkaxis[index], dat, 0x00);
-		PollJoyKbdSub(index, axis , dat, 0x80);
-	        joybkaxis[index] = axis;
-	} else {
-		if(((axis & 0xff) == 0) && (axis != joybkaxis[index])){
-			/*
-			 * 強制的に方向キー解除
-			 */
-		   PollJoyKbdSub(index, joybkaxis[index], dat, 0x00);
-		   PollJoyKbdSub(index, 0, dat, 0x80);
-		   joybkaxis[index] = 0;
-		}  else {
-//		   if((joybkaxis[index] & 0xff) == 0) PollJoyKbdSub(index, 0, dat, 0x00);
-		   joybkaxis[index] = axis;
-		}
-   
-	}
-	/*
-	 * ボタン
-	 */
 	bit = 0x00010000;
 	for (i = 0; i < _JOY_MAX_BUTTONS; i++) {
 		if (dat & bit) {
-
 			/*
 			 * 初めて押さたら、make発行
 			 */
@@ -453,14 +679,8 @@ static void PollJoyKbd(int index, DWORD axis, DWORD dat)
 				 } else {
 				    PushKeyData(nJoyKeyCode[index][i + 5], 0x80);
 				 }
-			   
-				
-//				}
 			}
-		}
-
-		else {
-
+		} else {
 			/*
 			 * 初めて離されたら、break発行
 			 */
@@ -474,7 +694,51 @@ static void PollJoyKbd(int index, DWORD axis, DWORD dat)
 		}
 		bit <<= 1;
 	}
-        joybkbutton[index] = dat;
+    joybkbutton[index] = dat;
+
+}
+
+/*
+ *  ジョイスティック ポーリング(キーボード)
+ */
+static void PollJoyKbd(int index, DWORD axis, DWORD dat)
+{
+	DWORD bit;
+	DWORD diff;
+	int            i;
+
+
+	/*
+	 * 上下左右
+	 */
+
+	bit = 0x00000001;
+	diff = axis ^ joybkaxis[index];
+	if(diff != 0) {
+		/*
+		 * 前キーbreak
+		 */
+		PollJoyKbdAxis(index, joybkaxis[index], 0x00);
+		PollJoyKbdAxis(index, axis , 0x80);
+	    joybkaxis[index] = axis;
+	} else {
+		if(((axis & 0xff) == 0) && (axis != joybkaxis[index])){
+			/*
+			 * 強制的に方向キー解除
+			 */
+		   PollJoyKbdAxis(index, joybkaxis[index], 0x00);
+		   PollJoyKbdAxis(index, 0, 0x80);
+		   joybkaxis[index] = 0;
+		}  else {
+//		   if((joybkaxis[index] & 0xff) == 0) PollJoyKbdSub(index, 0, dat, 0x00);
+		   joybkaxis[index] = axis;
+		}
+
+	}
+	/*
+	 * ボタン
+	 */
+	 PollJoyKbdButton(index, dat);
 }
 
 
@@ -530,7 +794,7 @@ void FASTCALL PollJoy(void)
 		 * データ取得(連射つき)
 		 */
 		dat = GetRapidJoy(i, check);
-	        axis = GetAxis(i, check); 
+	        axis = GetAxis(i, check);
 		/*
 		 * タイプ別
 		 */

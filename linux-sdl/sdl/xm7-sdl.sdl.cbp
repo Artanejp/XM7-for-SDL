@@ -72,7 +72,6 @@
 			<Add library="SDL_ttf" />
 			<Add library="gomp" />
 		</Linker>
-		<Unit filename="GtkKbdInterface.cpp" />
 		<Unit filename="GtkKbdInterface.h" />
 		<Unit filename="KbdInterface.cpp" />
 		<Unit filename="KbdInterface.h" />

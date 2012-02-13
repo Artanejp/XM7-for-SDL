@@ -13,7 +13,7 @@
 
 #define _JOY_MAX_BUTTONS 12 // 2-16
 #define _JOY_MAX_AXIS    2 // 2-16
-#define _JOY_MAX_PLUG    2 
+#define _JOY_MAX_PLUG    2
 
 
 #ifdef __cplusplus
@@ -34,4 +34,39 @@ extern BOOL OnReleaseJoy(SDL_Event * event);
 }
 #endif
 
+#ifdef __cplusplus
+#include <vector>
+class JSActionClass {
+public:
+    JSActionClass();
+    virtual ~JSActionClass(void);
+    BOOL ButtonDown(void);
+    BOOL ButtonUp(void);
+    void SetAxis(int axis, int Code);
+    void SetButton(int Button);
+    void SetAction(BOOL JoyKey, Uint16 Code);
+    BOOL IsMatchAxis(int no, int Code);
+    BOOL IsMatchButton(int Button);
+private:
+    BOOL isJoyKey;
+    int AxisNo;
+    int AxisCode;
+    int Button;
+    Uint8 JsPushCode; // 70-76
+    Uint16 KeyPushCode; // 00-ff
+};
+
+class JSActionIndexClass{
+public:
+    JSActionIndexClass();
+    virtual ~JSActionIndexClass(void);
+    int AddAction(JSActionClass *p, BOOL isJoyKey, Uint16 PushCode);
+    void DelAction(void);
+    int GetActionSize(void);
+    JSActionClass *GetAction(int num);
+    BOOL SetAction(int num, BOOL isJoyKey, Uint16 PushCode);
+private:
+    std::vector<JSActionClass> act;
+};
+#endif
 #endif /* API_JS_H_ */

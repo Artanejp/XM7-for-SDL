@@ -7,12 +7,6 @@
 
 #ifndef API_KBD_H_
 #define API_KBD_H_
-#ifdef USE_GTK
-#include<X11/Xlib.h>
-#include<gtk/gtk.h>
-#include<gdk/gdkx.h>
-#include<gdk/gdkkeysyms.h>
-#endif
 #include<memory.h>
 
 #include "xm7.h"

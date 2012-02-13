@@ -3334,11 +3334,7 @@
 
 1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_sch.h
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.h
-	<X11/Xlib.h>
-	<gtk/gtk.h>
-	<gdk/gdkx.h>
-	<gdk/gdkkeysyms.h>
+1329062294 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.h
 	<memory.h>
 	"xm7.h"
 	"mainetc.h"
@@ -3403,7 +3399,7 @@
 1315075186 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLKbdInterface.h
 	"KbdInterface.h"
 
-1306517204 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.cpp
+1329022998 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.cpp
 	<X11/Xlib.h>
 	<memory.h>
 	<SDL/SDL.h>
@@ -3421,11 +3417,12 @@
 	"api_js.h"
 	"SDLJoyInterface.h"
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.h
+1329107576 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.h
 	"xm7.h"
 	"api_kbd.h"
+	<vector>
 
-1306429480 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.h
+1329022569 /home/whatisthis/codeblocks/xm7-sdl/sdl/SDLJoyInterface.h
 	<SDL.h>
 	"xm7.h"
 
@@ -3435,7 +3432,7 @@
 	<SDL.h>
 	"SDLKbdInterface.h"
 
-1328874554 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvBeep.cpp
+1328895352 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvBeep.cpp
 	<SDL/SDL.h>
 	<SDL/SDL_mixer.h>
 	"xm7.h"
@@ -3471,11 +3468,12 @@
 
 1306446803 /home/whatisthis/codeblocks/xm7-sdl/vm//tapelp.h
 
-1328882286 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
+1328928755 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.cpp
 	"SndDrvOpn.h"
 	"api_snd.h"
+	"types.h"
 
-1328591959 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.h
+1328887902 /home/whatisthis/codeblocks/xm7-sdl/sdl/SndDrvOpn.h
 	"xm7.h"
 	"../fmgen/misc.h"
 	"opna.h"
@@ -3739,7 +3737,7 @@
 	<stdlib.h>
 	"EmuGrphScale1x2.h"
 
-1318141653 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.cpp
+1329107783 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_js.cpp
 	<X11/Xlib.h>
 	<memory.h>
 	<SDL/SDL.h>
@@ -3757,8 +3755,9 @@
 	"sdl_sch.h"
 	"api_kbd.h"
 	"api_js.h"
+	<vector>
 
-1318141706 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.cpp
+1329012974 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_kbd.cpp
 	<X11/Xlib.h>
 	<gtk/gtk.h>
 	<gdk/gdkx.h>
@@ -3778,8 +3777,6 @@
 	"api_kbd.h"
 	"KbdInterface.h"
 	"SDLKbdInterface.h"
-	"GtkKbdInterface.h"
-	"gtk_propkeyboard.h"
 	"AgarKbdInterface.h"
 
 1326108510 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/AgarKbdInterface.h
@@ -3820,7 +3817,7 @@
 	"api_draw.h"
 	"api_scaler.h"
 
-1328883213 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
+1329026965 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd2.cpp
 	<machine/soundcard.h>
 	<linux/soundcard.h>
 	<stdlib.h>
@@ -3847,7 +3844,7 @@
 	"SndDrvOpn.h"
 	"SndDrvCMT.h"
 
-1305541919 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_wavwriter.h
+1328973638 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_wavwriter.h
 	<stdlib.h>
 	<unistd.h>
 	<fcntl.h>
@@ -3864,7 +3861,7 @@
 	<stdint.h>
 	<SDL.h>
 
-1321982179 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_wavwriter.cpp
+1328973484 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_wavwriter.cpp
 	"api_wavwriter.h"
 
 1306429830 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/main.cpp
@@ -5167,7 +5164,7 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 
-1327979281 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
+1329062662 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_vram.h
 	<SDL.h>
 	<GL/gl.h>
 	<GL/glext.h>
@@ -5179,6 +5176,7 @@
 	"agar_draw.h"
 	"agar_gldraw.h"
 	"agar_xm7.h"
+	"../fmgen/types.h"
 
 1318200384 /usr/include/atk-1.0/atk/atkwindow.h
 	<atk/atkobject.h>
@@ -5292,12 +5290,13 @@
 	<agar/core.h>
 	<agar/gui.h>
 
-1327982226 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vramvec.c
+1328893254 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vramvec.c
 	<SDL.h>
+	"types.h"
 	"api_draw.h"
 	"api_vram.h"
 
-1328883911 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd.h
+1328932412 /home/whatisthis/codeblocks/xm7-sdl/sdl/api_snd.h
 	"xm7.h"
 	"device.h"
 	"mainetc.h"
@@ -5311,7 +5310,7 @@
 	"api_wavwriter.h"
 	"SndDrvIF.h"
 
-1328883706 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/snd_buffer.cpp
+1328932982 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/snd_buffer.cpp
 	<machine/soundcard.h>
 	<linux/soundcard.h>
 	<stdlib.h>
@@ -5328,6 +5327,7 @@
 	"mainetc.h"
 	"sdl.h"
 	"sdl_sch.h"
+	"types.h"
 	"api_snd.h"
 	"api_wavwriter.h"
 	"SndDrvIF.h"
@@ -5336,17 +5336,23 @@
 	"SndDrvOpn.h"
 	"SndDrvCMT.h"
 
-1328591395 /home/whatisthis/codeblocks/xm7-sdl/fmgen/misc.h
+1328893563 /home/whatisthis/codeblocks/xm7-sdl/fmgen/misc.h
 	<math.h>
 	<string.h>
 
-1328592385 /home/whatisthis/codeblocks/xm7-sdl/fmgen/opna.h
+1328893563 /home/whatisthis/codeblocks/xm7-sdl/fmgen/opna.h
 	"fmgen.h"
 	"psg.h"
 
-1328591408 /home/whatisthis/codeblocks/xm7-sdl/fmgen/fmgen.h
+1328893563 /home/whatisthis/codeblocks/xm7-sdl/fmgen/fmgen.h
 	"misc.h"
 
-1328592286 /home/whatisthis/codeblocks/xm7-sdl/fmgen/psg.h
+1328893563 /home/whatisthis/codeblocks/xm7-sdl/fmgen/psg.h
 	"misc.h"
+
+1328892462 /home/whatisthis/codeblocks/xm7-sdl/fmgen/types.h
+	<stdint.h>
+	<stddef.h>
+
+1328893563 /home/whatisthis/codeblocks/xm7-sdl/fmgen/fmgeninl.h
 

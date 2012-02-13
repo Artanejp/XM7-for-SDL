@@ -19,7 +19,7 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_xm7.h"
-#include "types.h"
+#include "../fmgen/types.h"
 
 /*
  * api_vram8.cpp
