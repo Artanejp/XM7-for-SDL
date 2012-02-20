@@ -1,0 +1,138 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>Tiny oscillo-scope kit 06202KP</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>オシロスコープキットを改造する。その１(2012-02-18)</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#WHAT">何を改造したいのか？</A><BR>
+<A HREF="#HOW">どう改造するのか？</A><BR>
+&nbsp; <A HREF="#KAIZO1">電圧インバータ部分</A><BR>
+&nbsp; <A HREF="#KAIZO2">インバータを組み込む</A><BR>
+<A HREF="#OMAKE1">おまけ</A><BR>
+&nbsp; <A HREF="#OMAKE2">コンデンサについて</A><BR>
+<A HREF="./index.html">オシロスコープ本文に戻る</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<A NAME="WHAT"></A>
+<BR>
+<H3>何を改造したいのか？</H3>
+&nbsp; このオシロスコープ、アナログ系が弱いようでテスト信号の方形波を測定すると縦±１ドットの範囲でぶらつきます。<BR>
+&nbsp; <A HREF="http://soec.blog71.fc2.com/blog-entry-38.html"
+target=_blank>既に先人が入力オペアンプの入力周りや電源周りのコンデンサを総入れ替えする</A>改善を行なっていますが、
+<B>又々液晶を取るというのも非常に面倒くさい</B>（基板焼かないようにするためにすっごく神経使います）ので、別のアプローチをしてみよう。<BR>
+&nbsp; そう思い立ちました。<BR>
+<BR>
+<A NAME="HOW"></A>
+<H3>どう改造するのか？</H3>
+&nbsp; <A HREF="http://www.jyetech.com/Products/LcdScope/e062.php"
+target=_blank>メーカーサイトを丹念に見ていくと回路図(Schematic)があります</A>が、
+U1とU2の電源であるAV+,AV-の内、負の電圧が必要なAV-をCPUからのタイミング信号でスイッチングする電圧コンバータで作っています。(Q1,Q2,L1〜L3のあたり)<BR>
+&nbsp; なので、<B>AV-を電圧インバータで作りなおしてやろう</B>と言う方向性を試して見ました。<BR>
+&nbsp; 電圧インバータには<A
+HREF="http://www.linear-tech.co.jp/product/LT1054"
+target=_blank>LT1054</A>を使ってみました。これは、<A
+HREF="http://akizukidenshi.com/catalog/g/gI-01632/"
+target=_blank>秋月電子でもDIP8ピン型が入手できます</A>。<BR>
+&nbsp; <B>勿論、電圧インバータを挿入するために、本体の部品を外します。表面実装部品のデバッグに自信がない人はやめたほうがいいと思います</B><BR>
+<BR>
+<A NAME="KAIZO1"></A>
+<H3>電圧インバータ部分</H3>
+&nbsp; まず、電圧インバータ部分を作りましょう。<BR>
+<A HREF="OSC-INVERTER-v1.sch.gz"><IMG SRC="OSC-INVERTER-v1.png">回路図</A><BR>
+&nbsp;
+回路図は、メーカのデータシートのP.10「標準的応用例」の中の「基本的な電圧インバータ／レギュレータ」そのまんまです(^_^;<BR>
+&nbsp; 但し、タンタルコンデンサは使わずになるべく積層セラミックコンデンサで組んでいます。
+今時は47uFと言う大きなものも積層セラミックでできているので、使わない手はない（これは流石に高価ですが、今回使った10uF辺りまでだと一個百円しないので無理な価格ではない)。
+&nbsp; 100uFだけは流石にスイッチング電源用の電解コンデンサの220uFを使っています。
+<BR>
+<A NAME="KAIZO2"></A>
+<H3>インバータを組み込む</H3>
+<IMG SRC="PC273094.JPG"><BR>
+&nbsp; インバータ部分の基板が出来て、電圧も目的通り出てることを確認しました。次は、これをオシロに組み込みましょう！<BR>
+<IMG SRC="PC273092.JPG"><BR>
+&nbsp; Q1,L2,L3を外します。一度ハンダを垂らして部品をハンダの海に浮かばせて、ピンセットで取る。<BR>
+&nbsp; ついでに、U3の両側に0.1uFのセラミックコンデンサをつけました。<BR>
+<IMG SRC="PC273106.JPG"><BR>
+&nbsp; 更に、入力コンデンサを手元にあったマザーボード用の680uF,16Vに（きわどいけど）<BR>
+<IMG SRC="PC273099.JPG"><BR>
+&nbsp; インバータ基板の出力(黄色：AV+,緑:AV-)を本体につなぎましょう。接続先は一度外したL2,L3の出力側です。<BR>
+<IMG SRC="PC273100.JPG"><BR>
+&nbsp; インバータ基盤の入力を電源ジャックから取ります。<BR>
+<BR>
+&nbsp; さて、基準信号を撮り直してみましょう<BR>
+<IMG SRC="PC273103.JPG"><BR>
+&nbsp; <B>少し改善したけど完全じゃない(´・ω・｀)</B><BR>
+&nbsp; まぁ、安物スイッチング電源を主電源に使ってるしこんなものだろうと当面諦めます(´・ω・｀)<BR>
+<BR>
+<A NAME="OMAKE1"></A>
+<H3>おまけ</H3>
+&nbsp; ついでにファームウェアもアップデートしたので（あとで書く）、<A HREF="../INVERTER/index.html">LED照明の電源</A>の波形を撮り直しました。<BR>
+<IMG SRC="PC273119.JPG"><BR>
+&nbsp; リップル(縦軸は0.1V/div)<BR>
+<IMG SRC="PC273122.JPG"><BR>
+&nbsp; ノイズ(縦軸は0.1V/div)<BR>
+<BR>
+<A NAME="OMAKE2"></A>
+<H4>コンデンサについて</H4>
+&nbsp; 
+&nbsp; 五年以上前だと表面実装での大容量コンデンサといえば大きなケミコンか中くらいの大きさで基板上のスペースは喰わないタンタルコンデンサが主流で、
+ケミコンで47uFとか100uF買うよりもタンタルは価格的に手頃ではあるんだけど故障モードが短絡なので電源系に使いにくいという問題がありました。<BR>
+&nbsp;
+大体のメーカは設計時の基準に「電源系にタンタルを使わないこと、使う場合はヒューズ付きを使うか応相談」としています。<BR>
+&nbsp;
+その上、タンタルは所謂レアメタルで供給が不安定な上に<B>主な採掘地のコンゴなど中央アフリカ地域での<A
+HREF="http://eco.nikkeibp.co.jp/article/report/20110908/108305/"
+target="_blank">内戦の原因になったり</A>、奴隷労働が横行したりと問題がありすぎる状態にあります。</B><BR>
+&nbsp; 最近はケミコンだけでなく高分子系の素材を使ったコンデンサに於いても大容量・小型でESR値もタンタル並みに
+低いコンデンサが多く出ていて、タンタルよりも安価になっています。しかしこれも未だ少し大きい上に耐圧が低めの物が多いです。
+これらのものはコンピュータの電源の二次側やマザーボードのような比較的低い電圧に使われることが多い。<BR>
+&nbsp;
+最近になって積層セラミックコンデンサも大容量化が進んで、47uF〜100uF程度まで商品化されています。
+これはESR値が極めて低く、35V以上の耐圧を兼ね備えてスペースも喰わないと言ういいことづくめの物です。但し、物性上機械的に弱かったり湿気や温度に敏感だったりする場合も少なくないので、そこは適材適所という事で。<BR>
+<BR>
+<HR>
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">LED-INVERTER</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="./index.html">オシロスコープ本文に戻る</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 18 Feb.2012 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
