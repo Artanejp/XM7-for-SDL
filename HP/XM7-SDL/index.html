@@ -49,7 +49,7 @@ libagar svn r9049のソースコード</A><BR>
 <H2>変更点:</H2>
 - <B>"10 20"未定義命令をLBRAと解釈してない問題の解決（他にバグ無いよね？）(NEW!)</B><BR>
 - <B>LEDランプやステータスをWidgetで実装しなおした(GL版は表示がバグってるけどagar側の問題っぽい)(NEW!)</B><BR>
-- <B><A HREF="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html">GCCのVector拡張</A>を使って描画や音声に関する転送や演算の高速化(MEW!)。
+- <B><A HREF="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html">GCCのVector拡張</A>を使って描画や音声に関する転送や演算の高速化(NEW!)。
 但し、組み込み関数やアセンブラは未だ使っていません</B><BR>
 - <B>↑の件に絡んで、コンパイル環境をgcc-4.4系列に戻した（※4.5以上や4.2以下では正当なビルドができない可能性がある）(NEW!)</B><BR>
 - <B>OPEN MPによる、マルチスレッド描画の実装(NEW!)</B><BR>
@@ -62,7 +62,7 @@ libagar svn r9049のソースコード</A><BR>
 - <B>WAVの取り込み機能が復活しました（スクラッチから書き起こした）</B><BR>
 - <B>GTKを捨てて、AGAR GUIツールキット ( <A HREF="http://www.libagar.org/"
 target="_blank">http://www.libagar.org/</A>)に置き換えた</B><BR>
-- <B>基本的に、OpenGL専用です(が、これからNonGLな描画機構も作る（｀・ω・´）)</B><BR>
+- <B><del>基本的に、OpenGL専用です(が、これからNonGLな描画機構も作る（｀・ω・´）)</del></B><BR>
 - <B>フォントをコマンドラインから設定できるようにした</B><BR>
 - <B>キーボードアサインが記録されていないことの改善</B><BR>
 - <B>CPUのTFR/EXG命令が正常に動いていなかったことの修正</B><BR>
@@ -81,7 +81,7 @@ target="_blank">http://www.libagar.org/</A>)に置き換えた</B><BR>
 - 描画について、モジュール化による書きなおしを進めています。(NEW!)<BR>
 - OpenGLレンダラ（少しはらしくなってきた？(´・ω・｀)）<BR>
 - 仮想キーボードの追加<BR>
-- DOSブートモードの復活(あれ？)<BR>
+- <del>DOSブートモードの復活(あれ？)</del><BR>
 - 描画処理を別スレッドにした<del>（現状はFPS固定)</del><BR>
 &nbsp;&nbsp;26万色・400lineが復活しました<BR>
 - <del>Eclipseでのビルドに移行開始(Makefileでもビルド出来ます)</del><BR>
