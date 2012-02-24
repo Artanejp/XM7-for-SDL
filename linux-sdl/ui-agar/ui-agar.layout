@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="AgarKbdInterface.cpp" open="0" top="0" tabpos="4">
-		<Cursor position="10347" topLine="381" />
+	<File name="AgarKbdInterface.cpp" open="1" top="0" tabpos="6">
+		<Cursor position="2221" topLine="80" />
 	</File>
 	<File name="AgarKbdInterface.h" open="0" top="0" tabpos="6">
 		<Cursor position="882" topLine="31" />
@@ -40,8 +40,8 @@
 	<File name="agar_guicore.cpp" open="1" top="0" tabpos="4">
 		<Cursor position="8526" topLine="385" />
 	</File>
-	<File name="agar_main.cpp" open="0" top="0" tabpos="24">
-		<Cursor position="3744" topLine="183" />
+	<File name="agar_main.cpp" open="1" top="1" tabpos="23">
+		<Cursor position="3747" topLine="183" />
 	</File>
 	<File name="agar_menu_about.cpp" open="0" top="0" tabpos="11">
 		<Cursor position="1222" topLine="61" />
@@ -62,7 +62,7 @@
 		<Cursor position="17360" topLine="714" />
 	</File>
 	<File name="agar_sch.cpp" open="1" top="0" tabpos="3">
-		<Cursor position="3172" topLine="167" />
+		<Cursor position="3172" topLine="154" />
 	</File>
 	<File name="agar_sdl.cpp" open="0" top="0" tabpos="2">
 		<Cursor position="2564" topLine="100" />

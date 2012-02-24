@@ -11,8 +11,8 @@
 //#include<gdk/gdkx.h>
 //#include<gdk/gdkkeysyms.h>
 #include<memory.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
+#include <SDL.h>
+#include <SDL_syswm.h>
 #include <vector>
 #include "SDLJoyInterface.h"
 
@@ -658,7 +658,7 @@ static void PollJoyKbdAxis(int index, DWORD axis, BYTE MakeBreak)
 		PushKeyData(nJoyKeyCode[index][4], MakeBreak);
 		break;
 	}
-//        printf("DBG:Joy:Button 0x%08x\n", axis);
+        printf("DBG:JoyKey:Button 0x%08x\n", axis);
 }
 
 static void PollJoyKbdButton(int index, DWORD dat)
@@ -845,7 +845,7 @@ BYTE FASTCALL joy_request(BYTE no)
 	 * ASSERT((no >= 0) && (no < 3));
 	 */
 	ASSERT(no < 3);
-//	printf("JOY: %02x %02x %02x\n", joydat[0], joydat[1], joydat[2]);
+//	printf("JOYRQ: %02x %02x %02x\n", joydat[0], joydat[1], joydat[2]);
 	return joydat[no];
 }
 
@@ -856,7 +856,7 @@ static void OpenJoyInit(void)
 {
 	int i;
 	for(i = 0;i<MAX_SDL_JOY; i++) SDLDrv[i].Open(i);
-//    SDL_JoystickEventState(SDL_ENABLE);
+        SDL_JoystickEventState(SDL_ENABLE);
 }
 /*
  * ジョイスティック初期化

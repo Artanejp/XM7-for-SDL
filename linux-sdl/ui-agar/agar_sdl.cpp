@@ -102,17 +102,18 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 
 BOOL EventSDL(AG_Driver *drv)
 {
-	SDL_Surface *p;
+//	SDL_Surface *p;
 	SDL_Event eventQueue;
 	AG_DriverEvent event;
 
 	/*
 	 * JoyStickなどはSDLが管理する
 	 */
+//	AG_SDL_GetNextEvent(void *obj, AG_DriverEvent *dev)
 
-	if(SDL_WasInit(SDL_INIT_VIDEO) != 0) {
-		p = SDL_GetVideoSurface();
-		if(p == NULL) return TRUE;
+//	if(SDL_WasInit(SDL_INIT_JOYSTICK) != 0) {
+//		p = SDL_GetVideoSurface();
+//		if(p == NULL) return TRUE;
 		while (SDL_PollEvent(&eventQueue))
 		{
 			switch (eventQueue.type)
@@ -132,7 +133,7 @@ BOOL EventSDL(AG_Driver *drv)
 				break;
 			}
 		}
-	}
+//	}
 	return TRUE;
 }
 

@@ -52,7 +52,8 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
 LIBS += -L/usr/local/lib
 
-LIBS += `pkg-config --libs sdl`
+#LIBS += `pkg-config --libs sdl`
+LIBS += `sdl-config --libs`
 LIBS +=  -lSDL_mixer -lSDL_ttf
 #LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
 

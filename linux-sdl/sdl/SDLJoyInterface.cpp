@@ -183,7 +183,7 @@ DWORD SDLJoyInterface::GetJoyAxis( BOOL flag)
 {
 	DWORD code = 0;
 	code = nJoyRawAxis;	/* いい加減だが… */
-	// printf("JS: code = %04x\n",code);
+	 //printf("JS: code = %08x\n",code);
 	return code;
 }
 

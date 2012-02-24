@@ -119,10 +119,10 @@ BOOL SelectSch(void)
 	/*
 	 * スレッド生成
 	 */
-	if (!AG_ThreadCreate(&SchThread, &ThreadSch, NULL))
-	{
-		return FALSE;
-	}
+	AG_ThreadCreate(&SchThread, &ThreadSch, NULL);
+//	{
+//		return FALSE;
+//	}
 	return TRUE;
 }
 

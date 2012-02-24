@@ -35,10 +35,10 @@ FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/
 
 LDFLAGS = 
 
-#CC = gcc
-#CXX = g++
-CC = gcc-4.4
-CXX = g++-4.4
+CC = gcc
+CXX = g++
+#CC = gcc-4.4
+#CXX = g++-4.4
 AR = ar
 
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
@@ -50,9 +50,9 @@ ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
 endif
 
-CFLAGS +=  -I. -I/usr/local/include
+CFLAGS +=  -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/
-CFLAGS += `pkg-config --cflags sdl`
+CFLAGS += `sdl-config --cflags`
 #CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`
 # OpenMP
