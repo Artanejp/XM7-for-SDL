@@ -1,0 +1,145 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>455KHz Reference osc</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>455KHz基準発振治具を作る(2012-02-27)</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#WHAT">これは何か</A><BR>
+<A HREF="#HOW">どのようなものか</A><BR>
+<A HREF="#MAKING">製作</A><BR>
+<A HREF="#CHECK">測定</A><BR>
+<A HREF="#COUNTER">周波数カウンタとのインタフェース</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<A NAME="WHAT"></A>
+<H3>これは何か</H3>
+&nbsp; 中波や短波のラジオをつくろうとした時に、どうしても避けられないのがスーパーヘテロダインにすることです。
+受信した信号を、中間周波数である455KHzに一度落として更に増幅し、検波し音に直す。
+そこら辺を省いたストレート式のラジオでもいいのですが、感度が悪かったり逆に良すぎて発振したりする気まぐれさを持っているので安定性がない。<BR>
+&nbsp; スーパーヘテロダイン式ラジオで普通に組もうとすると、455KHzの信号を使って調整する必要があります。
+中波のラジオだと複数の放送局を受信しての調整が可能ですが、短波や長波となるとそうはいかない。動作チェックすら容易でない。<BR>
+&nbsp; そこで、(とりあえず無変調だけど）455KHzを発振する基準信号発生器を作って見ることにしました<BR>
+<BR>
+<A NAME="HOW"></A>
+<H3>どのようなものか</H3>
+&nbsp; 非常にシンプルな回路です。中間周波トランス（黒）を使ってハートレー式の発振回路を組み、
+その上でオシロスコープに付いているTTLレベル入力周波数カウンタを動作させるために方形波（もどき）を出す端子を一緒に付けてあります。
+<BR>
+<BR>
+<A HREF="455K-1.sch.gz"><IMG SRC="455K-1.png" ALT="回路図"><BR>
+&nbsp;&nbsp; 回路図</A><BR>
+<BR>
+&nbsp; この回路を組むにあたってトランジスタを
+<A
+HREF="http://www.semicon.toshiba.co.jp/openb2b/websearch/productDetails.jsp?partKey=2SC4116"
+target="_blank">2SC4116GR</A>にしました。
+よく使われてきた2SC1815は生産終了になるので、どうしても表面実装にできないもの以外はなるべくこの手の物にしようと…<BR>
+&nbsp; しかし、このトランジスタは非常に小さなトランジスタで、通常の万能基板では実装ができません。<BR>
+&nbsp; そこで、<A HREF="http://akizukidenshi.com/catalog/g/gP-03811/"
+target="_blank">秋月電子から出ている「プロトタイピング基板」</A>(矢島製作所製）を加工して使うことにしました。
+しかし、それでもトランジスタのほうが小さくて難儀したのでした。<BR>
+<BR>
+<A NAME="MAKING"></A>
+<H3>製作</H3>
+<BR>
+<IMG SRC="P2273846.JPG" ALT="プロトタイピング基板"><BR>
+&nbsp; この基板は、1.25mm間隔で表面実装部品をハンダ付けしやすいランドが並んでいます。ここに、トランジスタや抵抗を乗せていきます。<BR>
+&nbsp; 又、裏側はベタアースに使われることを期待して、一枚の銅箔で作られています。この面を加工し、穴を開けてIFTを付けていきます。
+<BR>
+<IMG SRC="P2273847.JPG" ALT="穴を開ける">  <IMG SRC="P2273848.JPG" ALT="プロトタイピング基板"><BR>
+&nbsp; IFTのピンが入る穴を明けます。1.0ミリくらい。<BR>
+<BR>
+<IMG SRC="P2273849.JPG" ALT="けがき">  <IMG SRC="P2273850.JPG" ALT="はがす"><BR>
+&nbsp; ベタアース面の銅箔を一部削るので、IFTの外枠よりちょっとだけ大きな範囲のレジストをカッターなどで剥がします。<BR>
+&nbsp; ついでにIFTのケースの固定用のタブをベタアース面にはんだづけするので、はんだ付けする範囲もレジストを剥がします。<BR>
+<BR>
+<IMG SRC="P2273853.JPG" ALT="IFT加工"><BR>
+&nbsp; IFTの固定用のタブを外側に曲げます。<BR>
+<BR>
+<IMG SRC="P2273854.JPG" ALT="ベタアース面"><BR>
+&nbsp; とりあえず、IFTのピンの周囲の銅箔を剥ぎ取り、タブが当たるところへの予備はんだだけしておきます。<BR>
+<BR>
+<IMG SRC="P2273855.JPG" ALT="部品面"><BR>
+&nbsp; 発振回路を組みます。トランジスタ→抵抗→コンデンサ→IFTと言う感じがベストのようです。<BR>
+<BR>
+<IMG SRC="P2273856.JPG" ALT="部品面２">  <IMG SRC="P2273856.JPG" ALT="部品面３"><BR>
+&nbsp; リード線や電池ボックスを付けていきます<BR>
+<A NAME="CHECK"></A>
+<H3>測定</H3>
+<BR>
+<IMG SRC="P2273860.JPG" ALT="波形１"><BR>
+&nbsp; 発振回路が出来たので、波形を取ってみましょう。<BR>
+<BR>
+<IMG SRC="P2273861.JPG" ALT="波形2"><BR>
+&nbsp; 一目盛1Vです…3Vp-p出ていて波形も結構きれい。いい加減に設計した割にはいいかな？<BR>
+<BR>
+<IMG SRC="P2273862.JPG" ALT="波形3">  <IMG SRC="P2273863.JPG" ALT="波形4"><BR>
+&nbsp; IFTのコアを回すと、周波数が上がったり下がったり。<BR>
+<BR>
+<A NAME="COUNTER">
+<H3>周波数カウンタとのインタフェース</H3>
+<BR>
+&nbsp; JYETECH社の簡易オシロスコープには、おまけで？TTLレベル入力の周波数カウンタ機能がついていますが、生の出力を入れてもレベル不足でカウンタが反応しません。<BR>
+&nbsp; そこで、Q2の周辺のように4.8Vp-pの方形波に変換する回路を後づけしました。<BR>
+<BR>
+<IMG SRC="P2273864.JPG" ALT="製作中"><BR>
+&nbsp; 回路を組んでいきます。この写真は抵抗値や回路をその場で調整している様子<BR>
+<BR>
+&nbsp; さて、調整が終わりました<BR>
+<BR>
+<IMG SRC="P2273870.JPG" ALT="波形5"><BR>
+&nbsp; 1V/div<BR>
+<IMG SRC="P2273871.JPG" ALT="波形6"><BR>
+&nbsp; 2V/div<BR>
+<BR>
+&nbsp; 波形が鈍っていますが、カウンタが反応するのでよしとしましょう(^_^;<BR>
+<BR>
+<IMG SRC="P2273869.JPG" ALT="カウンタ"><BR>
+&nbsp; 周波数カウンタを使って455KHzに調整しました<BR>
+<BR>
+<HR>
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">Oscilator</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 27 Feb.2012 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
