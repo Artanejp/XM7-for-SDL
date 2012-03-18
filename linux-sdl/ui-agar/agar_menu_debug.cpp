@@ -57,6 +57,7 @@ struct MemDumpWid {
     DWORD addr;
     BOOL8 Editable;
     BOOL8 Updated;
+    Uint8 *oldbuf;
 
     int w;
     int h;
@@ -107,14 +108,31 @@ static BOOL sanity_hexa(char *s, int *v)
     return TRUE;
 }
 
-extern  void DBG_HexDumpMemory(char *str, Uint8 *buf, WORD addr, int sum, int bytes, BOOL AddrFlag);
+static inline char hex2chr(Uint8 b)
+{
+    Uint8 bb = b & 0x0f;
+    char c;
+
+    if(bb < 10) {
+        c = '0' + bb;
+    } else {
+        c = 'A' + (bb - 10);
+    }
+    return c;
+}
+
+
+extern void DBG_HexDumpMemory(char *str, Uint8 *buf, WORD addr, int sum, int bytes, BOOL AddrFlag);
 extern void DBG_PrintYSum(char *str, int *sum, int totalSum, int width);
-
 extern int DBG_DisAsm1op(int cpuno, Uint16 pc, char *s, Uint8 *membuf);
+extern void DBG_Bin2Hex1(char *str, Uint8 b);
+extern void DBG_Bin2Hex2(char *str, Uint16 w);
+extern void DBG_Bin2Hex4(char *str, Uint32 dw);
+extern void DBG_DumpAsc(char *str, Uint8 b);
 
-static void DumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), int w, int h);
 
-
+static void DumpMem(AG_Textbox *t, WORD addr, struct MemDumpWid *mp);
+static void UpdateDumpMem(AG_Textbox *t, WORD addr, struct MemDumpWid *mp);
 
 static void Disassemble(AG_Textbox *t, WORD addr, struct MemDumpWid *mp, int lines)
 {
@@ -188,9 +206,8 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
     AG_Textbox *td;
 
     if(mp == NULL) return ival;
-//    if(mp->Updated == FALSE) return;
     td = mp->dumpBox;
-    if(mp->Updated) DumpMem(td, mp->addr, mp->rf, mp->w, mp->h);
+    DumpMem(td, mp->addr, mp);
     return mp->to_tick;
 }
 
@@ -215,13 +232,108 @@ static int sum_line(Uint8 *p, int *ysum, int w)
     return sum;
 }
 
-static void DumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), int w, int h)
+static void decodecursor_dump(int pos, int *x, int *y, int w, int h)
+{
+    pos -= 3 * w + 6 + 1;
+    pos -= (w * 3 + 8 + 1);
+    if(pos <= 0) {
+        *x = 0;
+        *y = 0;
+        return;
+    }
+    *y = pos / (w * 4 + 12);
+    pos -= ((w * 4 + 12) * *y + 5);
+    *x = pos / 3;
+}
+
+static int movecursor_dump(int x, int y, int w, int h)
+{
+    int pos;
+    pos = 3 * w + 6 + 1;
+    pos += (w * 3 + 8 + 1);
+    pos += (y * (w * 4 + 12));
+    pos += x * 3 + 5;
+    return pos;
+}
+
+static int movecursor_ascii(int x, int y, int w, int h)
+{
+    int pos;
+    pos = 3 * w + 6 + 1;
+    pos += (w * 3 + 8 + 1);
+    pos += (y * (w * 4 + 12));
+    pos += w * 3 + 5 + 1;
+    pos += x;
+    return pos;
+}
+
+
+static void UpdateDumpMem(AG_Textbox *t, WORD addr, struct MemDumpWid *mp)
+{
+    int w;
+    int h;
+    int x;
+    int y;
+    Uint8 *buf;
+    Uint8 *oldbuf;
+    Uint8 b;
+    int ptr = 0;
+    char cbuf[16];
+
+    if(mp == NULL) return;
+    w = mp->w;
+    h = mp->h;
+    oldbuf = mp->oldbuf;
+
+    if(w <= 0) return;
+    if(h <= 0) return;
+
+    buf = (Uint8 *)malloc(w * h + 4);
+    cbuf[0] = '\0';
+    ReadMemLine(buf, addr , mp->rf, w * h);
+    for(y = 0; y < h; y++){
+        for(x = 0; x < w; x++){
+            b = buf[ptr];
+            if((oldbuf == NULL) || (b != oldbuf[ptr])){
+                AG_TextboxSetCursorPos(t, movecursor_dump(x, y, w, h));
+                DBG_Bin2Hex1(cbuf, b);
+                AG_TextboxSetString(t, cbuf);
+
+                AG_TextboxSetCursorPos(t, movecursor_ascii(x, y, w, h));
+                DBG_DumpAsc(cbuf, b);
+                AG_TextboxSetString(t, cbuf);
+            }
+            ptr++;
+        }
+    }
+    if(oldbuf != NULL) memcpy(oldbuf, buf, w * h);
+}
+
+static void DumpMem(AG_Textbox *t, WORD addr, struct MemDumpWid *mp)
 {
     char *stmp;
+    char *stmp2;
     Uint8 *buf;
+    Uint8 *oldbuf;
     int i;
+    int j;
     int xsum;
     int *ysum;
+    int tsum = 0;
+    BYTE (*rf)(WORD);
+    int w;
+    int h;
+
+    if(mp == NULL) return;
+    rf = mp->rf;
+    oldbuf = mp->oldbuf;
+    w = mp->w;
+    h = mp->h;
+
+
+    if(w <= 0) return;
+    if(h <= 0) return;
+    if(rf == NULL) return;
 
     buf = (Uint8 *)malloc(sizeof(Uint8) * (w + 1));
     if(buf == NULL) return;
@@ -231,35 +343,79 @@ static void DumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), int w, int h)
         free(buf);
         return;
     }
+    memset(ysum, 0x00, sizeof(int) * (w + 1));
+
     stmp = (char *)malloc(sizeof(char) * ((w + 1) * 5 + 16 + 5) * h);
     if(stmp == NULL){
         free(buf);
         free(ysum);
         return;
     }
+    stmp2 = (char *)malloc(sizeof(char) * ((w + 1)* 3 + 12));
+    if(stmp2 == NULL){
+        free(buf);
+        free(ysum);
+        free(stmp);
+        return;
+    }
+    stmp[0] = '\0';
+    stmp2[0] = '\0';
 
-    strcpy(stmp, "");
+    strcpy(stmp2, "ADDR  ");
+    j = 6;
+    for(i = 0; i < w; i++) {
+        stmp2[j] = '+';
+        stmp2[j + 1] = (char)hex2chr((Uint8)(i & 0x0f));
+        stmp2[j + 2] = ' ';
+        j += 3;
+    }
+    stmp2[j] = '\n';
+    stmp2[j + 1] = '\0';
+    strcpy(stmp, stmp2);
+
+    for(i = 0; i < (w * 3 + 8); i++) {
+        stmp2[i] = '-';
+    }
+    stmp2[i] = '\n';
+    stmp2[i + 1] = '\0';
+    strcat(stmp, stmp2);
 
     for(i = 0; i < h ; i++){
-//        strcpy(stmp, "");
         ReadMemLine(buf, addr + (w * i) , rf, w);
+        if(oldbuf != NULL) {
+            memcpy(&oldbuf[w * i], buf, w);
+        }
         xsum = sum_line(buf, ysum, w);
+        tsum += xsum;
         DBG_HexDumpMemory(stmp, buf, addr + (i * w), xsum, w, TRUE);
 //        AG_TextboxPrintf(t, "%s", stmp);
         strcat(stmp, "\n");
     }
+    strcat(stmp, stmp2);
+
+    DBG_PrintYSum(stmp, ysum, tsum, w);
     AG_TextboxPrintf(t, "%s\n", stmp);
+
+    AG_TextboxSetCursorPos(t, movecursor_dump(15, 15, w, h));
+    mp->Updated = 0;
     free(stmp);
+    free(stmp2);
     free(ysum);
     free(buf);
 }
 
-static void CreateDumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), void FASTCALL (*wf)(WORD, BYTE), int w, int h)
+static void CreateDumpMem(AG_Textbox *t, WORD addr, struct MemDumpWid *mp)
 {
     char *stmp;
     int i;
+    int w;
+    int h;
+    BYTE (*rf)(WORD);
 
-
+    if(mp == NULL) return;
+    w = mp->w;
+    h = mp->h;
+    rf = mp->rf;
     if(w <= 0) return;
     if(h <= 0) return;
 
@@ -280,7 +436,7 @@ static void CreateDumpMem(AG_Textbox *t, WORD addr, BYTE (*rf)(WORD), void FASTC
     AG_TextboxSizeHint(t, stmp);
     AG_TextboxSizeHintLines(t, h);
 
-    DumpMem(t, addr, rf, w, h);
+    DumpMem(t, addr, mp);
     free(stmp);
 }
 
@@ -331,7 +487,7 @@ static void OnChangeAddr(AG_Event *event)
         i = i & 0xffff;
     }
     mp->addr = i;
-    DumpMem(td, i, mp->rf, w, h);
+    DumpMem(td, i, mp);
 }
 
 
@@ -342,6 +498,7 @@ static void DestroyDumpWindow(AG_Event *event)
 
     if(mp->dumpFont != NULL) AG_DestroyFont(mp->dumpFont);
     if(mp->text != NULL) free(mp->text);
+    if(mp->oldbuf != NULL) free(mp->oldbuf);
     free(mp);
     mp = NULL;
 }
@@ -377,6 +534,12 @@ static void CreateDump(AG_Event *event)
 
     mp = (struct MemDumpWid *)malloc(sizeof(struct MemDumpWid));
     if(mp == NULL) return;
+    mp->oldbuf = (Uint8 *)malloc(sizeof(Uint8) * 16 * 16);
+    if(mp->oldbuf == NULL){
+        free(mp);
+        return;
+    }
+    memset(mp->oldbuf, 0x00, sizeof(Uint8) * 16 * 16);
 
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 230, 80);
@@ -385,13 +548,14 @@ static void CreateDump(AG_Event *event)
     hb = AG_HBoxNew(vb, 0);
     mp->text = (char *)malloc(17 * 17 * 8 + 16 * 8);
     if(mp->text == NULL) {
+        free(mp->oldbuf);
         free(mp);
         return;
     }
     mp->addr = addr;
     mp->Editable = FALSE;
     mp->Updated = TRUE;
-    mp->to_tick = 100; // 100ms
+    mp->to_tick = 200; // 200ms
     mp->win = w;
     mp->dumpFont = AG_FetchFont("F-Font_400line.ttf", 16, 0);
 //    mp->Seek = NULL;
@@ -444,10 +608,11 @@ static void CreateDump(AG_Event *event)
         AG_TextboxPrintf(addrVar, "%04x", addr);
         AG_WidgetShow(AGWIDGET(addrVar));
         if(disasm == 0) {
-            CreateDumpMem(dumpVar, addr, readFunc, writeFunc, mp->w, mp->h);
+            CreateDumpMem(dumpVar, addr, mp);
             AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
         } else {
-            CreateDumpMem(dumpVar, addr, readFunc, writeFunc, mp->w, mp->lines);
+            mp->h = 20;
+            CreateDumpMem(dumpVar, addr, mp);
             AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddrDisasm, "%p", mp);
         }
     }
@@ -460,6 +625,7 @@ static void CreateDump(AG_Event *event)
    	box = AG_BoxNewHoriz(vb, 0);
 
     AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
+    mp->Updated = TRUE;
 
     if(disasm == 0){
         AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);

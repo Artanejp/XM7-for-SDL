@@ -69,6 +69,8 @@ static inline char hex2chr(Uint8 b)
     return c;
 }
 
+
+
 void DBG_Bin2Hex1(char *str, Uint8 b)
 {
     str[0] = hex2chr((b & 0xf0) >>4);
@@ -102,13 +104,21 @@ void DBG_Bin2Hex4(char *str, Uint32 dw)
 void DBG_DumpAsc(char *str, Uint8 b)
 {
    char c;
-    if((b < 0xff) && (b != 0x7f) && (b > 0x1f)) {
-        c = (char)b;
+   int uc;
+
+   if((b < 0x7f) && (b > 0x1f)) { // Alphabet
+        str[0] = (char)b;
+        str[1] = '\0';
+  } else if((b <= 0xdf) && (b >= 0xa1)){
+        uc = 0xfec0 + (int)b; // カナ： U+ff61 - U + ff9f
+        str[0] = ((uc>>12) & 0x0f) | 0xe0;
+        str[1] = ((uc>>6) & 0x3f) | 0x80;
+        str[2] = (uc & 0x3f) | 0x80;
+        str[3] = '\0';
     } else {
-        c = '.';
+        str[0] = '.';
+        str[1] = '\0';
     }
-    str[0] = c;
-    str[1] = '\0';
 }
 
 static int convertascii(Uint8 *buf, char *dst, int bytes)
@@ -122,7 +132,7 @@ static int convertascii(Uint8 *buf, char *dst, int bytes)
         if((buf[i] < 0x7f) && (buf[i] > 0x1f) && (buf[i] != 0x7f)){
             dst[len] = buf[i];
             len += 1;
-        } else if((buf[i] <= 0xdf) && (buf[i] >= 0xa1)){
+        } else if((buf[i] <= 0xdf) && (buf[i] >= 0xa1)){ // Alphabet
             uc = 0xff00 + (int)buf[i] - 0x40; // カナ： U+ff61 - U + ff9f
             dst[len + 0] = ((uc>>12) & 0x0f) | 0xe0;
             dst[len + 1] = ((uc>>6) & 0x3f) | 0x80;
@@ -181,7 +191,7 @@ void DBG_PrintYSum(char *str, int *sum, int totalSum, int width)
     char cb[5];
     int i;
 
-        strcat(str, "    ");
+    strcat(str, "SUM: ");
     for(i = 0; i < width; i++){
             DBG_Bin2Hex1(cb, sum[i] & 0xff);
             cb[2] = ' ';
