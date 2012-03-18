@@ -49,6 +49,7 @@ struct MemDumpWid {
     AG_Window *win;
     AG_Widget *parent;
     AG_Textbox *dumpBox;
+    AG_Font *dumpFont;
     AG_Timeout to;
     int to_tick;
 
@@ -306,8 +307,11 @@ static void OnChangeAddr(AG_Event *event)
 
 static void DestroyDumpWindow(AG_Event *event)
 {
-    void *mp = AG_PTR(1);
+    struct MemDumpWid *mp = (struct MemDumpWid *)AG_PTR(1);
     if(mp == NULL) return;
+
+    if(mp->dumpFont != NULL) AG_DestroyFont(mp->dumpFont);
+
     free(mp);
     mp = NULL;
 }
@@ -355,6 +359,7 @@ static void CreateDump(AG_Event *event)
     mp->Updated = TRUE;
     mp->to_tick = 100; // 100ms
     mp->win = w;
+    mp->dumpFont = AG_FetchFont("F-Font.ttf", 16, 0);
 //    mp->Seek = NULL;
 //    mp->ReadSec = NULL;
 //    mp->WriteSec = NULL;
@@ -397,6 +402,7 @@ static void CreateDump(AG_Event *event)
     mp->w = 16;
     mp->h = 16;
     mp->lines = 20;
+    if(mp->dumpFont != NULL) AG_TextboxSetFont(mp->dumpBox, mp->dumpFont);
 
     if((readFunc != NULL) && (writeFunc != NULL)) {
         AG_TextboxPrintf(addrVar, "%04x", addr);

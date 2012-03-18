@@ -57,7 +57,9 @@ LIBS += `sdl-config --libs`
 LIBS +=  -lSDL_mixer -lSDL_ttf
 #LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
 
+
 LIBS += -lGL -lGLU -lpthread
+#LIBS += -lGLU -lpthread libGL.so.1
 LIBS += -ljpeg -lpng -lfreetype
 LIBS += -lgomp
 
