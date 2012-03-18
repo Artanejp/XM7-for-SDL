@@ -3,6 +3,7 @@
  */
 
 #include <SDL/SDL.h>
+#include <iconv.h>
 #include "xm7.h"
 
 static int chr2hex(Uint8 s)
@@ -98,26 +99,55 @@ void DBG_Bin2Hex4(char *str, Uint32 dw)
     str[8] = '\0';
 }
 
+void DBG_DumpAsc(char *str, Uint8 b)
+{
+   char c;
+    if((b < 0xff) && (b != 0x7f) && (b > 0x1f)) {
+        c = (char)b;
+    } else {
+        c = '.';
+    }
+    str[0] = c;
+    str[1] = '\0';
+}
 
+static int convertascii(Uint8 *buf, char *dst, int bytes)
+{
+    int i;
+    int len;
+    int uc;
+
+    len = 0;
+    for(i = 0; i < bytes; i++){
+        if((buf[i] < 0x7f) && (buf[i] > 0x1f) && (buf[i] != 0x7f)){
+            dst[len] = buf[i];
+            len += 1;
+        } else if((buf[i] <= 0xdf) && (buf[i] >= 0xa1)){
+            uc = 0xff00 + (int)buf[i] - 0x40; // カナ： U+ff61 - U + ff9f
+            dst[len + 0] = ((uc>>12) & 0x0f) | 0xe0;
+            dst[len + 1] = ((uc>>6) & 0x3f) | 0x80;
+            dst[len + 2] = (uc & 0x3f) | 0x80;
+            len += 3;
+        } else {
+            dst[len] = '.';
+            len += 1;
+        }
+    }
+    dst[len] = '\0';
+    return len;
+}
 
 /*
  * Bufに格納したメモリの写しをダンプしてstrに表示する
  */
- void DBG_HexDumpMemory(char *str, Uint8 *buf, WORD Segment, WORD addr, int bytes, BOOL SegFlag, BOOL AddrFlag)
+ void DBG_HexDumpMemory(char *str, Uint8 *buf, WORD addr, int sum, int bytes, BOOL AddrFlag)
  {
     char cb[16];
     int i;
 
-    if(SegFlag) {
-        DBG_Bin2Hex2(cb, Segment);
-        strcat(str, cb);
-        strcat(str, ":");
-    }
     if(AddrFlag) {
         DBG_Bin2Hex2(cb, addr);
         strcat(str, cb);
-    }
-    if(AddrFlag | SegFlag) {
         strcat(str, " ");
     }
     for(i = 0; i < bytes; i++){
@@ -126,5 +156,41 @@ void DBG_Bin2Hex4(char *str, Uint32 dw)
             cb[3] = '\0';
             strcat(str, cb);
     }
+    // 20120318 Checksum(X)
+    strcat(str, ":");
+    DBG_Bin2Hex1(cb, sum & 0xff);
+    cb[2] = ' ';
+    cb[3] = '\0';
+    strcat(str, cb);
+    // Ascii Dump
+    {
+        char ibuf[1024];
+        char *pIn;
+        int len;
+        pIn = ibuf;
 
+        len = convertascii(buf, ibuf, bytes);
+        ibuf[len] = '\0';
+        strcat(str, ibuf);
+    }
+    strcat(str, "  ");
  }
+
+void DBG_PrintYSum(char *str, int *sum, int totalSum, int width)
+{
+    char cb[5];
+    int i;
+
+        strcat(str, "    ");
+    for(i = 0; i < width; i++){
+            DBG_Bin2Hex1(cb, sum[i] & 0xff);
+            cb[2] = ' ';
+            cb[3] = '\0';
+            strcat(str, cb);
+    }
+    strcat(str, ":");
+    DBG_Bin2Hex1(cb, totalSum & 0xff);
+    cb[2] = '\0';
+    strcat(str, cb);
+
+}
