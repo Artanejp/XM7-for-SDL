@@ -51,7 +51,7 @@ CFLAGS += -DSVNVER=\"$(SVNVER)\"
 endif
 
 CFLAGS +=  -I. 
-CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/
+CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
 CFLAGS += `sdl-config --cflags`
 #CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`

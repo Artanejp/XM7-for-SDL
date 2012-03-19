@@ -39,6 +39,7 @@ LOCALSRC = \
 	agar_osd.cpp \
 	agar_vramutil.cpp \
 	agar_svram.cpp \
+	agar_surfaceconsole.cpp \
 	$(VIDEODRVSRC) \
 	$(INPUTSRC) \
 	$(UISRC)
