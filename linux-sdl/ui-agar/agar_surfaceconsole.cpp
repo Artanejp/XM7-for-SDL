@@ -20,12 +20,15 @@ class DumpObject {
     BOOL InitConsole(int w, int h);
     void MoveCursor(int x, int y);
     BOOL Txt2UTF8(BYTE b, BYTE *disp);
+    void PutCharScreen(BYTE c);
     void PutChar(BYTE c);
+    void Draw(BOOL redraw);
 
     void SetReader(BYTE (*rf)(WORD));
     void SetWriter(void FASTCALL (*wf)(WORD, BYTE));
 private:
-    unsigned int *ConsoleBuf;
+    unsigned char *ConsoleBuf;
+    unsigned char *BackupConsoleBuf;
     BOOL  Changed;
     AG_Surface *Screen;
     AG_Font *TextFont;
@@ -79,6 +82,7 @@ static void SetPixelFormat(AG_PixelFormat *fmt)
 DumpObject::DumpObject()
 {
     ConsoleBuf = NULL;
+    BackupConsoleBuf = NULL;
     Changed = FALSE;
     TextFont = NULL;
     SymFont = NULL;
@@ -97,6 +101,7 @@ DumpObject::~DumpObject()
     if(TextFont != NULL) AG_DestroyFont(TextFont);
     if(SymFont != NULL) AG_DestroyFont(SymFont);
     if(ConsoleBuf != NULL) delete [] ConsoleBuf;
+    if(BackupConsoleBuf != NULL) delete [] BackupConsoleBuf;
 }
 
 void DumpObject::InitFont(void)
@@ -144,6 +149,8 @@ BOOL DumpObject::InitConsole(int w, int h)
 {
     int size;
     AG_PixelFormat fmt;
+    int xx;
+    int yy;
 
     if((w <= 0) || (h <= 0)) return FALSE;
     W = w;
@@ -151,7 +158,14 @@ BOOL DumpObject::InitConsole(int w, int h)
     X = 0;
     Y = 0;
     size = w * h;
-    ConsoleBuf = new unsigned int[size];
+    ConsoleBuf = new unsigned char[size];
+    BackupConsoleBuf = new unsigned char[size];
+    for(yy = 0; yy < H; yy++){
+        for(xx = 0; xx < W; xx++){
+            ConsoleBuf[xx + yy * W] = 0x00;
+            BackupConsoleBuf[xx + yy * W] = 0x00;
+        }
+    }
     SetPixelFormat(&fmt);
     Screen = AG_SurfaceNew(AG_SURFACE_PACKED, W * CHRW, H * CHRH, &fmt, AG_SRCALPHA);
 }
@@ -165,7 +179,6 @@ void DumpObject::MoveCursor(int x, int y)
     if(X <= 0) X = 0;
     if(Y <= 0) Y = 0;
 
-    curpos = X + Y * W;
 }
 
 BOOL DumpObject::Txt2UTF8(BYTE b, BYTE *disp)
@@ -190,7 +203,7 @@ BOOL DumpObject::Txt2UTF8(BYTE b, BYTE *disp)
 
 }
 
-void DumpObject::PutChar(BYTE c)
+void DumpObject::PutCharScreen(BYTE c)
 {
     BYTE utf8[8];
     AG_Surface *r = NULL;
@@ -226,4 +239,50 @@ void DumpObject::PutChar(BYTE c)
         }
         AG_SurfaceFree(r);
     }
+}
+
+void DumpObject::PutChar(BYTE c)
+{
+    curpos = X + Y * W;
+    ConsoleBuf[curpos] = c;
+}
+
+
+void DumpObject::Draw(BOOL redraw)
+{
+    int xx;
+    int yy;
+    int Xb;
+    int Yb;
+    int pos;
+
+    // Backup X,Y
+    Xb = X;
+    Yb = Y;
+    if(redraw){
+        for(yy = 0; yy < H; yy++){
+            pos = yy * W;
+            for(xx = 0; xx < W; xx++){
+                X = xx;
+                Y = yy;
+                PutCharScreen(ConsoleBuf[pos + xx]);
+                BackupConsoleBuf[pos + xx] = ConsoleBuf[pos + xx];
+            }
+        }
+    } else { // Diff
+        for(yy = 0; yy < H; yy++){
+            pos = yy * W;
+            for(xx = 0; xx < W; xx++){
+                if(ConsoleBuf[pos + xx] != BackupConsoleBuf[pos + xx]){
+                    X = xx;
+                    Y = yy;
+                    PutCharScreen(ConsoleBuf[pos + xx]);
+                }
+                BackupConsoleBuf[pos + xx] = ConsoleBuf[pos + xx];
+            }
+        }
+    }
+    // Restore Original X,Y
+    X = Xb;
+    Y = Yb;
 }
