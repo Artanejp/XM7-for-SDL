@@ -5,49 +5,7 @@
 *  20120319 : Initial
 */
 
-#include <agar/core/types.h>
-#include <agar/core.h>
-#include <agar/gui.h>
-
-#include "agar_xm7.h"
-#include "xm7-debugger/memdef.h"
-#include "xm7-debugger/memread.h"
-
-// DumpObject: Charcode = 00h-ffh
-class DumpObject {
-    DumpObject();
-    ~DumpObject();
-    BOOL InitConsole(int w, int h);
-    void MoveCursor(int x, int y);
-    BOOL Txt2UTF8(BYTE b, BYTE *disp);
-    void PutCharScreen(BYTE c);
-    void PutChar(BYTE c);
-    void Draw(BOOL redraw);
-
-    void SetReader(BYTE (*rf)(WORD));
-    void SetWriter(void FASTCALL (*wf)(WORD, BYTE));
-private:
-    unsigned char *ConsoleBuf;
-    unsigned char *BackupConsoleBuf;
-    BOOL  Changed;
-    AG_Surface *Screen;
-    AG_Font *TextFont;
-    AG_Font *SymFont;
-    int X;
-    int Y;
-    int W;
-    int H;
-    int CHRW;
-    int CHRH;
-
-    int curpos;
-    AG_Color fgColor;
-    AG_Color bgColor;
-    void InitFont(void);
-    BYTE (*readfunc)(WORD);
-    void FASTCALL (*writefunc)(WORD, BYTE);
-    BOOL ExistSym;
-};
+#include "agar_surfaceconsole.h"
 
 static void SetPixelFormat(AG_PixelFormat *fmt)
 {
@@ -93,15 +51,18 @@ DumpObject::DumpObject()
     CHRW = 0;
     CHRH = 0;
     Screen = NULL;
+    AG_MutexInit(&mutex);
     InitFont();
 }
 
 DumpObject::~DumpObject()
 {
+    AG_MutexLock(&mutex);
     if(TextFont != NULL) AG_DestroyFont(TextFont);
     if(SymFont != NULL) AG_DestroyFont(SymFont);
     if(ConsoleBuf != NULL) delete [] ConsoleBuf;
     if(BackupConsoleBuf != NULL) delete [] BackupConsoleBuf;
+    AG_MutexDestroy(&mutex);
 }
 
 void DumpObject::InitFont(void)
@@ -135,16 +96,6 @@ void DumpObject::InitFont(void)
     AG_PopTextState();
 }
 
-void DumpObject::SetReader(BYTE (*rf)(WORD))
-{
-    readfunc = rf;
-}
-
-void DumpObject::SetWriter(void FASTCALL (*wf)(WORD, BYTE))
-{
-    writefunc = wf;
-}
-
 BOOL DumpObject::InitConsole(int w, int h)
 {
     int size;
@@ -153,11 +104,15 @@ BOOL DumpObject::InitConsole(int w, int h)
     int yy;
 
     if((w <= 0) || (h <= 0)) return FALSE;
+    AG_MutexLock(&mutex);
     W = w;
     H = h;
     X = 0;
     Y = 0;
     size = w * h;
+    if(ConsoleBuf != NULL) delete [] ConsoleBuf;
+    if(BackupConsoleBuf != NULL) delete [] ConsoleBuf;
+    if(Screen != NULL) AG_SurfaceFree(Screen);
     ConsoleBuf = new unsigned char[size];
     BackupConsoleBuf = new unsigned char[size];
     for(yy = 0; yy < H; yy++){
@@ -168,17 +123,19 @@ BOOL DumpObject::InitConsole(int w, int h)
     }
     SetPixelFormat(&fmt);
     Screen = AG_SurfaceNew(AG_SURFACE_PACKED, W * CHRW, H * CHRH, &fmt, AG_SRCALPHA);
+    AG_MutexUnlock(&mutex);
 }
 
 void DumpObject::MoveCursor(int x, int y)
 {
+    AG_MutexLock(&mutex);
     X = x;
     Y = y;
     if(X >= W) X = W - 1;
     if(Y >= H) Y = H - 1;
     if(X <= 0) X = 0;
     if(Y <= 0) Y = 0;
-
+    AG_MutexUnlock(&mutex);
 }
 
 BOOL DumpObject::Txt2UTF8(BYTE b, BYTE *disp)
@@ -244,7 +201,9 @@ void DumpObject::PutCharScreen(BYTE c)
 void DumpObject::PutChar(BYTE c)
 {
     curpos = X + Y * W;
+    AG_MutexLock(&mutex);
     ConsoleBuf[curpos] = c;
+    AG_MutexUnlock(&mutex);
 }
 
 
@@ -257,6 +216,8 @@ void DumpObject::Draw(BOOL redraw)
     int pos;
 
     // Backup X,Y
+    AG_MutexLock(&mutex);
+
     Xb = X;
     Yb = Y;
     if(redraw){
@@ -285,4 +246,84 @@ void DumpObject::Draw(BOOL redraw)
     // Restore Original X,Y
     X = Xb;
     Y = Yb;
+    AG_MutexUnlock(&mutex);
+}
+
+int  DumpObject::SizeAlloc(AG_SizeAlloc *a)
+{
+    int w,h;
+    if(a == NULL) return -1;
+    w = a->w / CHRW;
+    h = a->h / CHRH;
+    if((w <= 0) || (h <= 0)) return -1;
+    InitConsole(w, h);
+    return 0;
+}
+
+int DumpObject::PutString(char *str)
+{
+    int len;
+    int cp = 0;
+    if(str == NULL) return -1;
+    len = strlen(str);
+    if(len <= 0) return -1;
+    do {
+        PutChar(str[cp]);
+        cp++;
+    } while(cp < len);
+    return len;
+}
+
+void DumpObject::DrawCursor(BOOL Flag)
+{
+    AG_Rect rec;
+    AG_Color col;
+    AG_Color fg,bg;
+    AG_Surface *s;
+
+
+    rec.h = CHRH;
+    rec.w = CHRW;
+    rec.x = CHRW * X;
+    rec.y = CHRH * Y;
+    col = fgColor;
+    col.a = 64;
+    if(Flag){
+        AG_MutexLock(&mutex);
+        fg = fgColor;
+        bg = bgColor;
+        fgColor = bg;
+        bgColor = fg;
+        PutCharScreen(ConsoleBuf[Y * W + X]);
+        AG_FillRect(Screen, &rec, col);
+        fgColor = fg;
+        bgColor = bg;
+        AG_MutexUnlock(&mutex);
+    }
+}
+
+void DumpObject::PollDraw(void)
+{
+    Draw(FALSE);
+    DrawCursor(TRUE);
+}
+
+int DumpObject::GetWidth(void)
+{
+   return W;
+}
+
+int DumpObject::GetHeight(void)
+{
+   return H;
+}
+
+int DumpObject::GetX(void)
+{
+   return X;
+}
+
+int DumpObject::GetY(void)
+{
+   return Y;
 }

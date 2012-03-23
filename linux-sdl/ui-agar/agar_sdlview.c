@@ -17,10 +17,7 @@
 
 
 #include "agar_sdlview.h"
-#include "api_vram.h"
-#include "api_draw.h"
-//#include "api_scaler.h"
-#include "api_kbd.h"
+#include <SDL.h>
 
 /*
  * This is a generic constructor function. It is completely optional, but

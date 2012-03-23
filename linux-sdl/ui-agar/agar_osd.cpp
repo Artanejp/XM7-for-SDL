@@ -1166,7 +1166,7 @@ static void DrawTape(int override)
 
 void DrawStatus(void)
 {
-        DrawMainCaption(FALSE);
+    DrawMainCaption(FALSE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();

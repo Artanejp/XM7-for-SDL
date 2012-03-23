@@ -16,7 +16,9 @@ extern "C" {
 
 //#include <agar/core/string_compat.h>
 #include <agar/core.h>
+#include <agar/core/types.h>
 #include <agar/gui.h>
+
 /*
 * Do compatibility for widget
 */
