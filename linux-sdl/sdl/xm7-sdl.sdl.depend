@@ -1126,7 +1126,7 @@
 	<glib-object.h>
 	<gdkconfig.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango.h
+1332629253 /usr/include/pango-1.0/pango/pango.h
 	<pango/pango-attributes.h>
 	<pango/pango-bidi-type.h>
 	<pango/pango-break.h>
@@ -1150,19 +1150,19 @@
 	<pango/pango-types.h>
 	<pango/pango-utils.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-attributes.h
+1332629253 /usr/include/pango-1.0/pango/pango-attributes.h
 	<pango/pango-font.h>
 	<glib-object.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-font.h
+1332629253 /usr/include/pango-1.0/pango/pango-font.h
 	<pango/pango-coverage.h>
 	<pango/pango-types.h>
 	<glib-object.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-coverage.h
+1332629253 /usr/include/pango-1.0/pango/pango-coverage.h
 	<glib.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-types.h
+1332629253 /usr/include/pango-1.0/pango/pango-types.h
 	<glib.h>
 	<glib-object.h>
 	<pango/pango-gravity.h>
@@ -1171,50 +1171,50 @@
 	<pango/pango-script.h>
 	<pango/pango-bidi-type.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-gravity.h
+1332629253 /usr/include/pango-1.0/pango/pango-gravity.h
 	<glib.h>
 	<pango/pango-matrix.h>
 	<pango/pango-script.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-matrix.h
+1332629253 /usr/include/pango-1.0/pango/pango-matrix.h
 	<glib.h>
 	<glib-object.h>
 	<pango/pango-types.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-script.h
+1332629253 /usr/include/pango-1.0/pango/pango-script.h
 	<glib.h>
 	<pango/pango-language.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-language.h
+1332629253 /usr/include/pango-1.0/pango/pango-language.h
 	<glib.h>
 	<glib-object.h>
 	<pango/pango-script.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-bidi-type.h
+1332629253 /usr/include/pango-1.0/pango/pango-bidi-type.h
 	<glib.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-break.h
+1332629253 /usr/include/pango-1.0/pango/pango-break.h
 	<glib.h>
 	<pango/pango-item.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-item.h
+1332629253 /usr/include/pango-1.0/pango/pango-item.h
 	<pango/pango-types.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-context.h
+1332629253 /usr/include/pango-1.0/pango/pango-context.h
 	<pango/pango-font.h>
 	<pango/pango-fontmap.h>
 	<pango/pango-attributes.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-fontmap.h
+1332629253 /usr/include/pango-1.0/pango/pango-fontmap.h
 	<pango/pango-font.h>
 	<pango/pango-fontset.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-fontset.h
+1332629253 /usr/include/pango-1.0/pango/pango-fontset.h
 	<pango/pango-coverage.h>
 	<pango/pango-types.h>
 	<glib-object.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-engine.h
+1332629253 /usr/include/pango-1.0/pango/pango-engine.h
 	<pango/pango-types.h>
 	<pango/pango-item.h>
 	<pango/pango-font.h>
@@ -1222,34 +1222,34 @@
 	<pango/pango-script.h>
 	<gmodule.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-glyph.h
+1332629253 /usr/include/pango-1.0/pango/pango-glyph.h
 	<pango/pango-types.h>
 	<pango/pango-item.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-enum-types.h
+1332629253 /usr/include/pango-1.0/pango/pango-enum-types.h
 	<glib-object.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-features.h
+1332629253 /usr/include/pango-1.0/pango/pango-features.h
 
-1331284241 /usr/include/pango-1.0/pango/pango-glyph-item.h
+1332629253 /usr/include/pango-1.0/pango/pango-glyph-item.h
 	<pango/pango-attributes.h>
 	<pango/pango-break.h>
 	<pango/pango-item.h>
 	<pango/pango-glyph.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-layout.h
+1332629253 /usr/include/pango-1.0/pango/pango-layout.h
 	<pango/pango-attributes.h>
 	<pango/pango-context.h>
 	<pango/pango-glyph-item.h>
 	<pango/pango-tabs.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-tabs.h
+1332629253 /usr/include/pango-1.0/pango/pango-tabs.h
 	<pango/pango-types.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-renderer.h
+1332629253 /usr/include/pango-1.0/pango/pango-renderer.h
 	<pango/pango-layout.h>
 
-1331284241 /usr/include/pango-1.0/pango/pango-utils.h
+1332629253 /usr/include/pango-1.0/pango/pango-utils.h
 	<stdio.h>
 	<glib.h>
 	<pango/pango-font.h>
@@ -1338,7 +1338,7 @@
 1330843863 /usr/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-enum-types.h
 	<glib-object.h>
 
-1331284241 /usr/include/pango-1.0/pango/pangocairo.h
+1332629253 /usr/include/pango-1.0/pango/pangocairo.h
 	<pango/pango.h>
 	<cairo.h>
 
@@ -5320,8 +5320,9 @@
 	<agar/core.h>
 	<agar/gui.h>
 
-1327207138 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlview.h
+1332319938 /home/whatisthis/codeblocks/xm7-sdl/ui-agar/agar_sdlview.h
 	<agar/core.h>
+	<agar/core/types.h>
 	<agar/gui.h>
 
 1328893254 source:/home/whatisthis/codeblocks/xm7-sdl/sdl/api_vramvec.c

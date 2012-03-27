@@ -131,12 +131,25 @@ void DumpObject::MoveCursor(int x, int y)
     AG_MutexLock(&mutex);
     X = x;
     Y = y;
+    if(CURX >= W) CURX = W - 1;
+    if(CURY >= H) CURY = H - 1;
+    if(CURX <= 0) CURX = 0;
+    if(CURY <= 0) CURY = 0;
+    AG_MutexUnlock(&mutex);
+}
+
+void DumpObject::MoveDrawPos(int x, int y)
+{
+    AG_MutexLock(&mutex);
+    X = x;
+    Y = y;
     if(X >= W) X = W - 1;
     if(Y >= H) Y = H - 1;
     if(X <= 0) X = 0;
     if(Y <= 0) Y = 0;
     AG_MutexUnlock(&mutex);
 }
+
 
 BOOL DumpObject::Txt2UTF8(BYTE b, BYTE *disp)
 {
@@ -284,8 +297,8 @@ void DumpObject::DrawCursor(BOOL Flag)
 
     rec.h = CHRH;
     rec.w = CHRW;
-    rec.x = CHRW * X;
-    rec.y = CHRH * Y;
+    rec.x = CHRW * CURX;
+    rec.y = CHRH * CURY;
     col = fgColor;
     col.a = 64;
     if(Flag){
@@ -294,7 +307,7 @@ void DumpObject::DrawCursor(BOOL Flag)
         bg = bgColor;
         fgColor = bg;
         bgColor = fg;
-        PutCharScreen(ConsoleBuf[Y * W + X]);
+        PutCharScreen(ConsoleBuf[CURY * W + CURX]);
         AG_FillRect(Screen, &rec, col);
         fgColor = fg;
         bgColor = bg;
@@ -326,4 +339,20 @@ int DumpObject::GetX(void)
 int DumpObject::GetY(void)
 {
    return Y;
+}
+
+int DumpObject::GetCurX(void)
+{
+    return CURX;
+}
+
+int DumpObject::GetCurY(void)
+{
+    return CURY;
+}
+
+
+AG_Surface *DumpObject::GetScreen(void)
+{
+    return Screen;
 }

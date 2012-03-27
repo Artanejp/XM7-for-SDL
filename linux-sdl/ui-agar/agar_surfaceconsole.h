@@ -21,6 +21,7 @@ public:
     ~DumpObject();
     BOOL InitConsole(int w, int h);
     void MoveCursor(int x, int y);
+    void MoveDrawPos(int x, int y);
     BOOL Txt2UTF8(BYTE b, BYTE *disp);
     void PutCharScreen(BYTE c);
     void PutChar(BYTE c);
@@ -35,6 +36,9 @@ public:
     int GetHeight(void);
     int GetX(void);
     int GetY(void);
+    int GetCurX(void);
+    int GetCurY(void);
+    AG_Surface *GetScreen(void);
 
 private:
     unsigned char *ConsoleBuf;
@@ -44,6 +48,8 @@ private:
     AG_Font *TextFont;
     AG_Font *SymFont;
     AG_Mutex mutex;
+    int CURX;
+    int CURY;
     int X;
     int Y;
     int W;
