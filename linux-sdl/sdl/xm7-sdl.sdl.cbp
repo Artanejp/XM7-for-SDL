@@ -21,7 +21,7 @@
 					<Add option="-pg" />
 					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
 					<Add library="../vm/obj/Debug/libxm7_vm.a" />
-					<Add library="../xm7-debugger/libxm7-debugger.a" />
+					<Add library="../xm7-debugger/obj/Debug/libxm7-debugger.a" />
 					<Add library="../fmgen/obj/Debug/libfmgen007a.a" />
 				</Linker>
 			</Target>

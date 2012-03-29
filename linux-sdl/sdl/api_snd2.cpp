@@ -777,33 +777,51 @@ static int SetChunk(struct SndBufType *p, int ch)
 	int channels = 2;
     int samples;
 
-    if(p->nWritePTR > p->nReadPTR) {
-        samples = p->nSize + p->nReadPTR - p->nWritePTR;
-    } else{
+//    if(p->nWritePTR > p->nReadPTR) {
+//        samples = p->nReadPTR - p->nWritePTR;
+//    } else{
         samples = p->nReadPTR - p->nWritePTR;
-    }
-    while(samples > 0) {
-        j = p->nSize - p->nReadPTR;
-        if(j >= samples) {
-	        // 分割不要
+//    }
+   if(samples == 0) return 0;
+   if(samples < 0) samples += p->nSize;
+   j = p->nSize - p->nReadPTR;
+   if(j > samples) {
+        // 分割不要
 //	    printf("SND:DBG:CHUNK:%d #%d Size=%d\n", ch, i, samples);
-            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
-            Mix_PlayChannel(ch , p->mChunk[i], 0);
-            p->nReadPTR += samples;
-            samples = 0;
-        } else {
+        SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
+        Mix_PlayChannel(ch , p->mChunk[i], 0);
+        p->nReadPTR += samples;
+        samples = 0;
+       i++;
+       if(i >= p->nChunks) i = 0;
+       p->nChunkNo = i;
+       if(p->nReadPTR >= p->nSize) {
+	  p->nReadPTR = 0;
+       }
+    } else {
 //	    printf("SND:DBG:CHUNK:%d #%d Size=%d\n", ch, i, j);
-            SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, iTotalVolume);
-            Mix_PlayChannel(ch , p->mChunk[i], 0);
-            p->nReadPTR += j;
-            samples -= j;
-        }
-        if(p->nReadPTR >= p->nSize) {
-		   p->nReadPTR = 0;
-	}
-        i++;
-        if(i >= p->nChunks) i = 0;
-        p->nChunkNo = i;
+       SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], j, iTotalVolume);
+       Mix_PlayChannel(ch , p->mChunk[i], 0);
+       p->nReadPTR += j;
+       samples -= j;
+       i++;
+       if(i >= p->nChunks) i = 0;
+       p->nChunkNo = i;
+       if(p->nReadPTR >= p->nSize) {
+	  p->nReadPTR = 0;
+       }
+       SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
+       Mix_PlayChannel(ch , p->mChunk[i], 0);
+       p->nReadPTR += samples;
+       samples = 0;
+       i++;
+       if(i >= p->nChunks) i = 0;
+       p->nChunkNo = i;
+       if(p->nReadPTR >= p->nSize) {
+	  p->nReadPTR = 0;
+       }
+       
+    
     }
     return i;
 }
@@ -848,6 +866,7 @@ void ProcessSnd(BOOL bZero)
 	dwSndCount++;
 	bbZero = bZero;
 	if(dwSndCount >= (uTick / 2)) {
+//	if(dwSndCount > (uTick / 2)) {
 		bWrite = TRUE;
 	}
 
@@ -909,9 +928,9 @@ void ProcessSnd(BOOL bZero)
         SetChunk(pOpnBuf ,  CH_SND_OPN);
         SetChunk(pBeepBuf , CH_SND_BEEP);
         SetChunk(pCMTBuf , CH_SND_CMT);
-//        if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
-//        if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
-//        if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();
+        if(DrvOPN != NULL) DrvOPN->ResetRenderCounter();
+        if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
+        if(DrvCMT != NULL) DrvCMT->ResetRenderCounter();
         SDL_SemPost(applySem);
         }
 //		SDL_UnlockAudio();
