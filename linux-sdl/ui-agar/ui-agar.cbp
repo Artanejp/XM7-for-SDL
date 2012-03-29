@@ -78,6 +78,8 @@
 		<Unit filename="agar_cfg.h" />
 		<Unit filename="agar_cmd.cpp" />
 		<Unit filename="agar_cmd.h" />
+		<Unit filename="agar_debugger.cpp" />
+		<Unit filename="agar_debugger.h" />
 		<Unit filename="agar_draw.cpp" />
 		<Unit filename="agar_draw.h" />
 		<Unit filename="agar_gldraw.h" />
@@ -101,6 +103,8 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="agar_sdlview.h" />
+		<Unit filename="agar_surfaceconsole.cpp" />
+		<Unit filename="agar_surfaceconsole.h" />
 		<Unit filename="agar_svram.cpp" />
 		<Unit filename="agar_toolbox.cpp" />
 		<Unit filename="agar_toolbox.h" />

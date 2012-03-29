@@ -43,9 +43,32 @@ enum {
 struct XM7_MemDumpDesc {
     XM7_DbgDump *dump;
     unsigned int addr;
+    BYTE (*rf)(WORD);
+    void (*wf)(WORD, BYTE);
     AG_Timeout to;
     Uint32 to_tick;
 };
+
+static void readmem(struct XM7_MemDumpDesc *p)
+{
+    BYTE *buf;
+    int x,y;
+    int ofset;
+
+    if(p == NULL) return;
+    if(p->rf == NULL) return;
+    if(p->dump->buf == NULL) return;
+    ofset = 0;
+    buf = p->dump->buf;
+    for(x = 0; x < 16 ; x++){
+        for(y = 0; y < 16; y++){
+            buf[ofset] = p->rf(p->addr + ofset);
+            ofset++;
+        }
+    }
+}
+
+
 static int c2h(char c)
 {
     if((c >= '0') && (c <= '9'))
@@ -110,6 +133,7 @@ static void OnChangeAddrDisasm(AG_Event *event)
 {
 }
 
+
 /*
 * Auto Update (Timer)
 */
@@ -117,11 +141,10 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
 {
 
     struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)arg;
-    XM7_DbgDump *dump;
 
     if(mp == NULL) return ival;
-    dump = mp->dump;
-    XM7_DbgDumpMem(obj, mp->addr);
+    readmem(mp);
+    XM7_DbgDumpMem(mp->dump, mp->addr);
     return mp->to_tick;
 }
 
@@ -166,6 +189,7 @@ static void OnChangeAddr(AG_Event *event)
         i = i & 0xffff;
     }
     mp->addr = i;
+    readmem(mp);
     XM7_DbgDumpMem(mp->dump, mp->addr);
 }
 
@@ -174,7 +198,7 @@ static void DestroyDumpWindow(AG_Event *event)
 {
     struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)AG_PTR(1);
     if(mp == NULL) return;
-    if(mp->dump != NULL) XM7_DbgDumpDetach(mp->dump);
+    if(mp->dump != NULL) XM7_DbgDumpMemDetach(mp->dump);
 
     free(mp);
     mp = NULL;
@@ -191,8 +215,8 @@ static void CreateDump(AG_Event *event)
     int disasm = AG_INT(2);
     AG_Textbox *pollVar;
     AG_Textbox *addrVar;
-
     struct XM7_MemDumpDesc *mp;
+
 
     BYTE (*readFunc)(WORD);
     void FASTCALL (*writeFunc)(WORD, BYTE);
@@ -242,9 +266,11 @@ static void CreateDump(AG_Event *event)
 
     hb = AG_HBoxNew(vb, 0);
     if((readFunc != NULL) && (writeFunc != NULL)) {
-        dump = XM7_DbgDumpNew(AGWIDGET(hb), readFunc, writeFunc, 80, 40, NULL);
+        dump = XM7_DbgDumpMemInit(hb);
         if(dump == NULL) return;
         mp->dump = dump;
+        mp->rf = readFunc;
+        mp->wf = writeFunc;
         AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
     }
 

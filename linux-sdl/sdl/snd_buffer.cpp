@@ -229,7 +229,8 @@ int MoveChunk(struct SndBufType *p, Sint16 *buf, int offset)
     if(buf == NULL) return -1;
     if(offset < 0) offset = 0;
 
-    if(p->nWritePTR > (p->nReadPTR + offset)) {
+//    if(p->nWritePTR > (p->nReadPTR + offset)) {
+    if(p->nWritePTR < (p->nReadPTR + offset)) {
         samples = p->nSize + p->nReadPTR + offset - p->nWritePTR;
     } else{
         samples = p->nReadPTR + offset - p->nWritePTR;
