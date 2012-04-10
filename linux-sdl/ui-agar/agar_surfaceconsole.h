@@ -41,8 +41,8 @@ public:
     AG_Surface *GetScreen(void);
 
 private:
-    unsigned char *ConsoleBuf;
-    unsigned char *BackupConsoleBuf;
+    BYTE *ConsoleBuf;
+    BYTE *BackupConsoleBuf;
     BOOL  Changed;
     AG_Surface *Screen;
     AG_Font *TextFont;

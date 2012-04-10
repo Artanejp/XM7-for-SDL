@@ -129,11 +129,11 @@ static int convertascii(Uint8 *buf, char *dst, int bytes)
 
     len = 0;
     for(i = 0; i < bytes; i++){
-        if((buf[i] < 0x7f) && (buf[i] > 0x1f) && (buf[i] != 0x7f)){
+        if((buf[i] < 0x7f) && (buf[i] > 0x1f) ){
             dst[len] = buf[i];
             len += 1;
         } else if((buf[i] <= 0xdf) && (buf[i] >= 0xa1)){ // Alphabet
-            uc = 0xff00 + (int)buf[i] - 0x40; // カナ： U+ff61 - U + ff9f
+            uc = 0xff00 + ((int)buf[i] & 0xff) - 0x40; // カナ： U+ff61 - U + ff9f
             dst[len + 0] = ((uc>>12) & 0x0f) | 0xe0;
             dst[len + 1] = ((uc>>6) & 0x3f) | 0x80;
             dst[len + 2] = (uc & 0x3f) | 0x80;
@@ -174,13 +174,20 @@ static int convertascii(Uint8 *buf, char *dst, int bytes)
     strcat(str, cb);
     // Ascii Dump
     {
-        char ibuf[1024];
-        char *pIn;
-        int len;
-        pIn = ibuf;
+        char ibuf[64];
+//        char *pIn;
+//        int len;
+//        pIn = ibuf;
 
-        len = convertascii(buf, ibuf, bytes);
-        ibuf[len] = '\0';
+//        len = convertascii(buf, ibuf, bytes);
+        for(i = 0; i < bytes; i++) {
+	    if(buf[i] > 0x1f) {
+	       ibuf[i] = buf[i];
+	    } else {
+	       ibuf[i] = '.';
+	    }
+	}
+        ibuf[bytes] = '\0';
         strcat(str, ibuf);
     }
     strcat(str, "  ");

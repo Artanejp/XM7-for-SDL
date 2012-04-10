@@ -126,12 +126,12 @@ BOOL DumpObject::InitConsole(int w, int h)
        AG_SurfaceFree(Screen);
     }
 
-    ConsoleBuf = new unsigned char[size];
-    BackupConsoleBuf = new unsigned char[size];
+    ConsoleBuf = new BYTE[size];
+    BackupConsoleBuf = new BYTE[size];
     for(yy = 0; yy < H; yy++){
         for(xx = 0; xx < W; xx++){
-            ConsoleBuf[xx + yy * W] = 0x00;
-            BackupConsoleBuf[xx + yy * W] = 0x00;
+            ConsoleBuf[xx + yy * W] = 0x00000000;
+            BackupConsoleBuf[xx + yy * W] = 0x00000000;
         }
     }
     SetPixelFormat(&fmt);

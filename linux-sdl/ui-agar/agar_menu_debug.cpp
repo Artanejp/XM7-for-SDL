@@ -146,7 +146,7 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
 
 
     if(mp == NULL) return ival;
-    readmem(mp);
+//    readmem(mp);
     XM7_DbgDumpMem(mp->dump, mp->addr);
 //    {
 //        str = "aaaaaaaa";
@@ -217,9 +217,9 @@ static void CreateDump(AG_Event *event)
 {
     AG_Window *w;
 
-	AG_Menu *self = (AG_Menu *)AG_SELF();
-	AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
-    int type = AG_INT(1);
+   AG_Menu *self = (AG_Menu *)AG_SELF();
+   AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+   int type = AG_INT(1);
     int disasm = AG_INT(2);
     AG_Textbox *pollVar;
     AG_Textbox *addrVar;
@@ -274,7 +274,7 @@ static void CreateDump(AG_Event *event)
 
     hb = AG_HBoxNew(vb, 0);
     if((readFunc != NULL) && (writeFunc != NULL)) {
-        dump = XM7_DbgDumpMemInit(hb);
+        dump = XM7_DbgDumpMemInit(hb, readFunc, writeFunc);
         if(dump == NULL) return;
         mp->dump = dump;
         mp->rf = readFunc;
