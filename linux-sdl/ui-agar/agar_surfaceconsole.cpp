@@ -50,6 +50,15 @@ DumpObject::DumpObject()
     H = 0;
     CHRW = 0;
     CHRH = 0;
+    fgColor.r = 255;
+    fgColor.g = 255;
+    fgColor.b = 255;
+    fgColor.a = 255;
+    bgColor.r = 0;
+    bgColor.g = 0;
+    bgColor.b = 0;
+    bgColor.a = 255;
+
     Screen = NULL;
     AG_MutexInit(&mutex);
     InitFont();
@@ -112,7 +121,11 @@ BOOL DumpObject::InitConsole(int w, int h)
     size = w * h;
     if(ConsoleBuf != NULL) delete [] ConsoleBuf;
     if(BackupConsoleBuf != NULL) delete [] ConsoleBuf;
-    if(Screen != NULL) AG_SurfaceFree(Screen);
+    if(Screen != NULL) {
+       Screen = NULL;
+       AG_SurfaceFree(Screen);
+    }
+
     ConsoleBuf = new unsigned char[size];
     BackupConsoleBuf = new unsigned char[size];
     for(yy = 0; yy < H; yy++){
@@ -123,6 +136,19 @@ BOOL DumpObject::InitConsole(int w, int h)
     }
     SetPixelFormat(&fmt);
     Screen = AG_SurfaceNew(AG_SURFACE_PACKED, W * CHRW, H * CHRH, &fmt, AG_SRCALPHA);
+    {
+        AG_Color col;
+        AG_Rect rec;
+        col.r = 0;
+        col.g = 0;
+        col.b = 0;
+        col.a = 255;
+        rec.x = 0;
+        rec.y = 0;
+        rec.w = Screen->w;
+        rec.h = Screen->h;
+        AG_FillRect(Screen, &rec, col);
+    }
     AG_MutexUnlock(&mutex);
 }
 
@@ -228,11 +254,13 @@ void DumpObject::Draw(BOOL redraw)
     int Yb;
     int pos;
 
+    if(Screen == NULL) return;
     // Backup X,Y
     AG_MutexLock(&mutex);
 
     Xb = X;
     Yb = Y;
+    AG_SurfaceLock(Screen);
     if(redraw){
         for(yy = 0; yy < H; yy++){
             pos = yy * W;
@@ -260,6 +288,8 @@ void DumpObject::Draw(BOOL redraw)
     X = Xb;
     Y = Yb;
     AG_MutexUnlock(&mutex);
+    AG_SurfaceUnlock(Screen);
+
 }
 
 int  DumpObject::SizeAlloc(AG_SizeAlloc *a)
@@ -283,6 +313,14 @@ int DumpObject::PutString(char *str)
     do {
         PutChar(str[cp]);
         cp++;
+        X++;
+        if((X >= W) || (X < 0)){
+            X = 0;
+            Y++;
+            if((Y >= H) || (Y < 0)){
+                Y = 0;
+            }
+        }
     } while(cp < len);
     return len;
 }

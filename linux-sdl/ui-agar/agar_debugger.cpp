@@ -19,14 +19,57 @@ extern void DBG_Bin2Hex2(char *str, Uint16 b);
 extern void DBG_Bin2Hex4(char *str, Uint32 b);
 
 extern "C" {
+#include <sys/time.h>
+#include <time.h>
+
 static void XM7_DbgDumpDrawFn(AG_Event *event)
 {
+   XM7_SDLView *view = (XM7_SDLView *)AG_SELF();
     struct XM7_DbgDump *p = (struct XM7_DbgDump *)AG_PTR(1);
     BOOL forceredraw = AG_INT(2);
+
     if(p == NULL) return;
-    if(p->dump == NULL) return;
+//    if(p->dump == NULL) return;
+//    if(view == NULL) return;
+//    if(view->Surface == NULL) return;
     p->dump->Draw(forceredraw);
-    AG_WidgetUpdateSurface(p->draw, p->draw->mySurface);
+    AG_SurfaceBlit(p->dump->GetScreen(), NULL, view->Surface, 0, 0);
+    AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
+
+#if 0
+    {
+    time_t t;
+    AG_Surface *s;
+    char *str;
+    AG_Color cb,cf;
+    AG_Font *ft;
+
+    t = time(NULL);
+    str = ctime(&t);
+
+    cb.a = 255;
+    cb.r = 0;
+    cb.g = 0;
+    cb.b = 0;
+
+    cf.a = 255;
+    cf.r = 255;
+    cf.g = 255;
+    cf.b = 0;
+    AG_PushTextState();
+    ft = AG_TextFontPts(12);
+    AG_TextFont(ft);
+    AG_TextColor(cf);
+    AG_TextBGColor(cb);
+    s = AG_TextRender(str);
+    AG_SurfaceBlit(s, NULL, view->Surface, 0, 0);
+    AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
+//    AG_WidgetBlit(AGWIDGET(view), s, 0, 0);
+    AG_SurfaceFree(s);
+    AG_PopTextState();
+    }
+#endif
+//    AG_WidgetUpdateSurface(view, view->mySurface);
 }
 
 }
@@ -109,6 +152,7 @@ struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent)
     DumpObject  *dump;
     BYTE        *buf;
     AG_SizeAlloc a;
+    AG_Surface *s;
     int chrw,chrh;
 
     if(parent == NULL) return NULL;
@@ -127,18 +171,20 @@ struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent)
         delete dump;
         return NULL;
     }
-    view = XM7_SDLViewNew(parent, dump->GetScreen(), "");
+    view = XM7_SDLViewNew(parent, NULL, "");
     obj->addr = 0x0000;
     obj->dump = dump;
     obj->draw = view;
     obj->buf = buf;
     obj->forceredraw = FALSE;
-    a.w = dump->GetScreen()->w;
-    a.h = dump->GetScreen()->h;
+    s = dump->GetScreen();
+    a.w = s->w;
+    a.h = s->h;
     a.x = 0;
     a.y = 0;
     AG_WidgetSizeAlloc(AGWIDGET(view), &a);
     XM7_SDLViewDrawFn(view, XM7_DbgDumpDrawFn, "%p,%i", (void *)obj, TRUE); //
+    XM7_SDLViewLinkSurface(view, s);
     return obj;
 }
 

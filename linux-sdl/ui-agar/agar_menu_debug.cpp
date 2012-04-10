@@ -28,6 +28,7 @@ extern "C" {
 #include "sdl_sch.h"
 #include "agar_toolbox.h"
 #include "agar_debugger.h"
+#include <time.h>
 
 #include "../xm7-debugger/memread.h"
 
@@ -141,10 +142,17 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
 {
 
     struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)arg;
+    char *str;
+
 
     if(mp == NULL) return ival;
     readmem(mp);
     XM7_DbgDumpMem(mp->dump, mp->addr);
+//    {
+//        str = "aaaaaaaa";
+//        mp->dump->dump->PutString(str);
+//    }
+
     return mp->to_tick;
 }
 
@@ -163,7 +171,7 @@ static void OnChangePollDump(AG_Event *event)
     if(i < 50) return;
     if(i > 4000) i = 4000;
     mp->to_tick = i;
-//    AG_LockTimeouts(AGOBJECT(t->wid.window));
+//    AG_LockTimeouts(AGOBJECT(mp));
 //    AG_ScheduleTimeout(AGOBJECT(t->wid.window), &(mp->to), i);
 //    AG_UnlockTimeouts(AGOBJECT(t->wid.window));
     return;
@@ -271,7 +279,6 @@ static void CreateDump(AG_Event *event)
         mp->dump = dump;
         mp->rf = readFunc;
         mp->wf = writeFunc;
-        AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
     }
 
 
@@ -282,6 +289,7 @@ static void CreateDump(AG_Event *event)
 
     AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
     AG_SetEvent(pollVar, "textbox-postchg", OnChangePollDump, "%p", mp);
+    AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
 
     AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
     AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
