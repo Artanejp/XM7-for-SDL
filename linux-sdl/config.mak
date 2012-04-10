@@ -35,10 +35,10 @@ FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/
 
 LDFLAGS = 
 
-#CC = gcc
-#CXX = g++
-CC = gcc-4.7
-CXX = g++-4.7
+CC = gcc
+CXX = g++
+#CC = gcc-4.7
+#CXX = g++-4.7
 AR = ar
 
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -D_XWIN -DNDEBUG -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
@@ -50,7 +50,7 @@ ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
 endif
 
-CFLAGS +=  -fpermissive -I. 
+CFLAGS +=  -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
 CFLAGS += `sdl-config --cflags`
 #CFLAGS += -I/usr/local/include/SDL
@@ -61,12 +61,19 @@ CFLAGS += -fopenmp
 CFLAGS_DEBUG = -pg -g -O0 
 CFLAGS_DEBUG += $(CFLAGS)
 
-CXXFLAGS_RELEASE =  -O3
-CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
-#CFLAGS_RELEASE += -pthread
+CFLAGS_RELEASE = $(CFLAGS)
 
-CFLAGS_RELEASE =  -O3
-CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CXXFLAGS = -fpermissive 
+CXXFLAGS += $(CFLAGS) 
+
+CXXFLAGS_DEBUG = -pg -g -O0 
+CXXFLAGS_DEBUG += $(CXXFLAGS)
+
+CXXFLAGS_RELEASE =  $(CXXFLAGS) -O3
+#CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+#CFLAGS_RELEASE += -pthread
+CFLAGS_RELEASE +=  -O3
+#CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 #CFLAGS_RELEASE += -pthread
 
@@ -77,9 +84,5 @@ CFLAGS_RELEASE += -minline-all-stringops
 CXXFLAGS_RELEASE += -march=amdfam10
 CXXFLAGS_RELEASE += -minline-all-stringops 
 
-
-
-CFLAGS_RELEASE += $(CFLAGS)
-CXXFLAGS_RELEASE += $(CFLAGS)
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN

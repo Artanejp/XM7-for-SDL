@@ -103,7 +103,7 @@ Debug/%.o: %.c
 	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/%.o: %.cpp
-	$(CXX) ${CFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 
 

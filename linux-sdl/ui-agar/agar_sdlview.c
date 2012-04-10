@@ -92,7 +92,7 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
             AG_SurfaceFree(my->Surface);
         }
     }
-    src = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, 0);
+    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, AG_SURFACE_GLTEXTURE);
     my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
     my->forceredraw = 1;
 
@@ -247,9 +247,10 @@ static void Draw(void *p)
 	 * for more information on styles.
 	 */
     AG_ObjectLock(my);
-	 if(my->draw_ev != NULL){
-        my->draw_ev->handler(my->draw_ev);
+        if(my->draw_ev != NULL){
+           my->draw_ev->handler(my->draw_ev);
 	 }
+
 	/*
 	 * Render some text into a new surface. In OpenGL mode, the
 	 * AG_WidgetMapSurface() call involves a texture upload.

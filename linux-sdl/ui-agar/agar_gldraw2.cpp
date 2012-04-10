@@ -32,8 +32,9 @@
 
 GLuint uVramTextureID;
 
-//static void (*pGetVram)(Uint32, Uint32 *, Uint32);
+
 static int bModeOld;
+static Uint32 *pFrameBuffer;
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
@@ -71,6 +72,11 @@ void DetachGL_AG2(void)
     DetachVirtualVram();
     DetachGridVertexs();
     DetachVramSemaphore();
+    if(pFrameBuffer != NULL) {
+       free(pFrameBuffer);
+       pFrameBuffer = NULL;
+    }
+   
 //    pGetVram = NULL;
 }
 
@@ -183,10 +189,12 @@ void InitGL_AG2(int w, int h)
     /*
      * GL 拡張の取得 20110907-
      */
+	pFrameBuffer = malloc(sizeof(Uint32) * 640 * 400);
+        if(pFrameBuffer == NULL) return;
+        memset(pFrameBuffer, 0x00, sizeof(Uint32) * 640 * 400);
 	InitVramSemaphore();
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
-//	pGetVram = NULL;
 	InitVirtualVram();
     InitGLExtensionVars();
     InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
@@ -202,7 +210,7 @@ Uint32 *GetVirtualVram(void)
     return &(pVirtualVram->pVram[0][0]);
 }
 
- // Create GL Handler(Main)
+// Create GL Handler(Main)
 void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 {
 	int xx, yy;
@@ -275,6 +283,53 @@ void AGEventScaleGL(AG_Event *event)
 
 }
 
+static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
+{
+   v8hi *addr;
+   v8hi *src;
+   int ofset;
+   int yy;
+   
+   if((x < 0) || (x >= 640)) return;
+   if((y < 0) || (y >= 400)) return;
+   if(pFrameBuffer == NULL) return;
+   ofset = x + y * 640;
+
+   src = (v8hi *)p;
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+   
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+    addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+   addr = (v8hi *)(&pFrameBuffer[ofset]);
+   *addr = *src++;
+   ofset += 640;
+
+   
+}
 
 /*
  * "Draw"イベントハンドラ
@@ -369,20 +424,23 @@ void AGEventDrawGL2(AG_Event *event)
        hh = h >> 3;
 
 //#ifdef _OPENMP
-//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh, yy) private(pu, xx)
+//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
 //#endif
-       for(yy = 0; yy < hh; yy++) {
+       for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
                for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
                     pu = &p[(xx + yy * ww) * 64];
-                    UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
+//                    UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
+                    UpdateFramebufferPiece(pu, xx << 3, yy << 3);
                     SDLDrawFlag.write[xx][yy] = FALSE;
                     }
                 }
             }
+       
+            if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
             glPopAttrib();
     }
-    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+//    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
@@ -394,7 +452,7 @@ void AGEventDrawGL2(AG_Event *event)
     glLoadIdentity();
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-//    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
