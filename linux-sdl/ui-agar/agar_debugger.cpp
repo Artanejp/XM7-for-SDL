@@ -130,7 +130,7 @@ struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), void (*wf
         return NULL;
     }
     buf = (BYTE *)malloc(sizeof(BYTE) * 16 * 16);
-    dump->InitConsole(80, 25);
+    dump->InitConsole(80, 20);
     if(buf == NULL){
         free(obj);
         delete dump;

@@ -242,9 +242,9 @@ static void CreateDump(AG_Event *event)
 //    if(pAddr == NULL) return;
     mp->addr = 0x0000;
     mp->to_tick = 200;
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
-	AG_WindowSetMinSize(w, 230, 80);
-	vb =AG_VBoxNew(w, 0);
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    AG_WindowSetMinSize(w, 230, 80);
+    vb =AG_VBoxNew(w, 0);
 
     hb = AG_HBoxNew(vb, 0);
 
@@ -252,24 +252,25 @@ static void CreateDump(AG_Event *event)
     case MEM_MAIN:
             readFunc = rb_main;
             writeFunc = mainmem_writeb;
+            AG_WindowSetCaption(w, "Dump Main memory");
             break;
     case MEM_SUB:
             readFunc = rb_sub;
             writeFunc = submem_writeb;
+            AG_WindowSetCaption(w, "Dump Sub memory");
             break;
     default:
             readFunc = NULL;
             writeFunc = NULL;
             break;
     }
-    pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
-    AG_TextboxSizeHint(pollVar, "XXXX");
-    AG_TextboxPrintf(pollVar, "%04", mp->to_tick);
-
-
     addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "Addr");
-    AG_TextboxSizeHint(addrVar, "XXXX");
-    AG_TextboxPrintf(addrVar, "%04", mp->addr);
+    AG_TextboxSizeHint(addrVar, "XXXXXX");
+    AG_TextboxPrintf(addrVar, "%04x", mp->addr);
+
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+    AG_TextboxSizeHint(pollVar, "XXXXXX");
+    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 
 
     hb = AG_HBoxNew(vb, 0);
@@ -282,10 +283,10 @@ static void CreateDump(AG_Event *event)
     }
 
 
-   	box = AG_BoxNewHoriz(vb, 0);
-   	box = AG_BoxNewHoriz(vb, 0);
-	btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
-   	box = AG_BoxNewHoriz(vb, 0);
+    box = AG_BoxNewHoriz(vb, 0);
+    box = AG_BoxNewHoriz(vb, 0);
+    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
+    box = AG_BoxNewHoriz(vb, 0);
 
     AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
     AG_SetEvent(pollVar, "textbox-postchg", OnChangePollDump, "%p", mp);

@@ -363,8 +363,8 @@ void AGEventDrawGL2(AG_Event *event)
        int hh;
        int ofset;
 
-            glPushAttrib(GL_TEXTURE_BIT);
-            glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+       glPushAttrib(GL_TEXTURE_BIT);
+       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
        ww = w >> 3;
        hh = h >> 3;
 
@@ -386,7 +386,9 @@ void AGEventDrawGL2(AG_Event *event)
 
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushAttrib(GL_TEXTURE_BIT);
+    glPushAttrib(GL_TRANSFORM_BIT);
+    glPushAttrib(GL_ENABLE_BIT);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -478,6 +480,8 @@ void AGEventDrawGL2(AG_Event *event)
     }
 e1:
     DrawOSDGL(glv);
+    glPopAttrib();
+    glPopAttrib();
     glPopAttrib();
 }
 
