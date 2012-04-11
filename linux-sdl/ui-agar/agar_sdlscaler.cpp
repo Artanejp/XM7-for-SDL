@@ -45,6 +45,93 @@ void pVram2RGB(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep
 }
 
 
+static inline Uint32 pVram_XtoHalf(Uint32 d1, Uint32 d2)
+{
+   Uint32 d0;
+   Uint16 r,g,b,a;
+#if AG_BIG_ENDIAN
+   r = (d1 & 0x000000ff) + (d2 & 0x000000ff);
+   g = ((d1 & 0x0000ff00) >> 8) + ((d2 & 0x0000ff00) >> 8);
+   b = ((d1 & 0x00ff0000) >> 16) + ((d2 & 0x00ff0000) >> 16);
+   d0 = 0xff000000 | (r >> 1) | ((b << 15) & 0x00ff0000) | ((g << 7) & 0x0000ff00); 
+#else
+   r = ((d1 & 0xff000000) >> 24) + ((d2 & 0xff000000) >> 24);
+   g = ((d1 & 0x00ff0000) >> 16) + ((d2 & 0x00ff0000) >> 16);
+   b = ((d1 & 0x0000ff00) >> 8) + ((d2 & 0x0000ff00) >> 8);
+   d0 = 0x000000ff | ((r << 23) & 0xff000000) | ((g << 15) & 0x00ff0000) | ((b << 7) & 0x0000ff00); 
+#endif
+   return d0;
+}
+
+// 0.5
+void pVram2RGB_x05(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+{
+   v8hi *b;
+   Uint32 *d1;
+   Uint32 *d2;
+   Uint32 *p;
+   int w = my->Surface->w;
+   int h = my->Surface->h;
+   int yy;
+   int xx;
+   int hh;
+   int ww;
+   int i;
+   int pitch;
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+   if(yrep < 1) {
+      if((y >> 1) > my->Surface->h) return;
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x >> 1) * my->Surface->format->BytesPerPixel
+                        + (y >> 1)  * my->Surface->pitch);
+   } else {
+      if((y + 8)  >= my->Surface->h) return;
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x >> 1) * my->Surface->format->BytesPerPixel
+                        + y * yrep * my->Surface->pitch);
+   }
+   
+   pitch = my->Surface->pitch / sizeof(Uint32);
+   if(yrep < 1) {
+      Uint32 d00, d01, d02;
+      p = src;
+      for(yy  = 0; yy < 4; yy++) {
+	 d2 = d1;
+	 for(xx = 0; xx < 4; xx++) {
+	    d00 = *p++;
+	    d01 = *p++;
+	    d02 = pVram_XtoHalf(d00, d01);
+	    *d2++ = d02;
+	 }
+	 p += 8;
+	 d1 += pitch;
+      }
+   } else {
+      Uint32 d00, d01, d02;
+      p = src;
+      for(yy  = 0; yy < 8; yy++) {
+	 d2 = d1;
+	 for(xx = 0; xx < 4; xx++) {
+	    d00 = *p++;
+	    d01 = *p++;
+	    d02 = pVram_XtoHalf(d00, d01);
+	    *d2++ = d02;
+	 }
+	 d1 += pitch;
+      }
+   }
+
+   
+
+
+   
+}
+
+
 void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi *b;
@@ -59,8 +146,24 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int ww;
    int i;
    int pitch;
-   d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * my->Surface->format->BytesPerPixel
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+
+   if(yrep == 0) {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * my->Surface->format->BytesPerPixel
+                        + y * my->Surface->pitch);
+      yrep = 1;
+   } else {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * my->Surface->format->BytesPerPixel
                         + y * yrep * my->Surface->pitch);
+   }
+
+   
    if(h <= ((y + 8) * yrep)) {
       hh = (h - y * yrep) / yrep;
    } else {
@@ -70,28 +173,121 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    pitch = my->Surface->pitch / sizeof(Uint32);
    if(w < (x  + 8)) {
     int j;
+    Uint32 d0;
+      
     p = src;
     ww = w - x;
+      
     for(yy = 0; yy < hh ; yy++) {
         i = 0;
-        for(xx = 0; xx < ww; xx += 2, i++){
-        d2 = d1;
-            for(j = 0; j < yrep; j++)
-             d2[xx + pitch * j] = p[i];
+        for(xx = 0; xx < ww; xx ++, i++){
+            d2 = d1;
+            d0 = p[i];
+            for(j = 0; j < yrep; j++){
+	       if((j >= (yrep / 2)) && !bFullScan){
+		  d2[xx] = black;
+	       } else {
+		  d2[xx] = d0;
+	       } 
+
+                d2 += pitch;
+            }
         }
         d1 += (pitch * yrep);
+        p += 8;
       }
    } else { // inside align
       v8hi *bv;
+      v8hi bb;
       int j;
-
+      bb.i[0] = bb.i[1] =
+      bb.i[2] = bb.i[3] =
+      bb.i[4] = bb.i[5] =
+      bb.i[6] = bb.i[7] = black;
         b = (v8hi *)src;
         for(yy = 0; yy < hh; yy++){
-            for(j = 0; j < yrep; j++) {
-                bv = (v8hi *)d1;
-                *bv = *b;
-                d1 += pitch;
-            }
+	   switch(yrep) {
+	    case 0:
+	    case 1:
+	      bv = (v8hi *)d1;
+	      *bv = *b;
+	      d1 += pitch;
+	      break;
+	    case 2:
+	      bv = (v8hi *)d1;
+	      *bv = *b;
+	      d1 += pitch;
+
+	      if(bFullScan) {
+		 bv = (v8hi *)d1;
+		 *bv = *b;
+		 d1 += pitch;
+	      } else {
+		 bv = (v8hi *)d1;
+		 *bv = bb;
+		 d1 += pitch;
+	      }
+	      break;
+	    case 3:
+	      bv = (v8hi *)d1;
+	      *bv = *b;
+	      d1 += pitch;
+
+	      bv = (v8hi *)d1;
+	      *bv = *b;
+	      d1 += pitch;
+
+	      if(bFullScan) {
+		 bv = (v8hi *)d1;
+		 *bv = *b;
+		 d1 += pitch;
+	      } else {
+		 bv = (v8hi *)d1;
+		 *bv = bb;
+		 d1 += pitch;
+	      }
+	      break;
+	    case 4:
+	      bv = (v8hi *)d1;
+	      *bv = *b;
+	      d1 += pitch;
+
+	      bv = (v8hi *)d1;
+	      *bv = *b;
+	      d1 += pitch;
+
+	      if(bFullScan) {
+		 bv = (v8hi *)d1;
+		 *bv = *b;
+		 d1 += pitch;
+
+		 bv = (v8hi *)d1;
+		 *bv = *b;
+		 d1 += pitch;
+	      } else {
+		 bv = (v8hi *)d1;
+		 *bv = bb;
+		 d1 += pitch;
+
+		 bv = (v8hi *)d1;
+		 *bv = bb;
+		 d1 += pitch;
+
+	      }
+	      break;
+	    default:
+	      for(j = 0; j < yrep; j++) {
+		 bv = (v8hi *)d1;
+		 if(!bFullScan && (j >= (yrep / 2))) {
+		    *bv = bb;
+		 } else {
+		    *bv = *b;
+		 }
+		 
+		 d1 += pitch;
+	      }
+	      break;
+	   }
         b++;
         }
     }
@@ -113,8 +309,22 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int ww;
    int i;
    int pitch;
-   d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 2 * my->Surface->format->BytesPerPixel
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+   if(yrep == 0) {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 2 * my->Surface->format->BytesPerPixel
+                        + y * my->Surface->pitch);
+      yrep = 1;
+   } else {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 2 * my->Surface->format->BytesPerPixel
                         + y * yrep * my->Surface->pitch);
+   }
+   
    if(h <= ((y + 8) * yrep)) {
       hh = (h - y * yrep) / yrep;
    } else {
@@ -134,8 +344,13 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
             d2 = d1;
             d0 = p[i];
             for(j = 0; j < yrep; j++){
-                d2[xx] = d0;
-                d2[xx + 1] = d0;
+	       if((j >= (yrep / 2)) && !bFullScan){
+		  d2[xx] = d2[xx +1] = black;
+	       } else {
+		  d2[xx] = d0;
+		  d2[xx + 1] = d0;
+	       } 
+	       
                 d2 += pitch;
             }
         }
@@ -146,6 +361,7 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
     int j;
     v8hi b2;
     v8hi b3;
+    v8hi bb;
     v8hi *b2p;
     b = (v8hi *)src;
     for(yy = 0; yy < hh; yy++){
@@ -159,7 +375,11 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
        b3.i[4] = b3.i[5] = b->i[6];
        b3.i[7] = b3.i[6] = b->i[7];
 
-
+       bb.i[0] = bb.i[1] =
+       bb.i[2] = bb.i[3] =
+       bb.i[4] = bb.i[5] =
+       bb.i[6] = bb.i[7] = black;
+	 
        switch(yrep) {
 	case 0:
 	case 1:
@@ -175,8 +395,12 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	  d1 += pitch;
 
 	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
+	  if(bFullScan) {
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	  } else {
+	     b2p[0] = b2p[1] = bb;
+	  }
 	  d1 += pitch;
 	  break;
 	case 3:
@@ -191,8 +415,12 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	  d1 += pitch;
 
 	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
+	  if(bFullScan) {
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	  } else {
+	     b2p[0] = b2p[1] = bb;
+	  }
 	  d1 += pitch;
 	  break;
         case 4:
@@ -206,21 +434,40 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	  b2p[1] = b3;
 	  d1 += pitch;
 
-	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  d1 += pitch;
 
-	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  d1 += pitch;
+	  if(bFullScan) {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     d1 += pitch;
+
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     d1 += pitch;
+	     
+	  } else {
+	     b2p = (v8hi *)d1;
+	     b2p[0] =
+	     b2p[1] = bb;
+	     d1 += pitch;
+
+	     b2p = (v8hi *)d1;
+	     b2p[0] =
+	     b2p[1] = bb;
+	     d1 += pitch;
+	  }
 	  break;
 	default:
 	  for(j = 0; j < yrep; j++) {
-	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
+	     b2p = (v8hi *)d1;
+	     if(!bFullScan && (j >= (yrep / 2))) {
+		b2p[0] = b2p[1] = bb;
+	     } else {
+		b2p[0] = b2;
+		b2p[1] = b3;
+	     }
+	     
 	  d1 += pitch;
 	  }
 	  break;
@@ -246,8 +493,22 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int ww;
    int i;
    int pitch;
-   d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 4 * my->Surface->format->BytesPerPixel
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+   if(yrep == 0) {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 3 * my->Surface->format->BytesPerPixel
+                        + y * my->Surface->pitch);
+      yrep = 1;
+   } else {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 3 * my->Surface->format->BytesPerPixel
                         + y * yrep * my->Surface->pitch);
+   }
+
    if(h <= ((y + 8) * yrep)) {
       hh = (h - y * yrep) / yrep;
    } else {
@@ -267,10 +528,16 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
             d2 = d1;
             d0 = p[i];
             for(j = 0; j < yrep; j++) {
-                d2[xx] = d0;
-                d2[xx + 1] = d0;
+	       if(!bFullScan && (j >= (yrep / 2))) {
+		d2[xx] = 
+		d2[xx + 1] = 
+                d2[xx + 2] = black;
+               } else {
+		d2[xx] = 
+                d2[xx + 1] = 
                 d2[xx + 2] = d0;
-                d2 += pitch;
+	       }
+               d2 += pitch;
             }
         }
 	 d1 += (pitch * yrep);
@@ -280,7 +547,12 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
       int j;
       v8hi b2,b3,b4;
       v8hi *b2p;
-      b = (v8hi *)src;
+      v8hi bb;
+      
+      bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] =
+      bb.i[4] = bb.i[5] = bb.i[6] = bb.i[7] = black;
+
+     b = (v8hi *)src;
      for(yy = 0; yy < hh; yy++){
 	b2.i[0] = b2.i[1] = b2.i[2] = b->i[0];
 	b2.i[3] = b2.i[4] = b2.i[5] = b->i[1];
@@ -288,8 +560,8 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	b3.i[1] = b3.i[2] = b3.i[3] = b->i[3];
 	b3.i[4] = b3.i[5] = b3.i[6] = b->i[4];
 	b3.i[7] = b4.i[0] = b4.i[1] = b->i[5];
-	b4.i[2] = b2.i[3] = b4.i[4] = b->i[6];
-	b4.i[5] = b2.i[6] = b4.i[7] = b->i[7];
+	b4.i[2] = b4.i[3] = b4.i[4] = b->i[6];
+	b4.i[5] = b4.i[6] = b4.i[7] = b->i[7];
 
 
        switch(yrep) {
@@ -309,9 +581,14 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	     d1 += pitch;
 
 	     b2p = (v8hi *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
+	     if(!bFullScan) {
+		b2p[0] = b2p[1] = b2p[2] = bb;
+	     } else {
+		b2p[0] = b2;
+		b2p[1] = b3;
+		b2p[2] = b4;
+	     }
+	  
 	     d1 += pitch;
 	     break;
 	case 3:
@@ -328,9 +605,13 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	     d1 += pitch;
 	  
 	     b2p = (v8hi *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
+	     if(!bFullScan) {
+		b2p[0] = b2p[1] = b2p[2] = bb;
+	     } else {
+		b2p[0] = b2;
+		b2p[1] = b3;
+		b2p[2] = b4;
+	     }
 	     d1 += pitch;
 	     break;
 	case 4:
@@ -347,23 +628,36 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	     d1 += pitch;
 	  
 	     b2p = (v8hi *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
-	     d1 += pitch;
-	  
-	     b2p = (v8hi *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
+	     if(!bFullScan) {
+		b2p[0] = b2p[1] = b2p[2] = bb;
+		d1 += pitch;
+
+		b2p = (v8hi *)d1;
+		b2p[0] = b2p[1] = b2p[2] = bb;
+
+	     } else {
+		b2p[0] = b2;
+		b2p[1] = b3;
+		b2p[2] = b4;
+		d1 += pitch;
+
+		b2p = (v8hi *)d1;
+		b2p[0] = b2;
+		b2p[1] = b3;
+		b2p[2] = b4;
+	     }
 	     d1 += pitch;
 	     break;
 	default:
 	  for(j = 0; j < yrep; j++) {
 	     b2p = (v8hi *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
+	     if(!bFullScan && (j >= (yrep / 2))) {
+		b2p[0] = b2p[1] = b2p[2] = bb;
+	     } else {
+		b2p[0] = b2;
+		b2p[1] = b3;
+		b2p[2] = b4;
+	     }
 	     d1 += pitch;
 	  }
 	  break;
@@ -387,8 +681,22 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int ww;
    int i;
    int pitch;
-   d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 4 * my->Surface->format->BytesPerPixel
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+   
+   if(yrep == 0) {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 4 * my->Surface->format->BytesPerPixel
+                        + y * my->Surface->pitch);
+      yrep = 1;
+   } else {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 4 * my->Surface->format->BytesPerPixel
                         + y * yrep * my->Surface->pitch);
+   }
    if(h <= ((y + 8) * yrep)) {
       hh = (h - y * yrep) / yrep;
    } else {
@@ -408,10 +716,12 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
             d2 = d1;
             d0 = p[i];
             for(j = 0; j < yrep; j++) {
-                d2[xx] = d0;
-                d2[xx + 1] = d0;
-                d2[xx + 2] = d0;
-                d2[xx + 3] = d0;
+	       if(!bFullScan && (j >= (yrep / 2))) {
+		    d2[xx] = d2[xx + 1] = d2[xx + 2] = d2[xx + 3] = black;
+		 } else {
+		    d2[xx] = d2[xx + 1] = d2[xx + 2] = d2[xx + 3] = d0;
+		 }
+	       
                 d2 += pitch;
             }
         }
@@ -422,7 +732,11 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
       v8hi b2, b3, b4, b5;
       v8hi *b2p;
       int j;
-      b = (v8hi *)src;
+      v8hi bb;
+     bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] =
+     bb.i[4] = bb.i[5] = bb.i[6] = bb.i[7] = black;
+      
+     b = (v8hi *)src;
      for(yy = 0; yy < hh; yy++){
        b2.i[0] = b2.i[1] = 
        b2.i[2] = b2.i[3] = b->i[0];
@@ -461,12 +775,18 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	  b2p[3] = b5;
 	  d1 += pitch;
 
-  	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  b2p[2] = b4;
-	  b2p[3] = b5;
-	  d1 += pitch;
+	  if(bFullScan) {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     b2p[3] = b5;
+	     d1 += pitch;
+	  } else {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2p[1] = b2p[2] = b2p[3] = bb;
+	     d1 += pitch;
+	  }
 	  break;
 	case 3:
 	  b2p = (v8hi *)d1;
@@ -483,12 +803,18 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	  b2p[3] = b5;
 	  d1 += pitch;
 	  
-	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  b2p[2] = b4;
-	  b2p[3] = b5;
-	  d1 += pitch;
+	  if(bFullScan) {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     b2p[3] = b5;
+	     d1 += pitch;
+	  } else {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2p[1] = b2p[2] = b2p[3] = bb;
+	     d1 += pitch;
+	  }
 	  break;
 	case 4:
 	  b2p = (v8hi *)d1;
@@ -506,26 +832,38 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	  d1 += pitch;
 
 	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  b2p[2] = b4;
-	  b2p[3] = b5;
-	  d1 += pitch;
+	  if(bFullScan) {
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     b2p[3] = b5;
+	     d1 += pitch;
 
-	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  b2p[2] = b4;
-	  b2p[3] = b5;
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     b2p[3] = b5;
+	  } else {
+	     b2p[0] = b2p[1] = b2p[2] = b2p[3] = bb;
+	     d1 += pitch;
+	     b2p = (v8hi *) d1;
+	     b2p[0] = b2p[1] = b2p[2] = b2p[3] = bb;
+	  }
 	  d1 += pitch;
 	  break;
 	default:
 	for(j = 0; j < yrep; j++) {
 	  b2p = (v8hi *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  b2p[2] = b4;
-	  b2p[3] = b5;
+	   if(!bFullScan && (j >= (yrep / 2))) {
+	      b2p[0] = b2p[1] = b2p[2] = b2p[3] = bb;
+	   } else {
+	      b2p[0] = b2;
+	      b2p[1] = b3;
+	      b2p[2] = b4;
+	      b2p[3] = b5;
+	   }
+	   
 	  d1 += pitch;
 	}
        }
@@ -552,8 +890,12 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
     xth = wx0 >> 1;
     switch(w1 / w0){
             case 0:
-            if(xfactor < xth){
-                DrawFn = NULL;
+            if(w0 > 480){
+	        if((w1 < 480) || (h1 < 200)){ 
+		   DrawFn = pVram2RGB_x05;
+		} else {
+		    DrawFn = pVram2RGB_x1;
+		}
             } else {
                 DrawFn = pVram2RGB_x1;
             }
@@ -643,7 +985,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
     tmp = h % hh;
     yrep = h / hh;
     if(tmp > (hh >> 1)){
-        yrep++;
+	  yrep++;
     }
 
     pb = (Uint8 *)(my->Surface->pixels);
@@ -675,7 +1017,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 *                *disp = src[of];
 ** // xx,yy = 1scale(not 8)
 */
-            if(xx >= w) continue;
+//            if(xx >= w) continue;
                 if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
                     disp = (Uint32 *)pb;
                     of = (xx *8) + yy * ww;
@@ -683,7 +1025,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
                     SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
                 }
 			}
-			if(yy >= h) continue;
+//			if(yy >= h) continue;
 	}
 	AG_SurfaceUnlock(my->Surface);
 //    my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
