@@ -101,6 +101,7 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi *b;
+
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
@@ -142,30 +143,89 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
         p += 8;
       }
    } else { // inside align
-       int j;
+    int j;
+    v8hi b2;
+    v8hi b3;
+    v8hi *b2p;
     b = (v8hi *)src;
     for(yy = 0; yy < hh; yy++){
-       for(j = 0; j < yrep; j++) {
-        d1[0] = b->i[0];
-        d1[1] = b->i[0];
-        d1[2] = b->i[1];
-        d1[3] = b->i[1];
-        d1[4] = b->i[2];
-        d1[5] = b->i[2];
-        d1[6] = b->i[3];
-        d1[7] = b->i[3];
+       b2.i[0] = b2.i[1] = b->i[0];
+       b2.i[2] = b2.i[3] = b->i[1];
+       b2.i[4] = b2.i[5] = b->i[2];
+       b2.i[7] = b2.i[6] = b->i[3];
 
-        d1[8] = b->i[4];
-        d1[9] = b->i[4];
-        d1[10] = b->i[5];
-        d1[11] = b->i[5];
-        d1[12] = b->i[6];
-        d1[13] = b->i[6];
-        d1[14] = b->i[7];
-        d1[15] = b->i[7];
+       b3.i[0] = b3.i[1] = b->i[4];
+       b3.i[2] = b3.i[3] = b->i[5];
+       b3.i[4] = b3.i[5] = b->i[6];
+       b3.i[7] = b3.i[6] = b->i[7];
 
-        d1 += pitch;
+
+       switch(yrep) {
+	case 0:
+	case 1:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+	  break;
+	case 2:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+	  break;
+	case 3:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+	  
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+	  break;
+        case 4:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+	  break;
+	default:
+	  for(j = 0; j < yrep; j++) {
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  d1 += pitch;
+	  }
+	  break;
        }
+       
        b++;
      }
    }
@@ -218,37 +278,95 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
     }
    } else { // inside align
       int j;
+      v8hi b2,b3,b4;
+      v8hi *b2p;
       b = (v8hi *)src;
      for(yy = 0; yy < hh; yy++){
-       for(j = 0; j < yrep; j++) {
-        d1[0] = b->i[0];
-        d1[1] = b->i[0];
-        d1[2] = b->i[0];
-        d1[3] = b->i[1];
-        d1[4] = b->i[1];
-        d1[5] = b->i[1];
-        d1[6] = b->i[2];
-        d1[7] = b->i[2];
+	b2.i[0] = b2.i[1] = b2.i[2] = b->i[0];
+	b2.i[3] = b2.i[4] = b2.i[5] = b->i[1];
+	b2.i[6] = b2.i[7] = b3.i[0] = b->i[2];
+	b3.i[1] = b3.i[2] = b3.i[3] = b->i[3];
+	b3.i[4] = b3.i[5] = b3.i[6] = b->i[4];
+	b3.i[7] = b4.i[0] = b4.i[1] = b->i[5];
+	b4.i[2] = b2.i[3] = b4.i[4] = b->i[6];
+	b4.i[5] = b2.i[6] = b4.i[7] = b->i[7];
 
-        d1[8] = b->i[2];
-        d1[9] = b->i[3];
-        d1[10] = b->i[3];
-        d1[11] = b->i[3];
-        d1[12] = b->i[4];
-        d1[13] = b->i[4];
-        d1[14] = b->i[4];
-        d1[15] = b->i[5];
 
-        d1[16] = b->i[5];
-        d1[17] = b->i[5];
-        d1[18] = b->i[6];
-        d1[19] = b->i[6];
-        d1[20] = b->i[6];
-        d1[21] = b->i[7];
-        d1[22] = b->i[7];
-        d1[23] = b->i[7];
+       switch(yrep) {
+	case 0:
+	case 1:
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	     break;
+	case 2:
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
 
-        d1 += pitch;
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	     break;
+	case 3:
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	  
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	  
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	     break;
+	case 4:
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	  
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	  
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	  
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	     break;
+	default:
+	  for(j = 0; j < yrep; j++) {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b2p[2] = b4;
+	     d1 += pitch;
+	  }
+	  break;
        }
        b++;
      }
@@ -301,47 +419,117 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 	 p += 8;
     }
    } else { // inside align
+      v8hi b2, b3, b4, b5;
+      v8hi *b2p;
       int j;
       b = (v8hi *)src;
      for(yy = 0; yy < hh; yy++){
-       for(j = 0; j < yrep; j++) {
-        d1[0] = b->i[0];
-        d1[1] = b->i[0];
-        d1[2] = b->i[0];
-        d1[3] = b->i[0];
-        d1[4] = b->i[1];
-        d1[5] = b->i[1];
-        d1[6] = b->i[1];
-        d1[7] = b->i[1];
+       b2.i[0] = b2.i[1] = 
+       b2.i[2] = b2.i[3] = b->i[0];
+       b2.i[4] = b2.i[5] =
+       b2.i[7] = b2.i[6] = b->i[1];
 
-        d1[8] = b->i[2];
-        d1[9] = b->i[2];
-        d1[10] = b->i[2];
-        d1[11] = b->i[2];
-        d1[12] = b->i[3];
-        d1[13] = b->i[3];
-        d1[14] = b->i[3];
-        d1[15] = b->i[3];
+       b3.i[0] = b3.i[1] =
+       b3.i[2] = b3.i[3] = b->i[2];
+       b3.i[4] = b3.i[5] =
+       b3.i[7] = b3.i[6] = b->i[3];
 
-        d1[16] = b->i[4];
-        d1[17] = b->i[4];
-        d1[18] = b->i[4];
-        d1[19] = b->i[4];
-        d1[20] = b->i[5];
-        d1[21] = b->i[5];
-        d1[22] = b->i[5];
-        d1[23] = b->i[5];
+       b4.i[0] = b4.i[1] =
+       b4.i[2] = b4.i[3] = b->i[4];
+       b4.i[4] = b4.i[5] =
+       b4.i[7] = b4.i[6] = b->i[5];
 
-        d1[24] = b->i[6];
-        d1[25] = b->i[6];
-        d1[26] = b->i[6];
-        d1[27] = b->i[6];
-        d1[28] = b->i[7];
-        d1[29] = b->i[7];
-        d1[30] = b->i[7];
-        d1[31] = b->i[7];
-        d1 += pitch;
+       b5.i[0] = b5.i[1] =
+       b5.i[2] = b5.i[3] = b->i[6];
+       b5.i[4] = b5.i[5] =
+       b5.i[7] = b5.i[6] = b->i[7];
+       switch(yrep){
+	case 0:
+	case 1:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	  break;
+        case 2:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+
+  	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	  break;
+	case 3:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	  
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	  
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	  break;
+	case 4:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	  break;
+	default:
+	for(j = 0; j < yrep; j++) {
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b2p[2] = b4;
+	  b2p[3] = b5;
+	  d1 += pitch;
+	}
        }
+	
        b++;
      }
    }
