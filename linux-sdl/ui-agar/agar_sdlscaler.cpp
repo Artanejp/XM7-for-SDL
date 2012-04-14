@@ -293,6 +293,221 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
     }
 }
 
+
+// Zoom 1.25 (640->800)
+void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+{
+   v8hi *b;
+
+   Uint32 *d1;
+   Uint32 *d2;
+   Uint32 *p;
+   int w = my->Surface->w;
+   int h = my->Surface->h;
+   int yy;
+   int xx;
+   int hh;
+   int ww;
+   int i;
+   int pitch;
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+   if(yrep == 0) {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5 * my->Surface->format->BytesPerPixel) / 4
+                        + y * my->Surface->pitch);
+      yrep = 1;
+   } else {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5  * my->Surface->format->BytesPerPixel) / 4
+                        + y * yrep * my->Surface->pitch);
+   }
+   
+   if(h <= ((y + 8) * yrep)) {
+      hh = (h - y * yrep) / yrep;
+   } else {
+      hh = 8;
+   }
+
+   pitch = my->Surface->pitch / sizeof(Uint32);
+   if(w < ((x * 5)/ 4 + 10)) {
+    int j;
+    Uint32 d0;
+
+    p = src;
+    ww = w - x * 2;
+    for(yy = 0; yy < hh ; yy++) {
+        i = 0;
+        for(xx = 0; xx < ww; xx ++, i++){
+            d2 = d1;
+            d0 = p[i];
+            for(j = 0; j < yrep; j++){
+	       if((j >= (yrep / 2)) && !bFullScan){
+		  d2[xx] = black;
+		  if((xx & 3) == 0) {
+		     xx++;
+		     d2[xx] = black;
+		  }
+       	       } else {
+		  d2[xx] = d0;
+		  if((xx & 3) == 0) {
+		     xx++;
+		     d2[xx] = d0;
+		  }
+	       } 
+	       
+                d2 += pitch;
+            }
+        }
+        d1 += (pitch * yrep);
+        p += 8;
+      }
+   } else { // inside align
+    int j;
+    v8hi b2;
+    v8hi bb;
+    Uint32 b28 ,b29;
+    Uint32 b38 ,b39;
+      
+    v8hi *b2p;
+    b = (v8hi *)src;
+    for(yy = 0; yy < hh; yy++){
+       b2.i[0] = b2.i[1] = b->i[0];
+       b2.i[2] = b->i[1];
+       b2.i[3] = b->i[2];
+       b2.i[4] = b->i[3];
+
+       b2.i[5] = b2.i[6] = b->i[4];
+       b2.i[7] = b->i[5];
+       b28 = b->i[6];
+       b29 = b->i[7];
+
+       bb.i[0] = bb.i[1] =
+       bb.i[2] = bb.i[3] =
+       bb.i[4] = bb.i[5] =
+       bb.i[6] = bb.i[7] = black;
+       b38 = b39 = black;
+       switch(yrep) {
+	case 0:
+	case 1:
+	  b2p = (v8hi *)d1;
+	  *b2p = b2;
+	  d1[8] = b28;
+	  d1[9] = b29;
+	  d1 += pitch;
+	  break;
+	case 2:
+	  b2p = (v8hi *)d1;
+	  *b2p = b2;
+	  d1[8] = b28;
+	  d1[9] = b29;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  if(bFullScan) {
+	     *b2p = b2;
+	     d1[8] = b28;
+	     d1[9] = b29;
+	  } else {
+	     *b2p = bb;
+	     d1[8] = b38;
+	     d1[9] = b39;
+	  }
+	  d1 += pitch;
+	  break;
+	case 3:
+	  b2p = (v8hi *)d1;
+	  *b2p = b2;
+	  d1[8] = b28;
+	  d1[9] = b29;
+	  d1 += pitch;
+	  
+	  b2p = (v8hi *)d1;
+	  *b2p = b2;
+	  d1[8] = b28;
+	  d1[9] = b29;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  if(bFullScan) {
+	     *b2p = b2;
+	     d1[8] = b28;
+	     d1[9] = b29;
+	  } else {
+	     *b2p = bb;
+	     d1[8] = b38;
+	     d1[9] = b39;
+	  }
+	  d1 += pitch;
+	  break;
+        case 4:
+	  b2p = (v8hi *)d1;
+	  *b2p = b2;
+	  d1[8] = b28;
+	  d1[9] = b29;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  *b2p = b2;
+	  d1[8] = b28;
+	  d1[9] = b29;
+	  d1 += pitch;
+
+
+	  if(bFullScan) {
+	     b2p = (v8hi *)d1;
+	     *b2p = b2;
+	     d1[8] = b28;
+	     d1[9] = b29;
+	     d1 += pitch;
+
+	     b2p = (v8hi *)d1;
+	     *b2p = b2;
+	     d1[8] = b28;
+	     d1[9] = b29;
+	     d1 += pitch;
+	     
+	  } else {
+	     b2p = (v8hi *)d1;
+	     *b2p = bb;
+	     d1[8] = b38;
+	     d1[9] = b39;
+	     d1 += pitch;
+
+	     b2p = (v8hi *)d1;
+	     *b2p = bb;
+	     d1[8] = b38;
+	     d1[9] = b39;
+	     d1 += pitch;
+	  }
+	  break;
+	default:
+	  for(j = 0; j < yrep; j++) {
+	     b2p = (v8hi *)d1;
+	     if(!bFullScan && (j >= (yrep / 2))) {
+		*b2p = bb;
+		d1[8] = b38;
+		d1[9] = b39;
+	     } else {
+		*b2p = b2;
+		d1[8] = b38;
+		d1[9] = b39;
+	     }
+	     
+	  d1 += pitch;
+	  }
+	  break;
+       }
+       
+       b++;
+     }
+   }
+}
+
+
 // Zoom 2x2
 void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
@@ -902,7 +1117,11 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
             break;
             case 1:
             if(xfactor < xth){
-              DrawFn = pVram2RGB_x1;
+	      if(w1 > 720) {
+		 DrawFn = pVram2RGB_x125;
+	      } else {
+		 DrawFn = pVram2RGB_x1;
+	      }
             } else { // xfactor != 0
               DrawFn = pVram2RGB_x2;
             }
