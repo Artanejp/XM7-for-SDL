@@ -266,11 +266,11 @@ static void InitMessages(AG_Widget *parent)
     p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
     AG_FillRect(p, NULL, col);
     //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
-    if(pwCaption == NULL) pwCaption = AG_PixmapFromSurface(parent, 0, p);
+    if(pwCaption == NULL) pwCaption = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , p);
     for(i = 1; i >= 0 ; i--) {
-        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapFromSurface(parent, 0, pFDNorm[i]);
+        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pFDNorm[i]);
     }
-    if(pwCMT == NULL) pwCMT = AG_PixmapFromSurface(parent, 0, pCMTNorm);
+    if(pwCMT == NULL) pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCMTNorm);
     AG_SurfaceFree(p);
 }
 
@@ -286,9 +286,9 @@ static void InitBox(AG_Widget *parent)
     if(parent == NULL) return;
     InitMessages(parent);
 
-    if(pwCAPS == NULL) pwCAPS = AG_PixmapFromSurface(parent, 0, pCapsOff);
-    if(pwINS == NULL) pwINS = AG_PixmapFromSurface(parent, 0, pInsOff);
-    if(pwKana == NULL) pwKana = AG_PixmapFromSurface(parent, 0, pKanaOff);
+    if(pwCAPS == NULL) pwCAPS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCapsOff);
+    if(pwINS == NULL) pwINS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pInsOff);
+    if(pwKana == NULL) pwKana = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pKanaOff);
 }
 
 static int LinkSurface(void)
@@ -1242,7 +1242,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
        CreateCaption(parent, FALSE);
        UpdateMainCaption(TRUE);
        {
-	  pwCaption = AG_PixmapFromSurface(parent, 0, pCaption);
+	  pwCaption = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCaption);
 	  nwCaption = 0;
 	  AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
 	  AG_PixmapUpdateSurface(pwCaption, nwCaption);
@@ -1256,7 +1256,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 	  nwFD[i][ID_EMPTY] = 0;
 	  UpdateVFDMessages(i, "               ");
 	  nwFD[i][ID_IN] = 0;
-	  pwFD[i] = AG_PixmapFromSurface(parent, 0, pFDNorm[i]);
+	  pwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pFDNorm[i]);
 	  nwFD[i][ID_READ] = AG_PixmapAddSurface(pwFD[i], pFDRead[i]);
 	  nwFD[i][ID_WRITE] = AG_PixmapAddSurface(pwFD[i], pFDWrite[i]);
 	  AG_PixmapUpdateSurface(pwFD[i], nwFD[i][ID_IN]);
@@ -1272,7 +1272,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
        CreateCMT(parent, FALSE);
        UpdateCMTMessages("       ");
        nwCMT[ID_IN] = 0;
-       pwCMT = AG_PixmapFromSurface(parent, 0, pCMTNorm);
+       pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCMTNorm);
        nwCMT[ID_READ] = AG_PixmapAddSurface(pwCMT, pCMTRead);
        nwCMT[ID_WRITE] = AG_PixmapAddSurface(pwCMT, pCMTWrite);
        AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
@@ -1286,17 +1286,17 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 //       pad = AG_BoxNewHoriz(parent, 0);
        CreateLEDs(parent, FALSE);
        nwCaps[ID_ON] = 0;
-       pwCAPS =  AG_PixmapFromSurface(parent, 0, pCapsOn);
+       pwCAPS =  AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCapsOn);
        nwCaps[ID_OFF] = AG_PixmapAddSurface(pwCAPS, pCapsOff);
        AG_WidgetSetSize(pwCAPS, nLedWidth, nLedHeight);
 
        nwIns[ID_ON] = 0;
-       pwINS = AG_PixmapFromSurface(parent, 0,  pInsOn);
+       pwINS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE ,  pInsOn);
        nwIns[ID_OFF] = AG_PixmapAddSurface(pwINS, pInsOff);
        AG_WidgetSetSize(pwINS, nLedWidth, nLedHeight);
 
        nwKana[ID_ON] = 0;
-       pwKana = AG_PixmapFromSurface(parent, 0, pKanaOn);
+       pwKana = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pKanaOn);
        nwKana[ID_OFF] = AG_PixmapAddSurface(pwKana, pKanaOff);
        AG_WidgetSetSize(pwKana, nLedWidth, nLedHeight);
 
