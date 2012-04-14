@@ -171,7 +171,7 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    }
 
    pitch = my->Surface->pitch / sizeof(Uint32);
-   if(w < (x  + 8)) {
+   if(w < (x  + 7)) {
     int j;
     Uint32 d0;
       
@@ -184,7 +184,7 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
             d2 = d1;
             d0 = p[i];
             for(j = 0; j < yrep; j++){
-	       if((j >= (yrep / 2)) && !bFullScan){
+	       if((j > (yrep / 2)) && !bFullScan){
 		  d2[xx] = black;
 	       } else {
 		  d2[xx] = d0;
@@ -333,34 +333,32 @@ void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int
    }
 
    pitch = my->Surface->pitch / sizeof(Uint32);
-   if(w < ((x * 5)/ 4 + 10)) {
+   if(w < ((x * 5)/ 4 + 8)) {
     int j;
     Uint32 d0;
 
     p = src;
-    ww = w - x * 2;
+    ww = w - (x * 5) / 4;
     for(yy = 0; yy < hh ; yy++) {
         i = 0;
         for(xx = 0; xx < ww; xx ++, i++){
             d2 = d1;
             d0 = p[i];
             for(j = 0; j < yrep; j++){
-	       if((j >= (yrep / 2)) && !bFullScan){
+	       if((j > (yrep / 2)) && !bFullScan){
 		  d2[xx] = black;
 		  if((xx & 3) == 0) {
-		     xx++;
-		     d2[xx] = black;
+		     d2[xx + 1] = black;
 		  }
        	       } else {
 		  d2[xx] = d0;
 		  if((xx & 3) == 0) {
-		     xx++;
-		     d2[xx] = d0;
+		     d2[xx + 1] = d0;
 		  }
 	       } 
-	       
-                d2 += pitch;
+               d2 += pitch;
             }
+	   if((xx & 3) == 0) xx++;
         }
         d1 += (pitch * yrep);
         p += 8;
@@ -547,7 +545,7 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    }
 
    pitch = my->Surface->pitch / sizeof(Uint32);
-   if(w < (x * 2 + 16)) {
+   if(w < (x * 2 + 15)) {
     int j;
     Uint32 d0;
 
@@ -693,6 +691,236 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    }
 }
 
+// Zoom 2.5
+void pVram2RGB_x25(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+{
+   v8hi *b;
+
+   Uint32 *d1;
+   Uint32 *d2;
+   Uint32 *p;
+   int w = my->Surface->w;
+   int h = my->Surface->h;
+   int yy;
+   int xx;
+   int hh;
+   int ww;
+   int i;
+   int pitch;
+   Uint32 black;
+   
+#if AG_BIG_ENDIAN
+   black = 0xff000000;
+#else
+   black = 0x000000ff;
+#endif
+   if(yrep == 0) {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5 * my->Surface->format->BytesPerPixel) / 2
+                        + y * my->Surface->pitch);
+      yrep = 1;
+   } else {
+      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5 * my->Surface->format->BytesPerPixel) / 2
+                        + y * yrep * my->Surface->pitch);
+   }
+   
+   if(h <= ((y + 8) * yrep)) {
+      hh = (h - y * yrep) / yrep;
+   } else {
+      hh = 8;
+   }
+
+   pitch = my->Surface->pitch / sizeof(Uint32);
+   if(w < ((x * 5) / 2 + 10)) {
+    int j;
+    Uint32 d0;
+
+    p = src;
+    ww = w - (x * 5) / 2;
+    for(yy = 0; yy < hh ; yy++) {
+        i = 0;
+        for(xx = 0; xx < ww; xx += 2, i++){
+            d2 = d1;
+            d0 = p[i];
+            for(j = 0; j < yrep; j++){
+	       if((j > (yrep / 2)) && !bFullScan){
+		  d2[xx] = d2[xx +1] = black;
+		  if((xx & 1) == 0) {
+		     d2[xx + 2] = black;
+		  }
+	       } else {
+		  d2[xx] = d2[xx + 1] = d0;
+		  if((xx & 1) == 0) {
+		     d2[xx + 2] = d0;
+		  }
+	       } 
+                d2 += pitch;
+            }
+	   if((xx & 1) == 0) xx++;
+	   
+        }
+        d1 += (pitch * yrep);
+        p += 8;
+      }
+   } else { // inside align
+    int j;
+    v8hi b2;
+    v8hi b3;
+    v4hi b4;
+    v8hi bb;
+    v4hi bb4;
+      
+    v8hi *b2p;
+    v4hi *b4p;
+      
+    b = (v8hi *)src;
+    for(yy = 0; yy < hh; yy++){
+       b2.i[0] = b2.i[1] = b2.i[2] = b->i[0];
+       b2.i[3] = b2.i[4] = b->i[1];
+       b2.i[5] = b2.i[6] = b2.i[7] = b->i[2];
+       b3.i[0] = b3.i[1] = b->i[3];
+
+       b3.i[2] = b3.i[3] = b3.i[4] = b->i[4];
+       b3.i[5] = b3.i[6] = b->i[5];
+       b3.i[7] = b4.i[0] = b4.i[1] = b->i[6];
+       b4.i[2] = b4.i[3] = b->i[7];
+
+       bb.i[0] = bb.i[1] =
+       bb.i[2] = bb.i[3] =
+       bb.i[4] = bb.i[5] =
+       bb.i[6] = bb.i[7] = black;
+       bb4.i[0] = bb4.i[1] =
+       bb4.i[2] = bb4.i[2] = black; 
+	 
+       switch(yrep) {
+	case 0:
+	case 1:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b4p = (v4hi *)(&d1[16]);
+	  *b4p = b4;
+	  d1 += pitch;
+	  break;
+	case 2:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b4p = (v4hi *)(&d1[16]);
+	  *b4p = b4;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  if(bFullScan) {
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = b4;
+	  } else {
+	     b2p[0] = b2p[1] = bb;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = bb4;
+	  }
+	  d1 += pitch;
+	  break;
+	case 3:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b4p = (v4hi *)(&d1[16]);
+	  *b4p = b4;
+	  d1 += pitch;
+	  
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b4p = (v4hi *)(&d1[16]);
+	  *b4p = b4;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  if(bFullScan) {
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = b4;
+	  } else {
+	     b2p[0] = b2p[1] = bb;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = bb4;
+	  }
+	  d1 += pitch;
+	  break;
+        case 4:
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b4p = (v4hi *)(&d1[16]);
+	  *b4p = b4;
+	  d1 += pitch;
+
+	  b2p = (v8hi *)d1;
+	  b2p[0] = b2;
+	  b2p[1] = b3;
+	  b4p = (v4hi *)(&d1[16]);
+	  *b4p = b4;
+	  d1 += pitch;
+
+
+	  if(bFullScan) {
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = b4;
+	     d1 += pitch;
+
+	     b2p = (v8hi *)d1;
+	     b2p[0] = b2;
+	     b2p[1] = b3;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = b4;
+	     d1 += pitch;
+	     
+	  } else {
+	     b2p = (v8hi *)d1;
+	     b2p[0] =
+	     b2p[1] = bb;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = bb4;
+	     d1 += pitch;
+
+	     b2p = (v8hi *)d1;
+	     b2p[0] =
+	     b2p[1] = bb;
+	     b4p = (v4hi *)(&d1[16]);
+	     *b4p = bb4;
+	     d1 += pitch;
+	  }
+	  break;
+	default:
+	  for(j = 0; j < yrep; j++) {
+	     b2p = (v8hi *)d1;
+	     if(!bFullScan && (j >= (yrep / 2))) {
+		b2p[0] = b2p[1] = bb;
+		b4p = (v4hi *)(&d1[16]);
+		*b4p = bb4;
+	     } else {
+		b2p[0] = b2;
+		b2p[1] = b3;
+		b4p = (v4hi *)(&d1[16]);
+		*b4p = b4;
+	     }
+	     
+	  d1 += pitch;
+	  }
+	  break;
+       }
+       
+       b++;
+     }
+   }
+}
+
 
 void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
@@ -731,7 +959,7 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    }
 
    pitch = my->Surface->pitch / sizeof(Uint32);
-   if(w <= (x * 3 + 24)) {
+   if(w <= (x * 3 + 23)) {
        int j;
        Uint32 d0;
       p = src;
@@ -743,7 +971,7 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
             d2 = d1;
             d0 = p[i];
             for(j = 0; j < yrep; j++) {
-	       if(!bFullScan && (j >= (yrep / 2))) {
+	       if(!bFullScan && (j > (yrep / 2))) {
 		d2[xx] = 
 		d2[xx + 1] = 
                 d2[xx + 2] = black;
@@ -919,7 +1147,7 @@ void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    }
 
    pitch = my->Surface->pitch / sizeof(Uint32);
-   if(w <= (x * 4 + 32)) {
+   if(w <= (x * 4 + 31)) {
        int j;
        Uint32 d0;
       p = src;
@@ -1127,11 +1355,18 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
             }
             break;
             case 2:
-            if(xfactor < xth){
-              DrawFn = pVram2RGB_x2;
-            } else { // xfactor != 0
-              DrawFn = pVram2RGB_x3;
-            }
+//            if(xfactor < xth){
+	      if((w1 > 720) && (w0 <= 480)) {
+		 DrawFn = pVram2RGB_x25;
+	      } else if(w1 > 1520){
+		 DrawFn = pVram2RGB_x25;
+	      } else {
+		 DrawFn = pVram2RGB_x2;
+	      }
+	       
+//            } else { // xfactor != 0
+//              DrawFn = pVram2RGB_x3;
+//            }
             break;
             case 3:
             if(xfactor < xth){
