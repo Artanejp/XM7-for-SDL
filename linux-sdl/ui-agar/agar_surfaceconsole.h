@@ -22,7 +22,8 @@ public:
     BOOL InitConsole(int w, int h);
     void MoveCursor(int x, int y);
     void MoveDrawPos(int x, int y);
-    BOOL Txt2UTF8(BYTE b, BYTE *disp);
+    BOOL Txt2UCS4(BYTE b, Uint32 *disp);
+    BOOL Sym2UCS4(BYTE b, Uint32 *disp);
     void PutCharScreen(BYTE c);
     void PutChar(BYTE c);
     int PutString(char *str);
@@ -61,7 +62,6 @@ private:
     AG_Color fgColor;
     AG_Color bgColor;
     void InitFont(void);
-    BOOL ExistSym;
 };
 
 

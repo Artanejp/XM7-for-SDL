@@ -423,9 +423,9 @@ void AGEventDrawGL2(AG_Event *event)
        ww = w >> 3;
        hh = h >> 3;
 
-//#ifdef _OPENMP
-//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
-//#endif
+#ifdef _OPENMP
+       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
+#endif
        for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
                for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
@@ -440,7 +440,7 @@ void AGEventDrawGL2(AG_Event *event)
             if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
             glPopAttrib();
     }
-//    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();

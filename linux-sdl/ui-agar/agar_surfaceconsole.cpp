@@ -79,18 +79,20 @@ void DumpObject::InitFont(void)
     AG_Surface *dummy;
     char c[3];
     AG_PushTextState();
-    TextFont = AG_TextFontLookup("F-Font.ttf", 16, 0);
+    TextFont = AG_TextFontLookup("F-Font_400line.ttf", 16, 0);
     if(TextFont == NULL) { // Fallback
         TextFont = AG_TextFontPts(16); //  16pts
     }
+    AG_PopTextState();
 
-    SymFont = AG_TextFontLookup("F-Font_Symbol.ttf", 16, 0);
+    AG_PushTextState();
+    SymFont = AG_TextFontLookup("F-Font_Symbol_Unicode.ttf", 16, 0);
     if(SymFont == NULL) { // Fallback
         SymFont = AG_TextFontPts(16);//  16pts
-        ExistSym = FALSE; // NO SYMBOL FONT
-    } else {
-        ExistSym = TRUE; // SYMBOL Exists
     }
+    AG_PopTextState();
+
+    AG_PushTextState();
     if(TextFont != NULL){
         c[0] = 'A';
         c[1] = '\0';
@@ -176,60 +178,98 @@ void DumpObject::MoveDrawPos(int x, int y)
     AG_MutexUnlock(&mutex);
 }
 
+// F-Font_Symbol_400line.ttf はコードスペースの問題でレンダリングされないので、
+// Unicode(ISO10646-1)に直したのを使う必要がある(F-Font_Symbol_400line_Unicode.ttfなど)
 
-BOOL DumpObject::Txt2UTF8(BYTE b, BYTE *disp)
+static Uint32 SymFontList80[] =
 {
-   unsigned int utf;
-   if(b <= 0x7f) {
+   // 0080-
+   0x00c4,0x00c5,0x00c7,0x00c9,0x00d1,0x00d6,0x00dc,0x00e1,
+   0x00e0,0x00e2,0x00e4,0x00e3,0x00e5,0x00e7,0x00e9,0x00e8,
+   // 0090-
+   0x00ea,0x00eb,0x00ed,0x00ec,0x00ee,0x00ef,0x00f1,0x00f3,
+   0x00f2,0x00f4,0x00f6,0x00f5,0x00fa,0x00f9,0x00fb,0x00fc,
+   // 00a0
+   0x2020
+};
+
+static Uint32 SymFontListE0[] =
+{
+   // 00e0-
+   0x2021,0x00b7,0x201a,0x201e,0x2030,0x00c2,0x00ca,0x00c1,
+   0x00cb,0x00c8,0x00cd,0x00ce,0x00cf,0x00cc,0x00d3,0x00d4,
+   // 00f0-
+   0xe01e,0x00d2,0x00da,0x00db,0x00d9,0x0131,0x02c6,0x02dc,
+   0x00af,0x02d8,0x02d9,0x02da,0x00b8,0x02dd,0x02db,0x02c7,
+};
+
+
+
+BOOL DumpObject::Sym2UCS4(BYTE b, Uint32 *disp)
+{
+   Uint32 ucs;
+   disp[0] = '\0';
+   if((b >= 0x80) && (b <= 0xa0)){
+     ucs = SymFontList80[b - 0x80];
+//     ucs = b;
+  } else if((b >= 0xd0) && (b <= 0xff)) {  
+     ucs = SymFontListE0[b - 0xe0];
+  } else {
+      return FALSE;
+  }
+   
+   disp[0] = ucs;
+   disp[1] = 0x00000000;
+   return TRUE;
+   
+}
+
+BOOL DumpObject::Txt2UCS4(BYTE b, Uint32 *disp)
+{
+   Uint32 ucs;
+   if((b <= 0x7f) && ( b>= 0x20)) {
        disp[0] = b;
        disp[1] = '\0';
        return TRUE;
    } else if((b <= 0xdf) || (b >= 0xa1)) {
-       utf = 0xfec0 + (unsigned int)b;
-        disp[0] = ((utf >> 12) & 0x0f) | 0xe0;
-        disp[1] = ((utf >> 6) & 0x3f) | 0x80;
-        disp[2] = (utf & 0x3f) | 0x80;
-        disp[3] = '\0';
-        return TRUE;
-   } else {
-       disp[0] = b;
+       disp[0] = 0xfec0 + (unsigned int)b;
        disp[1] = '\0';
-       return FALSE;
+        return TRUE;
+   } else if(b < 0x20) {
+	disp[0] = '.';
+       disp[1] = '\0';
+      return TRUE;
    }
-
+   return FALSE;
 }
 
 void DumpObject::PutCharScreen(BYTE c)
 {
-    BYTE utf8[8];
+    Uint32 ucs[2];
     AG_Surface *r = NULL;
 
-    utf8[0] = '\0';
-    if(Txt2UTF8(c, utf8)) {
-        if(TextFont != NULL){
-            AG_PushTextState();
-            AG_TextFont(TextFont);
-            AG_TextColor(fgColor);
-            AG_TextBGColor(bgColor);
-            AG_TextValign(AG_TEXT_MIDDLE);
-            r = AG_TextRender((const char *)utf8);
-            AG_PopTextState();
-        }
-    } else { // Symbol
-        if(c < 0x20){
-            Txt2UTF8(' ', utf8);
-        }
+    if(Sym2UCS4(c, ucs)) {
         if(SymFont != NULL){
             AG_PushTextState();
             AG_TextFont(SymFont);
             AG_TextColor(fgColor);
             AG_TextBGColor(bgColor);
             AG_TextValign(AG_TEXT_MIDDLE);
-            r = AG_TextRender((const char *)utf8);
+            r = AG_TextRenderUCS4((const Uint32 *)ucs);
+            AG_PopTextState();
+        }
+    } else if(Txt2UCS4(c, ucs)) {
+        if(TextFont != NULL){
+            AG_PushTextState();
+            AG_TextFont(TextFont);
+            AG_TextColor(fgColor);
+            AG_TextBGColor(bgColor);
+            AG_TextValign(AG_TEXT_MIDDLE);
+            r = AG_TextRenderUCS4((const Uint32 *)ucs);
             AG_PopTextState();
         }
     }
-    if(r != NULL){
+   if(r != NULL){
         if(Screen != NULL){
             AG_SurfaceBlit(r, NULL, Screen, X * CHRW, Y * CHRH);
         }
