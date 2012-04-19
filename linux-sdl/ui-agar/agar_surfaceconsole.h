@@ -28,11 +28,13 @@ public:
     void PutChar(BYTE c);
     int PutString(char *str);
     void PollDraw(void);
+    void ClearScreen(void);
+
 
     void Draw(BOOL redraw);
     void DrawCursor(BOOL Flag);
     int  SizeAlloc(AG_SizeAlloc *a);
-
+   
     int GetWidth(void);
     int GetHeight(void);
     int GetX(void);

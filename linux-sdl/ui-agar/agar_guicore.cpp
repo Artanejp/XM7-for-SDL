@@ -63,7 +63,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	BOOL bi;
 
 	bi = FALSE;
-    if(MainWindow != NULL) {
+        if(MainWindow != NULL) {
         if(AG_WindowIsFocused(MainWindow)) {
             bi = TRUE;
         }
@@ -74,14 +74,14 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	/* Retrieve the next queued event. */
 	switch (ev->type) {
 	case AG_DRIVER_KEY_UP:
-        if(bi) {
-            OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
-        }
+//        if(bi) {
+//            OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
+//        }
     break;
 	case AG_DRIVER_KEY_DOWN:
-        if(bi) {
-            OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
-        }
+//        if(bi) {
+//            OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
+//        }
     break;
 	case AG_DRIVER_VIDEORESIZE:
 		w = ev->data.videoresize.w;
@@ -414,6 +414,7 @@ static void InitFont(void)
 {
 }
 
+   
 void InitInstance(void)
 {
 	AG_HBox *hb;
@@ -473,10 +474,13 @@ void InitInstance(void)
         DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
+        AG_SetEvent(DrawArea, "key-up", ProcessKeyUp, NULL);
+        AG_SetEvent(DrawArea, "key-down", ProcessKeyDown, NULL);
+       
         AG_WidgetSetSize(DrawArea, 640, 400);
         bUseOpenGL = FALSE;
         GLDrawArea = NULL;
-	    AG_WidgetShow(DrawArea);
+        AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }

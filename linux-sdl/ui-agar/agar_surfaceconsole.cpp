@@ -351,6 +351,7 @@ int DumpObject::PutString(char *str)
     len = strlen(str);
     if(len <= 0) return -1;
     do {
+        
         PutChar(str[cp]);
         cp++;
         X++;
@@ -392,6 +393,34 @@ void DumpObject::DrawCursor(BOOL Flag)
         AG_MutexUnlock(&mutex);
     }
 }
+
+void DumpObject::ClearScreen(void)
+{
+   int xx;
+   int yy;
+   int pos;
+   AG_Rect rect;
+  
+   AG_MutexLock(&mutex);
+      pos = 0;
+      for(yy = 0; yy < H; yy++) {
+	 for(xx = 0; xx < W; xx++) {
+	    ConsoleBuf[pos + xx] = BackupConsoleBuf[pos + xx] = 0x00;
+	 }
+	 pos += W;
+      }
+   if(Screen != NULL) {
+      //AG_ObjectLock(AGOBJECT(Screen));
+      rect.w = W;
+      rect.h = H;
+      rect.x = 0;
+      rect.y = 0;
+      AG_FillRect(Screen, &rect, bgColor);
+      //AG_ObjectUnlock(AGOBJECT(Screen));
+   }
+   AG_MutexUnlock(&mutex);
+}
+
 
 void DumpObject::PollDraw(void)
 {
