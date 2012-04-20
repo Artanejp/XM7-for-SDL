@@ -217,6 +217,92 @@ static void CreateDump(AG_Event *event)
     AG_WindowShow(w);
 }
 
+static void CreateDisasm(AG_Event *event)
+{
+    AG_Window *w;
+
+   AG_Menu *self = (AG_Menu *)AG_SELF();
+   AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+   int type = AG_INT(1);
+    int disasm = AG_INT(2);
+    AG_Textbox *pollVar;
+    AG_Textbox *addrVar;
+    struct XM7_MemDumpDesc *mp;
+
+
+    BYTE (*readFunc)(WORD);
+    void FASTCALL (*writeFunc)(WORD, BYTE);
+    XM7_DbgDump *dump;
+
+    AG_HBox *hb;
+    AG_VBox *vb;
+    AG_Box *box;
+    AG_Button *btn;
+
+    mp = (XM7_MemDumpDesc *)malloc(sizeof(struct XM7_MemDumpDesc));
+    if(mp == NULL) return;
+    memset(mp, 0x00, sizeof(struct XM7_MemDumpDesc));
+
+//    if(pAddr == NULL) return;
+    mp->to_tick = 200;
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    AG_WindowSetMinSize(w, 230, 80);
+    vb =AG_VBoxNew(w, 0);
+
+    hb = AG_HBoxNew(vb, 0);
+
+    switch(type){
+    case MEM_MAIN:
+            readFunc = rb_main;
+            writeFunc = mainmem_writeb;
+            AG_WindowSetCaption(w, "Dump Main memory");
+            break;
+    case MEM_SUB:
+            readFunc = rb_sub;
+            writeFunc = submem_writeb;
+            AG_WindowSetCaption(w, "Dump Sub memory");
+            break;
+    default:
+            readFunc = NULL;
+            writeFunc = NULL;
+            break;
+    }
+    addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "Addr");
+    AG_TextboxSizeHint(addrVar, "XXXXXX");
+    AG_TextboxPrintf(addrVar, "%04x", 0x0000);
+
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+    AG_TextboxSizeHint(pollVar, "XXXXXX");
+    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
+
+
+    hb = AG_HBoxNew(vb, 0);
+    if((readFunc != NULL) && (writeFunc != NULL)) {
+        dump = XM7_DbgDumpMemInit(hb, readFunc, writeFunc);
+        if(dump == NULL) return;
+        mp->dump = dump;
+        mp->dump->rb = readFunc;
+        mp->dump->wb = writeFunc;
+        mp->dump->addr = 0x0000;
+        mp->dump->edaddr = 0x0000;
+    }
+
+
+    box = AG_BoxNewHoriz(vb, 0);
+    box = AG_BoxNewHoriz(vb, 0);
+    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
+    box = AG_BoxNewHoriz(vb, 0);
+
+    AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
+    AG_SetEvent(pollVar, "textbox-postchg", OnChangePollDump, "%p", mp);
+    AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
+    AG_SetEvent(dump->draw, "key-down", XM7_DbgKeyPressFn, "%p", mp);
+
+    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    AG_WindowShow(w);
+}
+
 
 void Create_DebugMenu(AG_MenuItem *parent)
 {

@@ -40,6 +40,71 @@ struct XM7_MemDumpDesc {
     Uint32 to_tick;
 };
 
+/* flag bits in the cc register */
+#define CC_C	0x01        /* Carry */
+#define CC_V	0x02        /* Overflow */
+#define CC_Z    0x04        /* Zero */
+#define CC_N    0x08        /* Negative */
+#define CC_II   0x10        /* Inhibit IRQ */
+#define CC_H    0x20        /* Half (auxiliary) carry */
+#define CC_IF   0x40        /* Inhibit FIRQ */
+#define CC_E    0x80        /* entire state pushed */
+
+extern "C" 
+{
+   extern cpu6809_t       maincpu;
+   extern cpu6809_t       subcpu;
+#if (XM7_VER == 1 && defined(JSUB))
+   extern cpu6809_t       jsubcpu;
+#endif // JSUB && XM7_VER==1
+}
+
+   
+
+typedef struct  XM7_DbgDisasm {
+    BYTE (*rb)(WORD);       // Read Access
+    void (*wb)(WORD, BYTE);       // Write Access
+    unsigned int addr;
+    unsigned int nextaddr;
+    DumpObject *cons;   // Internal Dump Object
+    int forceredraw;
+    XM7_SDLView *draw;
+    unsigned int baddr;
+    unsigned int bdata;
+    BOOL editAddr;
+    BOOL paused;
+    BYTE *buf;
+};
+
+
+
+struct XM7_DbgDisasmDesc {
+    XM7_DbgDisasm *disasm;
+    AG_Timeout to;
+    Uint32 to_tick;
+};
+
+typedef struct  XM7_DbgRegdump {
+    DumpObject *dump;   // Internal Dump Object
+    int forceredraw;
+    XM7_SDLView *draw;
+    cpu6809_t mainRegs;
+    cpu6809_t subRegs;
+#if (XM7_VER == 1 && defined(JSUB))
+    cpu6809_t jsubRegs;   
+#endif // JSUB && XM7_VER==1
+
+    BOOL paused;
+    BYTE *buf;
+};
+
+struct XM7_DbgRegDumpDesc {
+    XM7_DbgDisasm *dump;
+    AG_Timeout to;
+    Uint32 to_tick;
+};
+
+
 
 
 extern void XM7_DbgDumpMem(void *p);
