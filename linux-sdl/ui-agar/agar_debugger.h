@@ -62,10 +62,11 @@ extern "C"
    
 
 typedef struct  XM7_DbgDisasm {
-    BYTE (*rb)(WORD);       // Read Access
-    void (*wb)(WORD, BYTE);       // Write Access
+//    BYTE (*rb)(WORD);       // Read Access
+//    void (*wb)(WORD, BYTE);       // Write Access
     unsigned int addr;
     unsigned int nextaddr;
+    int cputype;
     DumpObject *cons;   // Internal Dump Object
     int forceredraw;
     XM7_SDLView *draw;
@@ -112,7 +113,14 @@ extern void XM7_DbgDumpMemDetach(struct XM7_DbgDump *dbg);
 extern struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE));
 extern "C" {
    extern void XM7_DbgKeyPressFn(AG_Event *event);
+
+
 }
+void XM7_DbgMemDisasm(void *p);
+void XM7_DbgDisasmKeyPressFn(AG_Event *event);
+void XM7_DbgDisasmDetach(struct XM7_DbgDisasm *dbg);
+struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE));
+
 
 static void readmem(struct XM7_MemDumpDesc *p)
 {

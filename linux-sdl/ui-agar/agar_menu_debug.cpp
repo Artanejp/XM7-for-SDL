@@ -43,13 +43,49 @@ extern void DBG_DumpAsc(char *str, Uint8 b);
 
 
 
-static Uint32 UpdateDisasmMemRead(void *obj, Uint32 ival, void *arg )
+static Uint32 UpdateDisasm(void *obj, Uint32 ival, void *arg )
 {
+   struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)arg;
+   char *str;
+   if(mp == NULL) return ival;
+   XM7_DbgMemDisasm(mp->disasm);
+   return mp->to_tick;
+
 }
 
 static void OnChangeAddrDisasm(AG_Event *event)
 {
+     AG_Textbox *t = (AG_Textbox *)AG_SELF();
+    struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
+
+    AG_Widget *wi;
+    char text[16];
+    int i;
+
+    if(mp == NULL) return;
+    if(t == NULL) return;
+
+
+    AG_TextboxCopyString(t, text, 15);
+    if(strlen(text) < 4) return;
+
+    if(sanity_hexa(text, &i)) {
+        i = i & 0xffff;
+    }
+    mp->disasm->addr = i;
+    XM7_DbgMemDisasm(mp->disasm);
 }
+
+
+static void DestroyDisasmWindow(AG_Event *event)
+{
+    struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
+    if(mp == NULL) return;
+    if(mp->disasm != NULL) XM7_DbgDisasmDetach(mp->disasm);
+    free(mp);
+    mp = NULL;
+}
+
 
 
 /*
@@ -73,26 +109,6 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
     return mp->to_tick;
 }
 
-static void OnChangePollDump(AG_Event *event)
-{
-    AG_Textbox *t = (AG_Textbox *)AG_SELF();
-    struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)AG_PTR(1);
-    char text[16];
-    int i;
-
-
-    if(mp == NULL) return;
-    if(t == NULL) return;
-    AG_TextboxCopyString(t, text, 15);
-    sscanf(text, "%d", &i);
-    if(i < 50) return;
-    if(i > 4000) i = 4000;
-    mp->to_tick = i;
-//    AG_LockTimeouts(AGOBJECT(mp));
-//    AG_ScheduleTimeout(AGOBJECT(t->wid.window), &(mp->to), i);
-//    AG_UnlockTimeouts(AGOBJECT(t->wid.window));
-    return;
-}
 
 static void OnChangeAddr(AG_Event *event)
 {
@@ -208,7 +224,6 @@ static void CreateDump(AG_Event *event)
     box = AG_BoxNewHoriz(vb, 0);
 
     AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
-    AG_SetEvent(pollVar, "textbox-postchg", OnChangePollDump, "%p", mp);
     AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
     AG_SetEvent(dump->draw, "key-down", XM7_DbgKeyPressFn, "%p", mp);
 
@@ -224,24 +239,24 @@ static void CreateDisasm(AG_Event *event)
    AG_Menu *self = (AG_Menu *)AG_SELF();
    AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
    int type = AG_INT(1);
-    int disasm = AG_INT(2);
+    int cputype;
     AG_Textbox *pollVar;
     AG_Textbox *addrVar;
-    struct XM7_MemDumpDesc *mp;
+    struct XM7_DbgDisasmDesc *mp;
 
 
     BYTE (*readFunc)(WORD);
     void FASTCALL (*writeFunc)(WORD, BYTE);
-    XM7_DbgDump *dump;
+    XM7_DbgDisasm *disasm;
 
     AG_HBox *hb;
     AG_VBox *vb;
     AG_Box *box;
     AG_Button *btn;
 
-    mp = (XM7_MemDumpDesc *)malloc(sizeof(struct XM7_MemDumpDesc));
+    mp = (XM7_DbgDisasmDesc *)malloc(sizeof(struct XM7_DbgDisasmDesc));
     if(mp == NULL) return;
-    memset(mp, 0x00, sizeof(struct XM7_MemDumpDesc));
+    memset(mp, 0x00, sizeof(struct XM7_DbgDisasmDesc));
 
 //    if(pAddr == NULL) return;
     mp->to_tick = 200;
@@ -253,18 +268,15 @@ static void CreateDisasm(AG_Event *event)
 
     switch(type){
     case MEM_MAIN:
-            readFunc = rb_main;
-            writeFunc = mainmem_writeb;
-            AG_WindowSetCaption(w, "Dump Main memory");
+            cputype = MAINCPU;
+            AG_WindowSetCaption(w, "Disasm Main memory");
             break;
     case MEM_SUB:
-            readFunc = rb_sub;
-            writeFunc = submem_writeb;
-            AG_WindowSetCaption(w, "Dump Sub memory");
+            cputype = SUBCPU;
+            AG_WindowSetCaption(w, "Disasm Sub memory");
             break;
     default:
-            readFunc = NULL;
-            writeFunc = NULL;
+            cputype = -1;
             break;
     }
     addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "Addr");
@@ -272,33 +284,27 @@ static void CreateDisasm(AG_Event *event)
     AG_TextboxPrintf(addrVar, "%04x", 0x0000);
 
    pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
-    AG_TextboxSizeHint(pollVar, "XXXXXX");
-    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
+   AG_TextboxSizeHint(pollVar, "XXXXXX");
+   AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 
 
-    hb = AG_HBoxNew(vb, 0);
-    if((readFunc != NULL) && (writeFunc != NULL)) {
-        dump = XM7_DbgDumpMemInit(hb, readFunc, writeFunc);
-        if(dump == NULL) return;
-        mp->dump = dump;
-        mp->dump->rb = readFunc;
-        mp->dump->wb = writeFunc;
-        mp->dump->addr = 0x0000;
-        mp->dump->edaddr = 0x0000;
-    }
-
+   hb = AG_HBoxNew(vb, 0);
+   disasm = XM7_DbgDisasmInit(hb, NULL, NULL);
+   if(disasm == NULL) return;
+   mp->disasm = disasm;
+   mp->disasm->addr = 0x0000;
+   mp->disasm->cputype = cputype;
 
     box = AG_BoxNewHoriz(vb, 0);
     box = AG_BoxNewHoriz(vb, 0);
     btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
     box = AG_BoxNewHoriz(vb, 0);
 
-    AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
-    AG_SetEvent(pollVar, "textbox-postchg", OnChangePollDump, "%p", mp);
-    AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
-    AG_SetEvent(dump->draw, "key-down", XM7_DbgKeyPressFn, "%p", mp);
+    AG_SetEvent(w, "window-close", DestroyDisasmWindow, "%p", mp);
+    AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddrDisasm, "%p", mp);
+    AG_SetEvent(disasm->draw, "key-down", XM7_DbgDisasmKeyPressFn, "%p", mp);
 
-    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+    AG_SetTimeout(&(mp->to), UpdateDisasm, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
     AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
     AG_WindowShow(w);
 }
@@ -313,6 +319,6 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent, gettext("Dump Main-Memory"), NULL, CreateDump, "%i,%i", MEM_MAIN, 0);
 	item = AG_MenuAction(parent, gettext("Dump Sub-Memory"), NULL, CreateDump, "%i,%i", MEM_SUB, 0);
 	AG_MenuSeparator(parent);
-//	item = AG_MenuAction(parent, gettext("Disasm Main-Memory"), NULL, CreateDump, "%i,%i", MEM_MAIN, 1);
-//	item = AG_MenuAction(parent, gettext("Disasm Sub-Memory"), NULL, CreateDump, "%i,%i", MEM_SUB, 1);
+	item = AG_MenuAction(parent, gettext("Disasm Main-Memory"), NULL, CreateDisasm, "%i,%i", MEM_MAIN, 1);
+	item = AG_MenuAction(parent, gettext("Disasm Sub-Memory"), NULL, CreateDisasm, "%i,%i", MEM_SUB, 1);
 }

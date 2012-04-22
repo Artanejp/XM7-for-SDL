@@ -16,7 +16,7 @@
 /*
  *      スタティック ワーク
  */
-static int      cputype;	/* CPU種別 */
+//static int      cputype;	/* CPU種別 */
 //static BYTE     opc;		/* オペコード */
 //static WORD     pc;		/* 実行前PC */
 //static WORD     addpc;		/* PC加算値(命令長) */
@@ -229,7 +229,7 @@ static char    *idx_tbl[] = {
  *      データフェッチ
  */
 static BYTE     FASTCALL
-fetch(WORD *pc, WORD *addpc)
+fetch(int cputype, WORD *pc, WORD *addpc)
 {
     BYTE            dat;
 
@@ -261,7 +261,7 @@ fetch(WORD *pc, WORD *addpc)
  *      データ読み出し
  */
 static BYTE     FASTCALL
-read_byte(WORD addr)
+read_byte(int cputype, WORD addr)
 {
     BYTE            dat;
 
@@ -387,7 +387,7 @@ set2dec(BYTE dat, char *linebuf)
  *      未定義
  */
 static void     FASTCALL
-notdef(WORD *pc, WORD *addpc, char *linebuf)
+notdef(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     strcat(linebuf, "?");
 }
@@ -398,14 +398,14 @@ notdef(WORD *pc, WORD *addpc, char *linebuf)
  *      リラティブモード(1バイト)
  */
 static void     FASTCALL
-rel1(WORD *pc, WORD *addpc, char *linebuf)
+rel1(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opr;
 
     /*
      * オペランド取得 
      */
-    opr = fetch(pc, addpc);
+    opr = fetch(cpu, pc, addpc);
 
     /*
      * セット 
@@ -421,15 +421,15 @@ rel1(WORD *pc, WORD *addpc, char *linebuf)
  *      リラティブモード(2バイト)
  */
 static void     FASTCALL
-rel2(WORD *pc, WORD *addpc, char *linebuf)
+rel2(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     WORD            dat;
 
     /*
      * オペランド取得 
      */
-    dat = (WORD) (fetch(pc, addpc) << 8);
-    dat |= (WORD) fetch(pc, addpc);
+    dat = (WORD) (fetch(cpu, pc, addpc) << 8);
+    dat |= (WORD) fetch(cpu, pc, addpc);
 
     /*
      * セット 
@@ -445,14 +445,14 @@ rel2(WORD *pc, WORD *addpc, char *linebuf)
  *      ダイレクトモード
  */
 static void     FASTCALL
-direct(WORD *pc, WORD *addpc, char *linebuf)
+direct(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opr;
 
     /*
      * オペランド取得 
      */
-    opr = fetch(pc, addpc);
+    opr = fetch(cpu, pc, addpc);
 
     /*
      * セット 
@@ -465,15 +465,15 @@ direct(WORD *pc, WORD *addpc, char *linebuf)
  *      エクステンドモード
  */
 static void     FASTCALL
-extend(WORD *pc, WORD *addpc, char *linebuf)
+extend(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     WORD            dat;
 
     /*
      * オペランド取得 
      */
-    dat = (WORD) (fetch(pc, addpc) << 8);
-    dat |= (WORD) fetch(pc, addpc);
+    dat = (WORD) (fetch(cpu, pc, addpc) << 8);
+    dat |= (WORD) fetch(cpu, pc, addpc);
 
     /*
      * セット 
@@ -485,14 +485,14 @@ extend(WORD *pc, WORD *addpc, char *linebuf)
  *      イミディエイトモード(1バイト)
  */
 static void     FASTCALL
-imm1(WORD *pc, WORD *addpc, char *linebuf)
+imm1(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opr;
 
     /*
      * オペランド取得 
      */
-    opr = fetch(pc, addpc);
+    opr = fetch(cpu, pc, addpc);
 
     /*
      * セット 
@@ -505,15 +505,15 @@ imm1(WORD *pc, WORD *addpc, char *linebuf)
  *      イミディエイトモード(2バイト)
  */
 static void     FASTCALL
-imm2(WORD *pc, WORD *addpc, char *linebuf)
+imm2(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     WORD            dat;
 
     /*
      * オペランド取得 
      */
-    dat = (WORD) (fetch(pc, addpc) << 8);
-    dat |= (WORD) (fetch(pc, addpc));
+    dat = (WORD) (fetch(cpu, pc, addpc) << 8);
+    dat |= (WORD) (fetch(cpu, pc, addpc));
 
     /*
      * セット 
@@ -526,7 +526,7 @@ imm2(WORD *pc, WORD *addpc, char *linebuf)
  *      インデックスモード
  */
 static void     FASTCALL
-idx(WORD *pc, WORD *addpc, char *linebuf)
+idx(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opr;
     BYTE            high,
@@ -537,7 +537,7 @@ idx(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * オペランド取得 
      */
-    opr = fetch(pc, addpc);
+    opr = fetch(cpu, pc, addpc);
     high = (BYTE) (opr & 0xf0);
     low = (BYTE) (opr & 0x0f);
 
@@ -598,8 +598,8 @@ idx(WORD *pc, WORD *addpc, char *linebuf)
 	if (high & 0x10) {
 	    strcat(linebuf, "[");
 	}
-	woffset = (WORD) fetch(pc, addpc);
-	woffset = (WORD) ((woffset << 8) + (WORD) fetch(pc, addpc));
+	woffset = (WORD) fetch(cpu, pc, addpc);
+	woffset = (WORD) ((woffset << 8) + (WORD) fetch(cpu, pc, addpc));
 	set4hex(woffset, linebuf);
 	if (high & 0x10) {
 	    strcat(linebuf, "]");
@@ -696,7 +696,7 @@ idx(WORD *pc, WORD *addpc, char *linebuf)
 	    strcat(linebuf, "[");
 	}
 
-	offset = fetch(pc, addpc);
+	offset = fetch(cpu, pc, addpc);
 
 	/*
 	 * X, Y, U, S, PCR 
@@ -736,8 +736,8 @@ idx(WORD *pc, WORD *addpc, char *linebuf)
 	    strcat(linebuf, "[");
 	}
 
-	woffset = (WORD) fetch(pc, addpc);
-	woffset = (WORD) ((woffset << 8) + (WORD) fetch(pc, addpc));
+	woffset = (WORD) fetch(cpu, pc, addpc);
+	woffset = (WORD) ((woffset << 8) + (WORD) fetch(cpu, pc, addpc));
 
 	/*
 	 * X, Y, U, S, PCR 
@@ -767,14 +767,14 @@ idx(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * それ以外は未定義 
      */
-    notdef(pc, addpc, linebuf);
+    notdef(cpu, pc, addpc, linebuf);
 }
 
 /*
  *      TFR,EXG,レジスタ間演算
  */
 static void     FASTCALL
-tfrexg(WORD *pc, WORD *addpc, char *linebuf)
+tfrexg(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opr;
     const char    **tfrexgtbl;
@@ -782,7 +782,7 @@ tfrexg(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * オペランド取得 
      */
-    opr = fetch(pc, addpc);
+    opr = fetch(cpu, pc, addpc);
 
     tfrexgtbl = (const char **) tfrexg_tbl;
 
@@ -791,14 +791,14 @@ tfrexg(WORD *pc, WORD *addpc, char *linebuf)
      */
     if (tfrexgtbl[(opr & 0xf0) >> 4] == NULL) {
 	linebuf[0] = '\0';
-	notdef(pc, addpc, linebuf);
+	notdef(cpu, pc, addpc, linebuf);
 	return;
     }
     strcat(linebuf, tfrexgtbl[(opr & 0xf0) >> 4]);
     strcat(linebuf, ",");
     if (tfrexgtbl[opr & 0x0f] == NULL) {
 	linebuf[0] = '\0';
-	notdef(pc, addpc, linebuf);
+	notdef(cpu, pc, addpc, linebuf);
 	return;
     }
     strcat(linebuf, tfrexgtbl[opr & 0x0f]);
@@ -808,7 +808,7 @@ tfrexg(WORD *pc, WORD *addpc, char *linebuf)
  *      PSH,PUL
  */
 static void     FASTCALL
-pshpul(WORD *pc, WORD *addpc, char *linebuf)
+pshpul(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opr;
     char            sreg[2];
@@ -818,7 +818,7 @@ pshpul(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * オペランド取得 
      */
-    opr = fetch(pc, addpc);
+    opr = fetch(cpu, pc, addpc);
 
     /*
      * S,Uを決定する 
@@ -876,7 +876,7 @@ strcat_mnemonic(const char *s, char *linebuf)
  *      ページ2(0x10)
  */
 static void     FASTCALL
-page2(WORD *pc, WORD *addpc, char *linebuf)
+page2(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            high,
                     low;
@@ -886,7 +886,7 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * オペコードを再度取得 
      */
-    opc = fetch(pc, addpc);
+    opc = fetch(cpu, pc, addpc);
     high = (BYTE) (opc & 0xf0);
     low = (BYTE) (opc & 0x0f);
 
@@ -897,7 +897,7 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
 	tmp[0] = 'L';
 	strcpy(&tmp[1], branch_tbl[low]);
 	strcat_mnemonic(tmp, linebuf);
-	rel2(pc, addpc, linebuf);
+	rel2(cpu, pc, addpc, linebuf);
 	return;
     }
 
@@ -922,11 +922,11 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
      */
     if (opc >= 0xc0) {
 	if (low <= 0x0d) {
-	    notdef(pc, addpc, linebuf);
+	    notdef(cpu, pc, addpc, linebuf);
 	    return;
 	}
 	if (opc == 0xcf) {
-	    notdef(pc, addpc, linebuf);
+	    notdef(cpu, pc, addpc, linebuf);
 	    return;
 	}
 	/*
@@ -943,16 +943,16 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
 	 */
 	switch (high) {
 	case 0xc0:
-	    imm2(pc, addpc, linebuf);
+	    imm2(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xd0:
-	    direct(pc, addpc, linebuf);
+	    direct(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xe0:
-	    idx(pc, addpc, linebuf);
+	    idx(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xf0:
-	    extend(pc, addpc, linebuf);
+	    extend(cpu, pc, addpc, linebuf);
 	    break;
 	default:
 	    ASSERT(FALSE);
@@ -977,14 +977,14 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
 	    break;
 	case 0x0f:
 	    if (high == 0x80) {
-		notdef(pc, addpc, linebuf);
+		notdef(cpu, pc, addpc, linebuf);
 		return;
 	    } else {
 		strcat_mnemonic("STY", linebuf);
 	    }
 	    break;
 	default:
-	    notdef(pc, addpc, linebuf);
+	    notdef(cpu, pc, addpc, linebuf);
 	    return;
 	}
 
@@ -993,16 +993,16 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
 	 */
 	switch (high) {
 	case 0x80:
-	    imm2(pc, addpc, linebuf);
+	    imm2(cpu, pc, addpc, linebuf);
 	    break;
 	case 0x90:
-	    direct(pc, addpc, linebuf);
+	    direct(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xa0:
-	    idx(pc, addpc, linebuf);
+	    idx(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xb0:
-	    extend(pc, addpc, linebuf);
+	    extend(cpu, pc, addpc, linebuf);
 	    break;
 	default:
 	    ASSERT(FALSE);
@@ -1015,14 +1015,14 @@ page2(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * それ以外は未定義 
      */
-    notdef(pc, addpc, linebuf);
+    notdef(cpu, pc, addpc, linebuf);
 }
 
 /*
  *      ページ3(0x11)
  */
 static void     FASTCALL
-page3(WORD *pc, WORD *addpc, char *linebuf)
+page3(int cpu, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            high,
                     low;
@@ -1031,7 +1031,7 @@ page3(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * オペコードを再度取得 
      */
-    opc = fetch(pc, addpc);
+    opc = fetch(cpu, pc, addpc);
     high = (BYTE) (opc & 0xf0);
     low = (BYTE) (opc & 0x0f);
 
@@ -1058,7 +1058,7 @@ page3(WORD *pc, WORD *addpc, char *linebuf)
 	    strcat_mnemonic("CMPS", linebuf);
 	    break;
 	default:
-	    notdef(pc, addpc, linebuf);
+	    notdef(cpu, pc, addpc, linebuf);
 	    return;
 	}
 
@@ -1067,16 +1067,16 @@ page3(WORD *pc, WORD *addpc, char *linebuf)
 	 */
 	switch (high) {
 	case 0x80:
-	    imm2(pc, addpc, linebuf);
+	    imm2(cpu, pc, addpc, linebuf);
 	    break;
 	case 0x90:
-	    direct(pc, addpc, linebuf);
+	    direct(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xa0:
-	    idx(pc, addpc, linebuf);
+	    idx(cpu, pc, addpc, linebuf);
 	    break;
 	case 0xb0:
-	    extend(pc, addpc, linebuf);
+	    extend(cpu, pc, addpc, linebuf);
 	    break;
 	default:
 	    ASSERT(FALSE);
@@ -1089,14 +1089,14 @@ page3(WORD *pc, WORD *addpc, char *linebuf)
     /*
      * それ以外は未定義 
      */
-    notdef(pc, addpc, linebuf);
+    notdef(cpu, pc, addpc, linebuf);
 }
 
 /*
  *      例外系1(0x00)
  */
 static void     FASTCALL
-except1(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
+except1(int cpu, BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
 {
     if ((opc & 0x0f) == 0x0e) {
 	/*
@@ -1110,24 +1110,24 @@ except1(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
     /*
      * すべてダイレクト 
      */
-    direct(pc, addpc, linebuf);
+    direct(cpu, pc, addpc, linebuf);
 }
 
 /*
  *      例外系2(0x10)
  */
 static void     FASTCALL
-except2(BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
+except2(int cpu, BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
 {
     /*
      * 0x10, 0x11で始まるページ 
      */
     if (opc == 0x10) {
-	page2(pc, addpc, linebuf);
+	page2(cpu, pc, addpc, linebuf);
 	return;
     }
     if (opc == 0x11) {
-	page3(pc, addpc, linebuf);
+	page3(cpu, pc, addpc, linebuf);
 	return;
     }
 
@@ -1135,7 +1135,7 @@ except2(BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
      * 未定義チェック 
      */
     if (except2_tbl[opc & 0x0f] == NULL) {
-	notdef(pc, addpc, linebuf);
+	notdef(cpu, pc, addpc, linebuf);
 	return;
     }
     strcat_mnemonic(except2_tbl[opc & 0x0f], linebuf);
@@ -1144,7 +1144,7 @@ except2(BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
      * 0x16, 0x17はロングブランチ 
      */
     if ((opc == 0x16) || (opc == 0x17)) {
-	rel2(pc, addpc, linebuf);;
+	rel2(cpu, pc, addpc, linebuf);;
 	return;
     }
 
@@ -1152,7 +1152,7 @@ except2(BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
      * 0x1a, 0x1cはイミディエイト 
      */
     if ((opc == 0x1a) || (opc == 0x1c)) {
-	imm1(pc, addpc, linebuf);
+	imm1(cpu, pc, addpc, linebuf);
 	return;
     }
 
@@ -1160,7 +1160,7 @@ except2(BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
      * 0x1e, 0x1fはTFR/EXG 
      */
     if ((opc == 0x1e) || (opc == 0x1f)) {
-	tfrexg(pc, addpc, linebuf);
+	tfrexg(cpu, pc, addpc, linebuf);
 	return;
     }
 }
@@ -1169,17 +1169,17 @@ except2(BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
  *      ブランチ系(0x20)
  */
 static void     FASTCALL
-branch(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
+branch(int cpu, BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
 {
     strcat_mnemonic(branch_tbl[opc - 0x20], linebuf);
-    rel1(pc, addpc, linebuf);
+    rel1(cpu, pc, addpc, linebuf);
 }
 
 /*
  *      LEA,スタック系(0x30)
  */
 static void     FASTCALL
-leastack(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
+leastack(int cpu, BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
 {
     /*
      * オペコード 
@@ -1190,7 +1190,7 @@ leastack(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
      * LEAはインデックスのみ 
      */
     if (opc < 0x34) {
-	idx(pc, addpc, linebuf);
+	idx(cpu, pc, addpc, linebuf);
 	return;
     }
 
@@ -1198,7 +1198,7 @@ leastack(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
      * PSH,PULは専用 
      */
     if (opc < 0x38) {
-	pshpul(pc, addpc, linebuf);
+	pshpul(cpu, pc, addpc, linebuf);
 	return;
     }
 
@@ -1206,7 +1206,7 @@ leastack(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
      * CWAI/隠し命令ANDCCはイミディエイト 
      */
     if ((opc == 0x38) || (opc == 0x3c)) {
-	imm1(pc, addpc, linebuf);
+	imm1(cpu, pc, addpc, linebuf);
     }
 }
 
@@ -1214,7 +1214,7 @@ leastack(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
  *      インヘレントA,B,M系(0x40,0x50,0x60,0x70)
  */
 static void     FASTCALL
-inhabm(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
+inhabm(int cpu, BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
 {
     char            tmp[5];
 
@@ -1236,9 +1236,9 @@ inhabm(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
     case 0x7:
 	strcat_mnemonic(inhm_tbl[opc & 0x0f], linebuf);
 	if ((opc & 0xf0) == 0x60) {
-	    idx(pc, addpc, linebuf);
+	    idx(cpu, pc, addpc, linebuf);
 	} else {
-	    extend(pc, addpc, linebuf);
+	    extend(cpu, pc, addpc, linebuf);
 	}
 	break;
     default:
@@ -1252,7 +1252,7 @@ inhabm(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
  *      Bレジスタ、Dレジスタ、Uレジスタ系(0xc0, 0xd0, 0xe0, 0xf0)
  */
 static void     FASTCALL
-regaxbdu(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
+regaxbdu(int cpu, BYTE opc, WORD *pc, WORD *addpc, char *linebuf)
 {
     BYTE            opc2;
 
@@ -1267,9 +1267,9 @@ regaxbdu(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
     if ((opc2 == 0x87) || (opc2 == 0x8f)) {
 	strcat_mnemonic("FLAG", linebuf);
 	if (opc2 == 0x87) {
-	    imm1(pc, addpc, linebuf);
+	    imm1(cpu, pc, addpc, linebuf);
 	} else {
-	    imm2(pc, addpc, linebuf);
+	    imm2(cpu, pc, addpc, linebuf);
 	}
 	return;
     }
@@ -1279,7 +1279,7 @@ regaxbdu(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
      */
     if (opc == 0x8d) {
 	strcat_mnemonic("BSR", linebuf);
-	rel1(pc, addpc, linebuf);
+	rel1(cpu, pc, addpc, linebuf);
 	return;
     }
 
@@ -1306,19 +1306,19 @@ regaxbdu(BYTE opc, WORD *pc, WORD *addpc, char linebuf)
     switch (opc2 >> 4) {
     case 0x8:
 	if ((opc2 == 0x83) || (opc2 == 0x8c) || (opc2 == 0x8e)) {
-	    imm2(pc, addpc, linebuf);
+	    imm2(cpu, pc, addpc, linebuf);
 	} else {
-	    imm1(pc, addpc, linebuf);
+	    imm1(cpu, pc, addpc, linebuf);
 	}
 	break;
     case 0x9:
-	direct(pc, addpc, linebuf);
+	direct(cpu, pc, addpc, linebuf);
 	break;
     case 0xa:
-	idx(pc, addpc, linebuf);
+	idx(cpu, pc, addpc, linebuf);
 	break;
     case 0xb:
-	extend(pc, addpc, linebuf);
+	extend(cpu, pc, addpc, linebuf);
 	break;
     default:
 	ASSERT(FALSE);
@@ -1339,6 +1339,7 @@ disline(int cpu, WORD pcreg, char *buffer)
     BYTE            opc;
     WORD pc;
     WORD addpc;
+    int cputype;
     char linebuf[128];
 
     /*
@@ -1358,29 +1359,29 @@ disline(int cpu, WORD pcreg, char *buffer)
     /*
      * 先頭のバイトを読み出し 
      */
-    opc = fetch(&pc, &addpc);
+    opc = fetch(cputype, &pc, &addpc);
 
     /*
      * グループ別 
      */
     switch ((int) (opc >> 4)) {
     case 0x0:
-	except1(opc, &pc, &addpc, linebuf);
+	except1(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x1:
-	except2(opc, &pc, &addpc, linebuf);
+	except2(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x2:
-	branch(opc, &pc, &addpc, linebuf);
+	branch(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x3:
-	leastack(opc, &pc, &addpc, linebuf);
+	leastack(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x4:
     case 0x5:
     case 0x6:
     case 0x7:
-	inhabm(opc, &pc, &addpc, linebuf);
+	inhabm(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x8:
     case 0x9:
@@ -1390,7 +1391,7 @@ disline(int cpu, WORD pcreg, char *buffer)
     case 0xd:
     case 0xe:
     case 0xf:
-	regaxbdu(opc, &pc, &addpc, linebuf);
+	regaxbdu(cputype, opc, &pc, &addpc, linebuf);
 	break;
     default:
 	ASSERT(FALSE);
@@ -1404,7 +1405,7 @@ disline(int cpu, WORD pcreg, char *buffer)
     sub4hex(pcreg, buffer);
     strcat(buffer, " ");
     for (i = 0; i < addpc; i++) {
-	sub2hex(read_byte((WORD) (pcreg + i)), buffer);
+	sub2hex(read_byte(cpu, (WORD) (pcreg + i)), buffer);
 	strcat(buffer, " ");
     }
 
@@ -1420,7 +1421,7 @@ disline(int cpu, WORD pcreg, char *buffer)
     }
 
     strcat(buffer, linebuf);
-    return (int) addpc;
+    return (int) addpc + pc;
 }
 
 /*
@@ -1433,6 +1434,7 @@ int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffer)
     BYTE opc;
     WORD pc;
     WORD addpc;
+    int cputype;
     char linebuf[128];
    
 
@@ -1453,29 +1455,29 @@ int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffer)
     /*
      * 先頭のバイトを読み出し 
      */
-    opc = fetch(&pc, &addpc);
+    opc = fetch(cputype, &pc, &addpc);
 
     /*
      * グループ別 
      */
     switch ((int) (opc >> 4)) {
     case 0x0:
-	except1(opc, &pc, &addpc, linebuf);
+	except1(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x1:
-	except2(opc, &pc, &addpc, linebuf);
+	except2(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x2:
-	branch(opc, &pc, &addpc, linebuf);
+	branch(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x3:
-	leastack(opc, &pc, &addpc, linebuf);
+	leastack(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x4:
     case 0x5:
     case 0x6:
     case 0x7:
-	inhabm(opc, &pc, &addpc, linebuf);
+	inhabm(cputype, opc, &pc, &addpc, linebuf);
 	break;
     case 0x8:
     case 0x9:
@@ -1485,7 +1487,7 @@ int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffer)
     case 0xd:
     case 0xe:
     case 0xf:
-	regaxbdu(opc, &pc, &addpc, linebuf);
+	regaxbdu(cputype, opc, &pc, &addpc, linebuf);
 	break;
     default:
 	ASSERT(FALSE);
@@ -1499,7 +1501,7 @@ int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffer)
     sub4hex(pcreg, buffer);
     strcat(buffer, " ");
     for (i = 0; i < addpc; i++) {
-	sub2hex(read_byte((WORD) (pcreg + i)), buffer);
+	sub2hex(read_byte(cputype, (WORD) (pcreg + i)), buffer);
 	strcat(buffer, " ");
     }
 
@@ -1515,5 +1517,5 @@ int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffer)
     }
 
     strcat(buffer, linebuf);
-    return (int) addpc;
+    return (int) addpc + pc;
 }

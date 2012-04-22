@@ -621,7 +621,7 @@ static void XM7_DbgDisasmDrawFn(AG_Event *event)
     BOOL forceredraw = AG_INT(2);
 
     if(p == NULL) return;
-    p->dump->Draw(forceredraw);
+    p->cons->Draw(forceredraw);
     AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
 
 }
@@ -652,7 +652,7 @@ struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*w
     cons->InitConsole(40, 22); // ステータス表示分
     if(buf == NULL){
         free(obj);
-        delete dump;
+        delete cons;
         return NULL;
     }
     memset(buf, 0x00, sizeof(BYTE) * 20 * 5);
@@ -662,8 +662,6 @@ struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*w
     obj->draw = view;
     obj->buf = buf;
     obj->forceredraw = FALSE;
-    obj->rb = rf;
-    obj->wb = wf;
    
     s = cons->GetScreen();
     a.w = s->w;
@@ -683,7 +681,7 @@ void XM7_DbgDisasmDetach(struct XM7_DbgDisasm *dbg)
         AG_ObjectDetach(dbg->draw);
     }
     if(dbg->buf != NULL) free(dbg->buf);
-    if(dbg->dump != NULL) delete dbg->dump;
+    if(dbg->cons != NULL) delete dbg->cons;
     free(dbg);
 }
 
@@ -804,7 +802,7 @@ static void XM7_DbgDisasmSetAddress(AG_Event *event)
    cons->PutString(strbuf);
    
    if(p->disasm->baddr >= 4) {
-      p->disasm->edaddr = p->disasm->bdata & 0x0000ffff;
+      p->disasm->addr = p->disasm->bdata & 0x0000ffff;
       p->disasm->bdata = 0;
       p->disasm->baddr = 0;
       p->disasm->editAddr = FALSE;
@@ -822,7 +820,7 @@ void XM7_DbgDisasmKeyPressFn(AG_Event *event)
 {
    	// キーハンドラー
    XM7_SDLView *disp = (XM7_SDLView *)AG_SELF();
-   struct XM7_DbgDisasmDesc *p = (struct XM7_MemDisasmDesc *)AG_PTR(1);
+   struct XM7_DbgDisasmDesc *p = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
    int sym = AG_INT(2);
    int mod = AG_INT(3);
    Uint32  unicode = (Uint32)AG_ULONG(4);
@@ -831,8 +829,8 @@ void XM7_DbgDisasmKeyPressFn(AG_Event *event)
 //   printf("Key Press %04x %04x %08x\n", sym, mod, p);
    if(p == NULL) return;
    if(p->disasm == NULL) return;
-   if(p->disasm->dump == NULL) return;
-   cons = p->disasm->dump;
+   if(p->disasm->cons == NULL) return;
+   cons = p->disasm->cons;
    
    if(p->disasm->paused == TRUE) {
 	p->disasm->paused = FALSE;
@@ -876,8 +874,8 @@ void XM7_DbgDisasmKeyPressFn(AG_Event *event)
       p->disasm->editAddr = TRUE;
       break;
     case AG_KEY_UP:
-	 p->disasm->edaddr -= 1;
-	 p->disasm->edaddr &= 0x0000ffff;
+	 p->disasm->addr -= 1;
+	 p->disasm->addr &= 0x0000ffff;
       break;
     case AG_KEY_DOWN:
 	 p->disasm->addr += 1;
@@ -889,7 +887,7 @@ void XM7_DbgDisasmKeyPressFn(AG_Event *event)
    
 }
 
-void XM7_DbgDumpMem(void *p)
+void XM7_DbgMemDisasm(void *p)
 {
     int a;
     int Hb,Wb;
@@ -898,61 +896,45 @@ void XM7_DbgDumpMem(void *p)
     char strbuf[256];
     BYTE *buf;
     int addr;
+    int next;
     XM7_DbgDisasm *obj;
 
     obj = (XM7_DbgDisasm *)p;
 
     if(obj == NULL) return;
     if(obj->cons == NULL) return;
-    if(obj->rb == NULL) return;
     if(obj->draw == NULL) return;
     if(obj->paused == TRUE) return;
     addr = obj->addr;
 
-    Wb = obj->dump->GetWidth();
-    Hb = obj->dump->GetHeight();
+    Wb = obj->cons->GetWidth();
+    Hb = obj->cons->GetHeight();
     wd = 40;
     hd = 18;
-    obj->dump->MoveDrawPos(65, 0);
-    obj->dump->PutString("H: Help");
+    obj->cons->MoveDrawPos(65, 0);
+    obj->cons->PutString("H: Help");
 
     if(obj->editAddr) return;
 	
-   obj->dump->MoveDrawPos(0, 0);
+   obj->cons->MoveDrawPos(0, 0);
    sprintf(strbuf, "DisAssemble at %04x", obj->addr);
-    obj->dump->PutString(strbuf);
+    obj->cons->PutString(strbuf);
 
-    obj->dump->MoveDrawPos(0, 1);
+    obj->cons->MoveDrawPos(0, 1);
     if(wd >= (Wb / 5)) wd = Wb / 5;
-    if(hd >= (Hb - 4)) hd = Hb - 4;
+    if(hd >= (Hb - 3)) hd = Hb - 3;
     buf = obj->buf;
     for(i = 0; i < Wb - 2; i++){
-        obj->dump->MoveDrawPos(i, 2);
-        obj->dump->PutChar('-');
+        obj->cons->MoveDrawPos(i, 1);
+        obj->cons->PutChar('-');
     }
     for(i = 0;i < hd; i++){
-     buf[j] = obj->rb((WORD)((addr + j) & 0xffff));
-            sum += (unsigned int)buf[j];
-            xsum += (unsigned int)buf[j];
-	    ysum[j] += buf[j];
-        }
         strbuf[0] = '\0';
-        obj->dump->MoveDrawPos(0, 3 + i);
-        DBG_HexDumpMemory(strbuf, buf, (WORD)addr, xsum & 0xff, wd, TRUE);
-        obj->dump->PutString(strbuf);
-        addr += wd;
+        obj->cons->MoveDrawPos(0, 2 + i);
+        next = disline(obj->cputype, addr, strbuf);
+        obj->cons->PutString(strbuf);
+        addr = next;
     }
-    // Footer
-    obj->dump->MoveDrawPos(0, 3 + hd);
-    for(i = 0; i < Wb - 2; i++){
-        obj->dump->MoveDrawPos(i, 3 + hd);
-        obj->dump->PutChar('-');
-    }
-    // Sum
-    obj->dump->MoveDrawPos(0, 4 + hd);
-    strbuf[0] = '\0';
-    DBG_PrintYSum(strbuf, (int *)ysum, (int) (sum & 0xff), wd);
-    obj->dump->PutString(strbuf);
-    obj->dump->MoveDrawPos(0, 0);
+    obj->cons->MoveDrawPos(0, 0);
 
 }
