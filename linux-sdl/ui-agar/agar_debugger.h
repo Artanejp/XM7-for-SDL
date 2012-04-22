@@ -66,6 +66,7 @@ typedef struct  XM7_DbgDisasm {
 //    void (*wb)(WORD, BYTE);       // Write Access
     unsigned int addr;
     unsigned int nextaddr;
+    unsigned int beforeaddr;
     int cputype;
     DumpObject *cons;   // Internal Dump Object
     int forceredraw;

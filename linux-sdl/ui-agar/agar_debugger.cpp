@@ -383,9 +383,10 @@ void XM7_DbgKeyPressFn(AG_Event *event)
       p->dump->paused = TRUE;
       break;
     case AG_KEY_J:
+    case AG_KEY_SLASH:
       // Set Address
       cons->MoveDrawPos(0, 0);
-      cons->PutString("Set-Address>>");
+      cons->PutString("Set Address >>          ");
       p->dump->editAddr = TRUE;
       break;
     case AG_KEY_ESCAPE:
@@ -796,10 +797,14 @@ static void XM7_DbgDisasmSetAddress(AG_Event *event)
       break;
    }
 
-   cons->MoveDrawPos(0, 0);
    p->disasm->bdata |= hb << ((4 - p->disasm->baddr) * 4);
-   sprintf(strbuf, "Set Address>>%04x", p->disasm->bdata);
-   cons->PutString(strbuf);
+   {
+      Uint8 c;
+      c = hex2chr(hb);
+      cons->MoveDrawPos(12 + p->disasm->baddr, 0);
+      cons->PutChar(c);
+   }
+   
    
    if(p->disasm->baddr >= 4) {
       p->disasm->addr = p->disasm->bdata & 0x0000ffff;
@@ -850,36 +855,50 @@ void XM7_DbgDisasmKeyPressFn(AG_Event *event)
       cons->MoveDrawPos(0, 0);
       cons->PutString("disasm Memory Help:");
       cons->MoveDrawPos(0, 1);
-      cons->PutString("J/j       : Set Address");
-      cons->MoveDrawPos(40, 1);
-      cons->PutString("Shift+UP  : Roll UP");
+      cons->PutString("J/j or / : Set Address");
+      cons->MoveDrawPos(0, 2);
+      cons->PutString("UP        : Roll UP");
+      cons->MoveDrawPos(0, 3);
+      cons->PutString("DOWN      : Roll Down");
       cons->MoveDrawPos(0, 4);
-      cons->PutString("Shift+DOWN: Roll Down");
-      cons->MoveDrawPos(40, 3);
       cons->PutString("Page Up   : Page UP");
-      cons->MoveDrawPos(40, 4);
-      cons->PutString("Page Up   : Page UP");
-      cons->MoveDrawPos(0, 10);
-      cons->PutString("Edit Mode");
-      cons->MoveDrawPos(0, 11);
-      cons->PutString("0-9,A-F   : Write Memory");
-      cons->MoveDrawPos(40, 21);
+      cons->MoveDrawPos(0, 5);
+      cons->PutString("Page Down : Page Down");
+      cons->MoveDrawPos(0, 21);
       cons->PutString("Press Any Key");
       p->disasm->paused = TRUE;
       break;
     case AG_KEY_J:
+    case AG_KEY_SLASH:
       // Set Address
       cons->MoveDrawPos(0, 0);
-      cons->PutString("Set-Address>>");
+      cons->PutString("Set Address >>         ");
+      cons->MoveDrawPos(0, 0);
       p->disasm->editAddr = TRUE;
       break;
     case AG_KEY_UP:
-	 p->disasm->addr -= 1;
+         p->disasm->nextaddr = p->disasm->addr;
+	 if((p->disasm->addr > (p->disasm->beforeaddr + 5)) || (p->disasm->addr < (p->disasm->beforeaddr - 5))) {
+	    p->disasm->addr -= 1;
+	    p->disasm->beforeaddr = p->disasm->addr - 1;
+	 } else {
+	   p->disasm->addr = p->disasm->beforeaddr;
+	   p->disasm->beforeaddr = p->disasm->addr - 1;
+	 }
 	 p->disasm->addr &= 0x0000ffff;
+         p->disasm->beforeaddr &= 0x0000ffff;
       break;
     case AG_KEY_DOWN:
-	 p->disasm->addr += 1;
+         p->disasm->beforeaddr = p->disasm->addr;
+         if((p->disasm->nextaddr > (p->disasm->addr + 5)) || (p->disasm->nextaddr < (p->disasm->addr - 5))) {
+	    p->disasm->addr += 1;
+	    p->disasm->nextaddr = p->disasm->addr + 1;
+	 } else {
+	    p->disasm->addr = p->disasm->nextaddr;
+	    p->disasm->nextaddr = p->disasm->addr + 1;
+	 }
 	 p->disasm->addr &= 0x0000ffff;
+	 p->disasm->nextaddr &= 0x0000ffff;
       break;
     default:
       break;
@@ -911,7 +930,7 @@ void XM7_DbgMemDisasm(void *p)
     Hb = obj->cons->GetHeight();
     wd = 40;
     hd = 18;
-    obj->cons->MoveDrawPos(65, 0);
+    obj->cons->MoveDrawPos(30, 0);
     obj->cons->PutString("H: Help");
 
     if(obj->editAddr) return;
