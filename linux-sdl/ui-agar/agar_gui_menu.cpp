@@ -43,7 +43,6 @@ extern void Create_ToolsMenu(AG_MenuItem *parent);
 extern void Create_DebugMenu(AG_MenuItem *parent);
 extern void Create_AboutMenu(AG_MenuItem *self);
 extern void OnPushCancel(AG_Event *event);
-extern void KeyBoardSnoop(BOOL t);
 
 extern "C" {
 extern void InitInstance(void);

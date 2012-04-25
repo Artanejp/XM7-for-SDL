@@ -33,7 +33,6 @@ extern "C" {
 #include "../xm7-debugger/memread.h"
 
 extern void OnPushCancel(AG_Event *event);
-extern void KeyBoardSnoop(BOOL t);
 
 
 extern void DBG_Bin2Hex1(char *str, Uint8 b);

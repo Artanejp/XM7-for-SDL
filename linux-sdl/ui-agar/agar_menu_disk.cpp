@@ -36,7 +36,7 @@ extern "C" {
  * Drive 1/0 Menu
  */
 extern void OnPushCancel(AG_Event *event);
-extern void KeyBoardSnoop(BOOL t);
+
 
 
 AG_MenuItem *Menu_DiskImages[FDC_DRIVES];
@@ -150,7 +150,6 @@ static void OnOpenDiskSubEv(AG_Event *event)
     int Drv = AG_INT(1);
 
     OnOpenDiskSub(Drv, sFilename);
-    KeyBoardSnoop(FALSE);
 }
 
 static void OnOpenDiskBothSub(char *sFilename)
@@ -180,7 +179,6 @@ static void OnOpenDiskBothSubEv(AG_Event *event)
     AG_FileType *ft = (AG_FileType *)AG_PTR(2);
 
     OnOpenDiskBothSub(sFilename);
-    KeyBoardSnoop(FALSE);
 }
 
 
@@ -197,7 +195,6 @@ static void OnOpenDisk(AG_Event *event)
 //    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
-	KeyBoardSnoop(TRUE);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskSubEv, "%i", Drive);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
@@ -221,7 +218,6 @@ static void OnOpenDiskBoth(AG_Event *event)
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
-	KeyBoardSnoop(TRUE);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskBothSubEv, NULL);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskBothSubEv, NULL);

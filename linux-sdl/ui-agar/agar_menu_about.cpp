@@ -36,8 +36,6 @@ extern "C" {
 #include "agar_cmd.h"
 
 extern void OnPushCancel(AG_Event *event);
-extern void KeyBoardSnoop(BOOL t);
-
 
 static void Dialog_OnPushOK(AG_Event *event)
 {

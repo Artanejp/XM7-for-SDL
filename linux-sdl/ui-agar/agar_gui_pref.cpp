@@ -53,7 +53,6 @@ static configdat_t localconfig;
 }
 
 extern void OnPushCancel(AG_Event *event);
-extern void KeyBoardSnoop(BOOL t);
 
 extern "C" {
 extern void ResizeGL(int w, int h);
@@ -89,7 +88,6 @@ static void OnConfigApply(AG_Event *event)
 	 * 終了処理
 	 */
 	UnlockVM();
-	KeyBoardSnoop(FALSE);
 	AG_WindowHide(self->wid.window);
 	AG_ObjectDetach(self->wid.window);
 }
@@ -392,7 +390,6 @@ void OnConfigEmulationMenu(AG_Event *event)
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(win, 320, 240);
-    KeyBoardSnoop(TRUE);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
@@ -508,7 +505,6 @@ void OnConfigInputMenu(AG_Event *event)
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(win, 320, 240);
-    KeyBoardSnoop(TRUE);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
@@ -679,7 +675,6 @@ void OnConfigSoundMenu(AG_Event *event)
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(win, 320, 240);
-    KeyBoardSnoop(TRUE);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*

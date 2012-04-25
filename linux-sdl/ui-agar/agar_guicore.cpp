@@ -45,16 +45,6 @@ extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
 
-//static BOOL bKeyboardSnooped;
-
-
-
-
-
-void KeyBoardSnoop(BOOL Flag)
-{
-//	bKeyboardSnooped = Flag;
-}
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {

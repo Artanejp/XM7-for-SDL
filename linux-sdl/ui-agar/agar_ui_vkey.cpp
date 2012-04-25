@@ -145,7 +145,6 @@ const struct KeyCode_Vkey VKeyTableAG_16[] = { { "0", 0x46 }, /* Tenkey 0 */
 };
 
 extern void PushKeyData(Uint8, Uint8); /* Make */
-extern void KeyBoardSnoop(BOOL flag);
 extern void OnPushCancel(AG_Event *event);
 
 static void OnPressVkey(AG_Event *event) {
@@ -419,7 +418,6 @@ static void OnSetVkey(AG_Event *event)
 
 	w = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	AG_WindowSetCaption(w, "Assign Key as %s (%02x)", button->lbl->text, pushCode);
-	KeyBoardSnoop(TRUE);
 	box = AG_BoxNewVert(w, 0);
 	box2 = AG_BoxNewHoriz(box, 0);
 	lbl = AG_LabelNew(box2, 0, "%s", gettext("Press Key"));

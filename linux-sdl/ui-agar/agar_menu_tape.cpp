@@ -35,7 +35,6 @@ extern "C" {
 #include "agar_toolbox.h"
 
 extern void OnPushCancel(AG_Event *event);
-extern void KeyBoardSnoop(BOOL t);
 
 static void OnOpenTapeSub(char *sFilename)
 {
@@ -61,7 +60,6 @@ static void OnOpenTapeSubEv(AG_Event *event)
     char  *sFilename = AG_STRING(1);
     AG_MenuItem *parent;
     OnOpenTapeSub(sFilename);
-    KeyBoardSnoop(FALSE);
 }
 
 
@@ -77,7 +75,6 @@ static void OnTapeOpen(AG_Event *event)
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[1]);
-	KeyBoardSnoop(TRUE);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "T77 CMT Image File", "*.t77,*.T77", OnOpenTapeSubEv, NULL);
     AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
