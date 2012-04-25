@@ -46,6 +46,7 @@
 #include "agar_toolbox.h"
 
 extern void KeyBoardSnoop(BOOL Flag);
+extern AG_Mutex nRunMutex;
 
 
 
@@ -123,11 +124,13 @@ static void OnLoadStatusSub(char *filename)
      * ステートロード
      */
     LockVM();
+    AG_MutexLock(&nRunMutex);
     StopSnd();
     StateLoad(filename);
     PlaySnd();
     ResetSch();
     UnlockVM();
+    AG_MutexUnlock(&nRunMutex);
     /*
      * 画面再描画
      */
@@ -199,14 +202,18 @@ static void OnSaveStatusSub(char *filename)
      * ステートセーブ
      */
     LockVM();
+    AG_MutexLock(&nRunMutex);
     StopSnd();
+    AG_Delay(10);
     if (!system_save(filename)) {
     } else {
     	strcpy(StatePath, filename);
     }
+//    run_flag = TRUE; 
     PlaySnd();
     ResetSch();
     UnlockVM();
+    AG_MutexUnlock(&nRunMutex);
     p = strrchr(filename, '/');
     if (p != NULL) {
 	p[1] = '\0';

@@ -43,7 +43,9 @@ BOOL bFullSpeed;		/* 全力駆動フラグ */
 BOOL bAutoSpeedAdjust;		/* 速度自動調整フラグ */
 DWORD dwNowTime;		/* timeGetTimeの値 */
 BOOL bTapeModeType;		/* テープ高速モードタイプ */
-
+AG_Mutex nRunMutex;
+   
+   
 /*
  *  スタティック ワーク
  */
@@ -109,6 +111,7 @@ void CleanSch(void)
 	void *ret;
 	bCloseReq = TRUE; // 終了要求
 	AG_ThreadJoin(SchThread,&ret); // スケジューラが終わるのを待つ
+        AG_MutexDestroy(&nRunMutex);
 }
 /*
  *  セレクト
@@ -120,9 +123,7 @@ BOOL SelectSch(void)
 	 * スレッド生成
 	 */
 	AG_ThreadCreate(&SchThread, &ThreadSch, NULL);
-//	{
-//		return FALSE;
-//	}
+        AG_MutexInit(&nRunMutex);
 	return TRUE;
 }
 
@@ -248,6 +249,7 @@ static void *ThreadSch(void *param)
 		 * いきなりロック
 		 */
 		LockVM();
+	        AG_MutexLock(&nRunMutex);
 
 		/*
 		 * 実行指示が変化したかチェック
@@ -274,6 +276,7 @@ static void *ThreadSch(void *param)
 			 */
 			ProcessSnd(TRUE);
 			UnlockVM();
+		        AG_MutexUnlock(&nRunMutex);
 
 			AG_Delay(10);
 			ResetSch();
@@ -322,6 +325,7 @@ static void *ThreadSch(void *param)
 			}
 			if (dwTempTime > dwExecTime) {
 				UnlockVM();
+			        AG_MutexUnlock(&nRunMutex);
 				continue;
 			}
 
@@ -338,6 +342,7 @@ static void *ThreadSch(void *param)
 					 * あまった時間もCPUを動かす
 					 */
 					UnlockVM();
+				        AG_MutexUnlock(&nRunMutex);
 					while (!stopreq_flag) {
 						if (dwTempTime != timeGetTime()) {
 							break;
@@ -361,6 +366,7 @@ static void *ThreadSch(void *param)
 				else {
 					AG_Delay(1);
 					UnlockVM();
+				        AG_MutexUnlock(&nRunMutex);
 					continue;
 				}
 			}
@@ -434,6 +440,7 @@ static void *ThreadSch(void *param)
 		 */
 		if (bCloseReq) {
 			UnlockVM();
+		        AG_MutexUnlock(&nRunMutex);
 			break;
 		}
 
@@ -445,6 +452,7 @@ static void *ThreadSch(void *param)
 			bDrawVsync = FALSE;
 			nFrameSkip = 0;
 			UnlockVM();
+		        AG_MutexUnlock(&nRunMutex);
 			continue;
 		}
 
@@ -499,6 +507,7 @@ static void *ThreadSch(void *param)
 				bDrawVsync = FALSE;
 			}
 			UnlockVM();
+		        AG_MutexUnlock(&nRunMutex);
 		}
 
 		/*

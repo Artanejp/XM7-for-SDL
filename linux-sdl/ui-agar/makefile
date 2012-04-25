@@ -32,6 +32,12 @@ UISRC = \
 	agar_gui_pref.cpp 
 
 
+DEBUGGERSRC = \
+	agar_surfaceconsole.cpp \
+	agar_debugger.cpp \
+	agar_dbg_disasm.cpp
+
+
 LOCALSRC = \
 	agar_cfg.cpp  \
         agar_cmd.cpp agar_sch.cpp \
@@ -39,11 +45,10 @@ LOCALSRC = \
 	agar_osd.cpp \
 	agar_vramutil.cpp \
 	agar_svram.cpp \
-	agar_surfaceconsole.cpp \
-	agar_debugger.cpp \
 	$(VIDEODRVSRC) \
 	$(INPUTSRC) \
-	$(UISRC)
+	$(UISRC) \
+	$(DEBUGGERSRC)
 
 SRCS =	${LOCALSRC}
 CSRCS =	$(filter %.c, $(SRCS))
