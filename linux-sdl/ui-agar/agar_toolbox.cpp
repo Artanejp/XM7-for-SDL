@@ -45,10 +45,7 @@
 
 #include "agar_toolbox.h"
 
-extern void KeyBoardSnoop(BOOL Flag);
 extern AG_Mutex nRunMutex;
-
-
 
 static Disk   disk[2][FDC_MEDIAS];
 static char   StatePath[MAXPATHLEN];
@@ -83,7 +80,6 @@ static AG_MenuItem *help_item;
 void OnPushCancel(AG_Event *event)
 {
 	AG_Button *self = (AG_Button *)AG_SELF();
-	KeyBoardSnoop(FALSE);
 	AG_WindowHide(self->wid.window);
 	AG_ObjectDetach(self->wid.window);
 }
@@ -145,7 +141,6 @@ static void OnLoadStatusSub(char *filename)
 static void OnLoadStatusSubEv(AG_Event *event)
 {
     char  *sFilename = AG_STRING(1);
-    KeyBoardSnoop(FALSE);
     OnLoadStatusSub(sFilename);
 }
 
@@ -158,7 +153,6 @@ void OnLoadStatus(AG_Event *event)
     if(dlgWin == NULL) return;
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
-    KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
     AG_WidgetFocus(dlg);
@@ -192,7 +186,6 @@ void OnQuickLoad(AG_Event *event)
 static void OnSaveStatusSub(char *filename)
 {
     char          *p;
-    KeyBoardSnoop(FALSE);
     if(filename == NULL) return;
 	/*
 	 * ファイル選択
@@ -225,7 +218,6 @@ static void OnSaveStatusSubEv(AG_Event *event)
 {
     char  *sFilename = AG_STRING(1);
     OnSaveStatusSub(sFilename);
-    KeyBoardSnoop(FALSE);
 
 }
 
@@ -242,7 +234,6 @@ void OnSaveAs(AG_Event *event)
     if(dlgWin == NULL) return;
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
-    KeyBoardSnoop(TRUE);
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);

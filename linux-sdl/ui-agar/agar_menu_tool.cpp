@@ -46,11 +46,16 @@ extern void OnConfigEmulationMenu(AG_Event *event);
 extern void OnConfigInputMenu(AG_Event *event);
 extern void OnConfigSoundMenu(AG_Event *event);
 
-extern void KeyBoardSnoop(BOOL t);
 
-static BOOL b2DD ;
-static BOOL bFormat ;
-static char DiskTitle[128];
+
+static void OnPushCancelDisk(AG_Event *event)
+{
+	AG_Button *self = (AG_Button *)AG_SELF();
+        char *alloc = AG_STRING(1);
+        if(alloc != NULL) free(alloc);
+	AG_WindowHide(self->wid.window);
+	AG_ObjectDetach(self->wid.window);
+}
 
 
 /*
@@ -59,17 +64,19 @@ static char DiskTitle[128];
 static void OnNewDiskCreate(AG_Event *event)
 {
     AG_Button *btn = (AG_Button *)AG_SELF();
-	char *title = DiskTitle;
-	char *filename = AG_STRING(1);
+	char *filename = AG_STRING(4);
+        char *DiskTitle = AG_STRING(1);
+        BOOL b2DD = AG_INT(2);
+        BOOL bFormat = AG_INT(3);
 	int err;
 	char *p;
 
 	LockVM();
 	StopSnd();
 	if (bFormat) {
-		err = make_new_userdisk(filename, title, b2DD);
+		err = make_new_userdisk(filename, DiskTitle, b2DD);
 	}	else {
-		err = make_new_d77(filename, title, b2DD);
+		err = make_new_d77(filename, DiskTitle, b2DD);
 	}
 	PlaySnd();
 	ResetSch();
@@ -79,7 +86,7 @@ static void OnNewDiskCreate(AG_Event *event)
 		p[1] = '\0';
 		strcpy(InitialDir[0], filename);
 	}
-    KeyBoardSnoop(FALSE);
+        if(DiskTitle != NULL) free(DiskTitle);
     //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 
@@ -93,12 +100,18 @@ static void OnNewDisk(AG_Event *event)
 	AG_Textbox *textbox;
 	AG_Checkbox *check;
 	AG_FileDlg *dlg;
+        BOOL b2DD;
+        BOOL bFormat;
+        char *DiskTitle;
+   
 
-
-    KeyBoardSnoop(TRUE);
 	if((InitialDir[0] == NULL) || strlen(InitialDir[0]) <= 0) {
 		strcpy(InitialDir[0], "./");
 	}
+        DiskTitle =(char *)malloc(sizeof(char) * 128);
+        if(DiskTitle == NULL) return;
+        memset(DiskTitle, 0x00, sizeof(char) * 128);
+   
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT );
 	AG_WindowSetMinSize(w, 280, 120);
     AG_WindowSetPadding(w, 10, 10, 10, 10);
@@ -122,10 +135,10 @@ static void OnNewDisk(AG_Event *event)
 	AG_WidgetSetSize(box, 280, 200);
     dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
-	AG_FileDlgAddType(dlg, "D77 Image File", "*.d77,*.D77", OnNewDiskCreate, NULL);
-    AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
-    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
-    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
+	AG_FileDlgAddType(dlg, "D77 Image File", "*.d77,*.D77", OnNewDiskCreate, "%s,%i,%i", DiskTitle, b2DD, bFormat );
+    AG_FileDlgCancelAction (dlg, OnPushCancelDisk, "%s", DiskTitle);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancelDisk, "%s", DiskTitle);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancelDisk, "%s", DiskTitle);
 
 	AG_WindowSetCaption(w, gettext("Create Disk "));
 	AG_WindowShow(w);
@@ -152,7 +165,6 @@ static void OnNewTapeCreate(AG_Event *event)
 		strcpy(InitialDir[1], filename);
 	}
 
-    KeyBoardSnoop(FALSE);
     //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 
@@ -164,7 +176,6 @@ static void OnNewTape(AG_Event *event)
 	AG_FileDlg *dlg;
 
 
-    KeyBoardSnoop(TRUE);
 	if((InitialDir[1] == NULL) || strlen(InitialDir[1]) <= 0) {
 		strcpy(InitialDir[1], "./");
 	}
@@ -211,7 +222,6 @@ static void ScreenCaptureSub(AG_Event *event)
 	p[1] = '\0';
 	strcpy(InitialDir[3], sFilename);
     }
-    KeyBoardSnoop(FALSE);
     //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 /*
@@ -231,7 +241,6 @@ static void OnGrpCapture(AG_Event *event)
 
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
-    KeyBoardSnoop(TRUE);
 	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[3]);
@@ -265,7 +274,6 @@ static void ScreenCaptureSub2(AG_Event *event)
 	p[1] = '\0';
 		strcpy(InitialDir[3], sFilename);
     }
-    KeyBoardSnoop(FALSE);
     //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 /*
@@ -283,7 +291,6 @@ static void OnGrpCapture2(AG_Event *event)
 		strcpy(InitialDir[3], "./");
 	}
 
-    KeyBoardSnoop(TRUE);
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
 	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
@@ -320,7 +327,6 @@ static void OnWavCaptureSub(AG_Event *event)
 	p[1] = '\0';
 	strcpy(InitialDir[4], sFilename);
     }
-    KeyBoardSnoop(FALSE);
     //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
     /*
@@ -347,7 +353,6 @@ static void OnWavCapture(AG_Event *event)
 	/*
 	 * ファイル選択
 	 */
-	KeyBoardSnoop(TRUE);
 	if((InitialDir[4] == NULL) || strlen(InitialDir[4]) <= 0) {
 		strcpy(InitialDir[4], "./");
 	}
