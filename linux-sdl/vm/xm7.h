@@ -551,10 +551,8 @@ extern          "C" {
 #define DISASM_BUF_SIZE 32768
     extern BOOL	     disasm_main_flag;
     extern int		 disasm_main_count;
-    extern char	 disasm_main_buf[DISASM_BUF_SIZE];
     extern BOOL	     disasm_sub_flag;
     extern int		 disasm_sub_count;
-    extern char 	disasm_sub_buf[DISASM_BUF_SIZE];
 
 //    extern int  FASTCALL disline(int cpu, WORD pcreg, char *buffer);
     /*

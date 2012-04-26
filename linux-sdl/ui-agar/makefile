@@ -35,7 +35,8 @@ UISRC = \
 DEBUGGERSRC = \
 	agar_surfaceconsole.cpp \
 	agar_debugger.cpp \
-	agar_dbg_disasm.cpp
+	agar_dbg_disasm.cpp \
+	agar_dbg_regdump.cpp
 
 
 LOCALSRC = \

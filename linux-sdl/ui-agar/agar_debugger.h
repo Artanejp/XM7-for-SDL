@@ -86,22 +86,18 @@ struct XM7_DbgDisasmDesc {
     Uint32 to_tick;
 };
 
-typedef struct  XM7_DbgRegdump {
-    DumpObject *dump;   // Internal Dump Object
+typedef struct  XM7_DbgRegDump {
+    DumpObject *cons;   // Internal Dump Object
     int forceredraw;
     XM7_SDLView *draw;
-    cpu6809_t mainRegs;
-    cpu6809_t subRegs;
-#if (XM7_VER == 1 && defined(JSUB))
-    cpu6809_t jsubRegs;   
-#endif // JSUB && XM7_VER==1
-
+    cpu6809_t *reg;
     BOOL paused;
-    BYTE *buf;
+    char title[12];
+    cpu6809_t buf;
 };
 
 struct XM7_DbgRegDumpDesc {
-    XM7_DbgDisasm *dump;
+    XM7_DbgRegDump *dump;
     AG_Timeout to;
     Uint32 to_tick;
 };
@@ -117,11 +113,14 @@ extern "C" {
 
 
 }
-void XM7_DbgMemDisasm(void *p);
-void XM7_DbgDisasmKeyPressFn(AG_Event *event);
-void XM7_DbgDisasmDetach(struct XM7_DbgDisasm *dbg);
-struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE));
+extern void XM7_DbgMemDisasm(void *p);
+extern void XM7_DbgDisasmKeyPressFn(AG_Event *event);
+extern void XM7_DbgDisasmDetach(struct XM7_DbgDisasm *dbg);
+extern struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE));
 
+extern XM7_DbgRegDump *XM7_DbgRegDumpInit(void *parent, cpu6809_t *cpu, char *title);
+extern void XM7_DbgDumpRegs(XM7_DbgRegDump *dbg);
+extern void XM7_DbgRegDumpDetach(XM7_DbgRegDump *dbg);
 
 static void readmem(struct XM7_MemDumpDesc *p)
 {
@@ -189,6 +188,24 @@ static inline char hex2chr(Uint8 b)
         c = 'A' + (bb - 10);
     }
     return c;
+}
+
+static inline void word2chr(WORD w, char *str)
+{
+   
+   str[0] = hex2chr((Uint8) ((w >> 12) & 0x0f)); 
+   str[1] = hex2chr((Uint8) ((w >> 8) & 0x0f)); 
+   str[2] = hex2chr((Uint8) ((w >> 4) & 0x0f)); 
+   str[3] = hex2chr((Uint8) (w & 0x0f)); 
+   str[4] = '\0';
+}
+
+static inline void byte2chr(BYTE b, char *str)
+{
+   
+   str[0] = hex2chr((Uint8) ((b >> 4) & 0x0f)); 
+   str[1] = hex2chr((Uint8) (b & 0x0f)); 
+   str[2] = '\0';
 }
 
 

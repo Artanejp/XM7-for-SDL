@@ -98,13 +98,7 @@ static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
 
 
    if(mp == NULL) return ival;
-//    readmem(mp);
     XM7_DbgDumpMem(mp->dump);
-//    {
-//        str = "aaaaaaaa";
-//        mp->dump->dump->PutString(str);
-//    }
-
     return mp->to_tick;
 }
 
@@ -144,6 +138,31 @@ static void DestroyDumpWindow(AG_Event *event)
     free(mp);
     mp = NULL;
 }
+
+
+static Uint32 UpdateRegDump(void *obj, Uint32 ival, void *arg )
+{
+
+    struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)arg;
+    char *str;
+
+
+   if(mp == NULL) return ival;
+    XM7_DbgDumpRegs(mp->dump);
+    return mp->to_tick;
+}
+
+
+static void DestroyRegDumpWindow(AG_Event *event)
+{
+    struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)AG_PTR(1);
+    if(mp == NULL) return;
+    if(mp->dump != NULL) XM7_DbgRegDumpDetach(mp->dump);
+
+    free(mp);
+    mp = NULL;
+}
+
 
 
 static void CreateDump(AG_Event *event)
@@ -308,6 +327,79 @@ static void CreateDisasm(AG_Event *event)
     AG_WindowShow(w);
 }
 
+static void CreateRegDump(AG_Event *event)
+{
+    AG_Window *w;
+
+   AG_Menu *self = (AG_Menu *)AG_SELF();
+   AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+   int type = AG_INT(1);
+   int cputype;
+   const char *title;
+   AG_Textbox *pollVar;
+   struct XM7_DbgRegDumpDesc *mp;
+   cpu6809_t *cpu;
+
+   XM7_DbgRegDump *regdump;
+
+    AG_HBox *hb;
+    AG_VBox *vb;
+    AG_Box *box;
+    AG_Button *btn;
+
+    mp = (XM7_DbgRegDumpDesc *)malloc(sizeof(struct XM7_DbgRegDumpDesc));
+    if(mp == NULL) return;
+    memset(mp, 0x00, sizeof(struct XM7_DbgRegDumpDesc));
+
+//    if(pAddr == NULL) return;
+    mp->to_tick = 200;
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    AG_WindowSetMinSize(w, 230, 80);
+    vb =AG_VBoxNew(w, 0);
+
+    hb = AG_HBoxNew(vb, 0);
+
+    switch(type){
+    case MEM_MAIN:
+            cputype = MAINCPU;
+            AG_WindowSetCaption(w, "Main CPU Registers");
+            cpu = &maincpu;
+            title = "Main Regs";
+            break;
+    case MEM_SUB:
+            cputype = SUBCPU;
+            AG_WindowSetCaption(w, "Sub CPU Registers");
+            cpu = &subcpu;
+            title = "Sub Regs";
+            break;
+    default:
+            cputype = -1;
+            cpu = NULL;
+            title = NULL;
+            break;
+    }
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   AG_TextboxSizeHint(pollVar, "XXXXXX");
+   AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
+
+
+   hb = AG_HBoxNew(vb, 0);
+   regdump = XM7_DbgRegDumpInit(hb, cpu, (char *)title);
+   if(regdump == NULL) return;
+   mp->dump = regdump;
+
+    box = AG_BoxNewHoriz(vb, 0);
+    box = AG_BoxNewHoriz(vb, 0);
+    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
+    box = AG_BoxNewHoriz(vb, 0);
+
+    AG_SetEvent(w, "window-close", DestroyRegDumpWindow, "%p", mp);
+
+    AG_SetTimeout(&(mp->to), UpdateRegDump, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    AG_WindowShow(w);
+}
+
 
 void Create_DebugMenu(AG_MenuItem *parent)
 {
@@ -318,6 +410,8 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent, gettext("Dump Main-Memory"), NULL, CreateDump, "%i,%i", MEM_MAIN, 0);
 	item = AG_MenuAction(parent, gettext("Dump Sub-Memory"), NULL, CreateDump, "%i,%i", MEM_SUB, 0);
 	AG_MenuSeparator(parent);
-	item = AG_MenuAction(parent, gettext("Disasm Main-Memory"), NULL, CreateDisasm, "%i,%i", MEM_MAIN, 1);
-	item = AG_MenuAction(parent, gettext("Disasm Sub-Memory"), NULL, CreateDisasm, "%i,%i", MEM_SUB, 1);
+	item = AG_MenuAction(parent, gettext("Disasm Main-Memory"), NULL, CreateDisasm, "%i,%i", MEM_MAIN, 0);
+	item = AG_MenuAction(parent, gettext("Disasm Sub-Memory"), NULL, CreateDisasm, "%i,%i", MEM_SUB, 0);
+	item = AG_MenuAction(parent, gettext("Dump Main-Regs"), NULL, CreateRegDump, "%i,%i", MEM_MAIN, 0);
+	item = AG_MenuAction(parent, gettext("Dump Sub-Regs"), NULL, CreateRegDump, "%i,%i", MEM_SUB, 0);
 }

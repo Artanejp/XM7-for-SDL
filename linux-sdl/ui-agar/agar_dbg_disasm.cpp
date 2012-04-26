@@ -7,11 +7,12 @@
 
 #include "agar_surfaceconsole.h"
 #include "agar_debugger.h"
+#include "xm7.h"
 
 // DisAsm
 extern "C" {
 extern int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffer);
-
+   
 static void XM7_DbgDisasmDrawFn(AG_Event *event)
 {
    XM7_SDLView *view = (XM7_SDLView *)AG_SELF();

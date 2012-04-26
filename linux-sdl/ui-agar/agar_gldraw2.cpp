@@ -76,7 +76,7 @@ void DetachGL_AG2(void)
        free(pFrameBuffer);
        pFrameBuffer = NULL;
     }
-   
+
 //    pGetVram = NULL;
 }
 
@@ -189,7 +189,7 @@ void InitGL_AG2(int w, int h)
     /*
      * GL 拡張の取得 20110907-
      */
-	pFrameBuffer = malloc(sizeof(Uint32) * 640 * 400);
+	pFrameBuffer = (Uint32 *)malloc(sizeof(Uint32) * 640 * 400);
         if(pFrameBuffer == NULL) return;
         memset(pFrameBuffer, 0x00, sizeof(Uint32) * 640 * 400);
 	InitVramSemaphore();
@@ -289,7 +289,7 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
    v8hi *src;
    int ofset;
    int yy;
-   
+
    if((x < 0) || (x >= 640)) return;
    if((y < 0) || (y >= 400)) return;
    if(pFrameBuffer == NULL) return;
@@ -299,7 +299,7 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
    addr = (v8hi *)(&pFrameBuffer[ofset]);
    *addr = *src++;
    ofset += 640;
-   
+
    addr = (v8hi *)(&pFrameBuffer[ofset]);
    *addr = *src++;
    ofset += 640;
@@ -328,7 +328,7 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
    *addr = *src++;
    ofset += 640;
 
-   
+
 }
 
 /*
@@ -436,7 +436,7 @@ void AGEventDrawGL2(AG_Event *event)
                     }
                 }
             }
-       
+
             if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
             glPopAttrib();
     }
