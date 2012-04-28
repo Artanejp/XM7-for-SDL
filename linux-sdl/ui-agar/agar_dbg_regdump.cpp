@@ -81,10 +81,13 @@ void XM7_DbgDumpRegs(XM7_DbgRegDump *dbg)
    cons->MoveDrawPos(17,3);
    cons->PutString(strbuf);
    // AB
-   word2chr(dbg->buf.acc.d, strbuf);
    cons->MoveDrawPos(0,4);
    cons->PutString("AB:");
    cons->MoveDrawPos(5,4);
+   byte2chr(dbg->buf.acc.h.a, strbuf);
+   cons->PutString(strbuf);
+   cons->MoveDrawPos(7,4);
+   byte2chr(dbg->buf.acc.h.b, strbuf);
    cons->PutString(strbuf);
    // DP
    byte2chr(dbg->buf.ea, strbuf);
