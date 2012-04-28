@@ -400,6 +400,79 @@ static void CreateRegDump(AG_Event *event)
     AG_WindowShow(w);
 }
 
+static Uint32 UpdateFdcDump(void *obj, Uint32 ival, void *arg )
+{
+
+    struct XM7_DbgFdcDumpDesc *mp = (struct XM7_DbgFdcDumpDesc *)arg;
+    char *str;
+
+
+    if(mp == NULL) return ival;
+    XM7_DbgDumpFdc(mp->dump);
+    return mp->to_tick;
+}
+
+
+static void DestroyFdcDumpWindow(AG_Event *event)
+{
+    struct XM7_DbgFdcDumpDesc *mp = (struct XM7_DbgFdcDumpDesc *)AG_PTR(1);
+    if(mp == NULL) return;
+    if(mp->dump != NULL) XM7_DbgFdcDumpDetach(mp->dump);
+
+    free(mp);
+    mp = NULL;
+}
+
+static void CreateFdcDump(AG_Event *event)
+{
+    AG_Window *w;
+
+   AG_Menu *self = (AG_Menu *)AG_SELF();
+   AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+   AG_Textbox *pollVar;
+   struct XM7_DbgFdcDumpDesc *mp;
+
+   XM7_DbgFdcDump *fdcdump;
+
+    AG_HBox *hb;
+    AG_VBox *vb;
+    AG_Box *box;
+    AG_Button *btn;
+
+    mp = (XM7_DbgFdcDumpDesc *)malloc(sizeof(struct XM7_DbgFdcDumpDesc));
+    if(mp == NULL) return;
+    memset(mp, 0x00, sizeof(struct XM7_DbgFdcDumpDesc));
+
+//    if(pAddr == NULL) return;
+    mp->to_tick = 200;
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    AG_WindowSetMinSize(w, 230, 80);
+    vb =AG_VBoxNew(w, 0);
+
+    hb = AG_HBoxNew(vb, 0);
+
+   AG_WindowSetCaption(w, "FDC Registers");
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   AG_TextboxSizeHint(pollVar, "XXXXXX");
+   AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
+
+
+   hb = AG_HBoxNew(vb, 0);
+   fdcdump = XM7_DbgFdcDumpInit(hb);
+   if(fdcdump == NULL) return;
+   mp->dump = fdcdump;
+
+    box = AG_BoxNewHoriz(vb, 0);
+    box = AG_BoxNewHoriz(vb, 0);
+    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
+    box = AG_BoxNewHoriz(vb, 0);
+
+    AG_SetEvent(w, "window-close", DestroyFdcDumpWindow, "%p", mp);
+
+    AG_SetTimeout(&(mp->to), UpdateFdcDump, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    AG_WindowShow(w);
+}
 
 void Create_DebugMenu(AG_MenuItem *parent)
 {
@@ -412,6 +485,9 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Disasm Main-Memory"), NULL, CreateDisasm, "%i,%i", MEM_MAIN, 0);
 	item = AG_MenuAction(parent, gettext("Disasm Sub-Memory"), NULL, CreateDisasm, "%i,%i", MEM_SUB, 0);
+	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump Main-Regs"), NULL, CreateRegDump, "%i,%i", MEM_MAIN, 0);
 	item = AG_MenuAction(parent, gettext("Dump Sub-Regs"), NULL, CreateRegDump, "%i,%i", MEM_SUB, 0);
+	AG_MenuSeparator(parent);
+	item = AG_MenuAction(parent, gettext("Dump FDC Regs"), NULL, CreateFdcDump, NULL);
 }

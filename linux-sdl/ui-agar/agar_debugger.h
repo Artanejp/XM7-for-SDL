@@ -5,6 +5,7 @@
 #include <agar/core.h>
 #include <agar/gui.h>
 #include "xm7.h"
+#include "fdc.h"
 #include "agar_surfaceconsole.h"
 #include "agar_sdlview.h"
 
@@ -102,6 +103,26 @@ struct XM7_DbgRegDumpDesc {
     Uint32 to_tick;
 };
 
+typedef struct  XM7_DbgFdcDump {
+    DumpObject *cons;   // Internal Dump Object
+    int forceredraw;
+    XM7_SDLView *draw;
+    BOOL paused;
+    BYTE fdc_command;    /* FDCコマンド */
+    BYTE fdc_status;     /* FDCステータス */
+    BYTE fdc_trkreg[4];     /* トラックレジスタ */
+    BYTE fdc_secreg[4];     /* セクタレジスタ */
+    BYTE fdc_sidereg[4];    /* サイドレジスタ */
+    BYTE fdc_drvreg;     /* 論理ドライブ */
+   
+};
+
+struct XM7_DbgFdcDumpDesc {
+    XM7_DbgFdcDump *dump;
+    AG_Timeout to;
+    Uint32 to_tick;
+};
+
 
 
 
@@ -110,8 +131,6 @@ extern void XM7_DbgDumpMemDetach(struct XM7_DbgDump *dbg);
 extern struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE));
 extern "C" {
    extern void XM7_DbgKeyPressFn(AG_Event *event);
-
-
 }
 extern void XM7_DbgMemDisasm(void *p);
 extern void XM7_DbgDisasmKeyPressFn(AG_Event *event);
@@ -121,6 +140,10 @@ extern struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), v
 extern XM7_DbgRegDump *XM7_DbgRegDumpInit(void *parent, cpu6809_t *cpu, char *title);
 extern void XM7_DbgDumpRegs(XM7_DbgRegDump *dbg);
 extern void XM7_DbgRegDumpDetach(XM7_DbgRegDump *dbg);
+
+extern void XM7_DbgDumpFdc(XM7_DbgFdcDump *dbg);
+extern XM7_DbgFdcDump *XM7_DbgFdcDumpInit(void *parent);
+extern void XM7_DbgFdcDumpDetach(XM7_DbgFdcDump *dbg);
 
 static void readmem(struct XM7_MemDumpDesc *p)
 {

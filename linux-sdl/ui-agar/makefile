@@ -36,7 +36,8 @@ DEBUGGERSRC = \
 	agar_surfaceconsole.cpp \
 	agar_dbg_memdump.cpp \
 	agar_dbg_disasm.cpp \
-	agar_dbg_regdump.cpp
+	agar_dbg_regdump.cpp \
+	agar_dbg_fdcdump.cpp
 
 
 LOCALSRC = \
