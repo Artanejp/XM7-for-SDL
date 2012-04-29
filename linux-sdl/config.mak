@@ -78,11 +78,18 @@ CFLAGS_RELEASE +=  -O3
 #CFLAGS_RELEASE += -pthread
 
 # Architecture Depend Flag
+CFLAGS_RELEASE += -msse -msse2 -mmmx
+CXXFLAGS_RELEASE += -msse -msse2 -mmmx
+
 CFLAGS_RELEASE += -march=amdfam10
 CFLAGS_RELEASE += -minline-all-stringops
 
 CXXFLAGS_RELEASE += -march=amdfam10
 CXXFLAGS_RELEASE += -minline-all-stringops 
+
+# Faster below
+CFLAGS_DEBUG += -msse -msse2 -mmmx
+CXXFLAGS_DEBUG += -msse -msse2 -mmmx
 
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
