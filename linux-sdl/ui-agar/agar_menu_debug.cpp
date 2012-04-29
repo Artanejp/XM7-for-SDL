@@ -474,6 +474,84 @@ static void CreateFdcDump(AG_Event *event)
     AG_WindowShow(w);
 }
 
+
+
+static Uint32 UpdateMMRDump(void *obj, Uint32 ival, void *arg )
+{
+
+    struct XM7_DbgMMRDumpDesc *mp = (struct XM7_DbgMMRDumpDesc *)arg;
+    char *str;
+
+
+    if(mp == NULL) return ival;
+    XM7_DbgDumpMMR(mp->dump);
+    return mp->to_tick;
+}
+
+
+static void DestroyMMRDumpWindow(AG_Event *event)
+{
+    struct XM7_DbgMMRDumpDesc *mp = (struct XM7_DbgMMRDumpDesc *)AG_PTR(1);
+    if(mp == NULL) return;
+    if(mp->dump != NULL) XM7_DbgDumpMMRDetach(mp->dump);
+
+    free(mp);
+    mp = NULL;
+}
+
+
+
+static void CreateMMRDump(AG_Event *event)
+{
+    AG_Window *w;
+
+   AG_Menu *self = (AG_Menu *)AG_SELF();
+   AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+   AG_Textbox *pollVar;
+   struct XM7_DbgMMRDumpDesc *mp;
+
+   XM7_DbgMMRDump *mmrdump;
+
+    AG_HBox *hb;
+    AG_VBox *vb;
+    AG_Box *box;
+    AG_Button *btn;
+
+    mp = (XM7_DbgMMRDumpDesc *)malloc(sizeof(struct XM7_DbgMMRDumpDesc));
+    if(mp == NULL) return;
+    memset(mp, 0x00, sizeof(struct XM7_DbgMMRDumpDesc));
+
+//    if(pAddr == NULL) return;
+    mp->to_tick = 200;
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    AG_WindowSetMinSize(w, 230, 80);
+    vb =AG_VBoxNew(w, 0);
+
+    hb = AG_HBoxNew(vb, 0);
+
+   AG_WindowSetCaption(w, "MMR Bank-map");
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   AG_TextboxSizeHint(pollVar, "XXXXXX");
+   AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
+
+
+   hb = AG_HBoxNew(vb, 0);
+   mmrdump = XM7_DbgDumpMMRInit(hb);
+   if(mmrdump == NULL) return;
+   mp->dump = mmrdump;
+
+    box = AG_BoxNewHoriz(vb, 0);
+    box = AG_BoxNewHoriz(vb, 0);
+    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
+    box = AG_BoxNewHoriz(vb, 0);
+
+    AG_SetEvent(w, "window-close", DestroyMMRDumpWindow, "%p", mp);
+
+    AG_SetTimeout(&(mp->to), UpdateMMRDump, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    AG_WindowShow(w);
+}
+
 void Create_DebugMenu(AG_MenuItem *parent)
 {
    	AG_MenuItem *item ;
@@ -490,4 +568,6 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent, gettext("Dump Sub-Regs"), NULL, CreateRegDump, "%i,%i", MEM_SUB, 0);
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump FDC Regs"), NULL, CreateFdcDump, NULL);
+	AG_MenuSeparator(parent);
+	item = AG_MenuAction(parent, gettext("Dump MMR"), NULL, CreateMMRDump, NULL);
 }

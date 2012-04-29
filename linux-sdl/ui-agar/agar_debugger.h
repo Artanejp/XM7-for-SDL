@@ -123,6 +123,24 @@ struct XM7_DbgFdcDumpDesc {
     Uint32 to_tick;
 };
 
+typedef struct  XM7_DbgMMRDump {
+    DumpObject *cons;   // Internal Dump Object
+    int forceredraw;
+    XM7_SDLView *draw;
+    BOOL paused;
+#if XM7_VER >= 3
+    BYTE mmr_reg[80];
+#else
+    BYTE mmr_reg[40];
+#endif
+};
+
+struct XM7_DbgMMRDumpDesc {
+    XM7_DbgMMRDump *dump;
+    AG_Timeout to;
+    Uint32 to_tick;
+};
+
 
 
 
@@ -144,6 +162,13 @@ extern void XM7_DbgRegDumpDetach(XM7_DbgRegDump *dbg);
 extern void XM7_DbgDumpFdc(XM7_DbgFdcDump *dbg);
 extern XM7_DbgFdcDump *XM7_DbgFdcDumpInit(void *parent);
 extern void XM7_DbgFdcDumpDetach(XM7_DbgFdcDump *dbg);
+
+
+extern XM7_DbgMMRDump *XM7_DbgDumpMMRInit(void *parent);
+extern void XM7_DbgDumpMMRDetach(struct XM7_DbgMMRDump *dbg);
+extern void XM7_DbgDumpMMR(void *p);
+
+
 
 static void readmem(struct XM7_MemDumpDesc *p)
 {
