@@ -16,7 +16,7 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-
+#include "xm7_types.h"
 #endif
 #include <SDL.h>
 
@@ -78,19 +78,6 @@
  * 最適化 ->FASTCALLは64bitだとバグることがあるのですっぱり削除
  */
 #define FASTCALL
-
-/*
- * 基本型定義 -> SDL定義にする(コンパイラ依存の吸収 20100802 α66)
- */
-/* 64bit */
-typedef Uint8 BYTE;
-typedef Uint16 WORD;
-typedef Uint32 DWORD;
-typedef Sint8 int8_t;
-typedef Sint16 int16_t;
-typedef Sint32 int32_t;
-typedef int     BOOL;
-
 
 /*
  * CPUレジスタ定義

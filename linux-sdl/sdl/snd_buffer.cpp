@@ -27,7 +27,7 @@
 #include "mainetc.h"
 #include "sdl.h"
 #include "sdl_sch.h"
-#include "types.h"
+#include "xm7_types.h"
 
 #include "api_snd.h"
 #include "api_wavwriter.h"

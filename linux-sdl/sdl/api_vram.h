@@ -19,7 +19,7 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_xm7.h"
-#include "../fmgen/types.h"
+#include "xm7_types.h"
 
 /*
  * api_vram8.cpp
@@ -52,24 +52,6 @@ extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int m
 #ifdef __cplusplus
 extern "C" {
 #endif
-//typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
-//typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(16)));
-
-
-//typedef union {
-//     v4si v;
-//     uint32_t i[4];
-//     uint16_t s[8];
-//     uint8_t  b[16];
-//} v4hi;
-
-
-//typedef union {
-//     v8si v;
-//     uint32_t i[8];
-//     uint16_t s[16];
-//     uint8_t  b[32];
-//} v8hi;
 
 extern void getvram_4096_vec(Uint32 addr, v4hi *cbuf);
 static inline void putword2_vec(Uint32 *disp, v4hi cbuf)
