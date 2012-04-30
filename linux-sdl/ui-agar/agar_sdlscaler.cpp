@@ -563,7 +563,7 @@ void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int
 // Zoom 2x2
 void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
-   v8hi *b;
+   register v8hi *b;
 
    Uint32 *d1;
    Uint32 *d2;
@@ -627,9 +627,9 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
       }
    } else { // inside align
     int j;
-    v8hi b2;
-    v8hi b3;
-    v8hi bb;
+    register v8hi b2;
+    register v8hi b3;
+    register v8hi bb;
     v8hi *b2p;
     b = (v8hi *)src;
     for(yy = 0; yy < hh; yy++){

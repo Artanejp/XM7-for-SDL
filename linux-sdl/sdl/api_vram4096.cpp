@@ -208,95 +208,43 @@ void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     addr = y * 40 + x;
     // Loop廃止(高速化)
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
     addr += 40;
     disp += pitch;
 
-    getvram_4096_vec(addr, &c);
+    c = getvram_4096_vec(addr);
     putword2_vec((Uint32 *)disp,  c);
-
-}
-
-/*
- * 8x8のピースをVRAMから作成する(パレットなし)：VramLockしない事に注意
- */
-void CreateVirtualVram4096_1Pcs_Nopal(Uint32 *p, int x, int y, int pitch, int mode)
-{
-    Uint32 c[8];
-    Uint8 *disp = (Uint8 *)p;
-    Uint32 addr;
-
-    addr = y * 40 + x;
-    // Loop廃止(高速化)
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
-    addr += 40;
-    disp += pitch;
-
-    getvram_4096(addr, c);
-    putword((Uint32 *)disp,  c);
 
 }
 

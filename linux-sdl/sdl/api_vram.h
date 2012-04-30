@@ -53,7 +53,7 @@ extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int m
 extern "C" {
 #endif
 
-extern void getvram_4096_vec(Uint32 addr, v4hi *cbuf);
+extern v4hi getvram_4096_vec(Uint32 addr);
 static inline void putword2_vec(Uint32 *disp, v4hi cbuf)
 {
    disp[0] = rgbAnalogGDI[cbuf.s[0]];
@@ -69,17 +69,22 @@ static inline void putword2_vec(Uint32 *disp, v4hi cbuf)
 extern __volatile__ void initvramtbl_8_vec(void);
 extern __volatile__ void initvramtbl_4096_vec(void);
 
-extern void getvram_8_vec(Uint32 addr, v4hi *cbuf);
-static inline void  putword8_vec(Uint32 *disp, v4hi *p)
+extern v4hi getvram_8_vec(Uint32 addr);
+
+   
+   
+static inline void  putword8_vec(Uint32 *disp, v4hi p)
 {
-    disp[0] = rgbTTLGDI[p->s[0]];
-    disp[1] = rgbTTLGDI[p->s[1]];
-    disp[2] = rgbTTLGDI[p->s[2]];
-    disp[3] = rgbTTLGDI[p->s[3]];
-    disp[4] = rgbTTLGDI[p->s[4]];
-    disp[5] = rgbTTLGDI[p->s[5]];
-    disp[6] = rgbTTLGDI[p->s[6]];
-    disp[7] = rgbTTLGDI[p->s[7]];
+   v8hi *pal =(v8hi *)rgbTTLGDI;
+   v8hi *dst = (v8hi *)disp;
+    dst->i[0] = pal->i[p.s[0]];
+    dst->i[1] = pal->i[p.s[1]];
+    dst->i[2] = pal->i[p.s[2]];
+    dst->i[3] = pal->i[p.s[3]];
+    dst->i[4] = pal->i[p.s[4]];
+    dst->i[5] = pal->i[p.s[5]];
+    dst->i[6] = pal->i[p.s[6]];
+    dst->i[7] = pal->i[p.s[7]];
 }
 
 

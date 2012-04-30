@@ -74,8 +74,9 @@ void initvramtbl_4096_vec(void)
     }
 }
 
-void getvram_4096_vec(Uint32 addr, v4hi *cbuf)
+v4hi getvram_4096_vec(Uint32 addr)
 {
+    v4hi cbuf;
     uint8_t dat[12];
         /*
          * R,G,Bについて8bit単位で描画する。
@@ -97,27 +98,29 @@ void getvram_4096_vec(Uint32 addr, v4hi *cbuf)
     dat[PLAINB2] = vram_pb[addr + 0x02000];
     dat[PLAINB1] = vram_pb[addr + 0x04000];
     dat[PLAINB0] = vram_pb[addr + 0x06000];
-    cbuf->v =
-        aPlaneB0[dat[PLAINB0]].v +
-        aPlaneB1[dat[PLAINB1]].v +
-        aPlaneB2[dat[PLAINB2]].v +
-        aPlaneB3[dat[PLAINB3]].v +
-        aPlaneR0[dat[PLAINR0]].v +
-        aPlaneR1[dat[PLAINR1]].v +
-        aPlaneR2[dat[PLAINR2]].v +
-        aPlaneR3[dat[PLAINR3]].v +
-        aPlaneG0[dat[PLAING0]].v +
-        aPlaneG1[dat[PLAING1]].v +
-        aPlaneG2[dat[PLAING2]].v +
+    cbuf.v =
+        aPlaneB0[dat[PLAINB0]].v |
+        aPlaneB1[dat[PLAINB1]].v |
+        aPlaneB2[dat[PLAINB2]].v |
+        aPlaneB3[dat[PLAINB3]].v |
+        aPlaneR0[dat[PLAINR0]].v |
+        aPlaneR1[dat[PLAINR1]].v |
+        aPlaneR2[dat[PLAINR2]].v |
+        aPlaneR3[dat[PLAINR3]].v |
+        aPlaneG0[dat[PLAING0]].v |
+        aPlaneG1[dat[PLAING1]].v |
+        aPlaneG2[dat[PLAING2]].v |
         aPlaneG3[dat[PLAING3]].v ;
+   return cbuf;
 }
 
 
 
 
-void getvram_8_vec(Uint32 addr, v4hi *cbuf)
+v4hi getvram_8_vec(Uint32 addr)
 {
     uint8_t dat[4];
+    v4hi cbuf;
         /*
          * R,G,Bについて8bit単位で描画する。
          * 高速化…キャッシュヒット率の向上とVector演算(MMXetc)の速度効果を考慮して、
@@ -129,8 +132,9 @@ void getvram_8_vec(Uint32 addr, v4hi *cbuf)
     dat[PLAINB] = vram_pb[addr];
     dat[PLAINW] = 0;
 
-    cbuf->v =
+    cbuf.v =
         aPlaneB0[dat[PLAINB]].v+
         aPlaneB1[dat[PLAINR]].v+
         aPlaneB2[dat[PLAING]].v;
+   return cbuf;
 }
