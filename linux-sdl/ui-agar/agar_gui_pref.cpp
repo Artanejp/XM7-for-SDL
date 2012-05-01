@@ -328,6 +328,8 @@ static void OnChangeScreenAspect(AG_Event *event)
 	ResizeWindow_Agar(localconfig.uWidth, localconfig.uHeight);
 }
 
+
+
 void OnConfigMenuScreen(AG_NotebookTab *parent)
 {
 	AG_Radio *radio;
@@ -374,6 +376,33 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 }
 
 
+extern void SetBrightRGB_AG_GL2(float r, float g, float b);
+static float fBright0;
+static void OnChangeBright(AG_Event *event)
+{
+	AG_Slider *self = (AG_Slider *)AG_SELF();
+        if(fBright0 < 0.0f) fBright0 = 0.0f;
+        if(fBright0 > 1.0f) fBright0 = 1.0f;
+        SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
+   
+}
+
+
+static void ConfigMenuBright(AG_NotebookTab *parent)
+{
+	AG_Slider *slider;
+	AG_Box *box;
+	AG_Box *vbox;
+	AG_Label *lbl;
+
+	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("Bright"));
+	slider = AG_SliderNewFltR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &fBright0, 0.0f, 1.0f);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeBright, NULL);
+
+	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_HFILL);
+
+}
+
 void OnConfigEmulationMenu(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
@@ -403,6 +432,8 @@ void OnConfigEmulationMenu(AG_Event *event)
 
     	tab = AG_NotebookAddTab(note, gettext("Screen"), AG_BOX_HORIZ);
     	OnConfigMenuScreen(tab);
+    	tab = AG_NotebookAddTab(note, gettext("Display"), AG_BOX_HORIZ);
+    	ConfigMenuBright(tab);
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
     AG_WidgetSetSize(AGWIDGET(box), 320, 24);

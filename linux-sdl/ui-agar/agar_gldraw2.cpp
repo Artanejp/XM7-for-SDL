@@ -84,6 +84,11 @@ void DetachGL_AG2(void)
 static GLfloat *GridVertexs200l;
 static GLfloat *GridVertexs400l;
 static GLfloat MainTexcoods[4];
+// Brights
+static float fBrightR;
+static float fBrightG;
+static float fBrightB;
+
 
 // FBO API
 PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
@@ -200,9 +205,20 @@ void InitGL_AG2(int w, int h)
     InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
                // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
     InitGridVertexs(); // Grid初期化
+    fBrightR = 1.0; // 輝度の初期化
+    fBrightG = 1.0;
+    fBrightB = 1.0;
+
     return;
 }
 
+
+void SetBrightRGB_AG_GL2(float r, float g, float b)
+{
+   fBrightR = r;
+   fBrightG = g;
+   fBrightB = b;
+}
 
 Uint32 *GetVirtualVram(void)
 {
@@ -331,83 +347,57 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
 
 }
 
-/*
- * "Draw"イベントハンドラ
- */
-void AGEventDrawGL2(AG_Event *event)
+static void drawGrids(void *pg,int w, int h)
 {
-	AG_GLView *glv = (AG_GLView *)AG_SELF();
-	AG_Surface *pixvram ;
-	int w;
-	int h;
-	int i;
-	float width;
-	float ybegin;
-	float yend;
-	Uint32 *p;
-	Uint32 *pp;
-	int x;
-	int y;
-    GLfloat TexCoords[4][2];
-    GLfloat Vertexs[4][3];
-    GLfloat TexCoords2[4][2];
-    GLfloat Vertexs2[4][3];
+    AG_GLView *glv = (AG_GLView *)pg;
+    float width;
+   
+    if(!bFullScan){
+        int sh = AGWIDGET(glv)->h;
+    	width = (float)sh / 800.0f * 1.5f;
+    	if(width < 0.70f) goto e1;
+        glLineWidth(width);
+        {
+           GLfloat *vertex;
+           int base;
 
-   if(pVirtualVram == NULL) return;
-   p = &(pVirtualVram->pVram[0][0]);
-   if(p == NULL) return;
-
-
-
-    ybegin = 1.0f;
-//    ybegin = 400.0f/460.0f;
-    yend = 1.0f;
-            // Z Axis
-
-     switch(bMode) {
+        switch(bMode) {
         case SCR_400LINE:
-            w = 640;
-            h = 400;
-            TexCoords[0][0] = TexCoords[3][0] = 0.0f / 642.0f; // Xbegin
-            TexCoords[0][1] = TexCoords[1][1] = 0.0f / 402.0f; // Ybegin
-
-            TexCoords[2][0] = TexCoords[1][0] = 642.0f / 642.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 402.0f / 402.0f; // Yend
+            goto e1;
             break;
-        case SCR_200LINE:
-            w = 640;
-            h = 200;
-            TexCoords[0][0] = TexCoords[3][0] = 0.0f / 642.0f; // Xbegin
-            TexCoords[0][1] = TexCoords[1][1] = 0.0f / 402.0f; // Ybegin
-
-            TexCoords[2][0] = TexCoords[1][0] = 642.0f / 642.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 201.0f / 402.0f; // Yend
-            break;
-        case SCR_262144:
-        case SCR_4096:
         default:
-            w = 320;
-            h = 200;
-            TexCoords[0][0] = TexCoords[3][0] = 1.0f / 642.0f; // Xbegin
-            TexCoords[0][1] = TexCoords[1][1] = 1.0f / 402.0f; // Ybegin
-
-            TexCoords[2][0] = TexCoords[1][0] = 321.0f / 642.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 201.0f / 402.0f; // Yend
+            vertex = GridVertexs200l;
             break;
-     }
-    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
-    Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
-    Vertexs[0][1] = Vertexs[1][1] = yend;  // Yend
-    Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
-    Vertexs[2][1] = Vertexs[3][1] = -ybegin; // Ybegin
-
-
-    if(uVramTextureID == 0) {
-        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         }
-     /*
-     * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
-     */
+        if(vertex == NULL) goto e1;
+    	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+        if(bGL_EXT_VERTEX_ARRAY) {
+                glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
+                glEnable(GL_VERTEX_ARRAY_EXT);
+                glDrawArraysEXT(GL_LINES, 0, h  * 2);
+                glDisable(GL_VERTEX_ARRAY_EXT);
+        } else {
+	    int i;
+            GLfloat *v;
+            // VERTEX_ARRAYなしの場合
+            glBegin(GL_LINES);
+            for(i = 0; i < (h - 1); i++) {
+                v = &vertex[i * 6];
+                glVertex3f(v[0], v[1], v[2]);
+                glVertex3f(v[3], v[4], v[5]);
+            }
+            glEnd();
+        }
+    }
+
+    }
+e1:
+   return;
+}
+
+
+static void drawUpdateTexture(Uint32 *p, int w, int h)
+{
     LockVram();
     if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
        Uint32 *pu;
@@ -444,6 +434,88 @@ void AGEventDrawGL2(AG_Event *event)
 
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
+
+
+}
+
+/*
+ * "Draw"イベントハンドラ
+ */
+void AGEventDrawGL2(AG_Event *event)
+{
+	AG_GLView *glv = (AG_GLView *)AG_SELF();
+	AG_Surface *pixvram ;
+	int w;
+	int h;
+	int i;
+	float width;
+	float ybegin;
+	float yend;
+	Uint32 *p;
+	Uint32 *pp;
+	int x;
+	int y;
+    GLfloat TexCoords[4][2];
+    GLfloat Vertexs[4][3];
+    GLfloat TexCoords2[4][2];
+
+   if(pVirtualVram == NULL) return;
+   p = &(pVirtualVram->pVram[0][0]);
+   if(p == NULL) return;
+
+
+
+    ybegin = 1.0f;
+//    ybegin = 400.0f/460.0f;
+    yend = 1.0f;
+            // Z Axis
+
+     switch(bMode) {
+        case SCR_400LINE:
+            w = 640;
+            h = 400;
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 1.0f; // Yend
+            break;
+        case SCR_200LINE:
+            w = 640;
+            h = 200;
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
+            break;
+        case SCR_262144:
+        case SCR_4096:
+        default:
+            w = 320;
+            h = 200;
+            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+            TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
+
+            TexCoords[2][0] = TexCoords[1][0] = 320.0f / 640.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
+            break;
+     }
+    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
+    Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
+    Vertexs[0][1] = Vertexs[1][1] = yend;  // Yend
+    Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
+    Vertexs[2][1] = Vertexs[3][1] = -ybegin; // Ybegin
+
+
+    if(uVramTextureID == 0) {
+        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
+        }
+     /*
+     * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
+     */
+     drawUpdateTexture(p, w, h);
+
     glPushAttrib(GL_TEXTURE_BIT);
     glPushAttrib(GL_TRANSFORM_BIT);
     glPushAttrib(GL_ENABLE_BIT);
@@ -451,13 +523,14 @@ void AGEventDrawGL2(AG_Event *event)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glEnable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
+   
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+   
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
      if(uVramTextureID != 0) {
-       	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
         glBindTexture(GL_TEXTURE_2D, uVramTextureID);
         if(!bSmoosing) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -494,49 +567,35 @@ void AGEventDrawGL2(AG_Event *event)
         }
 //        UnlockVram();
      }
+     // 20120502 輝度調整
+//    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0); // 20111023
-    glEnable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);
-
-    if(!bFullScan){
-        int sh = AGWIDGET(glv)->h;
-    	width = (float)sh / 800.0f * 1.5f;
-    	if(width < 0.70f) goto e1;
-        glLineWidth(width);
-        {
-           GLfloat *vertex;
-           int base;
-
-        switch(bMode) {
-        case SCR_400LINE:
-            goto e1;
-            break;
-        default:
-            vertex = GridVertexs200l;
-            break;
-        }
-        if(vertex == NULL) goto e1;
-    	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+   
+    glEnable(GL_BLEND);
+    glColor3f(fBrightR , fBrightG, fBrightB);
+    glBlendFunc(GL_ZERO, GL_SRC_COLOR);
         if(bGL_EXT_VERTEX_ARRAY) {
-                glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
-                glEnable(GL_VERTEX_ARRAY_EXT);
-                glDrawArraysEXT(GL_LINES, 0, h  * 2);
-                glDisable(GL_VERTEX_ARRAY_EXT);
+            glEnable(GL_VERTEX_ARRAY_EXT);
+            glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
+            glDrawArraysEXT(GL_POLYGON, 0, 4);
+            glDisable(GL_VERTEX_ARRAY_EXT);
         } else {
-            GLfloat *v;
-            // VERTEX_ARRAYなしの場合
-            glBegin(GL_LINES);
-            for(i = 0; i < (h - 1); i++) {
-                v = &vertex[i * 6];
-                glVertex3f(v[0], v[1], v[2]);
-                glVertex3f(v[3], v[4], v[5]);
-            }
+            glBegin(GL_POLYGON);
+            glVertex3f(Vertexs[0][0], Vertexs[0][1], Vertexs[0][2]);
+            glVertex3f(Vertexs[1][0], Vertexs[1][1], Vertexs[1][2]);
+            glVertex3f(Vertexs[2][0], Vertexs[2][1], Vertexs[2][2]);
+            glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
             glEnd();
         }
-    }
+   
+    glBlendFunc(GL_ONE, GL_ZERO);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
-    }
-e1:
+    drawGrids(glv, w, h);
+
     DrawOSDGL(glv);
     glPopAttrib();
     glPopAttrib();
