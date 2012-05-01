@@ -14,7 +14,8 @@ VIDEODRVSRC = \
 	agar_draw.cpp agar_gldraw2.cpp \
 	agar_glutil.cpp \
 	agar_sdlview.c \
-	agar_sdlscaler.cpp
+	agar_sdlscaler.cpp \
+#	agar_sdlscaler_sse.cpp
 
 INPUTSRC = \
 	AgarKbdInterface.cpp \

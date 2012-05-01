@@ -34,6 +34,8 @@
 #include "agar_gldraw.h"
 
 #include "sdl_inifile.h"
+#include "sdl_cpuid.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,7 +55,8 @@ BOOL            bActivate;              /* アクティベートフラグ */
 int             nAppIcon;               /* アイコン番号(1,2,3) */
 BOOL            bMMXflag;               /* MMXサポートフラグ(未使用) */
 BOOL            bCMOVflag;              /* CMOVサポートフラグ(現状未使用) */
-
+struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
+   
 #if ((XM7_VER <= 2) && defined(FMTV151))
 BOOL            bFMTV151;               /* チャンネルコールフラグ */
 #endif				/*  */
@@ -172,6 +175,8 @@ void OnCreate(AG_Widget *parent)
 
 extern void MainLoop(int argc, char *argv[]);
 
+
+
 /*
  *  メイン関数
  */
@@ -183,7 +188,10 @@ int main(int argc, char *argv[])
  * 実行モジュールのディレクトリを取得
  */
         char    *p;
-
+       /*
+	* Check CPUID
+	*/
+       pCpuID = initCpuID();
        p = getenv("HOME");
         if(p == NULL) {
                 perror("Warning : Can't get HOME directory...Making ./.xm7/ .");

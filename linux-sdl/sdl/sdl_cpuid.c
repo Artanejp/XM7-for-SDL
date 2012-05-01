@@ -14,7 +14,8 @@
 void getCpuID(struct XM7_CPUID *p)
 {
    Uint32 a,b,c,d;
-   __get_cpuid(0x80000000 , &a, &b, &c, &d);
+   a = b = c = d = 0;
+   if(__get_cpuid(0x80000001 , &a, &b, &c, &d) == 0) return; // Get Features
    p->use_mmx = ((d & bit_MMX) != 0)?TRUE:FALSE;
    p->use_sse = ((d & bit_SSE) != 0)?TRUE:FALSE;
    p->use_sse2 = ((d & bit_SSE2) != 0)?TRUE:FALSE;

@@ -28,11 +28,10 @@ extern "C" {
 #endif
 
 #include "api_kbd.h"
-//#include "sdl_sch.h"
-//#include "sdl_snd.h"
 #include "sdl_inifile.h"
 #include "api_draw.h"
-//#include "sdl_gtkdlg.h"
+#include "sdl_cpuid.h"
+extern struct XM7_CPUID *pCpuID;
 
 extern "C" {
 void InitInstance(void);
@@ -396,6 +395,11 @@ void OnDestroy(AG_Event *event)
         /*
          * 仮想マシン クリーンアップ
          */
+        if(pCpuID != NULL) {
+	   detachCpuID(pCpuID);
+	   pCpuID = NULL;
+	}
+   
         system_cleanup();
         AG_Quit();
 }
