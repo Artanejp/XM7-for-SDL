@@ -30,6 +30,7 @@ INPUTSRC = \
 UISRC = 
 
 LOCALSRC = \
+	sdl_cpuid.c \
 	sdl_inifile.c \
         sdl_file.c \
 	$(VIDEODRVSRC) \
