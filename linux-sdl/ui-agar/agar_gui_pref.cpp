@@ -630,6 +630,27 @@ static void SoundMenu(AG_NotebookTab *parent)
 	}
 }
 
+static void SoundMenu2(AG_NotebookTab *parent)
+{
+	AG_Radio *radio;
+	AG_Checkbox *check;
+	AG_Numerical *num;
+	AG_Label *lbl;
+	AG_Box *box;
+	AG_Box *box2;
+	int i;
+
+
+
+	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
+	{
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Enable OPN"), &localconfig.bOPNEnable);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Enable WHG"), &localconfig.bWHGEnable);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Enable THG"), &localconfig.bTHGEnable);
+	}
+}
+
+
 static void OnChangeVolume(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
@@ -717,6 +738,7 @@ void OnConfigSoundMenu(AG_Event *event)
     	tab = AG_NotebookAddTab(note, gettext("Rendering"), AG_BOX_HORIZ);
     	SoundMenu(tab);
     	tab = AG_NotebookAddTab(note, gettext("Misc"), AG_BOX_HORIZ);
+    	SoundMenu2(tab);
 
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);

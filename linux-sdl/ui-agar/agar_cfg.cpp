@@ -787,6 +787,9 @@ void ApplyCfg(void)
     nWaveVolume = configdat.nWaveVolume;
 #endif				/*  */
     uChSeparation = configdat.uChSeparation;
+    opn_enable = configdat.bOPNEnable;
+    whg_enable = configdat.bWHGEnable;
+    thg_enable = configdat.bTHGEnable;
 
     ApplySnd();
 
@@ -828,9 +831,6 @@ void ApplyCfg(void)
 /*
  * Optionセクション
  */
-    opn_enable = configdat.bOPNEnable;
-    whg_enable = configdat.bWHGEnable;
-    thg_enable = configdat.bTHGEnable;
     digitize_enable = configdat.bDigitizeEnable;
 
 #if XM7_VER >= 3
