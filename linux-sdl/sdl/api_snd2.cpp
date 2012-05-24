@@ -625,10 +625,10 @@ static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
    if(applySem) {
 //			SDL_SemWait(applySem);
         samples  = SndCalcSamples(pOpnBuf, ttime);
-        RenderOpnSub(ttime, samples, FALSE);
-        samples  = SndCalcSamples(pBeepBuf, ttime);
-	RenderBeepSub(ttime, samples , FALSE);
-        samples  = SndCalcSamples(pCMTBuf, ttime);
+        RenderOpnSub(ttime, samples * 2, FALSE);
+//        samples  = SndCalcSamples(pBeepBuf, ttime);
+	RenderBeepSub(ttime, samples * 2 , FALSE);
+//        samples  = SndCalcSamples(pCMTBuf, ttime);
 	RenderCMTSub(ttime, samples * 2, FALSE);
 //			SDL_SemPost(applySem);
 	}
@@ -681,9 +681,9 @@ void beep_notify(void)
 		//	SDL_SemWait(applySem);
 		   samples  = SndCalcSamples(pBeepBuf, ttime);
 		   RenderBeepSub(ttime, samples , FALSE);
-		   samples  = SndCalcSamples(pOpnBuf, ttime);
-		   RenderOpnSub(ttime, samples, FALSE);
-		   samples  = SndCalcSamples(pCMTBuf, ttime);
+//		   samples  = SndCalcSamples(pOpnBuf, ttime);
+		   RenderOpnSub(ttime, samples * 2, FALSE);
+//		   samples  = SndCalcSamples(pCMTBuf, ttime);
 		   RenderCMTSub(ttime, samples * 2, FALSE);
 //			SDL_SemPost(applySem);
 		}
@@ -713,10 +713,10 @@ void tape_notify(BOOL flag)
 //            SDL_SemWait(applySem);
 	   samples  = SndCalcSamples(pCMTBuf, ttime);
 	   RenderCMTSub(ttime, samples * 2, FALSE);
-           samples  = SndCalcSamples(pBeepBuf, ttime);
+//           samples  = SndCalcSamples(pBeepBuf, ttime);
 	   RenderBeepSub(ttime, samples , FALSE);
-           samples  = SndCalcSamples(pOpnBuf, ttime);
-	   RenderOpnSub(ttime, samples, FALSE);
+//           samples  = SndCalcSamples(pOpnBuf, ttime);
+	   RenderOpnSub(ttime, samples * 2, FALSE);
 //            SDL_SemPost(applySem);
         }
 
@@ -891,11 +891,11 @@ void ProcessSnd(BOOL bZero)
 		       if(applySem) {
                 SDL_SemWait(applySem);
                 samples = SndCalcSamples(pOpnBuf, ttime);
-                RenderOpnSub(ttime, samples, bZero);
+                RenderOpnSub(ttime, samples * 2, bZero);
 
-                samples = SndCalcSamples(pBeepBuf, ttime);
+//                samples = SndCalcSamples(pBeepBuf, ttime);
                 RenderBeepSub(ttime, samples * 2, bZero);
-                samples = SndCalcSamples(pCMTBuf, ttime);
+//                samples = SndCalcSamples(pCMTBuf, ttime);
                 RenderCMTSub(ttime, samples * 2, bZero);
                 SDL_SemPost(applySem);
 		       }
@@ -907,10 +907,10 @@ void ProcessSnd(BOOL bZero)
         if(applySem) {
 //		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
             SDL_SemWait(applySem);
-            chunksize = (dwSndCount * uRate) / 1000;
-	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize * 2);
-            FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize * 2);
-            FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize * 2);
+            chunksize = (dwSndCount * uRate * 2) / 1000;
+	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
+            FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize);
+            FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize);
 		/*
 		 * 演奏本体
 		 * 20110524 マルチスレッドにすると却って音飛びが悪くなるのでこれでいく。

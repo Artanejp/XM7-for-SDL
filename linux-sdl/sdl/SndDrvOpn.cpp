@@ -22,8 +22,8 @@ static int r_vol[3][4] = {
 
 static inline Sint16 _clamp(Sint32 b)
 {
-    if(b < -0x7fff) return -0x7fff;
-    if(b > 0x7fff) return 0x7fff;
+//    if(b < -32767) return -32767;
+//    if(b > 32767) return 32767;
     return (Sint16) b;
 }
 
@@ -61,14 +61,14 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         tmp3.ss[6] =_clamp(tmp2.si[6]);
         tmp3.ss[7] =_clamp(tmp2.si[7]);
         *l++ = tmp3;
-        }
-        p = (Sint32 *)h;
-        t = (Sint16 *)l;
-        if(i >= size) return;
-        for (j = 0; j < (size - i); j++) {
-            tmp1 = *p++;
-	    *t++ = _clamp(tmp1);
-        }
+   }
+   p = (Sint32 *)h;
+   t = (Sint16 *)l;
+   if(i >= size) return;
+   for (j = 0; j < (size - i); j++) {
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+   }
 }
 
 
@@ -417,12 +417,12 @@ int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOO
 
 void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 {
-	DWORD *p;
-	WORD *q;
+   DWORD *p;
+   WORD *q;
 
-	if((samples <= 0) || (ofset < 0))return;
-    if(RenderSem == NULL) return;
-    SDL_SemWait(RenderSem);
+   if((samples <= 0) || (ofset < 0))return;
+   if(RenderSem == NULL) return;
+   SDL_SemWait(RenderSem);
 
 	p = (DWORD *)src;
 	p = &(p[ofset * channels]);
@@ -433,7 +433,7 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 //	}
 
 //	memset(q, 0x00 , samples * channels * sizeof(Sint16));
-	CopySoundBufferGeneric(p, q, (int)(samples * channels));
+	CopySoundBufferGeneric(p, q, samples * channels);
     SDL_SemPost(RenderSem);
 }
 

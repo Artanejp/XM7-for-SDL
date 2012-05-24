@@ -66,7 +66,6 @@
 			<Add directory=".." />
 			<Add directory="../vm" />
 			<Add directory="/usr/local/include/agar/" />
-			<Add directory="../libemugrph" />
 			<Add directory="../sdl" />
 		</Compiler>
 		<Linker>
@@ -78,7 +77,11 @@
 		<Unit filename="agar_cfg.h" />
 		<Unit filename="agar_cmd.cpp" />
 		<Unit filename="agar_cmd.h" />
-		<Unit filename="agar_debugger.cpp" />
+		<Unit filename="agar_dbg_disasm.cpp" />
+		<Unit filename="agar_dbg_fdcdump.cpp" />
+		<Unit filename="agar_dbg_memdump.cpp" />
+		<Unit filename="agar_dbg_mmr.cpp" />
+		<Unit filename="agar_dbg_regdump.cpp" />
 		<Unit filename="agar_debugger.h" />
 		<Unit filename="agar_draw.cpp" />
 		<Unit filename="agar_draw.h" />

@@ -115,6 +115,10 @@
 		<Unit filename="makefile" />
 		<Unit filename="sdl.h" />
 		<Unit filename="sdl_bar.h" />
+		<Unit filename="sdl_cpuid.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sdl_cpuid.h" />
 		<Unit filename="sdl_file.c">
 			<Option compilerVar="CC" />
 		</Unit>

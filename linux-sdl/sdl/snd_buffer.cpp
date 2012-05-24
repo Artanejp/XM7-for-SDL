@@ -403,9 +403,7 @@ BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, 
         if(p == NULL) return FALSE;
         if(drv == NULL) return FALSE;
 	if(maxchunk <= 0) return FALSE;
-        j = p->nWritePTR;
-//        if(j >= p->nSize) j = 0;
-	chunksize = maxchunk  - (j % maxchunk);
+	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
         if(chunksize <= 0) return TRUE;
 //        printf("SND:OPN_FLUSH@%d %d\n", ttime, chunksize);
       if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
