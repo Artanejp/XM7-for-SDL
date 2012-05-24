@@ -228,6 +228,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 
 	Sint16          *wbuf;
 	int sf;
+        int sf2;
 	Sint16 level;
 
 	if(pBuf == NULL) return 0;
@@ -241,7 +242,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 	wbuf = &wbuf[start * channels];
 	if(counter >= srate) counter = 0;
 
-    level = nLevel >>2;
+        level = nLevel >>2;
 //    if((start <= 0) && (clear != TRUE)) {
 //        	memset(pBuf, 0x00, s * channels * sizeof(Sint16));
 //     }
@@ -249,7 +250,18 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 
 	if(clear)  memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16)); // 全消去
 	if(!enable)  {
-		memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16)); // Not Enable →サンプル数分の領域をクリア
+	   if(channels == 1) {
+	        for(i = 0; i < ss2 ; i++){ 
+		   wbuf[i] = -level;
+		}
+	   } else {
+	        for(i = 0; i < (ss2 * 2) ; i++){ 
+		   wbuf[i] = -level;
+		}
+	   }
+	   
+		
+//		memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16)); // Not Enable →サンプル数分の領域をクリア
 		SDL_SemPost(RenderSem);
 		return ss2;
 	}
@@ -268,12 +280,13 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 		/*
 		 * サンプル書き込み
 		 */
+	        sf2 =(int)(counter * freq) << 1;
+	        
 		for (i = 0; i < ss2; i++) {
 			/*
 			 * 矩形波を作成
 			 */
-			sf = (int) (counter * freq * 2);
-			sf /= (int) srate;
+			sf = sf2 / srate;
 			/*
 			 * 偶・奇に応じてサンプル書き込み
 			 */
@@ -296,8 +309,10 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 			/*
 			 * カウンタアップ
 			 */
-			counter+=1;
+			counter += 1;
+		        sf2 += (freq << 1);
 			if (counter >= srate) {
+			        sf2 = 0;
 				counter = 0;
 			}
 		}
