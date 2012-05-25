@@ -27,10 +27,10 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 all:	Release/libfmgen008.a Debug/libfmgen007a.a 
 
 Debug/libfmgen007a.a: ${OBJS_DEBUG}
-	ar crv $@ ${OBJS_DEBUG}
+	$(AR) crv $@ ${OBJS_DEBUG}
 
 Release/libfmgen007a.a: ${OBJS_RELEASE}
-	ar crv $@ ${OBJS_RELEASE}
+	$(AR) crv $@ ${OBJS_RELEASE}
 
 Release/%.o: %.c
 	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)

@@ -16,8 +16,11 @@
 #include "mouse.h"
 #include "event.h"
 #ifdef USE_AGAR
+#ifndef _WINDOWS
 #include <SDL.h>
+
 #include <SDL_syswm.h>
+#endif
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>

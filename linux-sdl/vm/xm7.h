@@ -18,7 +18,9 @@
 #include <agar/gui.h>
 #include "xm7_types.h"
 #endif
+#ifndef _WINDOWS
 #include <SDL.h>
+#endif
 
 #ifdef MEMWATCH
 #include <memwatch.h>

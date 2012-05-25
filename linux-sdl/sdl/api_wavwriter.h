@@ -18,16 +18,21 @@ extern "C" {
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/ioctl.h>
+//#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <errno.h>
+#ifndef _WINDOWS
 #include <SDL/SDL.h>
+#endif
+   
 #ifdef _USE_SDL_MIXER
+#ifndef _WINDOWS
 #include <SDL/SDL_mixer.h>
+#endif
 #endif
 #include <math.h>
 
-#if !defined(BOOL)
+#if !defined(BOOL) && !defined(_WINDOWS)
 typedef int BOOL;
 #endif
 

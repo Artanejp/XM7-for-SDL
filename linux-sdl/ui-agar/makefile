@@ -68,10 +68,10 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 all:	Debug/libui-agar.a  Release/libui-agar.a
 
 Debug/libui-agar.a: ${OBJS_DEBUG}
-	ar crv $@ ${OBJS_DEBUG}
+	$(AR) crv $@ ${OBJS_DEBUG}
 
 Release/libui-agar.a: ${OBJS_RELEASE}
-	ar crv $@ ${OBJS_RELEASE}
+	$(AR) crv $@ ${OBJS_RELEASE}
 
 Release/%.o: %.c
 	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)

@@ -27,10 +27,10 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 all:	Release/libxm7_debug.a Debug/libxm7_debug.a 
 
 Debug/libxm7_debug.a: ${OBJS_DEBUG}
-	ar crv $@ ${OBJS_DEBUG}
+	$(AR) crv $@ ${OBJS_DEBUG}
 
 Release/libxm7_debug.a: ${OBJS_RELEASE}
-	ar crv $@ ${OBJS_RELEASE}
+	$(AR) crv $@ ${OBJS_RELEASE}
 
 Release/%.o: %.c
 	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)

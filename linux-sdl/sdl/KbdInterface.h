@@ -9,7 +9,9 @@
 #ifndef KBDINTERFACE_H_
 #define KBDINTERFACE_H_
 
+#ifndef _WINDOWS
 #include <SDL.h>
+#endif
 #include "xm7.h"
 #include "api_kbd.h"
 #include "api_mouse.h"

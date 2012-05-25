@@ -23,7 +23,9 @@
 #endif /* USE_GTK */				/*  */
 
 #ifndef _SDL_H
-#include <SDL.h>
+#ifndef _WINDOWS
+# include <SDL.h>
+#endif
 #endif				/*  */
 
 #ifdef USE_AGAR

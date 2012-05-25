@@ -183,7 +183,7 @@ void Flip(void)
 /*
  *  BITBLT
  */
-BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
+BOOL XM7_BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 			int nSrcLeft, int nSrcTop)
 {
 

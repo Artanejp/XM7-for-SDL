@@ -164,7 +164,7 @@ extern void Draw256k(void);
 
 extern void Palet640(void);
 extern void Palet320(void);
-extern BOOL BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
+extern BOOL XM7_BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 		int nSrcLeft, int nSrcTop);
 extern BOOL SelectDraw2(void);
 

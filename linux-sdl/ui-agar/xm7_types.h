@@ -13,6 +13,7 @@
  * 基本型定義 -> SDL定義にする(コンパイラ依存の吸収 20100802 α66)
  */
 
+#ifndef _WINDOWS
 
 typedef uint8_t Uint8;
 typedef uint16_t Uint16;
@@ -31,10 +32,12 @@ typedef int32_t int32;
 typedef Uint8 BYTE;
 typedef Uint16 WORD;
 typedef Uint32 DWORD;
+typedef int     BOOL;
+#endif
 //typedef Sint8 int8_t;
 //typedef Sint16 int16_t;
 //typedef Sint32 int32_t;
-typedef int     BOOL;
+
 
 // Vector
 #if defined(_X86INTRIN_H_INCLUDED) 
