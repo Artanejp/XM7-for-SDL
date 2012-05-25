@@ -564,9 +564,28 @@ static DWORD RenderCMTSub(DWORD ttime, int samples, BOOL bZero)
 }
 
 /*
- * バッファを一定時間の所まで埋める
- * TRUE : 埋めた
- * FALSE : 埋める必要がなかった
+ * Rendering 1:
+ * Normal Type
+ */
+static DWORD Render1(DWORD ttime, BOOL bZero)
+{
+   DWORD max;
+   DWORD n;
+   int samples;
+   
+   samples  = SndCalcSamples(pOpnBuf, ttime) * 2;
+
+   max = RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
+   n = RenderSub(pBeepBuf, DrvBeep, ttime, samples, bZero);
+   if(n > max) max = n;
+   n = RenderSub(pCMTBuf, DrvCMT, ttime, samples, bZero);
+   if(n > max) max = n;
+   return n;
+}
+
+/*
+ * Rendering 2:
+ * Fill Type
  */
 
 /*
@@ -622,16 +641,7 @@ static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 	/*
 	 * サウンド合成
 	 */
-   if(applySem) {
-//			SDL_SemWait(applySem);
-        samples  = SndCalcSamples(pOpnBuf, ttime);
-        RenderOpnSub(ttime, samples * 2, FALSE);
-//        samples  = SndCalcSamples(pBeepBuf, ttime);
-	RenderBeepSub(ttime, samples * 2 , FALSE);
-//        samples  = SndCalcSamples(pCMTBuf, ttime);
-	RenderCMTSub(ttime, samples * 2, FALSE);
-//			SDL_SemPost(applySem);
-	}
+        Render1(ttime, FALSE);
 
 	/*
 	 * 出力
@@ -676,17 +686,7 @@ void beep_notify(void)
 		return;
 	}
 #if 1
-
-		if(applySem) {
-		//	SDL_SemWait(applySem);
-		   samples  = SndCalcSamples(pBeepBuf, ttime);
-		   RenderBeepSub(ttime, samples , FALSE);
-//		   samples  = SndCalcSamples(pOpnBuf, ttime);
-		   RenderOpnSub(ttime, samples * 2, FALSE);
-//		   samples  = SndCalcSamples(pCMTBuf, ttime);
-		   RenderCMTSub(ttime, samples * 2, FALSE);
-//			SDL_SemPost(applySem);
-		}
+        Render1(ttime, FALSE);
 #endif
 	if(DrvBeep) {
 //		DrvBeep->ResetCounter(!bBeepFlag);
@@ -708,17 +708,8 @@ void tape_notify(BOOL flag)
 	if(!DrvCMT) return;
 	DrvCMT->SetState((BOOL)bTapeFlag);
 	DrvCMT->Enable(bTapeMon);
+        Render1(ttime, FALSE);
 
-        if(applySem) {
-//            SDL_SemWait(applySem);
-	   samples  = SndCalcSamples(pCMTBuf, ttime);
-	   RenderCMTSub(ttime, samples * 2, FALSE);
-//           samples  = SndCalcSamples(pBeepBuf, ttime);
-	   RenderBeepSub(ttime, samples , FALSE);
-//           samples  = SndCalcSamples(pOpnBuf, ttime);
-	   RenderOpnSub(ttime, samples * 2, FALSE);
-//            SDL_SemPost(applySem);
-        }
 
 	bTapeFlag = flag;
 }
@@ -889,15 +880,9 @@ void ProcessSnd(BOOL bZero)
 		   if (bWrite) {
 		       // OPNについては不要か？必要か？
 		       if(applySem) {
-                SDL_SemWait(applySem);
-                samples = SndCalcSamples(pOpnBuf, ttime);
-                RenderOpnSub(ttime, samples * 2, bZero);
-
-//                samples = SndCalcSamples(pBeepBuf, ttime);
-                RenderBeepSub(ttime, samples * 2, bZero);
-//                samples = SndCalcSamples(pCMTBuf, ttime);
-                RenderCMTSub(ttime, samples * 2, bZero);
-                SDL_SemPost(applySem);
+			  SDL_SemWait(applySem);
+			  Render1(ttime, FALSE);
+			  SDL_SemPost(applySem);
 		       }
 		   }
 		   return;
