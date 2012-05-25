@@ -22,8 +22,8 @@ static int r_vol[3][4] = {
 
 static inline Sint16 _clamp(Sint32 b)
 {
-//    if(b < -32767) return -32767;
-//    if(b > 32767) return 32767;
+    if(b < -32767) return -32767;
+    if(b > 32767) return 32767;
     return (Sint16) b;
 }
 
@@ -36,8 +36,8 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     register Sint32       tmp1;
     v4hi   *l;
     v8hi *h;
-    register v8hi tmp2;
-    register v4hi tmp3;
+    v8hi tmp2;
+    v4hi tmp3;
     
 
     if (p == NULL) {

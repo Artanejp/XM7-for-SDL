@@ -252,11 +252,11 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 	if(!enable)  {
 	   if(channels == 1) {
 	        for(i = 0; i < ss2 ; i++){ 
-		   wbuf[i] = -level;
+		   wbuf[i] = 0;
 		}
 	   } else {
 	        for(i = 0; i < (ss2 * 2) ; i++){ 
-		   wbuf[i] = -level;
+		   wbuf[i] = 0;
 		}
 	   }
 	   
@@ -304,6 +304,8 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 				} else {
 					wbuf[i * 2] = -level;
 					wbuf[i * 2 + 1] = -level;
+//					wbuf[i * 2] = 0;
+//					wbuf[i * 2 + 1] = 0;
 				}
 			}
 			/*

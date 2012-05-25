@@ -48,8 +48,9 @@ struct WavPCMFmtDesc {
 	uint16_t Channels;
 	uint32_t SampleRate;
 	uint32_t Speed; // Bytes per second.
+        uint16_t BlkSize; // Blocks = channels * sizeof(Sint16)
 	uint16_t SampleBits;
-	uint16_t ExtraSize; // Extra Area
+	uint16_t ExtraSize; // Extra Area (NOT EXISTS on PCM ($0001)).
 	// End of Format Header
 } __attribute__ ((packed));
 

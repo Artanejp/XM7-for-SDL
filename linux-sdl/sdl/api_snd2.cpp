@@ -440,7 +440,6 @@ void OpenCaptureSnd(char *fname)
    	if(bWavCapture) {
 		CloseCaptureSnd();
 	}
-
 	WavDescCapture = StartWavWrite(fname, nSampleRate);
 	if(WavDescCapture == NULL) printf("Error opening WAV\n");
 	bWavCapture = TRUE;    /* WAVキャプチャ開始 */
@@ -802,6 +801,12 @@ static BOOL SndWavWrite(struct WavDesc *h, int channels)
    int x, y, z;
 
    wavbuf = pCaptureBuf->pBuf;
+   if(h == NULL) return FALSE;
+   if(!bWavCapture){
+	CloseCaptureSnd();
+        return FALSE;
+   }
+   
    if(wavbuf != NULL) {
       memset(wavbuf, 0x00, pCaptureBuf->nSize * channels * sizeof(Sint16));
       x = CopyChunk(pOpnBuf, wavbuf, 0);
@@ -891,7 +896,12 @@ void ProcessSnd(BOOL bZero)
 		 */
         if(bWavCapture){
             SndWavWrite(WavDescCapture, channels);
-        }
+        } //else {
+	   //if(bWavCaptureOld) {
+	//	CloseCaptureSnd();
+	//   }
+	//}
+	   
         bWavCaptureOld = bWavCapture;
         SetChunk(pOpnBuf ,  CH_SND_OPN);
         SetChunk(pBeepBuf , CH_SND_BEEP);

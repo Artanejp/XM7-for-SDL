@@ -49,6 +49,7 @@ struct WavDesc *StartWavWrite(char *path, uint32_t nSampleRate)
 	h->fmt.Channels = EndianChangeUint16(0x0002); // 2ch
 	h->fmt.SampleRate = EndianChangeUint32(nSampleRate); //
 	h->fmt.Speed = EndianChangeUint32(nSampleRate * 2 * sizeof(Sint16));
+	h->fmt.BlkSize = EndianChangeUint16(2 * sizeof(Sint16));
 	h->fmt.SampleBits = EndianChangeUint16(16);
 	h->fmt.ExtraSize = EndianChangeUint16(0);
 	// データ本体
@@ -67,7 +68,7 @@ success:
 err:
        if(w->file) {
 	   SDL_RWclose(w->file);
-//	   SDL_FreeRW(w->file);
+	   SDL_FreeRW(w->file);
 	}
         printf("ERR: Open file to write %s\n",path);
 	free(w);
@@ -104,21 +105,16 @@ BOOL EndWriteWavData(WavDesc *desc)
 		if(result != 1) goto err;
 #endif
        success:
-	        printf("DBG: Success Writing TotalSize = %08x DataSize = %08x.\n", desc->header.totalSize, desc->header.DataSize);
-	        if(desc->file) {
-		   SDL_RWclose(desc->file);
-//		   SDL_FreeRW(desc->file);
-		}
-//		desc->file->close(desc->file);
-		free(desc);
-		return TRUE;
+	   printf("DBG: Success Writing TotalSize = %08x DataSize = %08x.\n", desc->header.totalSize, desc->header.DataSize);
+	   SDL_RWclose(desc->file);
+//	   SDL_FreeRW(desc->file);
+	   free(desc);
+	   return TRUE;
 	err:
-	        if(desc->file) {
-		   SDL_RWclose(desc->file);
-//		   SDL_FreeRW(desc->file);
-		}
-//		free(desc);
-		return FALSE;
+	   SDL_RWclose(desc->file);
+//	   SDL_FreeRW(desc->file);
+	   free(desc);
+	   return FALSE;
 	}
 	// そもそもファイルポインタがないのだからFAILで返す
 	return FALSE;
@@ -132,10 +128,12 @@ int WriteWavDataSint16(struct WavDesc *desc, Sint16 *data, int size)
 	int s;
 	int result;
    
-        size = (size / 2 )*2; // align 4bytes(2words)
+        if(desc == NULL) return -1;
+	if(data == NULL) return -1;
+//        size = (size / 2 ) * 2; // align 4bytes(2words)
         s = size * sizeof(Sint16);
-        result = desc->file->write(desc->file, (void *)data, sizeof(Sint16), size);
-	if(result != size){
+        result = desc->file->write(desc->file, (void *)data, s, 1);
+	if(result != 1){
 		//SDL_RWclose(desc->file);
 	        printf("ERR: Writing WAV file.\n");
 		EndWriteWavData(desc);

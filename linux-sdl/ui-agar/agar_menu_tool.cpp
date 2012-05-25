@@ -317,11 +317,12 @@ static void OnWavCaptureSub(AG_Event *event)
     if (!bWavCapture) {
 		LockVM();
 		StopSnd();
-	    OpenCaptureSnd(sFilename);
+	        OpenCaptureSnd(sFilename);
 		PlaySnd();
 		ResetSch();
 		UnlockVM();
-    }
+    } 
+	
     p = strrchr(sFilename, '/');
     if (p != NULL) {
 	p[1] = '\0';
@@ -343,7 +344,7 @@ static void OnWavCapture(AG_Event *event)
 	 */
 	if(bWavCapture) {
 		LockVM();
-	        bWavCapture = FALSE;
+//	        bWavCapture = FALSE;
 		CloseCaptureSnd();
 		UnlockVM();
 		// ダイアログ表示入れる？
