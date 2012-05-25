@@ -624,7 +624,7 @@ static void SoundMenu(AG_NotebookTab *parent)
 		num = AG_NumericalNewInt(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Per Second") ,gettext("Sound Buffer"), &localconfig.nSoundBuffer);
 		AG_NumericalSetRangeInt(num, 30, 2000);
 		AG_NumericalSetIncrement(num, 10.0);
-		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Force Stereo"), &localconfig.bForceStereo);
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Force Stereo"), &localconfig.nStereoOut);
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("FDD Seek & Motor"), &localconfig.bFddSound);
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("CMT Monitor"), &localconfig.bTapeMon);
 	}
@@ -682,11 +682,11 @@ static void VolumeMenu(AG_NotebookTab *parent)
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_HFILL);
 	AG_WidgetSetSize(AGWIDGET(box), 320, 12);
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("PSG"));
-	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nPSGVolume, -35, 12);
+	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nPSGVolume, -40, 12);
 	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
 
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("FM"));
-	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nFMVolume, -35, 12);
+	slider = AG_SliderNewIntR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &localconfig.nFMVolume, -40, 12);
 	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, NULL);
 
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("BEEP"));

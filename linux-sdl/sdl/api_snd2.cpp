@@ -87,8 +87,8 @@ static BOOL		bMode; /* HQモード */
 static struct SndBufType *pOpnBuf;
 static struct SndBufType *pBeepBuf;
 static struct SndBufType *pCMTBuf;
-static struct SndBufType *pCaptureBuf;
-static struct  SndBufType *pSoundBuf;
+static Sint16 *pCaptureBuf;
+static Sint16 *pSoundBuf;
 
 /*
  * OPN内部変数
@@ -192,7 +192,8 @@ void InitSnd(void)
 	pOpnBuf = InitBufferDesc();
 	pBeepBuf = InitBufferDesc();
 	pCMTBuf = InitBufferDesc();
-	pCaptureBuf = InitBufferDesc();
+	pCaptureBuf = NULL;
+	pSoundBuf = NULL;
 }
 
 /*
@@ -230,9 +231,12 @@ void CleanSnd(void)
 	}
 
     bSndExit = TRUE;
-	DetachBufferDesc(pCaptureBuf);
-	pCaptureBuf = NULL;
-
+//	DetachBufferDesc(pCaptureBuf);
+	if(pCaptureBuf != NULL) {
+	   free(pCaptureBuf);
+	   pCaptureBuf = NULL;
+	}
+   
 	/*
 	 * ドライバの抹消(念の為)
 	 */
@@ -281,7 +285,15 @@ static void CloseSnd(void)
 		DetachBuffer(pBeepBuf);
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
-		DetachBuffer(pCaptureBuf);
+	        if(pCaptureBuf != NULL) {
+		   free(pCaptureBuf);
+		   pCaptureBuf = NULL;
+		}
+	        if(pSoundBuf != NULL) {
+		   free(pSoundBuf);
+		   pSoundBuf = NULL;
+		}
+	   
 		bSndEnable = FALSE;
 	}
 }
@@ -307,7 +319,7 @@ BOOL SelectSnd(void)
 	nWavVol = nWaveVolume;
 	uChanSep = uChSeparation;
 	uStereo = nStereoOut %4;
-
+        if(uStereo <= 0) uStereo = 1;
 	/*
 	 * もしもWAV取り込んでいたら、強制終了
 	 */
@@ -315,8 +327,8 @@ BOOL SelectSnd(void)
 		CloseCaptureSnd();
 	}
 	bWavCapture = FALSE;
-    bSndExit = FALSE;
-    bbZero   = FALSE;
+        bSndExit = FALSE;
+        bbZero   = FALSE;
 
 /*
  * バッファの初期化
@@ -324,6 +336,12 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
+        if(posix_memalign(&pCaptureBuf, 16, uBufSize * 2) < 0) return -1;
+        if(posix_memalign(&pSoundBuf, 16, uBufSize * 2) < 0) {
+	   free(pCaptureBuf);
+	   return -1;
+	}
+   
     //Mix_QuerySpec(&freq, &format, &channels);
     if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 4000)< 0) {
 //    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
@@ -340,7 +358,6 @@ BOOL SelectSnd(void)
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
 	SetupBuffer(pOpnBuf, members , TRUE, TRUE);
-	SetupBuffer(pCaptureBuf, members, TRUE, FALSE);
 //        nSndBank = 
 
 	/*
@@ -371,11 +388,20 @@ BOOL SelectSnd(void)
         }
 	}
 	if(DrvOPN) {
+	   int i;
 		DrvOPN->SetRate(uRate);
 		DrvOPN->Enable(TRUE);
 		DrvOPN->SetRenderVolume(OPN_STD, nFMVolume, nPSGVolume);
 		DrvOPN->SetRenderVolume(OPN_WHG, nFMVolume, nPSGVolume);
 		DrvOPN->SetRenderVolume(OPN_THG, nFMVolume, nPSGVolume);
+	        DrvOPN->SetReg(OPN_STD, 0x27, 0);
+	        DrvOPN->SetReg(OPN_WHG, 0x27, 0);
+	        DrvOPN->SetReg(OPN_THG, 0x27, 0);
+	        for(i = 0; i < 3; i++) nScale[i] = 0;
+	        opn_notify(0x27, 0);
+	        whg_notify(0x27, 0);
+	        thg_notify(0x27, 0);
+	        for(i = 0; i < 3 ; i++) DrvOPN->SetReg(i, opn_reg[i]);
 	}
 	if(DrvBeep) {
 		DrvBeep->SetRate(uRate);
@@ -399,8 +425,7 @@ void ApplySnd(void)
 	 * パラメータ一致チェック
 	 */
 	if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
-			(bMode == bFMHQmode) && (uStereo == nStereoOut)) {
-
+			(bMode == bFMHQmode) ) {
 		return;
 	}
 	SDL_SemWait(applySem);
@@ -425,9 +450,9 @@ void ApplySnd(void)
 	bBeepFlag = !bBeepFlag;
 	beep_notify();
 	tape_notify(!bTapeFlag);
-    opn_notify(0xff, 0);
-    thg_notify(0xff, 0);
-    whg_notify(0xff, 0);
+//    opn_notify(0xff, 0);
+//    thg_notify(0xff, 0);
+//    whg_notify(0xff, 0);
 
 }
 
@@ -471,21 +496,21 @@ void SetSoundVolume(void)
 	SDL_SemWait(applySem);
 	/* FM音源/PSGボリューム設定 */
 	if(DrvOPN) {
-			DrvOPN->SetRenderVolume(OPN_STD, nFMVolume, nPSGVolume);
-			DrvOPN->SetRenderVolume(OPN_WHG, nFMVolume, nPSGVolume);
-			DrvOPN->SetRenderVolume(OPN_THG, nFMVolume, nPSGVolume);
+			DrvOPN->SetRenderVolume(OPN_STD, nFMVol, nPSGVol);
+			DrvOPN->SetRenderVolume(OPN_WHG, nFMVol, nPSGVol);
+			DrvOPN->SetRenderVolume(OPN_THG, nFMVol, nPSGVol);
 	}
 
 	/* BEEP音/CMT音/各種効果音ボリューム設定 */
 	if(DrvBeep) {
-			DrvBeep->SetRenderVolume(nBeepVolume);
+			DrvBeep->SetRenderVolume(nBeepVol);
 	}
 	if(DrvCMT) {
-			DrvCMT->SetRenderVolume(nCMTVolume);
+			DrvCMT->SetRenderVolume(nCMTVol);
 	}
 	if(DrvWav) {
 		for(i = 0; i < 3; i++) {
-				DrvWav[i].SetRenderVolume(nWaveVolume);
+				DrvWav[i].SetRenderVolume(nWavVol);
 			}
 	}
 	if(DrvOPN) DrvOPN->SetLRVolume();
@@ -800,7 +825,7 @@ static BOOL SndWavWrite(struct WavDesc *h, int channels)
    Sint16 *wavbuf;
    int x, y, z;
 
-   wavbuf = pCaptureBuf->pBuf;
+   wavbuf = pCaptureBuf;
    if(h == NULL) return FALSE;
    if(!bWavCapture){
 	CloseCaptureSnd();
@@ -808,7 +833,7 @@ static BOOL SndWavWrite(struct WavDesc *h, int channels)
    }
    
    if(wavbuf != NULL) {
-      memset(wavbuf, 0x00, pCaptureBuf->nSize * channels * sizeof(Sint16));
+      memset(wavbuf, 0x00, uBufSize *  2);
       x = CopyChunk(pOpnBuf, wavbuf, 0);
       y = CopyChunk(pCMTBuf, wavbuf, 0);
       z = CopyChunk(pBeepBuf, wavbuf, 0);

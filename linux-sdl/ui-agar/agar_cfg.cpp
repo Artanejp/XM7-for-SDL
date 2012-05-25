@@ -260,7 +260,7 @@ void LoadCfg(void)
     }
 
     configdat.bTapeMon = LoadCfgBool("TapeMon", FALSE);
-    configdat.bForceStereo = LoadCfgInt("ForceStereoOutput", FALSE);
+
 
     configdat.iTotalVolume = LoadCfgInt("TotalVolume", SDL_MIX_MAXVOLUME - 1);
     if ((configdat.iTotalVolume < 0) || (configdat.iTotalVolume >= SDL_MIX_MAXVOLUME)) {
@@ -768,7 +768,6 @@ void ApplyCfg(void)
     nBeepFreq = configdat.nBeepFreq;
     bFMHQmode = configdat.bFMHQmode;
     nStereoOut = configdat.nStereoOut % 4;
-    bForceStereo = configdat.bForceStereo;
     bTapeMon = configdat.bTapeMon;
     tape_monitor = configdat.bTapeMon;
 

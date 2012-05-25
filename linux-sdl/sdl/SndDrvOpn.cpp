@@ -52,19 +52,27 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     
     for (j = 0; j < i; j += 8) {
         tmp2 = *h++;
-        tmp3.ss[0] =_clamp(tmp2.si[0]);
-        tmp3.ss[1] =_clamp(tmp2.si[1]);
-        tmp3.ss[2] =_clamp(tmp2.si[2]);
-        tmp3.ss[3] =_clamp(tmp2.si[3]);
-        tmp3.ss[4] =_clamp(tmp2.si[4]);
-        tmp3.ss[5] =_clamp(tmp2.si[5]);
-        tmp3.ss[6] =_clamp(tmp2.si[6]);
-        tmp3.ss[7] =_clamp(tmp2.si[7]);
+//        tmp3.ss[0] =_clamp(tmp2.si[0]);
+//        tmp3.ss[1] =_clamp(tmp2.si[1]);
+//        tmp3.ss[2] =_clamp(tmp2.si[2]);
+//        tmp3.ss[3] =_clamp(tmp2.si[3]);
+//        tmp3.ss[4] =_clamp(tmp2.si[4]);
+//        tmp3.ss[5] =_clamp(tmp2.si[5]);
+//        tmp3.ss[6] =_clamp(tmp2.si[6]);
+//        tmp3.ss[7] =_clamp(tmp2.si[7]);
+        tmp3.ss[0] = tmp2.si[0];
+        tmp3.ss[1] = tmp2.si[1];
+        tmp3.ss[2] = tmp2.si[2];
+        tmp3.ss[3] = tmp2.si[3];
+        tmp3.ss[4] = tmp2.si[4];
+        tmp3.ss[5] = tmp2.si[5];
+        tmp3.ss[6] = tmp2.si[6];
+        tmp3.ss[7] = tmp2.si[7];
         *l++ = tmp3;
    }
    p = (Sint32 *)h;
    t = (Sint16 *)l;
-   if(i >= size) return;
+   if(j >= size) return;
    for (j = 0; j < (size - i); j++) {
       tmp1 = *p++;
       *t++ = _clamp(tmp1);
@@ -149,6 +157,7 @@ SndDrvOpn::SndDrvOpn(void) {
 	// TODO Auto-generated constructor stub
 	int i;
 	uStereo = nStereoOut %4;
+        if(uStereo <= 0) uStereo = 1;
     channels = 2;
 	ms = nSoundBuffer;
     srate = nSampleRate;
@@ -210,7 +219,11 @@ void SndDrvOpn::SetRate(int ch, unsigned int clk, int rate, BOOL hq)
 
 void SndDrvOpn::SetRenderVolume(int level)
 {
-	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
+   int ch;
+   for(ch = 0; ch < 3; ch++) {
+	SetRenderVolume(ch, level, level);
+   }
+   
 }
 
 void SndDrvOpn::Enable(BOOL flag)
@@ -263,8 +276,8 @@ void SndDrvOpn::SetRenderVolume(int ch, int fm, int psg)
 	if((ch<0) || (ch>3)) return;
 	/* FM音源/PSGボリューム設定 */
 		if (pOPN != NULL) {
-			pOPN[ch].SetVolumeFM(fm );
-			pOPN[ch].SetVolumePSG(psg);
+			pOPN[ch].SetVolumeFM(fm * 2);
+			pOPN[ch].SetVolumePSG(psg * 2);
 		}
 		SetLRVolume();
 }
@@ -294,8 +307,8 @@ int *SndDrvOpn::GetRVolume(int num)
 void SndDrvOpn::Setup(int tick)
 {
 	UINT uChannels;
-
 	uStereo = nStereoOut %4;
+        if(uStereo <= 0) uStereo = 1;
 	uChannels = 2;
     channels = uChannels;
 	enable = FALSE;
@@ -350,7 +363,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 
 			/* ステレオ */
 			if (!whg_use && !thg_use) {
-			   pOPN[OPN_STD].Mix2((int32*)q, ss2, l_vol[OPN_STD][uStereo], r_vol[OPN_STD][uStereo]);
+			   pOPN[OPN_STD].Mix2((int32*)q, ss2, 16, 16);
 				if (fm7_ver == 1) { // PSG
 					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
 				}				

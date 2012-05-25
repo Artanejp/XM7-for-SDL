@@ -59,7 +59,6 @@ typedef struct {
 	int nBeepFreq;	/* BEEP周波数 */
 	BOOL bFMHQmode;	/* FM高品質合成 */
 	int nStereoOut;	/* 出力モード */
-	BOOL bForceStereo;	/* 強制ステレオ出力 */
 	BOOL bTapeMon;	/* テープ音モニタ */
 
 	XM7KeyCode KeyMap[256]; /* キーマップ */
