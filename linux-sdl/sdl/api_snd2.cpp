@@ -543,27 +543,6 @@ void StopSnd(void)
 }
 
 /*
- * samples分のレンダリング
- */
-static DWORD RenderOpnSub(DWORD ttime, int samples, BOOL bZero)
-{
-//   printf("SND:OPN@%d %d\n", ttime, samples);
-   return RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
-}
-
-
-static DWORD RenderBeepSub(DWORD ttime, int samples, BOOL bZero)
-{
-    return RenderSub(pBeepBuf, DrvBeep, ttime, samples, bZero);
-}
-
-
-static DWORD RenderCMTSub(DWORD ttime, int samples, BOOL bZero)
-{
-      return RenderSub(pCMTBuf, DrvCMT, ttime, samples, bZero);
-}
-
-/*
  * Rendering 1:
  * Normal Type
  */
@@ -583,10 +562,6 @@ static DWORD Render1(DWORD ttime, BOOL bZero)
    return n;
 }
 
-/*
- * Rendering 2:
- * Fill Type
- */
 
 /*
  * XXX Notify系関数…VM上の仮想デバイスに変化があったとき呼び出される
@@ -842,6 +817,23 @@ static BOOL SndWavWrite(struct WavDesc *h, int channels)
    return FALSE;
 }
 
+/*
+ * Rendering 2:
+ * Fill Type
+ */
+
+static BOOL SndFlush(DWORD ttime, DWORD ms, BOOL bZero)
+{
+   int chunksize;
+   BOOL r;
+   
+   chunksize = (ms * uRate * 2) / 1000;
+   r = SndFlushSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
+   r &= SndFlushSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize);
+   r &= SndFlushSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize);
+   return r;
+}
+
 
 /*
  * 1msごとにスケジューラから呼び出されるhook
@@ -890,24 +882,15 @@ void ProcessSnd(BOOL bZero)
 
 		// フラッシュする
         if(applySem) {
-//		printf("Output Called: @%08d bufsize=%d Rptr=%d Wptr=%d size=%d\n", time, pBeepBuf->nSize, pBeepBuf->nReadPTR, pBeepBuf->nWritePTR, chunksize );
             SDL_SemWait(applySem);
-            chunksize = (dwSndCount * uRate * 2) / 1000;
-	    FlushOpnSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
-            FlushBeepSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize);
-            FlushCMTSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize);
+	    SndFlush(ttime, dwSndCount, bZero);
 		/*
 		 * 演奏本体
 		 * 20110524 マルチスレッドにすると却って音飛びが悪くなるのでこれでいく。
 		 *          こちらの方がWAV取り込みに悪影響がでない（？？）
 		 */
-//	   SDL_LockAudio();
         if(bWavCapture){
             SndWavWrite(WavDescCapture, channels);
-//        } else {
-//            if(bWavCaptureOld) {
-//                CloseCaptureSnd();
-//            }
         }
         bWavCaptureOld = bWavCapture;
         SetChunk(pOpnBuf ,  CH_SND_OPN);

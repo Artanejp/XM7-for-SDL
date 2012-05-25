@@ -352,63 +352,21 @@ DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, B
 	return samples;
 }
 
-
-BOOL FlushCMTSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk)
+BOOL SndFlushSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk)
 {
-	int chunksize;
-
-        if(p == NULL) return FALSE;
-        if(drv == NULL) return FALSE;
-	if(maxchunk <= 0) return FALSE;
-	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
-        if(chunksize <= 0) return TRUE;
+   int chunksize;
+   
+   if(p == NULL) return FALSE;
+   if(drv == NULL) return FALSE;
+   if(maxchunk <= 0) return FALSE;
+   chunksize = maxchunk  - (p->nWritePTR % maxchunk);
+   if(chunksize <= 0) return TRUE;
 	/*
 	 * オーバーフロー対策込
 	 */
-      if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
+   if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
 	 return TRUE;
-      }
-   return FALSE;
-}
-
-/*
- * バッファを一定時間の所まで埋める
- * TRUE : 埋めた
- * FALSE : 埋める必要がなかった
- */
-BOOL FlushBeepSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk)
-{
-	int chunksize;
-        if(p == NULL) return FALSE;
-        if(drv == NULL) return FALSE;
-	if(maxchunk <= 0) return FALSE;
-
-	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
-        if(chunksize <= 0) return TRUE;
-	/*
-	 * オーバーフロー対策込
-	 */
-//        printf("SND:BEEP_FLUSH@%d %d\n", ttime, chunksize);
-      if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
-	 return TRUE;
-      }
-   return FALSE;
-}
-
-BOOL FlushOpnSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk)
-{
-        int chunksize;
-        int j;
-
-        if(p == NULL) return FALSE;
-        if(drv == NULL) return FALSE;
-	if(maxchunk <= 0) return FALSE;
-	chunksize = maxchunk  - (p->nWritePTR % maxchunk);
-        if(chunksize <= 0) return TRUE;
-//        printf("SND:OPN_FLUSH@%d %d\n", ttime, chunksize);
-      if(RenderSub(p, drv, ttime, chunksize, bZero) != 0) {
-	 return TRUE;
-      }
+   }
    return FALSE;
 }
 
