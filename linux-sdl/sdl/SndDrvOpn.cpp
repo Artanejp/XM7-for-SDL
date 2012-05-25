@@ -52,22 +52,22 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     
     for (j = 0; j < i; j += 8) {
         tmp2 = *h++;
-//        tmp3.ss[0] =_clamp(tmp2.si[0]);
-//        tmp3.ss[1] =_clamp(tmp2.si[1]);
-//        tmp3.ss[2] =_clamp(tmp2.si[2]);
-//        tmp3.ss[3] =_clamp(tmp2.si[3]);
-//        tmp3.ss[4] =_clamp(tmp2.si[4]);
-//        tmp3.ss[5] =_clamp(tmp2.si[5]);
-//        tmp3.ss[6] =_clamp(tmp2.si[6]);
-//        tmp3.ss[7] =_clamp(tmp2.si[7]);
-        tmp3.ss[0] = tmp2.si[0];
-        tmp3.ss[1] = tmp2.si[1];
-        tmp3.ss[2] = tmp2.si[2];
-        tmp3.ss[3] = tmp2.si[3];
-        tmp3.ss[4] = tmp2.si[4];
-        tmp3.ss[5] = tmp2.si[5];
-        tmp3.ss[6] = tmp2.si[6];
-        tmp3.ss[7] = tmp2.si[7];
+        tmp3.ss[0] =_clamp(tmp2.si[0]);
+        tmp3.ss[1] =_clamp(tmp2.si[1]);
+        tmp3.ss[2] =_clamp(tmp2.si[2]);
+        tmp3.ss[3] =_clamp(tmp2.si[3]);
+        tmp3.ss[4] =_clamp(tmp2.si[4]);
+        tmp3.ss[5] =_clamp(tmp2.si[5]);
+        tmp3.ss[6] =_clamp(tmp2.si[6]);
+        tmp3.ss[7] =_clamp(tmp2.si[7]);
+//        tmp3.ss[0] = tmp2.si[0];
+//        tmp3.ss[1] = tmp2.si[1];
+//        tmp3.ss[2] = tmp2.si[2];
+//        tmp3.ss[3] = tmp2.si[3];
+//        tmp3.ss[4] = tmp2.si[4];
+//        tmp3.ss[5] = tmp2.si[5];
+//        tmp3.ss[6] = tmp2.si[6];
+//        tmp3.ss[7] = tmp2.si[7];
         *l++ = tmp3;
    }
    p = (Sint32 *)h;
@@ -355,7 +355,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 
 	if(enable) {
 		if(bZero) {
-			memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
+			//memset(q, 0x00, sizeof(DWORD) * ss2 * channels);
 			SDL_SemPost(RenderSem);
 		        RenderCounter += ss2;
 			return ss2;
@@ -424,7 +424,7 @@ int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOO
 
         r = Render32(pBuf32, start, sSamples, clear, bZero);
 //	if(r > 0) Copy32(pBuf32, pBuf, start, r);
-	Copy32(pBuf32, pBuf, start, sSamples);
+	Copy32(pBuf32, pBuf, start, r);
 	return r;
 }
 
@@ -441,8 +441,8 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 	p = &(p[ofset * channels]);
 	q = (WORD *)dst;
 	q = &(q[ofset * channels]);
-//	if(ofset <= 0){
-//		memset(dst, 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000);
+//	if(ofset == 0){
+//		memset(q, 0x00, RenderCounter * channels * sizeof(Sint16));
 //	}
 
 //	memset(q, 0x00 , samples * channels * sizeof(Sint16));
