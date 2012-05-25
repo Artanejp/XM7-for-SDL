@@ -1,0 +1,127 @@
+###
+###	FM-7 EMULATOR "XM7"
+###
+###	Copyright (C) 2004 GIMONS
+###	Copyright (C) 2010 K.Ohta
+###	[ Makefile GTK For SDL]
+XM7_VER		= 3
+include ../config.mak
+
+	
+VIDEODRVSRC = \
+	api_draw.cpp \
+	draw_thread.cpp \
+	api_vram8.cpp \
+	api_vram4096.cpp \
+	api_vram256k.cpp \
+	api_vramvec.c 	
+
+SNDDRVSRC = \
+	api_snd2.cpp api_wavwriter.cpp  \
+	snd_buffer.cpp \
+	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
+
+INPUTSRC = \
+	api_kbd.cpp api_js.cpp api_mouse.cpp \
+	SDLKbdInterface.cpp \
+	SDLJoyInterface.cpp \
+	KbdInterface.cpp 
+
+UISRC = 
+
+LOCALSRC = \
+	sdl_cpuid.c \
+	sdl_inifile.c \
+        sdl_file.c \
+	$(VIDEODRVSRC) \
+	$(SNDDRVSRC) $(INPUTSRC) \
+	$(UISRC)
+
+
+
+.SUFFIXES: .c .cpp .asm .o
+
+SRCS =	${COMMONSRC} ${LOCALSRC}
+CSRCS =	$(filter %.c, $(SRCS))
+CXXSRCS = $(filter %.cpp, $(SRCS))
+
+OBJS = $(patsubst %.c,%.o,$(CSRCS))
+OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
+OBJS_RELEASE = $(addprefix Release/, $(OBJS))
+OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
+
+
+LIBS += -L$(PREFIX)/lib
+
+#LIBS += `pkg-config --libs sdl`
+LIBS += `$(PREFIX)/bin/sdl-config --libs`
+LIBS +=   -lSDL_mixer -lSDL_ttf
+#LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
+
+
+#LIBS += -lGL -lGLU -lpthread
+LIBS += -lopengl32 -lpthread
+#LIBS += -lGLU -lpthread libGL.so.1
+LIBS += -lpng -lfreetype
+#LIBS += -lgomp
+
+
+## Uncomment below if you *not* wish static-link agar.
+#LIBS += `agar-config --libs`
+
+## Uncomment below if you wish static-link agar.
+LIBS += $(PREFIX)/lib/libag_gui.a $(PREFIX)/lib/libag_core.a $(PREFIX)/lib/libag_dev.a 
+
+#LIBS_RELEASE = ../libemugrph/Release/libemugrph.a
+LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
+LIBS_RELEASE += ../vm/Release/libxm7_vm.a
+LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a
+LIBS_RELEASE += ../fmgen/Release/libfmgen007a.a
+
+
+#LIBS_DEBUG = ../libemugrph/Debug/libemugrph.a
+LIBS_DEBUG += ../ui-agar/Debug/libui-agar.a
+LIBS_DEBUG += ../vm/Debug/libxm7_vm.a
+LIBS_DEBUG += ../xm7-debugger/Debug/libxm7_debug.a
+LIBS_DEBUG += ../fmgen/Debug/libfmgen007a.a
+
+
+all:	xm7.exe xm7.debug.exe
+
+xm7.exe: ${OBJS_RELEASE} ${LIBS_RELEASE}
+	$(CXX) ${LDFLAGS} -o xm7.exe $^ ${LIBS} ${LIBS_RELEASE}
+	strip xm7.exe
+
+xm7.debug.exe: ${OBJS_DEBUG} ${LIBS_DEBUG}
+	$(CXX) -pg -g ${LDFLAGS} -o xm7.debug.exe $^ ${LIBS} ${LIBS_DEBUG}
+
+Release/%.o: %.c
+	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
+
+Release/%.o: %.cpp
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
+
+Debug/%.o: %.c
+	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
+
+Debug/%.o: %.cpp
+	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
+
+
+
+
+.asm.o:
+	nasm ${ASFLAGS} $<
+
+install: all
+	$(INSTALL)  -d $(SHAREDIR)
+	$(INSTALL) ./xm7 $(PREFIX)/bin
+	$(INSTALL) -m 0644 *.ui $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
+#	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)
+
+.PHONY: clean
+clean:
+	rm -f xm7.debug.exe xm7.exe *.o *~ Debug/*.o Release/*.o
+
