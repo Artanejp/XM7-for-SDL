@@ -28,7 +28,7 @@ ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
 OPTION		= -DMOUSE -DMR2 -DFDDSND
 #OPTION		= -DMOUSE -DMR2
 OPTION		+= -DUSE_AGAR
-
+#OPTION		+= -D_WINDOWS
 
 ifndef BIG_ENDIAN
 OPTION		+= -D_M_IX86
