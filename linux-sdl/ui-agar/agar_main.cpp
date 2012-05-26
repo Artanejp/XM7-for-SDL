@@ -10,6 +10,9 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include <locale.h>
+#include <libintl.h>
+
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
@@ -203,7 +206,11 @@ int main(int argc, char *argv[])
         if(opendir(ModuleDir) == NULL) {
                 mkdir(ModuleDir, 0777);
         }
-
+        /* Gettext */
+        setlocale(LC_ALL, "");           
+        bindtextdomain("messages", RSSDIR);
+        textdomain("messages");          
+   
         //SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
 
 #if ((XM7_VER <= 2) && defined(FMTV151))

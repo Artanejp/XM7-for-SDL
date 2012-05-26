@@ -30,6 +30,14 @@
 //#include <SDL.h>
 //#endif				/*  */
 
+/* Gettext */
+#include <libintl.h>
+
+#define _(String) gettext(String)
+#define N_(String) gettext_noop(String)
+#define gettext_noop(String) (String)
+
+
 /* デフォルトフォントが設定されてないときはフォントとしてIPAゴシックを使う */
 #ifndef FONTPATH
 
