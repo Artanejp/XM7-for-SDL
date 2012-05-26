@@ -45,12 +45,17 @@ void InitGL(int w, int h)
         return;
     }
     SDL_SemWait(DrawInitSem);
-    if(AG_UsingGL(NULL)) {
+#ifdef USE_OPENGL
+   if(AG_UsingGL(NULL)) {
         InitGL_AG2(w, h);
     } else {
         InitNonGL(w, h);
 //        AG_ResizeDisplay(w, h);
     }
+#else
+        InitNonGL(w, h);
+        AG_ResizeDisplay(w, h);
+#endif   
     SDL_SemPost(DrawInitSem);
 }
 
@@ -126,13 +131,6 @@ void ResizeWindow_Agar(int w, int h)
         AG_WidgetSizeReq(AGWIDGET(win), &r);
         hh = h;
         ww = w;
-//        if(pStatusBar) {
-//            hh = hh  - pStatusBar->wid.h;
-//        }
-//        if(MenuBar){
-//            hh = hh - MenuBar->wid.h;
-//            AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
-//        }
 	    a.x = 0;
 	    a.y = 0;
 	    a.w = ww;
@@ -154,14 +152,16 @@ void ResizeWindow_Agar(int w, int h)
            AG_Redraw(AGWIDGET(MainWindow));
        }
 	}
-	if(GLDrawArea != NULL) {
+#ifdef USE_OPENGL
+      if(GLDrawArea != NULL) {
 	    hh = h;
 	    ww = w;
 
         AG_GLViewSizeHint(GLDrawArea, w, h);
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
 	}
-	if(MenuBar) {
+#endif /* USE_OPENGL */
+      if(MenuBar) {
         AG_ObjectLock(AGOBJECT(drv));
 		AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
         AG_WidgetEnable(AGWIDGET(MenuBar));
@@ -179,9 +179,11 @@ void ResizeWindow_Agar(int w, int h)
           ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
 	  hh = hh + pStatusBar->wid.h;
        }
+#ifdef USE_OPENGL   
 	if(AG_UsingGL(NULL)) {
 	   AG_ResizeDisplay(ww, hh);
 	}
+#endif /* USE_OPENGL */   
     printf("Resize to %d x %d\n", w, hh );
 //    AG_Redraw(AGWIDGET(MenuBar));
 }
@@ -230,7 +232,9 @@ void ResizeWindow_Agar2(int w, int h)
            AG_Redraw(AGWIDGET(MainWindow));
        }
 	}
-	if(GLDrawArea != NULL) {
+   
+#ifdef USE_OPENGL   
+   if(GLDrawArea != NULL) {
         AG_SizeReq r;
 
         hh = h - (STAT_HEIGHT * h * 2) / 800;
@@ -256,9 +260,25 @@ void ResizeWindow_Agar2(int w, int h)
         AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
 	}
- 	nDrawWidth = w;
+	nDrawWidth = w;
 	nDrawHeight = hh;
-    printf("Resize2 to %d x %d\n", w, h);
+#else
+   {
+        if(pStatusBar != NULL) {
+	   int hhh;
+	   hhh = hh + AGWIDGET(pStatusBar)->h;
+	   AG_ResizeDisplay(ww, hhh);
+	} else {
+	   AG_ResizeDisplay(ww, hh);
+	}
+      
+      
+   }
+   nDrawWidth = w;
+   nDrawHeight = hh;
+  
+#endif /* USE_OPENGL */   
+     printf("Resize2 to %d x %d\n", w, h);
 }
 
 

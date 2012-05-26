@@ -375,9 +375,9 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 	}
 }
 
-
-extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 static float fBright0;
+#ifdef USE_OPENGL
+extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 static void OnChangeBright(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
@@ -386,7 +386,7 @@ static void OnChangeBright(AG_Event *event)
         SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
    
 }
-
+#endif /* USE_OPENGL */
 
 static void ConfigMenuBright(AG_NotebookTab *parent)
 {
@@ -397,8 +397,9 @@ static void ConfigMenuBright(AG_NotebookTab *parent)
 
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("Bright"));
 	slider = AG_SliderNewFltR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &fBright0, 0.0f, 1.0f);
+#ifdef USE_OPENGL
 	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeBright, NULL);
-
+#endif /* USE_OPENGL */
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_HFILL);
 
 }
@@ -432,8 +433,10 @@ void OnConfigEmulationMenu(AG_Event *event)
 
     	tab = AG_NotebookAddTab(note, gettext("Screen"), AG_BOX_HORIZ);
     	OnConfigMenuScreen(tab);
+#ifdef USE_OPENGL
     	tab = AG_NotebookAddTab(note, gettext("Display"), AG_BOX_HORIZ);
     	ConfigMenuBright(tab);
+#endif /* USE_OPENGL */
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
     AG_WidgetSetSize(AGWIDGET(box), 320, 24);

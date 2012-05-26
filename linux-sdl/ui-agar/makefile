@@ -11,11 +11,15 @@ include ../config.mak
 #CFLAGS += -I../xm7-sdl/
 
 VIDEODRVSRC = \
-	agar_draw.cpp agar_gldraw2.cpp \
-	agar_glutil.cpp \
+	agar_draw.cpp  \
 	agar_sdlview.c \
 	agar_sdlscaler.cpp \
-#	agar_sdlscaler_sse.cpp
+
+ifdef USE_OPENGL
+VIDEODRVSRC += \
+        agar_gldraw2.cpp \
+	agar_glutil.cpp
+endif
 
 INPUTSRC = \
 	AgarKbdInterface.cpp \

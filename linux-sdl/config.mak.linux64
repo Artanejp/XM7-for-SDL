@@ -4,14 +4,39 @@
 ###	Copyright (C) 2004 GIMONS
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile GTK For SDL]
+
+#################### Build flags ############################
+# Uncomment if using OpenGL
+USE_OPENGL      = Yes
+
+# Uncomment if using OpenMP
+USE_OPENMP      = Yes
+
+# Uncomment if BIG-ENDIAN
+#BIG_ENDIAN      = Yes
+
+# Uncomment if cross-build
+#CROSS_BUILD    = Yes
+
+# SET Arch specified
+#ARCH_FLAGS       = -mmmx -msse -msse2
+ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
+
+################### VARIABLES ################################
 #XM7_VER		= 3
 #OPTION		= -DMOUSE -DMR2 -DFDDSND -DMEMWATCH
 OPTION		= -DMOUSE -DMR2 -DFDDSND
-OPTION          += -DUSE_OPENGL
 #OPTION		= -DMOUSE -DMR2
 OPTION		+= -DUSE_AGAR
-# IF SET Little endian
+
+
+ifndef BIG_ENDIAN
 OPTION		+= -D_M_IX86
+endif
+
+ifdef USE_OPENGL
+OPTION          += -DUSE_OPENGL
+endif
 
 INSTALL          = install -c 
 PREFIX           = /usr/local
@@ -55,8 +80,11 @@ CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
 CFLAGS += `sdl-config --cflags`
 #CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`
+
 # OpenMP
+ifdef USE_OPENMP
 CFLAGS += -fopenmp
+endif
 
 CFLAGS_DEBUG = -pg -g -O0 
 CFLAGS_DEBUG += $(CFLAGS)
@@ -78,18 +106,16 @@ CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -pthread
 
 # Architecture Depend Flag
-CFLAGS_RELEASE += -msse -msse2 -mmmx
-CXXFLAGS_RELEASE += -msse -msse2 -mmmx
 
-CFLAGS_RELEASE += -march=amdfam10
+CFLAGS_RELEASE += $(ARCH_FLAGS)
 CFLAGS_RELEASE += -minline-all-stringops
 
-CXXFLAGS_RELEASE += -march=amdfam10
+CXXFLAGS_RELEASE += $(ARCH_FLAGS)
 CXXFLAGS_RELEASE += -minline-all-stringops 
 
 # Faster below
-CFLAGS_DEBUG += -msse -msse2 -mmmx
-CXXFLAGS_DEBUG += -msse -msse2 -mmmx
+CFLAGS_DEBUG += $(ARCH_FLAGS)
+CXXFLAGS_DEBUG += $(ARCH_FLAGS)
 
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN

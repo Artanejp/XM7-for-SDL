@@ -108,11 +108,17 @@ void AGDrawTaskEvent(BOOL flag)
 	Uint32 oldfps = nDrawFPS;
 
     if(nDrawFPS > 2) {
-        if(DrawArea != NULL) {
+#ifdef USE_OPENGL
+       if(DrawArea != NULL) {
             AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
         } else if(GLDrawArea != NULL){
             AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
         }
+#else
+        if(DrawArea != NULL) {
+            AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+        }
+#endif
     }
 
 	for(;;) {
@@ -123,11 +129,17 @@ void AGDrawTaskEvent(BOOL flag)
 		}
         if(oldfps != nDrawFPS){ // FPS Change 20120120
                 oldfps = nDrawFPS;
-                if(DrawArea != NULL) {
+ #ifdef USE_OPENGL
+	   if(DrawArea != NULL) {
                     AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
                 } else if(GLDrawArea != NULL){
                     AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
                 }
+#else
+	   if(DrawArea != NULL) {
+                    AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+                }
+#endif
         }
 		nDrawTick2D = AG_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
@@ -326,8 +338,13 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 //    SDL_Init(SDL_INIT_VIDEO);
 
     if(drivers == NULL)  {
-    	AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
+#ifdef USE_OPENGL 
+		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
     			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
+#else
+       		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
+    			AG_VIDEO_RESIZABLE );
+#endif
     } else {
         if (AG_InitGraphics(drivers) == -1) {
                 fprintf(stderr, "%s\n", AG_GetError());
@@ -416,9 +433,10 @@ void InitInstance(void)
 	AG_Window *win;
 //	AG_Driver *drv;
 
-
+#ifdef USE_OPENGL
     GLDrawArea = NULL;
-    DrawArea = NULL;
+#endif /* USE_OPENGL */
+   DrawArea = NULL;
 
 	InitFont();
 
@@ -443,7 +461,7 @@ void InitInstance(void)
 
 	AG_WindowShow(MainWindow);
 	AG_WindowFocus(MainWindow);
-
+#if USE_OPENGL
     if(AG_UsingGL(NULL) != 0) {
           /*
          * OpenGL Capability
@@ -462,7 +480,9 @@ void InitInstance(void)
 		DrawArea = NULL;
 	    AG_WidgetShow(GLDrawArea);
 	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
-    } else {
+    } else 
+#endif /* USE_OPENGL */
+     {
         // Non-GL
 //        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
@@ -473,7 +493,9 @@ void InitInstance(void)
        
         AG_WidgetSetSize(DrawArea, 640, 400);
         bUseOpenGL = FALSE;
+#ifdef USE_OPENGL
         GLDrawArea = NULL;
+#endif /* USE_OPENGL */
         AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);

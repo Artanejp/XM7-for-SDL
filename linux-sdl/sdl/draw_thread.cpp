@@ -39,9 +39,12 @@
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #include "agar_draw.h"
+#ifdef USE_OPENGL
 #include "agar_gldraw.h"
+#endif /* USE_OPENGL */
 #include "agar_glutil.h"
-#endif
+#endif /* USE_AGAR */
+
 #include "sdl.h"
 
 #include "api_vram.h"
@@ -161,13 +164,22 @@ BOOL SelectDraw2(void)
 		}
 #ifdef USE_AGAR
 //		if(agDriverOps == NULL) return FALSE;
-        if(GLDrawArea != NULL) {
+#ifdef USE_OPENGL
+               if(GLDrawArea != NULL) {
 		   wid = AGWIDGET(GLDrawArea);
 		} else if(DrawArea != NULL) {
 		   wid = AGWIDGET(DrawArea);
 		} else {
 		   return FALSE;
 		}
+#else
+                if(DrawArea != NULL) {
+		   wid = AGWIDGET(DrawArea);
+		} else {
+		   return FALSE;
+		}
+   
+#endif /* USE_OPENGL */
 #else
 		p = SDL_GetVideoSurface();
 		if(p == NULL) return FALSE;
@@ -176,8 +188,10 @@ BOOL SelectDraw2(void)
 		rect.x = 0;
 		rect.y = 0;
 #endif
+#ifdef USE_OPENGL
 		if(!bUseOpenGL) {
-			/*
+#endif /* USE_OPENGL */
+		   /*
 			 * すべてクリア
 			 */
 #ifndef USE_AGAR
@@ -204,8 +218,10 @@ BOOL SelectDraw2(void)
 				SDL_FillRect(realDrawArea, &rect, nullcolor);
 				SDL_UnlockSurface(realDrawArea);
 			}
-#endif
+#endif /* USE_AGAR */
+#ifdef USE_OPENGL
 		}
+#endif /* USE_OPENGL */
 		bOldFullScan = bFullScan;
 		/*
 		 * セレクト

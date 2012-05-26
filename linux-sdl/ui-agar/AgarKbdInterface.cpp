@@ -311,7 +311,9 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
 }
 
 extern AG_Menu *MenuBar;
+#ifdef USE_OPENGL
 extern AG_GLView *GLDrawArea;
+#endif /* USE_OPENGL */
 extern XM7_SDLView *DrawArea;
 
 void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
@@ -382,11 +384,18 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
     {
         if(MenuBar != NULL) {
             if(AG_WidgetIsFocused(MenuBar)) {
-                if(GLDrawArea != NULL) {
+#ifdef USE_OPENGL
+	       if(GLDrawArea != NULL) {
                     AG_WidgetFocus(GLDrawArea);
                 } else if(DrawArea != NULL) {
                     AG_WidgetFocus(DrawArea);
                 }
+#else /* USE_OPENGL */
+	       if(DrawArea != NULL) {
+                    AG_WidgetFocus(DrawArea);
+                }
+	       
+#endif /* USE_OPENGL */
             } else {
                 AG_WidgetFocus(AGWIDGET(MenuBar));
             }

@@ -39,8 +39,11 @@
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #include "agar_draw.h"
-#include "agar_gldraw.h"
-#endif
+#ifdef USE_OPENGL
+  #include "agar_gldraw.h"
+#endif /* USE_OPENGL */
+#endif /* USE_AGAR */
+
 #include "sdl.h"
 
 #include "api_vram.h"
@@ -126,8 +129,9 @@ BOOL newResize;
 
 extern Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
+#ifdef USE_OPENGL
 extern GLuint uVramTextureID;
-
+#endif /* USE_OPENGL */
 
 
 /*
@@ -403,8 +407,10 @@ void	InitDraw(void)
 		/*
 		 *  VRAMテクスチャ生成
 		 */
-		 uVramTextureID = 0;
-//		 initvramtbl_8_vec();
+#ifdef USE_OPENGL
+                 uVramTextureID = 0;
+#endif /* USE_OPENGL */
+   //		 initvramtbl_8_vec();
 		 initvramtbl_4096_vec();
 }
 
@@ -610,17 +616,6 @@ BOOL SelectDraw(void)
 	AG_Rect rect;
 	AG_Widget *w;
 
-//    if(DrawArea != NULL) {
-//        drv = AGWIDGET(DrawArea)->drv;
-//        if(drv == NULL) return FALSE;
-//        w = AGWIDGET(DrawArea);
-//    } else if(GLDrawArea != NULL) {
-//        drv = AGWIDGET(GLDrawArea)->drv;
-//        if(drv == NULL) return FALSE;
-//        w = AGWIDGET(GLDrawArea);
-//    } else {
-//        return FALSE;
-//    }
 #else
 	SDL_Surface *p;
 	Uint32 nullcolor;
@@ -751,7 +746,8 @@ void AllClear(void)
         SDLDrawFlag.ForcaReDraw = TRUE;
         SDLDrawFlag.Drawn = TRUE;    }
 #ifdef USE_AGAR
-    if(DrawArea != NULL) {
+#ifdef USE_OPENGL
+   if(DrawArea != NULL) {
         drv = AGWIDGET(DrawArea)->drv;
         if(drv == NULL) return;
         w = AGWIDGET(DrawArea);
@@ -762,6 +758,16 @@ void AllClear(void)
     } else {
         return;
     }
+#else /* USE_OPENGL */
+   if(DrawArea != NULL) {
+        drv = AGWIDGET(DrawArea)->drv;
+        if(drv == NULL) return;
+        w = AGWIDGET(DrawArea);
+    } else {
+        return;
+    }
+   
+#endif /* USE_OPENGL */
 #else
 	p = SDL_GetVideoSurface();
 	if(p == NULL) return;
@@ -835,7 +841,9 @@ void RenderFullScan(void)
 	AG_Driver *drv;
 	AG_Surface *s;
 	AG_Widget *w;
-    if(DrawArea != NULL) {
+
+#ifdef USE_OPENGL
+   if(DrawArea != NULL) {
         drv = AGWIDGET(DrawArea)->drv;
         if(drv == NULL) return;
         w = AGWIDGET(DrawArea);
@@ -846,30 +854,33 @@ void RenderFullScan(void)
     } else {
         return;
     }
-
-	return;
-	if(agDriverOps == NULL) return;
-	if(DrawArea == NULL) return;
-	drv = AGWIDGET(DrawArea)->drv;
-	if(drv == NULL) return;
-	s = drv->sRef;
-#else
+#else /* USE_OPENGL */
+   if(DrawArea != NULL) {
+        drv = AGWIDGET(DrawArea)->drv;
+        if(drv == NULL) return;
+        w = AGWIDGET(DrawArea);
+    } else {
+        return;
+    }
+   
+#endif /* USE_OPENGL */   
+#else /* USE_AGAR */
 	SDL_Surface *s = SDL_GetVideoSurface();
 	Uint32 nullcolor;
-#endif
-	if(bUseOpenGL) {
-#ifdef USE_AGAR
-#endif
+#endif /* USE_AGAR */
+#ifdef USE_OPENGL
+     if(bUseOpenGL) {
 		return;
 	}
+#endif /* USE_OPENGL */   
 	if(s == NULL) {
-#ifdef USE_AGAR
-#endif
 		return;
 	}
 
+#ifdef USE_OPENGL
 	if(!bUseOpenGL) {
-#ifdef USE_AGAR
+#endif /* USE_OPENGL */
+# ifdef USE_AGAR
 		AG_ObjectLock(w);
 #else
 		SDL_LockSurface(s);
@@ -896,7 +907,9 @@ void RenderFullScan(void)
 		SDL_UnlockSurface(s);
 #endif
 //		SDL_UpdateRect(s, 0, 0, s->w, s->h);
-	}
+#ifdef USE_OPENGL
+	   }
+#endif /* USE_OPENGL */
 	Flip();
 }
 
