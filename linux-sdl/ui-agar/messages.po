@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-26 21:15+0900\n"
+"POT-Creation-Date: 2012-05-26 22:10+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,6 +65,38 @@ msgstr ""
 
 #: agar_gui_menu.cpp:137
 msgid "Quit"
+msgstr ""
+
+#: agar_gui_menu.cpp:149
+msgid "File"
+msgstr ""
+
+#: agar_gui_menu.cpp:152
+msgid "Drive 1"
+msgstr ""
+
+#: agar_gui_menu.cpp:155
+msgid "Drive 0"
+msgstr ""
+
+#: agar_gui_menu.cpp:158
+msgid "Tape"
+msgstr ""
+
+#: agar_gui_menu.cpp:161
+msgid "Debug"
+msgstr ""
+
+#: agar_gui_menu.cpp:164
+msgid "Tools"
+msgstr ""
+
+#: agar_gui_menu.cpp:166
+msgid "Help"
+msgstr ""
+
+#: agar_gui_menu.cpp:167
+msgid "About"
 msgstr ""
 
 #: agar_gui_pref.cpp:157
@@ -301,9 +333,50 @@ msgstr ""
 msgid "About XM7"
 msgstr ""
 
+#: agar_menu_debug.cpp:206
+msgid "Dump Main memory"
+msgstr ""
+
+#: agar_menu_debug.cpp:211
+msgid "Dump Sub memory"
+msgstr ""
+
+#: agar_menu_debug.cpp:218 agar_menu_debug.cpp:300
+msgid "Addr"
+msgstr ""
+
+#: agar_menu_debug.cpp:222 agar_menu_debug.cpp:304 agar_menu_debug.cpp:381
+#: agar_menu_debug.cpp:455 agar_menu_debug.cpp:533
+msgid "Poll"
+msgstr ""
+
 #: agar_menu_debug.cpp:241 agar_menu_debug.cpp:318 agar_menu_debug.cpp:393
 #: agar_menu_debug.cpp:467 agar_menu_debug.cpp:545
 msgid "Close"
+msgstr ""
+
+#: agar_menu_debug.cpp:290
+msgid "Disasm Main memory"
+msgstr ""
+
+#: agar_menu_debug.cpp:294
+msgid "Disasm Sub memory"
+msgstr ""
+
+#: agar_menu_debug.cpp:365
+msgid "Main CPU Registers"
+msgstr ""
+
+#: agar_menu_debug.cpp:371
+msgid "Sub CPU Registers"
+msgstr ""
+
+#: agar_menu_debug.cpp:454
+msgid "FDC Registers"
+msgstr ""
+
+#: agar_menu_debug.cpp:532
+msgid "MMR Bank-map"
 msgstr ""
 
 #: agar_menu_debug.cpp:559

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: xm 7-sdl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-26 21:15+0900\n"
+"POT-Creation-Date: 2012-05-26 22:10+0900\n"
 "PO-Revision-Date: 2012-05-26 21:18+0900\n"
 "Last-Translator:  <whatisthis.sowhat@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -66,6 +66,39 @@ msgstr "ホットリセット"
 #: agar_gui_menu.cpp:137
 msgid "Quit"
 msgstr "終了"
+
+#: agar_gui_menu.cpp:149
+msgid "File"
+msgstr "ファイル"
+
+#: agar_gui_menu.cpp:152
+msgid "Drive 1"
+msgstr "1:"
+
+#: agar_gui_menu.cpp:155
+msgid "Drive 0"
+msgstr "0:"
+
+#: agar_gui_menu.cpp:158
+msgid "Tape"
+msgstr "テープ"
+
+#: agar_gui_menu.cpp:161
+msgid "Debug"
+msgstr "デバッガ"
+
+#: agar_gui_menu.cpp:164
+msgid "Tools"
+msgstr "ツール"
+
+#: agar_gui_menu.cpp:166
+msgid "Help"
+msgstr "ヘルプ"
+
+#: agar_gui_menu.cpp:167
+#, fuzzy
+msgid "About"
+msgstr "XM7について"
 
 #: agar_gui_pref.cpp:157
 msgid "Emulation Type"
@@ -301,10 +334,57 @@ msgstr "XM7/SDLについて"
 msgid "About XM7"
 msgstr "XM7について"
 
+#: agar_menu_debug.cpp:206
+#, fuzzy
+msgid "Dump Main memory"
+msgstr "メインメモリのダンプ"
+
+#: agar_menu_debug.cpp:211
+#, fuzzy
+msgid "Dump Sub memory"
+msgstr "サブメモリのダンプ"
+
+#: agar_menu_debug.cpp:218 agar_menu_debug.cpp:300
+msgid "Addr"
+msgstr ""
+
+#: agar_menu_debug.cpp:222 agar_menu_debug.cpp:304 agar_menu_debug.cpp:381
+#: agar_menu_debug.cpp:455 agar_menu_debug.cpp:533
+msgid "Poll"
+msgstr ""
+
 #: agar_menu_debug.cpp:241 agar_menu_debug.cpp:318 agar_menu_debug.cpp:393
 #: agar_menu_debug.cpp:467 agar_menu_debug.cpp:545
 msgid "Close"
 msgstr "閉じる"
+
+#: agar_menu_debug.cpp:290
+#, fuzzy
+msgid "Disasm Main memory"
+msgstr "メインメモリの逆アセンブル"
+
+#: agar_menu_debug.cpp:294
+#, fuzzy
+msgid "Disasm Sub memory"
+msgstr "サブメモリの逆アセンブル"
+
+#: agar_menu_debug.cpp:365
+#, fuzzy
+msgid "Main CPU Registers"
+msgstr "メイン MMR"
+
+#: agar_menu_debug.cpp:371
+msgid "Sub CPU Registers"
+msgstr "サブMPUレジスタ"
+
+#: agar_menu_debug.cpp:454
+#, fuzzy
+msgid "FDC Registers"
+msgstr "FDCレジスタ"
+
+#: agar_menu_debug.cpp:532
+msgid "MMR Bank-map"
+msgstr "MMRバンク"
 
 #: agar_menu_debug.cpp:559
 msgid "Pause"

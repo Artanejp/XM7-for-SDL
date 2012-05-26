@@ -203,23 +203,23 @@ static void CreateDump(AG_Event *event)
     case MEM_MAIN:
             readFunc = rb_main;
             writeFunc = mainmem_writeb;
-            AG_WindowSetCaption(w, "Dump Main memory");
+            AG_WindowSetCaption(w, gettext("Dump Main memory"));
             break;
     case MEM_SUB:
             readFunc = rb_sub;
             writeFunc = submem_writeb;
-            AG_WindowSetCaption(w, "Dump Sub memory");
+            AG_WindowSetCaption(w, gettext("Dump Sub memory"));
             break;
     default:
             readFunc = NULL;
             writeFunc = NULL;
             break;
     }
-    addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "Addr");
+    addrVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Addr"));
     AG_TextboxSizeHint(addrVar, "XXXXXX");
     AG_TextboxPrintf(addrVar, "%04x", 0x0000);
 
-   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Poll"));
     AG_TextboxSizeHint(pollVar, "XXXXXX");
     AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 
@@ -287,21 +287,21 @@ static void CreateDisasm(AG_Event *event)
     switch(type){
     case MEM_MAIN:
             cputype = MAINCPU;
-            AG_WindowSetCaption(w, "Disasm Main memory");
+            AG_WindowSetCaption(w, gettext("Disasm Main memory"));
             break;
     case MEM_SUB:
             cputype = SUBCPU;
-            AG_WindowSetCaption(w, "Disasm Sub memory");
+            AG_WindowSetCaption(w, gettext("Disasm Sub memory"));
             break;
     default:
             cputype = -1;
             break;
     }
-    addrVar = AG_TextboxNew(AGWIDGET(hb), 0, "Addr");
+    addrVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Addr"));
     AG_TextboxSizeHint(addrVar, "XXXXXX");
     AG_TextboxPrintf(addrVar, "%04x", 0x0000);
 
-   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Poll"));
    AG_TextboxSizeHint(pollVar, "XXXXXX");
    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 
@@ -362,13 +362,13 @@ static void CreateRegDump(AG_Event *event)
     switch(type){
     case MEM_MAIN:
             cputype = MAINCPU;
-            AG_WindowSetCaption(w, "Main CPU Registers");
+            AG_WindowSetCaption(w, gettext("Main CPU Registers"));
             cpu = &maincpu;
             title = "Main Regs";
             break;
     case MEM_SUB:
             cputype = SUBCPU;
-            AG_WindowSetCaption(w, "Sub CPU Registers");
+            AG_WindowSetCaption(w, gettext("Sub CPU Registers"));
             cpu = &subcpu;
             title = "Sub Regs";
             break;
@@ -378,7 +378,7 @@ static void CreateRegDump(AG_Event *event)
             title = NULL;
             break;
     }
-   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Poll"));
    AG_TextboxSizeHint(pollVar, "XXXXXX");
    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 
@@ -451,8 +451,8 @@ static void CreateFdcDump(AG_Event *event)
 
     hb = AG_HBoxNew(vb, 0);
 
-   AG_WindowSetCaption(w, "FDC Registers");
-   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   AG_WindowSetCaption(w, gettext("FDC Registers"));
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Poll"));
    AG_TextboxSizeHint(pollVar, "XXXXXX");
    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 
@@ -529,8 +529,8 @@ static void CreateMMRDump(AG_Event *event)
 
     hb = AG_HBoxNew(vb, 0);
 
-   AG_WindowSetCaption(w, "MMR Bank-map");
-   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, "Poll");
+   AG_WindowSetCaption(w, gettext("MMR Bank-map"));
+   pollVar = AG_TextboxNew(AGWIDGET(hb), 0, gettext("Poll"));
    AG_TextboxSizeHint(pollVar, "XXXXXX");
    AG_TextboxPrintf(pollVar, "%4d", mp->to_tick);
 

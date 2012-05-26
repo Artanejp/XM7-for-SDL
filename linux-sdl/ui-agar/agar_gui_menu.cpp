@@ -146,25 +146,25 @@ void Create_AGMainBar(AG_Widget *Parent)
 	if(!MenuBar) return;
 
 	AG_LockVFS(AGOBJECT(MenuBar));
-	item = AG_MenuNode(MenuBar->root , "File", NULL);
+	item = AG_MenuNode(MenuBar->root , gettext("File"), NULL);
 	Create_FileMenu(item);
 
-	item = AG_MenuNode(MenuBar->root, "Drive 1", NULL);
+	item = AG_MenuNode(MenuBar->root, gettext("Drive 1"), NULL);
 	Create_Drive1Menu(item);
 
-	item = AG_MenuNode(MenuBar->root, "Drive 0", NULL);
+	item = AG_MenuNode(MenuBar->root, gettext("Drive 0"), NULL);
 	Create_Drive0Menu(item);
 
- 	item = AG_MenuNode(MenuBar->root, "Tape", NULL);
+ 	item = AG_MenuNode(MenuBar->root, gettext("Tape"), NULL);
 	Create_TapeMenu(item);
 
- 	item = AG_MenuNode(MenuBar->root, "Debug", NULL);
+ 	item = AG_MenuNode(MenuBar->root, gettext("Debug"), NULL);
     Create_DebugMenu(item);
 
- 	item = AG_MenuNode(MenuBar->root, "Tools", NULL);
+ 	item = AG_MenuNode(MenuBar->root, gettext("Tools"), NULL);
  	Create_ToolsMenu(item);
- 	item = AG_MenuNode(MenuBar->root, "Help", NULL);
- 	item = AG_MenuNode(MenuBar->root, "About", NULL);
+ 	item = AG_MenuNode(MenuBar->root, gettext("Help"), NULL);
+ 	item = AG_MenuNode(MenuBar->root, gettext("About"), NULL);
  	Create_AboutMenu(item);
 	AG_UnlockVFS(AGOBJECT(MenuBar));
 	// F12 -> Menu 閉じる
