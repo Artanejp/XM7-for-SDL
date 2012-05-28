@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
 //	FM Sound Generator
-//	Copyright (C) cisc 1998, 2000.
+//	Copyright (C) cisc 1998, 2003.
 // ---------------------------------------------------------------------------
-//	$Id: fmgeninl.h,v 1.19 2002/04/07 05:40:08 cisc Exp $
+//	$Id: fmgeninl.h,v 1.26 2003/06/12 13:14:36 cisc Exp $
 
 #ifndef FM_GEN_INL_H
 #define FM_GEN_INL_H
@@ -20,26 +20,20 @@
 
 #define FM_EGCBITS		18			// eg の count のシフト値
 #define FM_LFOCBITS		14
-#define FM_PGBITS		2			// 9
 
-#define FM_RATIOBITS	8			// 12			// 8-12 くらいまで？
+#ifdef FM_TUNEBUILD
+ #define FM_PGBITS		2
+ #define FM_RATIOBITS	0
+#else
+ #define FM_PGBITS		9		
+ #define FM_RATIOBITS	7			// 8-12 くらいまで？
+#endif
 
 #define FM_EGBITS		16
-
-#define FM_ISHIFT		3
-#define FM_IPSCALE		16384
-
-//	3次スプライン(?)補完
-#define INTERPOLATE(y, x)	\
-	(((((((-y[0]+3*y[1]-3*y[2]+y[3]) * x + FM_IPSCALE/2) / FM_IPSCALE \
-	+ 3 * (y[0]-2*y[1]+y[2])) * x + FM_IPSCALE/2) / FM_IPSCALE \
-	- 2*y[0]-3*y[1]+6*y[2]-y[3]) * x + 3*FM_IPSCALE) / (6*FM_IPSCALE) + y[1])
-
 
 //extern int paramcount[];
 //#define PARAMCHANGE(i) paramcount[i]++;
 #define PARAMCHANGE(i)
-
 
 namespace FM
 {
@@ -61,12 +55,6 @@ inline void Operator::KeyOn()
 		keyon_ = true;
 		if (eg_phase_ == off || eg_phase_ == release)
 		{
-			if (ssg_type_ & 8) {
-				//	フラグリセット
-				ssg_type_ &= (uint8)~0x10;
-				ssg_type_ |= (uint8)((ssg_type_ & 4) << 2);
-			}
-
 			ssg_phase_ = -1;
 			ShiftPhase(attack);
 			EGUpdate();
@@ -176,10 +164,9 @@ inline void Operator::SetKS(uint ks)
 inline void Operator::SetSSGEC(uint ssgec)	
 { 
 	if (ssgec & 8)
-		ssg_type_ = (uint8)(ssgec & 0x0f);
+		ssg_type_ = ssgec; 
 	else
 		ssg_type_ = 0;
-	param_changed_ = true;
 }
 
 inline void Operator::SetAMON(bool amon)		
@@ -207,12 +194,10 @@ inline void Operator::SetMS(uint ms)
 //	4-op Channel
 
 //	オペレータの種類 (LFO) を設定
-inline void FASTCALL Channel4::SetType(OpType type)
+inline void Channel4::SetType(OpType type)
 {
-	op[0].type_ = type;
-	op[1].type_ = type;
-	op[2].type_ = type;
-	op[3].type_ = type;
+	for (int i=0; i<4; i++)
+		op[i].type_ = type;
 }
 
 //	セルフ・フィードバックレートの設定 (0-7)
@@ -233,30 +218,23 @@ inline void Channel4::SetMS(uint ms)
 //	チャンネル・マスク
 inline void Channel4::Mute(bool m)
 {
-	op[0].Mute(m);
-	op[1].Mute(m);
-	op[2].Mute(m);
-	op[3].Mute(m);
-	mute_ = m;
+	for (int i=0; i<4; i++)
+		op[i].Mute(m);
 }
 
 //	内部パラメータを再計算
 inline void Channel4::Refresh()
 {
-	op[0].param_changed_ = true;
-	op[1].param_changed_ = true;
-	op[2].param_changed_ = true;
-	op[3].param_changed_ = true;
+	for (int i=0; i<4; i++)
+		op[i].param_changed_ = true;
 	PARAMCHANGE(3);
 }
 
 inline void Channel4::SetChip(Chip* chip)
 {
 	chip_ = chip;
-	op[0].SetChip(chip);
-	op[1].SetChip(chip);
-	op[2].SetChip(chip);
-	op[3].SetChip(chip);
+	for (int i=0; i<4; i++)
+		op[i].SetChip(chip);
 }
 
 // ---------------------------------------------------------------------------

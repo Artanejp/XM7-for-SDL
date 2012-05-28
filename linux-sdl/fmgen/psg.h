@@ -2,35 +2,24 @@
 //	PSG-like sound generator
 //	Copyright (C) cisc 1997, 1999.
 // ---------------------------------------------------------------------------
-//	$Id: psg.h,v 1.6 2000/09/08 13:45:57 cisc Exp $
+//	$Id: psg.h,v 1.8 2003/04/22 13:12:53 cisc Exp $
 
 #ifndef PSG_H
 #define PSG_H
 
-#include "misc.h"
-
 #define PSG_SAMPLETYPE		int32		// int32 or int16
-//#define PSG_SAMPLETYPE		int16		// int32 or int16
-
-#define PSG_IPSCALE			16384
-#define PSG_INTERPOLATE(y, x)	\
-	(((((((-y[0]+3*y[1]-3*y[2]+y[3]) * x + PSG_IPSCALE/2) / PSG_IPSCALE \
-	+ 3 * (y[0]-2*y[1]+y[2])) * x + PSG_IPSCALE/2) / PSG_IPSCALE \
-	- 2*y[0]-3*y[1]+6*y[2]-y[3]) * x + 3*PSG_IPSCALE) / (6*PSG_IPSCALE) + y[1])
 
 // ---------------------------------------------------------------------------
 //	class PSG
 //	PSG に良く似た音を生成する音源ユニット
 //	
 //	interface:
-//	bool SetClock(uint clock, uint rate, bool ipflag)
+//	bool SetClock(uint clock, uint rate)
 //		初期化．このクラスを使用する前にかならず呼んでおくこと．
 //		PSG のクロックや PCM レートを設定する
-//		(オリジナルfmgenに対してipflagが追加されているのに注意)
 //
 //		clock:	PSG の動作クロック
 //		rate:	生成する PCM のレート
-//		ipflag:	線形補間ON/OFF
 //		retval	初期化に成功すれば true
 //
 //	void Mix(Sample* dest, int nsamples)
@@ -69,18 +58,14 @@ public:
 	~PSG();
 
 	void Mix(Sample* dest, int nsamples);
-	void Mix2(Sample* dest, int nsamples, int vol_l, int vol_r);
-	void SetClock(int clock, int rate, bool ipflag);
-
+	void SetClock(int clock, int rate);
+	
 	void SetVolume(int vol);
 	void SetChannelMask(int c);
-
+	
 	void Reset();
 	void SetReg(uint regnum, uint8 data);
 	uint GetReg(uint regnum) { return reg[regnum & 0x0f]; }
-
-	int rcnt;
-	int32 rbuf[3][512];
 
 protected:
 	void MakeNoiseTable();
@@ -103,15 +88,6 @@ protected:
 	static uint enveloptable[16][64];
 	static uint noisetable[noisetablesize];
 	static int EmitTable[32];
-	static bool table_initialize;
-
-	uint	psgrate;
-
-	// 補間モード用
-	bool	interpolation;
-	int32	mixdelta;
-	int		mpratio;
-	int32	mb[4];
 };
 
 #endif // PSG_H

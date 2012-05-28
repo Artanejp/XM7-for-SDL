@@ -24,12 +24,12 @@ OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
-all:	Release/libfmgen008.a Debug/libfmgen007a.a 
+all:	Release/libfmgen008.a Debug/libfmgen008.a 
 
-Debug/libfmgen007a.a: ${OBJS_DEBUG}
+Debug/libfmgen008.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
 
-Release/libfmgen007a.a: ${OBJS_RELEASE}
+Release/libfmgen008.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
 
 Release/%.o: %.c

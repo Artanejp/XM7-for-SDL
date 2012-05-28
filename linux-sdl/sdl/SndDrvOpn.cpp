@@ -90,6 +90,13 @@ void SndDrvOpn::InitOpn(void)
 		pOPN[opn].SetReg(0x27, 0);
 		uCh3Mode[opn] = 0xff;
 	}
+	if(pPSG != NULL) {
+	   pPSG->Reset();
+	   pPSG->SetClock((OPN_CLOCK * 100) / 2, srate);
+	   pPSG->SetReg(0x27, 0); // Need?
+	   uCh3Mode[3] = 0xff;
+	}
+   
 }
 
 BYTE SndDrvOpn::GetCh3Mode(int opn)
@@ -108,7 +115,14 @@ void SndDrvOpn::SetCh3Mode(int opn, Uint8 dat)
 void SndDrvOpn::SetReg(int opn, BYTE reg, BYTE dat)
 {
 	if((opn<0) || (opn>3)) return;
+        if((fm7_ver == 1) && (pPSG != NULL)) {
+	   if(opn == OPN_THG) {
+		pPSG->SetReg((uint) reg, (uint) dat);
+	        return;
+	   }
+	}
 	pOPN[opn].SetReg((uint) reg,(uint) dat);
+   
 }
 
 BYTE SndDrvOpn::GetReg(int opn, BYTE reg)
@@ -128,7 +142,12 @@ void SndDrvOpn::SetReg(int opn, BYTE *reg)
      * PSG
      */
     for (i = 0; i < 16; i++) {
-    	pOPN[opn].SetReg((BYTE) i, reg[i]);
+       if((pPSG != NULL) && (opn == OPN_THG) && (fm7_ver == 1)) {
+	  pPSG->SetReg((BYTE) i, reg[i]);
+       } else {
+          pOPN[opn].SetReg((BYTE) i, reg[i]);
+       }
+       
     }
 
     /*
@@ -173,13 +192,23 @@ SndDrvOpn::SndDrvOpn(void) {
 	RenderSem = SDL_CreateSemaphore(1);
 	SDL_SemPost(RenderSem);
 	pOPN = new FM::OPN[3];
-
+        if(fm7_ver == 1) {
+	    pPSG = new PSG;
+	} else {
+	    pPSG = NULL;
+	}
+   
+   
 	InitOpn();
 }
 
 void SndDrvOpn::DeleteOpn(void)
 {
 	delete [] pOPN;
+        if(pPSG != NULL) {
+	   delete pPSG;
+	}
+   
 }
 
 SndDrvOpn::~SndDrvOpn() {
@@ -214,6 +243,10 @@ void SndDrvOpn::SetRate(int ch, unsigned int clk, int rate, BOOL hq)
    if(pOPN != NULL) {
 	   pOPN[ch].SetRate(clk, rate, hq);
    }
+   if((pPSG != NULL) && (ch == OPN_THG)){
+	pPSG->SetClock(clk / 2, rate);
+   }
+   
 }
 
 
@@ -280,6 +313,10 @@ void SndDrvOpn::SetRenderVolume(int ch, int fm, int psg)
 			pOPN[ch].SetVolumePSG(psg * 2);
 		}
 		SetLRVolume();
+        if((pPSG != NULL) && (ch == OPN_THG)) {
+	   pPSG->SetVolume(psg * 2);
+	}
+   
 }
 
 void SndDrvOpn::SetLRVolume(void)
@@ -364,8 +401,8 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 			/* ステレオ */
 			if (!whg_use && !thg_use) {
 			   pOPN[OPN_STD].Mix2((int32*)q, ss2, 16, 16);
-				if (fm7_ver == 1) { // PSG
-					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
+				if ((fm7_ver == 1) && (pPSG != NULL)){ // PSG
+					pPSG->Mix((int32*)q, ss2);
 				}				
 			}
 			else {
@@ -380,8 +417,8 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 					pOPN[OPN_THG].Mix2((int32*)q, ss2,
 							l_vol[OPN_THG][uStereo], r_vol[OPN_THG][uStereo]);
 				}
-				else if (fm7_ver == 1){  // PSG
-					pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
+				else if ((fm7_ver == 1) && (pPSG != NULL)){  // PSG
+					pPSG->Mix((int32*)q, ss2);
 				}
 			}
 //      	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));

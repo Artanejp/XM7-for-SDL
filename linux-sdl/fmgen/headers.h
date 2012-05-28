@@ -11,6 +11,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "types.h"
+
 #ifdef _MSC_VER
 	#undef max
 	#define max _MAX

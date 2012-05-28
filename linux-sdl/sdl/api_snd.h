@@ -13,6 +13,7 @@
 #include "device.h"
 #include "mainetc.h"
 #include "tapelp.h"
+#include "../fmgen/types.h"
 #include "../fmgen/misc.h"
 #include "../fmgen/opna.h"
 #include "../fmgen/psg.h"
