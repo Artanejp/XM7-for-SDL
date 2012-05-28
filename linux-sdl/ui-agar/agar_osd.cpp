@@ -163,6 +163,9 @@ static void UpdateCMTMessages(char *string)
 
    if(pStatusFont == NULL) return;
    if(nFontSize <= 2) return;
+   if(pCMTRead == NULL) return;
+   if(pCMTWrite == NULL) return;
+   if(pCMTNorm == NULL) return;
    AG_PushTextState();
 	AG_TextFont(pStatusFont);
         AG_TextFontPts(nFontSize);
@@ -171,14 +174,16 @@ static void UpdateCMTMessages(char *string)
 	rect.h = nCMTHeight;
 	rect.w = nCMTWidth;
 
-    AG_FillRect(pCMTRead, &rect, r);
+        AG_FillRect(pCMTRead, &rect, r);
 	AG_TextColor(black);
 	AG_TextBGColor(r);
+//        AG_ObjectLock(pCMTRead);
 	tmp = AG_TextRender(string);
 //         if(tmp->w < rect.w) rect.w = tmp->w;
 //         if(tmp->h < rect.w) rect.h = tmp->h;
 	AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
 	AG_SurfaceFree(tmp);
+//        AG_ObjectUnlock(pCMTRead);
 
 
 
@@ -839,8 +844,8 @@ static void DrawMainCaption(BOOL override)
 	      AG_PixmapSetSurface(pwCaption, nwCaption);
 	      AG_PixmapUpdateSurface(pwCaption, nwCaption);
 	      AG_Redraw(pwCaption);
-	}
 	AG_ObjectUnlock(pwCaption);
+	}
 }
 
 
@@ -1052,14 +1057,14 @@ static void DrawDrive(int drive, BOOL override)
 			 }
 			 old_writep[drive] = fdc_writep[drive];
 		 }
-        AG_ObjectLock(pwFD[drive]);
-        UpdateVFDMessages(drive, outstr);
 	    if(pwFD[drive] != NULL){
+	       AG_ObjectLock(pwFD[drive]);
+	       UpdateVFDMessages(drive, outstr);
 	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_IN]);
 	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_READ]);
 	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
+	       AG_ObjectUnlock(pwFD[drive]);
 	    }
-        AG_ObjectUnlock(pwFD[drive]);
 	 }
 	 if (nDrive[drive] == FDC_ACCESS_READ) {
 	    if(nwFD[drive][ID_READ] >= 0)  AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_READ]);
@@ -1132,14 +1137,14 @@ static void DrawTape(int override)
 		 * カウンタ番号レンダリング(仮)
 		 */
 		if(pStatusFont != NULL) {
+		   if(pwCMT != NULL){
 		   AG_ObjectLock(pwCMT);
 		   UpdateCMTMessages(string);
-		   if(pwCMT != NULL){
 		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
 		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
 		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-		   }
 		   AG_ObjectUnlock(pwCMT);
+		   }
 		}
 	}
 		if ((nTape >= 10000) && (nTape < 30000)) {
