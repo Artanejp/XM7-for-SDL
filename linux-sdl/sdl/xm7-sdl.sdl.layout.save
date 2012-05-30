@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="GtkKbdInterface.cpp" open="1" top="0" tabpos="0">
+		<Cursor position="109" topLine="0" />
+	</File>
+	<File name="GtkKbdInterface.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="KbdInterface.cpp" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="KbdInterface.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="SDLJoyInterface.cpp" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="SDLKbdInterface.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="SndDrvBeep.cpp" open="1" top="0" tabpos="13">
+		<Cursor position="1847" topLine="81" />
+	</File>
+	<File name="SndDrvCMT.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="1630" topLine="71" />
+	</File>
+	<File name="SndDrvWav.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="1541" topLine="59" />
+	</File>
+	<File name="api_draw.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="40224" topLine="2224" />
+	</File>
+	<File name="api_draw.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="api_js.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="api_kbd.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="api_scaler.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="api_snd2.cpp" open="1" top="0" tabpos="3">
+		<Cursor position="17105" topLine="816" />
+	</File>
+	<File name="build_config.h" open="1" top="0" tabpos="1">
+		<Cursor position="1526" topLine="79" />
+	</File>
+	<File name="sdl.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="sdl_bar.h" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="sdl_inifile.c" open="1" top="0" tabpos="0">
+		<Cursor position="0" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>
