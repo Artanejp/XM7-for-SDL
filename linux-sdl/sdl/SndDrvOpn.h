@@ -12,9 +12,7 @@
 //#include <SDL/SDL_mixer.h>
 #include "xm7.h"
 #include "../fmgen/misc.h"
-#include "../fmgen/types.h"
-#include "../fmgen/opna.h"
-#include "../fmgen/psg.h"
+#include "opna.h"
 
 #include "fmgen.h"
 #include "fmgeninl.h"
@@ -83,9 +81,8 @@ private:
 	UINT counter;
 	int nScale; /* プリスケーラ */
 	UINT uChanSep;
-	BYTE uCh3Mode[4];
+	BYTE uCh3Mode[3];
 	FM::OPN *pOPN;
-        PSG *pPSG;
 };
 
 #endif /* SNDDRVOPN_H_ */
