@@ -6,7 +6,6 @@
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
 
-SVNVER = `svnversion`
 
 include config.mak
 

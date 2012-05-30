@@ -43,7 +43,7 @@ PREFIX           = /usr/local
 SHAREDIR         = $(PREFIX)/share/xm7/
 
 ## SVNの時はコメントアウト外す
-SVNVER = `svnversion`
+#SVNVER = `svnversion`
 
 
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること
