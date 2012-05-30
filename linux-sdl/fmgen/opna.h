@@ -1,14 +1,14 @@
 // ---------------------------------------------------------------------------
 //	OPN/A/B interface with ADPCM support
-//	Copyright (C) cisc 1998, 2003.
+//	Copyright (C) cisc 1998, 2001.
 // ---------------------------------------------------------------------------
-//	$Id: opna.h,v 1.33 2003/06/12 13:14:37 cisc Exp $
+//	$Id: opna.h,v 1.21 2001/03/11 01:29:54 cisc Exp $
 
 #ifndef FM_OPNA_H
 #define FM_OPNA_H
 
 #include "fmgen.h"
-#include "fmtimer.h"
+//#include "fmtimer.h"
 #include "psg.h"
 
 // ---------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 //	OPN/OPNA に良く似た音を生成する音源ユニット
 //	
 //	interface:
-//	bool Init(uint clock, uint rate, bool, const char* path);
+//	bool Init(uint clock, uint rate, bool interpolation, const char* path);
 //		初期化．このクラスを使用する前にかならず呼んでおくこと．
 //		OPNA の場合はこの関数でリズムサンプルを読み込む
 //
@@ -24,6 +24,11 @@
 //
 //		rate:	生成する PCM の標本周波数(Hz)
 //
+//		inter.:	線形補完モード (OPNA のみ有効)
+//				true にすると，FM 音源の合成は音源本来のレートで行うように
+//				なる．最終的に生成される PCM は rate で指定されたレートになる
+//				よう線形補完される
+//				
 //		path:	リズムサンプルのパス(OPNA のみ有効)
 //				省略時はカレントディレクトリから読み込む
 //				文字列の末尾には '\' や '/' などをつけること
@@ -35,7 +40,7 @@
 //		Rhythm サンプルを読み直す．
 //		path は Init の path と同じ．
 //		
-//	bool SetRate(uint clock, uint rate, bool)
+//	bool SetRate(uint clock, uint rate, bool interpolation)
 //		クロックや PCM レートを変更する
 //		引数等は Init を参照のこと．
 //	
@@ -81,7 +86,8 @@
 namespace FM
 {
 	//	OPN Base -------------------------------------------------------
-	class OPNBase : public Timer
+//	class OPNBase : public Timer
+	class OPNBase
 	{
 	public:
 		OPNBase();
@@ -91,34 +97,39 @@ namespace FM
 		
 		void	SetVolumeFM(int db);
 		void	SetVolumePSG(int db);
-		void	SetLPFCutoff(uint freq) {}	// obsolete
-
+	
+		PSG		psg;
 	protected:
 		void	SetParameter(Channel4* ch, uint addr, uint data);
 		void	SetPrescaler(uint p);
 		void	RebuildTimeTable();
 		
 		int		fmvolume;
+		int		fbch;
 		
-		uint	clock;				// OPN クロック
-		uint	rate;				// FM 音源合成レート
-		uint	psgrate;			// FMGen  出力レート
+		uint	clock;
+		uint	rate;
+		uint	psgrate;
 		uint	status;
 		Channel4* csmch;
 		
+		int32	mixdelta;
+		int		mpratio;
+		bool	interpolation;
 
 		static  uint32 lfotable[8];
-	
-	private:
+
+		uint8	regtc;			// XM7 : Timerクラスから移動
 		void	TimerA();
+
+	private:
 		uint8	prescale;
-		
+
 	protected:
 		Chip	chip;
-		PSG		psg;
 	};
 
-	//	OPN2 Base ------------------------------------------------------
+	//	OPNA Base ------------------------------------------------------
 	class OPNABase : public OPNBase
 	{
 	public:
@@ -131,12 +142,10 @@ namespace FM
 	
 	private:
 		virtual void Intr(bool) {}
-
-		void	MakeTable2();
 	
 	protected:
-		bool	Init(uint c, uint r, bool);
-		bool	SetRate(uint c, uint r, bool);
+		bool	Init(uint c, uint r, bool ipflag);
+		bool	SetRate(uint c, uint r, bool ipflag);
 
 		void	Reset();
 		void 	SetReg(uint addr, uint data);
@@ -146,6 +155,7 @@ namespace FM
 	protected:
 		void	FMMix(Sample* buffer, int nsamples);
 		void 	Mix6(Sample* buffer, int nsamples, int activech);
+		void 	Mix6I(Sample* buffer, int nsamples, int activech);
 		
 		void	MixSubS(int activech, ISample**);
 		void	MixSubSL(int activech, ISample**);
@@ -162,6 +172,10 @@ namespace FM
 		uint	ReadRAM();
 		int		ReadRAMN();
 		int		DecodeADPCMBSample(uint);
+		
+	// 線形補間用ワーク
+		int32	mixl, mixl1;
+		int32	mixr, mixr1;
 		
 	// FM 音源関係
 		uint8	pan[6];
@@ -203,21 +217,16 @@ namespace FM
 		uint	adpcmreadbuf;	// ADPCM リード用バッファ
 		bool	adpcmplay;		// ADPCM 再生中
 		int8	granuality;		
-		bool	adpcmmask_;
 
 		uint8	control1;		// ADPCM コントロールレジスタ１
 		uint8	control2;		// ADPCM コントロールレジスタ２
 		uint8	adpcmreg[8];	// ADPCM レジスタの一部分
-
-		int		rhythmmask_;
 
 		Channel4 ch[6];
 
 		static void	BuildLFOTable();
 		static int amtable[FM_LFOENTS];
 		static int pmtable[FM_LFOENTS];
-		static int32 tltable[FM_TLENTS+FM_TLPOS];
-		static bool	tablehasmade;
 	};
 
 	//	YM2203(OPN) ----------------------------------------------------
@@ -228,11 +237,11 @@ namespace FM
 		virtual ~OPN() {}
 		
 		bool	Init(uint c, uint r, bool=false, const char* =0);
-		bool	SetRate(uint c, uint r, bool=false);
+		bool	SetRate(uint c, uint r, bool);
 		
 		void	Reset();
 		void 	Mix(Sample* buffer, int nsamples);
-		void 	Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r);
+		void	Mix2(Sample* buffer, int nsamples, int vol_l, int vol_r);
 		void 	SetReg(uint addr, uint data);
 		uint	GetReg(uint addr);
 		uint	ReadStatus() { return status & 0x03; }
@@ -240,10 +249,8 @@ namespace FM
 		
 		void	SetChannelMask(uint mask);
 		
-		int		dbgGetOpOut(int c, int s) { return ch[c].op[s].dbgopout_; }
-		int		dbgGetPGOut(int c, int s) { return ch[c].op[s].dbgpgout_; }
-		Channel4* dbgGetCh(int c) { return &ch[c]; }
-	
+		int		rcnt;
+		ISample	rbuf[3][512];
 	private:
 		virtual void Intr(bool) {}
 		
@@ -254,6 +261,9 @@ namespace FM
 		uint	fnum3[3];
 		uint8	fnum2[6];
 		
+	// 線形補間用ワーク
+		int32	mb[4];
+
 		Channel4 ch[3];
 	};
 
@@ -264,10 +274,10 @@ namespace FM
 		OPNA();
 		virtual ~OPNA();
 		
-		bool	Init(uint c, uint r, bool  = false, const char* rhythmpath=0);
+		bool	Init(uint c, uint r, bool ipflag = false, const char* rhythmpath=0);
 		bool	LoadRhythmSample(const char*);
 	
-		bool	SetRate(uint c, uint r, bool = false);
+		bool	SetRate(uint c, uint r, bool ipflag = false);
 		void 	Mix(Sample* buffer, int nsamples);
 
 		void	Reset();
@@ -279,11 +289,6 @@ namespace FM
 		void	SetVolumeRhythm(int index, int db);
 
 		uint8*	GetADPCMBuffer() { return adpcmbuf; }
-
-		int		dbgGetOpOut(int c, int s) { return ch[c].op[s].dbgopout_; }
-		int		dbgGetPGOut(int c, int s) { return ch[c].op[s].dbgpgout_; }
-		Channel4* dbgGetCh(int c) { return &ch[c]; }
-
 		
 	private:
 		struct Rhythm
@@ -314,11 +319,11 @@ namespace FM
 		OPNB();
 		virtual ~OPNB();
 		
-		bool	Init(uint c, uint r, bool = false,
+		bool	Init(uint c, uint r, bool ipflag = false,
 					 uint8 *_adpcma = 0, int _adpcma_size = 0,
 					 uint8 *_adpcmb = 0, int _adpcmb_size = 0);
 	
-		bool	SetRate(uint c, uint r, bool = false);
+		bool	SetRate(uint c, uint r, bool ipflag = false);
 		void 	Mix(Sample* buffer, int nsamples);
 
 		void	Reset();
@@ -367,39 +372,32 @@ namespace FM
 		Channel4 ch[6];
 	};
 
-	//	YM2612/3438(OPN2) ----------------------------------------------------
-	class OPN2 : public OPNBase
+	//	YM2612(OPN2) -----------------------------------------------------
+	class OPN2 : public OPNABase
 	{
 	public:
 		OPN2();
-		virtual ~OPN2() {}
+		virtual ~OPN2();
 		
-		bool	Init(uint c, uint r, bool=false, const char* =0);
-		bool	SetRate(uint c, uint r, bool);
-		
-		void	Reset();
+		bool	Init(uint c, uint r, bool ipflag = false);
+	
+		bool	SetRate(uint c, uint r, bool ipflag = false);
 		void 	Mix(Sample* buffer, int nsamples);
+
+		void	Reset();
 		void 	SetReg(uint addr, uint data);
 		uint	GetReg(uint addr);
-		uint	ReadStatus() { return status & 0x03; }
-		uint	ReadStatusEx() { return 0xff; }
-		
-		void	SetChannelMask(uint mask);
-		
+		uint	ReadStatusEx();
+
+//		void	SetChannelMask(uint mask);
+
 	private:
-		virtual void Intr(bool) {}
-		
-		void	SetStatus(uint bit);
-		void	ResetStatus(uint bit);
-		
-		uint	fnum[3];
-		uint	fnum3[3];
-		uint8	fnum2[6];
-		
-	// 線形補間用ワーク
-		int32	mixc, mixc1;
-		
-		Channel4 ch[3];
+		void	DACMix(Sample* buffer, uint nsamples);
+		uint8	reg2a;		// YM2612 DAC DATA
+		uint8	reg2b;		// YM2612 DAC ENABLE
+		uint8	dac_pan;	// YM2612 DAC PANPOT
+
+		Channel4 ch[6];
 	};
 }
 

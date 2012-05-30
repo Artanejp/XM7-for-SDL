@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
 //	FM Sound Generator - Core Unit
-//	Copyright (C) cisc 1998, 2003.
+//	Copyright (C) cisc 1998, 2001.
 // ---------------------------------------------------------------------------
-//	$Id: fmgen.cpp,v 1.49 2003/09/02 14:51:04 cisc Exp $
+//	$Id: fmgen.cpp,v 1.39 2003/05/12 22:26:34 cisc Exp $
 // ---------------------------------------------------------------------------
 //	参考:
 //		FM sound generator for M.A.M.E., written by Tatsuyuki Satoh.
@@ -21,7 +21,6 @@
 //		ほか掲示板等で様々なご助言，ご支援をお寄せいただいた皆様に
 // ---------------------------------------------------------------------------
 
-#include "headers.h"
 #include "misc.h"
 #include "fmgen.h"
 #include "fmgeninl.h"
@@ -39,16 +38,16 @@ namespace FM
 {
 	const uint8 Operator::notetable[128] =
 	{
-		 0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  3,  3,  3,  3,  3,  3, 
-		 4,  4,  4,  4,  4,  4,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7, 
-		 8,  8,  8,  8,  8,  8,  8,  9, 10, 11, 11, 11, 11, 11, 11, 11, 
-		12, 12, 12, 12, 12, 12, 12, 13, 14, 15, 15, 15, 15, 15, 15, 15, 
-		16, 16, 16, 16, 16, 16, 16, 17, 18, 19, 19, 19, 19, 19, 19, 19, 
-		20, 20, 20, 20, 20, 20, 20, 21, 22, 23, 23, 23, 23, 23, 23, 23, 
-		24, 24, 24, 24, 24, 24, 24, 25, 26, 27, 27, 27, 27, 27, 27, 27, 
-		28, 28, 28, 28, 28, 28, 28, 29, 30, 31, 31, 31, 31, 31, 31, 31, 
+		 0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  3,  3,  3,  3,  3,  3,
+		 4,  4,  4,  4,  4,  4,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7,
+		 8,  8,  8,  8,  8,  8,  8,  9, 10, 11, 11, 11, 11, 11, 11, 11,
+		12, 12, 12, 12, 12, 12, 12, 13, 14, 15, 15, 15, 15, 15, 15, 15,
+		16, 16, 16, 16, 16, 16, 16, 17, 18, 19, 19, 19, 19, 19, 19, 19,
+		20, 20, 20, 20, 20, 20, 20, 21, 22, 23, 23, 23, 23, 23, 23, 23,
+		24, 24, 24, 24, 24, 24, 24, 25, 26, 27, 27, 27, 27, 27, 27, 27,
+		28, 28, 28, 28, 28, 28, 28, 29, 30, 31, 31, 31, 31, 31, 31, 31,
 	};
-	
+
 	const int8 Operator::dttable[256] =
 	{
 		  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -69,101 +68,81 @@ namespace FM
 		-16,-16,-18,-20,-22,-24,-26,-28,-32,-34,-38,-40,-44,-44,-44,-44,
 	};
 
-	const int8 Operator::decaytable1[64][8] = 
+	const int8 Operator::decaytable1[64][8] =
 	{
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1, 1, 1, 1,		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 0, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 0, 1, 0, 1, 0, 1, 0,		1, 1, 1, 0, 1, 0, 1, 0,
-		1, 1, 1, 0, 1, 1, 1, 0,		1, 1, 1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 1, 1, 1,		2, 1, 1, 1, 2, 1, 1, 1,
-		2, 1, 2, 1, 2, 1, 2, 1,		2, 2, 2, 1, 2, 2, 2, 1,
-		2, 2, 2, 2, 2, 2, 2, 2,		4, 2, 2, 2, 4, 2, 2, 2,	
-		4, 2, 4, 2, 4, 2, 4, 2,		4, 4, 4, 2, 4, 4, 4, 2,
-		4, 4, 4, 4, 4, 4, 4, 4,		8, 4, 4, 4, 8, 4, 4, 4,	
-		8, 4, 8, 4, 8, 4, 8, 4,		8, 8, 8, 4, 8, 8, 8, 4,
-		16,16,16,16,16,16,16,16,	16,16,16,16,16,16,16,16,
-		16,16,16,16,16,16,16,16,	16,16,16,16,16,16,16,16,
+		{0, 0, 0, 0, 0, 0, 0, 0},		{0, 0, 0, 0, 0, 0, 0, 0},
+		{1, 1, 1, 1, 1, 1, 1, 1},		{1, 1, 1, 1, 1, 1, 1, 1},
+		{1, 1, 1, 1, 1, 1, 1, 1},		{1, 1, 1, 1, 1, 1, 1, 1},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 0, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 1, 0, 1, 0, 1, 0},		{1, 1, 1, 0, 1, 0, 1, 0},
+		{1, 1, 1, 0, 1, 1, 1, 0},		{1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 1, 1, 1, 1, 1, 1, 1},		{2, 1, 1, 1, 2, 1, 1, 1},
+		{2, 1, 2, 1, 2, 1, 2, 1},		{2, 2, 2, 1, 2, 2, 2, 1},
+		{2, 2, 2, 2, 2, 2, 2, 2},		{4, 2, 2, 2, 4, 2, 2, 2},
+		{4, 2, 4, 2, 4, 2, 4, 2},		{4, 4, 4, 2, 4, 4, 4, 2},
+		{4, 4, 4, 4, 4, 4, 4, 4},		{8, 4, 4, 4, 8, 4, 4, 4},
+		{8, 4, 8, 4, 8, 4, 8, 4},		{8, 8, 8, 4, 8, 8, 8, 4},
+		{16,16,16,16,16,16,16,16},		{16,16,16,16,16,16,16,16},
+		{16,16,16,16,16,16,16,16},		{16,16,16,16,16,16,16,16},
 	};
 
-	const int Operator::decaytable2[16] = 
+	const int Operator::decaytable2[16] =
 	{
 		1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2047, 2047, 2047, 2047, 2047
 	};
 
-	const int8 Operator::attacktable[64][8] = 
+	const int8 Operator::attacktable[64][8] =
 	{
-		-1,-1,-1,-1,-1,-1,-1,-1,	-1,-1,-1,-1,-1,-1,-1,-1,
-		 4, 4, 4, 4, 4, 4, 4, 4,	 4, 4, 4, 4, 4, 4, 4, 4,
-		 4, 4, 4, 4, 4, 4, 4, 4,	 4, 4, 4, 4, 4, 4, 4, 4,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4,-1, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4,-1, 4,-1, 4,-1, 4,-1,	 4, 4, 4,-1, 4,-1, 4,-1,
-		 4, 4, 4,-1, 4, 4, 4,-1,	 4, 4, 4, 4, 4, 4, 4,-1,
-		 4, 4, 4, 4, 4, 4, 4, 4,	 3, 4, 4, 4, 3, 4, 4, 4,
-		 3, 4, 3, 4, 3, 4, 3, 4,	 3, 3, 3, 4, 3, 3, 3, 4,
-		 3, 3, 3, 3, 3, 3, 3, 3,	 2, 3, 3, 3, 2, 3, 3, 3,
-		 2, 3, 2, 3, 2, 3, 2, 3,	 2, 2, 2, 3, 2, 2, 2, 3,
-		 2, 2, 2, 2, 2, 2, 2, 2,	 1, 2, 2, 2, 1, 2, 2, 2,
-		 1, 2, 1, 2, 1, 2, 1, 2,	 1, 1, 1, 2, 1, 1, 1, 2,
-		 0, 0, 0, 0, 0, 0, 0, 0,	 0, 0 ,0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0, 0, 0,	 0, 0 ,0, 0, 0, 0, 0, 0,
-	};
-
-	const int Operator::ssgenvtable[8][2][3][2] =
-	{
-		1, 1,  1, 1,  1, 1,		// 08 
-		0, 1,  1, 1,  1, 1,		// 08 56~
-		0, 1,  2, 0,  2, 0,		// 09
-		0, 1,  2, 0,  2, 0,		// 09
-		1,-1,  0, 1,  1,-1,		// 10
-		0, 1,  1,-1,  0, 1,		// 10 60~
-		1,-1,  0, 0,  0, 0,		// 11
-		0, 1,  0, 0,  0, 0,		// 11 60~
-		2,-1,  2,-1,  2,-1,		// 12
-		1,-1,  2,-1,  2,-1,		// 12 56~
-		1,-1,  0, 0,  0, 0,		// 13
-		1,-1,  0, 0,  0, 0,		// 13
-		0, 1,  1,-1,  0, 1,		// 14
-		1,-1,  0, 1,  1,-1,		// 14 60~
-		0, 1,  2, 0,  2, 0,		// 15
-		1,-1,  2, 0,  2, 0,		// 15 60~
+		{-1,-1,-1,-1,-1,-1,-1,-1},	{-1,-1,-1,-1,-1,-1,-1,-1},
+		{ 4, 4, 4, 4, 4, 4, 4, 4},	{ 4, 4, 4, 4, 4, 4, 4, 4},
+		{ 4, 4, 4, 4, 4, 4, 4, 4},	{ 4, 4, 4, 4, 4, 4, 4, 4},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4,-1, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4,-1, 4,-1, 4,-1, 4,-1},	{ 4, 4, 4,-1, 4,-1, 4,-1},
+		{ 4, 4, 4,-1, 4, 4, 4,-1},	{ 4, 4, 4, 4, 4, 4, 4,-1},
+		{ 4, 4, 4, 4, 4, 4, 4, 4},	{ 3, 4, 4, 4, 3, 4, 4, 4},		// 8 16
+		{ 3, 4, 3, 4, 3, 4, 3, 4},	{ 3, 3, 3, 4, 3, 3, 3, 4},
+		{ 3, 3, 3, 3, 3, 3, 3, 3},	{ 2, 3, 3, 3, 2, 3, 3, 3},		// 1 8
+		{ 2, 3, 2, 3, 2, 3, 2, 3},	{ 2, 2, 2, 3, 2, 2, 2, 3},
+		{ 2, 2, 2, 2, 2, 2, 2, 2},	{ 1, 2, 2, 2, 1, 2, 2, 2},		// 3 1
+		{ 1, 2, 1, 2, 1, 2, 1, 2},	{ 1, 1, 1, 2, 1, 1, 1, 2},
+		{ 0, 0, 0, 0, 0, 0, 0, 0},	{ 0, 0 ,0, 0, 0, 0, 0, 0},
+		{ 0, 0, 0, 0, 0, 0, 0, 0},	{ 0, 0 ,0, 0, 0, 0, 0, 0},
 	};
 
 	// fixed equasion-based tables
@@ -185,26 +164,24 @@ void MakeLFOTable()
 		return;
 
 	tablemade = true;
-	
+
 	int i;
 
-	static const double pms[2][8] = 
-	{ 
+	static const double pms[2][8] =
+	{
 		{ 0, 1/360., 2/360., 3/360.,  4/360.,  6/360., 12/360.,  24/360., },	// OPNA
-//		{ 0, 1/240., 2/240., 4/240., 10/240., 20/240., 80/240., 140/240., },	// OPM
-		{ 0, 1/480., 2/480., 4/480., 10/480., 20/480., 80/480., 140/480., },	// OPM
-//		{ 0, 1/960., 2/960., 4/960., 10/960., 20/960., 80/960., 140/960., },	// OPM
+		{ 0, 1/240., 2/240., 4/240., 10/240., 20/240., 80/240., 140/240., },	// OPM
 	};
 	//		 3		 6,      12      30       60       240      420		/ 720
 	//	1.000963
 	//	lfofref[level * max * wave];
 	//	pre = lfofref[level][pms * wave >> 8];
-	static const uint8 amt[2][4] = 
+	static const uint8 amt[2][4] =
 	{
 		{ 31, 6, 4, 3 }, // OPNA
 		{ 31, 2, 1, 0 }, //	OPM
 	};
-	
+
 	for (int type = 0; type < 2; type++)
 	{
 		for (i=0; i<8; i++)
@@ -215,10 +192,10 @@ void MakeLFOTable()
 				double v = pow(2.0, pmb * (2 * j - FM_LFOENTS+1) / (FM_LFOENTS-1));
 				double w = 0.6 * pmb * sin(2 * j * 3.14159265358979323846 / FM_LFOENTS) + 1;
 //				pmtable[type][i][j] = int(0x10000 * (v - 1));
-//				if (type == 0)
+				if (type == 0)
 					pmtable[type][i][j] = int(0x10000 * (w - 1));
-//				else
-//					pmtable[type][i][j] = int(0x10000 * (v - 1));
+				else
+					pmtable[type][i][j] = int(0x10000 * (v - 1));
 
 //				printf("pmtable[%d][%d][%.2x] = %5d  %7.5f %7.5f\n", type, i, j, pmtable[type][i][j], v, w);
 			}
@@ -255,21 +232,31 @@ void Chip::SetRatio(uint ratio)
 void Chip::MakeTable()
 {
 	int h, l;
-	
+
 	// PG Part
 	static const float dt2lv[4] = { 1.f, 1.414f, 1.581f, 1.732f };
 	for (h=0; h<4; h++)
 	{
 		assert(2 + FM_RATIOBITS - FM_PGBITS >= 0);
-		double rr = dt2lv[h] * double(ratio_) / (1 << (2 + FM_RATIOBITS - FM_PGBITS));
+		// 演算精度向上のためテーブル作成時のビットシフトを廃止 by RyuTak
+		double rr = dt2lv[h] * double(ratio_);
 		for (l=0; l<16; l++)
 		{
 			int mul = l ? l * 2 : 1;
 			multable_[h][l] = uint(mul * rr);
 		}
 	}
-}
 
+	// EG
+	ratetable_[0] = 0;
+	for (h=1; h<16; h++)
+	{
+		assert(FM_EGBITS - FM_RATIOBITS >= 0);
+		ratetable_[h] =
+			((ratio_ << (FM_EGBITS - FM_RATIOBITS)) << Min(h, 11));
+//		printf("%.2d %d: %8x\n", h, l, rate_table[h]);
+	}
+}
 
 // ---------------------------------------------------------------------------
 //	Operator
@@ -280,7 +267,6 @@ int32 FM::Operator::cltable[FM_CLENTS];
 
 //	構築
 FM::Operator::Operator()
-: chip_(0)
 {
 	if (!tablehasmade)
 		MakeTable();
@@ -291,7 +277,6 @@ FM::Operator::Operator()
 	mute_ = false;
 	keyon_ = false;
 	tl_out_ = false;
-	ssg_type_ = 0;
 
 	// PG Part
 	multiple_ = 0;
@@ -300,19 +285,18 @@ FM::Operator::Operator()
 
 	// LFO
 	ms_ = 0;
-	
-//	Reset();
+
+	Reset();
 }
 
 //	初期化
-void FM::Operator::Reset()
+void FASTCALL FM::Operator::Reset()
 {
 	// EG part
 	tl_ = tl_latch_ = 127;
 	ShiftPhase(off);
 	eg_count_ = 0;
 	eg_curve_count_ = 0;
-	ssg_phase_ = 0;
 
 	// PG part
 	pg_count_ = 0;
@@ -344,7 +328,7 @@ void Operator::MakeTable()
 	}
 
 //	for (i=0; i<13*256; i++)
-//		printf("%4d, %d, %d\n", i, cltable[i*2], cltable[i*2+1]);
+//		printf("%d, %d\n", cltable[i*2], cltable[i*2+1]);
 
 	// サインテーブルの作成
 	double log2 = log(2.);
@@ -367,25 +351,28 @@ void Operator::MakeTable()
 
 inline void FM::Operator::SetDPBN(uint dp, uint bn)
 {
-	dp_ = dp, bn_ = bn; param_changed_ = true; 
+	dp_ = dp, bn_ = bn; param_changed_ = true;
 	PARAMCHANGE(1);
 }
 
 
 //	準備
-void Operator::Prepare()
+void FASTCALL Operator::Prepare()
 {
 	if (param_changed_)
 	{
 		param_changed_ = false;
+
 		//	PG Part
+		//	演算精度向上のためこの時点でシフトするように変更 by RyuTak
 		pg_diff_ = (dp_ + dttable[detune_ + bn_]) * chip_->GetMulValue(detune2_, multiple_);
+		pg_diff_ >>= (2 + FM_RATIOBITS - FM_PGBITS);
 		pg_diff_lfo_ = pg_diff_ >> 11;
 
 		// EG Part
 		key_scale_rate_ = bn_ >> (3-ks_);
 		tl_out_ = mute_ ? 0x3ff : tl_ * 8;
-		
+
 		switch (eg_phase_)
 		{
 		case attack:
@@ -401,19 +388,10 @@ void Operator::Prepare()
 		case release:
 			SetEGRate(Min(63, rr_ + key_scale_rate_));
 			break;
+        default:
+            break;
 		}
 
-		// SSG-EG
-		if (ssg_type_ && (eg_phase_ != release))
-		{
-			int m = ar_ >= ((ssg_type_ == 8 || ssg_type_ == 12) ? 56 : 60);
-
-			assert(0 <= ssg_phase_ && ssg_phase_ <= 2);
-			const int* table = ssgenvtable[ssg_type_ & 7][m][ssg_phase_];
-
-			ssg_offset_ = table[0] * 0x200;
-			ssg_vector_ = table[1];
-		}
 		// LFO
 		ams_ = amtable[type_][amon_ ? (ms_ >> 4) & 3 : 0];
 		EGUpdate();
@@ -422,26 +400,16 @@ void Operator::Prepare()
 	}
 }
 //	envelop の eg_phase_ 変更
-void Operator::ShiftPhase(EGPhase nextphase)
+void FASTCALL Operator::ShiftPhase(EGPhase nextphase)
 {
 	switch (nextphase)
 	{
+	case hold:			// EG Level Hold
+		eg_level_ = FM_EG_BOTTOM;
+		eg_level_on_next_phase_ = FM_EG_BOTTOM;
+		break;
 	case attack:		// Attack Phase
 		tl_ = tl_latch_;
-		if (ssg_type_)
-		{
-			ssg_phase_ = ssg_phase_ + 1;
-			if (ssg_phase_ > 2)
-				ssg_phase_ = 1;
-			
-			int m = ar_ >= ((ssg_type_ == 8 || ssg_type_ == 12) ? 56 : 60);
-
-			assert(0 <= ssg_phase_ && ssg_phase_ <= 2);
-			const int* table = ssgenvtable[ssg_type_ & 7][m][ssg_phase_];
-
-			ssg_offset_ = table[0] * 0x200;
-			ssg_vector_ = table[1];
-		}
 		if ((ar_ + key_scale_rate_) < 62)
 		{
 			SetEGRate(ar_ ? Min(63, ar_ + key_scale_rate_) : 0);
@@ -452,32 +420,65 @@ void Operator::ShiftPhase(EGPhase nextphase)
 		if (sl_)
 		{
 			eg_level_ = 0;
-			eg_level_on_next_phase_ = ssg_type_ ? Min(sl_ * 8, 0x200) : sl_ * 8;
+			eg_level_on_next_phase_ = sl_ * 8;
 
 			SetEGRate(dr_ ? Min(63, dr_ + key_scale_rate_) : 0);
 			eg_phase_ = decay;
 			break;
 		}
 	case sustain:		// Sustain Phase
-		eg_level_ = sl_ * 8;
-		eg_level_on_next_phase_ = ssg_type_ ? 0x200 : 0x400;
-
-		SetEGRate(sr_ ? Min(63, sr_ + key_scale_rate_) : 0);
-		eg_phase_ = sustain;
-		break;
-	
-	case release:		// Release Phase
-		if (ssg_type_)
-		{
-			eg_level_ = eg_level_ * ssg_vector_ + ssg_offset_;
-			ssg_vector_ = 1;
-			ssg_offset_ = 0;
+		if (ssg_type_ && (sl_ >= 124)) {
+			//	SSG-EG使用時、SL=15の場合はサスティン処理を省略
+			eg_level_ = eg_level_on_next_phase_ = 0x400;
+			eg_phase_ = release;
 		}
-		if (eg_phase_ == attack || (eg_level_ < FM_EG_BOTTOM)) //0x400/* && eg_phase_ != off*/))
+		else {
+			eg_level_ = sl_ * 8;
+			eg_level_on_next_phase_ = 0x400;
+
+			SetEGRate(sr_ ? Min(63, sr_ + key_scale_rate_) : 0);
+			eg_phase_ = sustain;
+			break;
+		}
+
+	case release:		// Release Phase
+		if (eg_phase_ == attack || (eg_level_ < (ssg_type_ ? 0x400 : FM_EG_BOTTOM))) //0x400/* && eg_phase_ != off*/))
 		{
+			if (ssg_type_) {
+				//	波形反転時の補正
+				if (ssg_type_ & 0x10) {
+					eg_level_ = 1023 - eg_level_;
+				}
+				ssg_type_ &= (uint8)~0x10;
+			}
+
 			eg_level_on_next_phase_ = 0x400;
 			SetEGRate(Min(63, rr_ + key_scale_rate_));
 			eg_phase_ = release;
+			break;
+		}
+		else if (ssg_type_) {
+			if ((ssg_type_ & 3) != 2) {
+				eg_level_ = FM_EG_BOTTOM;
+				eg_level_on_next_phase_ = FM_EG_BOTTOM;
+			}
+			if (ssg_type_ & 1) {
+				//	one shot
+				SetEGRate(0);
+				eg_phase_ = hold;
+			}
+			else {
+				//	repeat
+				SetEGRate(ar_ ? Min(63, ar_ + key_scale_rate_) : 0);
+				eg_phase_ = attack;
+			}
+			if (ssg_type_ & 2) {
+				//	alternate
+				ssg_type_ ^= (uint8)0x10;
+				if (!(ssg_type_ & 1)) {
+					eg_level_ = eg_level_on_next_phase_ = 0;
+				}
+			}
 			break;
 		}
 	case off:			// off
@@ -492,7 +493,7 @@ void Operator::ShiftPhase(EGPhase nextphase)
 }
 
 //	Block/F-Num
-void Operator::SetFNum(uint f)
+void FASTCALL Operator::SetFNum(uint f)
 {
 	dp_ = (f & 2047) << ((f >> 11) & 7);
 	bn_ = notetable[(f >> 7) & 127];
@@ -521,27 +522,40 @@ inline FM::ISample Operator::LogToLin(uint a)
 
 inline void Operator::EGUpdate()
 {
+//	int tmp;
+
 	if (!ssg_type_)
 	{
 		eg_out_ = Min(tl_out_ + eg_level_, 0x3ff) << (1 + 2);
 	}
 	else
 	{
-		eg_out_ = Min(tl_out_ + eg_level_ * ssg_vector_ + ssg_offset_, 0x3ff) << (1 + 2);
+		//	波形反転
+		if ((ssg_type_ & 0x18) == 0x18) {
+			ssg_vector_ = -1;
+			ssg_offset_ = 1023;
+		}
+		else {
+			ssg_vector_ = 1;
+			ssg_offset_ = 0;
+		}
+		eg_out_ = Max(0, Min(tl_out_ + eg_level_ * ssg_vector_ + ssg_offset_, 0x3ff)) << (1 + 2);
 	}
 }
 
-inline void Operator::SetEGRate(uint rate)
+inline void FASTCALL Operator::SetEGRate(uint rate)
 {
 	eg_rate_ = rate;
-	eg_count_diff_ = decaytable2[rate / 4] * chip_->GetRatio();
+	eg_count_diff_ = decaytable2[rate / 4]; 			// ## ratio != 1 対策が必要
 }
 
 //	EG 計算
-void FM::Operator::EGCalc()
+void FASTCALL FM::Operator::EGCalc()
 {
-	eg_count_ = (2047 * 3) << FM_RATIOBITS;				// ##この手抜きは再現性を低下させる
-	
+	//	とりあえず合成周波数変更対策 by RyuTak
+	eg_count_ = (2047 * 3 * (1 << FM_RATIOBITS)) / chip_->ratio_;
+											// ##この手抜きは再現性を低下させる
+
 	if (eg_phase_ == attack)
 	{
 		int c = attacktable[eg_rate_][eg_curve_count_ & 7];
@@ -551,38 +565,23 @@ void FM::Operator::EGCalc()
 			if (eg_level_ <= 0)
 				ShiftPhase(decay);
 		}
-		EGUpdate();
 	}
 	else
 	{
-		if (!ssg_type_)
+		if (!ssg_type_ || (eg_phase_ == release))
 		{
 			eg_level_ += decaytable1[eg_rate_][eg_curve_count_ & 7];
 			if (eg_level_ >= eg_level_on_next_phase_)
 				ShiftPhase(EGPhase(eg_phase_+1));
-			EGUpdate();
 		}
 		else
 		{
-			eg_level_ += 4 * decaytable1[eg_rate_][eg_curve_count_ & 7];
+			eg_level_ += 8 * decaytable1[eg_rate_][eg_curve_count_ & 7];
 			if (eg_level_ >= eg_level_on_next_phase_)
-			{
-				EGUpdate();
-				switch (eg_phase_)
-				{
-				case decay:
-					ShiftPhase(sustain);
-					break;
-				case sustain:
-					ShiftPhase(attack);
-					break;
-				case release:
-					ShiftPhase(off);
-					break;
-				}
-			}
+				ShiftPhase(EGPhase(eg_phase_+1));
 		}
 	}
+	EGUpdate();
 	eg_curve_count_++;
 }
 
@@ -643,10 +642,10 @@ inline FM::ISample FM::Operator::CalcL(ISample in)
 inline FM::ISample FM::Operator::CalcN(uint noise)
 {
 	EGStep();
-	
+
 	int lv = Max(0, 0x3ff - (tl_out_ + eg_level_)) << 1;
-	
-	// noise & 1 ? lv : -lv と等価 
+
+	// noise & 1 ? lv : -lv と等価
 	noise = (noise & 1) - 1;
 	out_ = (lv + noise) ^ noise;
 
@@ -677,7 +676,7 @@ inline FM::ISample FM::Operator::CalcFB(uint fb)
 inline FM::ISample FM::Operator::CalcFBL(uint fb)
 {
 	EGStep();
-	
+
 	ISample in = out_ + out2_;
 	out2_ = out_;
 
@@ -723,7 +722,7 @@ void Channel4::MakeTable()
 }
 
 // リセット
-void Channel4::Reset()
+void FASTCALL Channel4::Reset()
 {
 	op[0].Reset();
 	op[1].Reset();
@@ -732,13 +731,13 @@ void Channel4::Reset()
 }
 
 //	Calc の用意
-int Channel4::Prepare()
+int FASTCALL Channel4::Prepare()
 {
 	op[0].Prepare();
 	op[1].Prepare();
 	op[2].Prepare();
 	op[3].Prepare();
-	
+
 	pms = pmtable[op[0].type_][op[0].ms_ & 7];
 	int key = (op[0].IsOn() | op[1].IsOn() | op[2].IsOn() | op[3].IsOn()) ? 1 : 0;
 	int lfo = op[0].ms_ & (op[0].amon_ | op[1].amon_ | op[2].amon_ | op[3].amon_ ? 0x37 : 7) ? 2 : 0;
@@ -746,42 +745,40 @@ int Channel4::Prepare()
 }
 
 //	F-Number/BLOCK を設定
-void Channel4::SetFNum(uint f)
+void FASTCALL Channel4::SetFNum(uint f)
 {
 	for (int i=0; i<4; i++)
 		op[i].SetFNum(f);
 }
 
+
 //	KC/KF を設定
-void Channel4::SetKCKF(uint kc, uint kf)
+void FASTCALL Channel4::SetKCKF(uint kc, uint kf)
 {
-	const static uint kctable[16] = 
-	{ 
-		5197, 5506, 5833, 6180, 6180, 6547, 6937, 7349, 
-		7349, 7786, 8249, 8740, 8740, 9259, 9810, 10394, 
+	// 理論値
+	const static uint kctable[16] =
+	{
+		5197, 5506, 5833, 6180, 6180, 6547, 6937, 7349,
+		7349, 7786, 8249, 8740, 8740, 9259, 9810, 10394,
 	};
 
 	int oct = 19 - ((kc >> 4) & 7);
 
-//printf("%p", this);
 	uint kcv = kctable[kc & 0x0f];
 	kcv = (kcv + 2) / 4 * 4;
-//printf(" %.4x", kcv);
 	uint dp = kcv * kftable[kf & 0x3f];
-//printf(" %.4x %.4x %.8x", kcv, kftable[kf & 0x3f], dp >> oct);
 	dp >>= 16 + 3;
 	dp <<= 16 + 3;
-	dp >>= oct;	
+	dp >>= oct;
 	uint bn = (kc >> 2) & 31;
 	op[0].SetDPBN(dp, bn);
 	op[1].SetDPBN(dp, bn);
 	op[2].SetDPBN(dp, bn);
 	op[3].SetDPBN(dp, bn);
-//printf(" %.8x\n", dp);
 }
 
 //	キー制御
-void Channel4::KeyControl(uint key)
+void FASTCALL Channel4::KeyControl(uint key)
 {
 	if (key & 0x1) op[0].KeyOn(); else op[0].KeyOff();
 	if (key & 0x2) op[1].KeyOn(); else op[1].KeyOff();
@@ -790,9 +787,9 @@ void Channel4::KeyControl(uint key)
 }
 
 //	アルゴリズムを設定
-void Channel4::SetAlgorithm(uint algo)
+void FASTCALL Channel4::SetAlgorithm(uint algo)
 {
-	static const uint8 table1[8][6] = 
+	static const uint8 table1[8][6] =
 	{
 		{ 0, 1, 1, 2, 2, 3 },	{ 1, 0, 0, 1, 1, 2 },
 		{ 1, 1, 1, 0, 0, 2 },	{ 0, 1, 2, 1, 1, 2 },
@@ -812,9 +809,9 @@ void Channel4::SetAlgorithm(uint algo)
 }
 
 //  合成
-ISample Channel4::Calc()
+ISample FASTCALL Channel4::Calc()
 {
-	int r;
+	int r = 0;
 	switch (algo_)
 	{
 	case 0:
@@ -870,11 +867,11 @@ ISample Channel4::Calc()
 }
 
 //  合成
-ISample Channel4::CalcL()
+ISample FASTCALL Channel4::CalcL()
 {
 	chip_->SetPMV(pms[chip_->GetPML()]);
 
-	int r;
+	int r = 0;
 	switch (algo_)
 	{
 	case 0:
@@ -930,7 +927,7 @@ ISample Channel4::CalcL()
 }
 
 //  合成
-ISample Channel4::CalcN(uint noise)
+ISample FASTCALL Channel4::CalcN(uint noise)
 {
 	buf[1] = buf[2] = buf[3] = 0;
 
@@ -943,12 +940,12 @@ ISample Channel4::CalcN(uint noise)
 }
 
 //  合成
-ISample Channel4::CalcLN(uint noise)
+ISample FASTCALL Channel4::CalcLN(uint noise)
 {
 	chip_->SetPMV(pms[chip_->GetPML()]);
 	buf[1] = buf[2] = buf[3] = 0;
 
-	buf[0] = op[0].out_; op[0].CalcFBL(fb); 
+	buf[0] = op[0].out_; op[0].CalcFBL(fb);
 	*out[0] += op[1].CalcL(*in[0]);
 	*out[1] += op[2].CalcL(*in[1]);
 	int o = op[3].out_;

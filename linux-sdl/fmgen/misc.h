@@ -1,69 +1,82 @@
-// ---------------------------------------------------------------------------
-//	misc.h
-//	Copyright (C) cisc 1998, 1999.
-// ---------------------------------------------------------------------------
-//	$Id: misc.h,v 1.5 2002/05/31 09:45:20 cisc Exp $
+/*
+ *      FM-7 EMULATOR "XM7"
+ *
+ *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2010 Ryu Takegami
+ *
+ *      [ FM音源ユニット接続 ]
+ */
 
-#ifndef MISC_H
-#define MISC_H
+#ifndef _cisc_h_
+#define _cisc_h_
 
-inline int Max(int x, int y) { return (x > y) ? x : y; }
-inline int Min(int x, int y) { return (x < y) ? x : y; }
-inline int Abs(int x) { return x >= 0 ? x : -x; }
+#include <math.h>
+#include <string.h>
 
-inline int Limit(int v, int max, int min) 
-{ 
-	return v > max ? max : (v < min ? min : v); 
-}
+#ifndef assert
+#define assert(exp)	(void(0))
+#endif
 
-inline unsigned int BSwap(unsigned int a)
+#define LOG0(m)		void (0)
+#define LOG1(m,a)	void (0)
+#define LOG2(m,a,b)	void (0)
+#define LOG3(m,a,b,c)	void (0)
+#define LOG4(m,a,b,c,d)	void (0)
+#define LOG5(m,a,b,c,d,e)	void (0)
+#define LOG6(m,a,b,c,d,e,f)	void (0)
+#define LOG7(m,a,b,c,d,e,f,g)	void (0)
+#define LOG8(m,a,b,c,d,e,f,g,h)	void (0)
+#define LOG9(m,a,b,c,d,e,f,g,h,i)	void (0)
+
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+
+typedef signed char sint8;
+typedef signed short sint16;
+typedef signed int sint32;
+
+typedef signed char int8;
+typedef signed short int16;
+typedef signed int int32;
+
+inline int
+Max(int x, int y)
 {
-	return (a >> 24) | ((a >> 8) & 0xff00) | ((a << 8) & 0xff0000) | (a << 24);
+    return (x > y) ? x : y;
 }
 
-inline unsigned int NtoBCD(unsigned int a)
+inline int
+Min(int x, int y)
 {
-	return ((a / 10) << 4) + (a % 10);
+    return (x < y) ? x : y;
 }
 
-inline unsigned int BCDtoN(unsigned int v)
+inline int
+Abs(int x)
 {
-	return (v >> 4) * 10 + (v & 15);
+    return x >= 0 ? x : -x;
 }
 
-
-template<class T>
-inline T gcd(T x, T y)
+inline int
+Limit(int v, int max, int min)
 {
-	T t;
-	while (y)
-	{
-		t = x % y;
-		x = y;
-		y = t;
-	}
-	return x;
+    return v > max ? max : (v < min ? min : v);
 }
 
+#define FASTCALL
 
-template<class T>
-T bessel0(T x)
-{
-	T p, r, s;
+#if !defined(FASTCALL)
+#if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && defined(_M_IX86)))
+#define FASTCALL		__fastcall
+#else
+#define FASTCALL
+#endif
+#endif
 
-	r = 1.0;
-	s = 1.0;
-	p = (x / 2.0) / s;
-
-	while (p > 1.0E-10)
-	{
-		r += p * p;
-		s += 1.0;
-		p *= (x / 2.0) / s;
-	}
-	return r;
-}
-
-
-#endif // MISC_H
-
+#endif				/* _cisc_h_ */

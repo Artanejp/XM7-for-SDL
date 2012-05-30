@@ -2,17 +2,18 @@
 //	FM Sound Generator
 //	Copyright (C) cisc 1998, 2001.
 // ---------------------------------------------------------------------------
-//	$Id: fmgen.h,v 1.37 2003/08/25 13:33:11 cisc Exp $
+//	$Id: fmgen.h,v 1.26 2001/03/30 01:05:52 cisc Exp $
 
 #ifndef FM_GEN_H
 #define FM_GEN_H
 
-//#include "types.h"
+#include "misc.h"
 
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
 //
 #define FM_SAMPLETYPE	int32				// int16 or int32
+//#define FM_SAMPLETYPE	int16				// int16 or int32
 
 // ---------------------------------------------------------------------------
 //	定数その１
@@ -37,9 +38,10 @@ namespace FM
 	//	Types ----------------------------------------------------------------
 	typedef FM_SAMPLETYPE	Sample;
 	typedef int32 			ISample;
+//	typedef int16 			ISample;
 
 	enum OpType { typeN=0, typeM=1 };
-
+	
 	void StoreSample(ISample& dest, int data);
 
 	class Chip;
@@ -51,17 +53,17 @@ namespace FM
 		Operator();
 		void	SetChip(Chip* chip) { chip_ = chip; }
 
-		static void	MakeTimeTable(uint ratio);
+		static void FASTCALL	MakeTimeTable(uint ratio);
 		
 		ISample	Calc(ISample in);
 		ISample	CalcL(ISample in);
 		ISample CalcFB(uint fb);
 		ISample CalcFBL(uint fb);
 		ISample CalcN(uint noise);
-		void	Prepare();
+		void	FASTCALL Prepare();
 		void	KeyOn();
 		void	KeyOff();
-		void	Reset();
+		void	FASTCALL Reset();
 		void	ResetFB();
 		int		IsOn();
 
@@ -76,20 +78,19 @@ namespace FM
 		void	SetRR(uint rr);
 		void	SetSL(uint sl);
 		void	SetSSGEC(uint ssgec);
-		void	SetFNum(uint fnum);
+		void	FASTCALL SetFNum(uint fnum);
 		void	SetDPBN(uint dp, uint bn);
-		void	SetMode(bool modulator);
+		void	FASTCALL SetMode(bool modulator);
 		void	SetAMON(bool on);
 		void	SetMS(uint ms);
 		void	Mute(bool);
 		
-//		static void SetAML(uint l);
-//		static void SetPML(uint l);
+		static void SetAML(uint l);
+		static void SetPML(uint l);
 
 		int		Out() { return out_; }
 
 		int		dbgGetIn2() { return in2_; } 
-		void	dbgStopPG() { pg_diff_ = 0; pg_diff_lfo_ = 0; }
 		
 	private:
 		typedef uint32 Counter;
@@ -111,13 +112,13 @@ namespace FM
 		int32	pg_diff_lfo_;	// Phase 差分値 >> x
 
 	//	Envelop Generator ---------------------------------------------------
-		enum	EGPhase { next, attack, decay, sustain, release, off };
+		enum	EGPhase { next, attack, decay, sustain, release, off, hold };
 		
-		void	EGCalc();
+		void	FASTCALL EGCalc();
 		void	EGStep();
-		void	ShiftPhase(EGPhase nextphase);
+		void	FASTCALL ShiftPhase(EGPhase nextphase);
 		void	SSGShiftPhase(int mode);
-		void	SetEGRate(uint);
+		void	FASTCALL SetEGRate(uint);
 		void	EGUpdate();
 		int		FBCalc(int fb);
 		ISample LogToLin(uint a);
@@ -153,12 +154,12 @@ namespace FM
 		uint	sl_;			// Sustain Level (0-127)
 		uint	rr_;			// Release Rate  (0-63)
 		uint	ks_;			// Keyscale      (0-3)
-		uint	ssg_type_;	// SSG-Type Envelop Control
+		uint	ssg_type_;		// SSG-Type Envelop Control
 
 		bool	keyon_;
-		bool	amon_;		// enable Amplitude Modulation
+		bool	amon_;			// enable Amplitude Modulation
 		bool	param_changed_;	// パラメータが更新された
-		bool	mute_;
+		bool	mute_;			// オペレータ別のミュート状態
 		
 	//	Tables ---------------------------------------------------------------
 		static Counter rate_table[16];
@@ -181,14 +182,11 @@ namespace FM
 
 	//	friends --------------------------------------------------------------
 		friend class Channel4;
-//		friend void __stdcall FM_NextPhase(Operator* op);
 		friend void FM_NextPhase(Operator* op);
 
 	public:
 		int		dbgopout_;
 		int		dbgpgout_;
-		static const int32* dbgGetClTable() { return cltable; }
-		static const uint* dbgGetSineTable() { return sinetable; }
 	};
 	
 	//	4-op Channel ---------------------------------------------------------
@@ -197,24 +195,22 @@ namespace FM
 	public:
 		Channel4();
 		void SetChip(Chip* chip);
-		void SetType(OpType type);
+		void FASTCALL SetType(OpType type);
 		
-		ISample Calc();
-		ISample CalcL();
-		ISample CalcN(uint noise);
-		ISample CalcLN(uint noise);
-		void SetFNum(uint fnum);
+		ISample FASTCALL Calc();
+		ISample FASTCALL CalcL();
+		ISample FASTCALL CalcN(uint noise);
+		ISample FASTCALL CalcLN(uint noise);
+		void FASTCALL SetFNum(uint fnum);
 		void SetFB(uint fb);
-		void SetKCKF(uint kc, uint kf);
-		void SetAlgorithm(uint algo);
-		int Prepare();
-		void KeyControl(uint key);
-		void Reset();
+		void FASTCALL SetKCKF(uint kc, uint kf);
+		void FASTCALL SetAlgorithm(uint algo);
+		int FASTCALL Prepare();
+		void FASTCALL KeyControl(uint key);
+		void FASTCALL Reset();
 		void SetMS(uint ms);
 		void Mute(bool);
 		void Refresh();
-
-		void dbgStopPG() { for (int i=0; i<4; i++) op[i].dbgStopPG(); }
 		
 	private:
 		static const uint8 fbtable[8];
@@ -225,6 +221,7 @@ namespace FM
 		int*	pms;
 		int		algo_;
 		Chip*	chip_;
+		bool	mute_;
 
 		static void MakeTable();
 
@@ -250,17 +247,19 @@ namespace FM
 		uint	GetAML() { return aml_; }
 		uint	GetPML() { return pml_; }
 		int		GetPMV() { return pmv_; }
-		uint	GetRatio() { return ratio_; }
+
+		uint	ratio_;
 
 	private:
 		void	MakeTable();
 
-		uint	ratio_;
+
 		uint	aml_;
 		uint	pml_;
 		int		pmv_;
 		OpType	optype_;
 		uint32	multable_[4][16];
+		uint32	ratetable_[16];
 	};
 }
 
