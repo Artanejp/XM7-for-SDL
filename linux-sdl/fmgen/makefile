@@ -33,15 +33,19 @@ Release/libfmgen007a.a: ${OBJS_RELEASE}
 	ar crv $@ ${OBJS_RELEASE}
 
 Release/%.o: %.c
+	mkdir -p Release
 	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
 
 Release/%.o: %.cpp
+	mkdir -p Release
 	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
 Debug/%.o: %.c
+	mkdir -p Debug
 	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
 
 Debug/%.o: %.cpp
+	mkdir -p Debug
 	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
 
