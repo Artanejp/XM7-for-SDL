@@ -174,6 +174,7 @@ static void UpdateCMTMessages(char *string)
 	rect.h = nCMTHeight;
 	rect.w = nCMTWidth;
 
+        AG_SurfaceLock(pCMTRead);
         AG_FillRect(pCMTRead, &rect, r);
 	AG_TextColor(black);
 	AG_TextBGColor(r);
@@ -184,9 +185,11 @@ static void UpdateCMTMessages(char *string)
 	AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
 	AG_SurfaceFree(tmp);
 //        AG_ObjectUnlock(pCMTRead);
+        AG_SurfaceUnlock(pCMTRead);
 
 
 
+        AG_SurfaceLock(pCMTWrite);
 	AG_FillRect(pCMTWrite, &rect, b);
 	AG_TextColor(black);
 	AG_TextBGColor(b);
@@ -195,9 +198,11 @@ static void UpdateCMTMessages(char *string)
 //         if(tmp->h < rect.w) rect.h = tmp->h;
 	AG_SurfaceBlit(tmp, &rect, pCMTWrite, 0, 0);
 	AG_SurfaceFree(tmp);
+        AG_SurfaceUnlock(pCMTWrite);
 
 
 
+        AG_SurfaceLock(pCMTNorm);
 	AG_FillRect(pCMTNorm, &rect, black);
 	AG_TextColor(n);
 	AG_TextBGColor(black);
@@ -206,6 +211,7 @@ static void UpdateCMTMessages(char *string)
 //         if(tmp->h < rect.w) rect.h = tmp->h;
 	AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
 	AG_SurfaceFree(tmp);
+        AG_SurfaceUnlock(pCMTNorm);
     AG_PopTextState();
 }
 
