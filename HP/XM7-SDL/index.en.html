@@ -1,0 +1,206 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>XM-7 for SDL</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<FONT SIZE=+4>FM-7 Emulator "XM7" for SDL.</FONT><BR>
+<BR>
+Sorry, under costraction and poor english ,Yet...<BR>
+<BR>
+<B><A HREF="./index.html">日本語</A></B><BR>
+<BR>
+<BR>
+<H2>Table of contents:</H2>
+&nbsp; <A HREF="#links">Links</A><BR>
+&nbsp; <A HREF="#changelogs">Changelogs</A><BR>
+&nbsp; <A HREF="#installation">How to install</A><BR>
+&nbsp; <A HREF="#todo">TODO</A><BR>
+&nbsp; <A HREF="#older">Older</A><BR>
+<BR>
+&nbsp; <A HREF="../ELECTRONICS/">NEW: Electronics pages (Japanese only)</A><BR>
+&nbsp; <A HREF="http://sky.geocities.jp/artanejp/">Back to home.</A><BR>
+<BR>
+<B>Releases,<BR>
+*  Version 0.2r423 (OpenGL or SDLFB+Agar Spec  / Beta level) Feb 03,2012<BR>
+*  Version 0.1r129 (alpha level) Oct 26,2010<BR>
+</B><BR>
+You need <A HREF="http://sevenzip.sourceforge.jp/" target="_blank">7zip</A> on extract<BR>
+<BR>
+<BR>
+<H2>Downloads：</H2>
+<A
+HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-sdl-linux-amd64.0.2r423.7z">
+Source code + GNU/Linux amd64 binaries (OpenGL or SDLFB r423 with <A HRE="http://libagar.org" target="_blank" >libagar toolkit</A>, maybe gamma or rc as soon as ;)</A><BR>
+<BR>
+<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/agar-svn-head.r9049.src.7z">
+Sourcecode of libagar svn r9049.</A><BR>
+<BR>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
+GNU/Linux amd64 binaries with sourcecode.(r128 Unstable, but functional, maybe... )</A><BR>
+<BR>
+・GIT Repository(NEW!)：<BR>
+<B>（※2012-05-31 Moved from unfuddle's SVN to github.）</B><BR>
+<A HREF="https://github.com/Artanejp/XM7-for-SDL" target="_blank">https://github.com/Artanejp/XM7-for-SDL</A><BR>
+<BR>
+OR
+<BR>
+<B>
+git clone git://github.com/Artanejp/XM7-for-SDL.git <BR>
+cd linux-sdl <BR>
+</B><BR>
+<BR>
+<A NAME="changelogs"></A>
+<H2>Changes:</H2>
+- <B>Fix "10 20" undefined opcode (as LBRA) was not recognaized（No other bugs on MPU? ^^;）(NEW!)</B><BR>
+- <B>Re-implement LEDS,FDDS,.. as Agar-Wieget.(NEW!)</B><BR>
+- <B>More faster video and sound, using 
+<A HREF="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html" target="_blank">Vector extension of GCC</A>(NEW!).</B>
+But not yet using CPU-specified functions.<BR>
+- <B>Build with gcc-4.4 (if 4.5 or later, or , 4.3 or earlier , maybe
+produce bugs on vector extensions; Fixed on resentry gites(NEW!)</B><BR>
+- <B>Multi-threaded drawing with Open MP(NEW!)</B><BR>
+- <B>Implement no-GL drawing, set -d sdlfb with commandline.(NEW!)</B><BR>
+- But, on W=320, segfault (Fixed on recently git).(NEW!)<BR>
+- <B>More, more, Bug Fixed(NEW!)</B><BR>
+<BR>
+<H2>Older Changes:</H2>
+- <B>All C/C++ (not assembler).</B><BR>
+- <B>Re-implement wav captureing , from scratch.</B><BR>
+- <B>Using Agar ToolKit ( <A HREF="http://www.libagar.org/"
+target="_blank">http://www.libagar.org/</A>), replace from GTK</B><BR>
+- <B>Set font-face from command-line.</B><BR>
+- <B>Fix keyboard assign customized.</B><BR>
+- <B>Fix TFR/EXG ops on MPU.</B><BR>
+- <B>Fix flags[8|16] ops on MPU.(really?)</B><BR>
+<BR>
+- Support differential drawing, reduce CPU usage.(Maybe)<BR>
+- Fix musics using BEEP (maybe?)<BR>
+- SDL_mixer depended audio.<BR>
+- Using <del>SDL_ttf</del>AGAR on OSD<BR>
+- Change IDE to CODE::Blocks.(Eclipse was not useful )<BR>
+- Change M6809 core  based on <A HREF="http://rbelmont.mameworld.info/?page_id=163" target="_blank">SDLMESS 0.136</A>.<BR>
+- Place on ~/.xm7 , setting files, R@Ms...<BR>
+- Classfied drawings, sounds (mostry from scratch).<BR>
+- Selectable drawing fps from 1 to <B>75</B>.<BR>
+- Moduleo drawing(NEW!)<BR>
+- Open GL rendrer.<BR>
+- Add virtual keyboard.<BR>
+- DOS Bootmode<BR>
+- Threades draw.<BR>
+etc...<BR>
+<BR>
+<A NAME="todo"></A>
+<H2>TODO:</H2>
+- Track to upstream newer.<BR>
+- Merge<A HREF="http://tomatoma.s54.xrea.com/">XM7'</A> and <A HREF="http://motor.geocities.jp/a160_1930/FM-7/XM7LP/">XM7LP</A><B>
+- Perfect GUIs<BR>
+- Develop *useful* debugger.（maybe from full-scratch）<BR>
+- Enable build on MinGW.<BR>
+- Support ARM<BR>
+- More faster, faster... (;_;)<BR>
+- Can merge CPU / OS depended code.<BR>
+- More modulo and separate to library.<BR>
+- <B>More improve quality!</B><BR>
+- Make installer（´・ω・｀）<BR>
+etc...<BR>
+<BR>
+<A NAME="installation"></A>
+<H2>Install:</H2>
+- make ; sudo make install　(0.2β or later)。<BR>
+But not bundled libagar's sourcecode and fonts.<BR>
+- <B>You need <A HREF="http://retropc.net/fm-7/museum/exhibition/f-font/index.html"
+target="_blank>F-Font</A> , and rebuild codespace LATIN to ISO10646
+using FontForge (or others).</B><BR> 
+- You need <A
+HREF="http://www.libagar.org/"target="_blank">AGAR</A>1.4.1,
+OpenGL,SDL and SDL_Mixer on playing.<BR>
+(I bundled binary of libagar on xm7-binary-package...)
+- Strong recommand<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/agar-svn-head.r9049.src.7z">
+1.4.1SVN9049 or later .(Sourcecode of r9049)</A><BR>
+- You need more font:<B><A
+HREF="http://ossipedia.ipa.go.jp/ipafont/index.html" target="_blank">IPA Gothic(V3)</A>.</B>
+If not include your system, place to $HOME or current directory.(NEW!)<BR>
+- Install bin/xm7 and bin/xm7.debug  to /usr/local/bin. <BR>
+- Install items below src/resource/  to /usr/local/share/xm7 .<BR>
+- Install libagar/ to /usr/local . You must it , from dependency of
+libagar.<BR>
+- you must "sudo ldconfig". <BR>
+<BR>
+<HR>
+<A NAME="older"></A>
+<H2>Older (in Japanese):</H2>
+<BR>
+<H5>Version 0.2r369 Nov 17,2011</H5>
+<A
+HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-sdl-linux-amd64.0.2r369.7z">
+本体ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r369 少し？Unstableだがたぶんうごくはずだ)</A><BR>
+<BR>
+<H5>Version 0.1r346 Sep 06,2011</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.2r346-libagar9027.7z">
+本体ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r346 少し？Unstableだがたぶんうごくはずだ)</A><BR>
+<BR>
+<H5>Version 0.1r254 Mar 10,2011</H5>
+<A
+HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r254.7z">
+ソースコード+GNU/Linux amd64バイナリ(OpenGL専用 r254 極めてUnstableだがたぶんうごくはずだ)</A><BR>
+<BR>
+<B>(ディスク整理のために省略)</B><BR>
+<H5>0.1r57 ??,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl_0.1r57.7z">ソースコード+GNU/Linux ia32/amd64バイナリ(Unstableだがたぶんうごくはずだ)</A><BR>
+<H5>0.1r45 Apr.29,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r45.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+<H5>0.1r42 Apr.02,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r42.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+<H5>0.1r30 Feb.02,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl.0.1-r30.tar.bz2">ソースコード+GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+<BR>
+<H5>0.1r15 Jan.31,2010</H5>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-bin.0.1.r15.tar.bz2">GNU/Linux ia32/amd64バイナリ(たぶんうごくはずだ)</A><BR>
+<BR>
+<A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-src.0.1.r15.tar.bz2">ソースコード</A><BR>
+<BR>
+This software is no warranty, and break your environment cause of
+primary-developing ^_^; <BR>
+<BR>
+<HR>
+<A NAME="links"></A>
+<H2>Links：</H2>
+- XM-7 upstream by Riu Takegami. <A HREF="http://retropc.net/ryu/xm7/">http://retropc.net/ryu/xm7/</A><BR>
+- Origin XM-7 , PI.'s page. <A HREF="http://ytanaka.vicp.net/fm7/xm7.html">http://ytanaka.vicp.net/fm7/xm7.html</A><BR>
+- Origin of XM7/SDL is Linux-GTK version. Developer is GIMONS. <A HREF="http://www.geocities.jp/kugimoto0715/">http://www.geocities.jp/kugimoto0715/</A><BR>
+- Apollo's XM7 aid page.(Compatible ROM is here!)<A HREF="http://retropc.net/apollo/">http://retropc.net/apollo/</A><BR>
+- <A HREF="http://tomatoma.s54.xrea.com/">XM7'</A><BR>
+- <A HREF="http://motor.geocities.jp/a160_1930/FM-7/XM7LP/">XM7LP</A><BR>
+<BR>
+<BR>
+<HR>
+From README：
+<blockquote>
+****<BR>
+* FM-7/77/AV エミュレータ、XM7 V3.4L30 for SDL/Linux<BR>
+*  Version 0.1r369 (βレベル ＼(^o^)／)<BR>
+*  Copyright (C) 1999-2003 ＰＩ．(ytanaka＠ipc-tokai.or.jp)<BR> 
+*  Copyright (C) 2001-2003 Ryu Takegami<BR>
+*  Copyright (C) 2004 GIMONS<BR>
+*  Copyright (C) 2010/2011 K.Ohta <BR>
+*<BR>
+* Since 2010.01.31 Artane.<BR>
+* HP:<BR>
+* <A HREF="http://sky.geocities.jp/artanejp/">http://sky.geocities.jp/artanejp/XM7-SDL/</A><BR>
+* Git:<BR>
+* <A HREF="https://github.com/Artanejp/XM7-for-SDL/ target="_blank"">https://github.com/Artanejp/XM7-for-SDL</A><BR>
+(以下略 ^^;)</br>
+<BR>
+<A HREF="http://sky.geocities.jp/artanejp/">Go to home!</A><BR>
+<BR>
+Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
