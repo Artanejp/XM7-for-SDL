@@ -87,6 +87,7 @@ void DumpObject::InitFont(void)
 
     AG_PushTextState();
     SymFont = AG_TextFontLookup("F-Font_Symbol_Unicode.ttf", 16, 0);
+//    SymFont = AG_TextFontLookup("F-Font_Symbol.ttf", 16, 0);
     if(SymFont == NULL) { // Fallback
         SymFont = AG_TextFontPts(16);//  16pts
     }
@@ -208,12 +209,14 @@ static Uint32 SymFontListE0[] =
 BOOL DumpObject::Sym2UCS4(BYTE b, Uint32 *disp)
 {
    Uint32 ucs;
+   
    disp[0] = '\0';
    if((b >= 0x80) && (b <= 0xa0)){
      ucs = SymFontList80[b - 0x80];
 //     ucs = b;
   } else if((b >= 0xd0) && (b <= 0xff)) {  
      ucs = SymFontListE0[b - 0xe0];
+//     ucs = b;
   } else {
       return FALSE;
   }

@@ -191,6 +191,7 @@ static void OnResetCycles(AG_Event *event)
 	AG_NumericalSetValue(NumSub, (double)SUBCYCLES);
 	AG_NumericalSetValue(NumMainMMR, (double)MAINCYCLES_MMR);
 	AG_NumericalSetValue(NumMainFMMR, (double)MAINCYCLES_FMMR);
+        AG_WidgetUpdate(AGWIDGET(NumMain));
 	localconfig.main_speed = MAINCYCLES;
 	localconfig.sub_speed = SUBCYCLES;
 	localconfig.mmr_speed = MAINCYCLES_MMR;
@@ -209,6 +210,8 @@ void ConfigMenuVMSpeed(AG_NotebookTab *parent)
 	AG_NumericalSetIncrement(NumMain, 1);
 	AG_BindUint32(NumMain, "value", &localconfig.main_speed);
 
+   
+   
 	NumSub = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Sub CPU") );
 	AG_NumericalSetRangeInt(NumSub, 2, 9999);
 	AG_NumericalSetIncrement(NumSub, 1);
