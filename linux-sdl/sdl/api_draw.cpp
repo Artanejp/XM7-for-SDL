@@ -44,7 +44,7 @@
 #endif /* USE_OPENGL */
 #endif /* USE_AGAR */
 
-#include "sdl.h"
+//#include "sdl.h"
 
 #include "api_vram.h"
 #include "api_draw.h"

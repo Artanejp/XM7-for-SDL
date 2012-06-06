@@ -27,17 +27,14 @@ typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
 
-
 /* 64bit */
-typedef Uint8 BYTE;
-typedef Uint16 WORD;
-typedef Uint32 DWORD;
+typedef uint8_t BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef int     BOOL;
+#else
 typedef int     BOOL;
 #endif
-//typedef Sint8 int8_t;
-//typedef Sint16 int16_t;
-//typedef Sint32 int32_t;
-
 
 // Vector
 #if defined(_X86INTRIN_H_INCLUDED) 

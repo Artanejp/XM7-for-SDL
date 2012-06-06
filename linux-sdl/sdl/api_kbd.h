@@ -17,9 +17,9 @@
 #include "event.h"
 #ifdef USE_AGAR
 #ifndef _WINDOWS
-#include <SDL.h>
+#include <SDL/SDL.h>
 
-#include <SDL_syswm.h>
+#include <SDL/SDL_syswm.h>
 #endif
 #include <agar/core.h>
 #include <agar/core/types.h>
@@ -27,9 +27,9 @@
 
 #include "agar_xm7.h"
 #else
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include "sdl.h"
+#include <SDL/SDL.h>
+#include <SDL/SDL_syswm.h>
+#include "xm7_sdl.h"
 #endif
 #include "sdl_sch.h"
 //#include "sdl_kbd.h"

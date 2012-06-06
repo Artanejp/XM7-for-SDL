@@ -21,7 +21,7 @@
 
 
 
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_sch.h"
 
 #include "api_wavwriter.h"

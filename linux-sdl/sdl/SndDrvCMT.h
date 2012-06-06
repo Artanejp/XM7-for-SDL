@@ -12,7 +12,7 @@
 #include "device.h"
 #include "mainetc.h"
 #include "tapelp.h"
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_sch.h"
 
 #include "SndDrvIF.h"

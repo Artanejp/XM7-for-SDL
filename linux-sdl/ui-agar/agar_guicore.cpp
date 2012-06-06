@@ -23,7 +23,7 @@ extern "C" {
 #include "agar_sdlview.h"
 #include "agar_osd.h"
 #else
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_cfg.h"
 #endif
 

@@ -7,8 +7,8 @@
 
 
 #include "xm7.h"
-#include "sdl.h"
-#include <SDL.h>
+#include "xm7_sdl.h"
+#include <SDL/SDL.h>
 #include "SDLKbdInterface.h"
 
 /*

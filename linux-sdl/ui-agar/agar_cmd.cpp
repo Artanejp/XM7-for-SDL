@@ -35,7 +35,7 @@
 #include "agar_xm7.h"
 #include "agar_cfg.h"
 #else
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_cfg.h"
 #include "sdl_prop.h"
 #endif

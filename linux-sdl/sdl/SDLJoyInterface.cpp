@@ -20,7 +20,7 @@
 #include "device.h"
 #include "mouse.h"
 #include "event.h"
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "api_js.h"

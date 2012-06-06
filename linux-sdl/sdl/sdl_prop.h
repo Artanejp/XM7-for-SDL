@@ -4,7 +4,6 @@
  * [GTK改] (C) 2010 K.Ohta
  */  
     
-#ifdef _XWIN
     
 #ifndef _xw_prop_h_
 #define _xw_prop_h_
@@ -165,5 +164,4 @@ GtkWidget * FASTCALL OpenPropertyPage(void);
 #endif
 
 #endif	/* _xw_prop_h_ */
-#endif	/* _XWIN */
 

@@ -25,7 +25,7 @@
 #include "xm7.h"
 #include "device.h"
 #include "mainetc.h"
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_sch.h"
 #include "xm7_types.h"
 

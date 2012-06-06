@@ -5,8 +5,6 @@
  * ]
  */
 
-#ifdef _XWIN
-
 #ifndef _xw_bar_h_
 #define _xw_bar_h_
 
@@ -42,4 +40,3 @@ extern          "C" {
 #endif				/*  */
 
 #endif	/* _xw_bar_h_ */
-#endif	/* _XWIN */

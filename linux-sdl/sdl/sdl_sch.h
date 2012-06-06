@@ -4,7 +4,6 @@
  * Takegami Copyright (C) 2004 GIMONS  [ XWIN スケジューラ ] 
  */  
     
-#ifdef _XWIN
     
 #ifndef _xw_sch_h_
 #define _xw_sch_h_
@@ -96,4 +95,3 @@ extern          "C" {
 #endif				/*  */
                
 #endif	/* _xw_sch_h_ */
-#endif	/* _XWIN */

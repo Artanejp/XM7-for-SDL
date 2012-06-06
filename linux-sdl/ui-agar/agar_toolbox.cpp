@@ -34,7 +34,7 @@
 #include "agar_cfg.h"
 
 #else
-#include "sdl.h"
+#include "xm7_sdl.h"
 #endif
 #include "agar_cmd.h"
 

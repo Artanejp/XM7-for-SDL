@@ -15,7 +15,7 @@
 #include <math.h>
 
 #include "xm7.h"
-#include "sdl.h"
+#include "xm7_sdl.h"
 //#include "api_snd.h"
 #include <vector>
 

@@ -11,7 +11,7 @@
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #else
-#include "sdl.h"
+#include "xm7_sdl.h"
 #endif
 #include "sdl_inifile.h"
 #include "agar_cfg.h"

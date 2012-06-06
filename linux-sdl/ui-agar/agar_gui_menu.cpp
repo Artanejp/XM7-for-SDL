@@ -22,7 +22,7 @@ extern "C" {
 #include "agar_cfg.h"
 #include "agar_cmd.h"
 #else
-#include "sdl.h"
+#include "xm7_sdl.h"
 #include "sdl_cfg.h"
 #endif
 

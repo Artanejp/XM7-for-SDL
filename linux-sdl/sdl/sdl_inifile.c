@@ -3,8 +3,6 @@
  * INIファイルアクセス ]
  */
 
-#ifdef _XWIN
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -283,4 +281,3 @@ void INI_setString(const char *section, const char *key, char *value)
 {
     INI_set(section, key, value);
 }
-#endif	/* _XWIN */

@@ -7,8 +7,6 @@
  *   [SDL Toolbox ] 
  */  
     
-#ifdef _XWIN
-    
 #ifndef _xw_cmd_h_
 #define _xw_cmd_h_
     
@@ -86,4 +84,3 @@ typedef struct {
 #endif				/*  */
                
 #endif	/* _xw_cmd_h_ */
-#endif	/* _XWIN */
