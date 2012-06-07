@@ -106,7 +106,6 @@ void AGDrawTaskEvent(BOOL flag)
 	AG_Driver *drv;
 	Uint32 fps;
 	Uint32 oldfps = nDrawFPS;
-	AG_TimeOps tops;
 
     if(nDrawFPS > 2) {
 #ifdef USE_OPENGL
@@ -121,12 +120,6 @@ void AGDrawTaskEvent(BOOL flag)
         }
 #endif
     }
-	AG_SetTimeOps(&tops);
-	if(tops.Init != NULL) tops.Init();
-	if(tops.GetTicks != NULL) {
-		nDrawTick1E = tops.GetTicks();
-		nDrawTick1E = tops.GetTicks();
-	}
 	for(;;) {
 		if(nDrawFPS > 2) {
 			fps = 1000 / nDrawFPS;
@@ -147,7 +140,7 @@ void AGDrawTaskEvent(BOOL flag)
                 }
 #endif
         }
-		if(tops.GetTicks != NULL) nDrawTick2D = tops.GetTicks();
+		nDrawTick2D = AG_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
 			// ここにGUIの処理入れる
@@ -187,26 +180,34 @@ void AGDrawTaskEvent(BOOL flag)
 	   drv = &agDriverSw->_inherit;
 
             if (AG_PendingEvents(drv) > 0){
-                if(EventSDL(drv) == FALSE) return;
+                if(EventSDL(drv) == FALSE) {
+		   return;
+		}
+	       
 //                if(EventGUI(drv) == FALSE) return;
             }
         } else { // Multi windows
        		AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
                     if (AG_PendingEvents(drv) > 0){
-                    if(EventSDL(drv) == FALSE) return;
-                    if(EventGUI(drv) == FALSE) return;
+                    if((EventSDL(drv) == FALSE) || (EventGUI(drv) == FALSE)) {
+		       return;
+		    }
+		       
                 }
              }
         }
+	   
+	   
 		// 20120109 - Timer Event
         if (AG_TIMEOUTS_QUEUED())
 		{
 			DWORD tim = 0;
-			if(tops.GetTicks != NULL) tim = tops.GetTicks();
+			AG_GetTicks();
                 	AG_ProcessTimeouts(tim);
 		}
-		if(tops.Delay != NULL) tops.Delay(1);
+		AG_Delay(1);
 	}
+   
 }
 
 
@@ -378,6 +379,9 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 
 //	ResizeWindow_Agar(640, 400);
 	newResize = FALSE;
+        nDrawTick1D = AG_GetTicks();
+	nDrawTick1E = nDrawTick1D;
+
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	AGDrawTaskEvent(TRUE);
 //	AG_Quit();

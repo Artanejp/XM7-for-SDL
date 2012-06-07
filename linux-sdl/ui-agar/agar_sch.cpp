@@ -99,8 +99,6 @@ void  InitSch(void)
 	bAutoSpeedAdjust = FALSE;
 	uTimerResolution = 1;
 	bTapeModeType = FALSE;
-	AG_SetTimeOps(&SchTimeOps);
-	if(SchTimeOps.Init != NULL) SchTimeOps.Init();
 	return;
 }
 
@@ -114,7 +112,6 @@ void CleanSch(void)
 	bCloseReq = TRUE; // 終了要求
 	AG_ThreadJoin(SchThread,&ret); // スケジューラが終わるのを待つ
         AG_MutexDestroy(&nRunMutex);
-	if(SchTimeOps.Destroy != NULL) SchTimeOps.Destroy();
 }
 /*
  *  セレクト
@@ -531,8 +528,7 @@ static DWORD timeGetTime(void)
 	// struct timeval t;
 	// gettimeofday(&t, 0);
 	// return (t.tv_sec*1000000 + t.tv_usec)/1000;
-	if(SchTimeOps.GetTicks != NULL) return SchTimeOps.GetTicks();
-	return (DWORD) 0;
+   return AG_GetTicks();
 }
 
 
@@ -541,10 +537,9 @@ static DWORD timeGetTime(void)
  */
 static void XM7_Sleep(DWORD t)
 {
-//	usleep(t * 1000);
-	//AG_Delay(t);
-	if(SchTimeOps.Delay != NULL) SchTimeOps.Delay(t);
+   AG_Delay(t);
 }
+   
 #ifdef __cplusplus
 }
 #endif

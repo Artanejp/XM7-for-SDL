@@ -3,62 +3,52 @@
 ###
 ###	Copyright (C) 2004 GIMONS
 ###	Copyright (C) 2010 K.Ohta
-###	[ Makefile GTK For SDL]
+###	[ Makefile for SDL / vm]
 XM7_VER		= 3
-
 include ../config.mak
 
-#CFLAGS += -I../xm7-sdl/
-
-VIDEODRVSRC = \
-	agar_draw.cpp  \
-	agar_sdlview.c \
-	agar_sdlscaler.cpp \
-
-ifdef USE_OPENGL
-VIDEODRVSRC += \
-        agar_gldraw2.cpp \
-	agar_glutil.cpp
-endif
-
-INPUTSRC = \
-	AgarKbdInterface.cpp \
-	agar_ui_vkey.cpp
-
-UISRC = \
+COMMONSRC = \
+	agar_cfg.cpp \
+	agar_cmd.cpp \
+	agar_draw.cpp \
 	agar_guicore.cpp \
-	agar_toolbox.cpp \
+	agar_osd.cpp \
+	agar_sch.cpp \
+	agar_sdl.cpp \
+	agar_sdlscaler.cpp \
+	agar_sdlview.c \
+	agar_svram.cpp \
+	agar_vramutil.cpp \
+	agar_main.cpp \
+	AgarKbdInterface.cpp
+
+GUISRC = \
 	agar_gui_menu.cpp \
+	agar_gui_pref.cpp \
+	agar_menu_about.cpp \
+	agar_menu_debug.cpp \
 	agar_menu_disk.cpp \
 	agar_menu_tape.cpp \
-	agar_menu_debug.cpp \
 	agar_menu_tool.cpp \
-	agar_menu_about.cpp \
-	agar_gui_pref.cpp 
-
-
-DEBUGGERSRC = \
+	agar_ui_vkey.cpp \
+	agar_toolbox.cpp \
+	
+DEBUGSRC = \
 	agar_surfaceconsole.cpp \
-	agar_dbg_memdump.cpp \
 	agar_dbg_disasm.cpp \
-	agar_dbg_regdump.cpp \
 	agar_dbg_fdcdump.cpp \
-	agar_dbg_mmr.cpp
+	agar_dbg_memdump.cpp \
+	agar_dbg_mmr.cpp \
+	agar_dbg_regdump.cpp \
 
 
-LOCALSRC = \
-	agar_cfg.cpp  \
-        agar_cmd.cpp agar_sch.cpp \
-	agar_main.cpp agar_sdl.cpp \
-	agar_osd.cpp \
-	agar_vramutil.cpp \
-	agar_svram.cpp \
-	$(VIDEODRVSRC) \
-	$(INPUTSRC) \
-	$(UISRC) \
-	$(DEBUGGERSRC)
+GLSRC = \
+	agar_gldraw2.cpp \
+	agar_glutil.cpp
+	
+.SUFFIXES: .c .cpp .asm .o
 
-SRCS =	${LOCALSRC}
+SRCS =	$(COMMONSRC) $(GLSRC) $(GUISRC) $(DEBUGSRC)
 CSRCS =	$(filter %.c, $(SRCS))
 CXXSRCS = $(filter %.cpp, $(SRCS))
 
@@ -67,14 +57,11 @@ OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
-.SUFFIXES: .o .c .cc .cpp 
-
-all:	Debug/libui-agar.a  Release/libui-agar.a
+all:	Release/libui-agar.a Debug/libui-agar.a 
 
 Debug/libui-agar.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
 	ranlib $@
-
 
 Release/libui-agar.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
@@ -96,11 +83,22 @@ Debug/%.o: %.cpp
 	mkdir -p Debug
 	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
+	
 
+.asm.o:
+	nasm ${ASFLAGS} $<
+
+install: all
+	$(INSTALL)  -d $(SHAREDIR)
+	$(INSTALL) ./xm7 $(PREFIX)/bin
+	$(INSTALL) -m 0644 *.ui $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
+#	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)
 
 .PHONY: clean
 clean:
-	rm -f *.la *.a *.o *.lo *~
-	rm -f Release/*.o Release/*.lo Release/*.a Release/*.la
-	rm -f Debug/*.la Debug/*.a Debug/*.o Debug/*.lo *~
-
+	rm -f Debug/*.o Release/*.o
+	rm -f Release/*.so Debug/*.so
+	rm -f Debug/*.lo Release/*.lo
+	rm -f Release/*.a Debug/*.a

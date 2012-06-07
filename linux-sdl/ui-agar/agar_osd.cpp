@@ -313,11 +313,9 @@ static int LinkSurface(void)
 
     // Caption
    nwCaption = 0;
-	if(pwCaption != NULL) {
  	  nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
    	  AG_PixmapUpdateCurrentSurface(pwCaption);
           AG_WidgetShow(pwCaption);
-	}
     // FD
    for(i = 0; i < 2 ; i++) {
 		nwFD[i][ID_EMPTY] = 0;
@@ -821,6 +819,7 @@ static BOOL UpdateMainCaption(BOOL override)
         if(pwCaption == NULL) return FALSE;
         if(pStatusFont == NULL) return FALSE;
 	if(nFontSize <= 2) return FALSE;
+	if(strlen(szCaption) <= 0) return TRUE; 
 	   AG_PushTextState();
 	   AG_TextFont(pStatusFont);
 	   AG_TextFontPts(nFontSize);

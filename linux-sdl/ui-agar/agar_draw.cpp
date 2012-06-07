@@ -19,7 +19,6 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
-//#include "DrawAGNonGL.h"
 
 
 extern BYTE bMode;
@@ -104,7 +103,6 @@ void ResizeWindow_Agar(int w, int h)
 //	int ofset;
 
 	AG_Driver *drv;
-
         if((w < 100) || (h < 100)) return; 
 	if(agDriverSw) {
 	    drv = &agDriverSw->_inherit;
@@ -174,10 +172,10 @@ void ResizeWindow_Agar(int w, int h)
        if(pStatusBar){
 	  AG_WidgetHide(pStatusBar);
 	  AG_ObjectDetach(AGOBJECT(pStatusBar));
-          pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
 
 	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * h * 2) / 800 + 5);
-          ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
+        ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
 	  hh = hh + pStatusBar->wid.h;
        }
 #ifdef USE_OPENGL   
