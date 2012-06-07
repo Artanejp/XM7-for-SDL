@@ -7,7 +7,7 @@
 XM7_VER		= 3
 
 
-include config.mak
+include config.mak.mingw32
 
 .PHONY: clean Release Debug libfmgen008-debug ui-agar-debug vm-debug libfmgen008-release ui-release vm-release debugger-debug debugger-release
 all: Release Debug
@@ -19,10 +19,10 @@ all: Release Debug
 #	make -C sdl xm7.debug
 
 Release: ui-agar-release vm-release debugger-release libfmgen008-release
-	make -C sdl xm7
+	make -C sdl -f makefile.mingw32 xm7.exe
 
 Debug: ui-agar-debug vm-debug debugger-debug libfmgen008-debug
-	make -C sdl xm7.debug
+	make -C sdl -f makefile.mingw32 xm7.debug.exe
 
 
 libfmgen008-release:
@@ -67,5 +67,5 @@ clean:
 	make -C ui-agar clean
 	make -C fmgen clean
 	make -C xm7-debugger clean
-	make -C sdl clean
+	make -C sdl -f makefile.mingw32 clean
 	
