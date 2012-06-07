@@ -90,7 +90,7 @@ all:	xm7.exe xm7.debug.exe
 
 xm7.exe: ${OBJS_RELEASE} ${LIBS_RELEASE}
 	$(CXX) ${LDFLAGS} -o xm7.exe $^ ${LIBS} ${LIBS_RELEASE}
-	strip xm7.exe
+#	strip xm7.exe
 
 xm7.debug.exe: ${OBJS_DEBUG} ${LIBS_DEBUG}
 	$(CXX) -pg -g ${LDFLAGS} -o xm7.debug.exe $^ ${LIBS} ${LIBS_DEBUG}
