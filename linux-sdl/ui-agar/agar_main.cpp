@@ -204,7 +204,11 @@ int main(int argc, char *argv[])
                 strcat(ModuleDir, "/.xm7/");
         }
         if(opendir(ModuleDir) == NULL) {
+#ifdef _WINDOWS
+		mkdir(ModuleDir);
+#else
                 mkdir(ModuleDir, 0777);
+#endif
         }
         /* Gettext */
         setlocale(LC_ALL, "");           

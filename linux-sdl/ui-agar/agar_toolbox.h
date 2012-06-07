@@ -44,9 +44,9 @@ extern AG_Menu *ToolBarMenu;
         extern void OnSaveAs(void);
         extern void OnQuickSave(char *s);
         extern void OnDiskPopup(AG_Event *event);
-        extern void    CreateDiskMenu_0 (void);
-        extern void    CreateDiskMenu_1 (void);
-        extern void    CreateMenu(void);
+        extern void CreateDiskMenu_0 (void);
+        extern void CreateDiskMenu_1 (void);
+        extern void XM7_CreateMenu(void);
 
 #endif
 

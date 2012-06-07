@@ -26,9 +26,9 @@
 #endif
 #endif /* USE_GTK */				/*  */
 
-//#ifndef _SDL_H
-//#include <SDL.h>
-//#endif				/*  */
+#ifndef _SDL_H
+#include <SDL/SDL.h>
+#endif				/*  */
 
 /* Gettext */
 #include <libintl.h>

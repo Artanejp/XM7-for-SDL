@@ -10,6 +10,7 @@
 #ifndef AGAR_SURFACECONSOLE_H_INCLUDED
 #define AGAR_SURFACECONSOLE_H_INCLUDED
 
+#include <SDL/SDL.h>
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>

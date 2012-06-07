@@ -19,6 +19,7 @@
 
 #include <sys/stat.h>
 
+#include <SDL/SDL.h>
 #include <agar/core.h>
 #include <agar/gui.h>
 
@@ -272,7 +273,7 @@ void OnQuickSave(AG_Event *event)
 /*
  *  メニューバーの生成
  */
-void CreateMenu(void)
+void XM7_CreateMenu(void)
 {
     memset(InitialDir, 0x00, 5 * MAXPATHLEN);
 }

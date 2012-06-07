@@ -129,6 +129,7 @@ BOOL QueryGLExtensions(const char *str)
     int k;
     int l;
     int ll;
+#ifndef _WINDOWS
 
     if(str == NULL) return FALSE;
     ll = strlen(str);
@@ -147,6 +148,7 @@ BOOL QueryGLExtensions(const char *str)
         p += (j + 1);
         i += (j + 1);
     }
+#endif
     return FALSE;
 }
 

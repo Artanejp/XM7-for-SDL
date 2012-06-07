@@ -13,9 +13,11 @@
  * 基本型定義 -> SDL定義にする(コンパイラ依存の吸収 20100802 α66)
  */
 
+#ifndef _WINDOWS
 typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
+#endif
 typedef int     BOOL;
 
 // Vector

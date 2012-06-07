@@ -73,9 +73,12 @@ all:	Debug/libui-agar.a  Release/libui-agar.a
 
 Debug/libui-agar.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
+	ranlib $@
+
 
 Release/libui-agar.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
+	ranlib $@
 
 Release/%.o: %.c
 	mkdir -p Release

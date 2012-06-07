@@ -9,9 +9,14 @@
 #include <agar/gui.h>
 //#include <agar/gui/opengl.h>
 
-#include <SDL.h>
+#include <SDL/SDL.h>
+#ifdef _WINDOWS
+#include <GL/gl.h>
+#include <GL/glext.h>
+#else
 #include <GL/glx.h>
 #include <GL/glxext.h>
+#endif
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -150,12 +155,19 @@ static void DetachGridVertexs(void)
 
 static void InitFBO(void)
 {
+#ifndef _WINDOWS // glx is for X11.
     glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
     if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
     glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)glXGetProcAddress((const GLubyte *)"glDrawArraysEXT");
     if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
     glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glTexCoordPointerEXT");
     if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+#else
+    bGL_EXT_VERTEX_ARRAY = FALSE;
+    glVertexPointerEXT = NULL;
+    glDrawArraysEXT = NULL;
+    glTexCoordPointerEXT = NULL;
+#endif // _WINDOWS    
 }
 
 void InitGL_AG2(int w, int h)

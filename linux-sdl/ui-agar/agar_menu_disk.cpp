@@ -4,8 +4,10 @@
  *  Created on: 2010/11/24
  *      Author: whatisthis
  */
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <libintl.h>
+#include <iconv.h>
+
 extern "C" {
 #include <agar/core.h>
 #include <agar/core/types.h>

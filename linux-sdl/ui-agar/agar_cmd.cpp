@@ -22,6 +22,7 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
+#include <SDL/SDL.h>
 #endif
 
 #include "xm7.h"

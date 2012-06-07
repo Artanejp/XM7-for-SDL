@@ -9,7 +9,9 @@
 #include <agar/core.h>
 #include <agar/gui.h>
 #include <agar/gui/opengl.h>
-//#include "EmuAgarGL.h"
+#include <SDL/SDL.h>
+
+
 #include "api_draw.h"
 //#include "api_scaler.h"
 
@@ -19,7 +21,6 @@
 #include "agar_sdlview.h"
 //#include "DrawAGNonGL.h"
 
-#include <SDL.h>
 
 extern BYTE bMode;
 
