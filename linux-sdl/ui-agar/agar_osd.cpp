@@ -313,9 +313,11 @@ static int LinkSurface(void)
 
     // Caption
    nwCaption = 0;
-   nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
-   AG_PixmapUpdateCurrentSurface(pwCaption);
-	AG_WidgetShow(pwCaption);
+	if(pwCaption != NULL) {
+ 	  nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
+   	  AG_PixmapUpdateCurrentSurface(pwCaption);
+          AG_WidgetShow(pwCaption);
+	}
     // FD
    for(i = 0; i < 2 ; i++) {
 		nwFD[i][ID_EMPTY] = 0;

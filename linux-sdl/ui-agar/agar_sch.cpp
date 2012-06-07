@@ -9,7 +9,7 @@
 #include <agar/core/types.h>
 #include <agar/gui.h>
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 #include "xm7.h"
 #include "tapelp.h"
@@ -68,9 +68,9 @@ BOOL bFullScreen = FALSE;
 static void *ThreadSch(void *);	/* スレッド関数 */
 static DWORD timeGetTime(void);	/* timeGetTime互換関数
  */
-static void  Sleep(DWORD t);	/* Sleep互換関数 */
+static void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 static AG_Thread SchThread;
-
+static AG_TimeOps SchTimeOps;
 
 /*
  *  初期化
@@ -99,6 +99,8 @@ void  InitSch(void)
 	bAutoSpeedAdjust = FALSE;
 	uTimerResolution = 1;
 	bTapeModeType = FALSE;
+	AG_SetTimeOps(&SchTimeOps);
+	if(SchTimeOps.Init != NULL) SchTimeOps.Init();
 	return;
 }
 
@@ -112,6 +114,7 @@ void CleanSch(void)
 	bCloseReq = TRUE; // 終了要求
 	AG_ThreadJoin(SchThread,&ret); // スケジューラが終わるのを待つ
         AG_MutexDestroy(&nRunMutex);
+	if(SchTimeOps.Destroy != NULL) SchTimeOps.Destroy();
 }
 /*
  *  セレクト
@@ -278,7 +281,7 @@ static void *ThreadSch(void *param)
 			UnlockVM();
 		        AG_MutexUnlock(&nRunMutex);
 
-			AG_Delay(10);
+			XM7_Sleep(10);
 			ResetSch();
 			ResetSpeedAdjuster();
 			continue;
@@ -364,7 +367,7 @@ static void *ThreadSch(void *param)
 				}
 
 				else {
-					AG_Delay(1);
+					XM7_Sleep(1);
 					UnlockVM();
 				        AG_MutexUnlock(&nRunMutex);
 					continue;
@@ -528,16 +531,19 @@ static DWORD timeGetTime(void)
 	// struct timeval t;
 	// gettimeofday(&t, 0);
 	// return (t.tv_sec*1000000 + t.tv_usec)/1000;
-	return (DWORD) AG_GetTicks();
+	if(SchTimeOps.GetTicks != NULL) return SchTimeOps.GetTicks();
+	return (DWORD) 0;
 }
 
 
 /*
  *  Sleep互換関数
  */
-static void Sleep(DWORD t)
+static void XM7_Sleep(DWORD t)
 {
-	usleep(t * 1000);
+//	usleep(t * 1000);
+	//AG_Delay(t);
+	if(SchTimeOps.Delay != NULL) SchTimeOps.Delay(t);
 }
 #ifdef __cplusplus
 }

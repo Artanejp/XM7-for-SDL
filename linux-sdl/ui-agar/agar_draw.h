@@ -4,7 +4,7 @@
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
-#include <agar/gui/opengl.h>
+//#include <agar/gui/opengl.h>
 //#include "EmuAgarGL.h"
 #include "api_draw.h"
 //#include "api_scaler.h"

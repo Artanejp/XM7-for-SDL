@@ -7,6 +7,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef _WINDOWS
+#include <windef.h>
+#endif
+
 #ifndef __XM7_TYPES_H
 #define __XM7_TYPES_H 1
 /*

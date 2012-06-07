@@ -106,6 +106,7 @@ void AGDrawTaskEvent(BOOL flag)
 	AG_Driver *drv;
 	Uint32 fps;
 	Uint32 oldfps = nDrawFPS;
+	AG_TimeOps tops;
 
     if(nDrawFPS > 2) {
 #ifdef USE_OPENGL
@@ -120,7 +121,12 @@ void AGDrawTaskEvent(BOOL flag)
         }
 #endif
     }
-
+	AG_SetTimeOps(&tops);
+	if(tops.Init != NULL) tops.Init();
+	if(tops.GetTicks != NULL) {
+		nDrawTick1E = tops.GetTicks();
+		nDrawTick1E = tops.GetTicks();
+	}
 	for(;;) {
 		if(nDrawFPS > 2) {
 			fps = 1000 / nDrawFPS;
@@ -141,7 +147,7 @@ void AGDrawTaskEvent(BOOL flag)
                 }
 #endif
         }
-		nDrawTick2D = AG_GetTicks();
+		if(tops.GetTicks != NULL) nDrawTick2D = tops.GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
 			// ここにGUIの処理入れる
@@ -194,8 +200,12 @@ void AGDrawTaskEvent(BOOL flag)
         }
 		// 20120109 - Timer Event
         if (AG_TIMEOUTS_QUEUED())
-                AG_ProcessTimeouts(AG_GetTicks());
-		AG_Delay(1);
+		{
+			DWORD tim = 0;
+			if(tops.GetTicks != NULL) tim = tops.GetTicks();
+                	AG_ProcessTimeouts(tim);
+		}
+		if(tops.Delay != NULL) tops.Delay(1);
 	}
 }
 
@@ -368,8 +378,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 
 //	ResizeWindow_Agar(640, 400);
 	newResize = FALSE;
-	nDrawTick1D = AG_GetTicks();
-	nDrawTick1E = AG_GetTicks();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 	AGDrawTaskEvent(TRUE);
 //	AG_Quit();
