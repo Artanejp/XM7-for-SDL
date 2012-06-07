@@ -45,7 +45,7 @@ PREFIX           = /mingw
 SHAREDIR         = $(PREFIX)/share/xm7/
 
 ## SVNの時はコメントアウト外す
-SVNVER = `svnversion`
+#SVNVER = `svnversion`
 
 
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること
@@ -77,14 +77,14 @@ ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
 endif
 
+#CFLAGS += -D_NO_OLDNAMES
 CFLAGS +=  -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
-CFLAGS += `/bin/sdl-config --cflags`
+#CFLAGS += `/bin/sdl-config --cflags`
 CFLAGS += -I/mingw/include
-#CFLAGS += -I/mingw/include/SDL
+CFLAGS += -I/mingw/include/SDL
 CFLAGS += -I/mingw/include/freetype2
-CFLAGS += -I/mingw/include/agar
-#CFLAGS += `/usr/local/i686-w64-mingw32/bin/agar-config --cflags`
+CFLAGS += `agar-config --cflags`
 # OpenMP
 ifdef USE_OPENMP
 CFLAGS += -fopenmp

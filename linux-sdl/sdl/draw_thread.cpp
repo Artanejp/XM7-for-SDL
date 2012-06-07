@@ -309,7 +309,7 @@ int DrawThreadMain(void *p)
 #endif
 {
 #ifdef USE_AGAR
-		nDrawTick1D = AG_GetTicks();
+		//nDrawTick1D = AG_GetTicks();
 		AG_DrawInitsub();
 #else
         SDL_DrawInitsub();

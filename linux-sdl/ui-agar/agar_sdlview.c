@@ -17,7 +17,7 @@
 
 
 #include "agar_sdlview.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 /*
  * This is a generic constructor function. It is completely optional, but
