@@ -21,20 +21,13 @@ extern "C" {
 //#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <errno.h>
-#ifndef _WINDOWS
 #include <SDL/SDL.h>
-#endif
    
 #ifdef _USE_SDL_MIXER
-#ifndef _WINDOWS
 #include <SDL/SDL_mixer.h>
 #endif
-#endif
 #include <math.h>
-
-#if !defined(BOOL) && !defined(_WINDOWS)
-typedef int BOOL;
-#endif
+#include "xm7_types.h"
 
 #if !defined(TRUE)
 #define TRUE 1

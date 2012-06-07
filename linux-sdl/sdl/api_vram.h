@@ -5,7 +5,7 @@
 #ifndef API_VRAM_H_INCLUDED
 #define API_VRAM_H_INCLUDED
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include "api_draw.h"

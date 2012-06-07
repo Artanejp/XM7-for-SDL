@@ -28,9 +28,11 @@ all:	Release/libfmgen007a.a Debug/libfmgen007a.a
 
 Debug/libfmgen007a.a: ${OBJS_DEBUG}
 	ar crv $@ ${OBJS_DEBUG}
+	ranlib $@
 
 Release/libfmgen007a.a: ${OBJS_RELEASE}
 	ar crv $@ ${OBJS_RELEASE}
+	ranlib $@
 
 Release/%.o: %.c
 	mkdir -p Release

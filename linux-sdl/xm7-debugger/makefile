@@ -28,9 +28,11 @@ all:	Release/libxm7_debug.a Debug/libxm7_debug.a
 
 Debug/libxm7_debug.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
+	ranlib $@
 
 Release/libxm7_debug.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
+	ranlib $@
 
 Release/%.o: %.c
 	mkdir -p Release

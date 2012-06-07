@@ -6,16 +6,9 @@
  */
 
 
-#ifdef __FreeBSD__
-#include <machine/soundcard.h>
-#else				/* */
-
-#include <linux/soundcard.h>
-#endif				/* */
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <SDL/SDL.h>
@@ -106,7 +99,14 @@ void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32)
 	if(p == NULL) return;
 	if(flag16) {
 		size = (members + 1) * sizeof(Sint16) * channels;
+#ifdef _WINDOWS
+		size = ((size + 15) / 16 ) * 16;
+		pv = malloc(size);
+		if(pv != NULL) {
+#else // POSIX
 	        if(posix_memalign(&pv, 16, size) == 0) {
+#endif
+
 //		p->pBuf = (Sint16 *)malloc(size);
 		p->pBuf = (Sint16 *)pv;
 		memset(p->pBuf, 0x00, size);
@@ -116,8 +116,13 @@ void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32)
 	}
 	if(flag32) {
 		size = (members + 1) * sizeof(Sint32) * channels;
-		p->pBuf32 = (Sint32 *)malloc(size);
+#ifdef _WINDOWS
+		size = ((size + 15) / 16 ) * 16;
+		pv = malloc(size);
+		if(pv != NULL) {	
+#else
 	        if(posix_memalign(&pv, 16, size) == 0) {
+#endif
 		        p->pBuf32 = (Sint32 *)pv;
 			memset(p->pBuf32, 0x00, size);
 			p->nSize = members;

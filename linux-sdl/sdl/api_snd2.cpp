@@ -8,13 +8,19 @@
 #ifdef __FreeBSD__
 #include <machine/soundcard.h>
 #else				/* */
-
-#include <linux/soundcard.h>
+#  ifdef _WINDOWS
+#  else
+#    include <linux/soundcard.h>
+#  endif
 #endif				/* */
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#ifndef _WINDOWS
 #include <sys/ioctl.h>
+#endif
+
 #include <sys/time.h>
 #include <errno.h>
 #include <SDL/SDL.h>
@@ -336,11 +342,25 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
+#ifndef _WINDOWS
         if(posix_memalign(&pCaptureBuf, 16, uBufSize * 2) < 0) return -1;
         if(posix_memalign(&pSoundBuf, 16, uBufSize * 2) < 0) {
 	   free(pCaptureBuf);
 	   return -1;
 	}
+#else
+	{
+	  int size = (((uBufSize * 2) +15) / 16) * 16;
+	   pCaptureBuf = malloc(size);
+	   if(pCaptureBuf == NULL) return -1;
+	   pSoundBuf = malloc(size);
+	   if(pSoundBuf == NULL) {
+              free(pCaptureBuf);
+	      return -1;
+	   }
+	}
+
+#endif
    
     //Mix_QuerySpec(&freq, &format, &channels);
     if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 4000)< 0) {

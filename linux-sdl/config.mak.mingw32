@@ -41,7 +41,7 @@ endif
 
 
 INSTALL          = install -c 
-PREFIX           = /usr/local/i686-w64-mingw32
+PREFIX           = /mingw
 SHAREDIR         = $(PREFIX)/share/xm7/
 
 ## SVNの時はコメントアウト外す
@@ -64,11 +64,11 @@ LDFLAGS =
 
 #CC = gcc
 #CXX = g++
-CC = i686-w64-mingw32-gcc
-CXX = i686-w64-mingw32-g++
-AR = i686-w64-mingw32-ar
+CC = gcc
+CXX = g++
+AR = ar
 
-CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
 CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
@@ -79,11 +79,11 @@ endif
 
 CFLAGS +=  -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
-#CFLAGS += `/usr/local/i686-w64-mingw32/bin/sdl-config --cflags`
-CFLAGS += -I/usr/local/i686-w64-mingw32/include
-CFLAGS += -I/usr/local/i686-w64-mingw32/include/SDL
-CFLAGS += -I/usr/local/i686-w64-mingw32/include/freetype2
-CFLAGS += -I/usr/local/i686-w64-mingw32/include/agar
+CFLAGS += `/bin/sdl-config --cflags`
+CFLAGS += -I/mingw/include
+#CFLAGS += -I/mingw/include/SDL
+CFLAGS += -I/mingw/include/freetype2
+CFLAGS += -I/mingw/include/agar
 #CFLAGS += `/usr/local/i686-w64-mingw32/bin/agar-config --cflags`
 # OpenMP
 ifdef USE_OPENMP

@@ -58,9 +58,11 @@ all:	Release/libxm7_vm.a Debug/libxm7_vm.a
 
 Debug/libxm7_vm.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
+	ranlib $@
 
 Release/libxm7_vm.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
+	ranlib $@
 
 Release/%.o: %.c
 	mkdir -p Release
