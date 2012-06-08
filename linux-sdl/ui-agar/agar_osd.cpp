@@ -273,16 +273,19 @@ static void InitMessages(AG_Widget *parent)
     col.b = 0;
     col.r = 0;
     col.g = 0;
-
+    if(parent == NULL) return;
 //    p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
 //    AG_FillRect(p, NULL, col);
     //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
     if(pwCaption == NULL) pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
-   
+     AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
+
     for(i = 1; i >= 0 ; i--) {
         if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
+           AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
     }
     if(pwCMT == NULL) pwCMT = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCMTWidth, nCMTHeight);
+    AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
 //    AG_SurfaceFree(p);
 }
 
@@ -296,11 +299,16 @@ static void InitBox(AG_Widget *parent)
     height = 20;
 
     if(parent == NULL) return;
+    AG_ObjectLock(parent);
     InitMessages(parent);
 
-    if(pwCAPS == NULL) pwCAPS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCapsOff);
-    if(pwINS == NULL) pwINS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pInsOff);
-    if(pwKana == NULL) pwKana = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pKanaOff);
+    if(pwCAPS == NULL) pwCAPS = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nLedWidth, nLedHeight);
+    if(pwINS == NULL) pwINS = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nLedWidth, nLedHeight);
+    if(pwKana == NULL) pwKana = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nLedWidth, nLedHeight);
+    AG_WidgetSetSize(pwCAPS, nLedWidth, nLedHeight);
+    AG_WidgetSetSize(pwINS, nLedWidth, nLedHeight);
+    AG_WidgetSetSize(pwKana, nLedWidth, nLedHeight);
+   AG_ObjectUnlock(parent);
 }
 
 static int LinkSurface(void)
