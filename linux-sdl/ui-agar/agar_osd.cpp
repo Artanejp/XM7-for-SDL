@@ -274,15 +274,16 @@ static void InitMessages(AG_Widget *parent)
     col.r = 0;
     col.g = 0;
 
-    p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
-    AG_FillRect(p, NULL, col);
+//    p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
+//    AG_FillRect(p, NULL, col);
     //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
-    if(pwCaption == NULL) pwCaption = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , p);
+    if(pwCaption == NULL) pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
+   
     for(i = 1; i >= 0 ; i--) {
-        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pFDNorm[i]);
+        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
     }
-    if(pwCMT == NULL) pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCMTNorm);
-    AG_SurfaceFree(p);
+    if(pwCMT == NULL) pwCMT = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCMTWidth, nCMTHeight);
+//    AG_SurfaceFree(p);
 }
 
 
