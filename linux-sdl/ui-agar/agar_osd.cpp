@@ -52,21 +52,14 @@ static int     nDriveOld[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
 static char    szOldDrive[2][16+1];       /* フロッピードライブ(過去) */
 static BOOL     old_writep[4];  /* 過去のライトプロテクトフラグ */
-static int     nTape;           /* テープ */
-static int     nOldTape;        /* テープ(過去) */
 static AG_Surface      *pFDRead[2]; /* Drive0 Read */
 static AG_Surface      *pFDWrite[2]; /* Drive0 Write */
 static AG_Surface      *pFDNorm[2]; /* Drive0 Normal */
-static AG_Surface      *pCMTRead; /* Tape Read */
-static AG_Surface      *pCMTWrite; /* Tape Write */
-static AG_Surface      *pCMTNorm; /* Tape Normal */
 static AG_Surface      *pCaption; /* Caption */
 
 /*  リサイズ */
 static int nVfdWidth;
 static int nVfdHeight;
-static int nCMTWidth;
-static int nCMTHeight;
 static int nCaptionWidth;
 static int nCaptionHeight;
 static int nStatFontSize;
@@ -82,10 +75,9 @@ static BOOL bGLMode; /* 描画にOpenGLを使うか否か*/
 
 static AG_Pixmap *pwCaption;
 static AG_Pixmap *pwFD[2];
-static AG_Pixmap *pwCMT;
+
 static int nwCaption;
 static int nwFD[2][4]; // R/W/Noaccess/Empty
-static int nwCMT[4]; // R/W/Noaccess/Empty
 extern "C" {
 AG_Box *pStatusBar;
 }
@@ -98,6 +90,14 @@ extern void DrawINS(void);
 extern void ResizeLeds(AG_Widget *parent, int w, int h);
 extern void LinkSurfaceLeds(void);
 extern void ClearLeds(void);
+extern void InitTapeOSD(AG_Widget *parent);
+extern void DestroyTapeOSD(void);
+extern void LinkSurfaceCMT(void);
+extern void ResizeTapeOSD(AG_Widget *parent, int w, int h);
+extern void ClearTapeOSD(void);
+extern void DrawTape(int override);
+extern void CreateCMT(AG_Widget *parent, bool initflag);
+
 
 
 /*
@@ -132,65 +132,6 @@ void SetPixelFormat(AG_PixelFormat *fmt)
 
 }
 
-
-static void UpdateCMTMessages(char *string)
-{
-    AG_Rect rect;
-    AG_Surface *tmp;
-
-   if(pStatusFont == NULL) return;
-   if(nFontSize <= 2) return;
-   if(pCMTRead == NULL) return;
-   if(pCMTWrite == NULL) return;
-   if(pCMTNorm == NULL) return;
-   AG_PushTextState();
-	AG_TextFont(pStatusFont);
-        AG_TextFontPts(nFontSize);
-	rect.x = 0;
-	rect.y = 0;
-	rect.h = nCMTHeight;
-	rect.w = nCMTWidth;
-
-        AG_SurfaceLock(pCMTRead);
-        AG_FillRect(pCMTRead, &rect, r);
-	AG_TextColor(black);
-	AG_TextBGColor(r);
-//        AG_ObjectLock(pCMTRead);
-	tmp = AG_TextRender(string);
-//         if(tmp->w < rect.w) rect.w = tmp->w;
-//         if(tmp->h < rect.w) rect.h = tmp->h;
-	AG_SurfaceBlit(tmp, &rect, pCMTRead, 0, 0);
-	AG_SurfaceFree(tmp);
-//        AG_ObjectUnlock(pCMTRead);
-        AG_SurfaceUnlock(pCMTRead);
-
-
-
-        AG_SurfaceLock(pCMTWrite);
-	AG_FillRect(pCMTWrite, &rect, b);
-	AG_TextColor(black);
-	AG_TextBGColor(b);
-	tmp = AG_TextRender(string);
-//       if(tmp->w < rect.w) rect.w = tmp->w;
-//         if(tmp->h < rect.w) rect.h = tmp->h;
-	AG_SurfaceBlit(tmp, &rect, pCMTWrite, 0, 0);
-	AG_SurfaceFree(tmp);
-        AG_SurfaceUnlock(pCMTWrite);
-
-
-
-        AG_SurfaceLock(pCMTNorm);
-	AG_FillRect(pCMTNorm, &rect, black);
-	AG_TextColor(n);
-	AG_TextBGColor(black);
-	tmp = AG_TextRender(string);
-//         if(tmp->w < rect.w) rect.w = tmp->w;
-//         if(tmp->h < rect.w) rect.h = tmp->h;
-	AG_SurfaceBlit(tmp, &rect, pCMTNorm, 0, 0);
-	AG_SurfaceFree(tmp);
-        AG_SurfaceUnlock(pCMTNorm);
-    AG_PopTextState();
-}
 
 static void UpdateVFDMessages(int drive, char *outstr)
 {
@@ -261,8 +202,6 @@ static void InitMessages(AG_Widget *parent)
         if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
            AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
     }
-    if(pwCMT == NULL) pwCMT = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCMTWidth, nCMTHeight);
-    AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
 //    AG_SurfaceFree(p);
 }
 
@@ -278,7 +217,6 @@ static void InitBox(AG_Widget *parent)
     if(parent == NULL) return;
     AG_ObjectLock(parent);
     InitMessages(parent);
-    InitLeds(parent);
    AG_ObjectUnlock(parent);
 }
 
@@ -305,11 +243,7 @@ static int LinkSurface(void)
 		AG_WidgetShow(pwFD[i]);
     }
     //CMT
-    nwCMT[ID_EMPTY] = 0;
-    nwCMT[ID_IN] = AG_PixmapAddSurface(pwCMT, pCMTNorm);
-    nwCMT[ID_READ] = AG_PixmapAddSurface(pwCMT, pCMTRead);
-    nwCMT[ID_WRITE] = AG_PixmapAddSurface(pwCMT, pCMTWrite);
-   AG_WidgetShow(pwCMT);
+   LinkSurfaceCMT();
    LinkSurfaceLeds();
 }
 
@@ -385,41 +319,6 @@ static void CreateVFD(AG_Widget *parent, BOOL initflag)
     }
 }
 
-static void CreateCMT(AG_Widget *parent, bool initflag)
-{
-    AG_Rect rec;
-    AG_PixelFormat fmt;
-
-   SetPixelFormat(&fmt);
-
-
-   if(pStatusFont == NULL) return;
-
-   rec.x = 0;
-   rec.y = 0;
-   rec.w = nCMTWidth;
-   rec.h = nCMTHeight;
-  if(pCMTRead != NULL){
-     AG_SurfaceResize(pCMTRead, rec.w, rec.h);
-  } else {
-     pCMTRead = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-  }
-  if(pCMTNorm != NULL){
-     AG_SurfaceResize(pCMTNorm, rec.w, rec.h);
-  } else {
-     pCMTNorm = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-  }
-  if(pCMTWrite != NULL){
-     AG_SurfaceResize(pCMTWrite, rec.w, rec.h);
-  } else {
-     pCMTWrite = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-  }
-
-   AG_FillRect(pCMTRead, NULL, r);
-   AG_FillRect(pCMTWrite, NULL, b);
-   AG_FillRect(pCMTNorm, NULL, black);
-    UpdateCMTMessages("     ");
-}
 
 static void CreateCaption(AG_Widget *parent, BOOL initflag)
 {
@@ -481,18 +380,13 @@ void CreateStatus(AG_Widget *parent)
 	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT * 4, 0);
 	// Init Var
 
-   
+
        pFDRead[0] = pFDWrite[0] = pFDNorm[0] = NULL;
     pFDRead[1] = pFDWrite[1] = pFDNorm[1] = NULL;
     nVfdHeight = VFD_HEIGHT * 2;
     nVfdWidth = VFD_WIDTH * 2;
     pwFD[0] = pwFD[1] = NULL;
     CreateVFD(parent, TRUE);
-
-    pCMTRead = pCMTWrite = pCMTNorm = NULL;
-    pwCMT = NULL;
-    nCMTHeight = CMT_HEIGHT * 2;
-    nCMTWidth = CMT_WIDTH * 2;
     CreateCMT(parent, TRUE);
    // Create Widgets;
    nFontSize = STAT_PT;
@@ -509,6 +403,8 @@ void CreateStatus(AG_Widget *parent)
     if(parent) {
         InitBox(parent);
         InitLeds(parent);
+        InitTapeOSD(parent);
+        //CreateCMT(parent, TRUE);
         LinkSurface();
     }
 }
@@ -516,8 +412,11 @@ void CreateStatus(AG_Widget *parent)
 void DestroyStatus(void)
 {
 	int i, j;
-        DestroyLeds();
-	if(pCaption !=NULL ) {
+
+     DestroyLeds();
+     DestroyTapeOSD();
+
+   if(pCaption !=NULL ) {
 		AG_SurfaceFree(pCaption);
 		pCaption = NULL;
 	}
@@ -534,18 +433,6 @@ void DestroyStatus(void)
 			AG_SurfaceFree(pFDNorm[i]);
 			pFDNorm[i] = NULL;
 		}
-	}
-	if(pCMTRead !=NULL ) {
-		AG_SurfaceFree(pCMTRead);
-		pCMTRead = NULL;
-	}
-	if(pCMTWrite !=NULL ) {
-		AG_SurfaceFree(pCMTWrite);
-		pCMTWrite = NULL;
-	}
-	if(pCMTNorm !=NULL ) {
-		AG_SurfaceFree(pCMTNorm);
-		pCMTNorm = NULL;
 	}
 	if(pStatusFont != NULL) {
 		AG_DestroyFont(pStatusFont);
@@ -659,7 +546,7 @@ static BOOL UpdateMainCaption(BOOL override)
         if(pwCaption == NULL) return FALSE;
         if(pStatusFont == NULL) return FALSE;
 	if(nFontSize <= 2) return FALSE;
-	if(strlen(szCaption) <= 0) return TRUE; 
+	if(strlen(szCaption) <= 0) return TRUE;
 	   AG_PushTextState();
 	   AG_TextFont(pStatusFont);
 	   AG_TextFontPts(nFontSize);
@@ -829,93 +716,6 @@ static void DrawDrive(int drive, BOOL override)
 }
 
 
-/*
- *  テープ描画
- */
-static void DrawTape(int override)
-{
-	int 		i;
-	int             num;
-	char            string[128];
-	char     protect[16];
-	AG_Rect rect;
-	AG_Surface *tmp;
-
-
-	if(tape_writep){
-		strcpy(protect, "■");
-	} else {
-		strcpy(protect, "　");
-	}
-	/*
-	 * ナンバー計算
-	 */
-	num = 30000;
-	if (tape_fileh != -1) {
-		num = (int) ((tape_offset >> 8) % 10000);
-		if (tape_motor) {
-			if (tape_rec) {
-				num += 20000;
-			}
-
-			else {
-				num += 10000;
-			}
-		}
-	}
-
-	/*
-	 * 番号比較
-	 */
-	 if ((nTape == num) && (override != TRUE)){
-		 return;
-	 }
-
-	/*
-	 * 描画
-	 */
-	 nTape = num;
-	if (nTape >= 30000) {
-		string[0] = '\0';
-		//strcpy(string, "OVER");
-	}
-	else {
-		sprintf(string, "%s%04d", protect, nTape % 10000);
-	}
-	if((nOldTape != nTape)  || (nTape == 0) || (override = TRUE)){
-		nOldTape = nTape;
-        if(pwCMT == NULL) return;
-		/*
-		 * カウンタ番号レンダリング(仮)
-		 */
-		if(pStatusFont != NULL) {
-		   if(pwCMT != NULL){
-		   AG_ObjectLock(pwCMT);
-		   UpdateCMTMessages(string);
-		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-		   AG_ObjectUnlock(pwCMT);
-		   }
-		}
-	}
-		if ((nTape >= 10000) && (nTape < 30000)) {
-			if (nTape >= 20000) {
-			   if(nwCMT[ID_WRITE] >= 0) {
-			      AG_PixmapSetSurface(pwCMT, nwCMT[ID_WRITE]);
-			   }
-			}   else {
-			   if(nwCMT[ID_READ] >= 0) {
-			      AG_PixmapSetSurface(pwCMT, nwCMT[ID_READ]);
-			   }
-			}
-		} else {
-		   if(nwCMT[ID_IN] >= 0) {
-			   AG_PixmapSetSurface(pwCMT, nwCMT[ID_IN]);
-		   }
-	       }
-	   AG_Redraw(pwCMT);
-}
 
 /*
  *  描画
@@ -954,20 +754,16 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
                 + CMT_WIDTH + LED_WIDTH * 3 + 50;
     int pos = 0;
     float ww = (float)w;
-    float wLed = (float)LED_WIDTH / (float)total;
-    float wCMT = (float)CMT_WIDTH / (float)total;
     float wFD = (float)VFD_WIDTH / (float)total;
     float wCaption = (float)STAT_WIDTH / (float)total;
     AG_Box *pad;
     if(parent == NULL) return;
 //	return;
 
-    nVfdHeight = nCMTHeight = nCaptionHeight = h;
+    nVfdHeight = nCaptionHeight = h;
     nVfdWidth = (int)(ww * wFD);
-    nCMTWidth = (int)(ww * wCMT);
     nCaptionWidth = (int)(ww * wCaption);
     if(nVfdWidth <= 0) return;
-    if(nCMTWidth <= 0) return;
     if(nCaptionWidth <= 0) return;
 
    nFontSize = (int)(STAT_PT * (float)h * 1.0f) / (STAT_HEIGHT * 2.0f);
@@ -979,8 +775,6 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 	  AG_WidgetHide(pwFD[i]);
 	  AG_ObjectDetach(AGOBJECT(pwFD[i]));
        }
-       AG_WidgetHide(pwCMT);
-       AG_ObjectDetach(AGOBJECT(pwCMT));
        if(pwCaption != NULL) {
 	  AG_WidgetHide(pwCaption);
 	  AG_ObjectDetach(AGOBJECT(pwCaption));
@@ -1019,19 +813,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
        }
 
 //       pad = AG_BoxNewHoriz(parent, 0);
-       CreateCMT(parent, FALSE);
-       UpdateCMTMessages("       ");
-       nwCMT[ID_IN] = 0;
-       pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCMTNorm);
-       nwCMT[ID_READ] = AG_PixmapAddSurface(pwCMT, pCMTRead);
-       nwCMT[ID_WRITE] = AG_PixmapAddSurface(pwCMT, pCMTWrite);
-       AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
-       AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-       AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-       AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-       AG_PixmapSetSurface(pwCMT, nwCMT[ID_IN]);
-       AG_WidgetShow(pwCMT);
-
+       ResizeTapeOSD(parent, w, h);
        ResizeLeds(parent, w, h);
 //       pad = AG_BoxNewHoriz(parent, 0);
        AG_ObjectUnlock(AGOBJECT(parent));
@@ -1060,9 +842,7 @@ void PaintStatus(void)
 	szDrive[1][0] = '\0';
 	szOldDrive[0][0] = '\0';
 	szOldDrive[1][0] = '\0';
-	nTape = -1;
-	nOldTape = 0;
-
+        ClearTapeOSD();
 	/*
 	 * 描画
 	 */
