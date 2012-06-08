@@ -1224,7 +1224,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     float wCaption = (float)STAT_WIDTH / (float)total;
     AG_Box *pad;
     if(parent == NULL) return;
-	return;
+//	return;
 
    nLedHeight = nVfdHeight = nCMTHeight = nCaptionHeight = h;
     nLedWidth = (int)(ww * wLed);
@@ -1261,7 +1261,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 
        pad = AG_BoxNewHoriz(parent, AG_HBOX_VFILL);
 
-//       CreateCaption(parent, FALSE);
+       CreateCaption(parent, FALSE);
        UpdateMainCaption(TRUE);
        {
 	  pwCaption = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCaption);
@@ -1273,7 +1273,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 	  AG_Redraw(pwCaption);
        }
 //       pad = AG_BoxNewHoriz(parent, 0);
-//       CreateVFD(parent, FALSE);
+       CreateVFD(parent, FALSE);
        for(i = 1; i >= 0 ; i--) {
 	  nwFD[i][ID_EMPTY] = 0;
 	  UpdateVFDMessages(i, "               ");
@@ -1291,7 +1291,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
        }
 
 //       pad = AG_BoxNewHoriz(parent, 0);
-//       CreateCMT(parent, FALSE);
+       CreateCMT(parent, FALSE);
        UpdateCMTMessages("       ");
        nwCMT[ID_IN] = 0;
        pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCMTNorm);
@@ -1306,7 +1306,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 
 
 //       pad = AG_BoxNewHoriz(parent, 0);
-//       CreateLEDs(parent, FALSE);
+       CreateLEDs(parent, FALSE);
        nwCaps[ID_ON] = 0;
        pwCAPS =  AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCapsOn);
        nwCaps[ID_OFF] = AG_PixmapAddSurface(pwCAPS, pCapsOff);
