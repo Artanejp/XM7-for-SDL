@@ -13,6 +13,7 @@ COMMONSRC = \
 	agar_draw.cpp \
 	agar_guicore.cpp \
 	agar_osd.cpp \
+	agar_osd_led.cpp \
 	agar_sch.cpp \
 	agar_sdl.cpp \
 	agar_sdlscaler.cpp \

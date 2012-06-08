@@ -35,6 +35,25 @@ extern          "C" {
 	 * 再描画
 	 */
         extern void DestroyStatus(void);
+
+/*
+* Widget Textures
+*/
+enum {
+    ID_EMPTY = 0,
+    ID_IN,
+    ID_READ,
+    ID_WRITE,
+    ID_END
+};
+enum {
+    ID_OFF = 0,
+    ID_ON
+};
+
+
+
+
 #ifdef __cplusplus
 }
 #endif				/*  */

@@ -47,9 +47,6 @@ char StatusFont[MAXPATHLEN];
  */
 static char     szCaption[132];	/* キャプション */
 static char     szOldCaption[132];	/* キャプション */
-static int     nCAP;		/* CAPキー */
-static int     nKANA;		/* かなキー */
-static int     nINS;		/* INSキー */
 static int     nDrive[2];	/* フロッピードライブ */
 static int     nDriveOld[2];	/* フロッピードライブ */
 static char    szDrive[2][16 + 1];	/* フロッピードライブ */
@@ -57,12 +54,6 @@ static char    szOldDrive[2][16+1];       /* フロッピードライブ(過去)
 static BOOL     old_writep[4];  /* 過去のライトプロテクトフラグ */
 static int     nTape;           /* テープ */
 static int     nOldTape;        /* テープ(過去) */
-static AG_Surface      *pInsOn; /* INSキープリレンダリング(ON) */
-static AG_Surface      *pInsOff; /* INSキープリレンダリング(OFF) */
-static AG_Surface      *pKanaOn; /* カナキープリレンダリング(ON) */
-static AG_Surface      *pKanaOff; /* カナキープリレンダリング(OFF) */
-static AG_Surface      *pCapsOn; /* Capsキープリレンダリング(ON) */
-static AG_Surface      *pCapsOff; /* Capsキープリレンダリング(OFF) */
 static AG_Surface      *pFDRead[2]; /* Drive0 Read */
 static AG_Surface      *pFDWrite[2]; /* Drive0 Write */
 static AG_Surface      *pFDNorm[2]; /* Drive0 Normal */
@@ -72,8 +63,6 @@ static AG_Surface      *pCMTNorm; /* Tape Normal */
 static AG_Surface      *pCaption; /* Caption */
 
 /*  リサイズ */
-static int nLedWidth;
-static int nLedHeight;
 static int nVfdWidth;
 static int nVfdHeight;
 static int nCMTWidth;
@@ -83,7 +72,7 @@ static int nCaptionHeight;
 static int nStatFontSize;
 static int nFontSize;
 
-static AG_Font         *pStatusFont;
+AG_Font         *pStatusFont;
 static AG_Color			r;
 static AG_Color 		b;
 static AG_Color			n;
@@ -91,42 +80,30 @@ static AG_Color 		black;
 static AG_Color			alpha;
 static BOOL bGLMode; /* 描画にOpenGLを使うか否か*/
 
-/*
-* Widget Textures
-*/
-enum {
-    ID_EMPTY = 0,
-    ID_IN,
-    ID_READ,
-    ID_WRITE,
-    ID_END
-};
-enum {
-    ID_OFF = 0,
-    ID_ON
-};
-
-
 static AG_Pixmap *pwCaption;
 static AG_Pixmap *pwFD[2];
 static AG_Pixmap *pwCMT;
-static AG_Pixmap *pwCAPS;
-static AG_Pixmap *pwINS;
-static AG_Pixmap *pwKana;
 static int nwCaption;
 static int nwFD[2][4]; // R/W/Noaccess/Empty
 static int nwCMT[4]; // R/W/Noaccess/Empty
-static int nwCaps[2]; //
-static int nwIns[2];
-static int nwKana[2];
 extern "C" {
 AG_Box *pStatusBar;
 }
 
+extern void InitLeds(AG_Widget *parent);
+extern void DestroyLeds(void);
+extern void DrawCAP(void);
+extern void DrawKANA(void);
+extern void DrawINS(void);
+extern void ResizeLeds(AG_Widget *parent, int w, int h);
+extern void LinkSurfaceLeds(void);
+extern void ClearLeds(void);
+
+
 /*
  * Set Pixelformat of surfaces
  */
-static void SetPixelFormat(AG_PixelFormat *fmt)
+void SetPixelFormat(AG_PixelFormat *fmt)
 {
    if(fmt == NULL) return;
    // Surfaceつくる
@@ -301,13 +278,7 @@ static void InitBox(AG_Widget *parent)
     if(parent == NULL) return;
     AG_ObjectLock(parent);
     InitMessages(parent);
-
-    if(pwCAPS == NULL) pwCAPS = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nLedWidth, nLedHeight);
-    if(pwINS == NULL) pwINS = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nLedWidth, nLedHeight);
-    if(pwKana == NULL) pwKana = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nLedWidth, nLedHeight);
-    AG_WidgetSetSize(pwCAPS, nLedWidth, nLedHeight);
-    AG_WidgetSetSize(pwINS, nLedWidth, nLedHeight);
-    AG_WidgetSetSize(pwKana, nLedWidth, nLedHeight);
+    InitLeds(parent);
    AG_ObjectUnlock(parent);
 }
 
@@ -339,21 +310,7 @@ static int LinkSurface(void)
     nwCMT[ID_READ] = AG_PixmapAddSurface(pwCMT, pCMTRead);
     nwCMT[ID_WRITE] = AG_PixmapAddSurface(pwCMT, pCMTWrite);
    AG_WidgetShow(pwCMT);
-
-    // CAPS
-    nwCaps[ID_OFF] = 0;
-    nwCaps[ID_ON] = AG_PixmapAddSurface(pwCAPS, pCapsOn);
-   AG_WidgetShow(pwCAPS);
-
-   // INS
-    nwIns[ID_OFF] = 0;
-    nwIns[ID_ON] = AG_PixmapAddSurface(pwINS, pInsOn);
-	AG_WidgetShow(pwINS);
-
-    // Kana
-    nwKana[ID_OFF] = 0;
-    nwKana[ID_ON] = AG_PixmapAddSurface(pwKana, pKanaOn);
-	AG_WidgetShow(pwKana);
+   LinkSurfaceLeds();
 }
 
 /*
@@ -372,104 +329,6 @@ void DrawOSDEv(AG_Event *event)
     return;
 }
 
-static void CreateLEDs(AG_Widget *parent, BOOL initflag)
-{
-    AG_PixelFormat fmt;
-    AG_Surface *tmps;
-
-   SetPixelFormat(&fmt);
-
-   if(initflag){
-     if(pwINS != NULL){
-        AG_ObjectDetach(AGOBJECT(pwINS));
-        pwINS = NULL;
-     }
-      if(pwKana != NULL){
-        AG_ObjectDetach(AGOBJECT(pwKana));
-        pwKana = NULL;
-      }
-      if(pwCAPS != NULL){
-        AG_ObjectDetach(AGOBJECT(pwCAPS));
-        pwCAPS = NULL;
-    }
-   }
-
-
-
-   if(pStatusFont == NULL) return;
-   if(nFontSize <= 2) return;
-
-
-    AG_PushTextState();
-	AG_TextFont(pStatusFont);
-        AG_TextFontPts(nFontSize);
-	AG_TextColor(black);
-	AG_TextBGColor(r);
-
-   if(pInsOn) {
-      AG_SurfaceResize(pInsOn, nLedWidth, nLedHeight);
-   } else {
-      pInsOn = AG_SurfaceNew(AG_SURFACE_PACKED , nLedWidth, nLedHeight, &fmt, AG_SRCALPHA);
-   }
-
-	AG_FillRect(pInsOn, NULL, r);
-	tmps = AG_TextRender("Ins");
-	AG_SurfaceBlit(tmps, NULL, pInsOn, 1, 0);
-	AG_SurfaceFree(tmps);
-
-   if(pCapsOn) {
-      AG_SurfaceResize(pCapsOn, nLedWidth, nLedHeight);
-   } else {
-      pCapsOn = AG_SurfaceNew(AG_SURFACE_PACKED , nLedWidth, nLedHeight, &fmt, AG_SRCALPHA);
-   }
-	AG_FillRect(pCapsOn, NULL, r);
-	tmps = AG_TextRender("CAP");
-	AG_SurfaceBlit(tmps, NULL, pCapsOn, 1, 0);
-	AG_SurfaceFree(tmps);
-
-   if(pKanaOn) {
-      AG_SurfaceResize(pKanaOn, nLedWidth, nLedHeight);
-   } else {
-      pKanaOn = AG_SurfaceNew(AG_SURFACE_PACKED , nLedWidth, nLedHeight, &fmt, AG_SRCALPHA);
-   }
-	AG_FillRect(pKanaOn, NULL, r);
-	tmps = AG_TextRender("カナ");
-	AG_SurfaceBlit(tmps, NULL, pKanaOn, 1, 0);
-	AG_SurfaceFree(tmps);
-	AG_TextColor(n);
-	AG_TextBGColor(black);
-   if(pInsOff) {
-      AG_SurfaceResize(pInsOff, nLedWidth, nLedHeight);
-   } else {
-      pInsOff = AG_SurfaceNew(AG_SURFACE_PACKED , nLedWidth, nLedHeight, &fmt, AG_SRCALPHA);
-   }
-
-	AG_FillRect(pInsOff, NULL, black);
-	tmps = AG_TextRender("Ins");
-	AG_SurfaceBlit(tmps, NULL, pInsOff, 1, 0);
-	AG_SurfaceFree(tmps);
-
-   if(pCapsOff) {
-      AG_SurfaceResize(pCapsOff, nLedWidth, nLedHeight);
-   } else {
-      pCapsOff = AG_SurfaceNew(AG_SURFACE_PACKED , nLedWidth, nLedHeight, &fmt, AG_SRCALPHA);
-   }
-	AG_FillRect(pCapsOff, NULL, black);
-	tmps = AG_TextRender("CAP");
-	AG_SurfaceBlit(tmps, NULL, pCapsOff, 1, 0);
-	AG_SurfaceFree(tmps);
-
-   if(pKanaOff) {
-      AG_SurfaceResize(pKanaOff, nLedWidth, nLedHeight);
-   } else {
-      pKanaOff = AG_SurfaceNew(AG_SURFACE_PACKED , nLedWidth, nLedHeight, &fmt, AG_SRCALPHA);
-   }
-	AG_FillRect(pKanaOff, NULL, black);
-	tmps = AG_TextRender("カナ");
-	AG_SurfaceBlit(tmps, NULL, pKanaOff, 1, 0);
-	AG_SurfaceFree(tmps);
-    AG_PopTextState();
-}
 
 static void CreateVFD(AG_Widget *parent, BOOL initflag)
 {
@@ -621,18 +480,9 @@ void CreateStatus(AG_Widget *parent)
     SetPixelFormat(&fmt);
 	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT * 4, 0);
 	// Init Var
-	nLedWidth = LED_WIDTH * 2;
-	nLedHeight = LED_HEIGHT * 2;
-	pInsOn = pInsOff = NULL;
-	pCapsOn = pCapsOff = NULL;
-	pKanaOn = pKanaOff = NULL;
-	pwINS = NULL;
-	pwCAPS = NULL;
-	pwKana = NULL;
-	// Create Widgets;
-	nFontSize = STAT_PT;
-   CreateLEDs(parent, TRUE);
-    pFDRead[0] = pFDWrite[0] = pFDNorm[0] = NULL;
+
+   
+       pFDRead[0] = pFDWrite[0] = pFDNorm[0] = NULL;
     pFDRead[1] = pFDWrite[1] = pFDNorm[1] = NULL;
     nVfdHeight = VFD_HEIGHT * 2;
     nVfdWidth = VFD_WIDTH * 2;
@@ -644,7 +494,10 @@ void CreateStatus(AG_Widget *parent)
     nCMTHeight = CMT_HEIGHT * 2;
     nCMTWidth = CMT_WIDTH * 2;
     CreateCMT(parent, TRUE);
-	/*
+   // Create Widgets;
+   nFontSize = STAT_PT;
+
+   /*
 	 * RECT Tape
 	 */
 
@@ -655,6 +508,7 @@ void CreateStatus(AG_Widget *parent)
     CreateCaption(parent, TRUE);
     if(parent) {
         InitBox(parent);
+        InitLeds(parent);
         LinkSurface();
     }
 }
@@ -662,30 +516,7 @@ void CreateStatus(AG_Widget *parent)
 void DestroyStatus(void)
 {
 	int i, j;
-	if(pInsOn !=NULL ) {
-		AG_SurfaceFree(pInsOn);
-		pInsOn = NULL;
-	}
-	if(pInsOff != NULL) {
-		AG_SurfaceFree(pInsOff);
-		pInsOff = NULL;
-	}
-	if(pCapsOn !=NULL ) {
-		AG_SurfaceFree(pCapsOn);
-		pCapsOn = NULL;
-	}
-	if(pCapsOff != NULL) {
-		AG_SurfaceFree(pCapsOff);
-		pCapsOff = NULL;
-	}
-	if(pKanaOn !=NULL ) {
-		AG_SurfaceFree(pKanaOn);
-		pKanaOn = NULL;
-	}
-	if(pKanaOff !=NULL ) {
-		AG_SurfaceFree(pKanaOff);
-		pKanaOff = NULL;
-	}
+        DestroyLeds();
 	if(pCaption !=NULL ) {
 		AG_SurfaceFree(pCaption);
 		pCaption = NULL;
@@ -865,101 +696,6 @@ static void DrawMainCaption(BOOL override)
 }
 
 
-
-/*
- *  CAPキー描画
- */
-static void DrawCAP(void)
-{
-	int            num;
-	/*
-	 * 番号決定
-	 */
-	if (caps_flag) {
-		num = 1;
-	} else {
-		num = 0;
-	}
-	/*
-	 * 描画、ワーク更新
-	 */
-	nCAP = num;
-    if(pwCAPS == NULL) return;
-    AG_ObjectLock(pwCAPS);
-	if (nCAP) {
-	      AG_PixmapSetSurface(pwCAPS, nwCaps[ID_ON]);
-       } else {
-	     AG_PixmapSetSurface(pwCAPS, nwCaps[ID_OFF]);
-	}
-    AG_ObjectUnlock(pwCAPS);
-     AG_Redraw(pwCAPS);
-}
-
-
-/*
- *  かなキー描画
- */
-static void DrawKANA(void)
-{
-	int            num;
-
-	/*
-	 * 番号決定
-	 */
-	if (kana_flag) {
-		num = 1;
-	} else {
-		num = 0;
-	}
-
-	/*
-	 * 描画、ワーク更新
-	 */
-	nKANA = num;
-    if(pwKana == NULL) return;
-    AG_ObjectLock(pwKana);
-
-	if (nKANA) {
-	      AG_PixmapSetSurface(pwKana, nwKana[ID_ON]);
-	} else {
-	      AG_PixmapSetSurface(pwKana, nwKana[ID_OFF]);
-	}
-    AG_ObjectUnlock(pwKana);
-    AG_Redraw(pwKana);
-}
-
-
-/*
- *  INSキー描画
- */
-static void DrawINS(void)
-{
-	int            num;
-
-	/*
-	 * 番号決定
-	 */
-	if (ins_flag) {
-		num = 1;
-	}  else {
-		num = 0;
-	}
-
-	/*
-	 * 描画、ワーク更新
-	 */
-	nINS = num;
-    if(pwINS == NULL) return;
-    AG_ObjectLock(pwINS);
-	if (nINS) {
-	      AG_PixmapSetSurface(pwINS, nwIns[ID_ON]);
-	} else {
-	      AG_PixmapSetSurface(pwINS, nwIns[ID_OFF]);
-	}
-     AG_ObjectUnlock(pwINS);
-
-     AG_Redraw(pwINS);
-}
 
 /*
  *  ドライブ描画
@@ -1217,7 +953,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     int total =  STAT_WIDTH + VFD_WIDTH * 2
                 + CMT_WIDTH + LED_WIDTH * 3 + 50;
     int pos = 0;
-    int ww = (float)w;
+    float ww = (float)w;
     float wLed = (float)LED_WIDTH / (float)total;
     float wCMT = (float)CMT_WIDTH / (float)total;
     float wFD = (float)VFD_WIDTH / (float)total;
@@ -1226,12 +962,10 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     if(parent == NULL) return;
 //	return;
 
-   nLedHeight = nVfdHeight = nCMTHeight = nCaptionHeight = h;
-    nLedWidth = (int)(ww * wLed);
+    nVfdHeight = nCMTHeight = nCaptionHeight = h;
     nVfdWidth = (int)(ww * wFD);
     nCMTWidth = (int)(ww * wCMT);
     nCaptionWidth = (int)(ww * wCaption);
-    if(nLedWidth <= 0) return;
     if(nVfdWidth <= 0) return;
     if(nCMTWidth <= 0) return;
     if(nCaptionWidth <= 0) return;
@@ -1241,12 +975,6 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     if(parent) {
     AG_ObjectLock(AGOBJECT(parent));
 
-       AG_WidgetHide(pwCAPS);
-       AG_ObjectDetach(AGOBJECT(pwCAPS));
-       AG_WidgetHide(pwINS);
-       AG_ObjectDetach(AGOBJECT(pwINS));
-       AG_WidgetHide(pwKana);
-       AG_ObjectDetach(AGOBJECT(pwKana));
        for(i = 0; i < 2; i++) {
 	  AG_WidgetHide(pwFD[i]);
 	  AG_ObjectDetach(AGOBJECT(pwFD[i]));
@@ -1304,24 +1032,8 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
        AG_PixmapSetSurface(pwCMT, nwCMT[ID_IN]);
        AG_WidgetShow(pwCMT);
 
-
+       ResizeLeds(parent, w, h);
 //       pad = AG_BoxNewHoriz(parent, 0);
-       CreateLEDs(parent, FALSE);
-       nwCaps[ID_ON] = 0;
-       pwCAPS =  AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCapsOn);
-       nwCaps[ID_OFF] = AG_PixmapAddSurface(pwCAPS, pCapsOff);
-       AG_WidgetSetSize(pwCAPS, nLedWidth, nLedHeight);
-
-       nwIns[ID_ON] = 0;
-       pwINS = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE ,  pInsOn);
-       nwIns[ID_OFF] = AG_PixmapAddSurface(pwINS, pInsOff);
-       AG_WidgetSetSize(pwINS, nLedWidth, nLedHeight);
-
-       nwKana[ID_ON] = 0;
-       pwKana = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pKanaOn);
-       nwKana[ID_OFF] = AG_PixmapAddSurface(pwKana, pKanaOff);
-       AG_WidgetSetSize(pwKana, nLedWidth, nLedHeight);
-
        AG_ObjectUnlock(AGOBJECT(parent));
 
     }
@@ -1337,11 +1049,9 @@ void PaintStatus(void)
 	/*
 	 * 記憶ワークをすべてクリアする
 	 */
-	szCaption[0] = '\0';
+        ClearLeds();
+        szCaption[0] = '\0';
 	szOldCaption[0] = '\0';
-	nCAP = -1;
-	nKANA = -1;
-	nINS = -1;
 	nDrive[0] = -1;
 	nDrive[1] = -1;
 	nDriveOld[0] = -1;
@@ -1357,4 +1067,9 @@ void PaintStatus(void)
 	 * 描画
 	 */
      DrawStatusForce();
+}
+
+int getnFontSize(void)
+{
+   return nFontSize;
 }
