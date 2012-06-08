@@ -1224,6 +1224,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     float wCaption = (float)STAT_WIDTH / (float)total;
     AG_Box *pad;
     if(parent == NULL) return;
+	return;
 
    nLedHeight = nVfdHeight = nCMTHeight = nCaptionHeight = h;
     nLedWidth = (int)(ww * wLed);

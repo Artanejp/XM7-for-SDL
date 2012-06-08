@@ -66,7 +66,7 @@ BOOL bFullScreen = FALSE;
  *  プロトタイプ宣言
  */
 static void *ThreadSch(void *);	/* スレッド関数 */
-static DWORD timeGetTime(void);	/* timeGetTime互換関数
+static DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数
  */
 static void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 static AG_Thread SchThread;
@@ -209,7 +209,7 @@ static void  DrawSch(void)
 void ResetSch(void)
 {
 	nFrameSkip = 0;
-	dwExecTime = timeGetTime();
+	dwExecTime = XM7_timeGetTime();
 }
 /*
  *  速度調整リセット
@@ -218,7 +218,7 @@ void ResetSpeedAdjuster(void)
 {
 	nSpeedCheck = 0;
 	dwSleepCount = 0;
-	dwChkTime = timeGetTime();
+	dwChkTime = XM7_timeGetTime();
 }
 /*
  *  スレッド関数
@@ -295,7 +295,7 @@ static void *ThreadSch(void *param)
 		/*
 		 * 時間を取得(49日でのループを考慮)
 		 */
-		dwNowTime = timeGetTime();
+		dwNowTime = XM7_timeGetTime();
 		dwTempTime = dwNowTime;
 		if (dwTempTime < dwExecTime) {
 			dwExecTime = 0;
@@ -318,7 +318,7 @@ static void *ThreadSch(void *param)
 			/*
 			 * 再度、時間を取得(49日でのループを考慮)
 			 */
-			dwNowTime = timeGetTime();
+			dwNowTime = XM7_timeGetTime();
 			dwTempTime = dwNowTime;
 			if (dwTempTime < dwExecTime) {
 				dwExecTime = 0;
@@ -344,7 +344,7 @@ static void *ThreadSch(void *param)
 					UnlockVM();
 				        AG_MutexUnlock(&nRunMutex);
 					while (!stopreq_flag) {
-						if (dwTempTime != timeGetTime()) {
+						if (dwTempTime != XM7_timeGetTime()) {
 							break;
 						}
 
@@ -397,7 +397,7 @@ static void *ThreadSch(void *param)
 				/*
 				 * 時間を取得(49日でのループを考慮)
 				 */
-				dwTempTime = timeGetTime();
+				dwTempTime = XM7_timeGetTime();
 				if (dwTempTime < dwChkTime) {
 					dwChkTime = 0;
 				}
@@ -523,12 +523,12 @@ static void *ThreadSch(void *param)
 	/*
 	 *  timeGetTime互換関数
 	 */
-static DWORD timeGetTime(void)
+static DWORD XM7_timeGetTime(void)
 {
 	// struct timeval t;
 	// gettimeofday(&t, 0);
 	// return (t.tv_sec*1000000 + t.tv_usec)/1000;
-   return AG_GetTicks();
+   return SDL_GetTicks();
 }
 
 
@@ -537,7 +537,7 @@ static DWORD timeGetTime(void)
  */
 static void XM7_Sleep(DWORD t)
 {
-   AG_Delay(t);
+   SDL_Delay(t);
 }
    
 #ifdef __cplusplus

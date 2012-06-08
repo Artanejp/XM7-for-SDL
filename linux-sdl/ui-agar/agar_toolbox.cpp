@@ -198,7 +198,7 @@ static void OnSaveStatusSub(char *filename)
     LockVM();
     AG_MutexLock(&nRunMutex);
     StopSnd();
-    AG_Delay(10);
+    SDL_Delay(10);
     if (!system_save(filename)) {
     } else {
     	strcpy(StatePath, filename);

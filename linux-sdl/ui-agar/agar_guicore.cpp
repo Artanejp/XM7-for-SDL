@@ -60,6 +60,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	return FALSE;
     }
    if(drv == NULL) return FALSE;
+   if(ev == NULL) return FALSE;
 	/* Retrieve the next queued event. */
 	switch (ev->type) {
 	case AG_DRIVER_KEY_UP:
@@ -140,7 +141,7 @@ void AGDrawTaskEvent(BOOL flag)
                 }
 #endif
         }
-		nDrawTick2D = AG_GetTicks();
+		nDrawTick2D = SDL_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
 			// ここにGUIの処理入れる
@@ -202,10 +203,10 @@ void AGDrawTaskEvent(BOOL flag)
         if (AG_TIMEOUTS_QUEUED())
 		{
 			DWORD tim = 0;
-			AG_GetTicks();
+			tim = SDL_GetTicks();
                 	AG_ProcessTimeouts(tim);
 		}
-		AG_Delay(1);
+		SDL_Delay(1);
 	}
    
 }
@@ -380,7 +381,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 
 //	ResizeWindow_Agar(640, 400);
 	newResize = FALSE;
-        nDrawTick1D = AG_GetTicks();
+        nDrawTick1D = SDL_GetTicks();
 	nDrawTick1E = nDrawTick1D;
 
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);

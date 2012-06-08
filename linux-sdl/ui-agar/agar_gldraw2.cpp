@@ -607,8 +607,9 @@ void AGEventDrawGL2(AG_Event *event)
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
     drawGrids(glv, w, h);
-
+#ifdef USE_OPENGL
     DrawOSDGL(glv);
+#endif
     glPopAttrib();
     glPopAttrib();
     glPopAttrib();
