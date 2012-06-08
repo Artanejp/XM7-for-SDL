@@ -254,7 +254,7 @@ void MainLoop(int argc, char *argv[])
 	SDL_Surface *s;
 
 //	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
-	AG_InitCore("xm7", AG_VERBOSE);
+	AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
 
 	AG_ConfigLoad();
     AG_SetInt(agConfig, "font.size", UI_PT);
@@ -362,6 +362,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 return;
         }
     }
+    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_CDROM);
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
 	stopreq_flag = FALSE;
