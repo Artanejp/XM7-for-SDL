@@ -42,8 +42,6 @@ DumpObject::DumpObject()
     ConsoleBuf = NULL;
     BackupConsoleBuf = NULL;
     Changed = FALSE;
-    TextFont = NULL;
-    SymFont = NULL;
     X = 0;
     Y = 0;
     W = 0;
@@ -77,35 +75,36 @@ DumpObject::~DumpObject()
 
 void DumpObject::InitFont(void)
 {
+    char c[2];
     AG_Surface *dummy;
-    char c[3];
     AG_PushTextState();
-    TextFont = AG_TextFontLookup("F-Font_400line.ttf", 16, 0);
-    if(TextFont == NULL) { // Fallback
-        TextFont = AG_TextFontPts(16); //  16pts
-    }
-    AG_PopTextState();
-
-    AG_PushTextState();
-    SymFont = AG_TextFontLookup("F-Font_Symbol_Unicode.ttf", 16, 0);
-//    SymFont = AG_TextFontLookup("F-Font_Symbol.ttf", 16, 0);
-    if(SymFont == NULL) { // Fallback
-        SymFont = AG_TextFontPts(16);//  16pts
-    }
-    AG_PopTextState();
-
-    AG_PushTextState();
-    if(TextFont != NULL){
+    if(pDbgDialogTextFont != NULL){
         c[0] = 'A';
         c[1] = '\0';
-        AG_TextFont(TextFont);
+        AG_TextFont(pDbgDialogTextFont);
         dummy = AG_TextRender(c);
         if(dummy != NULL) {
             CHRW = dummy->w;
             CHRH = dummy->h;
             AG_SurfaceFree(dummy);
-        }
+        } else {
+	    CHRW = DBG_TEXT_PT;
+	    CHRH = DBG_TEXT_PT;
+	}
+    } else { // Lost fonts
+        c[0] = 'A';
+        c[1] = '\0';
+        dummy = AG_TextRender(c);
+        if(dummy != NULL) {
+            CHRW = dummy->w;
+            CHRH = dummy->h;
+            AG_SurfaceFree(dummy);
+        } else {
+	    CHRW = DBG_TEXT_PT;
+	    CHRH = DBG_TEXT_PT;
+	}
     }
+   
     AG_PopTextState();
 }
 
@@ -253,9 +252,9 @@ void DumpObject::PutCharScreen(BYTE c)
     AG_Surface *r = NULL;
 
     if(Sym2UCS4(c, ucs)) {
-        if(SymFont != NULL){
+        if(pDbgDialogSymFont != NULL){
             AG_PushTextState();
-            AG_TextFont(SymFont);
+            AG_TextFont(pDbgDialogSymFont);
             AG_TextColor(fgColor);
             AG_TextBGColor(bgColor);
             AG_TextValign(AG_TEXT_MIDDLE);
@@ -263,9 +262,9 @@ void DumpObject::PutCharScreen(BYTE c)
             AG_PopTextState();
         }
     } else if(Txt2UCS4(c, ucs)) {
-        if(TextFont != NULL){
+        if(pDbgDialogTextFont != NULL){
             AG_PushTextState();
-            AG_TextFont(TextFont);
+            AG_TextFont(pDbgDialogTextFont);
             AG_TextColor(fgColor);
             AG_TextBGColor(bgColor);
             AG_TextValign(AG_TEXT_MIDDLE);

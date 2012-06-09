@@ -389,6 +389,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 //	AG_Quit();
 }
 
+extern void Detach_DebugMenu(void);
 
 #ifdef __cplusplus
 extern "C" {
@@ -400,10 +401,10 @@ void OnDestroy2(void)
 	OnDestroy(NULL);
 }
 
-
 void OnDestroy(AG_Event *event)
 {
-
+   // 20120610 GUI関連処理
+   Detach_DebugMenu();
         /*
          * サウンド停止
          */
@@ -522,8 +523,8 @@ void InitInstance(void)
         AG_WidgetShow(pStatusBar);
     }
 
-	win = AG_GuiDebugger();
-    AG_WindowShow(win);
+    //win = AG_GuiDebugger();
+    //AG_WindowShow(win);
 
 }
 

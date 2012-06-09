@@ -28,6 +28,7 @@ extern "C" {
 #include "sdl_sch.h"
 #include "agar_toolbox.h"
 #include "agar_debugger.h"
+#include "agar_surfaceconsole.h"
 #include <time.h>
 
 #include "../xm7-debugger/memread.h"
@@ -40,6 +41,40 @@ extern void DBG_Bin2Hex2(char *str, Uint16 w);
 extern void DBG_Bin2Hex4(char *str, Uint32 dw);
 extern void DBG_DumpAsc(char *str, Uint8 b);
 
+/*
+ * Fix Fonts
+ */
+AG_Font *pDbgDialogTextFont;
+AG_Font *pDbgDialogSymFont;
+
+static void DbgInitFont(void)
+{
+    AG_Surface *dummy;
+    char c[3];
+    AG_PushTextState();
+    pDbgDialogTextFont = AG_TextFontLookup(DBG_TEXT_FONT, DBG_TEXT_PT, 0);
+    if(pDbgDialogTextFont == NULL) { // Fallback
+        pDbgDialogTextFont = AG_TextFontPts(DBG_TEXT_PT); //  16pts
+    }
+    AG_PopTextState();
+
+    AG_PushTextState();
+    pDbgDialogSymFont = AG_TextFontLookup(DBG_SYM_FONT, DBG_TEXT_PT, 0);
+//    SymFont = AG_TextFontLookup("F-Font_Symbol.ttf", 16, 0);
+    if(pDbgDialogSymFont == NULL) { // Fallback
+        pDbgDialogSymFont = AG_TextFontPts(DBG_TEXT_PT);//  16pts
+    }
+    AG_PopTextState();
+
+}
+
+static void DbgDetachFont(void)
+{
+    if(pDbgDialogTextFont != NULL) AG_DestroyFont(pDbgDialogTextFont);
+    if(pDbgDialogSymFont != NULL) AG_DestroyFont(pDbgDialogSymFont);
+    pDbgDialogTextFont = NULL;
+    pDbgDialogSymFont = NULL;
+}
 
 
 static Uint32 UpdateDisasm(void *obj, Uint32 ival, void *arg )
@@ -574,7 +609,7 @@ static void CreateMMRDump(AG_Event *event)
 void Create_DebugMenu(AG_MenuItem *parent)
 {
    	AG_MenuItem *item ;
-
+        DbgInitFont(); //
 	item = AG_MenuBool(parent, gettext("Pause"), NULL, &run_flag, 1);
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump Main-Memory"), NULL, CreateDump, "%i,%i", MEM_MAIN, 0);
@@ -590,3 +625,10 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump MMR"), NULL, CreateMMRDump, NULL);
 }
+
+void Detach_DebugMenu(void)
+{  
+  DbgDetachFont();
+}
+
+  
