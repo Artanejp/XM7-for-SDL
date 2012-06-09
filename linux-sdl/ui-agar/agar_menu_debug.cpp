@@ -79,7 +79,12 @@ static void OnChangeAddrDisasm(AG_Event *event)
 static void DestroyDisasmWindow(AG_Event *event)
 {
     struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
+    void *self = (void *)AG_SELF();
+
     if(mp == NULL) return;
+    AG_LockTimeouts(self);
+    AG_DelTimeout(self, &mp->to);
+    AG_UnlockTimeouts(self);
     if(mp->disasm != NULL) XM7_DbgDisasmDetach(mp->disasm);
     free(mp);
     mp = NULL;
@@ -132,7 +137,11 @@ static void OnChangeAddr(AG_Event *event)
 static void DestroyDumpWindow(AG_Event *event)
 {
     struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)AG_PTR(1);
+    void *self = AG_SELF();
     if(mp == NULL) return;
+    AG_LockTimeouts(self);
+    AG_DelTimeout(self, &mp->to);
+    AG_UnlockTimeouts(self);
     if(mp->dump != NULL) XM7_DbgDumpMemDetach(mp->dump);
 
     free(mp);
@@ -146,8 +155,7 @@ static Uint32 UpdateRegDump(void *obj, Uint32 ival, void *arg )
     struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)arg;
     char *str;
 
-
-   if(mp == NULL) return ival;
+    if(mp == NULL) return ival;
     XM7_DbgDumpRegs(mp->dump);
     return mp->to_tick;
 }
@@ -156,9 +164,12 @@ static Uint32 UpdateRegDump(void *obj, Uint32 ival, void *arg )
 static void DestroyRegDumpWindow(AG_Event *event)
 {
     struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)AG_PTR(1);
+    void *self = AG_SELF();
     if(mp == NULL) return;
+    AG_LockTimeouts(self);
+    AG_DelTimeout(self, &mp->to);
+    AG_UnlockTimeouts(self);
     if(mp->dump != NULL) XM7_DbgRegDumpDetach(mp->dump);
-
     free(mp);
     mp = NULL;
 }
@@ -193,7 +204,7 @@ static void CreateDump(AG_Event *event)
 
 //    if(pAddr == NULL) return;
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -278,7 +289,7 @@ static void CreateDisasm(AG_Event *event)
 
 //    if(pAddr == NULL) return;
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -353,7 +364,7 @@ static void CreateRegDump(AG_Event *event)
 
 //    if(pAddr == NULL) return;
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -416,7 +427,12 @@ static Uint32 UpdateFdcDump(void *obj, Uint32 ival, void *arg )
 static void DestroyFdcDumpWindow(AG_Event *event)
 {
     struct XM7_DbgFdcDumpDesc *mp = (struct XM7_DbgFdcDumpDesc *)AG_PTR(1);
+    void *self = (void *)AG_SELF();
+
     if(mp == NULL) return;
+    AG_LockTimeouts(self);
+    AG_DelTimeout(self, &mp->to);
+    AG_UnlockTimeouts(self);
     if(mp->dump != NULL) XM7_DbgFdcDumpDetach(mp->dump);
 
     free(mp);
@@ -445,7 +461,7 @@ static void CreateFdcDump(AG_Event *event)
 
 //    if(pAddr == NULL) return;
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NOCLOSE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -482,7 +498,6 @@ static Uint32 UpdateMMRDump(void *obj, Uint32 ival, void *arg )
     struct XM7_DbgMMRDumpDesc *mp = (struct XM7_DbgMMRDumpDesc *)arg;
     char *str;
 
-
     if(mp == NULL) return ival;
     XM7_DbgDumpMMR(mp->dump);
     return mp->to_tick;
@@ -492,9 +507,13 @@ static Uint32 UpdateMMRDump(void *obj, Uint32 ival, void *arg )
 static void DestroyMMRDumpWindow(AG_Event *event)
 {
     struct XM7_DbgMMRDumpDesc *mp = (struct XM7_DbgMMRDumpDesc *)AG_PTR(1);
-    if(mp == NULL) return;
-    if(mp->dump != NULL) XM7_DbgDumpMMRDetach(mp->dump);
+    void *self = AG_SELF();
 
+    if(mp == NULL) return;
+    AG_LockTimeouts(self);
+    AG_DelTimeout(self, &mp->to);
+    AG_UnlockTimeouts(self);
+    if(mp->dump != NULL) XM7_DbgDumpMMRDetach(mp->dump);
     free(mp);
     mp = NULL;
 }
@@ -523,7 +542,7 @@ static void CreateMMRDump(AG_Event *event)
 
 //    if(pAddr == NULL) return;
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NOCLOSE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 

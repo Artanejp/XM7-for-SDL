@@ -5600,3 +5600,572 @@
 1335841782 /home/whatisthis/codeblocks/xm7-sdl/sdl/sdl_cpuid.h
 	<cpuid.h>
 
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/KbdInterface.cpp
+	"xm7.h"
+	"KbdInterface.h"
+	"xm7.h"
+	<SDL.h>
+	"SDLKbdInterface.h"
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//xm7.h
+	<stdio.h>
+	"build_config.h"
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"xm7_types.h"
+	<SDL/SDL.h>
+	<memwatch.h>
+	<assert.h>
+
+1339215472 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/build_config.h
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/xm7_types.h
+	<stdint.h>
+	<stddef.h>
+	<windef.h>
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/KbdInterface.h
+	<SDL.h>
+	"xm7.h"
+	"api_kbd.h"
+	"api_mouse.h"
+
+1339006851 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_kbd.h
+	<memory.h>
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	<SDL/SDL.h>
+	<SDL/SDL_syswm.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"agar_xm7.h"
+	<SDL/SDL.h>
+	<SDL/SDL_syswm.h>
+	"xm7_sdl.h"
+	"sdl_sch.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//mainetc.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//keyboard.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//device.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//mouse.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//event.h
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/agar_xm7.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"xm7.h"
+	<stdlib.h>
+	<sys/param.h>
+	<gtk/gtk.h>
+	<SDL/SDL.h>
+	<libintl.h>
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/xm7_sdl.h
+	<stdlib.h>
+	<sys/param.h>
+	<gtk/gtk.h>
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+
+1339007672 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/sdl_sch.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_mouse.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SDLKbdInterface.h
+	"KbdInterface.h"
+
+1339059830 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SDLJoyInterface.cpp
+	<memory.h>
+	<SDL/SDL.h>
+	<SDL/SDL_joystick.h>
+	<SDL/SDL_syswm.h>
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"api_kbd.h"
+	"api_js.h"
+	"SDLJoyInterface.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_js.h
+	"xm7.h"
+	"api_kbd.h"
+	<vector>
+
+1339006995 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SDLJoyInterface.h
+	<SDL/SDL.h>
+	"xm7.h"
+
+1339006987 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SDLKbdInterface.cpp
+	"xm7.h"
+	"xm7_sdl.h"
+	<SDL/SDL.h>
+	"SDLKbdInterface.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvBeep.cpp
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	"xm7.h"
+	"SndDrvBeep.h"
+	"api_snd.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvBeep.h
+	"SndDrvIF.h"
+
+1339007077 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvIF.h
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"xm7_sdl.h"
+	<vector>
+
+1339006872 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_snd.h
+	"xm7.h"
+	"device.h"
+	"mainetc.h"
+	"tapelp.h"
+	"../fmgen/types.h"
+	"../fmgen/misc.h"
+	"../fmgen/opna.h"
+	"../fmgen/psg.h"
+	"opn.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"api_wavwriter.h"
+	"SndDrvIF.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//tapelp.h
+
+1339009393 /home/whatisthis/src/XM7-for-SDL/linux-sdl/fmgen/types.h
+	<stdint.h>
+	<stddef.h>
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/fmgen/misc.h
+	<math.h>
+	<string.h>
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/fmgen/opna.h
+	"fmgen.h"
+	"psg.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/fmgen/fmgen.h
+	"misc.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/fmgen/psg.h
+	"misc.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//opn.h
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_wavwriter.h
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/time.h>
+	<errno.h>
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7_types.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvCMT.cpp
+	"SndDrvCMT.h"
+	"api_snd.h"
+
+1339007091 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvCMT.h
+	"xm7.h"
+	"device.h"
+	"mainetc.h"
+	"tapelp.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"SndDrvIF.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvOpn.cpp
+	"SndDrvOpn.h"
+	"api_snd.h"
+	"xm7_types.h"
+
+1339006953 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvOpn.h
+	"xm7.h"
+	"../fmgen/misc.h"
+	"opna.h"
+	"fmgen.h"
+	"fmgeninl.h"
+	"opn.h"
+	"psg.h"
+	"xm7_sdl.h"
+	<vector>
+	"SndDrvIF.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/fmgen/fmgeninl.h
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvTmpl.cpp
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	"xm7.h"
+	"SndDrvTmpl.h"
+
+1339006962 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvTmpl.h
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"xm7_sdl.h"
+	"api_snd.h"
+	<vector>
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvWav.cpp
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_rwops.h>
+	"xm7.h"
+	"SndDrvWav.h"
+	"api_snd.h"
+
+1339006971 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/SndDrvWav.h
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"xm7_sdl.h"
+	"SndDrvIF.h"
+
+1339214532 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_draw.cpp
+	<gtk/gtk.h>
+	<gdk/gdk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"xm7.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"api_vram.h"
+	"api_draw.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//multipag.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//ttlpalet.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//apalet.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//subctrl.h
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/vm//display.h
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/agar_draw.h
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"api_draw.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	<SDL.h>
+
+1339006808 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_draw.h
+	<gtk/gtk.h>
+	<gdk/gdk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"xm7.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"xm7.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/agar_vramutil.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	"api_draw.h"
+	"api_vram.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_vram.h
+	<SDL/SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_xm7.h"
+	"xm7_types.h"
+
+1339059830 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/agar_gldraw.h
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"api_draw.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_glutil.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/agar_glutil.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"agar_xm7.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/agar_sdlview.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+
+1339059830 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_js.cpp
+	<memory.h>
+	<SDL.h>
+	<SDL_syswm.h>
+	<vector>
+	"SDLJoyInterface.h"
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"api_kbd.h"
+	"api_js.h"
+	<vector>
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_kbd.cpp
+	<X11/Xlib.h>
+	<gtk/gtk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<memory.h>
+	<SDL.h>
+	<SDL_syswm.h>
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	"agar_xm7.h"
+	"sdl.h"
+	"sdl_sch.h"
+	"api_kbd.h"
+	"KbdInterface.h"
+	"SDLKbdInterface.h"
+	"AgarKbdInterface.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/ui-agar/AgarKbdInterface.h
+	"SDLKbdInterface.h"
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_mouse.cpp
+	<X11/Xlib.h>
+	<gtk/gtk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/cursors.h>
+	<memory.h>
+	<SDL.h>
+	<SDL_syswm.h>
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	"agar_xm7.h"
+	"sdl.h"
+	"sdl_sch.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_mouse.h"
+	"gtk_propkeyboard.h"
+
+1339172946 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_snd2.cpp
+	<machine/soundcard.h>
+	<linux/soundcard.h>
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/ioctl.h>
+	<sys/time.h>
+	<errno.h>
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"device.h"
+	"mainetc.h"
+	"opn.h"
+	"tapelp.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"api_snd.h"
+	"api_wavwriter.h"
+	"SndDrvIF.h"
+	"SndDrvBeep.h"
+	"SndDrvWav.h"
+	"SndDrvOpn.h"
+	"SndDrvCMT.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_vram256k.cpp
+	<SDL.h>
+	"api_draw.h"
+	"api_vram.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_vram4096.cpp
+	<SDL.h>
+	"api_draw.h"
+	"api_vram.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_vram8.cpp
+	<SDL.h>
+	"api_draw.h"
+	"api_vram.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_vramvec.c
+	<SDL.h>
+	"types.h"
+	"api_draw.h"
+	"api_vram.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/api_wavwriter.cpp
+	"api_wavwriter.h"
+
+1339066651 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/draw_thread.cpp
+	<gtk/gtk.h>
+	<gdk/gdk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"xm7.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_glutil.h"
+	"xm7_sdl.h"
+	"api_vram.h"
+	"api_draw.h"
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/sdl_cpuid.c
+	"xm7.h"
+	"xm7_types.h"
+	"sdl_cpuid.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/sdl_cpuid.h
+	<cpuid.h>
+
+1338432046 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/sdl_file.c
+	<assert.h>
+	<fcntl.h>
+	<sys/stat.h>
+	<stdlib.h>
+	"xm7.h"
+	"device.h"
+	"agar_xm7.h"
+	"sdl.h"
+
+1339007630 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/sdl_inifile.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"xm7.h"
+	"agar_xm7.h"
+	"sdl.h"
+	"sdl_inifile.h"
+
+1338432046 /home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/sdl_inifile.h
+
+1339059830 source:/home/whatisthis/src/XM7-for-SDL/linux-sdl/sdl/snd_buffer.cpp
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/time.h>
+	<errno.h>
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"device.h"
+	"mainetc.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"xm7_types.h"
+	"api_snd.h"
+	"api_wavwriter.h"
+	"SndDrvIF.h"
+	"SndDrvBeep.h"
+	"SndDrvWav.h"
+	"SndDrvOpn.h"
+	"SndDrvCMT.h"
+

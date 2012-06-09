@@ -53,6 +53,7 @@
 		</Build>
 		<Compiler>
 			<Add option="`pkg-config --cflags sdl`" />
+			<Add option="`agar-config --cflags`" />
 			<Add option="-fopenmp" />
 			<Add option="-DXM7_VER=3" />
 			<Add option="-DUSE_OPENGL" />
@@ -99,6 +100,9 @@
 		<Unit filename="agar_menu_tape.cpp" />
 		<Unit filename="agar_menu_tool.cpp" />
 		<Unit filename="agar_osd.cpp" />
+		<Unit filename="agar_osd.h" />
+		<Unit filename="agar_osd_led.cpp" />
+		<Unit filename="agar_osd_tape.cpp" />
 		<Unit filename="agar_sch.cpp" />
 		<Unit filename="agar_sdl.cpp" />
 		<Unit filename="agar_sdlscaler.cpp" />
@@ -115,6 +119,7 @@
 		<Unit filename="agar_vramutil.cpp" />
 		<Unit filename="agar_vramutil.h" />
 		<Unit filename="agar_xm7.h" />
+		<Unit filename="xm7_types.h" />
 		<Extensions>
 			<envvars set="default" />
 			<code_completion>

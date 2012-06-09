@@ -22,7 +22,7 @@
 					<Add library="../ui-agar/obj/Debug/libui-agar.a" />
 					<Add library="../vm/obj/Debug/libxm7_vm.a" />
 					<Add library="../xm7-debugger/obj/Debug/libxm7-debugger.a" />
-					<Add library="../fmgen/obj/Debug/libfmgen007a.a" />
+					<Add library="../fmgen/fmgen/obj/Debug/libfmgen007a.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -39,14 +39,13 @@
 					<Add library="../ui-agar/obj/Release/libui-agar.a" />
 					<Add library="../vm/obj/Release/libxm7_vm.a" />
 					<Add library="../xm7-debugger/obj/Release/libxm7-debugger.a" />
-					<Add library="../fmgen/obj/Release/libfmgen007.a" />
+					<Add library="../fmgen/fmgen/obj/Release/libfmgen007.a" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="`sdl-config --cflags`" />
-			<Add option="`pkg-config --cflags gtk+-3.0`" />
 			<Add option="`agar-config --cflags`" />
 			<Add option="-fopenmp" />
 			<Add option="-DUSE_OPENGL" />

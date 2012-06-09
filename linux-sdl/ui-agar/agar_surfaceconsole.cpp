@@ -67,10 +67,11 @@ DumpObject::DumpObject()
 DumpObject::~DumpObject()
 {
     AG_MutexLock(&mutex);
-    if(TextFont != NULL) AG_DestroyFont(TextFont);
-    if(SymFont != NULL) AG_DestroyFont(SymFont);
+//    if(TextFont != NULL) AG_DestroyFont(TextFont);
+//    if(SymFont != NULL) AG_DestroyFont(SymFont);
     if(ConsoleBuf != NULL) delete [] ConsoleBuf;
     if(BackupConsoleBuf != NULL) delete [] BackupConsoleBuf;
+    AG_MutexUnlock(&mutex);
     AG_MutexDestroy(&mutex);
 }
 
@@ -209,22 +210,22 @@ static Uint32 SymFontListE0[] =
 BOOL DumpObject::Sym2UCS4(BYTE b, Uint32 *disp)
 {
    Uint32 ucs;
-   
+
    disp[0] = '\0';
    if((b >= 0x80) && (b <= 0xa0)){
      ucs = SymFontList80[b - 0x80];
 //     ucs = b;
-  } else if((b >= 0xd0) && (b <= 0xff)) {  
+  } else if((b >= 0xd0) && (b <= 0xff)) {
      ucs = SymFontListE0[b - 0xe0];
 //     ucs = b;
   } else {
       return FALSE;
   }
-   
+
    disp[0] = ucs;
    disp[1] = 0x00000000;
    return TRUE;
-   
+
 }
 
 BOOL DumpObject::Txt2UCS4(BYTE b, Uint32 *disp)
@@ -354,7 +355,7 @@ int DumpObject::PutString(char *str)
     len = strlen(str);
     if(len <= 0) return -1;
     do {
-        
+
         PutChar(str[cp]);
         cp++;
         X++;
@@ -403,7 +404,7 @@ void DumpObject::ClearScreen(void)
    int yy;
    int pos;
    AG_Rect rect;
-  
+
    AG_MutexLock(&mutex);
       pos = 0;
       for(yy = 0; yy < H; yy++) {
