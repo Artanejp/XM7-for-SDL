@@ -141,9 +141,13 @@ static void UpdateVFDMessages(int drive, char *outstr)
    if(pStatusFont == NULL) return;
    if(nFontSize <= 2) return;
 
-    AG_PushTextState();
+	 AG_SurfaceLock(pFDRead[drive]);
+	 AG_SurfaceLock(pFDWrite[drive]);
+	 AG_SurfaceLock(pFDNorm[drive]);
+
+     AG_PushTextState();
 	 AG_TextFont(pStatusFont);
-        AG_TextFontPts(nFontSize);
+     AG_TextFontPts(nFontSize);
 	 AG_TextColor(alpha);
 	 AG_TextBGColor(r);
 	 rect.x = 0;
@@ -174,6 +178,9 @@ static void UpdateVFDMessages(int drive, char *outstr)
 	 AG_SurfaceBlit(tmp, &rect, pFDNorm[drive], 0, 0);
 	 AG_SurfaceFree(tmp);
          AG_PopTextState();
+	 AG_SurfaceUnlock(pFDRead[drive]);
+	 AG_SurfaceUnlock(pFDWrite[drive]);
+	 AG_SurfaceUnlock(pFDNorm[drive]);
 
 }
 
@@ -832,6 +839,7 @@ void PaintStatus(void)
 	 * 記憶ワークをすべてクリアする
 	 */
         ClearLeds();
+        ClearTapeOSD();
         szCaption[0] = '\0';
 	szOldCaption[0] = '\0';
 	nDrive[0] = -1;

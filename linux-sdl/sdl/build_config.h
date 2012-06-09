@@ -44,7 +44,7 @@
 #endif
 
 #ifndef STAT_PT
-#define STAT_PT 24
+#define STAT_PT 18
 #endif
 
 #ifndef UI_PT
