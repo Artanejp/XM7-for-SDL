@@ -4,31 +4,30 @@ Authors: XM7/SDL:       K.Ohta <whatisthis.sowhat@gmail.com>
 	               PI.
 	 FMGEN       : CISC <cisc@retropc.net>
 	 6809 core   : MESS Team.
+	 
 HP:      http://sky.geocities.jp/artanejp/XM7-SDL/
          http://github.com/Artanejp/XM7-for-SDL/
 	 
 License:
- このソフトは、りうたけがみ氏とPI.氏によるXM-7
- ( http://retropc.net/ryu/xm7/ ) の改良版であり、ファイル単位で
- ライセンスが入り乱れています(^^;
-
- K.Ohtaの完全オリジナル部分は原則 CC-BY-SA 3.0で公開します。
+ This software is imploved XM-7, developed by PI. and Riu Takegami
+ ( http://retropc.net/ryu/xm7/ ) . Multiple licenses per file (^^;
+ 
+ K.Ohta's sourcecodes what original perfectly are CC-BY-SA 3.0.
  http://creativecommons.org/licenses/by-sa/3.0/
  
- 6809MPUコアに関しては,MESSからの流用なので、MESSのライセンスに
- 準拠します(非商用での使用に限り再配布可能）
+ 6809 MPU Core is improved from MESS, licensed by MESS license.
  http://www.mess.org/license
 
- fmgen/ はCISC氏によるものですので、以下のページもお読みください  
+ fmgen/ was developed by CISC, see also below page:  
  http://retropc.net/cisc/m88/
  
- その他のvm/のファイルはオリジナルXM7に準じます（オリジナルの
-著作権表示・商業利用の禁止）
+ Other files under vm/, Original XM7 license, like CC-BY-NC-SA 3.0,
+see also original text XM7SRC.utf.txt written in Japanese.
 
-　オリジナルXM7からの再利用からK.Ohtaが作った部分は、元ライセンス
-の規制に無い限りCC-BY-NC-SA 3.0で公開します。
+　K.Ohta's sourcecodes made from original XM7, CC-BY-NC-SA 3.0 
+basically.
+  Re-Distributing binary, refer to original XM7. 
 
-　バイナリに関しては、オリジナルに準じます。
 ***
 Files:
 1 CC-BY-SA:
