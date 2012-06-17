@@ -79,8 +79,10 @@
 /*
  * 最適化 ->FASTCALLは64bitだとバグることがあるのですっぱり削除
  */
+#if defined(FASTCALL)
+#undef FASTCALL
 #define FASTCALL
-
+#endif
 /*
  * CPUレジスタ定義
  */
@@ -331,7 +333,7 @@ extern          "C" {
     /*
      * イベント削除
      */
-    void FASTCALL   schedule_handle(int id, BOOL(FASTCALL * func) (void));
+    void FASTCALL schedule_handle(int id, BOOL(FASTCALL * func) (void));
     /*
      * イベントハンドラ設定
      */
@@ -363,27 +365,27 @@ extern          "C" {
     /*
      * メインCPUメモリ クリーンアップ
      */
-    void FASTCALL   mainmem_reset(void);
+    void FASTCALL mainmem_reset(void);
     /*
      * メインCPUメモリ リセット
      */
-    void FASTCALL   mainmem_transfer_boot(void);
+    void FASTCALL mainmem_transfer_boot(void);
     /*
      * メインCPUメモリ ブート転送
      */
-    volatile BYTE FASTCALL   mainmem_readb(WORD addr);
+    volatile BYTE FASTCALL mainmem_readb(WORD addr);
     /*
      * メインCPUメモリ 読み出し
      */
-    volatile BYTE FASTCALL   mainmem_readbnio(WORD addr);
+    volatile BYTE mainmem_readbnio(WORD addr);
     /*
      * メインCPUメモリ 読み出し(I/Oなし)
      */
-    void FASTCALL   mainmem_writeb(WORD addr, BYTE dat);
+    void FASTCALL mainmem_writeb(WORD addr, BYTE dat);
     /*
      * メインCPUメモリ 書き込み
      */
-    BOOL FASTCALL   mainmem_save(int fileh);
+    BOOL FASTCALL mainmem_save(int fileh);
     /*
      * メインCPUメモリ セーブ
      */
@@ -411,7 +413,7 @@ extern          "C" {
     /*
      * サブCPUメモリ 読み出し
      */
-    volatile BYTE FASTCALL   submem_readbnio(WORD addr);
+    volatile BYTE submem_readbnio(WORD addr);
     /*
      * サブCPUメモリ 読み出し(I/Oなし)
      */
