@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="xm7-debugger-win32" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="libxm7-debugger-win32" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Debug\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-pg" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg -lgmon" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="libxm7-debugger-win32" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Release\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-Wall" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-fpermissive" />
+			<Add option="`agar-config --cflags`" />
+			<Add option="-DMOUSE" />
+			<Add option="-DMR2" />
+			<Add option="-DFDDSND" />
+			<Add option="-DXM7_VER=3" />
+			<Add option='-DRSSDIR=\&quot;~/xm7\&quot;' />
+			<Add option='-DFONTPATH=\&quot;:.:./.xm7/:./xm7/:\&quot;' />
+			<Add option="-DUI_PT=16" />
+			<Add option="-DSTAT_PT=16" />
+			<Add option='-DUI_FONT=\&quot;ipagui.ttf\&quot;' />
+			<Add option='-DFUNC_FONT=\&quot;ipagui.ttf\&quot;' />
+			<Add option='-DSTAT_FONT=\&quot;ipagp.ttf\&quot;' />
+			<Add option='-DVFD_FONT=\&quot;ipagp.ttf\&quot;' />
+			<Add option='-DCMT_FONT=\&quot;ipagp.ttf\&quot;' />
+			<Add option="-D_M_IX_86" />
+			<Add option="-D_WINDOWS" />
+			<Add option="-D_NDEBUG" />
+			<Add option="-DUSE_AGAR" />
+			<Add directory="..\..\xm7-debugger" />
+			<Add directory="..\..\vm" />
+			<Add directory="..\..\ui-agar" />
+			<Add directory="..\..\sdl" />
+			<Add directory="..\..\fmgen" />
+			<Add directory="C:\MinGW\include\agar" />
+			<Add directory="C:\MinGW\include\SDL" />
+		</Compiler>
+		<Unit filename="..\dbg_breakpoint.cpp" />
+		<Unit filename="..\dbg_disasm09.cpp" />
+		<Unit filename="..\dbg_fonts.cpp" />
+		<Unit filename="..\dbg_memdump.cpp" />
+		<Unit filename="..\memaccess.cpp" />
+		<Unit filename="..\memdef.h" />
+		<Unit filename="..\memread.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

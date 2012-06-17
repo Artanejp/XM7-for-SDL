@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="xm7-win32-ui-agar" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="libxm7-win32-ui-agar" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Debug\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-pg" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg -lgmon" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="libxm7-win32-ui-agar" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Release\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-march=i686" />
+					<Add option="-O3" />
+					<Add option="-Wall" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="`agar-config --cflags`" />
+			<Add option="-fpermissive" />
+			<Add option="-DMOUSE" />
+			<Add option="-DMR2" />
+			<Add option="-DFDDSND" />
+			<Add option="-DXM7_VER=3" />
+			<Add option='-DRSSDIR=\&quot;~/xm7\&quot;' />
+			<Add option='-DFONTPATH=\&quot;:.:./.xm7/:./xm7/:\&quot;' />
+			<Add option="-DUI_PT=16" />
+			<Add option="-DSTAT_PT=16" />
+			<Add option='-DUI_FONT=\&quot;ipagui.ttf\&quot;' />
+			<Add option='-DFUNC_FONT=\&quot;ipagui.ttf\&quot;' />
+			<Add option='-DSTAT_FONT=\&quot;ipagp.ttf\&quot;' />
+			<Add option='-DVFD_FONT=\&quot;ipagp.ttf\&quot;' />
+			<Add option='-DCMT_FONT=\&quot;ipagp.ttf\&quot;' />
+			<Add option="-D_M_IX_86" />
+			<Add option="-D_WINDOWS" />
+			<Add option="-D_NDEBUG" />
+			<Add option="-DUSE_AGAR" />
+			<Add directory="..\..\ui-agar" />
+			<Add directory="..\..\sdl" />
+			<Add directory="..\..\vm" />
+			<Add directory="..\..\xm7-debugger" />
+			<Add directory="..\..\fmgen" />
+			<Add directory="C:\MinGW\include\agar" />
+			<Add directory="C:\MinGW\include\freetype2" />
+			<Add directory="C:\MinGW\include\SDL" />
+			<Add directory="C:\MinGW\include\GL" />
+		</Compiler>
+		<Unit filename="..\AgarKbdInterface.cpp" />
+		<Unit filename="..\AgarKbdInterface.h" />
+		<Unit filename="..\agar_cfg.cpp" />
+		<Unit filename="..\agar_cfg.h" />
+		<Unit filename="..\agar_cmd.cpp" />
+		<Unit filename="..\agar_cmd.h" />
+		<Unit filename="..\agar_dbg_disasm.cpp" />
+		<Unit filename="..\agar_dbg_fdcdump.cpp" />
+		<Unit filename="..\agar_dbg_memdump.cpp" />
+		<Unit filename="..\agar_dbg_mmr.cpp" />
+		<Unit filename="..\agar_dbg_regdump.cpp" />
+		<Unit filename="..\agar_debugger.h" />
+		<Unit filename="..\agar_draw.cpp" />
+		<Unit filename="..\agar_draw.h" />
+		<Unit filename="..\agar_gldraw.h" />
+		<Unit filename="..\agar_gldraw2.cpp" />
+		<Unit filename="..\agar_glutil.cpp" />
+		<Unit filename="..\agar_glutil.h" />
+		<Unit filename="..\agar_gui_menu.cpp" />
+		<Unit filename="..\agar_gui_pref.cpp" />
+		<Unit filename="..\agar_guicore.cpp" />
+		<Unit filename="..\agar_main.cpp" />
+		<Unit filename="..\agar_menu_about.cpp" />
+		<Unit filename="..\agar_menu_debug.cpp" />
+		<Unit filename="..\agar_menu_disk.cpp" />
+		<Unit filename="..\agar_menu_tape.cpp" />
+		<Unit filename="..\agar_menu_tool.cpp" />
+		<Unit filename="..\agar_osd.cpp" />
+		<Unit filename="..\agar_osd.h" />
+		<Unit filename="..\agar_sch.cpp" />
+		<Unit filename="..\agar_sdl.cpp" />
+		<Unit filename="..\agar_sdlscaler.cpp" />
+		<Unit filename="..\agar_sdlview.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\agar_sdlview.h" />
+		<Unit filename="..\agar_surfaceconsole.cpp" />
+		<Unit filename="..\agar_surfaceconsole.h" />
+		<Unit filename="..\agar_svram.cpp" />
+		<Unit filename="..\agar_toolbox.cpp" />
+		<Unit filename="..\agar_toolbox.h" />
+		<Unit filename="..\agar_ui_vkey.cpp" />
+		<Unit filename="..\agar_vramutil.cpp" />
+		<Unit filename="..\agar_vramutil.h" />
+		<Unit filename="..\agar_xm7.h" />
+		<Unit filename="..\xm7_types.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
