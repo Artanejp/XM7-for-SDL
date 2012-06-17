@@ -223,6 +223,7 @@ XM7_DbgRegDump *XM7_DbgRegDumpInit(void *parent, cpu6809_t *cpu, char *title)
 void XM7_DbgRegDumpDetach(XM7_DbgRegDump *dbg)
 {
     if(dbg == NULL) return;
+
     if(dbg->draw != NULL) {
         AG_ObjectDetach(dbg->draw);
     }

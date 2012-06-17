@@ -159,7 +159,7 @@ void Create_AGMainBar(AG_Widget *Parent)
 	Create_TapeMenu(item);
 
  	item = AG_MenuNode(MenuBar->root, gettext("Debug"), NULL);
-    Create_DebugMenu(item);
+        Create_DebugMenu(item);
 
  	item = AG_MenuNode(MenuBar->root, gettext("Tools"), NULL);
  	Create_ToolsMenu(item);

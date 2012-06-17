@@ -1,0 +1,75 @@
+** Fujitsu Micro7 emulator, XM-7 for SDL,libagar **
+Authors: XM7/SDL:       K.Ohta <whatisthis.sowhat@gmail.com>
+         Original XM7: Riu Takegami <ryu.takegami@mbg.nifty.com>
+	               PI.
+	 FMGEN       : CISC <cisc@retropc.net>
+	 6809 core   : MESS Team.
+	 
+HP:      http://sky.geocities.jp/artanejp/XM7-SDL/
+         http://github.com/Artanejp/XM7-for-SDL/
+	 
+License:
+ This software is imploved XM-7, developed by PI. and Riu Takegami
+ ( http://retropc.net/ryu/xm7/ ) . Multiple licenses per file (^^;
+ 
+ K.Ohta's sourcecodes what original perfectly are CC-BY-SA 3.0.
+ http://creativecommons.org/licenses/by-sa/3.0/
+ 
+ 6809 MPU Core is improved from MESS, licensed by MESS license.
+ http://www.mess.org/license
+
+ fmgen/ was developed by CISC, see also below page:  
+ http://retropc.net/cisc/m88/
+ 
+ Other files under vm/, Original XM7 license, like CC-BY-NC-SA 3.0,
+see also original text XM7SRC.utf.txt written in Japanese.
+
+　K.Ohta's sourcecodes made from original XM7, CC-BY-NC-SA 3.0 
+basically.
+  Re-Distributing binary, refer to original XM7. 
+
+***
+Files:
+1 CC-BY-SA:
+  sdl/api_vram*.[cpp | c | h]
+  sdl/sdl_cpuid.[c | h]
+  sdl/snd_buffer.cpp
+  sdl/KbdInterface.[cpp | h]
+  ui-agar/*.[cpp | c | h] *excepts* 
+             ui-agar/agar_cfg.[cpp | h] and
+	     ui-agar/agar_cmd.[cpp | h] and
+	     ui-agar/agar_sch.[cpp | h] and
+	     ui-agar/agar_osd.[cpp | h]
+  xm7-debugger/
+  locales/
+  
+2 CC-BY-NC-SA:
+  sdl/api_*.[cpp | c | h] excepts sdl/api_vram*.[cpp | c | h]
+  sdl/sdl_*.[cpp | c | h]
+  sdl/SndDrv*.[cpp | h]
+  ui-agar/agar_cfg.[cpp | h]
+  ui-agar/agar_cmd.[cpp | h]
+  ui-agar/agar_sch.[cpp | h]
+  ui-agar/agar_osd.[cpp | h]
+  resource/
+  
+3 Another License (See also directory, XM7SRC.utf.txt)
+  fmgen/
+  vm/
+  F-Font/
+
+***
+オリジナルXM7のソースコードの著作権表示より：
+□使用規定（ライセンス）
+
+  アーカイブに含まれるファイル群は、一部の例外(後述)を除き、ＰＩ．および
+たけがみりうが著作権を保有しています。
+  
+  ソースファイルの一部、もしくは全部を再利用する場合は、次の規則に基づくものとします。
+      
+ ・VMディレクトリ下のファイルを再利用する場合は、ドキュメントにオリジナルの
+   著作権表示を明記してください。また商用利用は禁止します。
+ ・それ以外の部分の再利用は自由です。ただし前項同様、商用利用は禁止します。
+   このアーカイブの再配布はできません。無断転載を禁じます。
+		
+ 

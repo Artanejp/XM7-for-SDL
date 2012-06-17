@@ -76,7 +76,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	case AG_DRIVER_VIDEORESIZE:
 		w = ev->data.videoresize.w;
 		h = ev->data.videoresize.h;
-		ResizeWindow_Agar2(w, h);
+//		ResizeWindow_Agar2(w, h);
 		break;
 	default:
 		break;
@@ -184,7 +184,7 @@ void AGDrawTaskEvent(BOOL flag)
                 if(EventSDL(drv) == FALSE) {
 		   return;
 		}
-	       
+
 //                if(EventGUI(drv) == FALSE) return;
             }
         } else { // Multi windows
@@ -193,12 +193,12 @@ void AGDrawTaskEvent(BOOL flag)
                     if((EventSDL(drv) == FALSE) || (EventGUI(drv) == FALSE)) {
 		       return;
 		    }
-		       
+
                 }
              }
         }
-	   
-	   
+
+
 		// 20120109 - Timer Event
         if (AG_TIMEOUTS_QUEUED())
 		{
@@ -208,7 +208,7 @@ void AGDrawTaskEvent(BOOL flag)
 		}
 		SDL_Delay(1);
 	}
-   
+
 }
 
 
@@ -350,7 +350,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 //    SDL_Init(SDL_INIT_VIDEO);
 
     if(drivers == NULL)  {
-#ifdef USE_OPENGL 
+#ifdef USE_OPENGL
 		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
     			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
 #else
@@ -389,6 +389,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 //	AG_Quit();
 }
 
+extern void Detach_DebugMenu(void);
 
 #ifdef __cplusplus
 extern "C" {
@@ -400,10 +401,10 @@ void OnDestroy2(void)
 	OnDestroy(NULL);
 }
 
-
 void OnDestroy(AG_Event *event)
 {
-
+   // 20120610 GUI関連処理
+   Detach_DebugMenu();
         /*
          * サウンド停止
          */
@@ -430,7 +431,7 @@ void OnDestroy(AG_Event *event)
 	   detachCpuID(pCpuID);
 	   pCpuID = NULL;
 	}
-   
+
         system_cleanup();
         AG_Quit();
 }
@@ -439,7 +440,7 @@ static void InitFont(void)
 {
 }
 
-   
+
 void InitInstance(void)
 {
 	AG_HBox *hb;
@@ -494,7 +495,7 @@ void InitInstance(void)
 		DrawArea = NULL;
 	    AG_WidgetShow(GLDrawArea);
 	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
-    } else 
+    } else
 #endif /* USE_OPENGL */
      {
         // Non-GL
@@ -504,7 +505,7 @@ void InitInstance(void)
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
         AG_SetEvent(DrawArea, "key-up", ProcessKeyUp, NULL);
         AG_SetEvent(DrawArea, "key-down", ProcessKeyDown, NULL);
-       
+
         AG_WidgetSetSize(DrawArea, 640, 400);
         bUseOpenGL = FALSE;
 #ifdef USE_OPENGL
@@ -522,8 +523,8 @@ void InitInstance(void)
         AG_WidgetShow(pStatusBar);
     }
 
-//	win = AG_GuiDebugger();
-//    AG_WindowShow(win);
+    //win = AG_GuiDebugger();
+    //AG_WindowShow(win);
 
 }
 

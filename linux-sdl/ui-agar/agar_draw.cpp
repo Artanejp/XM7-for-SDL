@@ -55,7 +55,7 @@ void InitGL(int w, int h)
 #else
         InitNonGL(w, h);
         AG_ResizeDisplay(w, h);
-#endif   
+#endif
     SDL_SemPost(DrawInitSem);
 }
 
@@ -103,7 +103,7 @@ void ResizeWindow_Agar(int w, int h)
 //	int ofset;
 
 	AG_Driver *drv;
-        if((w < 100) || (h < 100)) return; 
+        if((w < 100) || (h < 100)) return;
 	if(agDriverSw) {
 	    drv = &agDriverSw->_inherit;
 	} else {
@@ -146,8 +146,12 @@ void ResizeWindow_Agar(int w, int h)
            rc.x = 0;
            rc.y = AGWIDGET(DrawArea)->y + AGWIDGET(DrawArea)->h;
             AG_WidgetSetGeometry(pStatusBar, rc);
+            nDrawHeight += pStatusBar->wid.h;
        }
        if(MainWindow) {
+//           AG_ObjectLock(AGOBJECT(MainWindow));
+//           AG_WindowSetGeometry(MainWindow, 0, 0, nDrawWidth, nDrawHeight);
+//           AG_ObjectUnlock(AGOBJECT(MainWindow));
            AG_Redraw(AGWIDGET(MainWindow));
        }
 	}
@@ -178,11 +182,11 @@ void ResizeWindow_Agar(int w, int h)
         ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
 	  hh = hh + pStatusBar->wid.h;
        }
-#ifdef USE_OPENGL   
+#ifdef USE_OPENGL
 	if(AG_UsingGL(NULL)) {
 	   AG_ResizeDisplay(ww, hh);
 	}
-#endif /* USE_OPENGL */   
+#endif /* USE_OPENGL */
     printf("Resize to %d x %d\n", w, hh );
 //    AG_Redraw(AGWIDGET(MenuBar));
 }
@@ -195,8 +199,8 @@ void ResizeWindow_Agar2(int w, int h)
 	int ww;
 	AG_Driver *drv;
 
-        if((w < 100) || (h < 100)) return; 
-   
+        if((w < 100) || (h < 100)) return;
+
 	if(DrawArea != NULL) {
         AG_SizeAlloc a;
         AG_SizeReq r;
@@ -219,7 +223,7 @@ void ResizeWindow_Agar2(int w, int h)
           ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * hh * 2) / 800, MenuBar->wid.h);
 	  hh = hh - pStatusBar->wid.h;
        }
-	   
+
 	    a.x = 0;
 	    a.y = 0;
 	    a.w = ww;
@@ -231,8 +235,8 @@ void ResizeWindow_Agar2(int w, int h)
            AG_Redraw(AGWIDGET(MainWindow));
        }
 	}
-   
-#ifdef USE_OPENGL   
+
+#ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
         AG_SizeReq r;
 
@@ -270,13 +274,13 @@ void ResizeWindow_Agar2(int w, int h)
 	} else {
 	   AG_ResizeDisplay(ww, hh);
 	}
-      
-      
+
+
    }
    nDrawWidth = w;
    nDrawHeight = hh;
-  
-#endif /* USE_OPENGL */   
+
+#endif /* USE_OPENGL */
      printf("Resize2 to %d x %d\n", w, h);
 }
 

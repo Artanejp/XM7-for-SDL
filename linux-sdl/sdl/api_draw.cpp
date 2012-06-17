@@ -292,7 +292,7 @@ void ChangeResolution(void)
   い       */
         SDL_SemWait(DrawInitSem);
 #ifdef USE_AGAR
-//        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 #else
 #ifdef USE_GTK
         ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
@@ -766,7 +766,7 @@ void AllClear(void)
     } else {
         return;
     }
-   
+
 #endif /* USE_OPENGL */
 #else
 	p = SDL_GetVideoSurface();
@@ -862,8 +862,8 @@ void RenderFullScan(void)
     } else {
         return;
     }
-   
-#endif /* USE_OPENGL */   
+
+#endif /* USE_OPENGL */
 #else /* USE_AGAR */
 	SDL_Surface *s = SDL_GetVideoSurface();
 	Uint32 nullcolor;
@@ -872,7 +872,7 @@ void RenderFullScan(void)
      if(bUseOpenGL) {
 		return;
 	}
-#endif /* USE_OPENGL */   
+#endif /* USE_OPENGL */
 	if(s == NULL) {
 		return;
 	}

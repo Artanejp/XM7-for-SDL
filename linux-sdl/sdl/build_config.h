@@ -44,7 +44,7 @@
 #endif
 
 #ifndef STAT_PT
-#define STAT_PT 24
+#define STAT_PT 18
 #endif
 
 #ifndef UI_PT
@@ -63,13 +63,13 @@
 #define LED_WIDTH 20
 #define LED_HEIGHT 14
 
-#define VFD_WIDTH 120
+#define VFD_WIDTH 110
 #define VFD_HEIGHT 14
 
-#define CMT_WIDTH 70
+#define CMT_WIDTH 50
 #define CMT_HEIGHT 14
 
-#define STAT_WIDTH 260
+#define STAT_WIDTH 250
 #define STAT_HEIGHT 14
 
 #ifndef SHAREDIR

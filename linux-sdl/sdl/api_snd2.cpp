@@ -242,7 +242,7 @@ void CleanSnd(void)
 	   free(pCaptureBuf);
 	   pCaptureBuf = NULL;
 	}
-   
+
 	/*
 	 * ドライバの抹消(念の為)
 	 */
@@ -299,7 +299,7 @@ static void CloseSnd(void)
 		   free(pSoundBuf);
 		   pSoundBuf = NULL;
 		}
-	   
+
 		bSndEnable = FALSE;
 	}
 }
@@ -343,8 +343,8 @@ BOOL SelectSnd(void)
     dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
 #ifndef _WINDOWS
-        if(posix_memalign(&pCaptureBuf, 16, uBufSize * 2) < 0) return -1;
-        if(posix_memalign(&pSoundBuf, 16, uBufSize * 2) < 0) {
+        if(posix_memalign((void **)&pCaptureBuf, 16, uBufSize * 2) < 0) return -1;
+        if(posix_memalign((void **)&pSoundBuf, 16, uBufSize * 2) < 0) {
 	   free(pCaptureBuf);
 	   return -1;
 	}
@@ -361,7 +361,7 @@ BOOL SelectSnd(void)
 	}
 
 #endif
-   
+
     //Mix_QuerySpec(&freq, &format, &channels);
     if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (nSoundBuffer * nSampleRate) / 4000)< 0) {
 //    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8 ) < 0) {
@@ -378,7 +378,7 @@ BOOL SelectSnd(void)
 	SetupBuffer(pBeepBuf, members, TRUE, FALSE);
 	SetupBuffer(pCMTBuf, members, TRUE, FALSE);
 	SetupBuffer(pOpnBuf, members , TRUE, TRUE);
-//        nSndBank = 
+//        nSndBank =
 
 	/*
 	 * レンダリングドライバの設定
@@ -501,7 +501,7 @@ void CloseCaptureSnd(void)
       EndWriteWavData(WavDescCapture);
       WavDescCapture = NULL;
    }
-   
+
 //   SDL_SemPost(WavSem);
 }
 
@@ -595,7 +595,7 @@ static DWORD Render1(DWORD ttime, BOOL bZero)
    DWORD max;
    DWORD n;
    int samples;
-   
+
    samples  = SndCalcSamples(pOpnBuf, ttime) * 2;
 
    max = RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
@@ -830,8 +830,8 @@ static int SetChunk(struct SndBufType *p, int ch)
        if(p->nReadPTR >= p->nSize) {
 	  p->nReadPTR = 0;
        }
-       
-    
+
+
     }
     return i;
 }
@@ -851,7 +851,7 @@ static BOOL SndWavWrite(struct WavDesc *h, int channels)
 	CloseCaptureSnd();
         return FALSE;
    }
-   
+
    if(wavbuf != NULL) {
       memset(wavbuf, 0x00, uBufSize *  2);
       x = CopyChunk(pOpnBuf, wavbuf, 0);
@@ -876,7 +876,7 @@ static BOOL SndFlush(DWORD ttime, DWORD ms, BOOL bZero)
 {
    int chunksize;
    BOOL r;
-   
+
    chunksize = (ms * uRate * 2) / 1000;
    r = SndFlushSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
    r &= SndFlushSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize);
@@ -946,7 +946,7 @@ void ProcessSnd(BOOL bZero)
 	//	CloseCaptureSnd();
 	//   }
 	//}
-	   
+
         bWavCaptureOld = bWavCapture;
         SetChunk(pOpnBuf ,  CH_SND_OPN);
         SetChunk(pBeepBuf , CH_SND_BEEP);

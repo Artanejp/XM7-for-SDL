@@ -42,8 +42,6 @@ DumpObject::DumpObject()
     ConsoleBuf = NULL;
     BackupConsoleBuf = NULL;
     Changed = FALSE;
-    TextFont = NULL;
-    SymFont = NULL;
     X = 0;
     Y = 0;
     W = 0;
@@ -67,44 +65,46 @@ DumpObject::DumpObject()
 DumpObject::~DumpObject()
 {
     AG_MutexLock(&mutex);
-    if(TextFont != NULL) AG_DestroyFont(TextFont);
-    if(SymFont != NULL) AG_DestroyFont(SymFont);
+//    if(TextFont != NULL) AG_DestroyFont(TextFont);
+//    if(SymFont != NULL) AG_DestroyFont(SymFont);
     if(ConsoleBuf != NULL) delete [] ConsoleBuf;
     if(BackupConsoleBuf != NULL) delete [] BackupConsoleBuf;
+    AG_MutexUnlock(&mutex);
     AG_MutexDestroy(&mutex);
 }
 
 void DumpObject::InitFont(void)
 {
+    char c[2];
     AG_Surface *dummy;
-    char c[3];
     AG_PushTextState();
-    TextFont = AG_TextFontLookup("F-Font_400line.ttf", 16, 0);
-    if(TextFont == NULL) { // Fallback
-        TextFont = AG_TextFontPts(16); //  16pts
-    }
-    AG_PopTextState();
-
-    AG_PushTextState();
-    SymFont = AG_TextFontLookup("F-Font_Symbol_Unicode.ttf", 16, 0);
-//    SymFont = AG_TextFontLookup("F-Font_Symbol.ttf", 16, 0);
-    if(SymFont == NULL) { // Fallback
-        SymFont = AG_TextFontPts(16);//  16pts
-    }
-    AG_PopTextState();
-
-    AG_PushTextState();
-    if(TextFont != NULL){
+    if(pDbgDialogTextFont != NULL){
         c[0] = 'A';
         c[1] = '\0';
-        AG_TextFont(TextFont);
+        AG_TextFont(pDbgDialogTextFont);
         dummy = AG_TextRender(c);
         if(dummy != NULL) {
             CHRW = dummy->w;
             CHRH = dummy->h;
             AG_SurfaceFree(dummy);
-        }
+        } else {
+	    CHRW = DBG_TEXT_PT;
+	    CHRH = DBG_TEXT_PT;
+	}
+    } else { // Lost fonts
+        c[0] = 'A';
+        c[1] = '\0';
+        dummy = AG_TextRender(c);
+        if(dummy != NULL) {
+            CHRW = dummy->w;
+            CHRH = dummy->h;
+            AG_SurfaceFree(dummy);
+        } else {
+	    CHRW = DBG_TEXT_PT;
+	    CHRH = DBG_TEXT_PT;
+	}
     }
+   
     AG_PopTextState();
 }
 
@@ -209,22 +209,22 @@ static Uint32 SymFontListE0[] =
 BOOL DumpObject::Sym2UCS4(BYTE b, Uint32 *disp)
 {
    Uint32 ucs;
-   
+
    disp[0] = '\0';
    if((b >= 0x80) && (b <= 0xa0)){
      ucs = SymFontList80[b - 0x80];
 //     ucs = b;
-  } else if((b >= 0xd0) && (b <= 0xff)) {  
+  } else if((b >= 0xd0) && (b <= 0xff)) {
      ucs = SymFontListE0[b - 0xe0];
 //     ucs = b;
   } else {
       return FALSE;
   }
-   
+
    disp[0] = ucs;
    disp[1] = 0x00000000;
    return TRUE;
-   
+
 }
 
 BOOL DumpObject::Txt2UCS4(BYTE b, Uint32 *disp)
@@ -252,9 +252,9 @@ void DumpObject::PutCharScreen(BYTE c)
     AG_Surface *r = NULL;
 
     if(Sym2UCS4(c, ucs)) {
-        if(SymFont != NULL){
+        if(pDbgDialogSymFont != NULL){
             AG_PushTextState();
-            AG_TextFont(SymFont);
+            AG_TextFont(pDbgDialogSymFont);
             AG_TextColor(fgColor);
             AG_TextBGColor(bgColor);
             AG_TextValign(AG_TEXT_MIDDLE);
@@ -262,9 +262,9 @@ void DumpObject::PutCharScreen(BYTE c)
             AG_PopTextState();
         }
     } else if(Txt2UCS4(c, ucs)) {
-        if(TextFont != NULL){
+        if(pDbgDialogTextFont != NULL){
             AG_PushTextState();
-            AG_TextFont(TextFont);
+            AG_TextFont(pDbgDialogTextFont);
             AG_TextColor(fgColor);
             AG_TextBGColor(bgColor);
             AG_TextValign(AG_TEXT_MIDDLE);
@@ -354,7 +354,7 @@ int DumpObject::PutString(char *str)
     len = strlen(str);
     if(len <= 0) return -1;
     do {
-        
+
         PutChar(str[cp]);
         cp++;
         X++;
@@ -403,7 +403,7 @@ void DumpObject::ClearScreen(void)
    int yy;
    int pos;
    AG_Rect rect;
-  
+
    AG_MutexLock(&mutex);
       pos = 0;
       for(yy = 0; yy < H; yy++) {

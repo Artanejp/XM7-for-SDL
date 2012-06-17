@@ -16,6 +16,15 @@
 #include <agar/gui.h>
 #include "xm7.h"
 
+extern "C" 
+{
+extern AG_Font *pDbgDialogTextFont;
+extern AG_Font *pDbgDialogSymFont;
+}
+#define DBG_TEXT_FONT "F-Font_400line.ttf"
+#define DBG_SYM_FONT "F-Font_Symbol_Unicode.ttf"
+#define DBG_TEXT_PT 16
+
 class DumpObject {
 public:
     DumpObject();
@@ -49,8 +58,6 @@ private:
     BYTE *BackupConsoleBuf;
     BOOL  Changed;
     AG_Surface *Screen;
-    AG_Font *TextFont;
-    AG_Font *SymFont;
     AG_Mutex mutex;
     int CURX;
     int CURY;
