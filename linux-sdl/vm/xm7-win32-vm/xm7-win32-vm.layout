@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="..\display.c" open="1" top="0" tabpos="2">
+		<Cursor position="16755" topLine="747" />
+	</File>
+	<File name="..\fdc.c" open="1" top="0" tabpos="5">
+		<Cursor position="81098" topLine="4116" />
+	</File>
+	<File name="..\m6809ops.h" open="1" top="0" tabpos="3">
+		<Cursor position="14341" topLine="768" />
+	</File>
+	<File name="..\mainmem.c" open="1" top="0" tabpos="4">
+		<Cursor position="17116" topLine="903" />
+	</File>
+	<File name="..\schedule.c" open="1" top="0" tabpos="6">
+		<Cursor position="6353" topLine="292" />
+	</File>
+	<File name="..\submem.c" open="0" top="0" tabpos="0">
+		<Cursor position="11030" topLine="623" />
+	</File>
+	<File name="..\system.c" open="1" top="1" tabpos="12">
+		<Cursor position="1898" topLine="69" />
+	</File>
+	<File name="..\tools.c" open="1" top="0" tabpos="14">
+		<Cursor position="0" topLine="20" />
+	</File>
+	<File name="..\xm7.h" open="1" top="0" tabpos="7">
+		<Cursor position="1394" topLine="81" />
+	</File>
+</CodeBlocks_layout_file>
