@@ -59,7 +59,7 @@ int             nAppIcon;               /* アイコン番号(1,2,3) */
 BOOL            bMMXflag;               /* MMXサポートフラグ(未使用) */
 BOOL            bCMOVflag;              /* CMOVサポートフラグ(現状未使用) */
 struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
-   
+
 #if ((XM7_VER <= 2) && defined(FMTV151))
 BOOL            bFMTV151;               /* チャンネルコールフラグ */
 #endif				/*  */
@@ -176,53 +176,6 @@ void OnCreate(AG_Widget *parent)
 }
 #endif
 
-extern void MainLoop(int argc, char *argv[]);
 
 
 
-/*
- *  メイン関数
- */
-int main(int argc, char *argv[])
-{
-   int rgb_size[3];
-   int flags;
-/*
- * 実行モジュールのディレクトリを取得
- */
-        char    *p;
-       /*
-	* Check CPUID
-	*/
-       pCpuID = initCpuID();
-       p = getenv("HOME");
-        if(p == NULL) {
-                perror("Warning : Can't get HOME directory...Making ./.xm7/ .");
-                strcpy(ModuleDir, "./.xm7/");
-        } else {
-                strcpy(ModuleDir, p);
-                strcat(ModuleDir, "/.xm7/");
-        }
-        if(opendir(ModuleDir) == NULL) {
-#ifdef _WINDOWS
-		mkdir(ModuleDir);
-#else
-                mkdir(ModuleDir, 0777);
-#endif
-        }
-        /* Gettext */
-        setlocale(LC_ALL, "");           
-        bindtextdomain("messages", RSSDIR);
-        textdomain("messages");          
-   
-        //SDL_Init(SDL_INIT_EVERYTHING | SDL_INIT_TIMER);
-
-#if ((XM7_VER <= 2) && defined(FMTV151))
-        bFMTV151 = TRUE;
-#endif				/*  */
-/*
- * アプリケーション初期化
- */
-        MainLoop(argc, argv);
-        return nErrorCode;
-}
