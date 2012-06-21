@@ -17,7 +17,7 @@
 	<memwatch.h>
 	<assert.h>
 
-1339063431 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\build_config.h
+1339946289 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\build_config.h
 
 1339063588 c:\mingw\include\agar\agar\core.h
 	<agar/core/core_begin.h>
@@ -1266,7 +1266,7 @@
 	"xm7_sdl.h"
 	"SndDrvIF.h"
 
-1339063430 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_draw.cpp
+1339946289 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_draw.cpp
 	<gtk/gtk.h>
 	<gdk/gdk.h>
 	<gdk/gdkx.h>
@@ -1489,7 +1489,7 @@
 	"api_mouse.h"
 	"gtk_propkeyboard.h"
 
-1339063431 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_snd2.cpp
+1339946289 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_snd2.cpp
 	<machine/soundcard.h>
 	<linux/soundcard.h>
 	<stdlib.h>
@@ -1617,4 +1617,52 @@
 	"SndDrvWav.h"
 	"SndDrvOpn.h"
 	"SndDrvCMT.h"
+
+1340280315 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\windows_main.cpp
+	<SDL.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<dirent.h>
+	<windows.h>
+	<tchar.h>
+	<locale.h>
+	<libintl.h>
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"xm7.h"
+	"mouse.h"
+	"tapelp.h"
+	"keyboard.h"
+	"agar_xm7.h"
+	"agar_osd.h"
+	"api_draw.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_mouse.h"
+	"api_snd.h"
+	"sdl_sch.h"
+	"agar_cfg.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"sdl_inifile.h"
+	"sdl_cpuid.h"
+
+1339946289 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd.h
+
+1339063431 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_cfg.h
+	"KbdInterface.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+	"sdl_inifile.h"
+	"agar_cfg.h"
+	"sdl_prop.h"
+	"sdl_sch.h"
+	"api_snd.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_mouse.h"
+	"api_draw.h"
+
+1339063431 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdl_prop.h
 

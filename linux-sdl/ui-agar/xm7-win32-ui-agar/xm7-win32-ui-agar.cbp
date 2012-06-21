@@ -98,6 +98,8 @@
 		<Unit filename="..\agar_menu_tool.cpp" />
 		<Unit filename="..\agar_osd.cpp" />
 		<Unit filename="..\agar_osd.h" />
+		<Unit filename="..\agar_osd_led.cpp" />
+		<Unit filename="..\agar_osd_tape.cpp" />
 		<Unit filename="..\agar_sch.cpp" />
 		<Unit filename="..\agar_sdl.cpp" />
 		<Unit filename="..\agar_sdlscaler.cpp" />

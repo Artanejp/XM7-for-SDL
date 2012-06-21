@@ -12,9 +12,11 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg -lgmon" />
 					<Add library="C:\MinGW\lib\libgmon.a" />
 				</Linker>
 			</Target>
@@ -64,43 +66,36 @@
 			<Add directory="C:\MinGW\include\GL" />
 		</Compiler>
 		<Linker>
-			<Add option="`agar-config --libs`" />
-			<Add option="`sdl-config --libs`" />
 			<Add option="-mwindows" />
-			<Add library="..\..\vm\xm7-win32-vm\libxm7-win32-vm.a" />
-			<Add library="..\..\fmgen\fmgen-win32\libfmgen-win32.a" />
-			<Add library="..\..\ui-agar\xm7-win32-ui-agar\libxm7-win32-ui-agar.a" />
-			<Add library="C:\MinGW\lib\libag_core.a" />
-			<Add library="C:\MinGW\lib\libag_dev.a" />
-			<Add library="C:\MinGW\lib\libag_gui.a" />
-			<Add library="C:\MinGW\lib\libSDL_mixer.dll.a" />
 			<Add library="C:\MinGW\lib\libmp3lame.a" />
-			<Add library="C:\MinGW\lib\libpng15.a" />
 			<Add library="C:\MinGW\lib\libFLAC.a" />
 			<Add library="C:\MinGW\lib\libvorbis.a" />
 			<Add library="C:\MinGW\lib\libogg.dll.a" />
-			<Add library="C:\MinGW\lib\libSDL.dll.a" />
-			<Add library="C:\MinGW\lib\libiconv.a" />
-			<Add library="C:\MinGW\lib\libintl.a" />
-			<Add library="C:\MinGW\lib\libfreetype.dll.a" />
-			<Add library="C:\MinGW\lib\libpthreadGCE2.dll.a" />
-			<Add library="C:\MinGW\lib\libpthread.dll.a" />
-			<Add library="C:\MinGW\lib\libopengl32.a" />
+			<Add library="..\..\ui-agar\xm7-win32-ui-agar\libxm7-win32-ui-agar.a" />
 			<Add library="..\..\xm7-debugger\xm7-debugger-win32\libxm7-debugger-win32.a" />
-			<Add library="C:\MinGW\lib\libgdi32.a" />
-			<Add library="C:\MinGW\lib\libz.a" />
-			<Add library="C:\MinGW\lib\libm.a" />
-			<Add library="C:\MinGW\lib\libpng15.a" />
-			<Add library="C:\MinGW\lib\libiconv.a" />
-			<Add library="C:\MinGW\lib\libintl.a" />
 			<Add library="..\..\vm\xm7-win32-vm\libxm7-win32-vm.a" />
-			<Add library="C:\MinGW\lib\libwinmm.a" />
-			<Add library="C:\MinGW\lib\libag_gui.a" />
-			<Add library="C:\MinGW\lib\libag_core.a" />
+			<Add library="..\..\fmgen\fmgen-win32\libfmgen-win32.a" />
+			<Add library="C:\MinGW\lib\libgdi32.a" />
 			<Add library="C:\MinGW\lib\libag_dev.a" />
 			<Add library="C:\MinGW\lib\libag_math.a" />
 			<Add library="C:\MinGW\lib\libag_rg.a" />
 			<Add library="C:\MinGW\lib\libag_vg.a" />
+			<Add library="C:\MinGW\lib\libag_gui.a" />
+			<Add library="C:\MinGW\lib\libag_core.a" />
+			<Add library="C:\MinGW\lib\libSDL_mixer.dll.a" />
+			<Add library="C:\MinGW\lib\libmingw32.a" />
+			<Add library="C:\MinGW\lib\libSDLmain.a" />
+			<Add library="C:\MinGW\lib\libSDL.dll.a" />
+			<Add library="C:\MinGW\lib\libpng15.a" />
+			<Add library="C:\MinGW\lib\libiconv.dll.a" />
+			<Add library="C:\MinGW\lib\libintl.dll.a" />
+			<Add library="C:\MinGW\lib\libfreetype.dll.a" />
+			<Add library="C:\MinGW\lib\libpthreadGCE2.dll.a" />
+			<Add library="C:\MinGW\lib\libpthread.dll.a" />
+			<Add library="C:\MinGW\lib\libopengl32.a" />
+			<Add library="C:\MinGW\lib\libz.a" />
+			<Add library="C:\MinGW\lib\libwinmm.a" />
+			<Add library="C:\MinGW\lib\libm.a" />
 		</Linker>
 		<Unit filename="..\KbdInterface.cpp" />
 		<Unit filename="..\KbdInterface.h" />
@@ -154,6 +149,7 @@
 		<Unit filename="..\sdl_prop.h" />
 		<Unit filename="..\sdl_sch.h" />
 		<Unit filename="..\snd_buffer.cpp" />
+		<Unit filename="..\windows_main.cpp" />
 		<Unit filename="..\xm7_sdl.h" />
 		<Extensions>
 			<code_completion />
