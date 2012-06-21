@@ -33,6 +33,7 @@ LOCALSRC = \
 	sdl_cpuid.c \
 	sdl_inifile.c \
         sdl_file.c \
+	windows_main.cpp \
 	$(VIDEODRVSRC) \
 	$(SNDDRVSRC) $(INPUTSRC) \
 	$(UISRC)

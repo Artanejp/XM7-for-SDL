@@ -82,6 +82,8 @@
 #if defined(FASTCALL)
 #undef FASTCALL
 #define FASTCALL
+#else
+#define FASTCALL
 #endif
 /*
  * CPUレジスタ定義
@@ -113,8 +115,8 @@ typedef struct
     WORD            intr;
     WORD            cycle;
     WORD            total;
-    BYTE(FASTCALL * readmem) (WORD);
-    void            (FASTCALL * writemem) (WORD, BYTE);
+    BYTE            (FASTCALL *readmem) (WORD);
+    void            (FASTCALL *writemem) (WORD, BYTE);
     WORD            ea;
 } cpu6809_t;
 #pragma pack(pop)
