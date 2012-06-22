@@ -15,10 +15,12 @@
  * inheritance, see demos/objsystem.
  */
 
+#ifdef _WINDOWS
+#define _OFF_T_
+#endif
 
 #include "agar_sdlview.h"
 #include <SDL/SDL.h>
-
 /*
  * This is a generic constructor function. It is completely optional, but
  * customary of FooNew() functions to allocate, initialize and attach an

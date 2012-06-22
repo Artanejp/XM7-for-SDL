@@ -16,7 +16,7 @@ extern "C" {
 
 //#include <agar/core/string_compat.h>
 #include <agar/core.h>
-#include <agar/core/types.h>
+//#include <agar/core/types.h>
 #include <agar/gui.h>
 
 /*
@@ -68,8 +68,8 @@ extern void XM7_SDLViewUpdateSrc(AG_Event *event);
 //#include <x86intrin.h>
 //   #if defined(__MMX__) || defined(__SSE__) || defined(__SSE2__)
 //extern void *XM7_SDLViewSelectScaler_SSE(int w0, int h0, int w1, int h1);
-//   #endif 
-//#endif   
+//   #endif
+//#endif
 
 #ifdef __cplusplus
 }
