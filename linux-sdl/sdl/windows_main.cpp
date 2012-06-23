@@ -64,11 +64,20 @@ int main(int argc, char *argv[])
        pCpuID = initCpuID();
        p = getenv("HOME");
         if(p == NULL) {
+#ifdef _WINDOWS
+                perror("Warning : Can't get HOME directory...Making ./xm7/ .");
+               strcpy(ModuleDir, ".\\xm7\\");
+#else
                 perror("Warning : Can't get HOME directory...Making ./.xm7/ .");
                 strcpy(ModuleDir, "./.xm7/");
+#endif
         } else {
                 strcpy(ModuleDir, p);
+#ifdef _WINDOWS
+                strcat(ModuleDir, "\\xm7\\");
+#else
                 strcat(ModuleDir, "/.xm7/");
+#endif
         }
         if(opendir(ModuleDir) == NULL) {
 #ifdef _WINDOWS

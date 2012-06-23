@@ -517,10 +517,10 @@ void InitInstance(void)
     }
     {
 //        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
-//        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), 0);
-        CreateStatus(AGWIDGET(pStatusBar));
-        AG_WidgetShow(pStatusBar);
+//        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+        pStatusBar = NULL;
+//        CreateStatus(AGWIDGET(pStatusBar));
+//        AG_WidgetShow(pStatusBar);
     }
 
     //win = AG_GuiDebugger();

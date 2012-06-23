@@ -54,7 +54,7 @@ void InitGL(int w, int h)
     }
 #else
         InitNonGL(w, h);
-        AG_ResizeDisplay(w, h);
+   //     AG_ResizeDisplay(w, h);
 #endif
     SDL_SemPost(DrawInitSem);
 }

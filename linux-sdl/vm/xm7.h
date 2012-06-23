@@ -219,6 +219,7 @@ typedef struct
 /*
  * ROMファイル名定義
  */
+
 #define FBASIC_ROM		"FBASIC30.ROM"
 #define FBASIC10_ROM	"FBASIC10.ROM"	/* F-BASIC V1.0 */
 #define BOOTBAS_ROM		"BOOT_BAS.ROM"

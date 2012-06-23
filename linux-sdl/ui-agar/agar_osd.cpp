@@ -202,12 +202,15 @@ static void InitMessages(AG_Widget *parent)
 //    p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
 //    AG_FillRect(p, NULL, col);
     //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
-    if(pwCaption == NULL) pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
-     AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
+//    if(pwCaption == NULL) pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
+     pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
+//     AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
 
     for(i = 1; i >= 0 ; i--) {
-        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
-           AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
+//        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
+            pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
+
+//           AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
     }
 //    AG_SurfaceFree(p);
 }
@@ -239,8 +242,6 @@ static int LinkSurface(void)
     // Caption
    nwCaption = 0;
  	  nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
-   	  AG_PixmapUpdateCurrentSurface(pwCaption);
-          AG_WidgetShow(pwCaption);
     // FD
    for(i = 0; i < 2 ; i++) {
 		nwFD[i][ID_EMPTY] = 0;
@@ -252,6 +253,8 @@ static int LinkSurface(void)
     //CMT
    LinkSurfaceCMT();
    LinkSurfaceLeds();
+   AG_PixmapUpdateCurrentSurface(pwCaption);
+   AG_WidgetShow(pwCaption);
 }
 
 /*
@@ -393,6 +396,7 @@ void CreateStatus(AG_Widget *parent)
     nVfdHeight = VFD_HEIGHT * 2;
     nVfdWidth = VFD_WIDTH * 2;
     pwFD[0] = pwFD[1] = NULL;
+    pwCaption = NULL;
     CreateVFD(parent, TRUE);
     CreateCMT(parent, TRUE);
    // Create Widgets;
@@ -412,7 +416,7 @@ void CreateStatus(AG_Widget *parent)
         InitLeds(parent);
         InitTapeOSD(parent);
         //CreateCMT(parent, TRUE);
-        LinkSurface();
+    //    LinkSurface();
     }
 }
 
@@ -730,6 +734,7 @@ static void DrawDrive(int drive, BOOL override)
 
 void DrawStatus(void)
 {
+    return;
     DrawMainCaption(FALSE);
 	DrawCAP();
 	DrawKANA();
@@ -745,6 +750,7 @@ void DrawStatus(void)
  */
 void DrawStatusForce(void)
 {
+    return;
 	DrawMainCaption(TRUE);
 	DrawCAP();
 	DrawKANA();
