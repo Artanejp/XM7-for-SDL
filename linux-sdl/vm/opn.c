@@ -860,7 +860,7 @@ static void FASTCALL opn_write_data_reg(int no, BYTE dat)
  *	OPN
  *	ステートセーブ共通処理
  */
-static BOOL FASTCALL opn_save_common(int no, int fileh)
+static BOOL FASTCALL opn_save_common(int no, SDL_RWops *fileh)
 {
 	ASSERT ((no >= 0) && (no <= 2));
 
@@ -912,7 +912,7 @@ static BOOL FASTCALL opn_save_common(int no, int fileh)
  *	OPN
  *	ステートロード共通処理
  */
-static BOOL FASTCALL opn_load_common(int no, int fileh)
+static BOOL FASTCALL opn_load_common(int no, SDL_RWops *fileh)
 {
 	ASSERT ((no >= 0) && (no <= 2));
 
@@ -1096,7 +1096,7 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
  *	OPN
  *	セーブ
  */
-BOOL FASTCALL opn_save(int fileh)
+BOOL FASTCALL opn_save(SDL_RWops *fileh)
 {
 	if (!opn_save_common(OPN_STD, fileh)) {
 		return FALSE;
@@ -1108,7 +1108,7 @@ BOOL FASTCALL opn_save(int fileh)
  *	OPN
  *	ロード
  */
-BOOL FASTCALL opn_load(int fileh, int ver)
+BOOL FASTCALL opn_load(SDL_RWops *fileh, int ver)
 {
 	int i;
 
@@ -1240,7 +1240,7 @@ BOOL FASTCALL whg_writeb(WORD addr, BYTE dat)
  *	WHG
  *	セーブ
  */
-BOOL FASTCALL whg_save(int fileh)
+BOOL FASTCALL whg_save(SDL_RWops *fileh)
 {
 	if (!file_bool_write(fileh, whg_enable)) {
 		return FALSE;
@@ -1259,7 +1259,7 @@ BOOL FASTCALL whg_save(int fileh)
  *	WHG
  *	ロード
  */
-BOOL FASTCALL whg_load(int fileh, int ver)
+BOOL FASTCALL whg_load(SDL_RWops *fileh, int ver)
 {
 	int i;
 
@@ -1477,7 +1477,7 @@ BOOL FASTCALL thg_writeb(WORD addr, BYTE dat)
  *	THG
  *	セーブ
  */
-BOOL FASTCALL thg_save(int fileh)
+BOOL FASTCALL thg_save(SDL_RWops *fileh)
 {
 	if (!file_bool_write(fileh, thg_enable)) {
 		return FALSE;
@@ -1496,7 +1496,7 @@ BOOL FASTCALL thg_save(int fileh)
  *	THG
  *	ロード
  */
-BOOL FASTCALL thg_load(int fileh, int ver)
+BOOL FASTCALL thg_load(SDL_RWops *fileh, int ver)
 {
 	int i;
 

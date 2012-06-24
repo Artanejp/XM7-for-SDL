@@ -20,31 +20,31 @@ extern          "C" {
      */
     BOOL FASTCALL   mos_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   mos_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   mos_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     void FASTCALL   mos_strobe_signal(BOOL strb);
     /*
-     * ストローブ信号処理 
+     * ストローブ信号処理
      */
     BYTE FASTCALL   mos_readdata(BYTE trigger);
     /*
-     * データ読み込み 
+     * データ読み込み
      */
-    BOOL FASTCALL   mos_save(int fileh);
+    BOOL FASTCALL   mos_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   mos_load(int fileh, int ver);
+    BOOL FASTCALL   mos_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -52,11 +52,11 @@ extern          "C" {
      */
     extern BYTE     mos_port;
     /*
-     * マウス接続ポート 
+     * マウス接続ポート
      */
     extern BOOL     mos_capture;
     /*
-     * マウスキャプチャフラグ 
+     * マウスキャプチャフラグ
      */
 #ifdef __cplusplus
 }

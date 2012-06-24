@@ -411,7 +411,7 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
  *	RS-232C
  *	セーブ
  */
-BOOL FASTCALL rs232c_save(int fileh)
+BOOL FASTCALL rs232c_save(SDL_RWops *fileh)
 {
 	if (!file_bool_write(fileh, rs_mask)) {
 		return FALSE;
@@ -451,7 +451,7 @@ BOOL FASTCALL rs232c_save(int fileh)
  *	RS-232C
  *	ロード
  */
-BOOL FASTCALL rs232c_load(int fileh, int ver)
+BOOL FASTCALL rs232c_load(SDL_RWops *fileh, int ver)
 {
 	/* バージョンチェック */
 	if (ver < 200) {

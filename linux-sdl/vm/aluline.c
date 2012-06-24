@@ -19,7 +19,7 @@
 #include "multipag.h"
 #include "device.h"
 /*
- * XM7/SDL依存 
+ * XM7/SDL依存
  */
 #ifdef USE_AGAR
 #include "agar_xm7.h"
@@ -72,7 +72,7 @@ BOOL  FASTCALL
 aluline_init(void)
 {
     /*
-     * 直線補間処理中にBUSY状態とする 
+     * 直線補間処理中にBUSY状態とする
      */
     line_boost = FALSE;
 
@@ -95,7 +95,7 @@ void            FASTCALL
 aluline_reset(void)
 {
     /*
-     * 全てのレジスタを初期化 
+     * 全てのレジスタを初期化
      */
     alu_command = 0;
     alu_color = 0;
@@ -130,7 +130,7 @@ static BYTE     FASTCALL
 alu_read(WORD addr)
 {
     /*
-     * アクティブプレーンでない場合、0xFFを返す 
+     * アクティブプレーンでない場合、0xFFを返す
      */
     if (multi_page & (1 << alu_vram_bank)) {
 	return 0xff;
@@ -139,7 +139,7 @@ alu_read(WORD addr)
     if (mode400l) {
 	if (addr >= 0x8000) {
 	    /*
-	     * 400ライン時の0x8000〜0xBFFFにはメモリが存在しない 
+	     * 400ライン時の0x8000〜0xBFFFにはメモリが存在しない
 	     */
 	    return 0xff;
 	} else {
@@ -161,7 +161,7 @@ static BYTE     FASTCALL
 alu_read_plane(WORD addr, int plane)
 {
     /*
-     * アクティブプレーンでない場合、0xFFを返す 
+     * アクティブプレーンでない場合、0xFFを返す
      */
     if (multi_page & (1 << plane)) {
 	return 0xff;
@@ -170,7 +170,7 @@ alu_read_plane(WORD addr, int plane)
     if (mode400l) {
 	if (addr >= 0x8000) {
 	    /*
-	     * 400ライン時の0x8000〜0xBFFFにはメモリが存在しない 
+	     * 400ライン時の0x8000〜0xBFFFにはメモリが存在しない
 	     */
 	    return 0xff;
 	} else {
@@ -192,7 +192,7 @@ static void     FASTCALL
 alu_write(WORD addr, BYTE dat)
 {
     /*
-     * アクティブプレーンでない場合NOP 
+     * アクティブプレーンでない場合NOP
      */
     if (multi_page & (1 << alu_vram_bank)) {
 	return;
@@ -200,7 +200,7 @@ alu_write(WORD addr, BYTE dat)
 #if XM7_VER >= 3
     if (mode400l) {
 	/*
-	 * 400ライン時の0x8000〜0xBFFFにはメモリが存在しないのでNOP 
+	 * 400ライン時の0x8000〜0xBFFFにはメモリが存在しないのでNOP
 	 */
 	if (addr < 0x8000) {
 	    if (vram_ablk[alu_vram_bank * 0x8000 + addr] != dat) {
@@ -232,7 +232,7 @@ alu_writesub(WORD addr, BYTE dat)
     BYTE            temp;
 
     /*
-     * 常に書き込み可能か 
+     * 常に書き込み可能か
      */
     if ((alu_command & 0x40) == 0) {
 	alu_write(addr, dat);
@@ -240,18 +240,18 @@ alu_writesub(WORD addr, BYTE dat)
     }
 
     /*
-     * イコール書き込みか、NOTイコール書き込みか 
+     * イコール書き込みか、NOTイコール書き込みか
      */
     if (alu_command & 0x20) {
 	/*
-	 * NOTイコールで書き込む 
+	 * NOTイコールで書き込む
 	 */
 	temp = alu_read(addr);
 	temp &= alu_cmpstat;
 	dat &= (BYTE) (~alu_cmpstat);
     } else {
 	/*
-	 * イコールで書き込む 
+	 * イコールで書き込む
 	 */
 	temp = alu_read(addr);
 	temp &= (BYTE) (~alu_cmpstat);
@@ -259,7 +259,7 @@ alu_writesub(WORD addr, BYTE dat)
     }
 
     /*
-     * データをVRAMに書き込む 
+     * データをVRAMに書き込む
      */
     alu_write(addr, (BYTE) (temp | dat));
 }
@@ -276,7 +276,7 @@ alu_pset(WORD addr)
     BYTE            bit;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -292,19 +292,19 @@ alu_pset(WORD addr)
 #endif
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * 演算カラーデータより、データ作成 
+	     * 演算カラーデータより、データ作成
 	     */
 	    if (alu_color & bit) {
 		dat = 0xff;
@@ -313,25 +313,25 @@ alu_pset(WORD addr)
 	    }
 
 	    /*
-	     * 演算なし(PSET) 
+	     * 演算なし(PSET)
 	     */
 	    mask = alu_read(addr);
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat &= (BYTE) (~alu_mask);
 	    mask &= alu_mask;
 	    dat |= mask;
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -350,7 +350,7 @@ alu_prohibit(WORD addr)
     BYTE            bit;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -366,35 +366,35 @@ alu_prohibit(WORD addr)
 #endif
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * 演算なし 
+	     * 演算なし
 	     */
 	    mask = alu_read(addr);
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat = (mask & alu_mask);
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -413,7 +413,7 @@ alu_or(WORD addr)
     BYTE            bit;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -430,19 +430,19 @@ alu_or(WORD addr)
 
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * 演算カラーデータより、データ作成 
+	     * 演算カラーデータより、データ作成
 	     */
 	    if (alu_color & bit) {
 		dat = 0xff;
@@ -451,26 +451,26 @@ alu_or(WORD addr)
 	    }
 
 	    /*
-	     * 演算 
+	     * 演算
 	     */
 	    mask = alu_read(addr);
 	    dat |= mask;
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat &= (BYTE) (~alu_mask);
 	    mask &= alu_mask;
 	    dat |= mask;
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -489,7 +489,7 @@ alu_and(WORD addr)
     BYTE            bit;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -505,19 +505,19 @@ alu_and(WORD addr)
 #endif
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * 演算カラーデータより、データ作成 
+	     * 演算カラーデータより、データ作成
 	     */
 	    if (alu_color & bit) {
 		dat = 0xff;
@@ -526,26 +526,26 @@ alu_and(WORD addr)
 	    }
 
 	    /*
-	     * 演算 
+	     * 演算
 	     */
 	    mask = alu_read(addr);
 	    dat &= mask;
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat &= (BYTE) (~alu_mask);
 	    mask &= alu_mask;
 	    dat |= mask;
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -564,7 +564,7 @@ alu_xor(WORD addr)
     BYTE            bit;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -580,19 +580,19 @@ alu_xor(WORD addr)
 #endif
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * 演算カラーデータより、データ作成 
+	     * 演算カラーデータより、データ作成
 	     */
 	    if (alu_color & bit) {
 		dat = 0xff;
@@ -601,26 +601,26 @@ alu_xor(WORD addr)
 	    }
 
 	    /*
-	     * 演算 
+	     * 演算
 	     */
 	    mask = alu_read(addr);
 	    dat ^= mask;
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat &= (BYTE) (~alu_mask);
 	    mask &= alu_mask;
 	    dat |= mask;
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -639,7 +639,7 @@ alu_not(WORD addr)
     BYTE            bit;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -655,38 +655,38 @@ alu_not(WORD addr)
 #endif
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * 演算(NOT) 
+	     * 演算(NOT)
 	     */
 	    mask = alu_read(addr);
 	    dat = (BYTE) (~mask);
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat &= (BYTE) (~alu_mask);
 	    mask &= alu_mask;
 	    dat |= mask;
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -705,7 +705,7 @@ alu_tile(WORD addr)
     BYTE            dat;
 
     /*
-     * VRAMオフセットを取得、ビット位置初期化 
+     * VRAMオフセットを取得、ビット位置初期化
      */
     alu_vram_bank = 0;
     bit = 0x01;
@@ -721,24 +721,24 @@ alu_tile(WORD addr)
 #endif
 
     /*
-     * 比較書き込み時は、先に比較データを取得 
+     * 比較書き込み時は、先に比較データを取得
      */
     if (alu_command & 0x40) {
 	alu_cmp(addr);
     }
 
     /*
-     * 各バンクに対して処理を行う(無効バンクはスキップ) 
+     * 各バンクに対して処理を行う(無効バンクはスキップ)
      */
     while (alu_vram_bank < 3) {
 	if (!(alu_disable & bit)) {
 	    /*
-	     * データ作成 
+	     * データ作成
 	     */
 	    dat = alu_tiledat[alu_vram_bank];
 
 	    /*
-	     * マスクビットの処理 
+	     * マスクビットの処理
 	     */
 	    dat &= (BYTE) (~alu_mask);
 	    mask = alu_read(addr);
@@ -746,13 +746,13 @@ alu_tile(WORD addr)
 	    dat |= mask;
 
 	    /*
-	     * 書き込み 
+	     * 書き込み
 	     */
 	    alu_writesub(addr, dat);
 	}
 
 	/*
-	 * 次のバンクへ 
+	 * 次のバンクへ
 	 */
 	alu_vram_bank++;
 	bit <<= 1;
@@ -778,7 +778,7 @@ alu_cmp(WORD addr)
     BYTE            disflag;
 
     /*
-     * アドレスマスク 
+     * アドレスマスク
      */
 #if XM7_VER >= 3
     if (mode400l) {
@@ -791,25 +791,25 @@ alu_cmp(WORD addr)
 #endif
 
     /*
-     * カラーデータ取得 
+     * カラーデータ取得
      */
     b = alu_read_plane(addr, 0);
     r = alu_read_plane(addr, 1);
     g = alu_read_plane(addr, 2);
 
     /*
-     * バンクディセーブルを考慮する(女神転生対策) 
+     * バンクディセーブルを考慮する(女神転生対策)
      */
     disflag = (BYTE) ((~alu_disable) & 0x07);
 
     /*
-     * 比較が必要 
+     * 比較が必要
      */
     dat = 0;
     bit = 0x80;
     for (i = 0; i < 8; i++) {
 	/*
-	 * 色を作成 
+	 * 色を作成
 	 */
 	color = 0;
 	if (b & bit) {
@@ -823,7 +823,7 @@ alu_cmp(WORD addr)
 	}
 
 	/*
-	 * 8つの色スロットをまわって、どれか一致するものがあるか 
+	 * 8つの色スロットをまわって、どれか一致するものがあるか
 	 */
 	flag = FALSE;
 	for (j = 0; j < 8; j++) {
@@ -836,20 +836,20 @@ alu_cmp(WORD addr)
 	}
 
 	/*
-	 * イコールで1を設定 
+	 * イコールで1を設定
 	 */
 	if (flag) {
 	    dat |= bit;
 	}
 
 	/*
-	 * 次へ 
+	 * 次へ
 	 */
 	bit >>= 1;
     }
 
     /*
-     * データ設定 
+     * データ設定
      */
     alu_cmpstat = dat;
 }
@@ -864,7 +864,7 @@ void            FASTCALL
 aluline_exec(WORD addr)
 {
     /*
-     * アドレスチェック 
+     * アドレスチェック
      */
     if (addr >= 0x8000) {
 	line_mask = 0xff;
@@ -872,59 +872,59 @@ aluline_exec(WORD addr)
     }
 
     /*
-     * マスクを設定 
+     * マスクを設定
      */
     alu_mask = line_mask;
     line_mask = 0xff;
 
     /*
-     * 論理演算 
+     * 論理演算
      */
     switch (alu_command & 0x07) {
 	/*
-	 * PSET 
+	 * PSET
 	 */
     case 0:
 	alu_pset(addr);
 	break;
 	/*
-	 * 禁止(黒色書き込み) 
+	 * 禁止(黒色書き込み)
 	 */
     case 1:
 	alu_prohibit(addr);
 	break;
 	/*
-	 * OR 
+	 * OR
 	 */
     case 2:
 	alu_or(addr);
 	break;
 	/*
-	 * AND 
+	 * AND
 	 */
     case 3:
 	alu_and(addr);
 	break;
 	/*
-	 * XOR 
+	 * XOR
 	 */
     case 4:
 	alu_xor(addr);
 	break;
 	/*
-	 * NOT 
+	 * NOT
 	 */
     case 5:
 	alu_not(addr);
 	break;
 	/*
-	 * タイルペイント 
+	 * タイルペイント
 	 */
     case 6:
 	alu_tile(addr);
 	break;
 	/*
-	 * コンペア 
+	 * コンペア
 	 */
     case 7:
 	alu_cmp(addr);
@@ -932,7 +932,7 @@ aluline_exec(WORD addr)
     }
 
     /*
-     * カウントアップ 
+     * カウントアップ
      */
     line_count++;
 }
@@ -949,14 +949,14 @@ aluline_pset(int x, int y)
 	{ 0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xfe };
 
     /*
-     * 論理演算のデータバスに入るので、論理演算onが必要 
+     * 論理演算のデータバスに入るので、論理演算onが必要
      */
     if (!(alu_command & 0x80)) {
 	return;
     }
 
     /*
-     * 画面モードから、アドレス算出 
+     * 画面モードから、アドレス算出
      */
 #if XM7_VER >= 3
     if (screen_mode & SCR_ANALOG) {
@@ -973,7 +973,7 @@ aluline_pset(int x, int y)
 #endif
 
     /*
-     * オフセットを加える 
+     * オフセットを加える
      */
     addr += line_offset;
 #if XM7_VER >= 3
@@ -987,31 +987,31 @@ aluline_pset(int x, int y)
 #endif
 
     /*
-     * 前回のアドレスと今回のアドレスが一致しない場合論理演算を行う 
+     * 前回のアドレスと今回のアドレスが一致しない場合論理演算を行う
      */
     if (line_addr_old != addr) {
 	/*
-	 * 論理演算を動かす 
+	 * 論理演算を動かす
 	 */
 	aluline_exec(line_addr_old);
 	line_addr_old = addr;
     }
 
     /*
-     * ラインスタイル 
+     * ラインスタイル
      */
     /*
-     * スタイルビットが立っている場合のみ 
+     * スタイルビットが立っている場合のみ
      */
     if (line_style & 0x8000) {
 	/*
-	 * マスクを設定 
+	 * マスクを設定
 	 */
 	line_mask &= mask[x & 0x07];
     }
 
     /*
-     * ラインスタイルレジスタを左ローテート 
+     * ラインスタイルレジスタを左ローテート
      */
     line_style = (WORD) ((line_style << 1) | (line_style >> 15));
 }
@@ -1034,7 +1034,7 @@ aluline_line(void)
                     r;
 
     /*
-     * データ取得 
+     * データ取得
      */
     x1 = (int) line_x0;
     x2 = (int) line_x1;
@@ -1042,14 +1042,14 @@ aluline_line(void)
     y2 = (int) line_y1;
 
     /*
-     * カウンタ初期化 
+     * カウンタ初期化
      */
     line_count = 0;
     line_addr_old = 0xffff;
     line_mask = 0xff;
 
     /*
-     * 初期値の計算 
+     * 初期値の計算
      */
     dx = x2 - x1;
     dy = y2 - y1;
@@ -1068,12 +1068,12 @@ aluline_line(void)
 
     if ((dx == 0) && (dy == 0)) {
 	/*
-	 * 単一点描画 
+	 * 単一点描画
 	 */
 	aluline_pset(x1, y1);
     } else if (dx == 0) {
 	/*
-	 * Xが同一の場合 (垂直) 
+	 * Xが同一の場合 (垂直)
 	 */
 	for (;;) {
 	    aluline_pset(x1, y1);
@@ -1084,7 +1084,7 @@ aluline_line(void)
 	}
     } else if (dy == 0) {
 	/*
-	 * Yが同一の場合 (水平) 
+	 * Yが同一の場合 (水平)
 	 */
 	for (;;) {
 	    aluline_pset(x1, y1);
@@ -1095,7 +1095,7 @@ aluline_line(void)
 	}
     } else if (dx >= dy) {
 	/*
-	 * メインループ1 (DX >= DY) 
+	 * メインループ1 (DX >= DY)
 	 */
 	r = dx >> 1;
 	for (;;) {
@@ -1113,7 +1113,7 @@ aluline_line(void)
 	}
     } else {
 	/*
-	 * メインループ2 (DX < DY) 
+	 * メインループ2 (DX < DY)
 	 */
 	r = dy >> 1;
 	for (;;) {
@@ -1132,7 +1132,7 @@ aluline_line(void)
     }
 
     /*
-     * 最後のバイトの論理演算 
+     * 最後のバイトの論理演算
      */
     aluline_exec(line_addr_old);
 }
@@ -1146,7 +1146,7 @@ static BOOL     FASTCALL
 aluline_event(void)
 {
     /*
-     * 直線補間をREADYにする 
+     * 直線補間をREADYにする
      */
     line_busy = FALSE;
 
@@ -1164,7 +1164,7 @@ BOOL            FASTCALL
 aluline_readb(WORD addr, BYTE * dat)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 2) {
 	return FALSE;
@@ -1172,35 +1172,35 @@ aluline_readb(WORD addr, BYTE * dat)
 
     switch (addr) {
 	/*
-	 * 論理演算 コマンド 
+	 * 論理演算 コマンド
 	 */
     case 0xd410:
 	*dat = alu_command;
 	return TRUE;
 
 	/*
-	 * 論理演算 カラー 
+	 * 論理演算 カラー
 	 */
     case 0xd411:
 	*dat = alu_color;
 	return TRUE;
 
 	/*
-	 * 論理演算 マスクビット 
+	 * 論理演算 マスクビット
 	 */
     case 0xd412:
 	*dat = alu_mask;
 	return TRUE;
 
 	/*
-	 * 論理演算 比較ステータス 
+	 * 論理演算 比較ステータス
 	 */
     case 0xd413:
 	*dat = alu_cmpstat;
 	return TRUE;
 
 	/*
-	 * 論理演算 無効バンク 
+	 * 論理演算 無効バンク
 	 */
     case 0xd41b:
 	*dat = alu_disable;
@@ -1208,7 +1208,7 @@ aluline_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * 論理演算 比較データ 
+     * 論理演算 比較データ
      */
     if ((addr >= 0xd413) && (addr <= 0xd41a)) {
 	*dat = 0xff;
@@ -1216,7 +1216,7 @@ aluline_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * 論理演算 タイルパターン 
+     * 論理演算 タイルパターン
      */
     if ((addr >= 0xd41c) && (addr <= 0xd41e)) {
 	*dat = 0xff;
@@ -1224,7 +1224,7 @@ aluline_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * 直線補間 
+     * 直線補間
      */
     if ((addr >= 0xd420) && (addr <= 0xd42b)) {
 	*dat = 0xff;
@@ -1244,7 +1244,7 @@ aluline_writeb(WORD addr, BYTE dat)
     DWORD           tmp;
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 2) {
 	return FALSE;
@@ -1252,35 +1252,35 @@ aluline_writeb(WORD addr, BYTE dat)
 
     switch (addr) {
 	/*
-	 * 論理演算 コマンド 
+	 * 論理演算 コマンド
 	 */
     case 0xd410:
 	alu_command = dat;
 	return TRUE;
 
 	/*
-	 * 論理演算 カラー 
+	 * 論理演算 カラー
 	 */
     case 0xd411:
 	alu_color = dat;
 	return TRUE;
 
 	/*
-	 * 論理演算 マスクビット 
+	 * 論理演算 マスクビット
 	 */
     case 0xd412:
 	alu_mask = dat;
 	return TRUE;
 
 	/*
-	 * 論理演算 無効バンク 
+	 * 論理演算 無効バンク
 	 */
     case 0xd41b:
 	alu_disable = dat;
 	return TRUE;
 
 	/*
-	 * 直線補間 アドレスオフセット(A1から注意) 
+	 * 直線補間 アドレスオフセット(A1から注意)
 	 */
     case 0xd420:
 	line_offset &= 0x01fe;
@@ -1292,7 +1292,7 @@ aluline_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * 直線補間 ラインスタイル 
+	 * 直線補間 ラインスタイル
 	 */
     case 0xd422:
 	line_style &= 0xff;
@@ -1304,7 +1304,7 @@ aluline_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * 直線補間 X0 
+	 * 直線補間 X0
 	 */
     case 0xd424:
 	line_x0 &= 0xff;
@@ -1317,7 +1317,7 @@ aluline_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * 直線補間 Y0 
+	 * 直線補間 Y0
 	 */
     case 0xd426:
 	line_y0 &= 0xff;
@@ -1330,7 +1330,7 @@ aluline_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * 直線補間 X1 
+	 * 直線補間 X1
 	 */
     case 0xd428:
 	line_x1 &= 0xff;
@@ -1343,7 +1343,7 @@ aluline_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * 直線補間 Y1 
+	 * 直線補間 Y1
 	 */
     case 0xd42a:
 	line_y1 &= 0xff;
@@ -1355,20 +1355,20 @@ aluline_writeb(WORD addr, BYTE dat)
 	line_y1 |= (WORD) dat;
 
 	/*
-	 * ここで直線補間スタート 
+	 * ここで直線補間スタート
 	 */
 	aluline_line();
 
 	/*
-	 * 線は引いたが、しばらくBUSYにしておく 
+	 * 線は引いたが、しばらくBUSYにしておく
 	 */
 	/*
-	 * BUSY状態にする時間を算出(1バイト描画=1/16μsecと仮定) 
+	 * BUSY状態にする時間を算出(1バイト描画=1/16μsecと仮定)
 	 */
 	tmp = (DWORD) (line_count >> 4);
 
 	/*
-	 * BUSY時間の小数部調整を行う 
+	 * BUSY時間の小数部調整を行う
 	 */
 	line_count_sub += (BYTE) (line_count & 15);
 	if (line_count_sub >= 16) {
@@ -1377,7 +1377,7 @@ aluline_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * 計算結果が1μs以上の場合はBUSYにする 
+	 * 計算結果が1μs以上の場合はBUSYにする
 	 */
 	if (tmp > 0) {
 	    line_busy = TRUE;
@@ -1388,7 +1388,7 @@ aluline_writeb(WORD addr, BYTE dat)
     }
 
     /*
-     * 論理演算 比較データ 
+     * 論理演算 比較データ
      */
     if ((addr >= 0xd413) && (addr <= 0xd41a)) {
 	alu_cmpdat[addr - 0xd413] = dat;
@@ -1396,7 +1396,7 @@ aluline_writeb(WORD addr, BYTE dat)
     }
 
     /*
-     * 論理演算 タイルパターン 
+     * 論理演算 タイルパターン
      */
     if ((addr >= 0xd41c) && (addr <= 0xd41e)) {
 	alu_tiledat[addr - 0xd41c] = dat;
@@ -1414,57 +1414,57 @@ void            FASTCALL
 aluline_extrb(WORD addr)
 {
     /*
-     * 論理演算が有効か 
+     * 論理演算が有効か
      */
     if (alu_command & 0x80) {
 	/*
-	 * コマンド別 
+	 * コマンド別
 	 */
 	switch (alu_command & 0x07) {
 	    /*
-	     * PSET 
+	     * PSET
 	     */
 	case 0:
 	    alu_pset(addr);
 	    break;
 	    /*
-	     * 禁止(黒色書き込み) 
+	     * 禁止(黒色書き込み)
 	     */
 	case 1:
 	    alu_prohibit(addr);
 	    break;
 	    /*
-	     * OR 
+	     * OR
 	     */
 	case 2:
 	    alu_or(addr);
 	    break;
 	    /*
-	     * AND 
+	     * AND
 	     */
 	case 3:
 	    alu_and(addr);
 	    break;
 	    /*
-	     * XOR 
+	     * XOR
 	     */
 	case 4:
 	    alu_xor(addr);
 	    break;
 	    /*
-	     * NOT 
+	     * NOT
 	     */
 	case 5:
 	    alu_not(addr);
 	    break;
 	    /*
-	     * タイルペイント 
+	     * タイルペイント
 	     */
 	case 6:
 	    alu_tile(addr);
 	    break;
 	    /*
-	     * コンペア 
+	     * コンペア
 	     */
 	case 7:
 	    alu_cmp(addr);
@@ -1480,7 +1480,7 @@ aluline_extrb(WORD addr)
  *      セーブ
  */
 BOOL            FASTCALL
-aluline_save(int fileh)
+aluline_save(SDL_RWops *fileh)
 {
     if (!file_byte_write(fileh, alu_command)) {
 	return FALSE;
@@ -1528,7 +1528,7 @@ aluline_save(int fileh)
     }
 
     /*
-     * 従来バージョンとの互換用ダミー 
+     * 従来バージョンとの互換用ダミー
      */
     if (!file_byte_write(fileh, 0)) {
 	return FALSE;
@@ -1542,12 +1542,12 @@ aluline_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-aluline_load(int fileh, int ver)
+aluline_load(SDL_RWops *fileh, int ver)
 {
     BYTE            tmp;
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -1599,14 +1599,14 @@ aluline_load(int fileh, int ver)
     }
 
     /*
-     * 従来バージョンとの互換用ダミー 
+     * 従来バージョンとの互換用ダミー
      */
     if (!file_byte_read(fileh, &tmp)) {
 	return FALSE;
     }
 
     /*
-     * イベント 
+     * イベント
      */
     schedule_handle(EVENT_LINE, aluline_event);
 

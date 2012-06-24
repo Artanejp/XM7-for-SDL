@@ -13,9 +13,9 @@
 /*
  *      定数定義
  */
-#define FDC_DRIVES			4	/* サポートドライブ数 
+#define FDC_DRIVES			4	/* サポートドライブ数
 						 */
-#define FDC_MEDIAS			16	/* D77ファイルに含まれる最大枚数 
+#define FDC_MEDIAS			16	/* D77ファイルに含まれる最大枚数
 						 */
 
 #define FDC_ST_BUSY			0x01	/* BUSY */
@@ -33,7 +33,7 @@
 #define FDC_ST_NOTREADY		0x80	/* メディア未挿入 */
 
 #define FDC_TYPE_NOTREADY	0	/* ファイルなし */
-#define FDC_TYPE_2D			1	/* 2Dファイルをマウント 
+#define FDC_TYPE_2D			1	/* 2Dファイルをマウント
 						 */
 #define FDC_TYPE_D77		2	/* D77ファイルをマウント */
 #define FDC_TYPE_VFD		3	/* VFDファイルをマウント */
@@ -55,43 +55,43 @@ extern          "C" {
      */
     BOOL    fdc_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void    fdc_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void    fdc_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL    fdc_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL    fdc_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL    fdc_save(int fileh);
+    BOOL    fdc_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL    fdc_load(int fileh, int ver);
+    BOOL    fdc_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
     int     fdc_setdisk(int drive, char *fname);
     /*
-     * ディスクセット 
+     * ディスクセット
      */
     BOOL    fdc_setmedia(int drive, int index);
     /*
-     * ディスクファイル内メディア指定 
+     * ディスクファイル内メディア指定
      */
     BOOL    fdc_setwritep(int drive, BOOL writep);
     /*
-     * ライトプロテクト指定 
+     * ライトプロテクト指定
      */
 
     /*
@@ -99,123 +99,123 @@ extern          "C" {
      */
     extern BYTE     fdc_command;
     /*
-     * $FD18 FDCコマンド 
+     * $FD18 FDCコマンド
      */
     extern BYTE     fdc_status;
     /*
-     * $FD18 FDCステータス 
+     * $FD18 FDCステータス
      */
     extern BYTE     fdc_trkreg;
     /*
-     * $FD19 トラックレジスタ 
+     * $FD19 トラックレジスタ
      */
     extern BYTE     fdc_secreg;
     /*
-     * $FD1A セクタレジスタ 
+     * $FD1A セクタレジスタ
      */
     extern BYTE     fdc_datareg;
     /*
-     * $FD1B データレジスタ 
+     * $FD1B データレジスタ
      */
     extern BYTE     fdc_sidereg;
     /*
-     * $FD1C サイドレジスタ 
+     * $FD1C サイドレジスタ
      */
     extern BYTE     fdc_motor;
     /*
-     * $FD1D モータ(on:0x80 off:0x00) 
+     * $FD1D モータ(on:0x80 off:0x00)
      */
     extern BYTE     fdc_drvreg;
     /*
-     * $FD1D ドライブ(0-3) 
+     * $FD1D ドライブ(0-3)
      */
     extern BYTE     fdc_drqirq;
     /*
-     * $FD1F DRQ, IRQ, その他フラグ 
+     * $FD1F DRQ, IRQ, その他フラグ
      */
 
 
 #if XM7_VER >= 3
     extern BYTE     fdc_logidrv;
     /*
-     * $FD1E 論理ドライブ番号 
+     * $FD1E 論理ドライブ番号
      */
     extern BYTE     fdc_physdrv[FDC_DRIVES];
     /*
-     * $FD1E 論理/物理ドライブの対応 
+     * $FD1E 論理/物理ドライブの対応
      */
     extern BYTE     fdc_2ddmode;
     /*
-     * $FD1E 2DDモードセレクト 
+     * $FD1E 2DDモードセレクト
      */
 #endif
 
     extern BYTE     fdc_cmdtype;
     /*
-     * コマンドタイプ 
+     * コマンドタイプ
      */
     extern WORD     fdc_totalcnt;
     /*
-     * トータルカウンタ 
+     * トータルカウンタ
      */
     extern WORD     fdc_nowcnt;
     /*
-     * カレントカウンタ 
+     * カレントカウンタ
      */
     extern BYTE     fdc_ready[FDC_DRIVES];
     /*
-     * レディ状態 
+     * レディ状態
      */
     extern BOOL     fdc_teject[FDC_DRIVES];
     /*
-     * 一時イジェクト 
+     * 一時イジェクト
      */
     extern BOOL     fdc_writep[FDC_DRIVES];
     /*
-     * 書き込み禁止状態 
+     * 書き込み禁止状態
      */
     extern BYTE     fdc_track[FDC_DRIVES];
     /*
-     * 実トラック 
+     * 実トラック
      */
 
     extern char     fdc_fname[FDC_DRIVES][256 + 1];
     /*
-     * ファイルネーム 
+     * ファイルネーム
      */
     extern char     fdc_name[FDC_DRIVES][FDC_MEDIAS][17];
     /*
-     * メディアごとの名前 
+     * メディアごとの名前
      */
     extern BOOL     fdc_fwritep[FDC_DRIVES];
     /*
-     * 書き込み禁止状態(ファイル単位) 
+     * 書き込み禁止状態(ファイル単位)
      */
     extern BYTE     fdc_header[FDC_DRIVES][0x2b0];
     /*
-     * D77ファイルヘッダ 
+     * D77ファイルヘッダ
      */
     extern BYTE     fdc_medias[FDC_DRIVES];
     /*
-     * メディア枚数 
+     * メディア枚数
      */
     extern BYTE     fdc_media[FDC_DRIVES];
     /*
-     * メディアセレクト状態 
+     * メディアセレクト状態
      */
     extern BYTE     fdc_access[FDC_DRIVES];
     /*
-     * アクセスLED 
+     * アクセスLED
      */
 
 #ifdef FDDSND
     extern BOOL     fdc_waitmode;
     /*
-     * FDCアクセスウェイト 
+     * FDCアクセスウェイト
      */
     extern BOOL     fdc_sound;
     /*
-     * FDDシーク音発生フラグ 
+     * FDDシーク音発生フラグ
      */
 #endif
 

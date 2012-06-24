@@ -30,7 +30,7 @@ BOOL            stopreq_flag;	/* 停止要求フラグ */
 event_t         event[EVENT_MAXNUM];	/* イベント データ */
 breakp_t        breakp[BREAKP_MAXNUM];	/* ブレークポイント
 					 * データ */
-WORD            main_runadr;	/* メインCPUの前回実行アドレス 
+WORD            main_runadr;	/* メインCPUの前回実行アドレス
 				 */
 WORD            sub_runadr;	/* サブCPUの前回実行アドレス */
 DWORD           main_speed;	/* メインCPUスピード */
@@ -39,7 +39,7 @@ DWORD           mmr_speed;	/* メイン(MMR)スピード */
 DWORD           fmmr_speed;	/* メイン(高速MMR)スピード */
 #endif
 DWORD           sub_speed;	/* サブCPUスピード */
-WORD            main_overcycles;	/* メインCPUオーバーサイクル 
+WORD            main_overcycles;	/* メインCPUオーバーサイクル
 					 */
 WORD            sub_overcycles;	/* サブCPUオーバーサイクル */
 BOOL            cycle_steal;	/* サイクルスチールフラグ */
@@ -50,9 +50,9 @@ DWORD           main_speed_low;	/* メインCPUスピード(低速) */
 DWORD           sub_speed_low;	/* サブCPUスピード(低速) */
 #ifdef JSUB
 DWORD           jsub_speed;	/* 日本語サブCPUスピード */
-WORD            jsub_overcycles;	/* 日本語サブCPUオーバーサイクル 
+WORD            jsub_overcycles;	/* 日本語サブCPUオーバーサイクル
 					 */
-WORD            jsub_runadr;	/* 日本語サブCPUの前回実行アドレス 
+WORD            jsub_runadr;	/* 日本語サブCPUの前回実行アドレス
 				 */
 #endif
 #endif
@@ -60,9 +60,9 @@ WORD            jsub_runadr;	/* 日本語サブCPUの前回実行アドレス
 /*
  *      スタティック ワーク
  */
-static BOOL     break_flag;	/* ブレークポイント有効フラグ 
+static BOOL     break_flag;	/* ブレークポイント有効フラグ
 				 */
-static int      exec0;		/* 高精度合成用実行時間補助カウンタ 
+static int      exec0;		/* 高精度合成用実行時間補助カウンタ
 				 */
 
 /*
@@ -79,7 +79,7 @@ schedule_init(void)
     memset(event, 0, sizeof(event));
 
     /*
-     * 前回の実行アドレスを初期化 
+     * 前回の実行アドレスを初期化
      */
     main_runadr = 0xFFFF;
     sub_runadr = 0xFFFF;
@@ -88,7 +88,7 @@ schedule_init(void)
 #endif
 
     /*
-     * CPU速度初期設定 
+     * CPU速度初期設定
      */
     main_speed = MAINCYCLES * 10;
     mmr_speed = MAINCYCLES_MMR * 10;
@@ -110,7 +110,7 @@ schedule_init(void)
     exec0 = 0;
 
     /*
-     * 仮想時間初期化 
+     * 仮想時間初期化
      */
     vmtime = 0;
 
@@ -136,11 +136,11 @@ schedule_reset(void)
     int             i;
 
     /*
-     * RTCイベント以外のスケジュールをクリア 
+     * RTCイベント以外のスケジュールをクリア
      */
     /*
      * (XM7起動直後はRTCイベントも schedule_init
-     * でクリアされている) 
+     * でクリアされている)
      */
     for (i = 0; i < EVENT_MAXNUM; i++) {
 	if (i != EVENT_RTC) {
@@ -149,7 +149,7 @@ schedule_reset(void)
     }
 
     /*
-     * カウンタクリア 
+     * カウンタクリア
      */
     maincpu.total = 0;
     subcpu.total = 0;
@@ -162,12 +162,12 @@ schedule_reset(void)
     exec0 = 0;
 
     /*
-     * 仮想時間初期化 
+     * 仮想時間初期化
      */
     vmtime = 0;
 
     /*
-     * 実行速度比率初期化 
+     * 実行速度比率初期化
      */
     speed_ratio = 10000;
 }
@@ -202,17 +202,17 @@ schedule_get_cycle(void)
 
 #if XM7_VER >= 3
     /*
-     * 高速リフレッシュモードのサイクル数を生成 
+     * 高速リフレッシュモードのサイクル数を生成
      */
     if (!mmr_fastmode && mmr_fast_refresh) {
 	if (mmr_flag || twr_flag) {
 	    /*
-	     * MMR/TWR有効時 約8.9%アップ 
+	     * MMR/TWR有効時 約8.9%アップ
 	     */
 	    tmp = (DWORD) ((tmp * 4461) >> 12);
 	} else {
 	    /*
-	     * MMR/TWR無効時 約8.6%アップ 
+	     * MMR/TWR無効時 約8.6%アップ
 	     */
 	    tmp = (DWORD) ((tmp * 4447) >> 12);
 	}
@@ -220,7 +220,7 @@ schedule_get_cycle(void)
 #endif
 
     /*
-     * CPU速度比率 
+     * CPU速度比率
      */
     if (speed_ratio != 10000) {
 	tmp = (tmp * speed_ratio) / 10000;
@@ -254,7 +254,7 @@ schedule_setevent(int id, DWORD microsec, BOOL(FASTCALL * func) (void))
     }
 
     /*
-     * 登録 
+     * 登録
      */
     event[id].current = microsec;
     event[id].reload = microsec;
@@ -262,7 +262,7 @@ schedule_setevent(int id, DWORD microsec, BOOL(FASTCALL * func) (void))
     event[id].flag = EVENT_ENABLED;
 
     /*
-     * 実行中なら、時間を足しておく必要がある(後で引くため) 
+     * 実行中なら、時間を足しておく必要がある(後で引くため)
      */
     if (run_flag) {
 	exec = (DWORD) maincpu.total;
@@ -288,7 +288,7 @@ schedule_delevent(int id)
     }
 
     /*
-     * 未使用に 
+     * 未使用に
      */
     event[id].flag = EVENT_NOTUSE;
 
@@ -306,7 +306,7 @@ schedule_handle(int id, BOOL(FASTCALL * func) (void))
     ASSERT(func);
 
     /*
-     * コールバック関数を登録するのみ。それ以外は触らない 
+     * コールバック関数を登録するのみ。それ以外は触らない
      */
     event[id].callback = func;
 }
@@ -322,12 +322,12 @@ schedule_chkevent(DWORD microsec)
     int             i;
 
     /*
-     * 初期設定 
+     * 初期設定
      */
     exectime = microsec;
 
     /*
-     * イベントを回って調査 
+     * イベントを回って調査
      */
     for (i = 0; i < EVENT_MAXNUM; i++) {
 	if (event[i].flag == EVENT_NOTUSE) {
@@ -363,7 +363,7 @@ schedule_doevent(DWORD microsec)
 	ASSERT(event[i].reload > 0);
 
 	/*
-	 * 実行時間を引き 
+	 * 実行時間を引き
 	 */
 	if (event[i].current < microsec) {
 	    event[i].current = 0;
@@ -372,15 +372,15 @@ schedule_doevent(DWORD microsec)
 	}
 
 	/*
-	 * カウンタが0なら 
+	 * カウンタが0なら
 	 */
 	if (event[i].current == 0) {
 	    /*
-	     * 時間はENABLE,DISABLEにかかわらずリロード 
+	     * 時間はENABLE,DISABLEにかかわらずリロード
 	     */
 	    event[i].current = event[i].reload;
 	    /*
-	     * コールバック実行 
+	     * コールバック実行
 	     */
 	    if (event[i].flag == EVENT_ENABLED) {
 		if (!event[i].callback()) {
@@ -403,7 +403,7 @@ schedule_setbreak(int cpu, WORD addr)
     int             i;
 
     /*
-     * まず、全てのブレークポイントを検索し、見つかるか 
+     * まず、全てのブレークポイントを検索し、見つかるか
      */
     for (i = 0; i < BREAKP_MAXNUM; i++) {
 	if (breakp[i].flag != BREAKP_NOTUSE) {
@@ -413,12 +413,12 @@ schedule_setbreak(int cpu, WORD addr)
 	}
     }
     /*
-     * 見つかれば、削除 
+     * 見つかれば、削除
      */
     if (i != BREAKP_MAXNUM) {
 	breakp[i].flag = BREAKP_NOTUSE;
 	/*
-	 * ブレーク有効フラグをチェック 
+	 * ブレーク有効フラグをチェック
 	 */
 	break_flag = FALSE;
 	for (i = 0; i < BREAKP_MAXNUM; i++) {
@@ -430,7 +430,7 @@ schedule_setbreak(int cpu, WORD addr)
     }
 
     /*
-     * 空きを調査 
+     * 空きを調査
      */
     for (i = 0; i < BREAKP_MAXNUM; i++) {
 	if (breakp[i].flag == BREAKP_NOTUSE) {
@@ -438,21 +438,21 @@ schedule_setbreak(int cpu, WORD addr)
 	}
     }
     /*
-     * すべて埋まっているか 
+     * すべて埋まっているか
      */
     if (i == BREAKP_MAXNUM) {
 	return FALSE;
     }
 
     /*
-     * セット 
+     * セット
      */
     breakp[i].flag = BREAKP_ENABLED;
     breakp[i].cpu = cpu;
     breakp[i].addr = addr;
 
     /*
-     * ブレーク有効 
+     * ブレーク有効
      */
     break_flag = TRUE;
 
@@ -467,7 +467,7 @@ BOOL            FASTCALL
 schedule_setbreak2(int num, int cpu, WORD addr)
 {
     /*
-     * セット 
+     * セット
      */
     if (breakp[num].flag != BREAKP_DISABLED) {
 	breakp[num].flag = BREAKP_ENABLED;
@@ -476,7 +476,7 @@ schedule_setbreak2(int num, int cpu, WORD addr)
     breakp[num].addr = addr;
 
     /*
-     * ブレーク有効 
+     * ブレーク有効
      */
     break_flag = TRUE;
 
@@ -547,7 +547,7 @@ void            FASTCALL
 schedule_trace(void)
 {
     /*
-     * １命令実行 
+     * １命令実行
      */
 #if XM7_VER >= 3
     if (!dma_burst_transfer || !dma_flag) {
@@ -559,7 +559,7 @@ schedule_trace(void)
 
 #if XM7_VER >= 3
     /*
-     * DMA転送 
+     * DMA転送
      */
     if (dma_flag) {
 	dmac_exec();
@@ -575,7 +575,7 @@ schedule_trace(void)
 	subcpu_execline();
 #if XM7_VER == 1
 	/*
-	 * VRAMアクセスフラグONの場合,所要クロックを3倍にする 
+	 * VRAMアクセスフラグONの場合,所要クロックを3倍にする
 	 */
 	if (vrama_flag) {
 	    subcpu.total += (WORD) (subcpu.cycle * 2);
@@ -590,12 +590,12 @@ schedule_trace(void)
 #endif
 
     /*
-     * HALT要求に応答 (V3.1) 
+     * HALT要求に応答 (V3.1)
      */
     subctrl_halt_ack();
 
     /*
-     * オーバーサイクル数をクリア 
+     * オーバーサイクル数をクリア
      */
     main_overcycles = 0;
     sub_overcycles = 0;
@@ -616,7 +616,7 @@ schedule_main_fullspeed(void)
 #if XM7_VER >= 3
     if (dma_burst_transfer) {
 	/*
-	 * バースト転送実行中。メインCPUは動けない 
+	 * バースト転送実行中。メインCPUは動けない
 	 */
 	return;
     }
@@ -624,7 +624,7 @@ schedule_main_fullspeed(void)
 
     if (break_flag) {
 	/*
-	 * ブレークポイントあり 
+	 * ブレークポイントあり
 	 */
 	if (schedule_chkbreak()) {
 	    stopreq_flag = TRUE;
@@ -635,7 +635,7 @@ schedule_main_fullspeed(void)
     }
 
     /*
-     * メインCPU実行 
+     * メインCPU実行
      */
 #ifdef FDDSND
     if (!fdc_waitmode || !(fdc_status & FDC_ST_BUSY)) {
@@ -646,12 +646,12 @@ schedule_main_fullspeed(void)
 #endif
 
     /*
-     * HALT要求に応答 (V3.1) 
+     * HALT要求に応答 (V3.1)
      */
     subctrl_halt_ack();
 
     /*
-     * オーバーサイクル数をクリア 
+     * オーバーサイクル数をクリア
      */
     main_overcycles = 0;
 }
@@ -667,7 +667,7 @@ schedule_fullspeed(void)
 
     if (break_flag) {
 	/*
-	 * ブレークポイントあり 
+	 * ブレークポイントあり
 	 */
 	if (schedule_chkbreak()) {
 	    stopreq_flag = TRUE;
@@ -678,7 +678,7 @@ schedule_fullspeed(void)
     }
 
     /*
-     * メインCPU実行 
+     * メインCPU実行
      */
 #if XM7_VER >= 3
     if (!dma_burst_transfer) {
@@ -701,7 +701,7 @@ schedule_fullspeed(void)
 #endif
 
     /*
-     * サブCPU実行 
+     * サブCPU実行
      */
 #if XM7_VER >= 2
     if ((!subhalt_flag || (subcpu.intr & INTR_HALT)) &&
@@ -712,7 +712,7 @@ schedule_fullspeed(void)
 	subcpu_exec();
 #if XM7_VER == 1
 	/*
-	 * VRAMアクセスフラグONの場合,所要クロックを3倍にする 
+	 * VRAMアクセスフラグONの場合,所要クロックを3倍にする
 	 */
 	if (vrama_flag) {
 	    subcpu.total += (WORD) (subcpu.cycle * 2);
@@ -721,7 +721,7 @@ schedule_fullspeed(void)
     }
 #if (XM7_VER == 1) && defined(JSUB)
     /*
-     * 日本語サブCPU実行 
+     * 日本語サブCPU実行
      */
     if (jsub_available && jsub_enable && !jsub_haltflag &&
 	(fm_subtype != FMSUB_FM8)) {
@@ -730,12 +730,12 @@ schedule_fullspeed(void)
 #endif
 
     /*
-     * HALT要求に応答 (V3.1) 
+     * HALT要求に応答 (V3.1)
      */
     subctrl_halt_ack();
 
     /*
-     * オーバーサイクル数をクリア 
+     * オーバーサイクル数をクリア
      */
     main_overcycles = 0;
     sub_overcycles = 0;
@@ -768,14 +768,14 @@ schedule_exec(DWORD microsec)
     ASSERT(!stopreq_flag);
 
     /*
-     * 最短の実行時間を得る 
+     * 最短の実行時間を得る
      */
     exec = schedule_chkevent(microsec);
     exec2 = 0;
 
     do {
 	/*
-	 * メインCPUとサブCPUの動作速度比率を求める 
+	 * メインCPUとサブCPUの動作速度比率を求める
 	 */
 	cycle = schedule_get_cycle();
 #if XM7_VER == 1
@@ -802,7 +802,7 @@ schedule_exec(DWORD microsec)
 #endif
 
 	/*
-	 * CPU時間に換算 
+	 * CPU時間に換算
 	 */
 	count = cycle;
 	count *= (exec - exec2);
@@ -814,7 +814,7 @@ schedule_exec(DWORD microsec)
 #endif
 
 	/*
-	 * カウンタ・フラグ初期化 
+	 * カウンタ・フラグ初期化
 	 */
 	maincpu.total = main_overcycles;
 	subcpu.total = sub_overcycles;
@@ -826,11 +826,11 @@ schedule_exec(DWORD microsec)
 	if (cycle_steal) {
 	    if (break_flag) {
 		/*
-		 * サイクルスチールあり、ブレークポイントあり 
+		 * サイクルスチールあり、ブレークポイントあり
 		 */
 
 		/*
-		 * 実行 
+		 * 実行
 		 */
 		while ((maincpu.total < maincnt) && !mmr_modify) {
 		    if (schedule_chkbreak()) {
@@ -841,30 +841,30 @@ schedule_exec(DWORD microsec)
 		    }
 #if XM7_VER >= 3
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    if (!dma_burst_transfer) {
 			maincpu_exec();
 		    }
 
 		    /*
-		     * DMA転送 
+		     * DMA転送
 		     */
 		    if (dma_flag) {
 			dmac_exec();
 		    }
 #else
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    maincpu_exec();
 #endif
 
 		    /*
-		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の 
+		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の
 		     */
 		    /*
-		     * 後処理(MAGUS) 
+		     * 後処理(MAGUS)
 		     */
 		    if (busy_CLR_count) {
 			busy_CLR_count--;
@@ -874,12 +874,12 @@ schedule_exec(DWORD microsec)
 		    }
 
 		    /*
-		     * サブCPU実行 
+		     * サブCPU実行
 		     */
 		    limit = maincpu.total * ratio;
 		    if (subhalt_flag && !(subcpu.intr & INTR_HALT)) {
 			/*
-			 * メインCPUと強制同期 
+			 * メインCPUと強制同期
 			 */
 			subcpu.total = (WORD) (limit >> 12);
 		    } else {
@@ -896,7 +896,7 @@ schedule_exec(DWORD microsec)
 
 #if (XM7_VER == 1) && defined(JSUB)
 		    /*
-		     * 日本語サブCPU実行 
+		     * 日本語サブCPU実行
 		     */
 		    limit = maincpu.total * ratio_js;
 		    while ((((DWORD) jsubcpu.total << 12) < limit) &&
@@ -913,55 +913,55 @@ schedule_exec(DWORD microsec)
 #endif
 
 		    /*
-		     * HALT要求に応答 (V3.1) 
+		     * HALT要求に応答 (V3.1)
 		     */
 		    subctrl_halt_ack();
 		}
 
 		/*
-		 * ブレークした場合の処理 
+		 * ブレークした場合の処理
 		 */
 		if (stopreq_flag) {
 		    /*
-		     * exec分時間を進める(あえて補正しない) 
+		     * exec分時間を進める(あえて補正しない)
 		     */
 		    run_flag = FALSE;
 		}
 	    } else {
 		/*
-		 * サイクルスチールあり、ブレークポイントなし 
+		 * サイクルスチールあり、ブレークポイントなし
 		 */
 
 		/*
-		 * 実行 
+		 * 実行
 		 */
 		while ((maincpu.total < maincnt) && !mmr_modify) {
 #if XM7_VER >= 3
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    if (!dma_burst_transfer) {
 			maincpu_exec();
 		    }
 
 		    /*
-		     * DMA転送 
+		     * DMA転送
 		     */
 		    if (dma_flag) {
 			dmac_exec();
 		    }
 #else
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    maincpu_exec();
 #endif
 
 		    /*
-		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の 
+		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の
 		     */
 		    /*
-		     * 後処理(MAGUS) 
+		     * 後処理(MAGUS)
 		     */
 		    if (busy_CLR_count) {
 			busy_CLR_count--;
@@ -971,12 +971,12 @@ schedule_exec(DWORD microsec)
 		    }
 
 		    /*
-		     * サブCPU実行 
+		     * サブCPU実行
 		     */
 		    limit = maincpu.total * ratio;
 		    if (subhalt_flag && !(subcpu.intr & INTR_HALT)) {
 			/*
-			 * メインCPUと強制同期 
+			 * メインCPUと強制同期
 			 */
 			subcpu.total = (WORD) (limit >> 12);
 		    } else {
@@ -987,7 +987,7 @@ schedule_exec(DWORD microsec)
 
 #if (XM7_VER == 1) && defined(JSUB)
 		    /*
-		     * 日本語サブCPU実行 
+		     * 日本語サブCPU実行
 		     */
 		    limit = maincpu.total * ratio_js;
 		    while ((((DWORD) jsubcpu.total << 12) < limit) &&
@@ -998,7 +998,7 @@ schedule_exec(DWORD microsec)
 #endif
 
 		    /*
-		     * HALT要求に応答 (V3.1) 
+		     * HALT要求に応答 (V3.1)
 		     */
 		    subctrl_halt_ack();
 		}
@@ -1006,11 +1006,11 @@ schedule_exec(DWORD microsec)
 	} else {
 	    if (break_flag) {
 		/*
-		 * サイクルスチールなし、ブレークポイントあり 
+		 * サイクルスチールなし、ブレークポイントあり
 		 */
 
 		/*
-		 * 実行 
+		 * 実行
 		 */
 		while ((maincpu.total < maincnt) && !mmr_modify) {
 		    if (schedule_chkbreak()) {
@@ -1021,30 +1021,30 @@ schedule_exec(DWORD microsec)
 		    }
 #if XM7_VER >= 3
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    if (!dma_burst_transfer) {
 			maincpu_exec();
 		    }
 
 		    /*
-		     * DMA転送 
+		     * DMA転送
 		     */
 		    if (dma_flag) {
 			dmac_exec();
 		    }
 #else
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    maincpu_exec();
 #endif
 
 		    /*
-		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の 
+		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の
 		     */
 		    /*
-		     * 後処理(MAGUS) 
+		     * 後処理(MAGUS)
 		     */
 		    if (busy_CLR_count) {
 			busy_CLR_count--;
@@ -1054,7 +1054,7 @@ schedule_exec(DWORD microsec)
 		    }
 
 		    /*
-		     * サブCPU実行 
+		     * サブCPU実行
 		     */
 		    limit = maincpu.total * ratio;
 #if XM7_VER >= 2
@@ -1064,7 +1064,7 @@ schedule_exec(DWORD microsec)
 		    if (subhalt_flag && !(subcpu.intr & INTR_HALT)) {
 #endif
 			/*
-			 * メインCPUと強制同期 
+			 * メインCPUと強制同期
 			 */
 			subcpu.total = (WORD) (limit >> 12);
 		    } else {
@@ -1079,10 +1079,10 @@ schedule_exec(DWORD microsec)
 			    subcpu_exec();
 #if XM7_VER == 1
 			    /*
-			     * VRAMアクセスフラグONの場合 
+			     * VRAMアクセスフラグONの場合
 			     */
 			    /*
-			     * 所要クロックを3倍にする 
+			     * 所要クロックを3倍にする
 			     */
 			    if (vrama_flag) {
 				subcpu.total += (WORD) (subcpu.cycle * 2);
@@ -1093,7 +1093,7 @@ schedule_exec(DWORD microsec)
 
 #if (XM7_VER == 1) && defined(JSUB)
 		    /*
-		     * 日本語サブCPU実行 
+		     * 日本語サブCPU実行
 		     */
 		    limit = maincpu.total * ratio_js;
 		    while ((((DWORD) jsubcpu.total << 12) < limit) &&
@@ -1110,55 +1110,55 @@ schedule_exec(DWORD microsec)
 #endif
 
 		    /*
-		     * HALT要求に応答 (V3.1) 
+		     * HALT要求に応答 (V3.1)
 		     */
 		    subctrl_halt_ack();
 		}
 
 		/*
-		 * ブレークした場合の処理 
+		 * ブレークした場合の処理
 		 */
 		if (stopreq_flag) {
 		    /*
-		     * exec分時間を進める(あえて補正しない) 
+		     * exec分時間を進める(あえて補正しない)
 		     */
 		    run_flag = FALSE;
 		}
 	    } else {
 		/*
-		 * サイクルスチールなし、ブレークポイントなし 
+		 * サイクルスチールなし、ブレークポイントなし
 		 */
 
 		/*
-		 * 実行 
+		 * 実行
 		 */
 		while ((maincpu.total < maincnt) && !mmr_modify) {
 #if XM7_VER >= 3
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    if (!dma_burst_transfer) {
 			maincpu_exec();
 		    }
 
 		    /*
-		     * DMA転送 
+		     * DMA転送
 		     */
 		    if (dma_flag) {
 			dmac_exec();
 		    }
 #else
 		    /*
-		     * メインCPU実行 
+		     * メインCPU実行
 		     */
 		    maincpu_exec();
 #endif
 
 		    /*
-		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の 
+		     * サブ側でCLR命令を使用してBUSYフラグを操作した場合の
 		     */
 		    /*
-		     * 後処理(MAGUS) 
+		     * 後処理(MAGUS)
 		     */
 		    if (busy_CLR_count) {
 			busy_CLR_count--;
@@ -1168,7 +1168,7 @@ schedule_exec(DWORD microsec)
 		    }
 
 		    /*
-		     * サブCPU実行 
+		     * サブCPU実行
 		     */
 		    limit = maincpu.total * ratio;
 #if XM7_VER >= 2
@@ -1178,7 +1178,7 @@ schedule_exec(DWORD microsec)
 		    if (subhalt_flag && !(subcpu.intr & INTR_HALT)) {
 #endif
 			/*
-			 * メインCPUと強制同期 
+			 * メインCPUと強制同期
 			 */
 			subcpu.total = (WORD) (limit >> 12);
 		    } else {
@@ -1186,10 +1186,10 @@ schedule_exec(DWORD microsec)
 			    subcpu_exec();
 #if XM7_VER == 1
 			    /*
-			     * VRAMアクセスフラグONの場合 
+			     * VRAMアクセスフラグONの場合
 			     */
 			    /*
-			     * 所要クロックを3倍にする 
+			     * 所要クロックを3倍にする
 			     */
 			    if (vrama_flag) {
 				subcpu.total += (WORD) (subcpu.cycle * 2);
@@ -1200,7 +1200,7 @@ schedule_exec(DWORD microsec)
 
 #if (XM7_VER == 1) && defined(JSUB)
 		    /*
-		     * 日本語サブCPU実行 
+		     * 日本語サブCPU実行
 		     */
 		    limit = maincpu.total * ratio_js;
 		    while ((((DWORD) jsubcpu.total << 12) < limit) &&
@@ -1211,7 +1211,7 @@ schedule_exec(DWORD microsec)
 #endif
 
 		    /*
-		     * HALT要求に応答 (V3.1) 
+		     * HALT要求に応答 (V3.1)
 		     */
 		    subctrl_halt_ack();
 		}
@@ -1219,7 +1219,7 @@ schedule_exec(DWORD microsec)
 	}
 
 	/*
-	 * MMR関連レジスタが変更された場合、実行時間を補正 
+	 * MMR関連レジスタが変更された場合、実行時間を補正
 	 */
 	if (mmr_modify) {
 	    exec2 += (maincpu.total * 10000) / cycle;
@@ -1233,7 +1233,7 @@ schedule_exec(DWORD microsec)
     while (mmr_modify && run_flag && (exec > exec2));
 
     /*
-     * オーバーサイクル処理 
+     * オーバーサイクル処理
      */
     if (maincpu.total > maincnt) {
 	main_overcycles = (WORD) (maincpu.total - maincnt);
@@ -1254,7 +1254,7 @@ schedule_exec(DWORD microsec)
 #endif
 
     /*
-     * イベント処理 
+     * イベント処理
      */
     maincpu.total = 0;
     subcpu.total = 0;
@@ -1274,7 +1274,7 @@ schedule_exec(DWORD microsec)
  *      セーブ
  */
 BOOL            FASTCALL
-schedule_save(int fileh)
+schedule_save(SDL_RWops *fileh)
 {
     int             i;
 
@@ -1287,14 +1287,14 @@ schedule_save(int fileh)
     }
 
     /*
-     * Ver901拡張 
+     * Ver901拡張
      */
     if (!file_byte_write(fileh, BREAKP_MAXNUM)) {
 	return FALSE;
     }
 
     /*
-     * ブレークポイント 
+     * ブレークポイント
      */
     for (i = 0; i < BREAKP_MAXNUM; i++) {
 	if (!file_byte_write(fileh, (BYTE) breakp[i].flag)) {
@@ -1309,11 +1309,11 @@ schedule_save(int fileh)
     }
 
     /*
-     * イベント 
+     * イベント
      */
 
     /*
-     * Ver9拡張 
+     * Ver9拡張
      */
     if (!file_byte_write(fileh, EVENT_MAXNUM)) {
 	return FALSE;
@@ -1321,7 +1321,7 @@ schedule_save(int fileh)
 
     for (i = 0; i < EVENT_MAXNUM; i++) {
 	/*
-	 * コールバック以外を保存 
+	 * コールバック以外を保存
 	 */
 	if (!file_byte_write(fileh, (BYTE) event[i].flag)) {
 	    return FALSE;
@@ -1335,7 +1335,7 @@ schedule_save(int fileh)
     }
 
     /*
-     * Ver9.05/7.05拡張 
+     * Ver9.05/7.05拡張
      */
     if (!file_word_write(fileh, main_overcycles)) {
 	return FALSE;
@@ -1357,14 +1357,14 @@ schedule_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-schedule_load(int fileh, int ver, BOOL old)
+schedule_load(SDL_RWops *fileh, int ver, BOOL old)
 {
     int             i;
     BYTE            tmp;
     BYTE            MAXNUM;
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -1379,10 +1379,10 @@ schedule_load(int fileh, int ver, BOOL old)
     }
 
     /*
-     * ブレークポイント 
+     * ブレークポイント
      */
     /*
-     * Ver9拡張 
+     * Ver9拡張
      */
 #if XM7_VER >= 3
     if ((ver >= 901) || ((ver >= 701) && (ver <= 799))) {
@@ -1399,7 +1399,7 @@ schedule_load(int fileh, int ver, BOOL old)
     }
 
     /*
-     * いったん初期化する 
+     * いったん初期化する
      */
     memset(breakp, 0, sizeof(breakp));
 
@@ -1424,10 +1424,10 @@ schedule_load(int fileh, int ver, BOOL old)
     }
 
     /*
-     * イベント 
+     * イベント
      */
     /*
-     * Ver9拡張 
+     * Ver9拡張
      */
 #if XM7_VER >= 3
     if ((ver >= 900) || ((ver >= 700) && (ver <= 799))) {
@@ -1449,7 +1449,7 @@ schedule_load(int fileh, int ver, BOOL old)
 
     for (i = 0; i < MAXNUM; i++) {
 	/*
-	 * コールバック以外を設定 
+	 * コールバック以外を設定
 	 */
 	if (!file_byte_read(fileh, &tmp)) {
 	    return FALSE;
@@ -1464,7 +1464,7 @@ schedule_load(int fileh, int ver, BOOL old)
     }
 
     /*
-     * Ver9.05/Ver7.05拡張 
+     * Ver9.05/Ver7.05拡張
      */
 #if XM7_VER >= 3
     if ((ver >= 905) || ((ver >= 705) && (ver <= 799))) {
@@ -1493,7 +1493,7 @@ schedule_load(int fileh, int ver, BOOL old)
     }
 
     /*
-     * 実行速度比率初期化 
+     * 実行速度比率初期化
      */
     speed_ratio = 10000;
 

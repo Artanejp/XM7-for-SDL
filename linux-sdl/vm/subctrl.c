@@ -24,9 +24,9 @@ BOOL            subhalt_flag;	/* サブHALTフラグ */
 BOOL            subbusy_flag;	/* サブBUSYフラグ */
 BOOL            subcancel_flag;	/* サブキャンセルフラグ */
 BOOL            subattn_flag;	/* サブアテンションフラグ */
-BOOL            subhalt_request;	/* サブHALTリクエストフラグ 
+BOOL            subhalt_request;	/* サブHALTリクエストフラグ
 					 */
-BOOL            subcancel_request;	/* サブキャンセルリクエストフラグ 
+BOOL            subcancel_request;	/* サブキャンセルリクエストフラグ
 					 */
 BYTE            shared_ram[0x80];	/* 共有RAM */
 BOOL            subreset_flag;	/* サブ再起動フラグ */
@@ -45,7 +45,7 @@ BOOL            subkanji_flag;	/* 漢字ROM サブCPU接続フラグ */
 #endif
 #endif
 #if XM7_VER == 1 && defined(L4CARD)
-BOOL            select_400line;	/* メイン側400ライン選択フラグ 
+BOOL            select_400line;	/* メイン側400ライン選択フラグ
 				 */
 BOOL            subkanji_flag;	/* 漢字ROM サブCPU接続フラグ */
 #endif
@@ -118,7 +118,7 @@ subctrl_halt_ack(void)
     subcancel_flag = subcancel_request;
 
     /*
-     * HALT時にはBUSY信号をONにする 
+     * HALT時にはBUSY信号をONにする
      */
     if (subhalt_request) {
 	subbusy_flag = TRUE;
@@ -137,11 +137,11 @@ subctrl_readb(WORD addr, BYTE * dat)
     switch (addr) {
 	/*
 	 * サブCPU
-	 * アテンション割り込み、Breakキー割り込み 
+	 * アテンション割り込み、Breakキー割り込み
 	 */
     case 0xfd04:
 	/*
-	 * BUSYフラグ 
+	 * BUSYフラグ
 	 */
 	if (subbusy_flag) {
 	    ret = 0xff;
@@ -149,25 +149,25 @@ subctrl_readb(WORD addr, BYTE * dat)
 	    ret = 0x7f;
 	}
 	/*
-	 * アテンションフラグ 
+	 * アテンションフラグ
 	 */
 	if (subattn_flag) {
 	    ret &= ~0x01;
 	    subattn_flag = FALSE;
 	}
 	/*
-	 * Breakキーフラグ 
+	 * Breakキーフラグ
 	 */
 	if (break_flag || hotreset_flag) {
 	    ret &= ~0x02;
 
 	    /*
-	     * ホットリセット処理 
+	     * ホットリセット処理
 	     */
 	    if (hotreset_flag) {
 #if XM7_VER >= 2
 		/*
-		 * イニシエータROMが無効ならホットリセット解除 
+		 * イニシエータROMが無効ならホットリセット解除
 		 */
 		if (!initrom_en) {
 		    break_flag = FALSE;
@@ -181,25 +181,25 @@ subctrl_readb(WORD addr, BYTE * dat)
 	}
 #if XM7_VER == 1 && defined(L4CARD)
 	/*
-	 * 以下、FM-77モードのみ有効 
+	 * 以下、FM-77モードのみ有効
 	 */
 	if (fm_subtype == FMSUB_FM77) {
 	    /*
-	     * 漢字ROM切り換え 
+	     * 漢字ROM切り換え
 	     */
 	    if (subkanji_flag) {
 		ret &= ~0x20;
 	    }
 
 	    /*
-	     * 400ラインカード 
+	     * 400ラインカード
 	     */
 	    if (enable_400linecard) {
 		ret &= ~0x10;
 	    }
 
 	    /*
-	     * 400ラインカードモード 
+	     * 400ラインカードモード
 	     */
 	    if (enable_400linecard && select_400line) {
 		ret &= ~0x08;
@@ -212,7 +212,7 @@ subctrl_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * サブインタフェース 
+	 * サブインタフェース
 	 */
     case 0xfd05:
 	if (subbusy_flag) {
@@ -224,27 +224,27 @@ subctrl_readb(WORD addr, BYTE * dat)
 	}
 
 	/*
-	 * サブモードステータス 
+	 * サブモードステータス
 	 */
 #if XM7_VER >= 2
     case 0xfd12:
 	ret = 0xff;
 	if (fm7_ver >= 2) {
 	    /*
-	     * 320/640 
+	     * 320/640
 	     */
 	    if (!mode320) {
 		ret &= ~0x40;
 	    }
 
 	    /*
-	     * ブランクステータス 
+	     * ブランクステータス
 	     */
 	    if (blank_flag) {
 		ret &= ~0x02;
 	    }
 	    /*
-	     * VSYNCステータス 
+	     * VSYNCステータス
 	     */
 	    if (!vsync_flag) {
 		ret &= ~0x01;
@@ -254,7 +254,7 @@ subctrl_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * サブバンク切り替え(Write Only) 
+	 * サブバンク切り替え(Write Only)
 	 */
     case 0xfd13:
 	*dat = 0xff;
@@ -275,12 +275,12 @@ subctrl_writeb(WORD addr, BYTE dat)
     switch (addr) {
 #if XM7_VER >= 3
 	/*
-	 * サブインタフェース AV40拡張部分 
+	 * サブインタフェース AV40拡張部分
 	 */
     case 0xfd04:
 	if (fm7_ver >= 3) {
 	    /*
-	     * bit2:サブモニタプロテクト 
+	     * bit2:サブモニタプロテクト
 	     */
 	    if (dat & 0x04) {
 		subram_protect = FALSE;
@@ -288,7 +288,7 @@ subctrl_writeb(WORD addr, BYTE dat)
 		subram_protect = TRUE;
 	    }
 	    /*
-	     * bit3:400ラインモード選択 
+	     * bit3:400ラインモード選択
 	     */
 	    if (dat & 0x08) {
 		mode400l = FALSE;
@@ -296,10 +296,10 @@ subctrl_writeb(WORD addr, BYTE dat)
 		mode400l = TRUE;
 	    }
 	    /*
-	     * bit4:26万色モード選択 
+	     * bit4:26万色モード選択
 	     */
 	    /*
-	     * bit3と4の両方がONだった場合、mode400lを優先 
+	     * bit3と4の両方がONだった場合、mode400lを優先
 	     */
 	    if ((dat & 0x10) && !mode400l) {
 		mode256k = TRUE;
@@ -307,7 +307,7 @@ subctrl_writeb(WORD addr, BYTE dat)
 		mode256k = FALSE;
 	    }
 	    /*
-	     * bit5:漢字ROM接続切り換え 
+	     * bit5:漢字ROM接続切り換え
 	     */
 	    if (dat & 0x20) {
 		subkanji_flag = FALSE;
@@ -316,7 +316,7 @@ subctrl_writeb(WORD addr, BYTE dat)
 	    }
 
 	    /*
-	     * 画面モードが切り替わった場合だけ再描画 
+	     * 画面モードが切り替わった場合だけ再描画
 	     */
 	    if ((BYTE) (dat & 0x18) != subif_dat) {
 		display_setpointer(TRUE);
@@ -328,15 +328,15 @@ subctrl_writeb(WORD addr, BYTE dat)
 
 #if XM7_VER == 1 && defined(L4CARD)
 	/*
-	 * サブインタフェース FM-77拡張部分 
+	 * サブインタフェース FM-77拡張部分
 	 */
     case 0xfd04:
 	/*
-	 * 以下、FM-77モードのみ有効 
+	 * 以下、FM-77モードのみ有効
 	 */
 	if (fm_subtype == FMSUB_FM77) {
 	    /*
-	     * bit3:400ラインカードモード 
+	     * bit3:400ラインカードモード
 	     */
 	    if (dat & 0x08) {
 		select_400line = FALSE;
@@ -345,7 +345,7 @@ subctrl_writeb(WORD addr, BYTE dat)
 	    }
 
 	    /*
-	     * bit5:漢字ROM接続切り換え 
+	     * bit5:漢字ROM接続切り換え
 	     */
 	    if (dat & 0x20) {
 		subkanji_flag = FALSE;
@@ -357,22 +357,22 @@ subctrl_writeb(WORD addr, BYTE dat)
 #endif
 
 	/*
-	 * サブコントロール 
+	 * サブコントロール
 	 */
     case 0xfd05:
 	if (dat & 0x80) {
 	    /*
-	     * サブHALTリクエスト 
+	     * サブHALTリクエスト
 	     */
 	    subhalt_request = TRUE;
 	} else {
 	    /*
-	     * サブRUNリクエスト 
+	     * サブRUNリクエスト
 	     */
 	    subhalt_request = FALSE;
 
 	    /*
-	     * バンク切り替え後は、リセットする 
+	     * バンク切り替え後は、リセットする
 	     */
 #if XM7_VER >= 3
 	    if (subreset_halt) {
@@ -383,7 +383,7 @@ subctrl_writeb(WORD addr, BYTE dat)
 	}
 	if (dat & 0x40) {
 	    /*
-	     * キャンセルIRQ 
+	     * キャンセルIRQ
 	     */
 	    subcancel_request = TRUE;
 	}
@@ -391,13 +391,13 @@ subctrl_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * サブモード切り替え 
+	 * サブモード切り替え
 	 */
 #if XM7_VER >= 2
     case 0xfd12:
 	if (fm7_ver >= 2) {
 	    /*
-	     * 画面モードが切り替わった場合だけ再描画 
+	     * 画面モードが切り替わった場合だけ再描画
 	     */
 	    if (dat & 0x40) {
 		if (!mode320) {
@@ -414,12 +414,12 @@ subctrl_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * サブバンク切り替え 
+	 * サブバンク切り替え
 	 */
     case 0xfd13:
 	if (fm7_ver >= 2) {
 	    /*
-	     * バンク切り替え 
+	     * バンク切り替え
 	     */
 #if XM7_VER >= 3
 	    if ((fm7_ver >= 3) && (dat & 0x04)) {
@@ -432,7 +432,7 @@ subctrl_writeb(WORD addr, BYTE dat)
 #endif
 
 	    /*
-	     * リセット 
+	     * リセット
 	     */
 #if XM7_VER >= 3
 	    if (!subhalt_flag) {
@@ -446,27 +446,27 @@ subctrl_writeb(WORD addr, BYTE dat)
 #endif
 
 	    /*
-	     * フラグ類セット 
+	     * フラグ類セット
 	     */
 	    subreset_flag = TRUE;
 	    subbusy_flag = TRUE;
 
 	    /*
 	     * 表示系I/Oをリセットする (FM77AV
-	     * デモプログラム) 
+	     * デモプログラム)
 	     */
 	    aluline_reset();
 	    ttlpalet_reset();
 	    multipag_reset();
 
 	    /*
-	     * CRTレジスタをリセットする 
+	     * CRTレジスタをリセットする
 	     */
 	    display_reset();
 	    display_notify();
 
 	    /*
-	     * INS LEDを消灯させる 
+	     * INS LEDを消灯させる
 	     */
 	    ins_flag = FALSE;
 	}
@@ -482,7 +482,7 @@ subctrl_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-subctrl_save(int fileh)
+subctrl_save(SDL_RWops *fileh)
 {
     if (!file_bool_write(fileh, subhalt_flag)) {
 	return FALSE;
@@ -514,7 +514,7 @@ subctrl_save(int fileh)
 #endif
 
     /*
-     * Ver7拡張 
+     * Ver7拡張
      */
     if (!file_bool_write(fileh, subhalt_request)) {
 	return FALSE;
@@ -524,14 +524,14 @@ subctrl_save(int fileh)
     }
 
     /*
-     * Ver711拡張 
+     * Ver711拡張
      */
     if (!file_byte_write(fileh, busy_CLR_count)) {
 	return FALSE;
     }
 #if XM7_VER >= 3
     /*
-     * Ver8拡張 
+     * Ver8拡張
      */
     if (!file_bool_write(fileh, mode400l)) {
 	return FALSE;
@@ -552,7 +552,7 @@ subctrl_save(int fileh)
 
 #if XM7_VER == 1 && defined(L4CARD)
     /*
-     * XM7 V1.1 / FM-77L4拡張 
+     * XM7 V1.1 / FM-77L4拡張
      */
     if (!file_bool_write(fileh, select_400line)) {
 	return FALSE;
@@ -570,10 +570,10 @@ subctrl_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-subctrl_load(int fileh, int ver)
+subctrl_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -609,7 +609,7 @@ subctrl_load(int fileh, int ver)
 #endif
 
     /*
-     * Ver7拡張 
+     * Ver7拡張
      */
 #if XM7_VER >= 3
     if (((ver >= 700) && (ver <= 799)) || (ver >= 900)) {
@@ -630,7 +630,7 @@ subctrl_load(int fileh, int ver)
     }
 
     /*
-     * Ver711拡張 
+     * Ver711拡張
      */
 #if XM7_VER >= 3
     if (((ver >= 711) && (ver <= 799)) || (ver >= 911)) {
@@ -648,7 +648,7 @@ subctrl_load(int fileh, int ver)
 
 #if XM7_VER >= 3
     /*
-     * Ver8拡張 
+     * Ver8拡張
      */
     if (ver < 800) {
 	mode400l = FALSE;
@@ -658,7 +658,7 @@ subctrl_load(int fileh, int ver)
 	subreset_halt = FALSE;
 
 	/*
-	 * ポインタを構成 
+	 * ポインタを構成
 	 */
 	display_setpointer(TRUE);
 	return TRUE;
@@ -678,7 +678,7 @@ subctrl_load(int fileh, int ver)
     }
 
     /*
-     * Ver9.06拡張 
+     * Ver9.06拡張
      */
     if (ver >= 906) {
 	if (!file_bool_read(fileh, &subkanji_flag)) {
@@ -693,7 +693,7 @@ subctrl_load(int fileh, int ver)
     }
 
     /*
-     * サブI/F Reg. 画面モード復帰 
+     * サブI/F Reg. 画面モード復帰
      */
     subif_dat = 0x00;
     if (!mode400l) {
@@ -706,7 +706,7 @@ subctrl_load(int fileh, int ver)
 
 #if XM7_VER == 1 && defined(L4CARD)
     /*
-     * XM7 V1.1 / FM-77L4拡張 
+     * XM7 V1.1 / FM-77L4拡張
      */
     if (!file_bool_read(fileh, &select_400line)) {
 	return FALSE;
@@ -717,7 +717,7 @@ subctrl_load(int fileh, int ver)
 #endif
 
     /*
-     * ポインタを構成 
+     * ポインタを構成
      */
     display_setpointer(TRUE);
 

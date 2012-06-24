@@ -28,20 +28,20 @@ WORD            dma_bcr[4];	/* 転送語数レジスタ */
 BYTE            dma_chcr[4];	/* チャネル制御レジスタ */
 BYTE            dma_pcr;	/* 優先制御レジスタ */
 BYTE            dma_icr;	/* 割り込み制御レジスタ */
-BYTE            dma_dcr;	/* データチェイン制御レジスタ 
+BYTE            dma_dcr;	/* データチェイン制御レジスタ
 				 */
 
-BYTE            dma_reg;	/* 現在選択されているレジスタ番号 
+BYTE            dma_reg;	/* 現在選択されているレジスタ番号
 				 */
 BOOL            dma_flag;	/* DMA転送実行中フラグ */
-BOOL            dma_burst_transfer;	/* DMAバースト転送実行中フラグ 
+BOOL            dma_burst_transfer;	/* DMAバースト転送実行中フラグ
 					 */
 
 
 /*
  *      プロトタイプ宣言
  */
-static BOOL FASTCALL dmac_start_ch0(void);	/* DMA転送開始イベント 
+static BOOL FASTCALL dmac_start_ch0(void);	/* DMA転送開始イベント
 						 */
 
 
@@ -74,7 +74,7 @@ dmac_reset(void)
     int             i;
 
     /*
-     * DMAC内部レジスタ初期化 
+     * DMAC内部レジスタ初期化
      */
     for (i = 0; i < 4; i++) {
 	dma_adr[i] = 0xFFFF;
@@ -86,7 +86,7 @@ dmac_reset(void)
     dma_dcr = 0x00;
 
     /*
-     * ワーク初期化 
+     * ワーク初期化
      */
     dma_reg = 0x00;
     dma_flag = FALSE;
@@ -102,35 +102,35 @@ void            FASTCALL
 dmac_start(void)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 3) {
 	return;
     }
 
     /*
-     * 既にDMA転送動作中であれば何もしない 
+     * 既にDMA転送動作中であれば何もしない
      */
     if (dma_flag) {
 	return;
     }
 
     /*
-     * 転送語長レジスタ(BCR)チェック 
+     * 転送語長レジスタ(BCR)チェック
      */
     if (dma_bcr[0] == 0) {
 	return;
     }
 
     /*
-     * DMA使用フラグ(TxRQ)チェック 
+     * DMA使用フラグ(TxRQ)チェック
      */
     if (!(dma_pcr & 0x01)) {
 	return;
     }
 
     /*
-     * DMA転送開始 イベント設定 
+     * DMA転送開始 イベント設定
      */
     schedule_setevent(EVENT_FDC_DMA, 50, dmac_start_ch0);
 }
@@ -143,12 +143,12 @@ static BOOL     FASTCALL
 dmac_start_ch0(void)
 {
     /*
-     * イベントを削除 
+     * イベントを削除
      */
     schedule_delevent(EVENT_FDC_DMA);
 
     /*
-     * DMAスタート 
+     * DMAスタート
      */
     dma_flag = TRUE;
     dma_chcr[0] = (BYTE) ((dma_chcr[0] & 0x0f) | 0x40);
@@ -167,14 +167,14 @@ dmac_exec(void)
     BYTE            seg;
 
     /*
-     * TxRQチェック 
+     * TxRQチェック
      */
     if (!(dma_pcr & 0x01)) {
 	return;
     }
 
     /*
-     * この時点でBCRが0なら転送/割り込み発生をせずに処理を中止 
+     * この時点でBCRが0なら転送/割り込み発生をせずに処理を中止
      */
     if (dma_bcr[0] == 0) {
 	dma_flag = FALSE;
@@ -183,20 +183,20 @@ dmac_exec(void)
     }
 
     /*
-     * バーストモードのチェックをおこなう 
+     * バーストモードのチェックをおこなう
      */
     if ((dma_chcr[0] & 0x02) && !dma_burst_transfer) {
 	dma_burst_transfer = TRUE;
     }
 
     /*
-     * FDCからのDRQを受け、転送する 
+     * FDCからのDRQを受け、転送する
      */
     fdc_readb(0xfd1f, &dat);
     if (!(dat & 0x80)) {
 	if (dma_burst_transfer) {
 	    /*
-	     * スケジューリングの関係上、メインCPUクロックを進める 
+	     * スケジューリングの関係上、メインCPUクロックを進める
 	     */
 	    maincpu.total += (WORD) 2;
 	}
@@ -204,70 +204,70 @@ dmac_exec(void)
     }
 
     /*
-     * DMA転送を実行。MMRは常にセグメント0になる 
+     * DMA転送を実行。MMRは常にセグメント0になる
      */
     seg = mmr_seg;
     mmr_seg = 0;
 
     if (dma_chcr[0] & 0x01) {
 	/*
-	 * 1:メモリ→FDC (Write) 
+	 * 1:メモリ→FDC (Write)
 	 */
 	dat = mainmem_readb(dma_adr[0]);
 	fdc_writeb(0xfd1b, dat);
     } else {
 	/*
-	 * 0:FDC→メモリ (Read) 
+	 * 0:FDC→メモリ (Read)
 	 */
 	fdc_readb(0xfd1b, &dat);
 	mainmem_writeb(dma_adr[0], dat);
     }
 
     /*
-     * MMRセグメント復帰 
+     * MMRセグメント復帰
      */
     mmr_seg = seg;
 
     /*
-     * アドレス更新 
+     * アドレス更新
      */
     if (dma_chcr[0] & 0x08) {
 	/*
-	 * アドレスDOWN 
+	 * アドレスDOWN
 	 */
 	dma_adr[0]--;
     } else {
 	/*
-	 * アドレスUP 
+	 * アドレスUP
 	 */
 	dma_adr[0]++;
     }
 
     /*
-     * メインCPUクロックの引き延ばしを行う 
+     * メインCPUクロックの引き延ばしを行う
      */
     maincpu.total += (WORD) 3;
 
     /*
-     * 転送サイズ更新 
+     * 転送サイズ更新
      */
     dma_bcr[0]--;
 
     /*
-     * 転送終了チェック 
+     * 転送終了チェック
      */
     if (dma_bcr[0] == 0) {
 #ifdef DMAC_AV40
 	if ((dma_dcr & 0x07) == 0x01) {
 	    /*
-	     * データチェイン 
+	     * データチェイン
 	     */
 	    dma_adr[0] = dma_adr[3];
 	    dma_bcr[0] = dma_bcr[3];
 	    dma_bcr[3] = 0;
 	} else {
 	    /*
-	     * DMA終了 
+	     * DMA終了
 	     */
 	    dma_flag = FALSE;
 	    dma_burst_transfer = FALSE;
@@ -275,7 +275,7 @@ dmac_exec(void)
 	    dma_dcr |= 0x10;
 
 	    /*
-	     * 割り込みがイネーブルなら、割り込みをかける 
+	     * 割り込みがイネーブルなら、割り込みをかける
 	     */
 	    if (dma_icr & 0x01) {
 		dma_icr |= 0x80;
@@ -286,7 +286,7 @@ dmac_exec(void)
 	}
 #else
 	/*
-	 * DMA終了 
+	 * DMA終了
 	 */
 	dma_flag = FALSE;
 	dma_burst_transfer = FALSE;
@@ -294,7 +294,7 @@ dmac_exec(void)
 	dma_dcr |= 0x10;
 
 	/*
-	 * 割り込みがイネーブルなら、割り込みをかける 
+	 * 割り込みがイネーブルなら、割り込みをかける
 	 */
 	if (dma_icr & 0x01) {
 	    dma_icr |= 0x80;
@@ -318,7 +318,7 @@ dmac_readreg(WORD addr)
     switch (addr) {
 #ifdef DMAC_AV40
 	/*
-	 * アドレスレジスタ(上位) 
+	 * アドレスレジスタ(上位)
 	 */
     case 0x00:
     case 0x04:
@@ -327,7 +327,7 @@ dmac_readreg(WORD addr)
 	return (BYTE) ((dma_adr[addr >> 2] >> 8) & 0xff);
 
 	/*
-	 * アドレスレジスタ(下位) 
+	 * アドレスレジスタ(下位)
 	 */
     case 0x01:
     case 0x05:
@@ -336,7 +336,7 @@ dmac_readreg(WORD addr)
 	return (BYTE) (dma_adr[addr >> 2] & 0xff);
 
 	/*
-	 * 転送語数レジスタ(上位) 
+	 * 転送語数レジスタ(上位)
 	 */
     case 0x02:
     case 0x06:
@@ -345,7 +345,7 @@ dmac_readreg(WORD addr)
 	return (BYTE) ((dma_bcr[addr >> 2] >> 8) & 0xff);
 
 	/*
-	 * 転送語数レジスタ(下位) 
+	 * 転送語数レジスタ(下位)
 	 */
     case 0x03:
     case 0x07:
@@ -354,7 +354,7 @@ dmac_readreg(WORD addr)
 	return (BYTE) (dma_bcr[addr >> 2] & 0xff);
 
 	/*
-	 * チャネル制御レジスタ 
+	 * チャネル制御レジスタ
 	 */
     case 0x10:
     case 0x11:
@@ -365,31 +365,31 @@ dmac_readreg(WORD addr)
 	return tmp;
 #else
 	/*
-	 * アドレスレジスタ(上位) 
+	 * アドレスレジスタ(上位)
 	 */
     case 0x00:
 	return (BYTE) ((dma_adr[0] >> 8) & 0xff);
 
 	/*
-	 * アドレスレジスタ(下位) 
+	 * アドレスレジスタ(下位)
 	 */
     case 0x01:
 	return (BYTE) (dma_adr[0] & 0xff);
 
 	/*
-	 * 転送語数レジスタ(上位) 
+	 * 転送語数レジスタ(上位)
 	 */
     case 0x02:
 	return (BYTE) ((dma_bcr[0] >> 8) & 0xff);
 
 	/*
-	 * 転送語数レジスタ(下位) 
+	 * 転送語数レジスタ(下位)
 	 */
     case 0x03:
 	return (BYTE) (dma_bcr[0] & 0xff);
 
 	/*
-	 * チャネル制御レジスタ 
+	 * チャネル制御レジスタ
 	 */
     case 0x10:
 	tmp = dma_chcr[0];
@@ -398,20 +398,20 @@ dmac_readreg(WORD addr)
 #endif
 
 	/*
-	 * 優先制御レジスタ 
+	 * 優先制御レジスタ
 	 */
     case 0x14:
 	return dma_pcr;
 
 	/*
-	 * 割り込み制御レジスタ 
+	 * 割り込み制御レジスタ
 	 */
     case 0x15:
 	tmp = (BYTE) (((dma_dcr >> 4) | 0x80) & dma_icr);
 	dma_dcr &= 0x0f;
 
 	/*
-	 * IRQを解除 
+	 * IRQを解除
 	 */
 	dma_icr &= (BYTE) ~ 0x80;
 	dma_irq_flag = FALSE;
@@ -419,14 +419,14 @@ dmac_readreg(WORD addr)
 	return tmp;
 
 	/*
-	 * データチェイン制御レジスタ 
+	 * データチェイン制御レジスタ
 	 */
     case 0x16:
 	return (BYTE) (dma_dcr & 0x0f);
     }
 
     /*
-     * その他のレジスタはデコードされていない 
+     * その他のレジスタはデコードされていない
      */
     return 0x00;
 }
@@ -440,7 +440,7 @@ dmac_writereg(WORD addr, BYTE dat)
 {
     switch (addr) {
 	/*
-	 * アドレスレジスタ(上位) 
+	 * アドレスレジスタ(上位)
 	 */
     case 0x00:
     case 0x04:
@@ -451,7 +451,7 @@ dmac_writereg(WORD addr, BYTE dat)
 	return;
 
 	/*
-	 * アドレスレジスタ(下位) 
+	 * アドレスレジスタ(下位)
 	 */
     case 0x01:
     case 0x05:
@@ -461,7 +461,7 @@ dmac_writereg(WORD addr, BYTE dat)
 	return;
 
 	/*
-	 * 転送語数レジスタ(上位) 
+	 * 転送語数レジスタ(上位)
 	 */
     case 0x02:
     case 0x06:
@@ -472,7 +472,7 @@ dmac_writereg(WORD addr, BYTE dat)
 	return;
 
 	/*
-	 * 転送語数レジスタ(下位) 
+	 * 転送語数レジスタ(下位)
 	 */
     case 0x03:
     case 0x07:
@@ -482,7 +482,7 @@ dmac_writereg(WORD addr, BYTE dat)
 	return;
 
 	/*
-	 * チャネル制御レジスタ 
+	 * チャネル制御レジスタ
 	 */
     case 0x10:
     case 0x11:
@@ -493,21 +493,21 @@ dmac_writereg(WORD addr, BYTE dat)
 	return;
 
 	/*
-	 * 優先制御レジスタ 
+	 * 優先制御レジスタ
 	 */
     case 0x14:
 	dma_pcr = (BYTE) (dat & 0x8f);
 	return;
 
 	/*
-	 * 割り込み制御レジスタ 
+	 * 割り込み制御レジスタ
 	 */
     case 0x15:
 	dma_icr = (BYTE) ((dma_icr & 0x80) | (dat & 0x0f));
 	return;
 
 	/*
-	 * データチェイン制御レジスタ 
+	 * データチェイン制御レジスタ
 	 */
     case 0x16:
 	dma_dcr = (BYTE) ((dma_dcr & 0xf0) | (dat & 0x0f));
@@ -523,7 +523,7 @@ BOOL            FASTCALL
 dmac_readb(WORD addr, BYTE * dat)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 3) {
 	return FALSE;
@@ -531,14 +531,14 @@ dmac_readb(WORD addr, BYTE * dat)
 
     switch (addr) {
 	/*
-	 * DMACアドレス 
+	 * DMACアドレス
 	 */
     case 0xfd98:
 	*dat = dma_reg;
 	return TRUE;
 
 	/*
-	 * DMACデータ 
+	 * DMACデータ
 	 */
     case 0xfd99:
 	*dat = dmac_readreg(dma_reg);
@@ -556,7 +556,7 @@ BOOL            FASTCALL
 dmac_writeb(WORD addr, BYTE dat)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 3) {
 	return FALSE;
@@ -564,14 +564,14 @@ dmac_writeb(WORD addr, BYTE dat)
 
     switch (addr) {
 	/*
-	 * DMACアドレス 
+	 * DMACアドレス
 	 */
     case 0xfd98:
 	dma_reg = (BYTE) (dat & 0x1f);
 	return TRUE;
 
 	/*
-	 * DMACデータ 
+	 * DMACデータ
 	 */
     case 0xfd99:
 	dmac_writereg(dma_reg, dat);
@@ -586,7 +586,7 @@ dmac_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-dmac_save(int fileh)
+dmac_save(SDL_RWops *fileh)
 {
 #ifdef DMAC_AV40
     int             i;
@@ -615,14 +615,14 @@ dmac_save(int fileh)
     }
 
     /*
-     * Ver9拡張 
+     * Ver9拡張
      */
     if (!file_byte_write(fileh, dma_dcr)) {
 	return FALSE;
     }
 
     /*
-     * Ver912拡張 
+     * Ver912拡張
      */
     if (!file_bool_write(fileh, dma_burst_transfer)) {
 	return FALSE;
@@ -630,7 +630,7 @@ dmac_save(int fileh)
 
     /*
      * Ver9拡張・AV40仕様時
-     * (40EX仕様時との互換性がなくなるので注意) 
+     * (40EX仕様時との互換性がなくなるので注意)
      */
 #ifdef DMAC_AV40
     for (i = 1; i < 4; i++) {
@@ -654,12 +654,12 @@ dmac_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-dmac_load(int fileh, int ver)
+dmac_load(SDL_RWops *fileh, int ver)
 {
     int             i;
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 800) {
 	dmac_reset();
@@ -689,7 +689,7 @@ dmac_load(int fileh, int ver)
     }
 
     /*
-     * Ver9拡張 
+     * Ver9拡張
      */
     if (ver >= 900) {
 	if (!file_byte_read(fileh, &dma_dcr)) {
@@ -697,7 +697,7 @@ dmac_load(int fileh, int ver)
 	}
 
 	/*
-	 * Ver912拡張 
+	 * Ver912拡張
 	 */
 	if (ver >= 912) {
 	    if (!file_bool_read(fileh, &dma_burst_transfer)) {
@@ -707,7 +707,7 @@ dmac_load(int fileh, int ver)
 #ifdef DMAC_AV40
 	/*
 	 * Ver9拡張・AV40仕様時
-	 * (40EX仕様時との互換性がなくなるので注意) 
+	 * (40EX仕様時との互換性がなくなるので注意)
 	 */
 	for (i = 1; i < 4; i++) {
 	    if (!file_word_read(fileh, &dma_adr[i])) {
@@ -726,7 +726,7 @@ dmac_load(int fileh, int ver)
     }
 
     /*
-     * Ch1〜3を初期化 
+     * Ch1〜3を初期化
      */
 #ifndef DMAC_AV40
     for (i = 1; i < 4; i++) {

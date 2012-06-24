@@ -18,31 +18,31 @@ extern          "C" {
      */
     BOOL FASTCALL   ttlpalet_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   ttlpalet_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   ttlpalet_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   ttlpalet_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   ttlpalet_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   ttlpalet_save(int fileh);
+    BOOL FASTCALL   ttlpalet_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   ttlpalet_load(int fileh, int ver);
+    BOOL FASTCALL   ttlpalet_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -50,7 +50,7 @@ extern          "C" {
      */
     extern BYTE     ttl_palet[8];
     /*
-     * TTLパレットデータ 
+     * TTLパレットデータ
      */
 #ifdef __cplusplus
 }

@@ -41,9 +41,9 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat);
 										/* OPN メモリ読み出し */
 BOOL FASTCALL opn_writeb(WORD addr, BYTE dat);
 										/* OPN メモリ書き込み */
-BOOL FASTCALL opn_save(int fileh);
+BOOL FASTCALL opn_save(SDL_RWops *fileh);
 										/* OPN セーブ */
-BOOL FASTCALL opn_load(int fileh, int ver);
+BOOL FASTCALL opn_load(SDL_RWops *fileh, int ver);
 										/* OPN ロード */
 
 BOOL FASTCALL whg_init(void);
@@ -56,9 +56,9 @@ BOOL FASTCALL whg_readb(WORD addr, BYTE *dat);
 										/* WHG メモリ読み出し */
 BOOL FASTCALL whg_writeb(WORD addr, BYTE dat);
 										/* WHG メモリ書き込み */
-BOOL FASTCALL whg_save(int fileh);
+BOOL FASTCALL whg_save(SDL_RWops *fileh);
 										/* WHG セーブ */
-BOOL FASTCALL whg_load(int fileh, int ver);
+BOOL FASTCALL whg_load(SDL_RWops *fileh, int ver);
 										/* WHG ロード */
 
 BOOL FASTCALL thg_init(void);
@@ -71,9 +71,9 @@ BOOL FASTCALL thg_readb(WORD addr, BYTE *dat);
 										/* THG メモリ読み出し */
 BOOL FASTCALL thg_writeb(WORD addr, BYTE dat);
 										/* THG メモリ書き込み */
-BOOL FASTCALL thg_save(int fileh);
+BOOL FASTCALL thg_save(SDL_RWops *fileh);
 										/* THG セーブ */
-BOOL FASTCALL thg_load(int fileh, int ver);
+BOOL FASTCALL thg_load(SDL_RWops *fileh, int ver);
 										/* THG ロード */
 
 /*

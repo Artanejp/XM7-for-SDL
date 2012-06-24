@@ -50,7 +50,7 @@ BOOL banksel_en;					/* バンク切り換えイネーブルフラグ */
 /*
  *      プロトタイプ宣言
  */
-BOOL FASTCALL   mainetc_event(void);	/* 2.03ms タイマーイベント 
+BOOL FASTCALL   mainetc_event(void);	/* 2.03ms タイマーイベント
 					 */
 
 /*
@@ -83,7 +83,7 @@ void            FASTCALL
 mainetc_reset(void)
 {
     /*
-     * 割り込みフラグ初期化 
+     * 割り込みフラグ初期化
      */
     key_irq_flag = FALSE;
     key_irq_mask = TRUE;
@@ -109,14 +109,14 @@ mainetc_reset(void)
 #endif
 
     /*
-     * BEEPフラグ初期化 
+     * BEEPフラグ初期化
      */
     beep_flag = FALSE;
     speaker_flag = FALSE;
 
 #if XM7_VER == 1
     /*
-     * イベントを追加(FM-8モードを除く) 
+     * イベントを追加(FM-8モードを除く)
      */
     if (fm_subtype != FMSUB_FM8) {
 	schedule_setevent(EVENT_MAINTIMER, 2034, mainetc_event);
@@ -125,13 +125,13 @@ mainetc_reset(void)
     }
 #else
     /*
-     * イベントを追加 
+     * イベントを追加
      */
     schedule_setevent(EVENT_MAINTIMER, 2034, mainetc_event);
 #endif
 
     /*
-     * 通知 
+     * 通知
      */
     beep_notify();
 }
@@ -143,17 +143,17 @@ BOOL            FASTCALL
 mainetc_beep(void)
 {
     /*
-     * BEEP停止 
+     * BEEP停止
      */
     beep_flag = FALSE;
 
     /*
-     * 自己イベント削除時は、TRUEにする 
+     * 自己イベント削除時は、TRUEにする
      */
     schedule_delevent(EVENT_BEEP);
 
     /*
-     * 通知 
+     * 通知
      */
     beep_notify();
 
@@ -167,13 +167,13 @@ BOOL            FASTCALL
 mainetc_event(void)
 {
     /*
-     * 2.03msごとのCLKで、maskの反転をDFFで入力する 
+     * 2.03msごとのCLKで、maskの反転をDFFで入力する
      */
     timer_irq_flag = !timer_irq_mask;
     maincpu_irq();
 
     /*
-     * CLKは4.9152MHzなので、2.0345ms単位で発生する 
+     * CLKは4.9152MHzなので、2.0345ms単位で発生する
      */
     if (event[EVENT_MAINTIMER].reload == 2034) {
 	schedule_setevent(EVENT_MAINTIMER, 2035, mainetc_event);
@@ -193,14 +193,14 @@ mainetc_fdc(void)
 {
 #if XM7_VER == 1
     /*
-     * マスクされていれば、何もしない 
+     * マスクされていれば、何もしない
      */
    if ((fm_subtype == FMSUB_FM8) || mfd_irq_mask) {
 	return;
     }
 #else
     /*
-     * マスクされていれば、何もしない 
+     * マスクされていれば、何もしない
      */
     if (mfd_irq_mask) {
 	return;
@@ -208,12 +208,12 @@ mainetc_fdc(void)
 #endif
 
     /*
-     * メインCPUでIRQ割り込みをかける 
+     * メインCPUでIRQ割り込みをかける
      */
     mfd_irq_flag = TRUE;
 
     /*
-     * 処理 
+     * 処理
      */
     maincpu_irq();
 }
@@ -227,14 +227,14 @@ mainetc_lp(void)
 {
 #if XM7_VER == 1
     /*
-     * マスクされていれば、何もしない 
+     * マスクされていれば、何もしない
      */
     if ((fm_subtype == FMSUB_FM8) || lp_irq_mask) {
 	return;
     }
 #else
     /*
-     * マスクされていれば、何もしない 
+     * マスクされていれば、何もしない
      */
     if (lp_irq_mask) {
 	return;
@@ -242,12 +242,12 @@ mainetc_lp(void)
 #endif
 
     /*
-     * メインCPUでIRQ割り込みをかける 
+     * メインCPUでIRQ割り込みをかける
      */
     lp_irq_flag = TRUE;
 
     /*
-     * 処理 
+     * 処理
      */
     maincpu_irq();
 }
@@ -262,7 +262,7 @@ BOOL FASTCALL mainetc_readb(WORD addr, BYTE * dat)
 
     switch (addr) {
 	/*
-	 * キーボード 上位 
+	 * キーボード 上位
 	 */
     case 0xfd00:
 #if XM7_VER == 1
@@ -291,7 +291,7 @@ BOOL FASTCALL mainetc_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * キーボード 下位 
+	 * キーボード 下位
 	 */
     case 0xfd01:
 #if XM7_VER == 1
@@ -307,7 +307,7 @@ BOOL FASTCALL mainetc_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * IRQ要因識別 
+	 * IRQ要因識別
 	 */
     case 0xfd03:
 #if XM7_VER == 1
@@ -341,7 +341,7 @@ BOOL FASTCALL mainetc_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * BASIC ROM 
+	 * BASIC ROM
 	 */
     case 0xfd0f:
 #if XM7_VER == 1
@@ -373,7 +373,7 @@ mainetc_writeb(WORD addr, BYTE dat)
 {
     switch (addr) {
 	/*
-	 * 割り込みマスク 
+	 * 割り込みマスク
 	 */
     case 0xfd02:
 #if XM7_VER == 1
@@ -422,11 +422,11 @@ mainetc_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * BEEP 
+	 * BEEP
 	 */
     case 0xfd03:
 	/*
-	 * スピーカフラグの処理 
+	 * スピーカフラグの処理
 	 */
 	if (dat & 0x01) {
 	    speaker_flag = TRUE;
@@ -435,37 +435,37 @@ mainetc_writeb(WORD addr, BYTE dat)
 	}
 	if (dat & 0x40) {
 	    /*
-	     * 単発BEEP 
+	     * 単発BEEP
 	     */
 	    beep_flag = TRUE;
 	    schedule_setevent(EVENT_BEEP, 205000, mainetc_beep);
 
 	    /*
-	     * 通知 
+	     * 通知
 	     */
 	    beep_notify();
 	} else {
 	    if (dat & 0x80) {
 		/*
-		 * 連続BEEP 
+		 * 連続BEEP
 		 */
 		beep_flag = TRUE;
 	    } else {
 		/*
-		 * BEEP OFF 
+		 * BEEP OFF
 		 */
 		beep_flag = FALSE;
 	    }
 
 	    /*
-	     * 通知 
+	     * 通知
 	     */
 	    beep_notify();
 	}
 	return TRUE;
 
 	/*
-	 * BASIC ROM 
+	 * BASIC ROM
 	 */
     case 0xfd0f:
 #if XM7_VER == 1
@@ -492,7 +492,7 @@ mainetc_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-mainetc_save(int fileh)
+mainetc_save(SDL_RWops *fileh)
 {
     if (!file_bool_write(fileh, key_irq_flag)) {
 	return FALSE;
@@ -545,14 +545,14 @@ mainetc_save(int fileh)
     }
 
     /*
-     * Ver6,8追加 
+     * Ver6,8追加
      */
     if (!file_bool_write(fileh, thg_irq_flag)) {
 	return FALSE;
     }
 #if XM7_VER >= 3
     /*
-     * Ver8追加 
+     * Ver8追加
      */
     if (!file_bool_write(fileh, dma_irq_flag)) {
 	return FALSE;
@@ -578,10 +578,10 @@ mainetc_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-mainetc_load(int fileh, int ver)
+mainetc_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -638,7 +638,7 @@ mainetc_load(int fileh, int ver)
     }
 
     /*
-     * Ver6追加 
+     * Ver6追加
      */
 #if XM7_VER >= 2
     if (ver >= 600) {
@@ -651,7 +651,7 @@ mainetc_load(int fileh, int ver)
     }
 #if XM7_VER >= 3
     /*
-     * Ver8追加 
+     * Ver8追加
      */
     if (ver >= 800) {
 	if (!file_bool_read(fileh, &dma_irq_flag)) {
@@ -675,13 +675,13 @@ mainetc_load(int fileh, int ver)
 #endif
 
     /*
-     * イベント 
+     * イベント
      */
     schedule_handle(EVENT_MAINTIMER, mainetc_event);
     schedule_handle(EVENT_BEEP, mainetc_beep);
 
     /*
-     * 通知 
+     * 通知
      */
     beep_notify();
 

@@ -137,7 +137,7 @@ subcpu_irq(void)
  *      セーブ
  */
 BOOL            FASTCALL
-subcpu_save(int fileh)
+subcpu_save(SDL_RWops *fileh)
 {
     /*
      * プラットフォームごとのパッキング差を回避するため、分割
@@ -194,7 +194,7 @@ subcpu_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-subcpu_load(int fileh, int ver)
+subcpu_load(SDL_RWops *fileh, int ver)
 {
     /*
      * バージョンチェック

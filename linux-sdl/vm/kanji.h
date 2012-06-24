@@ -18,31 +18,31 @@ extern          "C" {
      */
     BOOL FASTCALL   kanji_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   kanji_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   kanji_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   kanji_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   kanji_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   kanji_save(int fileh);
+    BOOL FASTCALL   kanji_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   kanji_load(int fileh, int ver);
+    BOOL FASTCALL   kanji_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -50,17 +50,17 @@ extern          "C" {
      */
     extern WORD     kanji_addr;
     /*
-     * アドレスレジスタ(共通) 
+     * アドレスレジスタ(共通)
      */
     extern BYTE    *kanji_rom;
     /*
-     * 第１水準ROM 
+     * 第１水準ROM
      */
 #if XM7_VER >= 3
     extern BYTE *kanji_rom_jis78; /* 第１水準ROM(JIS78準拠) */
     extern BYTE    *kanji_rom2;
     /*
-     * 第２水準ROM 
+     * 第２水準ROM
      */
 #endif
 #ifdef __cplusplus

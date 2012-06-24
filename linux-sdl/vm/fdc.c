@@ -4047,7 +4047,7 @@ BOOL fdc_writeb(WORD addr, BYTE dat)
  *      FDC
  *      セーブ
  */
-BOOL fdc_save(int fileh)
+BOOL fdc_save(SDL_RWops *fileh)
 {
     int             i;
 
@@ -4211,7 +4211,7 @@ BOOL fdc_save(int fileh)
  *      FDC
  *      ロード
  */
-BOOL fdc_load(int fileh, int ver)
+BOOL fdc_load(SDL_RWops *fileh, int ver)
 {
     int             i;
     BYTE            ready[FDC_DRIVES];

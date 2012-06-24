@@ -16,7 +16,7 @@
 #include "display.h"
 #include "subctrl.h"
 /*
- * XM7/SDL依存 
+ * XM7/SDL依存
  */
 #ifdef USE_AGAR
 #include "agar_xm7.h"
@@ -74,19 +74,19 @@ BOOL            FASTCALL
 apalet_readb(WORD addr, BYTE * dat)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 2) {
 	return FALSE;
     }
 
     /*
-     * アドレスチェック 
+     * アドレスチェック
      */
     if ((addr >= 0xfd30) && (addr <= 0xfd34)) {
 #if XM7_VER >= 3
 	/*
-	 * FM77AVは読み出しできない 
+	 * FM77AVは読み出しできない
 	 */
 	if (fm7_ver < 3) {
 	    *dat = 0xff;
@@ -94,39 +94,39 @@ apalet_readb(WORD addr, BYTE * dat)
 	}
 
 	/*
-	 * FM77AV40EXは読み出し可能 
+	 * FM77AV40EXは読み出し可能
 	 */
 	switch (addr) {
 	    /*
-	     * パレット番号上位 
+	     * パレット番号上位
 	     */
 	case 0xfd30:
 	    *dat = (BYTE) (0xf0 | (apalet_no >> 8));
 	    return TRUE;
 
 	    /*
-	     * パレット番号下位 
+	     * パレット番号下位
 	     */
 	case 0xfd31:
 	    *dat = (BYTE) (0xf0 | (apalet_no & 0xff));
 	    return TRUE;
 
 	    /*
-	     * Bレベル 
+	     * Bレベル
 	     */
 	case 0xfd32:
 	    *dat = (BYTE) (0xf0 | (apalet_b[apalet_no] & 0x0f));
 	    return TRUE;
 
 	    /*
-	     * Rレベル 
+	     * Rレベル
 	     */
 	case 0xfd33:
 	    *dat = (BYTE) (0xf0 | (apalet_r[apalet_no] & 0x0f));
 	    return TRUE;
 
 	    /*
-	     * Gレベル 
+	     * Gレベル
 	     */
 	case 0xfd34:
 	    *dat = (BYTE) (0xf0 | (apalet_g[apalet_no] & 0x0f));
@@ -134,7 +134,7 @@ apalet_readb(WORD addr, BYTE * dat)
 	}
 #else
 	/*
-	 * FM77AVは読み出しできない 
+	 * FM77AVは読み出しできない
 	 */
 	*dat = 0xff;
 	return TRUE;
@@ -152,7 +152,7 @@ BOOL            FASTCALL
 apalet_writeb(WORD addr, BYTE dat)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 2) {
 	return FALSE;
@@ -160,7 +160,7 @@ apalet_writeb(WORD addr, BYTE dat)
 
     switch (addr) {
 	/*
-	 * パレット番号上位 
+	 * パレット番号上位
 	 */
     case 0xfd30:
 	apalet_no &= (WORD) 0xff;
@@ -168,7 +168,7 @@ apalet_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * パレット番号下位 
+	 * パレット番号下位
 	 */
     case 0xfd31:
 	apalet_no &= (WORD) (0xf00);
@@ -176,7 +176,7 @@ apalet_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * Bレベル 
+	 * Bレベル
 	 */
     case 0xfd32:
 	if (apalet_b[apalet_no] != (dat & 0x0f)) {
@@ -192,7 +192,7 @@ apalet_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * Rレベル 
+	 * Rレベル
 	 */
     case 0xfd33:
 	if (apalet_r[apalet_no] != (dat & 0x0f)) {
@@ -208,7 +208,7 @@ apalet_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * Gレベル 
+	 * Gレベル
 	 */
     case 0xfd34:
 	if (apalet_g[apalet_no] != (dat & 0x0f)) {
@@ -234,7 +234,7 @@ apalet_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-apalet_save(int fileh)
+apalet_save(SDL_RWops *fileh)
 {
     if (!file_word_write(fileh, apalet_no)) {
 	return FALSE;
@@ -257,10 +257,10 @@ apalet_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-apalet_load(int fileh, int ver)
+apalet_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;

@@ -18,31 +18,31 @@ extern          "C" {
      */
     BOOL FASTCALL   multipag_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   multipag_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   multipag_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   multipag_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   multipag_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   multipag_save(int fileh);
+    BOOL FASTCALL   multipag_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   multipag_load(int fileh, int ver);
+    BOOL FASTCALL   multipag_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -50,7 +50,7 @@ extern          "C" {
      */
     extern BYTE     multi_page;
     /*
-     * マルチページ 
+     * マルチページ
      */
 #ifdef __cplusplus
 }

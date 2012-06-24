@@ -563,7 +563,7 @@ system_load(char *filename)
      * ファイルオープン
      */
     fileh = file_open(filename, OPEN_R);
-    if (fileh == -1) {
+    if (fileh == NULL) {
 	return STATELOAD_OPENERR;
     }
 

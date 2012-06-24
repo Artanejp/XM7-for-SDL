@@ -394,7 +394,7 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
 	       if(DrawArea != NULL) {
                     AG_WidgetFocus(DrawArea);
                 }
-	       
+
 #endif /* USE_OPENGL */
             } else {
                 AG_WidgetFocus(AGWIDGET(MenuBar));

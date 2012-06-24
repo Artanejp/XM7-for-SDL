@@ -21,83 +21,83 @@ extern          "C" {
      */
     BOOL FASTCALL   jsubsys_init(void);
     /*
-     * 日本語サブシステム 初期化 
+     * 日本語サブシステム 初期化
      */
     void FASTCALL   jsubsys_cleanup(void);
     /*
-     * 日本語サブシステム クリーンアップ 
+     * 日本語サブシステム クリーンアップ
      */
     void FASTCALL   jsubsys_reset(void);
     /*
-     * 日本語サブシステム リセット 
+     * 日本語サブシステム リセット
      */
     void FASTCALL   jsubcpu_execline(void);
     /*
-     * 日本語サブCPU １行実行 
+     * 日本語サブCPU １行実行
      */
     void FASTCALL   jsubcpu_exec(void);
     /*
-     * 日本語サブCPU 実行 
+     * 日本語サブCPU 実行
      */
     void FASTCALL   jsubcpu_nmi(void);
     /*
-     * 日本語サブCPU NMI割り込み要求 
+     * 日本語サブCPU NMI割り込み要求
      */
     void FASTCALL   jsubcpu_firq(void);
     /*
-     * 日本語サブCPU FIRQ割り込み要求 
+     * 日本語サブCPU FIRQ割り込み要求
      */
     void FASTCALL   jsubcpu_irq(void);
     /*
-     * 日本語サブCPU IRQ割り込み要求 
+     * 日本語サブCPU IRQ割り込み要求
      */
     BYTE FASTCALL   jsubmem_readb(WORD addr);
     /*
-     * 日本語サブメモリ 読み出し 
+     * 日本語サブメモリ 読み出し
      */
     BYTE FASTCALL   jsubmem_readbnio(WORD addr);
     /*
-     * 日本語サブメモリ 読み出し(I/O無) 
+     * 日本語サブメモリ 読み出し(I/O無)
      */
     void FASTCALL   jsubmem_writeb(WORD addr, BYTE dat);
     /*
-     * 日本語サブメモリ 書き込み 
+     * 日本語サブメモリ 書き込み
      */
     BOOL FASTCALL   jsubsys_readb(WORD addr, BYTE * dat);
     /*
-     * 日本語サブI/O 読み出し 
+     * 日本語サブI/O 読み出し
      */
     BOOL FASTCALL   jsubsys_writeb(WORD addr, BYTE dat);
     /*
-     * 日本語サブI/O 書き込み 
+     * 日本語サブI/O 書き込み
      */
     BOOL FASTCALL   jsub_readb(WORD addr, BYTE * dat);
     /*
-     * 日本語サブI/F 読み出し 
+     * 日本語サブI/F 読み出し
      */
     BOOL FASTCALL   jsub_writeb(WORD addr, BYTE dat);
     /*
-     * 日本語サブI/F 書き込み 
+     * 日本語サブI/F 書き込み
      */
-    BOOL FASTCALL   jsubsys_save(int fileh);
+    BOOL FASTCALL   jsubsys_save(SDL_RWops *fileh);
     /*
-     * 日本語サブシステム セーブ 
+     * 日本語サブシステム セーブ
      */
-    BOOL FASTCALL   jsubsys_load(int fileh, int ver);
+    BOOL FASTCALL   jsubsys_load(SDL_RWops *fileh, int ver);
     /*
-     * 日本語サブシステム ロード 
+     * 日本語サブシステム ロード
      */
     extern BYTE FASTCALL jsub_readrcb(void);
     /*
-     * RCBリード 
+     * RCBリード
      */
     extern void FASTCALL jsub_writercb(BYTE);
     /*
-     * RCBライト 
+     * RCBライト
      */
     extern void FASTCALL jsub_clear_address(void);
     /*
-     * RCBアドレスカウンタクリア 
+     * RCBアドレスカウンタクリア
      */
 
     /*
@@ -105,15 +105,15 @@ extern          "C" {
      */
     extern BOOL     jsub_haltflag;
     /*
-     * 日本語サブシステムHALTフラグ 
+     * 日本語サブシステムHALTフラグ
      */
     extern BOOL     jsub_available;
     /*
-     * 日本語サブ使用可能フラグ 
+     * 日本語サブ使用可能フラグ
      */
     extern BOOL     jsub_enable;
     /*
-     * 日本語サブ使用フラグ 
+     * 日本語サブ使用フラグ
      */
 #ifdef __cplusplus
 }

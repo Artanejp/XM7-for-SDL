@@ -1084,7 +1084,7 @@ void FASTCALL mainmem_writeb(WORD addr, BYTE dat)
  *      メインCPUメモリ
  *      セーブ
  */
-BOOL FASTCALL mainmem_save(int fileh)
+BOOL FASTCALL mainmem_save(SDL_RWops *fileh)
 {
     if (!file_write(fileh, mainram_a, 0x8000)) {
 	return FALSE;
@@ -1153,7 +1153,7 @@ BOOL FASTCALL mainmem_save(int fileh)
  *      メインCPUメモリ
  *      ロード
  */
-BOOL FASTCALL mainmem_load(int fileh, int ver)
+BOOL FASTCALL mainmem_load(SDL_RWops *fileh, int ver)
 {
     /*
      * バージョンチェック

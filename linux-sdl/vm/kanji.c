@@ -49,7 +49,7 @@ BOOL            FASTCALL
 kanji_init(void)
 {
     /*
-     * メモリ確保 
+     * メモリ確保
      */
 #if XM7_VER >= 3
    kanji_rom_jis78 = (BYTE *)malloc(0x6000);
@@ -65,7 +65,7 @@ kanji_init(void)
     }
 
     /*
-     * 第1水準 ファイル読み込み 
+     * 第1水準 ファイル読み込み
      */
     if (!file_load(KANJI_ROM, kanji_rom, 0x20000)) {
 #if XM7_VER >= 2
@@ -79,7 +79,7 @@ kanji_init(void)
     }
 #if XM7_VER >= 3
     /*
-     * 第2水準 ファイル読み込み 
+     * 第2水準 ファイル読み込み
      */
     kanji_rom2 = (BYTE *) (kanji_rom + 0x20000);
     if (!file_load(KANJI_ROM2, kanji_rom2, 0x20000)) {
@@ -142,7 +142,7 @@ kanji_readb(WORD addr, BYTE * dat)
 
     switch (addr) {
 	/*
-	 * アドレス(第1・第2共通)上位・下位 
+	 * アドレス(第1・第2共通)上位・下位
 	 */
     case 0xfd20:
     case 0xfd21:
@@ -154,7 +154,7 @@ kanji_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * 第1水準データ 
+	 * 第1水準データ
 	 */
     case 0xfd22:		/* 第1データLEFT */
     case 0xfd23:		/* 第1データRIGHT */
@@ -188,7 +188,7 @@ kanji_readb(WORD addr, BYTE * dat)
 			else if ((fm7_ver <= 1) && (offset < 0x8000)) {
 				/* FM-7モード時の$6000〜$7FFFは未定義領域 */
 				*dat = (BYTE)(addr & 1);
- 
+
 	} else {
   	/* 通常領域 */
 	    *dat = kanji_rom[offset + (addr & 1)];
@@ -197,7 +197,7 @@ kanji_readb(WORD addr, BYTE * dat)
 
 #if XM7_VER >= 3
 	/*
-	 * 第2水準データ 
+	 * 第2水準データ
 	 */
     case 0xfd2e:		/* 第2データLEFT */
     case 0xfd2f:		/* 第2データRIGHT */
@@ -213,8 +213,8 @@ kanji_readb(WORD addr, BYTE * dat)
 
     return FALSE;
 }
-   
-   
+
+
 /*
  *      漢字ROM
  *      １バイト書き込み
@@ -224,7 +224,7 @@ kanji_writeb(WORD addr, BYTE dat)
 {
     switch (addr) {
 	/*
-	 * アドレス(第1・第2共通)上位 
+	 * アドレス(第1・第2共通)上位
 	 */
 #if XM7_VER >= 3
     case 0xfd2c:
@@ -238,7 +238,7 @@ kanji_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * アドレス(第1・第2共通)下位 
+	 * アドレス(第1・第2共通)下位
 	 */
 #if XM7_VER >= 3
     case 0xfd2d:
@@ -252,7 +252,7 @@ kanji_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * データ 
+	 * データ
 	 */
     case 0xfd22:
     case 0xfd23:
@@ -263,7 +263,7 @@ kanji_writeb(WORD addr, BYTE dat)
 
 #if XM7_VER >= 3
 	/*
-	 * 日本語カード バンクセレクト 
+	 * 日本語カード バンクセレクト
 	 */
     case 0xfd2e:
 	if (fm7_ver < 3) {
@@ -271,7 +271,7 @@ kanji_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * bit7:学習RAM 
+	 * bit7:学習RAM
 	 */
 	if (dat & 0x80) {
 	    dicram_en = TRUE;
@@ -280,7 +280,7 @@ kanji_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * bit6:辞書ROMイネーブル 
+	 * bit6:辞書ROMイネーブル
 	 */
 	if (dat & 0x40) {
 	    dicrom_en = TRUE;
@@ -289,7 +289,7 @@ kanji_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * bit0-5:辞書ROMバンク 
+	 * bit0-5:辞書ROMバンク
 	 */
 	dicrom_bank = (BYTE) (dat & 0x3f);
 	return TRUE;
@@ -328,13 +328,13 @@ static void FASTCALL kanji_make_jis78(BYTE *rom)
 	}
 }
 
-  
-   
+
+
 /*
  *      漢字ROM
  *      セーブ
  */
-BOOL FASTCALL kanji_save(int fileh)
+BOOL FASTCALL kanji_save(SDL_RWops *fileh)
 {
     if (!file_word_write(fileh, kanji_addr)) {
 	return FALSE;
@@ -348,10 +348,10 @@ BOOL FASTCALL kanji_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-kanji_load(int fileh, int ver)
+kanji_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;

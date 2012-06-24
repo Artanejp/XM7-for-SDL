@@ -48,14 +48,14 @@ ttlpalet_reset(void)
     int             i;
 
     /*
-     * すべての色を初期化 
+     * すべての色を初期化
      */
     for (i = 0; i < 8; i++) {
 	ttl_palet[i] = (BYTE) (i | 0x08);
     }
 
     /*
-     * 通知 
+     * 通知
      */
     ttlpalet_notify();
 }
@@ -69,7 +69,7 @@ ttlpalet_readb(WORD addr, BYTE * dat)
 {
 #if XM7_VER == 1
     /*
-     * FM-8モードでは無効 
+     * FM-8モードでは無効
      */
     if (fm_subtype == FMSUB_FM8) {
 	return FALSE;
@@ -77,30 +77,30 @@ ttlpalet_readb(WORD addr, BYTE * dat)
 #endif
 
     /*
-     * 範囲チェック、読み出し 
+     * 範囲チェック、読み出し
      */
     if ((addr >= 0xfd38) && (addr <= 0xfd3f)) {
 	ASSERT((WORD) (addr - 0xfd38) <= 7);
 
 	/*
-	 * 上位ニブルは0xF0が入る 
+	 * 上位ニブルは0xF0が入る
 	 */
 #if XM7_VER >= 3
 	if (fm7_ver == 3) {
 	    /*
-	     * FM77AV40EXでは下位3ビットのみ有効 
+	     * FM77AV40EXでは下位3ビットのみ有効
 	     */
 	    *dat =
 		(BYTE) ((ttl_palet[(WORD) (addr - 0xfd38)] & 0x07) | 0xf0);
 	} else {
 	    /*
-	     * FM-7/FM77AV(MB15021)では下位4ビットが有効 
+	     * FM-7/FM77AV(MB15021)では下位4ビットが有効
 	     */
 	    *dat = (BYTE) (ttl_palet[(WORD) (addr - 0xfd38)] | 0xf0);
 	}
 #else
 	/*
-	 * FM-7/FM77AV(MB15021)では下位4ビットが有効 
+	 * FM-7/FM77AV(MB15021)では下位4ビットが有効
 	 */
 	*dat = (BYTE) (ttl_palet[(WORD) (addr - 0xfd38)] | 0xf0);
 #endif
@@ -122,7 +122,7 @@ ttlpalet_writeb(WORD addr, BYTE dat)
 
 #if XM7_VER == 1
     /*
-     * FM-8モードでは無効 
+     * FM-8モードでは無効
      */
     if (fm_subtype == FMSUB_FM8) {
 	return FALSE;
@@ -130,7 +130,7 @@ ttlpalet_writeb(WORD addr, BYTE dat)
 #endif
 
     /*
-     * 範囲チェック、書き込み 
+     * 範囲チェック、書き込み
      */
     if ((addr >= 0xfd38) && (addr <= 0xfd3f)) {
 	no = addr - 0xfd38;
@@ -138,7 +138,7 @@ ttlpalet_writeb(WORD addr, BYTE dat)
 	    ttl_palet[no] = (BYTE) (dat & 0x0f);
 
 	    /*
-	     * 通知 
+	     * 通知
 	     */
 #if XM7_VER >= 2
 #if XM7_VER >= 3
@@ -164,7 +164,7 @@ ttlpalet_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-ttlpalet_save(int fileh)
+ttlpalet_save(SDL_RWops *fileh)
 {
     return file_write(fileh, ttl_palet, 8);
 }
@@ -174,10 +174,10 @@ ttlpalet_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-ttlpalet_load(int fileh, int ver)
+ttlpalet_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;

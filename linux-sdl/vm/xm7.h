@@ -340,11 +340,11 @@ extern          "C" {
     /*
      * イベントハンドラ設定
      */
-    BOOL FASTCALL   schedule_save(int fileh);
+    BOOL FASTCALL   schedule_save(SDL_RWops *fileh);
     /*
      * スケジューラ セーブ
      */
-    BOOL FASTCALL   schedule_load(int fileh, int ver, BOOL old);
+    BOOL FASTCALL   schedule_load(SDL_RWops *fileh, int ver, BOOL old);
     /*
      * スケジューラ ロード
      */
@@ -388,11 +388,11 @@ extern          "C" {
     /*
      * メインCPUメモリ 書き込み
      */
-    BOOL FASTCALL mainmem_save(int fileh);
+    BOOL FASTCALL mainmem_save(SDL_RWops *fileh);
     /*
      * メインCPUメモリ セーブ
      */
-    BOOL FASTCALL   mainmem_load(int fileh, int ver);
+    BOOL FASTCALL   mainmem_load(SDL_RWops *fileh, int ver);
     /*
      * メインCPUメモリ ロード
      */
@@ -468,11 +468,11 @@ extern          "C" {
     /*
      * メインCPU IRQ割り込み要求
      */
-    BOOL FASTCALL   maincpu_save(int fileh);
+    BOOL FASTCALL   maincpu_save(SDL_RWops *fileh);
     /*
      * メインCPU セーブ
      */
-    BOOL FASTCALL   maincpu_load(int fileh, int ver);
+    BOOL FASTCALL   maincpu_load(SDL_RWops *fileh, int ver);
     /*
      * メインCPU ロード
      */
@@ -512,11 +512,11 @@ extern          "C" {
     /*
      * サブCPU IRQ割り込み要求
      */
-    BOOL FASTCALL   subcpu_save(int fileh);
+    BOOL FASTCALL   subcpu_save(SDL_RWops *fileh);
     /*
      * サブCPU セーブ
      */
-    BOOL FASTCALL   subcpu_load(int fileh, int ver);
+    BOOL FASTCALL   subcpu_load(SDL_RWops *fileh, int ver);
     /*
      * サブCPU ロード
      */

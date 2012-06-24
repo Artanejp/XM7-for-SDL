@@ -1096,7 +1096,7 @@ mmr_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-mmr_save(int fileh)
+mmr_save(SDL_RWops *fileh)
 {
     if (!file_bool_write(fileh, mmr_flag)) {
 	return FALSE;
@@ -1161,7 +1161,7 @@ mmr_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-mmr_load(int fileh, int ver)
+mmr_load(SDL_RWops *fileh, int ver)
 {
 #if (XM7_VER >= 3) && !defined(MR2)
     WORD            tmp;

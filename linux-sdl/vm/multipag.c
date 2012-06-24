@@ -59,7 +59,7 @@ multipag_readb(WORD addr, BYTE * dat)
 {
 #if XM7_VER == 1
     /*
-     * FM-8モードでは無効 
+     * FM-8モードでは無効
      */
     if (fm_subtype == FMSUB_FM8) {
 	return FALSE;
@@ -71,7 +71,7 @@ multipag_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * 常にFFが読み出される 
+     * 常にFFが読み出される
      */
     *dat = 0xff;
     return TRUE;
@@ -86,7 +86,7 @@ multipag_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER == 1
     /*
-     * FM-8モードでは無効 
+     * FM-8モードでは無効
      */
     if (fm_subtype == FMSUB_FM8) {
 	return FALSE;
@@ -99,19 +99,19 @@ multipag_writeb(WORD addr, BYTE dat)
 
     if ((BYTE) (multi_page & 0x70) == (BYTE) (dat & 0x70)) {
 	/*
-	 * 表示状態に変更がない場合はデータ記憶だけして帰る 
+	 * 表示状態に変更がない場合はデータ記憶だけして帰る
 	 */
 	multi_page = dat;
 	return TRUE;
     }
 
     /*
-     * データ記憶 
+     * データ記憶
      */
     multi_page = dat;
 
     /*
-     * パレット再設定 
+     * パレット再設定
      */
     if (crt_flag) {
 #if XM7_VER >= 2
@@ -137,7 +137,7 @@ multipag_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-multipag_save(int fileh)
+multipag_save(SDL_RWops *fileh)
 {
     return file_byte_write(fileh, multi_page);
 }
@@ -147,10 +147,10 @@ multipag_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-multipag_load(int fileh, int ver)
+multipag_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;

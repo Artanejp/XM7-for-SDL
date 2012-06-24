@@ -32,7 +32,7 @@
 #include "api_draw.h"
 
 extern void LockVram(void);
-extern void UnLockVram(void);
+extern void UnlockVram(void);
 
 /*
  *      グローバル ワーク
@@ -2090,7 +2090,7 @@ display_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-display_save(int fileh)
+display_save(SDL_RWops *fileh)
 {
     if (!file_bool_write(fileh, crt_flag)) {
 	return FALSE;
@@ -2247,7 +2247,7 @@ display_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-display_load(int fileh, int ver)
+display_load(SDL_RWops *fileh, int ver)
 {
     /*
      * バージョンチェック

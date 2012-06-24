@@ -18,43 +18,43 @@ extern          "C" {
      */
     BOOL FASTCALL   mainetc_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   mainetc_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   mainetc_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   mainetc_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   mainetc_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   mainetc_save(int fileh);
+    BOOL FASTCALL   mainetc_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   mainetc_load(int fileh, int ver);
+    BOOL FASTCALL   mainetc_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
     void FASTCALL   mainetc_fdc(void);
     /*
-     * FDC割り込み 
+     * FDC割り込み
      */
     void FASTCALL   mainetc_lp(void);
     /*
-     * ラインプリンタ割り込み 
+     * ラインプリンタ割り込み
      */
     BOOL FASTCALL   mainetc_beep(void);
     /*
-     * BEEPイベント 
+     * BEEPイベント
      */
 
     /*
@@ -62,85 +62,85 @@ extern          "C" {
      */
     extern BOOL     key_irq_flag;
     /*
-     * キーボード割り込み 要求 
+     * キーボード割り込み 要求
      */
     extern BOOL     key_irq_mask;
     /*
-     * キーボード割り込み マスク 
+     * キーボード割り込み マスク
      */
     extern BOOL     lp_irq_flag;
     /*
-     * プリンタ割り込み 要求 
+     * プリンタ割り込み 要求
      */
     extern BOOL     lp_irq_mask;
     /*
-     * プリンタ割り込み マスク 
+     * プリンタ割り込み マスク
      */
     extern BOOL     timer_irq_flag;
     /*
-     * タイマー割り込み 要求 
+     * タイマー割り込み 要求
      */
     extern BOOL     timer_irq_mask;
     /*
-     * タイマー割り込み マスク 
+     * タイマー割り込み マスク
      */
     extern BOOL     mfd_irq_flag;
     /*
-     * FDC割り込み フラグ 
+     * FDC割り込み フラグ
      */
     extern BOOL     mfd_irq_mask;
     /*
-     * FDC割り込み マスク 
+     * FDC割り込み マスク
      */
     extern BOOL     txrdy_irq_flag;
     /*
-     * TxRDY割り込み フラグ 
+     * TxRDY割り込み フラグ
      */
     extern BOOL     txrdy_irq_mask;
     /*
-     * TxRDY割り込み マスク 
+     * TxRDY割り込み マスク
      */
     extern BOOL     rxrdy_irq_flag;
     /*
-     * RxRDY割り込み フラグ 
+     * RxRDY割り込み フラグ
      */
     extern BOOL     rxrdy_irq_mask;
     /*
-     * RxRDY割り込み マスク 
+     * RxRDY割り込み マスク
      */
     extern BOOL     syndet_irq_flag;
     /*
-     * SYNDET割り込み フラグ 
+     * SYNDET割り込み フラグ
      */
     extern BOOL     syndet_irq_mask;
     /*
-     * SYNDET割り込み マスク 
+     * SYNDET割り込み マスク
      */
     extern BOOL     opn_irq_flag;
     /*
-     * OPN割り込み フラグ 
+     * OPN割り込み フラグ
      */
     extern BOOL     whg_irq_flag;
     /*
-     * WHG割り込み フラグ 
+     * WHG割り込み フラグ
      */
     extern BOOL     thg_irq_flag;
     /*
-     * THG割り込み フラグ 
+     * THG割り込み フラグ
      */
 #if XM7_VER >= 3
     extern BOOL     dma_irq_flag;
     /*
-     * DMA割り込み フラグ 
+     * DMA割り込み フラグ
      */
 #endif
     extern BOOL     beep_flag;
     /*
-     * BEEP有効フラグ 
+     * BEEP有効フラグ
      */
     extern BOOL     speaker_flag;
     /*
-     * スピーカ有効フラグ 
+     * スピーカ有効フラグ
      */
 #if XM7_VER == 1
    extern BOOL banksel_en;
@@ -148,7 +148,7 @@ extern          "C" {
     * バンク切り換えイネーブルフラグ
     */
 #endif
-   
+
 #ifdef __cplusplus
 }
 #endif

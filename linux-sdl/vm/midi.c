@@ -69,10 +69,10 @@ midi_readb(WORD addr, BYTE * dat)
     switch (addr) {
     case 0xfdea:		/* USART DATA */
 	/*
-	 * MIDI INには非対応 
+	 * MIDI INには非対応
 	 */
 	/*
-	 * 読み出し結果を変更 (kaikiraw…のbug) 
+	 * 読み出し結果を変更 (kaikiraw…のbug)
 	 */
 	*dat = 0xff;
 	return TRUE;
@@ -100,7 +100,7 @@ midi_writeb(WORD addr, BYTE dat)
     case 0xfdea:		/* USART DATA */
 	/*
 	 * TxE=1
-	 * かつモードコマンドレジスタ設定値が正常な場合に送信 
+	 * かつモードコマンドレジスタ設定値が正常な場合に送信
 	 */
 	if (midi_txenable && (midi_modereg == 0x4e)) {
 	    midi_notify(dat);
@@ -110,17 +110,17 @@ midi_writeb(WORD addr, BYTE dat)
     case 0xfdeb:		/* USART COMMAND */
 	if (midi_selectmc) {
 	    /*
-	     * モードコマンドレジスタ 
+	     * モードコマンドレジスタ
 	     */
 	    midi_modereg = dat;
 	    midi_selectmc = FALSE;
 	} else {
 	    /*
-	     * コマンドレジスタ 
+	     * コマンドレジスタ
 	     */
 
 	    /*
-	     * TXE 
+	     * TXE
 	     */
 	    if (dat & RSC_TXEN) {
 		midi_txenable = TRUE;
@@ -129,7 +129,7 @@ midi_writeb(WORD addr, BYTE dat)
 	    }
 
 	    /*
-	     * 内部リセット 
+	     * 内部リセット
 	     */
 	    if (dat & RSC_IR) {
 		midi_modereg = 0xff;
@@ -156,7 +156,7 @@ midi_writeb(WORD addr, BYTE dat)
 	if (!file_byte_read(fileh, &midi_modereg)) {
 		return FALSE;
 	}
-	
+
 	return TRUE;
     }
 
@@ -168,7 +168,7 @@ midi_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-midi_save(int fileh)
+midi_save(SDL_RWops *fileh)
 {
    if (!file_bool_write(fileh, midi_txenable)) {
       return FALSE;
@@ -187,10 +187,10 @@ midi_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-midi_load(int fileh, int ver)
+midi_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;

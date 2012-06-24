@@ -20,31 +20,31 @@ extern          "C" {
      */
     BOOL FASTCALL   jcard_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   jcard_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   jcard_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BYTE FASTCALL   jcard_readb(WORD addr);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     void FASTCALL   jcard_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   jcard_save(int fileh);
+    BOOL FASTCALL   jcard_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   jcard_load(int fileh, int ver);
+    BOOL FASTCALL   jcard_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -52,19 +52,19 @@ extern          "C" {
      */
     extern BYTE    *extram_b;
     /*
-     * 拡張RAM $10000 
+     * 拡張RAM $10000
      */
     extern BYTE    *dicrom;
     /*
-     * 辞書ROM $40000 
+     * 辞書ROM $40000
      */
     extern BYTE    *extrom;
     /*
-     * 拡張ROM(EX/SX) $20000 
+     * 拡張ROM(EX/SX) $20000
      */
     extern BYTE    *dicram;
     /*
-     * 学習RAM $2000 
+     * 学習RAM $2000
      */
 
     /*
@@ -72,19 +72,19 @@ extern          "C" {
      */
     extern BYTE     dicrom_bank;
     /*
-     * 辞書ROMバンク番号 
+     * 辞書ROMバンク番号
      */
     extern BOOL     dicrom_en;
     /*
-     * 辞書ROMアクティブ 
+     * 辞書ROMアクティブ
      */
     extern BOOL     dicram_en;
     /*
-     * 学習RAMアクティブ 
+     * 学習RAMアクティブ
      */
     extern BOOL     extrom_sel;
     /*
-     * 辞書ROM/拡張ROM選択フラグ 
+     * 辞書ROM/拡張ROM選択フラグ
      */
 #ifdef __cplusplus
 }

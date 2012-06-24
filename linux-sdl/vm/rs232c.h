@@ -92,9 +92,9 @@ BOOL FASTCALL rs232c_readb(WORD addr, BYTE *dat);
 										/* 1バイト読み出し */
 BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat);
 										/* 1バイト書き込み */
-BOOL FASTCALL rs232c_save(int fileh);
+BOOL FASTCALL rs232c_save(SDL_RWops *fileh);
 										/* セーブ */
-BOOL FASTCALL rs232c_load(int fileh, int ver);
+BOOL FASTCALL rs232c_load(SDL_RWops *fileh, int ver);
 										/* ロード */
 
 /*

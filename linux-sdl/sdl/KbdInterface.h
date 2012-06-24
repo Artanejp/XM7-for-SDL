@@ -17,7 +17,7 @@
 #include "api_mouse.h"
 
 struct XM7KeyCode {
-		Uint32 code;
+		int32_t code;
 		Uint32 mod;
 		Uint8 pushCode;
 };

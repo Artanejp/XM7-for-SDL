@@ -41,7 +41,7 @@ BOOL            FASTCALL
 jcard_init(void)
 {
     /*
-     * ワークエリア初期化 
+     * ワークエリア初期化
      */
     extram_b = NULL;
     dicrom = NULL;
@@ -49,7 +49,7 @@ jcard_init(void)
     extrom = NULL;
 
     /*
-     * 日本語空間 拡張RAM 
+     * 日本語空間 拡張RAM
      */
     extram_b = (BYTE *) malloc(0x10000);
     if (extram_b == NULL) {
@@ -57,7 +57,7 @@ jcard_init(void)
     }
 
     /*
-     * 辞書ROM 
+     * 辞書ROM
      */
     dicrom = (BYTE *) malloc(0x40000);
     if (dicrom == NULL) {
@@ -68,7 +68,7 @@ jcard_init(void)
     }
 
     /*
-     * 学習RAM読み込み 
+     * 学習RAM読み込み
      */
     dicram = (BYTE *) malloc(0x2000);
     if (dicram == NULL) {
@@ -76,13 +76,13 @@ jcard_init(void)
     }
     if (!file_load(DICT_RAM, dicram, 0x2000)) {
 	/*
-	 * ファイルが存在しない。初期化 
+	 * ファイルが存在しない。初期化
 	 */
 	memset(dicram, 0xff, 0x2000);
     }
 
     /*
-     * 拡張ROM 
+     * 拡張ROM
      */
     extrom = (BYTE *) malloc(0x20000);
     if (extrom == NULL) {
@@ -94,7 +94,7 @@ jcard_init(void)
     } else {
 	/*
 	 * バンク56〜63にBASIC
-	 * ROM、隠しブートROMの内容をコピー 
+	 * ROM、隠しブートROMの内容をコピー
 	 */
 	memcpy(&extrom[0x18000], basic_rom, 0x7c00);
 	if (available_mmrboot) {
@@ -124,14 +124,14 @@ jcard_cleanup(void)
     ASSERT(extrom);
 
     /*
-     * 初期化途中で失敗した場合を考慮 
+     * 初期化途中で失敗した場合を考慮
      */
     if (extrom) {
 	free(extrom);
     }
     if (dicram) {
 	/*
-	 * 学習RAMの内容をファイルに書き出す 
+	 * 学習RAMの内容をファイルに書き出す
 	 */
 	file_save(DICT_RAM, dicram, 0x2000);
 	free(dicram);
@@ -167,14 +167,14 @@ jcard_readb(WORD addr)
     DWORD           dicrom_addr;
 
     /*
-     * FM77AV40EXのみサポート 
+     * FM77AV40EXのみサポート
      */
     if (fm7_ver < 3) {
 	return 0xff;
     }
 
     /*
-     * $28000-$29FFF : 学習RAM 
+     * $28000-$29FFF : 学習RAM
      */
     if ((addr >= 0x8000) && (addr < 0xa000)) {
 	if (dicram_en) {
@@ -183,18 +183,18 @@ jcard_readb(WORD addr)
     }
 
     /*
-     * $2E000-$2EFFF : 辞書ROM or 拡張ROM 
+     * $2E000-$2EFFF : 辞書ROM or 拡張ROM
      */
     if ((addr >= 0xe000) && (addr < 0xf000)) {
 	/*
-	 * 辞書ROMが有効か 
+	 * 辞書ROMが有効か
 	 */
 	if (dicrom_en) {
 	    addr &= (WORD) 0x0fff;
 	    dicrom_addr = (dicrom_bank << 12);
 
 	    /*
-	     * 拡張ROMが有効か 
+	     * 拡張ROMが有効か
 	     */
 	    if (extrom_sel) {
 		/* バンク0〜31 : 第1水準漢字(JIS78準拠) */
@@ -204,27 +204,27 @@ jcard_readb(WORD addr)
 		if (dicrom_bank < 8) {
 			return (BYTE)(addr & 1);
 		}
-	       
+
 		if (dicrom_bank < 32) {
 		    return kanji_rom[addr | dicrom_addr];
 		}
 		/*
 		 * バンク32〜43 :
-		 * 拡張サブシステムROM(extsub.rom) 
+		 * 拡張サブシステムROM(extsub.rom)
 		 */
 		/*
-		 * バンク56〜63 : F-BASIC V3.0 ROM ($8000-$EFFF) 
+		 * バンク56〜63 : F-BASIC V3.0 ROM ($8000-$EFFF)
 		 */
 		/*
-		 * バンク63 : DOSモードBOOT ($FE00-$FFDF) 
+		 * バンク63 : DOSモードBOOT ($FE00-$FFDF)
 		 */
 		/*
-		 * バンク63 : 割り込みベクタ領域 ($FFE0-$FFFF) 
+		 * バンク63 : 割り込みベクタ領域 ($FFE0-$FFFF)
 		 */
 		return extrom[addr | (dicrom_addr - 0x20000)];
 	    } else {
 		/*
-		 * 辞書ROM 
+		 * 辞書ROM
 		 */
 		return dicrom[addr | dicrom_addr];
 	    }
@@ -232,7 +232,7 @@ jcard_readb(WORD addr)
     }
 
     /*
-     * 拡張RAM 
+     * 拡張RAM
      */
     return extram_b[addr];
 }
@@ -245,14 +245,14 @@ void            FASTCALL
 jcard_writeb(WORD addr, BYTE dat)
 {
     /*
-     * FM77AV40EXのみサポート 
+     * FM77AV40EXのみサポート
      */
     if (fm7_ver < 3) {
 	return;
     }
 
     /*
-     * $28000-$29FFF : 学習RAM 
+     * $28000-$29FFF : 学習RAM
      */
     if ((addr >= 0x8000) && (addr < 0xa000)) {
 	if (dicram_en) {
@@ -263,7 +263,7 @@ jcard_writeb(WORD addr, BYTE dat)
 
     /*
      * 拡張RAM
-     * (辞書ROMの選択状態に関わらず書き込み可能) 
+     * (辞書ROMの選択状態に関わらず書き込み可能)
      */
     extram_b[addr] = dat;
 }
@@ -273,7 +273,7 @@ jcard_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-jcard_save(int fileh)
+jcard_save(SDL_RWops *fileh)
 {
     if (!file_byte_write(fileh, dicrom_bank)) {
 	return FALSE;
@@ -299,10 +299,10 @@ jcard_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-jcard_load(int fileh, int ver)
+jcard_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 800) {
 	dicrom_bank = 0;

@@ -25,11 +25,11 @@ cpu6809_t       jsubcpu;
 BYTE           *jsubrom;	/* 日本語サブモニタROM */
 BYTE           *jdicrom;	/* 辞書ROM(日本語通信カード) */
 BYTE           *jsub_sram;	/* ワークSRAM */
-BOOL            jsub_available;	/* 日本語サブシステム使用可能フラグ 
+BOOL            jsub_available;	/* 日本語サブシステム使用可能フラグ
 				 */
-BOOL            jsub_enable;	/* 日本語サブシステム使用フラグ 
+BOOL            jsub_enable;	/* 日本語サブシステム使用フラグ
 				 */
-BOOL            jsub_haltflag;	/* 日本語サブシステムHALTフラグ 
+BOOL            jsub_haltflag;	/* 日本語サブシステムHALTフラグ
 				 */
 BYTE            jsub_dicbank;	/* 辞書ROMバンク */
 BYTE            jsub_address;	/* RCBアドレスカウンタ */
@@ -50,7 +50,7 @@ BOOL            FASTCALL
 jsubsys_init(void)
 {
     /*
-     * 一度、全てクリア 
+     * 一度、全てクリア
      */
     jsubrom = NULL;
     jdicrom = NULL;
@@ -60,7 +60,7 @@ jsubsys_init(void)
     jsub_address = 0;
 
     /*
-     * メモリ確保 
+     * メモリ確保
      */
     jsubrom = (BYTE *) malloc(0x4000);
     if (jsubrom == NULL) {
@@ -76,7 +76,7 @@ jsubsys_init(void)
     }
 
     /*
-     * ROMファイル読み込み 
+     * ROMファイル読み込み
      */
     if (!file_load(JSUBSYS_ROM, jsubrom, 0x4000)) {
 	jsub_available = FALSE;
@@ -86,7 +86,7 @@ jsubsys_init(void)
     }
 
     /*
-     * メモリアクセス関数設定 
+     * メモリアクセス関数設定
      */
     jsubcpu.readmem = jsubmem_readb;
     jsubcpu.writemem = jsubmem_writeb;
@@ -191,28 +191,28 @@ BYTE            FASTCALL
 jsubmem_readb(WORD addr)
 {
     /*
-     * 日本語サブモニタROM 
+     * 日本語サブモニタROM
      */
     if (addr >= 0xc000) {
 	return jsubrom[addr - 0xc000];
     }
 
     /*
-     * 辞書ROM 
+     * 辞書ROM
      */
     if ((addr >= 0xa000) && (addr <= 0xafff)) {
 	return jdicrom[(addr & 0xfff) | (jsub_dicbank << 12)];
     }
 
     /*
-     * SRAM 
+     * SRAM
      */
     if ((addr >= 0x8000) && (addr <= 0x9ffe)) {
 	return jsub_sram[addr - 0x8000];
     }
 
     /*
-     * 辞書バンク・同期フラグレジスタ 
+     * 辞書バンク・同期フラグレジスタ
      */
     if (addr == 0x9fff) {
 	return jsub_dicbank;
@@ -229,28 +229,28 @@ BYTE            FASTCALL
 jsubmem_readbnio(WORD addr)
 {
     /*
-     * 日本語サブモニタROM 
+     * 日本語サブモニタROM
      */
     if (addr >= 0xc000) {
 	return jsubrom[addr - 0xc000];
     }
 
     /*
-     * 辞書ROM 
+     * 辞書ROM
      */
     if ((addr >= 0xa000) && (addr <= 0xafff)) {
 	return jdicrom[(addr & 0xfff) | (jsub_dicbank << 12)];
     }
 
     /*
-     * SRAM 
+     * SRAM
      */
     if ((addr >= 0x8000) && (addr <= 0x9ffe)) {
 	return jsub_sram[addr - 0x8000];
     }
 
     /*
-     * 辞書バンク・同期フラグレジスタ 
+     * 辞書バンク・同期フラグレジスタ
      */
     if (addr == 0x9fff) {
 	return (BYTE) jsub_dicbank;
@@ -268,7 +268,7 @@ void            FASTCALL
 jsubmem_writeb(WORD addr, BYTE dat)
 {
     /*
-     * 辞書バンク・同期フラグレジスタ 
+     * 辞書バンク・同期フラグレジスタ
      */
     if (addr == 0x9fff) {
 	if (dat & 0x80) {
@@ -282,7 +282,7 @@ jsubmem_writeb(WORD addr, BYTE dat)
     }
 
     /*
-     * SRAM 
+     * SRAM
      */
     if ((addr >= 0x8000) && (addr <= 0x9ffe)) {
 	jsub_sram[addr - 0x8000] = dat;
@@ -336,7 +336,7 @@ jsub_readb(WORD addr, BYTE * dat)
    }
     switch (addr) {
 	/*
-	 * 日本語サブシステム同期フラグ 
+	 * 日本語サブシステム同期フラグ
 	 */
     case 0xfd28:
 	*dat = 0xff;
@@ -346,7 +346,7 @@ jsub_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * RCBデータ読み込み 
+	 * RCBデータ読み込み
 	 */
     case 0xfd29:
 	if (jsub_haltflag) {
@@ -399,7 +399,7 @@ jsub_writeb(WORD addr, BYTE dat)
 	  jsub_kanji_addr |= dat;
 	  return TRUE;
 	/*
-	 * 日本語サブシステム同期フラグ 
+	 * 日本語サブシステム同期フラグ
 	 */
 	case 0xfd2a:
 	  if (dat & 0x80) {
@@ -412,7 +412,7 @@ jsub_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * RCBデータ書き込み 
+	 * RCBデータ書き込み
 	 */
 	case 0xfd2b:
 	  if (jsub_haltflag) {
@@ -427,10 +427,10 @@ jsub_writeb(WORD addr, BYTE dat)
  *      日本語サブシステム
  *      セーブ
  */
-BOOL FASTCALL jsubsys_save(int fileh)
+BOOL FASTCALL jsubsys_save(SDL_RWops *fileh)
 {
     /*
-     * プラットフォームごとのパッキング差を回避するため、分割 
+     * プラットフォームごとのパッキング差を回避するため、分割
      */
     if (!file_byte_write(fileh, jsubcpu.cc)) {
 	return FALSE;
@@ -500,10 +500,10 @@ BOOL FASTCALL jsubsys_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-jsubsys_load(int fileh, int ver)
+jsubsys_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -511,7 +511,7 @@ jsubsys_load(int fileh, int ver)
 
     if (ver >= 301 && ver <= 499) {
 	/*
-	 * プラットフォームごとのパッキング差を回避するため、分割 
+	 * プラットフォームごとのパッキング差を回避するため、分割
 	 */
 	if (!file_byte_read(fileh, &jsubcpu.cc)) {
 	    return FALSE;
@@ -583,7 +583,7 @@ jsubsys_load(int fileh, int ver)
     }
 
     /*
-     * 日本語サブが使用不可の場合ディセーブル 
+     * 日本語サブが使用不可の場合ディセーブル
      */
     if (!jsub_available) {
 	jsub_enable = FALSE;

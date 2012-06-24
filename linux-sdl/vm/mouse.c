@@ -42,7 +42,7 @@ BOOL            FASTCALL
 mos_init(void)
 {
     /*
-     * マウスキャプチャを停止する 
+     * マウスキャプチャを停止する
      */
     mos_port = 1;
     mos_capture = FALSE;
@@ -67,7 +67,7 @@ void            FASTCALL
 mos_reset(void)
 {
     /*
-     * ワークエリア初期化 
+     * ワークエリア初期化
      */
     mos_x = 0;
     mos_y = 0;
@@ -83,12 +83,12 @@ static BOOL     FASTCALL
 mos_timeout(void)
 {
     /*
-     * タイムアウトイベントを削除 
+     * タイムアウトイベントを削除
      */
     schedule_delevent(EVENT_MOUSE);
 
     /*
-     * ストローブ信号・フェーズカウンタをリセット 
+     * ストローブ信号・フェーズカウンタをリセット
      */
     mos_phase = 0;
     mos_strobe = FALSE;
@@ -104,28 +104,28 @@ void            FASTCALL
 mos_strobe_signal(BOOL strb)
 {
     /*
-     * ストローブ信号の状態が変化したかチェック 
+     * ストローブ信号の状態が変化したかチェック
      */
     if (strb != mos_strobe) {
 	/*
-	 * ストローブ信号の状態を保存 
+	 * ストローブ信号の状態を保存
 	 */
 	mos_strobe = strb;
 
 	if (mos_phase == 0) {
 	    /*
-	     * フェーズ0の時に移動距離を取り込む 
+	     * フェーズ0の時に移動距離を取り込む
 	     */
 	    mospos_request(&mos_x, &mos_y);
 
 	    /*
-	     * タイムアウトイベントの登録 
+	     * タイムアウトイベントの登録
 	     */
 	    schedule_setevent(EVENT_MOUSE, 2000, mos_timeout);
 	}
 
 	/*
-	 * フェーズカウンタを更新 
+	 * フェーズカウンタを更新
 	 */
 	mos_phase = (BYTE) ((mos_phase + 1) & 0x03);
     }
@@ -141,7 +141,7 @@ mos_readdata(BYTE trigger)
     BYTE            ret;
 
     /*
-     * フェーズカウンタに従ってデータを作成 
+     * フェーズカウンタに従ってデータを作成
      */
     switch (mos_phase) {
     case 1:			/* Ｘ上位ニブル */
@@ -159,7 +159,7 @@ mos_readdata(BYTE trigger)
     }
 
     /*
-     * ボタン押下状態データを合成 
+     * ボタン押下状態データを合成
      */
     ret |= (BYTE) ((mosbtn_request() & (trigger << 4)) & 0x30);
 
@@ -171,7 +171,7 @@ mos_readdata(BYTE trigger)
  *      セーブ
  */
 BOOL            FASTCALL
-mos_save(int fileh)
+mos_save(SDL_RWops *fileh)
 {
     if (!file_byte_write(fileh, mos_x)) {
 	return FALSE;
@@ -194,25 +194,25 @@ mos_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-mos_load(int fileh, int ver)
+mos_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
     }
 
     /*
-     * いったんリセットする 
+     * いったんリセットする
      */
     mos_reset();
 
 #if XM7_VER >= 3
     if ((ver >= 900) || ((ver >= 700) && (ver <= 799))) {
-#elif XM7_VER >= 2    
+#elif XM7_VER >= 2
     if (ver >= 700) {
-#else 
+#else
     if ((ver >= 302) && (ver <= 399)) {
 #endif
 	if (!file_byte_read(fileh, &mos_x)) {
@@ -230,7 +230,7 @@ mos_load(int fileh, int ver)
     }
 
     /*
-     * イベント 
+     * イベント
      */
     schedule_handle(EVENT_MOUSE, mos_timeout);
 

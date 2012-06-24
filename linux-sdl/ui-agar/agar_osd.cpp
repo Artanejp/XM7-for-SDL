@@ -199,11 +199,11 @@ static void InitMessages(AG_Widget *parent)
     col.r = 0;
     col.g = 0;
     if(parent == NULL) return;
-//    p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
-//    AG_FillRect(p, NULL, col);
+    p = AG_SurfaceNew(AG_SURFACE_PACKED, nCaptionWidth, nCaptionHeight, &fmt, AG_SRCALPHA);
+    AG_FillRect(p, NULL, col);
     //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
 //    if(pwCaption == NULL) pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
-     pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
+     pwCaption = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE, pCaption);
      AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
 
     for(i = 1; i >= 0 ; i--) {
@@ -211,7 +211,7 @@ static void InitMessages(AG_Widget *parent)
             pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
            AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
     }
-//    AG_SurfaceFree(p);
+    AG_SurfaceFree(p);
 }
 
 
@@ -573,9 +573,9 @@ static BOOL UpdateMainCaption(BOOL override)
 	   rect.y = 0;
 	   rect.h = nCaptionHeight;
 	   rect.w = nCaptionWidth;
-//	   if((pCaption != NULL) && (rect.h > 10) && (rect.w > 10)) {
+	   if((pCaption != NULL) && (rect.h > 10) && (rect.w > 10)) {
 	      AG_SurfaceBlit(tmps, &rect, pCaption, 2, 0);
-//	   }
+	   }
 
 	   AG_SurfaceFree(tmps);
 	   AG_PopTextState();
@@ -589,8 +589,8 @@ static void DrawMainCaption(BOOL override)
    if( !UpdateMainCaption(override)) return;
    if(pwCaption != NULL) {
 	AG_ObjectLock(pwCaption);
-	      AG_PixmapSetSurface(pwCaption, nwCaption);
-	      AG_PixmapUpdateSurface(pwCaption, nwCaption);
+//	      AG_PixmapSetSurface(pwCaption, nwCaption);
+//	      AG_PixmapUpdateSurface(pwCaption, nwCaption);
 	      AG_Redraw(pwCaption);
 	AG_ObjectUnlock(pwCaption);
 	}
@@ -802,10 +802,10 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
        CreateCaption(parent, FALSE);
        UpdateMainCaption(TRUE);
        {
-	  pwCaption = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pCaption);
+	  pwCaption = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE,  pCaption);
 	  nwCaption = 0;
 	  AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
-	  AG_PixmapUpdateSurface(pwCaption, nwCaption);
+//	  AG_PixmapUpdateSurface(pwCaption, nwCaption);
 	  AG_PixmapSetSurface(pwCaption, nwCaption);
 	  AG_WidgetShow(pwCaption);
 	  AG_Redraw(pwCaption);

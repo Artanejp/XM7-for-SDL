@@ -25,43 +25,43 @@ extern          "C" {
      */
     BOOL FASTCALL   keyboard_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   keyboard_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   keyboard_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   keyboard_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   keyboard_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   keyboard_save(int fileh);
+    BOOL FASTCALL   keyboard_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   keyboard_load(int fileh, int ver);
+    BOOL FASTCALL   keyboard_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
     void FASTCALL   keyboard_repeat(void);
     /*
-     * キーリピートタイマ変更 
+     * キーリピートタイマ変更
      */
     void FASTCALL   keyboard_make(BYTE dat);
     /*
-     * キー押下 
+     * キー押下
      */
     void FASTCALL   keyboard_break(BYTE dat);
     /*
-     * キー離した 
+     * キー離した
      */
 
     /*
@@ -69,81 +69,81 @@ extern          "C" {
      */
     extern BOOL     caps_flag;
     /*
-     * CAPS フラグ 
+     * CAPS フラグ
      */
     extern BOOL     kana_flag;
     /*
-     * カナ フラグ 
+     * カナ フラグ
      */
     extern BOOL     ins_flag;
     /*
-     * INS フラグ 
+     * INS フラグ
      */
     extern BOOL     shift_flag;
     /*
-     * SHIFTキーフラグ 
+     * SHIFTキーフラグ
      */
     extern BOOL     lshift_flag;
     /*
-     * 左SHIFTキーフラグ 
+     * 左SHIFTキーフラグ
      */
     extern BOOL     rshift_flag;
     /*
-     * 右SHIFTキーフラグ 
+     * 右SHIFTキーフラグ
      */
     extern BOOL     ctrl_flag;
     /*
-     * CTRLキーフラグ 
+     * CTRLキーフラグ
      */
     extern BOOL     graph_flag;
     /*
-     * GRAPHキーフラグ 
+     * GRAPHキーフラグ
      */
     extern BOOL     break_flag;
     /*
-     * Breakキーフラグ 
+     * Breakキーフラグ
      */
     extern BYTE     key_scan;
     /*
-     * キーコード(物理, Make/Break兼用) 
+     * キーコード(物理, Make/Break兼用)
      */
     extern WORD     key_fm7;
     /*
-     * キーコード(FM-7互換) 
+     * キーコード(FM-7互換)
      */
     extern BOOL     key_repeat_flag;
     /*
-     * キーリピート有効フラグ 
+     * キーリピート有効フラグ
      */
 
     extern BYTE     key_format;
     /*
-     * コードフォーマット 
+     * コードフォーマット
      */
     extern DWORD    key_repeat_time1;
     /*
-     * キーリピート開始時間 
+     * キーリピート開始時間
      */
     extern DWORD    key_repeat_time2;
     /*
-     * キーリピート間隔 
+     * キーリピート間隔
      */
 
     extern BYTE     simpose_mode;
     /*
-     * スーパーインポーズ モード 
+     * スーパーインポーズ モード
      */
     extern BOOL     simpose_half;
     /*
-     * スーパーインポーズ ハーフトーン 
+     * スーパーインポーズ ハーフトーン
      */
     extern BOOL     digitize_enable;
     /*
-     * ディジタイズ有効・無効フラグ 
+     * ディジタイズ有効・無効フラグ
      */
     extern BOOL     digitize_keywait;
     /*
-     * ディジタイズキー待ち 
+     * ディジタイズキー待ち
      */
 #ifdef __cplusplus
 }

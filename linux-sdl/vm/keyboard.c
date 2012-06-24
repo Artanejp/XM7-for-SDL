@@ -15,7 +15,7 @@
 #include "rtc.h"
 #include "device.h"
 /*
- * XM7/SDL依存 
+ * XM7/SDL依存
  */
 #ifdef USE_AGAR
 #include "agar_xm7.h"
@@ -39,7 +39,7 @@ BOOL            ctrl_flag;	/* CTRLキーフラグ */
 BOOL            graph_flag;	/* GRAPHキーフラグ */
 BOOL            break_flag;	/* Breakキーフラグ */
 
-BYTE            key_scan;	/* キーコード(物理コード、Make/Break兼用) 
+BYTE            key_scan;	/* キーコード(物理コード、Make/Break兼用)
 				 */
 WORD            key_fm7;	/* キーコード(FM-7互換コード) */
 BOOL            key_repeat_flag;	/* キーリピートフラグ */
@@ -53,7 +53,7 @@ BYTE            simpose_mode;	/* スーパーインポーズ モード */
 BOOL            simpose_half;	/* スーパーインポーズ
 				 * ハーフトーン */
 
-BOOL            digitize_enable;	/* ディジタイズ有効・無効フラグ 
+BOOL            digitize_enable;	/* ディジタイズ有効・無効フラグ
 					 */
 BOOL            digitize_keywait;	/* ディジタイズキー待ち */
 #endif
@@ -63,19 +63,19 @@ BOOL            digitize_keywait;	/* ディジタイズキー待ち */
  */
 BYTE            key_repeat_code;	/* キーリピートコード */
 #if XM7_VER >= 2
-BYTE            key_trans_send[16];	/* キーエンコーダ行き送信バッファ 
+BYTE            key_trans_send[16];	/* キーエンコーダ行き送信バッファ
 					 */
-BYTE            key_trans_sendc;	/* キーエンコーダ行き送信カウンタ 
+BYTE            key_trans_sendc;	/* キーエンコーダ行き送信カウンタ
 					 */
-BYTE            key_trans_recv[16];	/* キーエンコーダから受信バッファ 
+BYTE            key_trans_recv[16];	/* キーエンコーダから受信バッファ
 					 */
-BYTE            key_trans_recvc;	/* キーエンコーダから受信カウンタ 
+BYTE            key_trans_recvc;	/* キーエンコーダから受信カウンタ
 					 */
-BYTE            key_trans_pos;	/* キーエンコータからのデータ位置 
+BYTE            key_trans_pos;	/* キーエンコータからのデータ位置
 				 */
-BOOL            key_trans_rxrdy;	/* キーエンコーダからの受信データあり 
+BOOL            key_trans_rxrdy;	/* キーエンコーダからの受信データあり
 					 */
-BYTE            simpose_mode_bak;	/* ディジタイズ終了後の画面モード復帰用 
+BYTE            simpose_mode_bak;	/* ディジタイズ終了後の画面モード復帰用
 					 */
 static BOOL     key_trans_ack;	/* キーエンコーダ ACK信号 */
 #endif
@@ -1056,7 +1056,7 @@ keyboard_init(void)
 {
 #if XM7_VER >= 2
     /*
-     * ディジタイズカード装着 
+     * ディジタイズカード装着
      */
     digitize_enable = TRUE;
 #endif
@@ -1081,7 +1081,7 @@ void            FASTCALL
 keyboard_reset(void)
 {
     /*
-     * キー別のフラグ 
+     * キー別のフラグ
      */
     caps_flag = FALSE;
     kana_flag = FALSE;
@@ -1095,13 +1095,13 @@ keyboard_reset(void)
     break_flag = FALSE;
 
     /*
-     * リセット時はkey_fm7 != 0にする(デスフォース対策) 
+     * リセット時はkey_fm7 != 0にする(デスフォース対策)
      */
     key_scan = 0;
     key_fm7 = 0xffff;
 
     /*
-     * キーボードパラメータ 
+     * キーボードパラメータ
      */
     key_format = KEY_FORMAT_9BIT;
     key_repeat_time1 = 700000;
@@ -1112,7 +1112,7 @@ keyboard_reset(void)
 
 #if XM7_VER >= 2
     /*
-     * キーボードエンコーダ 
+     * キーボードエンコーダ
      */
     key_trans_sendc = 0;
     key_trans_recvc = 0;
@@ -1121,13 +1121,13 @@ keyboard_reset(void)
     key_trans_ack = TRUE;
 
     /*
-     * スーパーインポーズ 
+     * スーパーインポーズ
      */
     simpose_mode = 0;
     simpose_half = FALSE;
 
     /*
-     * ディジタイズ 
+     * ディジタイズ
      */
     digitize_keywait = FALSE;
     simpose_mode_bak = 0;
@@ -1144,11 +1144,11 @@ static void     FASTCALL
 key_set_format(void)
 {
     /*
-     * パラメータチェック 
+     * パラメータチェック
      */
     if (key_trans_send[1] <= KEY_FORMAT_SCAN) {
 	/*
-	 * 設定 
+	 * 設定
 	 */
 	key_format = key_trans_send[1];
 	caps_flag = FALSE;
@@ -1160,7 +1160,7 @@ key_set_format(void)
 	key_repeat_time2 = 70000;
 
 	/*
-	 * シフト解除 (F-BASIC V3.3/V3.4 日本語モード) 
+	 * シフト解除 (F-BASIC V3.3/V3.4 日本語モード)
 	 */
 	shift_flag = FALSE;
 	lshift_flag = FALSE;
@@ -1170,7 +1170,7 @@ key_set_format(void)
     }
 
     /*
-     * 終了 
+     * 終了
      */
     key_trans_sendc = 0;
     key_trans_recvc = 0;
@@ -1185,7 +1185,7 @@ static void     FASTCALL
 key_get_format(void)
 {
     /*
-     * レスポンス設定 
+     * レスポンス設定
      */
     key_trans_recv[0] = key_format;
 
@@ -1203,28 +1203,28 @@ key_set_led(void)
 {
     switch (key_trans_send[1]) {
 	/*
-	 * CAP ON 
+	 * CAP ON
 	 */
     case 0:
 	caps_flag = TRUE;
 	break;
 
 	/*
-	 * CAP OFF 
+	 * CAP OFF
 	 */
     case 1:
 	caps_flag = FALSE;
 	break;
 
 	/*
-	 * かな ON 
+	 * かな ON
 	 */
     case 2:
 	kana_flag = TRUE;
 	break;
 
 	/*
-	 * かな OFF 
+	 * かな OFF
 	 */
     case 3:
 	kana_flag = FALSE;
@@ -1232,7 +1232,7 @@ key_set_led(void)
     }
 
     /*
-     * 終了 
+     * 終了
      */
     key_trans_sendc = 0;
     key_trans_recvc = 0;
@@ -1247,7 +1247,7 @@ static void     FASTCALL
 key_get_led(void)
 {
     /*
-     * レスポンス設定 
+     * レスポンス設定
      */
     key_trans_recv[0] = 0;
     if (caps_flag) {
@@ -1271,7 +1271,7 @@ key_set_repeat(void)
 {
     switch (key_trans_send[1]) {
 	/*
-	 * リピートON 
+	 * リピートON
 	 */
     case 0:
 	key_repeat_flag = TRUE;
@@ -1279,7 +1279,7 @@ key_set_repeat(void)
 	break;
 
 	/*
-	 * リピートOFF 
+	 * リピートOFF
 	 */
     case 1:
 	key_repeat_flag = FALSE;
@@ -1287,7 +1287,7 @@ key_set_repeat(void)
     }
 
     /*
-     * 終了 
+     * 終了
      */
     key_trans_sendc = 0;
     key_trans_recvc = 0;
@@ -1303,13 +1303,13 @@ key_set_time(void)
 {
     if ((key_trans_send[1] == 0) || (key_trans_send[2] == 0)) {
 	/*
-	 * どちらかが0なら、デフォルトに設定 
+	 * どちらかが0なら、デフォルトに設定
 	 */
 	key_repeat_time1 = 700000;
 	key_repeat_time2 = 70000;
     } else {
 	/*
-	 * パラメータ×10msに設定 
+	 * パラメータ×10msに設定
 	 */
 	key_repeat_time1 = (DWORD) key_trans_send[1];
 	key_repeat_time1 *= 10000;
@@ -1318,7 +1318,7 @@ key_set_time(void)
     }
 
     /*
-     * 終了 
+     * 終了
      */
     key_trans_sendc = 0;
     key_trans_recvc = 0;
@@ -1333,12 +1333,12 @@ static void     FASTCALL
 key_set_rtc(void)
 {
     /*
-     * 時計セット 
+     * 時計セット
      */
     rtc_set(&key_trans_send[2]);
 
     /*
-     * 終了 
+     * 終了
      */
     key_trans_sendc = 0;
     key_trans_recvc = 0;
@@ -1353,7 +1353,7 @@ static void     FASTCALL
 key_get_rtc(void)
 {
     /*
-     * 時計取得 
+     * 時計取得
      */
     rtc_get(&key_trans_recv[0]);
 
@@ -1370,7 +1370,7 @@ static void     FASTCALL
 key_capture(void)
 {
     /*
-     * ディジタイズon 
+     * ディジタイズon
      */
     digitize_keywait = TRUE;
     simpose_mode_bak = simpose_mode;
@@ -1389,35 +1389,35 @@ static void     FASTCALL
 key_set_scrmode(void)
 {
     /*
-     * パラメータを受け取る 
+     * パラメータを受け取る
      */
     switch (key_trans_send[1]) {
 	/*
-	 * パソコンモード 
+	 * パソコンモード
 	 */
     case 0x00:
 	simpose_mode = 0;
 	break;
 	/*
-	 * スーパーインポーズモード 
+	 * スーパーインポーズモード
 	 */
     case 0x01:
 	simpose_mode = 1;
 	break;
 	/*
-	 * テレビモード 
+	 * テレビモード
 	 */
     case 0x02:
 	simpose_mode = 2;
 	break;
 	/*
-	 * ディジタイズモード 
+	 * ディジタイズモード
 	 */
     case 0x03:
 	simpose_mode = 3;
 	break;
 	/*
-	 * それ以外は、未定義パラメータとしてスキップ 
+	 * それ以外は、未定義パラメータとしてスキップ
 	 */
     default:
 	break;
@@ -1436,7 +1436,7 @@ static void     FASTCALL
 key_get_scrmode(void)
 {
     /*
-     * レスポンス設定 
+     * レスポンス設定
      */
     if (simpose_half) {
 	key_trans_recv[0] = 0x01;
@@ -1457,23 +1457,23 @@ static void     FASTCALL
 key_set_scrtone(void)
 {
     /*
-     * パラメータを受け取る 
+     * パラメータを受け取る
      */
     switch (key_trans_send[1]) {
 	/*
-	 * 画面高輝度モード 
+	 * 画面高輝度モード
 	 */
     case 0x00:
 	simpose_half = FALSE;
 	break;
 	/*
-	 * ハーフトーンモード 
+	 * ハーフトーンモード
 	 */
     case 0x01:
 	simpose_half = TRUE;
 	break;
 	/*
-	 * それ以外は、未定義パラメータとしてスキップ 
+	 * それ以外は、未定義パラメータとしてスキップ
 	 */
     default:
 	break;
@@ -1511,7 +1511,7 @@ keyboard_readb(WORD addr, BYTE * dat)
 
     switch (addr) {
 	/*
-	 * キーコード上位 
+	 * キーコード上位
 	 */
     case 0xd400:
 	if (key_fm7 & 0x0100) {
@@ -1522,12 +1522,12 @@ keyboard_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * キーコード下位 
+	 * キーコード下位
 	 */
     case 0xd401:
 	*dat = (BYTE) (key_fm7 & 0xff);
 	/*
-	 * 割り込みoff 
+	 * 割り込みoff
 	 */
 	key_irq_flag = FALSE;
 	maincpu_irq();
@@ -1535,7 +1535,7 @@ keyboard_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * INS LED ON 
+	 * INS LED ON
 	 */
     case 0xd40d:
 	ins_flag = TRUE;
@@ -1543,13 +1543,13 @@ keyboard_readb(WORD addr, BYTE * dat)
 
 #if XM7_VER >= 2
 	/*
-	 * キーエンコーダ データ受信 
+	 * キーエンコーダ データ受信
 	 */
     case 0xd431:
 	if (fm7_ver >= 2) {
 	    *dat = key_trans_recv[key_trans_pos];
 	    /*
-	     * バッファ内実データの範囲内で、進める 
+	     * バッファ内実データの範囲内で、進める
 	     */
 	    if (key_trans_pos < key_trans_recvc) {
 		key_trans_pos++;
@@ -1561,7 +1561,7 @@ keyboard_readb(WORD addr, BYTE * dat)
 	return TRUE;
 
 	/*
-	 * キーエンコーダ ステータス 
+	 * キーエンコーダ ステータス
 	 */
     case 0xd432:
 	if (fm7_ver >= 2) {
@@ -1572,7 +1572,7 @@ keyboard_readb(WORD addr, BYTE * dat)
 	    }
 	    /*
 	     * ディジタイズキー待ちの場合はACK
-	     * SENDを送信しない 
+	     * SENDを送信しない
 	     */
 	    if (!key_trans_ack || digitize_keywait) {
 		tmp &= 0xfe;
@@ -1580,7 +1580,7 @@ keyboard_readb(WORD addr, BYTE * dat)
 	    *dat = tmp;
 
 	    /*
-	     * データがあれば、RXRDY 
+	     * データがあれば、RXRDY
 	     */
 	    if (key_trans_pos < key_trans_recvc) {
 		key_trans_rxrdy = TRUE;
@@ -1604,19 +1604,19 @@ keyboard_writeb(WORD addr, BYTE dat)
 {
     switch (addr) {
 	/*
-	 * キーコード上位 
+	 * キーコード上位
 	 */
     case 0xd400:
 	return TRUE;
 
 	/*
-	 * キーコード下位 
+	 * キーコード下位
 	 */
     case 0xd401:
 	return TRUE;
 
 	/*
-	 * INS LED OFF 
+	 * INS LED OFF
 	 */
     case 0xd40d:
 	ins_flag = FALSE;
@@ -1624,30 +1624,30 @@ keyboard_writeb(WORD addr, BYTE dat)
 
 #if XM7_VER >= 2
 	/*
-	 * キーエンコーダ データ送信 
+	 * キーエンコーダ データ送信
 	 */
     case 0xd431:
 	if (fm7_ver >= 2) {
 	    /*
-	     * バッファ越えのチェック 
+	     * バッファ越えのチェック
 	     */
 	    if (key_trans_sendc >= 16) {
 		key_trans_sendc = 0;
 		break;
 	    }
 	    /*
-	     * データセット、終了チェック 
+	     * データセット、終了チェック
 	     */
 	    key_trans_send[key_trans_sendc++] = dat;
 	    switch (key_trans_send[0]) {
 		/*
-		 * コード系切り替え 
+		 * コード系切り替え
 		 */
 	    case 0:
 		if (key_trans_sendc >= 2) {
 		    key_set_format();
 		    /*
-		     * Make状態であれば再度Makeコード再発行 
+		     * Make状態であれば再度Makeコード再発行
 		     */
 		    if (!(key_scan & 0x80) && key_scan) {
 			keyboard_make(key_scan);
@@ -1655,13 +1655,13 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * コード系読み取り 
+		 * コード系読み取り
 		 */
 	    case 1:
 		key_get_format();
 		break;
 		/*
-		 * LED設定 
+		 * LED設定
 		 */
 	    case 2:
 		if (key_trans_sendc >= 2) {
@@ -1669,7 +1669,7 @@ keyboard_writeb(WORD addr, BYTE dat)
 
 		    if (key_format != KEY_FORMAT_SCAN) {
 			/*
-			 * Make状態であれば再度Makeコード発行 
+			 * Make状態であれば再度Makeコード発行
 			 */
 			if (!(key_scan & 0x80) && key_scan) {
 			    keyboard_make(key_scan);
@@ -1678,13 +1678,13 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * LED取得 
+		 * LED取得
 		 */
 	    case 3:
 		key_get_led();
 		break;
 		/*
-		 * リピート設定 
+		 * リピート設定
 		 */
 	    case 4:
 		if (key_trans_sendc >= 2) {
@@ -1692,7 +1692,7 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * リピート時間設定 
+		 * リピート時間設定
 		 */
 	    case 5:
 		if (key_trans_sendc >= 3) {
@@ -1700,7 +1700,7 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * RTC送受信 
+		 * RTC送受信
 		 */
 	    case 0x80:
 		if (key_trans_sendc >= 2) {
@@ -1715,13 +1715,13 @@ keyboard_writeb(WORD addr, BYTE dat)
 			break;
 		    }
 		    /*
-		     * 未定義パラメータ 
+		     * 未定義パラメータ
 		     */
 		    key_trans_sendc = 0;
 		}
 		break;
 		/*
-		 * 画面ディジタイズ 
+		 * 画面ディジタイズ
 		 */
 	    case 0x81:
 		if (key_trans_sendc >= 2) {
@@ -1729,7 +1729,7 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * 画面モード制御 
+		 * 画面モード制御
 		 */
 	    case 0x82:
 		if (key_trans_sendc >= 2) {
@@ -1737,13 +1737,13 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * 画面モード取得 
+		 * 画面モード取得
 		 */
 	    case 0x83:
 		key_get_scrmode();
 		break;
 		/*
-		 * テレビ画面輝度制御 
+		 * テレビ画面輝度制御
 		 */
 	    case 0x84:
 		if (key_trans_sendc >= 2) {
@@ -1751,14 +1751,14 @@ keyboard_writeb(WORD addr, BYTE dat)
 		}
 		break;
 		/*
-		 * それ以外はNOP 
+		 * それ以外はNOP
 		 */
 	    default:
 		key_trans_sendc = 0;
 	    }
 
 	    /*
-	     * 5μs経過後(適当)にACK送信 
+	     * 5μs経過後(適当)にACK送信
 	     */
 	    key_trans_ack = FALSE;
 	    schedule_setevent(EVENT_KEYENC_ACK, 5, key_send_ack);
@@ -1781,7 +1781,7 @@ keyboard_update_shift(BYTE dat)
 {
     switch (dat) {
 	/*
-	 * 左SHIFT 押した 
+	 * 左SHIFT 押した
 	 */
     case 0x53:
 	shift_flag = TRUE;
@@ -1789,7 +1789,7 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * 左SHIFT 離した 
+	 * 左SHIFT 離した
 	 */
     case 0x53 + 0x80:
 	lshift_flag = FALSE;
@@ -1799,7 +1799,7 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * 右SHIFT 押した 
+	 * 右SHIFT 押した
 	 */
     case 0x54:
 	shift_flag = TRUE;
@@ -1807,7 +1807,7 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * 右SHIFT 離した 
+	 * 右SHIFT 離した
 	 */
     case 0x54 + 0x80:
 	rshift_flag = FALSE;
@@ -1817,35 +1817,35 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * CTRL 押した 
+	 * CTRL 押した
 	 */
     case 0x52:
 	ctrl_flag = TRUE;
 	return TRUE;
 
 	/*
-	 * CTRL 離した 
+	 * CTRL 離した
 	 */
     case 0x52 + 0x80:
 	ctrl_flag = FALSE;
 	return TRUE;
 
 	/*
-	 * GRAPH 押した 
+	 * GRAPH 押した
 	 */
     case 0x56:
 	graph_flag = TRUE;
 	return TRUE;
 
 	/*
-	 * GRAPH 離した 
+	 * GRAPH 離した
 	 */
     case 0x56 + 0x80:
 	graph_flag = FALSE;
 	return TRUE;
 
 	/*
-	 * CAP 押した 
+	 * CAP 押した
 	 */
     case 0x55:
 	if (key_format != KEY_FORMAT_SCAN) {
@@ -1854,7 +1854,7 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * カナ 押した 
+	 * カナ 押した
 	 */
     case 0x5a:
 	if (key_format != KEY_FORMAT_SCAN) {
@@ -1863,7 +1863,7 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * BREAK 押した 
+	 * BREAK 押した
 	 */
     case 0x5c:
 	break_flag = TRUE;
@@ -1871,7 +1871,7 @@ keyboard_update_shift(BYTE dat)
 	return TRUE;
 
 	/*
-	 * BREAK 離した 
+	 * BREAK 離した
 	 */
     case 0x5c + 0x80:
 	break_flag = FALSE;
@@ -1892,19 +1892,19 @@ keyboard_to_fm7(BYTE dat)
     int             i;
 
     /*
-     * シフト状態フラグを更新 
+     * シフト状態フラグを更新
      */
     if (keyboard_update_shift(dat)) {
 	return 0xffff;
     }
 
     /*
-     * Makeコード化 
+     * Makeコード化
      */
     dat &= 0x7f;
 
     /*
-     * CTRLモード 
+     * CTRLモード
      */
     if (ctrl_flag) {
 	for (i = 0; i < (sizeof(ctrl_key_table) / 3); i++) {
@@ -1920,7 +1920,7 @@ keyboard_to_fm7(BYTE dat)
     }
 
     /*
-     * GRAPHモード 
+     * GRAPHモード
      */
     if (graph_flag) {
 	for (i = 0; i < (sizeof(graph_key_table) / 3); i++) {
@@ -1936,7 +1936,7 @@ keyboard_to_fm7(BYTE dat)
     }
 
     /*
-     * かなモード 
+     * かなモード
      */
     if (kana_flag) {
 	for (i = 0; i < (sizeof(kana_key_table) / 3); i++) {
@@ -1952,7 +1952,7 @@ keyboard_to_fm7(BYTE dat)
     }
 
     /*
-     * CAPモード 
+     * CAPモード
      */
     if (caps_flag) {
 	for (i = 0; i < (sizeof(caps_key_table) / 3); i++) {
@@ -1968,7 +1968,7 @@ keyboard_to_fm7(BYTE dat)
     }
 
     /*
-     * ノーマルモード 
+     * ノーマルモード
      */
     for (i = 0; i < (sizeof(norm_key_table) / 3); i++) {
 	if (dat == norm_key_table[i * 3]) {
@@ -1994,19 +1994,19 @@ keyboard_to_fm16b(BYTE dat)
     int             i;
 
     /*
-     * シフト状態フラグを更新 
+     * シフト状態フラグを更新
      */
     if (keyboard_update_shift(dat)) {
 	return 0xffff;
     }
 
     /*
-     * Makeコード化 
+     * Makeコード化
      */
     dat &= 0x7f;
 
     /*
-     * CTRLモード 
+     * CTRLモード
      */
     if (ctrl_flag) {
 	for (i = 0; i < (sizeof(ctrl_16b_table) / 3); i++) {
@@ -2022,7 +2022,7 @@ keyboard_to_fm16b(BYTE dat)
     }
 
     /*
-     * GRAPHモード 
+     * GRAPHモード
      */
     if (graph_flag) {
 	for (i = 0; i < (sizeof(graph_16b_table) / 3); i++) {
@@ -2038,7 +2038,7 @@ keyboard_to_fm16b(BYTE dat)
     }
 
     /*
-     * かなモード 
+     * かなモード
      */
     if (kana_flag) {
 	for (i = 0; i < (sizeof(kana_16b_table) / 3); i++) {
@@ -2054,7 +2054,7 @@ keyboard_to_fm16b(BYTE dat)
     }
 
     /*
-     * CAPモード 
+     * CAPモード
      */
     if (caps_flag) {
 	for (i = 0; i < (sizeof(caps_16b_table) / 3); i++) {
@@ -2070,7 +2070,7 @@ keyboard_to_fm16b(BYTE dat)
     }
 
     /*
-     * ノーマルモード 
+     * ノーマルモード
      */
     for (i = 0; i < (sizeof(norm_16b_table) / 3); i++) {
 	if (dat == norm_16b_table[i * 3]) {
@@ -2094,12 +2094,12 @@ WORD            FASTCALL
 keyboard_to_scan(BYTE dat)
 {
     /*
-     * シフト状態フラグを更新 
+     * シフト状態フラグを更新
      */
     keyboard_update_shift(dat);
 
     /*
-     * コードを代入 
+     * コードを代入
      */
     return (WORD) dat;
 }
@@ -2115,21 +2115,21 @@ keyboard_event(void)
 {
     if (key_repeat_flag) {
 	/*
-	 * Makeコードを再ロードする(スキャンモード時) 
+	 * Makeコードを再ロードする(スキャンモード時)
 	 */
 	if (key_format == KEY_FORMAT_SCAN) {
 	    key_fm7 = key_repeat_code;
 	}
 
 	/*
-	 * CPUへ割り込み 
+	 * CPUへ割り込み
 	 */
 	key_irq_flag = TRUE;
 	maincpu_irq();
 	subcpu_firq();
 
 	/*
-	 * 次のイベント 
+	 * 次のイベント
 	 */
 	schedule_setevent(EVENT_KEYBOARD, key_repeat_time2,
 			  keyboard_event);
@@ -2160,16 +2160,16 @@ keyboard_make(BYTE dat)
 
 #if XM7_VER >= 2
     /*
-     * ディジタイズキー待ちの場合は、ディジタイズを止めキーを読み捨てる 
+     * ディジタイズキー待ちの場合は、ディジタイズを止めキーを読み捨てる
      */
     if (digitize_keywait) {
 	/*
-	 * 画面モード復帰 
+	 * 画面モード復帰
 	 */
 	simpose_mode = simpose_mode_bak;
 
 	/*
-	 * ディジタイズ実行 
+	 * ディジタイズ実行
 	 */
 	if (digitize_enable) {
 	    digitize_notify();
@@ -2180,7 +2180,7 @@ keyboard_make(BYTE dat)
     }
 #else
     /*
-     * 無変換/変換を強制的にSPACEに割り当て 
+     * 無変換/変換を強制的にSPACEに割り当て
      */
     if ((dat == 0x57) || (dat == 0x58)) {
 	dat = 0x35;
@@ -2188,35 +2188,35 @@ keyboard_make(BYTE dat)
 #endif
 
     /*
-     * コード記憶 
+     * コード記憶
      */
     key_scan = dat;
 
     /*
-     * データ変換 
+     * データ変換
      */
 #if XM7_VER >= 2
     switch (key_format) {
 	/*
-	 * FM-7互換モード 
+	 * FM-7互換モード
 	 */
     case KEY_FORMAT_9BIT:
 	code = keyboard_to_fm7(dat);
 	break;
 	/*
-	 * FM-16βモード 
+	 * FM-16βモード
 	 */
     case KEY_FORMAT_FM16B:
 	code = keyboard_to_fm16b(dat);
 	break;
 	/*
-	 * スキャンモード 
+	 * スキャンモード
 	 */
     case KEY_FORMAT_SCAN:
 	code = keyboard_to_scan(dat);
 	break;
 	/*
-	 * それ以外 
+	 * それ以外
 	 */
     default:
 	ASSERT(FALSE);
@@ -2227,22 +2227,22 @@ keyboard_make(BYTE dat)
 #endif
 
     /*
-     * シフトキーチェック 
+     * シフトキーチェック
      */
     if (shift_flag) {
 	/*
-	 * キーリピートon/off 
+	 * キーリピートon/off
 	 */
 	if (ctrl_flag) {
 	    /*
-	     * SHIFT+CTRL+0 キーリピートoff 
+	     * SHIFT+CTRL+0 キーリピートoff
 	     */
 	    if ((dat == 0x0b) || (dat == 0x46)) {
 		key_repeat_flag = FALSE;
 		return;
 	    }
 	    /*
-	     * SHIFT+CTRL+1 キーリピートon 
+	     * SHIFT+CTRL+1 キーリピートon
 	     */
 	    if ((dat == 0x02) || (dat == 0x42)) {
 		key_repeat_flag = TRUE;
@@ -2251,31 +2251,31 @@ keyboard_make(BYTE dat)
 	}
 #if XM7_VER >= 2
 	/*
-	 * スーパーインポーズ 
+	 * スーパーインポーズ
 	 */
 	switch (dat) {
 	    /*
-	     * SHIFT+PF7 パソコンモード 
+	     * SHIFT+PF7 パソコンモード
 	     */
 	case 0x63:
 	    simpose_mode = 0;
 	    break;
 	    /*
-	     * SHIFT+PF8 スーパーインポーズ(高輝度)モード 
+	     * SHIFT+PF8 スーパーインポーズ(高輝度)モード
 	     */
 	case 0x64:
 	    simpose_mode = 1;
 	    simpose_half = FALSE;
 	    break;
 	    /*
-	     * SHIFT+PF9 スーパーインポーズ(低輝度)モード 
+	     * SHIFT+PF9 スーパーインポーズ(低輝度)モード
 	     */
 	case 0x65:
 	    simpose_mode = 1;
 	    simpose_half = TRUE;
 	    break;
 	    /*
-	     * SHIFT+PF10 TVモード 
+	     * SHIFT+PF10 TVモード
 	     */
 	case 0x66:
 	    simpose_mode = 2;
@@ -2285,13 +2285,13 @@ keyboard_make(BYTE dat)
     }
 
     /*
-     * コードが有効なら、記憶して割り込み 
+     * コードが有効なら、記憶して割り込み
      */
     if (code != 0xffff) {
 	key_fm7 = code;
 
 	/*
-	 * 割り込み 
+	 * 割り込み
 	 */
 	key_irq_flag = TRUE;
 	maincpu_irq();
@@ -2299,12 +2299,12 @@ keyboard_make(BYTE dat)
 
 	if ((code >= 0x101) && (code <= 0x10a)) {
 	    /*
-	     * PFキーは、リピートなし 
+	     * PFキーは、リピートなし
 	     */
 	    schedule_delevent(EVENT_KEYBOARD);
 	} else {
 	    /*
-	     * PFキー以外なら、リピートあり 
+	     * PFキー以外なら、リピートあり
 	     */
 	    key_repeat_code = dat;
 	    schedule_setevent(EVENT_KEYBOARD, key_repeat_time1,
@@ -2312,7 +2312,7 @@ keyboard_make(BYTE dat)
 	}
     } else {
 	/*
-	 * イベント削除 
+	 * イベント削除
 	 */
 	schedule_delevent(EVENT_KEYBOARD);
     }
@@ -2327,7 +2327,7 @@ keyboard_break(BYTE dat)
 {
 #if XM7_VER == 1
     /*
-     * 無変換/変換を強制的にSPACEに割り当て 
+     * 無変換/変換を強制的にSPACEに割り当て
      */
     if ((dat == 0x57) || (dat == 0x58)) {
 	dat = 0x35;
@@ -2335,35 +2335,35 @@ keyboard_break(BYTE dat)
 #endif
 
     /*
-     * ワークに記憶 
+     * ワークに記憶
      */
     key_scan = (BYTE) (dat | 0x80);
 
     /*
-     * データ変換 
+     * データ変換
      */
 #if XM7_VER >= 2
     switch (key_format) {
 	/*
-	 * FM-7互換モード 
+	 * FM-7互換モード
 	 */
     case KEY_FORMAT_9BIT:
 	keyboard_to_fm7(key_scan);
 	break;
 	/*
-	 * FM-16βモード 
+	 * FM-16βモード
 	 */
     case KEY_FORMAT_FM16B:
 	keyboard_to_fm16b(key_scan);
 	break;
 	/*
-	 * スキャンモード 
+	 * スキャンモード
 	 */
     case KEY_FORMAT_SCAN:
 	keyboard_to_scan(key_scan);
 	break;
 	/*
-	 * それ以外 
+	 * それ以外
 	 */
     default:
 	ASSERT(FALSE);
@@ -2374,13 +2374,13 @@ keyboard_break(BYTE dat)
 #endif
 
     /*
-     * スキャンモードの場合は、Breakデータを入力 
+     * スキャンモードの場合は、Breakデータを入力
      */
     if (key_format == KEY_FORMAT_SCAN) {
 	key_fm7 = key_scan;
 
 	/*
-	 * 割り込み 
+	 * 割り込み
 	 */
 	key_irq_flag = TRUE;
 	maincpu_irq();
@@ -2388,7 +2388,7 @@ keyboard_break(BYTE dat)
     }
 
     /*
-     * リピートなし 
+     * リピートなし
      */
     if (dat == key_repeat_code) {
 	schedule_delevent(EVENT_KEYBOARD);
@@ -2400,7 +2400,7 @@ keyboard_break(BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-keyboard_save(int fileh)
+keyboard_save(SDL_RWops *fileh)
 {
     if (!file_bool_write(fileh, caps_flag)) {
 	return FALSE;
@@ -2468,7 +2468,7 @@ keyboard_save(int fileh)
     }
 
     /*
-     * スーパーインポーズ、ディジタイズ(ファイルバージョン5で拡張) 
+     * スーパーインポーズ、ディジタイズ(ファイルバージョン5で拡張)
      */
     if (!file_byte_write(fileh, simpose_mode)) {
 	return FALSE;
@@ -2485,7 +2485,7 @@ keyboard_save(int fileh)
 #endif
 
     /*
-     * 左右シフトフラグ(Ver9.03/7.03で拡張) 
+     * 左右シフトフラグ(Ver9.03/7.03で拡張)
      */
     if (!file_bool_write(fileh, lshift_flag)) {
 	return FALSE;
@@ -2495,7 +2495,7 @@ keyboard_save(int fileh)
     }
 #if XM7_VER >= 2
     /*
-     * キーボードエンコーダACK(Ver9.06/7.06で拡張) 
+     * キーボードエンコーダACK(Ver9.06/7.06で拡張)
      */
     if (!file_bool_write(fileh, key_trans_ack)) {
 	return FALSE;
@@ -2510,10 +2510,10 @@ keyboard_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-keyboard_load(int fileh, int ver)
+keyboard_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -2585,7 +2585,7 @@ keyboard_load(int fileh, int ver)
     }
 
     /*
-     * スーパーインポーズ、ディジタイズ(ファイルバージョン5で拡張) 
+     * スーパーインポーズ、ディジタイズ(ファイルバージョン5で拡張)
      */
     if (ver >= 500) {
 	if (!file_byte_read(fileh, &simpose_mode)) {
@@ -2604,7 +2604,7 @@ keyboard_load(int fileh, int ver)
 #endif
 
     /*
-     * 左右シフトフラグ(Ver9.03/7.03で拡張) 
+     * 左右シフトフラグ(Ver9.03/7.03で拡張)
      */
 #if XM7_VER >= 3
     if ((ver >= 903) || ((ver >= 703) && (ver <= 799))) {
@@ -2621,7 +2621,7 @@ keyboard_load(int fileh, int ver)
 	}
     } else {
 	/*
-	 * 実際の状態と矛盾が生じるが… 
+	 * 実際の状態と矛盾が生じるが…
 	 */
 	lshift_flag = FALSE;
 	rshift_flag = FALSE;
@@ -2629,7 +2629,7 @@ keyboard_load(int fileh, int ver)
 
 #if XM7_VER >= 2
     /*
-     * キーボードエンコーダACK(Ver9.06/7.06で拡張) 
+     * キーボードエンコーダACK(Ver9.06/7.06で拡張)
      */
 #if XM7_VER >= 3
     if ((ver >= 906) || ((ver >= 706) && (ver <= 799))) {
@@ -2645,7 +2645,7 @@ keyboard_load(int fileh, int ver)
 #endif
 
     /*
-     * イベント 
+     * イベント
      */
     schedule_delevent(EVENT_KEYBOARD);
 #if XM7_VER >= 2

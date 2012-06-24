@@ -60,9 +60,9 @@ static BYTE     bmp_palet_table_16[] = {
 /*
  *      画像縮小用
  */
-#define GAMMA200L	1.483239697419133	/* 画像縮小時のγ補正値 
+#define GAMMA200L	1.483239697419133	/* 画像縮小時のγ補正値
 						 * (200LINE) */
-#define GAMMA400L	1.217883285630907	/* 画像縮小時のγ補正値 
+#define GAMMA400L	1.217883285630907	/* 画像縮小時のγ補正値
 						 * (400LINE) */
 static BYTE     color_bit_mask[3] = { 1, 4, 2 };
 
@@ -73,7 +73,7 @@ static DWORD    color_add_data[5];
  *      ブランクディスク作成 サブ
  */
 static BOOL     FASTCALL
-make_d77_sub(int fileh, DWORD dat)
+make_d77_sub(SDL_RWops *fileh, DWORD dat)
 {
     BYTE            buf[4];
 
@@ -91,28 +91,28 @@ make_d77_sub(int fileh, DWORD dat)
 BOOL            FASTCALL
 make_new_d77(char *fname, char *name, BOOL mode2dd)
 {
-    int             fileh;
+    SDL_RWops       *fileh;
     BYTE            header[0x2b0];
     DWORD           offset;
     int             i;
     int             j;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(fname);
 
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(fname, OPEN_W);
-    if (fileh == -1) {
+    if (fileh == NULL) {
 	return FALSE;
     }
 
     /*
-     * ヘッダ作成 
+     * ヘッダ作成
      */
     memset(header, 0, sizeof(header));
     if (name != NULL) {
@@ -127,7 +127,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * 密度(2D,2DD,2HD) 
+     * 密度(2D,2DD,2HD)
      */
 #if XM7_VER >= 3
     if (mode2dd) {
@@ -136,7 +136,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
 #endif
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!file_write(fileh, header, 0x1c)) {
 	file_close(fileh);
@@ -144,7 +144,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * ファイルトータルサイズ 
+     * ファイルトータルサイズ
      */
 #if XM7_VER >= 3
     if (mode2dd) {
@@ -161,7 +161,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * トラックオフセット 
+     * トラックオフセット
      */
     offset = 0x2b0;
     for (i = 0; i < 84; i++) {
@@ -186,7 +186,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
 	}
     } else {
 	/*
-	 * ヘッダ書き込み 
+	 * ヘッダ書き込み
 	 */
 	if (!file_write(fileh, &header[0x170], 0x2b0 - 0x170)) {
 	    file_close(fileh);
@@ -196,7 +196,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
     }
 #else
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!file_write(fileh, &header[0x170], 0x2b0 - 0x170)) {
 	file_close(fileh);
@@ -205,7 +205,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
 #endif
 
     /*
-     * ヌルデータ書き込み 
+     * ヌルデータ書き込み
      */
     memset(header, 0, sizeof(header));
     for (i = 0; i < 84; i++) {
@@ -232,7 +232,7 @@ make_new_d77(char *fname, char *name, BOOL mode2dd)
     }
 #endif
     /*
-     * ok 
+     * ok
      */
     file_close(fileh);
     return TRUE;
@@ -251,7 +251,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
 	0x20, 0xfe		/* BRA * */
     };
 
-    int             fileh;
+    SDL_RWops       *fileh;
     BYTE            header[0x2b0];
     DWORD           offset;
     int             i;
@@ -259,20 +259,20 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
     int             k;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(fname);
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(fname, OPEN_W);
-    if (fileh == -1) {
+    if (fileh == NULL) {
 	return FALSE;
     }
 
     /*
-     * ヘッダ作成 
+     * ヘッダ作成
      */
     memset(header, 0, sizeof(header));
     if (name != NULL) {
@@ -287,7 +287,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * 密度(2D,2DD,2HD) 
+     * 密度(2D,2DD,2HD)
      */
 #if XM7_VER >= 3
     if (mode2dd) {
@@ -296,7 +296,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
 #endif
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!file_write(fileh, header, 0x1c)) {
 	file_close(fileh);
@@ -304,7 +304,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * ファイルトータルサイズ 
+     * ファイルトータルサイズ
      */
 #if XM7_VER >= 3
     if (mode2dd) {
@@ -321,7 +321,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * トラックオフセット 
+     * トラックオフセット
      */
     offset = 0x2b0;
 #if XM7_VER >= 3
@@ -347,7 +347,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * ヌルデータ書き込み 
+     * ヌルデータ書き込み
      */
     memset(header, 0, sizeof(header));
     for (i = 0; i < k; i++) {
@@ -367,13 +367,13 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
 
 	    if ((i == 0) && (j == 1)) {
 		/*
-		 * ダミーIPLセクタ作成 
+		 * ダミーIPLセクタ作成
 		 */
 		memset(header, 0x00, 0x100);
 		memcpy(header, dummyipl, sizeof(dummyipl));
 	    } else if ((i == 0) && (j == 3)) {
 		/*
-		 * IDセクタ作成 
+		 * IDセクタ作成
 		 */
 		memset(header, 0x00, 0x100);
 #if XM7_VER >= 3
@@ -389,7 +389,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
 		header[2] = 0x20;
 	    } else if ((i == 2) || (i == 3)) {
 		/*
-		 * FAT/ディレクトリ作成 
+		 * FAT/ディレクトリ作成
 		 */
 		memset(header, 0xff, 0x100);
 		if ((i == 2) && (j == 1)) {
@@ -397,7 +397,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
 		}
 	    } else {
 		/*
-		 * 通常セクタ作成 
+		 * 通常セクタ作成
 		 */
 		memset(header, 0xe5, 0x100);
 	    }
@@ -409,7 +409,7 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
     }
 
     /*
-     * ok 
+     * ok
      */
     file_close(fileh);
     return TRUE;
@@ -421,20 +421,20 @@ make_new_userdisk(char *fname, char *name, BOOL mode2dd)
 BOOL            FASTCALL
 make_new_t77(char *fname)
 {
-    int             fileh;
+    SDL_RWops   *fileh;
 
     ASSERT(fname);
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(fname, OPEN_W);
-    if (fileh == -1) {
+    if (fileh == NULL) {
 	return FALSE;
     }
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!file_write(fileh, (BYTE *) "XM7 TAPE IMAGE 0", 16)) {
 	file_close(fileh);
@@ -442,7 +442,7 @@ make_new_t77(char *fname)
     }
 
     /*
-     * 成功 
+     * 成功
      */
     file_close(fileh);
     return TRUE;
@@ -454,8 +454,8 @@ make_new_t77(char *fname)
 BOOL            FASTCALL
 conv_vfd_to_d77(char *src, char *dst, char *name)
 {
-    int             files;
-    int             filed;
+    SDL_RWops       *files;
+    SDL_RWops       *filed;
     BYTE            vfd_h[480];
     BYTE            d77_h[0x2b0];
     BYTE           *buffer;
@@ -471,14 +471,14 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     BYTE           *ptr;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(src);
     ASSERT(dst);
     ASSERT(name);
 
     /*
-     * ワークメモリ確保 
+     * ワークメモリ確保
      */
     buffer = (BYTE *) malloc(8192);
     if (buffer == NULL) {
@@ -486,21 +486,21 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * VFDファイルオープン 
+     * VFDファイルオープン
      */
     files = file_open(src, OPEN_R);
-    if (files == -1) {
+    if (files == NULL) {
 	free(buffer);
 	return FALSE;
     }
 
     /*
-     * ここで、ファイルサイズを取得しておく 
+     * ここで、ファイルサイズを取得しておく
      */
     srclen = file_getsize(files);
 
     /*
-     * VFDヘッダ読み込み 
+     * VFDヘッダ読み込み
      */
     if (!file_read(files, vfd_h, sizeof(vfd_h))) {
 	free(buffer);
@@ -509,17 +509,17 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * D77ファイル作成 
+     * D77ファイル作成
      */
     filed = file_open(dst, OPEN_W);
-    if (filed == -1) {
+    if (filed == NULL) {
 	free(buffer);
 	file_close(files);
 	return FALSE;
     }
 
     /*
-     * ヘッダ作成 
+     * ヘッダ作成
      */
     memset(d77_h, 0, sizeof(d77_h));
     if (strlen(name) <= 16) {
@@ -529,7 +529,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * 一旦、ヘッダを書く 
+     * 一旦、ヘッダを書く
      */
     if (!file_write(filed, d77_h, sizeof(d77_h))) {
 	free(buffer);
@@ -539,17 +539,17 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * 書き込みポインタを初期化 
+     * 書き込みポインタを初期化
      */
     wrlen = sizeof(d77_h);
 
     /*
-     * トラックループ 
+     * トラックループ
      */
     header = vfd_h;
     for (trk = 0; trk < 80; trk++) {
 	/*
-	 * ヘッダ取得 
+	 * ヘッダ取得
 	 */
 	offset = header[3];
 	offset *= 256;
@@ -567,13 +567,13 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	secs = *header++;
 
 	/*
-	 * secs=0への対応 
+	 * secs=0への対応
 	 */
 	if (secs == 0) {
 	    continue;
 	} else {
 	    /*
-	     * 書き込みポインタを記入 
+	     * 書き込みポインタを記入
 	     */
 	    d77_h[trk * 4 + 0x20 + 3] = (BYTE) (wrlen >> 24);
 	    d77_h[trk * 4 + 0x20 + 2] = (BYTE) ((wrlen >> 16) & 255);
@@ -582,7 +582,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	}
 
 	/*
-	 * トラック長を計算 
+	 * トラック長を計算
 	 */
 	switch (len) {
 	case 0:
@@ -600,7 +600,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	}
 
 	/*
-	 * ヘッダ検査 
+	 * ヘッダ検査
 	 */
 	if ((offset > srclen) | (trklen > 8192)) {
 	    free(buffer);
@@ -610,7 +610,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	}
 
 	/*
-	 * シーク 
+	 * シーク
 	 */
 	if (!file_seek(files, offset)) {
 	    free(buffer);
@@ -620,24 +620,24 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	}
 
 	/*
-	 * セクタループ 
+	 * セクタループ
 	 */
 	ptr = buffer;
 	for (sec = 1; sec <= secs; sec++) {
 	    memset(ptr, 0, 0x10);
 	    /*
-	     * C,H,R,N 
+	     * C,H,R,N
 	     */
 	    ptr[0] = (BYTE) (trk >> 1);
 	    ptr[1] = (BYTE) (trk & 1);
 	    ptr[2] = (BYTE) sec;
 	    ptr[3] = (BYTE) len;
 	    /*
-	     * セクタ数 
+	     * セクタ数
 	     */
 	    ptr[4] = (BYTE) (secs);
 	    /*
-	     * セクタ長＆データ読み込み 
+	     * セクタ長＆データ読み込み
 	     */
 	    switch (len) {
 	    case 0:
@@ -668,7 +668,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	}
 
 	/*
-	 * 一括書き込み 
+	 * 一括書き込み
 	 */
 	if (!file_write(filed, buffer, trklen)) {
 	    free(buffer);
@@ -678,13 +678,13 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 	}
 
 	/*
-	 * 書き込みポインタを進める 
+	 * 書き込みポインタを進める
 	 */
 	wrlen += trklen;
     }
 
     /*
-     * ファイルサイズ設定 
+     * ファイルサイズ設定
      */
     d77_h[0x1f] = (BYTE) ((wrlen >> 24) & 0xff);
     d77_h[0x1e] = (BYTE) ((wrlen >> 16) & 0xff);
@@ -692,7 +692,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     d77_h[0x1c] = (BYTE) (wrlen & 0xff);
 
     /*
-     * 再度、ヘッダを書き込んで 
+     * 再度、ヘッダを書き込んで
      */
     if (!file_seek(filed, 0)) {
 	free(buffer);
@@ -708,7 +708,7 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * すべて終了 
+     * すべて終了
      */
     free(buffer);
     file_close(files);
@@ -722,8 +722,8 @@ conv_vfd_to_d77(char *src, char *dst, char *name)
 BOOL            FASTCALL
 conv_2d_to_d77(char *src, char *dst, char *name)
 {
-    int             files;
-    int             filed;
+    SDL_RWops      *files;
+    SDL_RWops      *filed;
     BYTE            d77_h[0x2b0];
     BYTE           *buffer;
     BYTE           *ptr;
@@ -734,14 +734,14 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     int             max_track;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(src);
     ASSERT(dst);
     ASSERT(name);
 
     /*
-     * ワークメモリ確保 
+     * ワークメモリ確保
      */
     buffer = (BYTE *) malloc(0x1100);
     if (buffer == NULL) {
@@ -749,10 +749,10 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * 2Dファイルオープン、ファイルサイズチェック 
+     * 2Dファイルオープン、ファイルサイズチェック
      */
     files = file_open(src, OPEN_R);
-    if (files == -1) {
+    if (files == NULL) {
 	free(buffer);
 	return FALSE;
     }
@@ -768,17 +768,17 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * D77ファイル作成 
+     * D77ファイル作成
      */
     filed = file_open(dst, OPEN_W);
-    if (filed == -1) {
+    if (filed == NULL) {
 	free(buffer);
 	file_close(files);
 	return FALSE;
     }
 
     /*
-     * ヘッダ作成 
+     * ヘッダ作成
      */
     memset(d77_h, 0, sizeof(d77_h));
     if (strlen(name) <= 16) {
@@ -788,7 +788,7 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * ファイルサイズ 
+     * ファイルサイズ
      */
 #if XM7_VER >= 3
     if (size == 655360) {
@@ -813,7 +813,7 @@ conv_2d_to_d77(char *src, char *dst, char *name)
 #endif
 
     /*
-     * トラックオフセット 
+     * トラックオフセット
      */
     offset = 0x2b0;
     for (trk = 0; trk < max_track; trk++) {
@@ -825,7 +825,7 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!file_write(filed, d77_h, sizeof(d77_h))) {
 	free(buffer);
@@ -835,17 +835,17 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * トラックループ 
+     * トラックループ
      */
     for (trk = 0; trk < max_track; trk++) {
 	ptr = buffer;
 	/*
-	 * セクタループ 
+	 * セクタループ
 	 */
 	for (sec = 1; sec <= 16; sec++) {
 	    memset(ptr, 0, 0x10);
 	    /*
-	     * C,H,R,N 
+	     * C,H,R,N
 	     */
 	    ptr[0] = (BYTE) (trk >> 1);
 	    ptr[1] = (BYTE) (trk & 1);
@@ -853,21 +853,21 @@ conv_2d_to_d77(char *src, char *dst, char *name)
 	    ptr[3] = 1;
 
 	    /*
-	     * セクタ数、レングス 
+	     * セクタ数、レングス
 	     */
 	    ptr[4] = 16;
 	    ptr[0x0f] = 0x01;
 	    ptr += 0x10;
 
 	    /*
-	     * データ読み込み 
+	     * データ読み込み
 	     */
 	    file_read(files, ptr, 256);
 	    ptr += 256;
 	}
 
 	/*
-	 * 一括書き込み 
+	 * 一括書き込み
 	 */
 	if (!file_write(filed, buffer, 0x1100)) {
 	    free(buffer);
@@ -878,7 +878,7 @@ conv_2d_to_d77(char *src, char *dst, char *name)
     }
 
     /*
-     * すべて終了 
+     * すべて終了
      */
     free(buffer);
     file_close(files);
@@ -891,13 +891,13 @@ conv_2d_to_d77(char *src, char *dst, char *name)
  *      １バイト出力
  */
 static BOOL     FASTCALL
-vtp_conv_write(int handle, BYTE dat)
+vtp_conv_write(SDL_RWops *handle, BYTE dat)
 {
     int             i;
     BYTE            buf[44];
 
     /*
-     * スタートビット設定 
+     * スタートビット設定
      */
     buf[0] = 0x00;
     buf[1] = 0x34;
@@ -907,7 +907,7 @@ vtp_conv_write(int handle, BYTE dat)
     buf[5] = 0x1a;
 
     /*
-     * ストップビット設定 
+     * ストップビット設定
      */
     buf[38] = 0x80;
     buf[39] = 0x2f;
@@ -917,7 +917,7 @@ vtp_conv_write(int handle, BYTE dat)
     buf[43] = 0x2f;
 
     /*
-     * 8ビット処理 
+     * 8ビット処理
      */
     for (i = 0; i < 8; i++) {
 	if (dat & 0x01) {
@@ -935,7 +935,7 @@ vtp_conv_write(int handle, BYTE dat)
     }
 
     /*
-     * 44バイトに拡大して書き込む 
+     * 44バイトに拡大して書き込む
      */
     if (!file_write(handle, buf, 44)) {
 	return FALSE;
@@ -950,8 +950,8 @@ vtp_conv_write(int handle, BYTE dat)
 BOOL            FASTCALL
 conv_vtp_to_t77(char *src, char *dst)
 {
-    int             files;
-    int             filed;
+    SDL_RWops      *files;
+    SDL_RWops      *filed;
     int             i;
     BYTE            buf[44];
     BYTE            hdr[4];
@@ -960,30 +960,30 @@ conv_vtp_to_t77(char *src, char *dst)
     int             count;
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(src);
     ASSERT(dst);
 
     /*
-     * VTPファイルオープン 
+     * VTPファイルオープン
      */
     files = file_open(src, OPEN_R);
-    if (files == -1) {
+    if (files == NULL) {
 	return FALSE;
     }
 
     /*
-     * T77ファイル作成 
+     * T77ファイル作成
      */
     filed = file_open(dst, OPEN_W);
-    if (filed == -1) {
+    if (filed == NULL) {
 	file_close(files);
 	return FALSE;
     }
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!file_write(filed, (BYTE *) header, 16)) {
 	file_close(filed);
@@ -992,24 +992,24 @@ conv_vtp_to_t77(char *src, char *dst)
     }
 
     /*
-     * T77データ作成 
+     * T77データ作成
      */
     while (TRUE) {
 	/*
-	 * カウンタ初期化 
+	 * カウンタ初期化
 	 */
 	count = 0;
 
 	/*
-	 * ゴミデータスキップ 
+	 * ゴミデータスキップ
 	 */
 	/*
 	 * 32個以上の連続した 0xFF
-	 * を発見できるまで繰り返す 
+	 * を発見できるまで繰り返す
 	 */
 	do {
 	    /*
-	     * 途中でファイルが終わった場合は正常終了 
+	     * 途中でファイルが終わった場合は正常終了
 	     */
 	    if (!file_read(files, &dat, 1)) {
 		file_close(filed);
@@ -1018,7 +1018,7 @@ conv_vtp_to_t77(char *src, char *dst)
 	    }
 
 	    /*
-	     * 0xFFを発見できたらカウンタ増加、それ以外ならカウンタクリア 
+	     * 0xFFを発見できたらカウンタ増加、それ以外ならカウンタクリア
 	     */
 	    if (dat == 0xff) {
 		count++;
@@ -1029,14 +1029,14 @@ conv_vtp_to_t77(char *src, char *dst)
 	while (count < 32);
 
 	/*
-	 * 1ファイル分のデータを作成する 
+	 * 1ファイル分のデータを作成する
 	 */
 	do {
 	    /*
-	     * ヘッダ検索 
+	     * ヘッダ検索
 	     */
 	    /*
-	     * 途中でファイルが終わった場合は正常終了 
+	     * 途中でファイルが終わった場合は正常終了
 	     */
 	    do {
 		do {
@@ -1058,7 +1058,7 @@ conv_vtp_to_t77(char *src, char *dst)
 	    while ((hdr[0] != 0x01) || (hdr[1] != 0x3c));
 
 	    /*
-	     * 残りのヘッダ部を読み込む 
+	     * 残りのヘッダ部を読み込む
 	     */
 	    for (i = 2; i < 4; i++) {
 		if (!file_read(files, &hdr[i], 1)) {
@@ -1069,7 +1069,7 @@ conv_vtp_to_t77(char *src, char *dst)
 	    }
 
 	    /*
-	     * ファイル情報ブロックだった場合はGapの前にマーカを設定 
+	     * ファイル情報ブロックだった場合はGapの前にマーカを設定
 	     */
 	    if (hdr[2] == 0x00) {
 		buf[0] = 0;
@@ -1084,10 +1084,10 @@ conv_vtp_to_t77(char *src, char *dst)
 	    }
 
 	    /*
-	     * Gap書き込み 
+	     * Gap書き込み
 	     */
 	    /*
-	     * データは全て 0xFF に統一する 
+	     * データは全て 0xFF に統一する
 	     */
 	    for (i = 0; i < count; i++) {
 		if (!vtp_conv_write(filed, 0xFF)) {
@@ -1098,7 +1098,7 @@ conv_vtp_to_t77(char *src, char *dst)
 	    }
 
 	    /*
-	     * ヘッダ書き込み 
+	     * ヘッダ書き込み
 	     */
 	    for (i = 0; i < 4; i++) {
 		if (!vtp_conv_write(filed, hdr[i])) {
@@ -1109,7 +1109,7 @@ conv_vtp_to_t77(char *src, char *dst)
 	    }
 
 	    /*
-	     * データ・チェックサム書き込み 
+	     * データ・チェックサム書き込み
 	     */
 	    for (i = 0; i <= hdr[3]; i++) {
 		if (!file_read(files, &dat, 1)) {
@@ -1125,7 +1125,7 @@ conv_vtp_to_t77(char *src, char *dst)
 	    }
 
 	    /*
-	     * カウンタ初期化 
+	     * カウンタ初期化
 	     */
 	    count = 0;
 	}
@@ -1137,7 +1137,7 @@ conv_vtp_to_t77(char *src, char *dst)
  *      BMPヘッダ書き込み
  */
 static BOOL     FASTCALL
-bmp_header_sub(int fileh)
+bmp_header_sub(SDL_RWops *fileh)
 {
     BYTE            filehdr[14];
     BYTE            infohdr[40];
@@ -1145,13 +1145,13 @@ bmp_header_sub(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 構造体クリア 
+     * 構造体クリア
      */
     memset(filehdr, 0, sizeof(filehdr));
     memset(infohdr, 0, sizeof(infohdr));
 
     /*
-     * BITMAPFILEHEADER 
+     * BITMAPFILEHEADER
      */
     filehdr[0] = 'B';
     filehdr[1] = 'M';
@@ -1179,14 +1179,14 @@ bmp_header_sub(int fileh)
 #elif XM7_VER >= 2
     if (mode320) {
 	/*
-	 * 4096色 ファイルサイズ 14+40+512000 
+	 * 4096色 ファイルサイズ 14+40+512000
 	 */
 	filehdr[2] = 0x36;
 	filehdr[3] = 0xd0;
 	filehdr[4] = 0x07;
     } else {
 	/*
-	 * 640x200 8色 ファイルサイズ 14+40+16*4+128000 
+	 * 640x200 8色 ファイルサイズ 14+40+16*4+128000
 	 */
 	filehdr[2] = 0x76;
 	filehdr[3] = 0xf4;
@@ -1194,7 +1194,7 @@ bmp_header_sub(int fileh)
     }
 #else
     /*
-     * 640x200 8色 ファイルサイズ 14+40+16*4+128000 
+     * 640x200 8色 ファイルサイズ 14+40+16*4+128000
      */
     filehdr[2] = 0x76;
     filehdr[3] = 0xf4;
@@ -1202,7 +1202,7 @@ bmp_header_sub(int fileh)
 #endif
 
     /*
-     * ビットマップへのオフセット 
+     * ビットマップへのオフセット
      */
 #if XM7_VER >= 2
 #if XM7_VER >= 3
@@ -1211,31 +1211,31 @@ bmp_header_sub(int fileh)
     if (mode320) {
 #endif
 	/*
-	 * 4096色 or 262144色 
+	 * 4096色 or 262144色
 	 */
 	filehdr[10] = 14 + 40;
     } else {
 	/*
-	 * 8色 
+	 * 8色
 	 */
 	filehdr[10] = 14 + 40 + (16 * 4);
     }
 #else
     /*
-     * 8色 
+     * 8色
      */
     filehdr[10] = 14 + 40 + (16 * 4);
 #endif
 
     /*
-     * BITMAPFILEHEADER 書き込み 
+     * BITMAPFILEHEADER 書き込み
      */
     if (!file_write(fileh, filehdr, sizeof(filehdr))) {
 	return FALSE;
     }
 
     /*
-     * BITMAPINFOHEADER 
+     * BITMAPINFOHEADER
      */
     infohdr[0] = 40;
     infohdr[4] = 0x80;
@@ -1244,7 +1244,7 @@ bmp_header_sub(int fileh)
     infohdr[9] = 0x01;
     infohdr[12] = 0x01;
     /*
-     * BiBitCount 
+     * BiBitCount
      */
 #if XM7_VER >= 3
     switch (screen_mode) {
@@ -1269,7 +1269,7 @@ bmp_header_sub(int fileh)
 #endif
 
     /*
-     * BITMAPFILEHEADER 書き込み 
+     * BITMAPFILEHEADER 書き込み
      */
     if (!file_write(fileh, infohdr, sizeof(infohdr))) {
 	return FALSE;
@@ -1362,7 +1362,7 @@ mix_color_16(double gamma, BYTE * palet_table, BYTE palet_count)
  *      BMPヘッダ書き込み (縮小画像用)
  */
 static BOOL     FASTCALL
-bmp_header_sub2(int fileh)
+bmp_header_sub2(SDL_RWops *fileh)
 {
     BYTE            filehdr[14];
     BYTE            infohdr[40];
@@ -1370,37 +1370,37 @@ bmp_header_sub2(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 構造体クリア 
+     * 構造体クリア
      */
     memset(filehdr, 0, sizeof(filehdr));
     memset(infohdr, 0, sizeof(infohdr));
 
     /*
-     * BITMAPFILEHEADER 
+     * BITMAPFILEHEADER
      */
     filehdr[0] = 'B';
     filehdr[1] = 'M';
 
     /*
-     * BiBitCount 
+     * BiBitCount
      */
 #if XM7_VER >= 3
     if (screen_mode == SCR_262144) {
 	/*
-	 * ファイルサイズ 14+40+192000 
+	 * ファイルサイズ 14+40+192000
 	 */
 	/*
-	 * 262144色 
+	 * 262144色
 	 */
 	filehdr[2] = 0x36;
 	filehdr[3] = 0xee;
 	filehdr[4] = 0x02;
     } else {
 	/*
-	 * ファイルサイズ 14+40+128000 
+	 * ファイルサイズ 14+40+128000
 	 */
 	/*
-	 * 8色/4096色 
+	 * 8色/4096色
 	 */
 	filehdr[2] = 0x36;
 	filehdr[3] = 0xf4;
@@ -1408,10 +1408,10 @@ bmp_header_sub2(int fileh)
     }
 #else
     /*
-     * ファイルサイズ 14+40+128000 
+     * ファイルサイズ 14+40+128000
      */
     /*
-     * 8色/4096色 
+     * 8色/4096色
      */
     filehdr[2] = 0x36;
     filehdr[3] = 0xf4;
@@ -1419,19 +1419,19 @@ bmp_header_sub2(int fileh)
 #endif
 
     /*
-     * ビットマップへのオフセット 
+     * ビットマップへのオフセット
      */
     filehdr[10] = 14 + 40;
 
     /*
-     * BITMAPFILEHEADER 書き込み 
+     * BITMAPFILEHEADER 書き込み
      */
     if (!file_write(fileh, filehdr, sizeof(filehdr))) {
 	return FALSE;
     }
 
     /*
-     * BITMAPINFOHEADER 
+     * BITMAPINFOHEADER
      */
     infohdr[0] = 40;
     infohdr[4] = 0x40;
@@ -1441,29 +1441,29 @@ bmp_header_sub2(int fileh)
     infohdr[12] = 0x01;
 
     /*
-     * BiBitCount 
+     * BiBitCount
      */
 #if XM7_VER >= 3
     if (screen_mode == SCR_262144) {
 	/*
-	 * 262144色 
+	 * 262144色
 	 */
 	infohdr[14] = 24;
     } else {
 	/*
-	 * 8色/4096色 
+	 * 8色/4096色
 	 */
 	infohdr[14] = 16;
     }
 #else
     /*
-     * 8色/4096色 
+     * 8色/4096色
      */
     infohdr[14] = 16;
 #endif
 
     /*
-     * BITMAPFILEHEADER 書き込み 
+     * BITMAPFILEHEADER 書き込み
      */
     if (!file_write(fileh, infohdr, sizeof(infohdr))) {
 	return FALSE;
@@ -1476,7 +1476,7 @@ bmp_header_sub2(int fileh)
  *      BMPパレット書き込み(8色/16色のみ)
  */
 static BOOL     FASTCALL
-bmp_palette_sub(int fileh)
+bmp_palette_sub(SDL_RWops *fileh)
 {
     int             i;
     BYTE           *p;
@@ -1485,7 +1485,7 @@ bmp_palette_sub(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 表示ページを考慮 
+     * 表示ページを考慮
      */
     vpage = (~(multi_page >> 4)) & 0x07;
 
@@ -1493,14 +1493,14 @@ bmp_palette_sub(int fileh)
     if (enable_400line) {
 	if (crt_flag) {
 	    /*
-	     * 固定パレット16色 
+	     * 固定パレット16色
 	     */
 	    if (!file_write(fileh, bmp_palet_table_16, 4 * 16)) {
 		return FALSE;
 	    }
 	} else {
 	    /*
-	     * 黒から16色 
+	     * 黒から16色
 	     */
 	    p = bmp_palet_table_16;
 	    for (i = 0; i < 16; i++) {
@@ -1515,7 +1515,7 @@ bmp_palette_sub(int fileh)
 #endif
 
     /*
-     * パレットより8色 
+     * パレットより8色
      */
     for (i = 0; i < 8; i++) {
 	if (crt_flag) {
@@ -1529,7 +1529,7 @@ bmp_palette_sub(int fileh)
     }
 
     /*
-     * 黒から8色 
+     * 黒から8色
      */
     p = bmp_palet_table;
     for (i = 0; i < 8; i++) {
@@ -1546,7 +1546,7 @@ bmp_palette_sub(int fileh)
  */
 #if XM7_VER >= 2
 static BOOL     FASTCALL
-bmp_320_sub(int fileh, BOOL fullscan)
+bmp_320_sub(SDL_RWops *fileh, BOOL fullscan)
 {
     int             x,
                     y;
@@ -1567,13 +1567,13 @@ bmp_320_sub(int fileh, BOOL fullscan)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 40 * 199;
 
 #if XM7_VER >= 3
     /*
-     * ウィンドウ領域のクリッピングを行う 
+     * ウィンドウ領域のクリッピングを行う
      */
     window_clip(1);
     dx1 = (WORD) (window_dx1 >> 3);
@@ -1581,7 +1581,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 #endif
 
     /*
-     * マスク取得 
+     * マスク取得
      */
     mask = 0;
     if (!(multi_page & 0x10)) {
@@ -1595,36 +1595,36 @@ bmp_320_sub(int fileh, BOOL fullscan)
     }
 
     /*
-     * 0で書き込み 
+     * 0で書き込み
      */
     memset(buffer[0], 0, sizeof(buffer[0]));
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 #if XM7_VER >= 3
 	winy = (((199 - y) >= window_dy1) && ((199 - y) <= window_dy2));
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 40; x++) {
 	    bit = 0x80;
 	    if (winy && (x >= dx1) && (x < dx2)) {
 		/*
-		 * ウィンドウ内(裏ブロック) 
+		 * ウィンドウ内(裏ブロック)
 		 */
 		vramptr = vram_bdptr;
 	    } else {
 		/*
-		 * ウィンドウ外(表ブロック) 
+		 * ウィンドウ外(表ブロック)
 		 */
 		vramptr = vram_dptr;
 	    }
 #else
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 40; x++) {
 	    bit = 0x80;
@@ -1632,14 +1632,14 @@ bmp_320_sub(int fileh, BOOL fullscan)
 #endif
 
 	    /*
-	     * ビットループ 
+	     * ビットループ
 	     */
 	    for (i = 0; i < 8; i++) {
 		dat = 0;
 
 #if XM7_VER >= 3
 		/*
-		 * G評価 
+		 * G評価
 		 */
 		if (vramptr[offset + 0x10000] & bit) {
 		    dat |= 0x800;
@@ -1655,7 +1655,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		}
 
 		/*
-		 * R評価 
+		 * R評価
 		 */
 		if (vramptr[offset + 0x08000] & bit) {
 		    dat |= 0x080;
@@ -1671,7 +1671,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		}
 
 		/*
-		 * B評価 
+		 * B評価
 		 */
 		if (vramptr[offset + 0x00000] & bit) {
 		    dat |= 0x008;
@@ -1687,7 +1687,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		}
 #else
 		/*
-		 * G評価 
+		 * G評価
 		 */
 		if (vramptr[offset + 0x08000] & bit) {
 		    dat |= 0x800;
@@ -1703,7 +1703,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		}
 
 		/*
-		 * R評価 
+		 * R評価
 		 */
 		if (vramptr[offset + 0x04000] & bit) {
 		    dat |= 0x080;
@@ -1719,7 +1719,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		}
 
 		/*
-		 * B評価 
+		 * B評価
 		 */
 		if (vramptr[offset + 0x00000] & bit) {
 		    dat |= 0x008;
@@ -1736,7 +1736,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 #endif
 
 		/*
-		 * アナログパレットよりデータ取得 
+		 * アナログパレットよりデータ取得
 		 */
 		dat &= mask;
 		color = apalet_r[dat];
@@ -1760,14 +1760,14 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		}
 
 		/*
-		 * CRTフラグ 
+		 * CRTフラグ
 		 */
 		if (!crt_flag) {
 		    color = 0;
 		}
 
 		/*
-		 * ２回続けて同じものを書き込む 
+		 * ２回続けて同じものを書き込む
 		 */
 		buffer[1][x * 32 + i * 4 + 0] = (BYTE) (color & 255);
 		buffer[1][x * 32 + i * 4 + 1] = (BYTE) (color >> 8);
@@ -1775,7 +1775,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
 		buffer[1][x * 32 + i * 4 + 3] = (BYTE) (color >> 8);
 
 		/*
-		 * 次のビットへ 
+		 * 次のビットへ
 		 */
 		bit >>= 1;
 	    }
@@ -1783,21 +1783,21 @@ bmp_320_sub(int fileh, BOOL fullscan)
 	}
 
 	/*
-	 * フルスキャン補間 
+	 * フルスキャン補間
 	 */
 	if (fullscan) {
 	    memcpy(buffer[0], buffer[1], sizeof(buffer[1]));
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, (BYTE *) buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (40 * 2);
     }
@@ -1811,7 +1811,7 @@ bmp_320_sub(int fileh, BOOL fullscan)
  *  BMPデータ書き込み(26万色モード)
  */
 static BOOL     FASTCALL
-bmp_256k_sub(int fileh, BOOL fullscan)
+bmp_256k_sub(SDL_RWops *fileh, BOOL fullscan)
 {
     int             x,
                     y;
@@ -1826,34 +1826,34 @@ bmp_256k_sub(int fileh, BOOL fullscan)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 40 * 199;
 
     /*
-     * ０で書き込み 
+     * ０で書き込み
      */
     memset(buffer[0], 0, sizeof(buffer[0]));
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 40; x++) {
 	    bit = 0x80;
 	    /*
-	     * ビットループ 
+	     * ビットループ
 	     */
 	    for (i = 0; i < 8; i++) {
 		r = g = b = 0;
 
 		if (!(multi_page & 0x40)) {
 		    /*
-		     * G評価 
+		     * G評価
 		     */
 		    if (vram_c[offset + 0x10000] & bit) {
 			g |= 0x20;
@@ -1877,7 +1877,7 @@ bmp_256k_sub(int fileh, BOOL fullscan)
 
 		if (!(multi_page & 0x20)) {
 		    /*
-		     * R評価 
+		     * R評価
 		     */
 		    if (vram_c[offset + 0x08000] & bit) {
 			r |= 0x20;
@@ -1901,7 +1901,7 @@ bmp_256k_sub(int fileh, BOOL fullscan)
 
 		if (!(multi_page & 0x10)) {
 		    /*
-		     * B評価 
+		     * B評価
 		     */
 		    if (vram_c[offset + 0x00000] & bit) {
 			b |= 0x20;
@@ -1924,14 +1924,14 @@ bmp_256k_sub(int fileh, BOOL fullscan)
 		}
 
 		/*
-		 * CRTフラグ 
+		 * CRTフラグ
 		 */
 		if (!crt_flag) {
 		    r = g = b = 0;
 		}
 
 		/*
-		 * ２回続けて同じものを書き込む 
+		 * ２回続けて同じものを書き込む
 		 */
 		buffer[1][x * 48 + i * 6 + 0] =
 		    (BYTE) truecolorbrightness[b];
@@ -1947,7 +1947,7 @@ bmp_256k_sub(int fileh, BOOL fullscan)
 		    (BYTE) truecolorbrightness[r];
 
 		/*
-		 * 次のビットへ 
+		 * 次のビットへ
 		 */
 		bit >>= 1;
 	    }
@@ -1955,21 +1955,21 @@ bmp_256k_sub(int fileh, BOOL fullscan)
 	}
 
 	/*
-	 * フルスキャン補間 
+	 * フルスキャン補間
 	 */
 	if (fullscan) {
 	    memcpy(buffer[0], buffer[1], sizeof(buffer[1]));
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, (BYTE *) buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (40 * 2);
     }
@@ -1982,7 +1982,7 @@ bmp_256k_sub(int fileh, BOOL fullscan)
  *  BMPデータ書き込み(640モード)
  */
 static BOOL     FASTCALL
-bmp_640_sub(int fileh, BOOL fullscan)
+bmp_640_sub(SDL_RWops *fileh, BOOL fullscan)
 {
     int             x,
                     y;
@@ -2000,68 +2000,68 @@ bmp_640_sub(int fileh, BOOL fullscan)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 80 * 199;
 
 #if XM7_VER >= 3
     /*
-     * ウィンドウ領域のクリッピングを行う 
+     * ウィンドウ領域のクリッピングを行う
      */
     window_clip(0);
     dx1 = (WORD) (window_dx1 >> 3);
     dx2 = (WORD) (window_dx2 >> 3);
 
     /*
-     * カラー9で書き込み 
+     * カラー9で書き込み
      */
     memset(buffer[0], 0x99, sizeof(buffer[0]));
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 	winy = (((199 - y) >= window_dy1) && ((199 - y) <= window_dy2));
 
 	/*
-	 * 一旦クリア 
+	 * 一旦クリア
 	 */
 	memset(buffer[1], 0, sizeof(buffer[1]));
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
 	    if (winy && (x >= dx1) && (x < dx2)) {
 		/*
-		 * ウィンドウ内(裏ブロック) 
+		 * ウィンドウ内(裏ブロック)
 		 */
 		vramptr = vram_bdptr;
 	    } else {
 		/*
-		 * ウィンドウ外(表ブロック) 
+		 * ウィンドウ外(表ブロック)
 		 */
 		vramptr = vram_dptr;
 	    }
 #else
     /*
-     * カラー9で書き込み 
+     * カラー9で書き込み
      */
     memset(buffer[0], 0x99, sizeof(buffer[0]));
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 
 	/*
-	 * 一旦クリア 
+	 * 一旦クリア
 	 */
 	memset(buffer[1], 0, sizeof(buffer[1]));
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
@@ -2073,7 +2073,7 @@ bmp_640_sub(int fileh, BOOL fullscan)
 #endif
 
 	    /*
-	     * bitループ 
+	     * bitループ
 	     */
 	    for (i = 0; i < 4; i++) {
 #if XM7_VER >= 3
@@ -2126,21 +2126,21 @@ bmp_640_sub(int fileh, BOOL fullscan)
 	}
 
 	/*
-	 * フルスキャン補間 
+	 * フルスキャン補間
 	 */
 	if (fullscan) {
 	    memcpy(buffer[0], buffer[1], sizeof(buffer[1]));
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, (BYTE *) buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (80 * 2);
     }
@@ -2153,7 +2153,7 @@ bmp_640_sub(int fileh, BOOL fullscan)
  *  BMPデータ書き込み(400ラインモード)
  */
 static BOOL     FASTCALL
-bmp_400l_sub(int fileh)
+bmp_400l_sub(SDL_RWops *fileh)
 {
     int             x,
                     y;
@@ -2169,47 +2169,47 @@ bmp_400l_sub(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 80 * 399;
 
     /*
-     * ウィンドウ領域のクリッピングを行う 
+     * ウィンドウ領域のクリッピングを行う
      */
     window_clip(2);
     dx1 = (WORD) (window_dx1 >> 3);
     dx2 = (WORD) (window_dx2 >> 3);
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 400; y++) {
 	winy = (((399 - y) >= window_dy1) && ((399 - y) <= window_dy2));
 
 	/*
-	 * 一旦クリア 
+	 * 一旦クリア
 	 */
 	memset(buffer, 0, sizeof(buffer));
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
 	    if (winy && (x >= dx1) && (x < dx2)) {
 		/*
-		 * ウィンドウ内(裏ブロック) 
+		 * ウィンドウ内(裏ブロック)
 		 */
 		vramptr = vram_bdptr;
 	    } else {
 		/*
-		 * ウィンドウ外(表ブロック) 
+		 * ウィンドウ外(表ブロック)
 		 */
 		vramptr = vram_dptr;
 	    }
 
 	    /*
-	     * bitループ 
+	     * bitループ
 	     */
 	    for (i = 0; i < 4; i++) {
 		if (vramptr[offset + 0x00000] & bit) {
@@ -2238,14 +2238,14 @@ bmp_400l_sub(int fileh)
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (80 * 2);
     }
@@ -2285,12 +2285,12 @@ bmp_400l4_sub(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 80 * 399;
 
     /*
-     * テキスト展開 初期設定(全体) 
+     * テキスト展開 初期設定(全体)
      */
     csr_st = (BYTE) (crtc_register[10] & 0x1f);
     csr_ed = (BYTE) (crtc_register[11] & 0x1f);
@@ -2298,16 +2298,16 @@ bmp_400l4_sub(int fileh)
     lines = (BYTE) ((crtc_register[9] & 0x1f) + 1);
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 400; y++) {
 	/*
-	 * 一旦クリア 
+	 * 一旦クリア
 	 */
 	memset(buffer, 0, sizeof(buffer));
 
 	/*
-	 * テキスト展開 初期設定(ラスタ単位) 
+	 * テキスト展開 初期設定(ラスタ単位)
 	 */
 	textbase = (WORD) text_start_addr;
 	textbase += (WORD) (((399 - y) / lines) * (crtc_register[1] << 2));
@@ -2315,7 +2315,7 @@ bmp_400l4_sub(int fileh)
 	raster = (BYTE) ((399 - y) % lines);
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
@@ -2323,7 +2323,7 @@ bmp_400l4_sub(int fileh)
 		bit2 = 0x80;
 
 		/*
-		 * キャラクタコード・アトリビュートを取得 
+		 * キャラクタコード・アトリビュートを取得
 		 */
 		if (width40_flag) {
 		    taddr = (WORD) ((textbase + (x & ~1)) & 0xffe);
@@ -2334,12 +2334,12 @@ bmp_400l4_sub(int fileh)
 		atr = tvram_c[taddr + 1];
 
 		/*
-		 * アトリビュートから描画色を設定 
+		 * アトリビュートから描画色を設定
 		 */
 		col = (BYTE) ((atr & 0x07) | ((atr & 0x20) >> 2));
 
 		/*
-		 * フォントデータ取得(アトリビュート/カーソル処理を含む) 
+		 * フォントデータ取得(アトリビュート/カーソル処理を含む)
 		 */
 		if ((!(atr & 0x10) || text_blink) && (raster < 16)) {
 		    chr_dat = subcg_l4[(WORD) (chr << 4) + raster];
@@ -2359,7 +2359,7 @@ bmp_400l4_sub(int fileh)
 	    }
 
 	    /*
-	     * GVRAM 実アドレスを取得 
+	     * GVRAM 実アドレスを取得
 	     */
 	    gaddr = (WORD) ((offset + vram_offset[0]) & 0x7fff);
 	    enable_page = FALSE;
@@ -2374,7 +2374,7 @@ bmp_400l4_sub(int fileh)
 	    }
 
 	    /*
-	     * bitループ 
+	     * bitループ
 	     */
 	    for (i = 0; i < 4; i++) {
 		if (chr_dat & bit2) {
@@ -2403,14 +2403,14 @@ bmp_400l4_sub(int fileh)
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (80 * 2);
     }
@@ -2424,7 +2424,7 @@ bmp_400l4_sub(int fileh)
  */
 #if XM7_VER >= 2
 static BOOL     FASTCALL
-bmp_320_sub2(int fileh)
+bmp_320_sub2(SDL_RWops *fileh)
 {
     int             x,
                     y;
@@ -2445,13 +2445,13 @@ bmp_320_sub2(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 40 * 199;
 
 #if XM7_VER >= 3
     /*
-     * ウィンドウ領域のクリッピングを行う 
+     * ウィンドウ領域のクリッピングを行う
      */
     window_clip(1);
     dx1 = (WORD) (window_dx1 >> 3);
@@ -2459,7 +2459,7 @@ bmp_320_sub2(int fileh)
 #endif
 
     /*
-     * マスク取得 
+     * マスク取得
      */
     mask = 0;
     if (!(multi_page & 0x10)) {
@@ -2473,31 +2473,31 @@ bmp_320_sub2(int fileh)
     }
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 #if XM7_VER >= 3
 	winy = (((199 - y) >= window_dy1) && ((199 - y) <= window_dy2));
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 40; x++) {
 	    bit = 0x80;
 	    if (winy && (x >= dx1) && (x < dx2)) {
 		/*
-		 * ウィンドウ内(裏ブロック) 
+		 * ウィンドウ内(裏ブロック)
 		 */
 		vramptr = vram_bdptr;
 	    } else {
 		/*
-		 * ウィンドウ外(表ブロック) 
+		 * ウィンドウ外(表ブロック)
 		 */
 		vramptr = vram_dptr;
 	    }
 #else
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 40; x++) {
 	    bit = 0x80;
@@ -2505,14 +2505,14 @@ bmp_320_sub2(int fileh)
 #endif
 
 	    /*
-	     * ビットループ 
+	     * ビットループ
 	     */
 	    for (i = 0; i < 8; i++) {
 		dat = 0;
 
 #if XM7_VER >= 3
 		/*
-		 * G評価 
+		 * G評価
 		 */
 		if (vramptr[offset + 0x10000] & bit) {
 		    dat |= 0x800;
@@ -2528,7 +2528,7 @@ bmp_320_sub2(int fileh)
 		}
 
 		/*
-		 * R評価 
+		 * R評価
 		 */
 		if (vramptr[offset + 0x08000] & bit) {
 		    dat |= 0x080;
@@ -2544,7 +2544,7 @@ bmp_320_sub2(int fileh)
 		}
 
 		/*
-		 * B評価 
+		 * B評価
 		 */
 		if (vramptr[offset + 0x00000] & bit) {
 		    dat |= 0x008;
@@ -2560,7 +2560,7 @@ bmp_320_sub2(int fileh)
 		}
 #else
 		/*
-		 * G評価 
+		 * G評価
 		 */
 		if (vramptr[offset + 0x08000] & bit) {
 		    dat |= 0x800;
@@ -2576,7 +2576,7 @@ bmp_320_sub2(int fileh)
 		}
 
 		/*
-		 * R評価 
+		 * R評価
 		 */
 		if (vramptr[offset + 0x04000] & bit) {
 		    dat |= 0x080;
@@ -2592,7 +2592,7 @@ bmp_320_sub2(int fileh)
 		}
 
 		/*
-		 * B評価 
+		 * B評価
 		 */
 		if (vramptr[offset + 0x00000] & bit) {
 		    dat |= 0x008;
@@ -2609,7 +2609,7 @@ bmp_320_sub2(int fileh)
 #endif
 
 		/*
-		 * アナログパレットよりデータ取得 
+		 * アナログパレットよりデータ取得
 		 */
 		dat &= mask;
 		color = apalet_r[dat];
@@ -2633,7 +2633,7 @@ bmp_320_sub2(int fileh)
 		}
 
 		/*
-		 * CRTフラグ 
+		 * CRTフラグ
 		 */
 		if (!crt_flag) {
 		    color = 0;
@@ -2643,7 +2643,7 @@ bmp_320_sub2(int fileh)
 		buffer[x * 16 + i * 2 + 1] = (BYTE) (color >> 8);
 
 		/*
-		 * 次のビットへ 
+		 * 次のビットへ
 		 */
 		bit >>= 1;
 	    }
@@ -2651,14 +2651,14 @@ bmp_320_sub2(int fileh)
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (40 * 2);
     }
@@ -2672,7 +2672,7 @@ bmp_320_sub2(int fileh)
  *  BMPデータ書き込み(26万色モード・縮小画像)
  */
 static BOOL     FASTCALL
-bmp_256k_sub2(int fileh)
+bmp_256k_sub2(SDL_RWops *fileh)
 {
     int             x,
                     y;
@@ -2687,29 +2687,29 @@ bmp_256k_sub2(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 40 * 199;
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 40; x++) {
 	    bit = 0x80;
 	    /*
-	     * ビットループ 
+	     * ビットループ
 	     */
 	    for (i = 0; i < 8; i++) {
 		r = g = b = 0;
 
 		if (!(multi_page & 0x40)) {
 		    /*
-		     * G評価 
+		     * G評価
 		     */
 		    if (vram_c[offset + 0x10000] & bit) {
 			g |= 0x20;
@@ -2733,7 +2733,7 @@ bmp_256k_sub2(int fileh)
 
 		if (!(multi_page & 0x20)) {
 		    /*
-		     * R評価 
+		     * R評価
 		     */
 		    if (vram_c[offset + 0x08000] & bit) {
 			r |= 0x20;
@@ -2757,7 +2757,7 @@ bmp_256k_sub2(int fileh)
 
 		if (!(multi_page & 0x10)) {
 		    /*
-		     * B評価 
+		     * B評価
 		     */
 		    if (vram_c[offset + 0x00000] & bit) {
 			b |= 0x20;
@@ -2780,7 +2780,7 @@ bmp_256k_sub2(int fileh)
 		}
 
 		/*
-		 * CRTフラグ 
+		 * CRTフラグ
 		 */
 		if (!crt_flag) {
 		    r = g = b = 0;
@@ -2791,7 +2791,7 @@ bmp_256k_sub2(int fileh)
 		buffer[x * 24 + i * 3 + 2] = (BYTE) truecolorbrightness[r];
 
 		/*
-		 * 次のビットへ 
+		 * 次のビットへ
 		 */
 		bit >>= 1;
 	    }
@@ -2799,14 +2799,14 @@ bmp_256k_sub2(int fileh)
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (40 * 2);
     }
@@ -2819,7 +2819,7 @@ bmp_256k_sub2(int fileh)
  *  BMPデータ書き込み(640モード・縮小画像)
  */
 static BOOL     FASTCALL
-bmp_640_sub2(int fileh)
+bmp_640_sub2(SDL_RWops *fileh)
 {
     int             x,
                     y;
@@ -2840,12 +2840,12 @@ bmp_640_sub2(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 色混合テーブル初期化 
+     * 色混合テーブル初期化
      */
     mix_color_init(GAMMA200L);
 
     /*
-     * 色データ生成 
+     * 色データ生成
      */
     for (i = 0; i < 8; i++) {
 	if (crt_flag) {
@@ -2857,48 +2857,48 @@ bmp_640_sub2(int fileh)
     }
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 80 * 199;
 
 #if XM7_VER >= 3
     /*
-     * ウィンドウ領域のクリッピングを行う 
+     * ウィンドウ領域のクリッピングを行う
      */
     window_clip(0);
     dx1 = (WORD) (window_dx1 >> 3);
     dx2 = (WORD) (window_dx2 >> 3);
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 	winy = (((199 - y) >= window_dy1) && ((199 - y) <= window_dy2));
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
 	    if (winy && (x >= dx1) && (x < dx2)) {
 		/*
-		 * ウィンドウ内(裏ブロック) 
+		 * ウィンドウ内(裏ブロック)
 		 */
 		vramptr = vram_bdptr;
 	    } else {
 		/*
-		 * ウィンドウ外(表ブロック) 
+		 * ウィンドウ外(表ブロック)
 		 */
 		vramptr = vram_dptr;
 	    }
 #else
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 200; y++) {
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
@@ -2910,7 +2910,7 @@ bmp_640_sub2(int fileh)
 #endif
 
 	    /*
-	     * bitループ 
+	     * bitループ
 	     */
 	    for (i = 0; i < 4; i++) {
 		col[0] = 0;
@@ -2972,14 +2972,14 @@ bmp_640_sub2(int fileh)
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if (!file_write(fileh, buffer, sizeof(buffer))) {
 	    return FALSE;
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (80 * 2);
     }
@@ -2992,7 +2992,7 @@ bmp_640_sub2(int fileh)
  *  BMPデータ書き込み(400ラインモード・縮小画像)
  */
 static BOOL     FASTCALL
-bmp_400l_sub2(int fileh)
+bmp_400l_sub2(SDL_RWops *fileh)
 {
     int             x,
                     y;
@@ -3014,12 +3014,12 @@ bmp_400l_sub2(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 色混合テーブル初期化 
+     * 色混合テーブル初期化
      */
     mix_color_init(GAMMA400L);
 
     /*
-     * 色データ生成 
+     * 色データ生成
      */
     for (i = 0; i < 8; i++) {
 	if (crt_flag) {
@@ -3031,49 +3031,49 @@ bmp_400l_sub2(int fileh)
     }
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 80 * 399;
 
     /*
-     * ウィンドウ領域のクリッピングを行う 
+     * ウィンドウ領域のクリッピングを行う
      */
     window_clip(2);
     dx1 = (WORD) (window_dx1 >> 3);
     dx2 = (WORD) (window_dx2 >> 3);
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 400; y++) {
 	winy = (((399 - y) >= window_dy1) && ((399 - y) <= window_dy2));
 
 	if ((y % 2) == 0) {
 	    /*
-	     * パレットバッファ初期化 
+	     * パレットバッファ初期化
 	     */
 	    memset(lbuf, 0, sizeof(pbuf));
 	}
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
 	    if (winy && (x >= dx1) && (x < dx2)) {
 		/*
-		 * ウィンドウ内(裏ブロック) 
+		 * ウィンドウ内(裏ブロック)
 		 */
 		vramptr = vram_bdptr;
 	    } else {
 		/*
-		 * ウィンドウ外(表ブロック) 
+		 * ウィンドウ外(表ブロック)
 		 */
 		vramptr = vram_dptr;
 	    }
 
 	    /*
-	     * bitループ 
+	     * bitループ
 	     */
 	    for (i = 0; i < 4; i++) {
 		col1 = 0;
@@ -3119,7 +3119,7 @@ bmp_400l_sub2(int fileh)
 	}
 
 	/*
-	 * 書き込み 
+	 * 書き込み
 	 */
 	if ((y % 2) == 1) {
 	    if (!file_write(fileh, buffer, sizeof(buffer))) {
@@ -3128,7 +3128,7 @@ bmp_400l_sub2(int fileh)
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (80 * 2);
     }
@@ -3142,7 +3142,7 @@ bmp_400l_sub2(int fileh)
  *  BMPデータ書き込み(L4 400ラインモード・縮小画像)
  */
 static BOOL     FASTCALL
-bmp_400l4_sub2(int fileh)
+bmp_400l4_sub2(SDL_RWops *fileh)
 {
     int             x,
                     y;
@@ -3173,12 +3173,12 @@ bmp_400l4_sub2(int fileh)
     ASSERT(fileh >= 0);
 
     /*
-     * 初期オフセット設定 
+     * 初期オフセット設定
      */
     offset = 80 * 399;
 
     /*
-     * テキスト展開 初期設定(全体) 
+     * テキスト展開 初期設定(全体)
      */
     csr_st = (BYTE) (crtc_register[10] & 0x1f);
     csr_ed = (BYTE) (crtc_register[11] & 0x1f);
@@ -3186,16 +3186,16 @@ bmp_400l4_sub2(int fileh)
     lines = (BYTE) ((crtc_register[9] & 0x1f) + 1);
 
     /*
-     * パレットバッファ初期化 
+     * パレットバッファ初期化
      */
     memset(lbuf, 0, sizeof(pbuf));
 
     /*
-     * yループ 
+     * yループ
      */
     for (y = 0; y < 400; y++) {
 	/*
-	 * テキスト展開 初期設定(ラスタ単位) 
+	 * テキスト展開 初期設定(ラスタ単位)
 	 */
 	textbase = (WORD) text_start_addr;
 	textbase += (WORD) (((399 - y) / lines) * (crtc_register[1] << 2));
@@ -3203,7 +3203,7 @@ bmp_400l4_sub2(int fileh)
 	raster = (BYTE) ((399 - y) % lines);
 
 	/*
-	 * xループ 
+	 * xループ
 	 */
 	for (x = 0; x < 80; x++) {
 	    bit = 0x80;
@@ -3211,7 +3211,7 @@ bmp_400l4_sub2(int fileh)
 		bit2 = 0x80;
 
 		/*
-		 * キャラクタコード・アトリビュートを取得 
+		 * キャラクタコード・アトリビュートを取得
 		 */
 		if (width40_flag) {
 		    taddr = (WORD) ((textbase + (x & ~1)) & 0xffe);
@@ -3222,12 +3222,12 @@ bmp_400l4_sub2(int fileh)
 		atr = tvram_c[taddr + 1];
 
 		/*
-		 * アトリビュートから描画色を設定 
+		 * アトリビュートから描画色を設定
 		 */
 		col = (BYTE) ((atr & 0x07) | ((atr & 0x20) >> 2));
 
 		/*
-		 * フォントデータ取得(アトリビュート/カーソル処理を含む) 
+		 * フォントデータ取得(アトリビュート/カーソル処理を含む)
 		 */
 		if ((!(atr & 0x10) || text_blink) && (raster < 16)) {
 		    chr_dat = subcg_l4[(WORD) (chr << 4) + raster];
@@ -3247,7 +3247,7 @@ bmp_400l4_sub2(int fileh)
 	    }
 
 	    /*
-	     * GVRAM 実アドレスを取得 
+	     * GVRAM 実アドレスを取得
 	     */
 	    gaddr = (WORD) ((offset + vram_offset[0]) & 0x7fff);
 	    enable_page = FALSE;
@@ -3262,7 +3262,7 @@ bmp_400l4_sub2(int fileh)
 	    }
 
 	    /*
-	     * bitループ 
+	     * bitループ
 	     */
 	    for (i = 0; i < 4; i++) {
 		if (chr_dat & bit2) {
@@ -3310,7 +3310,7 @@ bmp_400l4_sub2(int fileh)
 	}
 
 	/*
-	 * 2ラインごとに書き込み 
+	 * 2ラインごとに書き込み
 	 */
 	if (y & 1) {
 	    if (!file_write(fileh, buffer, sizeof(buffer))) {
@@ -3319,7 +3319,7 @@ bmp_400l4_sub2(int fileh)
 	}
 
 	/*
-	 * 次のyへ(戻る) 
+	 * 次のyへ(戻る)
 	 */
 	offset -= (80 * 2);
     }
@@ -3334,20 +3334,20 @@ bmp_400l4_sub2(int fileh)
 BOOL            FASTCALL
 capture_to_bmp(char *fname, BOOL fullscan)
 {
-    int             fileh;
+    SDL_RWops   *fileh;
 
     ASSERT(fname);
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(fname, OPEN_W);
-    if (fileh == -1) {
+    if (fileh == NULL) {
 	return FALSE;
     }
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!bmp_header_sub(fileh)) {
 	file_close(fileh);
@@ -3355,7 +3355,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
     }
 
     /*
-     * パレット書き込み 
+     * パレット書き込み
      */
 #if XM7_VER >= 2
 #if XM7_VER >= 3
@@ -3376,7 +3376,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
 #endif
 
     /*
-     * 本体書き込み 
+     * 本体書き込み
      */
 #if XM7_VER >= 3
     switch (screen_mode) {
@@ -3408,7 +3408,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
 #elif XM7_VER >= 2
     if (mode320) {
 	/*
-	 * 320×200 4096色モード 
+	 * 320×200 4096色モード
 	 */
 	if (!bmp_320_sub(fileh, fullscan)) {
 	    file_close(fileh);
@@ -3416,7 +3416,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
 	}
     } else {
 	/*
-	 * 640×200 8色モード 
+	 * 640×200 8色モード
 	 */
 	if (!bmp_640_sub(fileh, fullscan)) {
 	    file_close(fileh);
@@ -3426,7 +3426,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
 #elif XM7_VER == 1 && defined(L4CARD)
     if (enable_400line) {
 	/*
-	 * 640×400 単色モード 
+	 * 640×400 単色モード
 	 */
 	if (!bmp_400l4_sub(fileh)) {
 	    file_close(fileh);
@@ -3434,7 +3434,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
 	}
     } else {
 	/*
-	 * 640×200 8色モード 
+	 * 640×200 8色モード
 	 */
 	if (!bmp_640_sub(fileh, fullscan)) {
 	    file_close(fileh);
@@ -3443,7 +3443,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
     }
 #else
     /*
-     * 640×200 8色モード 
+     * 640×200 8色モード
      */
     if (!bmp_640_sub(fileh, fullscan)) {
 	file_close(fileh);
@@ -3452,7 +3452,7 @@ capture_to_bmp(char *fname, BOOL fullscan)
 #endif
 
     /*
-     * 成功 
+     * 成功
      */
     file_close(fileh);
     return TRUE;
@@ -3464,20 +3464,20 @@ capture_to_bmp(char *fname, BOOL fullscan)
 BOOL            FASTCALL
 capture_to_bmp2(char *fname)
 {
-    int             fileh;
+    SDL_RWops    *fileh;
 
     ASSERT(fname);
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(fname, OPEN_W);
-    if (fileh == -1) {
+    if (fileh == NULL) {
 	return FALSE;
     }
 
     /*
-     * ヘッダ書き込み 
+     * ヘッダ書き込み
      */
     if (!bmp_header_sub2(fileh)) {
 	file_close(fileh);
@@ -3485,7 +3485,7 @@ capture_to_bmp2(char *fname)
     }
 
     /*
-     * 本体書き込み 
+     * 本体書き込み
      */
 #if XM7_VER >= 3
     switch (screen_mode) {
@@ -3517,7 +3517,7 @@ capture_to_bmp2(char *fname)
 #elif XM7_VER >= 2
     if (mode320) {
 	/*
-	 * 320×200 4096色モード 
+	 * 320×200 4096色モード
 	 */
 	if (!bmp_320_sub2(fileh)) {
 	    file_close(fileh);
@@ -3525,7 +3525,7 @@ capture_to_bmp2(char *fname)
 	}
     } else {
 	/*
-	 * 640×200 8色モード 
+	 * 640×200 8色モード
 	 */
 	if (!bmp_640_sub2(fileh)) {
 	    file_close(fileh);
@@ -3535,7 +3535,7 @@ capture_to_bmp2(char *fname)
 #elif XM7_VER == 1 && defined(L4CARD)
     if (enable_400line) {
 	/*
-	 * 640×400 単色モード 
+	 * 640×400 単色モード
 	 */
 	if (!bmp_400l4_sub2(fileh)) {
 	    file_close(fileh);
@@ -3543,7 +3543,7 @@ capture_to_bmp2(char *fname)
 	}
     } else {
 	/*
-	 * 640×200 8色モード 
+	 * 640×200 8色モード
 	 */
 	if (!bmp_640_sub2(fileh)) {
 	    file_close(fileh);
@@ -3552,7 +3552,7 @@ capture_to_bmp2(char *fname)
     }
 #else
     /*
-     * 640×200 8色モード 
+     * 640×200 8色モード
      */
     if (!bmp_640_sub2(fileh)) {
 	file_close(fileh);
@@ -3561,7 +3561,7 @@ capture_to_bmp2(char *fname)
 #endif
 
     /*
-     * 成功 
+     * 成功
      */
     file_close(fileh);
     return TRUE;

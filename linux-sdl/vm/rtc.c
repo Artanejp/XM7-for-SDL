@@ -47,9 +47,9 @@ static BYTE     rtc_day_table[] = {	/* 2月は28日にセット */
  *      プロトタイプ宣言
  */
 static BOOL FASTCALL rtc_event(void);	/* 時計イベント */
-static BOOL FASTCALL rtc_event_adjust(void);	/* 時計イベント(時刻調整用) 
+static BOOL FASTCALL rtc_event_adjust(void);	/* 時計イベント(時刻調整用)
 						 */
-static void FASTCALL rtc_time_adjust_sub(void);	/* 時刻アジャストサブ 
+static void FASTCALL rtc_time_adjust_sub(void);	/* 時刻アジャストサブ
 						 */
 
 
@@ -61,13 +61,13 @@ BOOL            FASTCALL
 rtc_init(void)
 {
     /*
-     * 時計をリセット。24h, 閏年0 
+     * 時計をリセット。24h, 閏年0
      */
     rtc_24h = TRUE;
     rtc_leap = 0;
 
     /*
-     * 初期化フラグをリセット 
+     * 初期化フラグをリセット
      */
     rtc_init_flag = FALSE;
 
@@ -91,7 +91,7 @@ void            FASTCALL
 rtc_reset(void)
 {
     /*
-     * 起動時のみ時刻を設定する必要がある 
+     * 起動時のみ時刻を設定する必要がある
      */
     if (!rtc_init_flag) {
 	rtc_time_adjust();
@@ -107,17 +107,17 @@ void            FASTCALL
 rtc_time_adjust(void)
 {
     /*
-     * いったん時刻調整を行う 
+     * いったん時刻調整を行う
      */
     rtc_time_adjust_sub();
 
     /*
-     * 基準時刻を初期化 
+     * 基準時刻を初期化
      */
     rtc_ltime = 0;
 
     /*
-     * 時刻調整イベントを設定 
+     * 時刻調整イベントを設定
      */
     schedule_setevent(EVENT_RTC, 1000, rtc_event_adjust);
 }
@@ -131,16 +131,16 @@ rtc_event_adjust(void)
 {
     if (rtc_ltime == 0) {
 	/*
-	 * 基準時刻を取得 
+	 * 基準時刻を取得
 	 */
 	rtc_ltime = time(NULL);
     } else {
 	/*
-	 * 時刻が変わるまで待機 
+	 * 時刻が変わるまで待機
 	 */
 	if (rtc_ltime != time(NULL)) {
 	    /*
-	     * 再度、時刻調整を行う(イベントの再設定も行われる) 
+	     * 再度、時刻調整を行う(イベントの再設定も行われる)
 	     */
 	    rtc_time_adjust_sub();
 	}
@@ -160,7 +160,7 @@ rtc_time_adjust_sub(void)
     struct tm      *now;
 
     /*
-     * 現在の時間を読み取り、セット 
+     * 現在の時間を読み取り、セット
      */
     ltime = time(NULL);
     now = localtime(&ltime);
@@ -173,7 +173,7 @@ rtc_time_adjust_sub(void)
     rtc_second = (BYTE) now->tm_sec;
 
     /*
-     * AM/PMフラグを設定 
+     * AM/PMフラグを設定
      */
     if (rtc_hour >= 12) {
 	rtc_pm = TRUE;
@@ -182,7 +182,7 @@ rtc_time_adjust_sub(void)
     }
 
     /*
-     * イベントを設定 
+     * イベントを設定
      */
     schedule_setevent(EVENT_RTC, 1000 * 1000, rtc_event);
 }
@@ -195,7 +195,7 @@ static BOOL     FASTCALL
 rtc_event(void)
 {
     /*
-     * 秒アップ 
+     * 秒アップ
      */
     rtc_second++;
     if (rtc_second < 60) {
@@ -204,7 +204,7 @@ rtc_event(void)
     rtc_second = 0;
 
     /*
-     * 分アップ 
+     * 分アップ
      */
     rtc_minute++;
     if (rtc_minute < 60) {
@@ -213,12 +213,12 @@ rtc_event(void)
     rtc_minute = 0;
 
     /*
-     * 時アップ 
+     * 時アップ
      */
     rtc_hour++;
     if (rtc_24h) {
 	/*
-	 * 24h 
+	 * 24h
 	 */
 	if (rtc_hour >= 12) {
 	    rtc_pm = TRUE;
@@ -230,18 +230,18 @@ rtc_event(void)
 	}
     } else {
 	/*
-	 * 12h 
+	 * 12h
 	 */
 	if (rtc_pm) {
 	    /*
-	     * PM 
+	     * PM
 	     */
 	    if (rtc_hour < 12) {
 		return TRUE;
 	    }
 	} else {
 	    /*
-	     * AM 
+	     * AM
 	     */
 	    if (rtc_hour < 12) {
 		return TRUE;
@@ -255,7 +255,7 @@ rtc_event(void)
     rtc_pm = FALSE;
 
     /*
-     * 曜日アップ 
+     * 曜日アップ
      */
     rtc_week++;
     if (rtc_week > 6) {
@@ -263,7 +263,7 @@ rtc_event(void)
     }
 
     /*
-     * 日アップ 
+     * 日アップ
      */
     rtc_day++;
     if (rtc_day <= rtc_day_table[rtc_month]) {
@@ -271,11 +271,11 @@ rtc_event(void)
     }
 
     /*
-     * 閏年のチェックを、ここで入れる 
+     * 閏年のチェックを、ここで入れる
      */
     if ((rtc_month == 2) && (rtc_day == 29)) {
 	/*
-	 * 2月29日なので、閏年ならreturn TRUE 
+	 * 2月29日なので、閏年ならreturn TRUE
 	 */
 	if (rtc_leap == 0) {
 	    if ((rtc_year % 4) == 0) {
@@ -290,7 +290,7 @@ rtc_event(void)
     rtc_day = 1;
 
     /*
-     * 月アップ 
+     * 月アップ
      */
     rtc_month++;
     if (rtc_month <= 12) {
@@ -299,7 +299,7 @@ rtc_event(void)
     rtc_month = 0;
 
     /*
-     * 年アップ 
+     * 年アップ
      */
     rtc_year++;
     if (rtc_year > 99) {
@@ -323,35 +323,35 @@ rtc_set(BYTE * packet)
     ASSERT(packet);
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 2) {
 	return;
     }
 
     /*
-     * 年 
+     * 年
      */
     dat = *packet++;
     rtc_year = (BYTE) ((dat >> 4) * 10);
     rtc_year |= (BYTE) (dat & 0x0f);
 
     /*
-     * 月 
+     * 月
      */
     dat = *packet++;
     rtc_month = (BYTE) ((dat >> 4) * 10);
     rtc_month |= (BYTE) (dat & 0x0f);
 
     /*
-     * 日 + 閏年 
+     * 日 + 閏年
      */
     dat = *packet++;
     rtc_day = (BYTE) (((dat & 0x30) >> 4) * 10);
     rtc_day |= (BYTE) (dat & 0x0f);
 
     /*
-     * 曜日,12/24,時の上位 
+     * 曜日,12/24,時の上位
      */
     dat = *packet++;
     rtc_week = (BYTE) ((dat >> 4) & 0x07);
@@ -368,21 +368,21 @@ rtc_set(BYTE * packet)
     }
 
     /*
-     * 時の下位、分の上位 
+     * 時の下位、分の上位
      */
     dat = *packet++;
     rtc_hour |= (BYTE) (dat >> 4);
     rtc_minute = (BYTE) ((dat & 0x0f) * 10);
 
     /*
-     * 分の下位、秒の上位 
+     * 分の下位、秒の上位
      */
     dat = *packet++;
     rtc_minute |= (BYTE) (dat >> 4);
     rtc_second = (BYTE) ((dat & 0x0f) * 10);
 
     /*
-     * 秒の下位 
+     * 秒の下位
      */
     dat = *packet;
     rtc_second |= (BYTE) (dat >> 4);
@@ -400,28 +400,28 @@ rtc_get(BYTE * packet)
     ASSERT(packet);
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (fm7_ver < 2) {
 	return;
     }
 
     /*
-     * 年 
+     * 年
      */
     dat = (BYTE) ((rtc_year / 10) << 4);
     dat |= (BYTE) (rtc_year % 10);
     *packet++ = dat;
 
     /*
-     * 月 
+     * 月
      */
     dat = (BYTE) ((rtc_month / 10) << 4);
     dat |= (BYTE) (rtc_month % 10);
     *packet++ = dat;
 
     /*
-     * 日 + 閏年 
+     * 日 + 閏年
      */
     dat = (BYTE) ((rtc_day / 10) << 4);
     dat |= (BYTE) (rtc_day % 10);
@@ -429,7 +429,7 @@ rtc_get(BYTE * packet)
     *packet++ = dat;
 
     /*
-     * 曜日,12/24,時の上位 
+     * 曜日,12/24,時の上位
      */
     dat = (BYTE) (rtc_week << 4);
     dat |= (BYTE) (rtc_hour / 10);
@@ -442,21 +442,21 @@ rtc_get(BYTE * packet)
     *packet++ = dat;
 
     /*
-     * 時の下位、分の上位 
+     * 時の下位、分の上位
      */
     dat = (BYTE) ((rtc_hour % 10) << 4);
     dat |= (BYTE) (rtc_minute / 10);
     *packet++ = dat;
 
     /*
-     * 分の下位、秒の上位 
+     * 分の下位、秒の上位
      */
     dat = (BYTE) ((rtc_minute % 10) << 4);
     dat |= (BYTE) (rtc_second / 10);
     *packet++ = dat;
 
     /*
-     * 秒の下位 
+     * 秒の下位
      */
     dat = (BYTE) ((rtc_second % 10) << 4);
     *packet = dat;
@@ -469,7 +469,7 @@ rtc_get(BYTE * packet)
  *      セーブ
  */
 BOOL            FASTCALL
-rtc_save(int fileh)
+rtc_save(SDL_RWops *fileh)
 {
     if (!file_bool_write(fileh, rtc_24h)) {
 	return FALSE;
@@ -491,10 +491,10 @@ rtc_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-rtc_load(int fileh, int ver)
+rtc_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -513,7 +513,7 @@ rtc_load(int fileh, int ver)
     }
 
     /*
-     * 現在の時間を読み取り、セット 
+     * 現在の時間を読み取り、セット
      */
     rtc_time_adjust();
 

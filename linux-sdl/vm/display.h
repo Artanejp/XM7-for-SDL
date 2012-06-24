@@ -28,45 +28,45 @@ extern          "C" {
      */
     BOOL FASTCALL   display_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   display_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   display_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   display_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   display_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   display_save(int fileh);
+    BOOL FASTCALL   display_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   display_load(int fileh, int ver);
+    BOOL FASTCALL   display_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     void FASTCALL   display_setpointer(BOOL redraw);
     /*
-     * 関連ワークの再設定 
+     * 関連ワークの再設定
      */
 #if XM7_VER >= 3
     void FASTCALL   window_clip(int mode);
     /*
-     * ウインドウクリッピング 
+     * ウインドウクリッピング
      */
     BOOL FASTCALL   fix_vram_address(void);
     /*
-     * 400ラインモード用VRAM配置補正 
+     * 400ラインモード用VRAM配置補正
      */
 #endif
 
@@ -75,122 +75,122 @@ extern          "C" {
      */
     extern BOOL     crt_flag;
     /*
-     * CRT表示フラグ 
+     * CRT表示フラグ
      */
     extern BOOL     vrama_flag;
     /*
-     * VRAMアクセスフラグ 
+     * VRAMアクセスフラグ
      */
     extern WORD     vram_offset[2];
     /*
-     * VRAMオフセットレジスタ 
+     * VRAMオフセットレジスタ
      */
     extern BOOL     vram_offset_flag;
     /*
-     * 拡張VRAMオフセットフラグ 
+     * 拡張VRAMオフセットフラグ
      */
     extern BOOL     vsync_flag;
     /*
-     * VSYNCフラグ 
+     * VSYNCフラグ
      */
     extern BOOL     draw_aftervsync;
     /*
-     * 画面描画通知タイミング 
+     * 画面描画通知タイミング
      */
     extern int      now_raster;
     /*
-     * 現在描画中のラスタ番号 
+     * 現在描画中のラスタ番号
      */
 
 #if XM7_VER >= 2
     extern BOOL     subnmi_flag;
     /*
-     * サブNMIイネーブルフラグ 
+     * サブNMIイネーブルフラグ
      */
     extern BOOL     blank_flag;
     /*
-     * ブランキングフラグ 
+     * ブランキングフラグ
      */
     extern BYTE     vram_active;
     /*
-     * アクティブページ 
+     * アクティブページ
      */
     extern BYTE    *vram_aptr;
     /*
-     * VRAMアクティブポインタ 
+     * VRAMアクティブポインタ
      */
     extern BYTE     vram_display;
     /*
-     * 表示ページ 
+     * 表示ページ
      */
     extern BYTE    *vram_dptr;
     /*
-     * VRAM表示ポインタ 
+     * VRAM表示ポインタ
      */
 
 #if XM7_VER >= 3
     /*
-     * FM77AV40 
+     * FM77AV40
      */
     extern BYTE     screen_mode;
     /*
-     * 画面モード 
+     * 画面モード
      */
     extern BYTE     subram_vrambank;
     /*
-     * アクティブページ(400line/26万色) 
+     * アクティブページ(400line/26万色)
      */
 
     /*
-     * FM77AV40EX 
+     * FM77AV40EX
      */
     extern WORD     window_x1,
                     window_dx1;
     /*
-     * ハードウェアウィンドウ X1 
+     * ハードウェアウィンドウ X1
      */
     extern WORD     window_y1,
                     window_dy1;
     /*
-     * ハードウェアウィンドウ Y1 
+     * ハードウェアウィンドウ Y1
      */
     extern WORD     window_x2,
                     window_dx2;
     /*
-     * ハードウェアウィンドウ X2 
+     * ハードウェアウィンドウ X2
      */
     extern WORD     window_y2,
                     window_dy2;
     /*
-     * ハードウェアウィンドウ Y2 
+     * ハードウェアウィンドウ Y2
      */
     extern BOOL     window_open;
     /*
-     * ウィンドウオープンフラグ 
+     * ウィンドウオープンフラグ
      */
     extern BYTE     block_active;
     /*
-     * アクティブブロック 
+     * アクティブブロック
      */
     extern BYTE     block_display;
     /*
-     * 表示ブロック 
+     * 表示ブロック
      */
     extern BYTE    *vram_ablk;
     /*
-     * アクティブブロックポインタ 
+     * アクティブブロックポインタ
      */
     extern BYTE    *vram_bdptr;
     /*
-     * 裏表示ブロックポインタ 
+     * 裏表示ブロックポインタ
      */
     extern BYTE    *vram_dblk;
     /*
-     * 表示ブロックポインタ 
+     * 表示ブロックポインタ
      */
     extern BYTE    *vram_bdblk;
     /*
-     * 裏表示ブロックポインタ2 
+     * 裏表示ブロックポインタ2
      */
 #endif
 #endif
@@ -198,49 +198,49 @@ extern          "C" {
 #if XM7_VER == 1 && defined(L4CARD)
     extern BOOL     width40_flag;
     /*
-     * WIDTH40モードフラグ 
+     * WIDTH40モードフラグ
      */
     extern BOOL     cursor_lsb;
     /*
-     * カーソルアドレスLSB 
+     * カーソルアドレスLSB
      */
     extern BOOL     enable_400line;
     /*
-     * 400ラインモードフラグ 
+     * 400ラインモードフラグ
      */
     extern BOOL     workram_select;
     /*
-     * ワークRAM選択フラグ 
+     * ワークRAM選択フラグ
      */
     extern BYTE     crtc_register[0x20];
     /*
-     * CRTCレジスタ 
+     * CRTCレジスタ
      */
     extern BYTE     crtc_regnum;
     /*
-     * CRTCレジスタ番号レジスタ 
+     * CRTCレジスタ番号レジスタ
      */
     extern WORD     text_start_addr;
     /*
-     * テキストスタートアドレス 
+     * テキストスタートアドレス
      */
     extern BOOL     text_blink;
     /*
-     * テキストブリンク状態 
+     * テキストブリンク状態
      */
     extern WORD     cursor_addr;
     /*
-     * カーソルアドレス 
+     * カーソルアドレス
      */
     extern BOOL     cursor_blink;
     /*
-     * カーソルブリンク状態 
+     * カーソルブリンク状態
      */
 #endif
 #if XM7_VER >= 3
     extern const BYTE truecolorbrightness[64];
     /*
-     * 24/32bit Color用輝度テーブル 
+     * 24/32bit Color用輝度テーブル
      */
 #endif
 

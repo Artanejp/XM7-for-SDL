@@ -85,12 +85,12 @@ maincpu_execline(void)
 #endif
 
     /*
-     * 1行実行 
+     * 1行実行
      */
     main_line();
 
     /*
-     * テープカウンタ処理 
+     * テープカウンタ処理
      */
     if (tape_motor) {
 	tape_subcnt += (DWORD) (maincpu.cycle << 4);
@@ -124,12 +124,12 @@ maincpu_exec(void)
 #endif
 
     /*
-     * 実行 
+     * 実行
      */
     main_exec();
 
     /*
-     * テープカウンタ処理 
+     * テープカウンタ処理
      */
     if (tape_motor) {
 	tape_subcnt += (DWORD) (maincpu.cycle << 4);
@@ -151,7 +151,7 @@ void            FASTCALL
 maincpu_nmi(void)
 {
     /*
-     * FM-77の1MB FDD対応(IRQ)で使われているらしい 
+     * FM-77の1MB FDD対応(IRQ)で使われているらしい
      */
     if (maincpu.intr & INTR_SLOAD) {
 	maincpu.intr |= INTR_NMI;
@@ -166,7 +166,7 @@ void            FASTCALL
 maincpu_firq(void)
 {
     /*
-     * BREAKキー及び、サブCPUからのアテンション割り込み 
+     * BREAKキー及び、サブCPUからのアテンション割り込み
      */
     if (break_flag || subattn_flag) {
 	maincpu.intr |= INTR_FIRQ;
@@ -184,10 +184,10 @@ maincpu_irq(void)
 {
 #if XM7_VER == 1
     /*
-     * FM-8モード時のIRQ割り込み設定 
+     * FM-8モード時のIRQ割り込み設定
      */
     if (fm_subtype == FMSUB_FM8) {
-	if (txrdy_irq_flag 
+	if (txrdy_irq_flag
 	    || rxrdy_irq_flag
 	    || syndet_irq_flag) {
 	    maincpu.intr |= INTR_IRQ;
@@ -199,7 +199,7 @@ maincpu_irq(void)
 #endif
 
     /*
-     * IRQ割り込み設定 
+     * IRQ割り込み設定
      */
     if ((key_irq_flag && !(key_irq_mask)) ||
 	timer_irq_flag ||
@@ -221,10 +221,10 @@ maincpu_irq(void)
  *      セーブ
  */
 BOOL            FASTCALL
-maincpu_save(int fileh)
+maincpu_save(SDL_RWops *fileh)
 {
     /*
-     * プラットフォームごとのパッキング差を回避するため、分割 
+     * プラットフォームごとのパッキング差を回避するため、分割
      */
     if (!file_byte_write(fileh, maincpu.cc)) {
 	return FALSE;
@@ -278,17 +278,17 @@ maincpu_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-maincpu_load(int fileh, int ver)
+maincpu_load(SDL_RWops *fileh, int ver)
 {
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
     }
 
     /*
-     * プラットフォームごとのパッキング差を回避するため、分割 
+     * プラットフォームごとのパッキング差を回避するため、分割
      */
     if (!file_byte_read(fileh, &maincpu.cc)) {
 	return FALSE;

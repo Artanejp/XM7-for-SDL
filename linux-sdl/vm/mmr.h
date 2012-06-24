@@ -18,43 +18,43 @@ extern          "C" {
      */
     BOOL FASTCALL   mmr_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   mmr_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   mmr_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   mmr_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   mmr_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
     BOOL FASTCALL   mmr_extrb(WORD * addr, BYTE * dat);
     /*
-     * MMR経由読み出し 
+     * MMR経由読み出し
      */
     BOOL FASTCALL   mmr_extbnio(WORD * addr, BYTE * dat);
     /*
-     * MMR経由読み出し(I/Oなし) 
+     * MMR経由読み出し(I/Oなし)
      */
     BOOL FASTCALL   mmr_extwb(WORD * addr, BYTE dat);
     /*
-     * MMR経由書き込み 
+     * MMR経由書き込み
      */
-    BOOL FASTCALL   mmr_save(int fileh);
+    BOOL FASTCALL   mmr_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   mmr_load(int fileh, int ver);
+    BOOL FASTCALL   mmr_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -62,51 +62,51 @@ extern          "C" {
      */
     extern BOOL     mmr_flag;
     /*
-     * MMR有効フラグ 
+     * MMR有効フラグ
      */
     extern BYTE     mmr_seg;
     /*
-     * MMRセグメント 
+     * MMRセグメント
      */
     extern BOOL     mmr_modify;
     /*
-     * MMR状態変更フラグ 
+     * MMR状態変更フラグ
      */
 #if XM7_VER >= 3
     extern BYTE     mmr_reg[0x80];
     /*
-     * MMRレジスタ 
+     * MMRレジスタ
      */
     extern BOOL     mmr_ext;
     /*
-     * 拡張MMR有効フラグ 
+     * 拡張MMR有効フラグ
      */
     extern BOOL     mmr_fastmode;
     /*
-     * MMR高速フラグ 
+     * MMR高速フラグ
      */
     extern BOOL     mmr_extram;
     /*
-     * 拡張RAM有効フラグ 
+     * 拡張RAM有効フラグ
      */
     extern BOOL     mmr_fast_refresh;
     /*
-     * 高速リフレッシュフラグ 
+     * 高速リフレッシュフラグ
      */
 #else
     extern BYTE     mmr_reg[0x40];
     /*
-     * MMRレジスタ 
+     * MMRレジスタ
      */
 #endif
 
     extern BOOL     twr_flag;
     /*
-     * TWR有効フラグ 
+     * TWR有効フラグ
      */
     extern BYTE     twr_reg;
     /*
-     * TWRレジスタ 
+     * TWRレジスタ
      */
 #ifdef __cplusplus
 }

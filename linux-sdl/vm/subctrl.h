@@ -18,35 +18,35 @@ extern          "C" {
      */
     BOOL FASTCALL   subctrl_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   subctrl_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   subctrl_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     void FASTCALL   subctrl_halt_ack(void);
     /*
-     * HALT/CANCELアクノリッジ 
+     * HALT/CANCELアクノリッジ
      */
     BOOL FASTCALL   subctrl_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   subctrl_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   subctrl_save(int fileh);
+    BOOL FASTCALL   subctrl_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   subctrl_load(int fileh, int ver);
+    BOOL FASTCALL   subctrl_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -54,74 +54,74 @@ extern          "C" {
      */
     extern BOOL     subhalt_flag;
     /*
-     * サブHALTフラグ 
+     * サブHALTフラグ
      */
     extern BOOL     subbusy_flag;
     /*
-     * サブBUSYフラグ 
+     * サブBUSYフラグ
      */
     extern BOOL     subcancel_flag;
     /*
-     * サブキャンセルフラグ 
+     * サブキャンセルフラグ
      */
     extern BOOL     subattn_flag;
     /*
-     * サブアテンションフラグ 
+     * サブアテンションフラグ
      */
     extern BOOL     subhalt_request;
     /*
-     * サブHALTリクエストフラグ 
+     * サブHALTリクエストフラグ
      */
     extern BOOL     subcancel_request;
     /*
-     * サブキャンセルリクエストフラグ 
+     * サブキャンセルリクエストフラグ
      */
     extern BYTE     shared_ram[0x80];
     /*
-     * 共有RAM 
+     * 共有RAM
      */
     extern BOOL     subreset_flag;
     /*
-     * サブ再起動フラグ 
+     * サブ再起動フラグ
      */
     extern BYTE     busy_CLR_count;
     /*
-     * BUSY($D40A) CLR命令実行時カウンタ 
+     * BUSY($D40A) CLR命令実行時カウンタ
      */
     extern BOOL     mode320;
     /*
-     * 320x200モード 
+     * 320x200モード
      */
 #if XM7_VER >= 3
     extern BOOL     mode400l;
     /*
-     * 640x400モード 
+     * 640x400モード
      */
     extern BOOL     mode256k;
     /*
-     * 26万色モード 
+     * 26万色モード
      */
     extern BOOL     subram_protect;
     /*
-     * サブモニタRAMプロテクト 
+     * サブモニタRAMプロテクト
      */
     extern BOOL     subreset_halt;
     /*
-     * HALT中再起動フラグ 
+     * HALT中再起動フラグ
      */
     extern BOOL     subkanji_flag;
     /*
-     * 漢字ROM サブCPU接続フラグ 
+     * 漢字ROM サブCPU接続フラグ
      */
 #endif
 #if XM7_VER == 1 && defined(L4CARD)
     extern BOOL     select_400line;
     /*
-     * 400ラインカードモード 
+     * 400ラインカードモード
      */
     extern BOOL     subkanji_flag;
     /*
-     * 漢字ROM サブCPU接続フラグ 
+     * 漢字ROM サブCPU接続フラグ
      */
 #endif
 #ifdef __cplusplus

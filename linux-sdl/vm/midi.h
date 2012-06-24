@@ -13,7 +13,7 @@
 #ifdef MIDI
 
 /*
- * ステータスレジスタ 
+ * ステータスレジスタ
  */
 //#define	RSS_DSR			0x80
 //#define	RSS_SYNDET		0x40
@@ -25,7 +25,7 @@
 //#define	RSS_TXRDY		0x01
 
 /*
- * モードコマンドレジスタ 
+ * モードコマンドレジスタ
  */
 //#define	RSM_STOPBITM	0xc0
 //#define	RSM_STOPBIT1	0x40
@@ -45,7 +45,7 @@
 //#define	RSM_BAUDDIV64	0x03
 
 /*
- * コマンドレジスタ 
+ * コマンドレジスタ
  */
 //#define	RSC_EH			0x80
 //#define	RSC_IR			0x40
@@ -65,31 +65,31 @@ extern          "C" {
      */
     BOOL FASTCALL   midi_init(void);
     /*
-     * 初期化 
+     * 初期化
      */
     void FASTCALL   midi_cleanup(void);
     /*
-     * クリーンアップ 
+     * クリーンアップ
      */
     void FASTCALL   midi_reset(void);
     /*
-     * リセット 
+     * リセット
      */
     BOOL FASTCALL   midi_readb(WORD addr, BYTE * dat);
     /*
-     * メモリ読み出し 
+     * メモリ読み出し
      */
     BOOL FASTCALL   midi_writeb(WORD addr, BYTE dat);
     /*
-     * メモリ書き込み 
+     * メモリ書き込み
      */
-    BOOL FASTCALL   midi_save(int fileh);
+    BOOL FASTCALL   midi_save(SDL_RWops *fileh);
     /*
-     * セーブ 
+     * セーブ
      */
-    BOOL FASTCALL   midi_load(int fileh, int ver);
+    BOOL FASTCALL   midi_load(SDL_RWops *fileh, int ver);
     /*
-     * ロード 
+     * ロード
      */
 
     /*
@@ -97,7 +97,7 @@ extern          "C" {
      */
     extern BOOL     midi_busy;
     /*
-     * MIDIバッファオーバーフロー 
+     * MIDIバッファオーバーフロー
      */
 #ifdef __cplusplus
 }
