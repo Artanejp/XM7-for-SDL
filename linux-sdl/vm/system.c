@@ -45,7 +45,7 @@
 int             fm7_ver;	/* ハードウェアバージョン */
 int             boot_mode;	/* 起動モード BASIC/DOS */
 #if XM7_VER == 1
-BYTE            fm_subtype;	/* ハードウェアサブバージョン 
+BYTE            fm_subtype;	/* ハードウェアサブバージョン
 				 */
 BOOL            lowspeed_mode;	/* 動作クロックモード */
 BOOL            available_fm8roms;	/* FM-8 ROM使用可能フラグ */
@@ -55,7 +55,7 @@ BOOL            available_fm7roms;	/* FM-7 ROM使用可能フラグ */
 BOOL            available_mmrboot;	/* FM-77 MMRブートROM使用可能フラグ */
 #endif
 
-BOOL            hotreset_flag;	/* メインホットリセットフラグ 
+BOOL            hotreset_flag;	/* メインホットリセットフラグ
 				 */
 BOOL            reset_flag;	/* システムリセットフラグ */
 BYTE            fetch_op;	/* 直前にフェッチした命令 */
@@ -79,7 +79,7 @@ BOOL            FASTCALL
 system_init(void)
 {
     /*
-     * モード設定 
+     * モード設定
      */
 #if XM7_VER >= 3
     fm7_ver = 3;		/* FM77AV40EX相当に設定 */
@@ -100,7 +100,7 @@ system_init(void)
     reset_flag = FALSE;
 
     /*
-     * スケジューラ、メモリバス 
+     * スケジューラ、メモリバス
      */
     if (!schedule_init()) {
 	return FALSE;
@@ -110,7 +110,7 @@ system_init(void)
     }
 
     /*
-     * メモリ、CPU 
+     * メモリ、CPU
      */
     if (!mainmem_init()) {
 	return FALSE;
@@ -131,7 +131,7 @@ system_init(void)
 #endif
 
     /*
-     * その他デバイス 
+     * その他デバイス
      */
     if (!display_init()) {
 	return FALSE;
@@ -210,7 +210,7 @@ void            FASTCALL
 system_cleanup(void)
 {
     /*
-     * その他デバイス 
+     * その他デバイス
      */
 #ifdef MOUSE
     mos_cleanup();
@@ -241,7 +241,7 @@ system_cleanup(void)
     display_cleanup();
 
     /*
-     * メモリ、CPU 
+     * メモリ、CPU
      */
 #if (XM7_VER == 1) && defined(JSUB)
     jsubsys_cleanup();
@@ -252,7 +252,7 @@ system_cleanup(void)
     mainmem_cleanup();
 
     /*
-     * スケジューラ、メモリバス 
+     * スケジューラ、メモリバス
      */
     mmr_cleanup();
     schedule_cleanup();
@@ -266,13 +266,13 @@ void            FASTCALL
 system_reset(void)
 {
     /*
-     * スケジューラ、メモリバス 
+     * スケジューラ、メモリバス
      */
     schedule_reset();
     mmr_reset();
 
     /*
-     * その他デバイス 
+     * その他デバイス
      */
     display_reset();
     ttlpalet_reset();
@@ -306,7 +306,7 @@ system_reset(void)
 #endif
 
     /*
-     * メモリ、CPU 
+     * メモリ、CPU
      */
     mainmem_reset();
     submem_reset();
@@ -317,18 +317,18 @@ system_reset(void)
 #endif
 
     /*
-     * 画面再描画 
+     * 画面再描画
      */
     display_setpointer(FALSE);
     display_notify();
 
     /*
-     * システムリセットフラグを設定 
+     * システムリセットフラグを設定
      */
     reset_flag = TRUE;
 
     /*
-     * フェッチ命令初期化 
+     * フェッチ命令初期化
      */
     fetch_op = 0;
 }
@@ -345,7 +345,7 @@ system_hotreset(void)
 #endif
 
     /*
-     * TWRが有効なら起動モードをDOSに切り替え 
+     * TWRが有効なら起動モードをDOSに切り替え
      */
 #if XM7_VER >= 2
     if (twr_flag) {
@@ -356,24 +356,24 @@ system_hotreset(void)
 #endif
 
     /*
-     * システムリセット 
+     * システムリセット
      */
     system_reset();
 
     /*
-     * BREAKキーを押下状態にする 
+     * BREAKキーを押下状態にする
      */
     break_flag = TRUE;
     maincpu_firq();
 
     /*
-     * ホットリセットフラグ有効 
+     * ホットリセットフラグ有効
      */
     hotreset_flag = TRUE;
 
 #if XM7_VER == 1
     /*
-     * リセット直前にTWRが有効だったら裏RAMを選択 
+     * リセット直前にTWRが有効だったら裏RAMを選択
      */
     if (flag) {
 	basicrom_en = FALSE;
@@ -388,135 +388,135 @@ system_hotreset(void)
 BOOL            FASTCALL
 system_save(char *filename)
 {
-    int             fileh;
+    SDL_RWops       *fileh;
     BOOL            flag;
     ASSERT(filename);
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(filename, OPEN_W);	/* BUG:
-						 * U*ixではWのみのファイルは読み込めない 
+						 * U*ixではWのみのファイルは読み込めない
 						 */
-    if (fileh == -1) {
-	return FALSE;
+    if (fileh == NULL) {
+        return FALSE;
     }
 
     /*
-     * フラグ初期化 
+     * フラグ初期化
      */
     flag = TRUE;
 
     /*
-     * ヘッダをセーブ 
+     * ヘッダをセーブ
      */
     if (!file_write(fileh, (BYTE *) state_header, 16)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 
     /*
-     * システムワーク 
+     * システムワーク
      */
     if (!file_word_write(fileh, (WORD) fm7_ver)) {
-	return FALSE;
+        return FALSE;
     }
     if (!file_word_write(fileh, (WORD) boot_mode)) {
-	return FALSE;
+        return FALSE;
     }
 #if XM7_VER == 1
     if (!file_byte_write(fileh, fm_subtype)) {
-	return FALSE;
+        return FALSE;
     }
     if (!file_bool_write(fileh, lowspeed_mode)) {
-	return FALSE;
+        return FALSE;
     }
     if (!file_bool_write(fileh, available_fm8roms)) {
-	return FALSE;
+        return FALSE;
     }
     if (!file_bool_write(fileh, available_fm7roms)) {
-	return FALSE;
+        return FALSE;
     }
 #endif
 
     /*
-     * 順番に呼び出す 
+     * 順番に呼び出す
      */
     if (!mainmem_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!submem_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!maincpu_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!subcpu_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!schedule_save(fileh)) {
 	flag = FALSE;
     }
     if (!display_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!ttlpalet_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!subctrl_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!keyboard_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!fdc_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!mainetc_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!multipag_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!kanji_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!tapelp_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!opn_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!mmr_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #if XM7_VER >= 2
     if (!aluline_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!rtc_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!apalet_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #endif
     if (!whg_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!thg_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #if XM7_VER >= 3
     if (!jcard_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
     if (!dmac_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #endif
 #ifdef MOUSE
     if (!mos_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #endif
 #ifdef RSC
@@ -526,12 +526,12 @@ system_save(char *filename)
 #endif
 #ifdef MIDI
     if (!midi_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #endif
 #if (XM7_VER == 1) && defined(JSUB)
     if (!jsubsys_save(fileh)) {
-	flag = FALSE;
+        flag = FALSE;
     }
 #endif
     file_close(fileh);
@@ -546,7 +546,7 @@ system_save(char *filename)
 int             FASTCALL
 system_load(char *filename)
 {
-    int             fileh;
+    SDL_RWops       *fileh;
     int             ver;
     char            header[16];
     BOOL            flag;
@@ -560,7 +560,7 @@ system_load(char *filename)
     ASSERT(filename);
 
     /*
-     * ファイルオープン 
+     * ファイルオープン
      */
     fileh = file_open(filename, OPEN_R);
     if (fileh == -1) {
@@ -568,45 +568,45 @@ system_load(char *filename)
     }
 
     /*
-     * フラグ初期化 
+     * フラグ初期化
      */
     flag = TRUE;
     old_scheduler = FALSE;
 
     /*
-     * ヘッダをロード 
+     * ヘッダをロード
      */
     if (!file_read(fileh, (BYTE *) header, 16)) {
-	flag = FALSE;
+        flag = FALSE;
     } else {
-	if (memcmp(header, "XM7 VM STATE ", 13) != 0) {
-	    flag = FALSE;
-	}
+        if (memcmp(header, "XM7 VM STATE ", 13) != 0) {
+            flag = FALSE;
+        }
     }
 
     /*
-     * ヘッダチェック 
+     * ヘッダチェック
      */
     if (!flag) {
-	file_close(fileh);
-	return STATELOAD_HEADERR;
+        file_close(fileh);
+        return STATELOAD_HEADERR;
     }
 
     /*
-     * ファイルバージョン取得、バージョン2以上が対象 
+     * ファイルバージョン取得、バージョン2以上が対象
      */
     if (header[13] != 0x20) {
-	ver = (int) ((BYTE) (header[13] - 0x30) * 100) +
-	    ((BYTE) (header[14] - 0x30) * 10) +
-	    ((BYTE) (header[15] - 0x30));
+        ver = (int) ((BYTE) (header[13] - 0x30) * 100) +
+            ((BYTE) (header[14] - 0x30) * 10) +
+            ((BYTE) (header[15] - 0x30));
     } else {
-	ver = (int) (BYTE) (header[15]);
-	ver -= 0x30;
-	ver *= 100;
+        ver = (int) (BYTE) (header[15]);
+        ver -= 0x30;
+        ver *= 100;
     }
 #if XM7_VER >= 3
     /*
-     * V3 : Ver5未満はロードできない 
+     * V3 : Ver5未満はロードできない
      */
     if ((ver < 200) || ((ver >= 300) && (ver <= 499))) {
 	file_close(fileh);
@@ -614,7 +614,7 @@ system_load(char *filename)
     }
 #elif XM7_VER >= 2
     /*
-     * V2 : Ver8以上・Ver5未満はロードできない 
+     * V2 : Ver8以上・Ver5未満はロードできない
      */
     if ((ver >= 800) || (ver < 200) || ((ver >= 300) && (ver <= 499))) {
 	file_close(fileh);
@@ -622,7 +622,7 @@ system_load(char *filename)
     }
 #else
     /*
-     * V1 : Ver5以上・Ver2未満はロードできない 
+     * V1 : Ver5以上・Ver2未満はロードできない
      */
     if ((ver >= 500) || (ver < 200)) {
 	file_close(fileh);
@@ -637,7 +637,7 @@ system_load(char *filename)
     }
 #if XM7_VER >= 2
     /*
-     * V3.0L30/V2.5L20以前のステートファイルに対処 
+     * V3.0L30/V2.5L20以前のステートファイルに対処
      */
     filesize = file_getsize(fileh);
     if (ver <= 500) {
@@ -660,7 +660,7 @@ system_load(char *filename)
 #endif
 
     /*
-     * システムワーク 
+     * システムワーク
      */
     if (!file_word_read(fileh, &tmp)) {
 	return FALSE;
@@ -679,7 +679,7 @@ system_load(char *filename)
     }
 
     /*
-     * セーブ時に有効だったROMデータがロード時に有効でない場合エラー 
+     * セーブ時に有効だったROMデータがロード時に有効でない場合エラー
      */
     if (!file_bool_read(fileh, &temp)) {
 	return FALSE;
@@ -696,7 +696,7 @@ system_load(char *filename)
 #endif
 
     /*
-     * 順番に呼び出す 
+     * 順番に呼び出す
      */
     if (!mainmem_load(fileh, ver)) {
 	flag = FALSE;
@@ -815,7 +815,7 @@ system_load(char *filename)
 
 #if XM7_VER >= 3
     /*
-     * 400ラインモードのみVRAM配置補正が必要 
+     * 400ラインモードのみVRAM配置補正が必要
      */
     if (mode400l) {
 	if (!fix_vram_address()) {
@@ -825,12 +825,12 @@ system_load(char *filename)
 #endif
 
     /*
-     * 画面再描画 
+     * 画面再描画
      */
     display_notify();
 
     /*
-     * CPU速度比率設定 
+     * CPU速度比率設定
      */
     speed_ratio = 10000;
 
@@ -844,8 +844,7 @@ system_load(char *filename)
 /*
  *      ファイル読み込み(BYTE)
  */
-BOOL            FASTCALL
-file_byte_read(int fileh, BYTE * dat)
+BOOL file_byte_read(SDL_RWops *fileh, BYTE * dat)
 {
     return file_read(fileh, dat, 1);
 }
@@ -853,8 +852,7 @@ file_byte_read(int fileh, BYTE * dat)
 /*
  *      ファイル読み込み(WORD)
  */
-BOOL            FASTCALL
-file_word_read(int fileh, WORD * dat)
+BOOL file_word_read(SDL_RWops *fileh, WORD * dat)
 {
     BYTE            tmp;
 
@@ -875,8 +873,7 @@ file_word_read(int fileh, WORD * dat)
 /*
  *      ファイル読み込み(DWORD)
  */
-BOOL            FASTCALL
-file_dword_read(int fileh, DWORD * dat)
+BOOL file_dword_read(SDL_RWops *fileh, DWORD * dat)
 {
     BYTE            tmp;
 
@@ -909,8 +906,7 @@ file_dword_read(int fileh, DWORD * dat)
 /*
  *      ファイル読み込み(BOOL)
  */
-BOOL            FASTCALL
-file_bool_read(int fileh, BOOL * dat)
+BOOL file_bool_read(SDL_RWops *fileh, BOOL * dat)
 {
     BYTE            tmp;
 
@@ -920,11 +916,11 @@ file_bool_read(int fileh, BOOL * dat)
 
     switch (tmp) {
     case 0:
-	*dat = FALSE;
-	return TRUE;
+        *dat = FALSE;
+        return TRUE;
     case 0xff:
-	*dat = TRUE;
-	return TRUE;
+        *dat = TRUE;
+        return TRUE;
     }
 
     return FALSE;
@@ -933,8 +929,7 @@ file_bool_read(int fileh, BOOL * dat)
 /*
  *      ファイル書き込み(BYTE)
  */
-BOOL            FASTCALL
-file_byte_write(int fileh, BYTE dat)
+BOOL file_byte_write(SDL_RWops *fileh, BYTE dat)
 {
     return file_write(fileh, &dat, 1);
 }
@@ -942,19 +937,18 @@ file_byte_write(int fileh, BYTE dat)
 /*
  *      ファイル書き込み(WORD)
  */
-BOOL            FASTCALL
-file_word_write(int fileh, WORD dat)
+BOOL file_word_write(SDL_RWops *fileh, WORD dat)
 {
     BYTE            tmp;
 
     tmp = (BYTE) (dat >> 8);
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     tmp = (BYTE) (dat & 0xff);
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     return TRUE;
@@ -963,29 +957,28 @@ file_word_write(int fileh, WORD dat)
 /*
  *      ファイル書き込み(DWORD)
  */
-BOOL            FASTCALL
-file_dword_write(int fileh, DWORD dat)
+BOOL file_dword_write(SDL_RWops *fileh, DWORD dat)
 {
     BYTE            tmp;
 
     tmp = (BYTE) (dat >> 24);
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     tmp = (BYTE) (dat >> 16);
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     tmp = (BYTE) (dat >> 8);
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     tmp = (BYTE) (dat & 0xff);
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     return TRUE;
@@ -994,19 +987,18 @@ file_dword_write(int fileh, DWORD dat)
 /*
  *      ファイル書き込み(BOOL)
  */
-BOOL            FASTCALL
-file_bool_write(int fileh, BOOL dat)
+BOOL file_bool_write(SDL_RWops *fileh, BOOL dat)
 {
     BYTE            tmp;
 
     if (dat) {
-	tmp = 0xff;
+        tmp = 0xff;
     } else {
-	tmp = 0;
+        tmp = 0;
     }
 
     if (!file_write(fileh, &tmp, 1)) {
-	return FALSE;
+        return FALSE;
     }
 
     return TRUE;

@@ -1113,7 +1113,7 @@ void FASTCALL submem_writeb(WORD addr, BYTE dat)
  *      サブCPUメモリ
  *      セーブ
  */
-BOOL FASTCALL submem_save(int fileh)
+BOOL FASTCALL submem_save(SDL_RWops *fileh)
 {
 #if XM7_VER >= 3
 	/*
@@ -1237,7 +1237,7 @@ BOOL FASTCALL submem_save(int fileh)
  *      サブCPUメモリ
  *      ロード
  */
-BOOL FASTCALL submem_load(int fileh, int ver)
+BOOL FASTCALL submem_load(SDL_RWops *fileh, int ver)
 {
 #if XM7_VER == 1 && defined(L4CARD)
 	BOOL            tmp;

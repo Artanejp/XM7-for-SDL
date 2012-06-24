@@ -950,7 +950,7 @@ static BOOL fdc_writetrk(void)
     WORD            seclen;
     WORD            writep;
     int             i;
-    int             handle;
+    SDL_RWops       *handle;
     BOOL            ddm;
 
     /*
@@ -1120,16 +1120,16 @@ static BOOL fdc_writetrk(void)
      * ファイルにデータを書きこむ
      */
     handle = file_open(fdc_fname[fdc_drvreg], OPEN_RW);
-    if (handle == -1) {
-	return FALSE;
+    if (handle == NULL) {
+        return FALSE;
     }
     if (!file_seek(handle, fdc_seekofs[fdc_drvreg])) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     if (!file_write(handle, fdc_buffer, (sectors * 0x10) + total)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     file_close(handle);
 
@@ -1145,7 +1145,7 @@ static BOOL fdc_writetrk(void)
 static BOOL fdc_writesec(void)
 {
     DWORD           offset;
-    int             handle;
+    SDL_RWops       *handle;
 
     /*
      * assert
@@ -1165,16 +1165,16 @@ static BOOL fdc_writesec(void)
      * 書き込み
      */
     handle = file_open(fdc_fname[fdc_drvreg], OPEN_RW);
-    if (handle == -1) {
-	return FALSE;
+    if (handle == NULL) {
+        return FALSE;
     }
     if (!file_seek(handle, offset)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     if (!file_write(handle, fdc_dataptr, fdc_totalcnt)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     file_close(handle);
 
@@ -1430,7 +1430,7 @@ static void fdc_readbuf(int drive)
     DWORD           len;
     DWORD           secs;
     int             trkside;
-    int             handle;
+    SDL_RWops       *handle;
     int             max_track;
 
     /*
@@ -1514,7 +1514,7 @@ static void fdc_readbuf(int drive)
 	 */
 	memset(fdc_buffer, 0, 0x1000);
 	handle = file_open(fdc_fname[drive], OPEN_R);
-	if (handle == -1) {
+	if (handle == NULL) {
 	    return;
 	}
 	if (!file_seek(handle, offset)) {
@@ -1573,7 +1573,7 @@ static void fdc_readbuf(int drive)
 	 */
 	memset(fdc_buffer, 0, fdc_trklen[drive]);
 	handle = file_open(fdc_fname[drive], OPEN_R);
-	if (handle == -1) {
+	if (handle == NULL) {
 	    return;
 	}
 	if (!file_seek(handle, offset)) {
@@ -1667,7 +1667,7 @@ static void fdc_readbuf(int drive)
      */
     memset(fdc_buffer, 0, 0x2000);
     handle = file_open(fdc_fname[drive], OPEN_R);
-    if (handle == -1) {
+    if (handle == NULL) {
 	return;
     }
     if (!file_seek(handle, offset)) {
@@ -1686,7 +1686,7 @@ static BOOL fdc_readhead(int drive, int index)
     int             i;
     DWORD           offset;
     DWORD           temp;
-    int             handle;
+    SDL_RWops       *handle;
 
     /*
      * assert
@@ -1704,16 +1704,16 @@ static BOOL fdc_readhead(int drive, int index)
      * シーク、読み込み
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
-    if (handle == -1) {
-	return FALSE;
+    if (handle == NULL) {
+        return FALSE;
     }
     if (!file_seek(handle, offset)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     if (!file_read(handle, fdc_header[drive], 0x2b0)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     file_close(handle);
 
@@ -1725,7 +1725,7 @@ static BOOL fdc_readhead(int drive, int index)
 	/*
 	 * 2D/2DDでない
 	 */
-	return FALSE;
+        return FALSE;
     }
     if (fdc_fwritep[drive]) {
 	fdc_writep[drive] = TRUE;
@@ -1741,22 +1741,22 @@ static BOOL fdc_readhead(int drive, int index)
      * トラックオフセットを設定
      */
     for (i = 0; i < 164; i++) {
-	temp = 0;
-	temp |= fdc_header[drive][0x0020 + i * 4 + 3];
-	temp *= 256;
-	temp |= fdc_header[drive][0x0020 + i * 4 + 2];
-	temp *= 256;
-	temp |= fdc_header[drive][0x0020 + i * 4 + 1];
-	temp *= 256;
-	temp |= fdc_header[drive][0x0020 + i * 4 + 0];
+        temp = 0;
+        temp |= fdc_header[drive][0x0020 + i * 4 + 3];
+        temp *= 256;
+        temp |= fdc_header[drive][0x0020 + i * 4 + 2];
+        temp *= 256;
+        temp |= fdc_header[drive][0x0020 + i * 4 + 1];
+        temp *= 256;
+        temp |= fdc_header[drive][0x0020 + i * 4 + 0];
 
-	if (temp != 0) {
-	    /*
-	     * データあり
-	     */
-	    temp += offset;
-	    *(DWORD *) (&fdc_header[drive][0x0020 + i * 4]) = temp;
-	}
+        if (temp != 0) {
+            /*
+            * データあり
+            */
+            temp += offset;
+            *(DWORD *) (&fdc_header[drive][0x0020 + i * 4]) = temp;
+        }
     }
 
     /*
@@ -1781,7 +1781,7 @@ static BOOL fdc_readhead(int drive, int index)
  */
 static BOOL fdc_readhead_vfd(int drive)
 {
-    int             handle;
+    SDL_RWops        *handle;
 
     /*
      * assert
@@ -1793,16 +1793,16 @@ static BOOL fdc_readhead_vfd(int drive)
      * シーク、読み込み
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
-    if (handle == -1) {
-	return FALSE;
+    if (handle == NULL) {
+        return FALSE;
     }
     if (!file_seek(handle, 0)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     if (!file_read(handle, fdc_header[drive], 0x1e0)) {
-	file_close(handle);
-	return FALSE;
+        file_close(handle);
+        return FALSE;
     }
     file_close(handle);
 
@@ -1816,7 +1816,7 @@ BOOL fdc_setwritep(int drive, BOOL writep)
 {
     BYTE            header[0x2b0];
     DWORD           offset;
-    int             handle;
+    SDL_RWops       *handle;
 
     /*
      * assert
@@ -1828,14 +1828,14 @@ BOOL fdc_setwritep(int drive, BOOL writep)
      * レディでなければならない
      */
     if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
-	return FALSE;
+        return FALSE;
     }
 
     /*
      * ファイルが書き込み不可ならダメ
      */
     if (fdc_fwritep[drive]) {
-	return FALSE;
+        return FALSE;
     }
 
     /*
@@ -1844,7 +1844,7 @@ BOOL fdc_setwritep(int drive, BOOL writep)
     if (fdc_ready[drive] == FDC_TYPE_D77) {
 	offset = fdc_foffset[drive][fdc_media[drive]];
 	handle = file_open(fdc_fname[drive], OPEN_RW);
-	if (handle == -1) {
+	if (handle == NULL) {
 	    return FALSE;
 	}
 	if (!file_seek(handle, offset)) {
@@ -1893,7 +1893,7 @@ BOOL fdc_setmedia(int drive, int index)
      * レディ状態か
      */
     if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
-	return FALSE;
+        return FALSE;
     }
 
     /*
@@ -1905,7 +1905,7 @@ BOOL fdc_setmedia(int drive, int index)
 #else
     if ((fdc_ready[drive] == FDC_TYPE_2D) && (index != 0)) {
 #endif
-	return FALSE;
+        return FALSE;
     }
 
     /*
@@ -1965,7 +1965,7 @@ BOOL fdc_setmedia(int drive, int index)
 static int fdc_chkd77(int drive)
 {
     int             i;
-    int             handle;
+    SDL_RWops       *handle;
     int             count;
     DWORD           offset;
     DWORD           len;
@@ -1975,8 +1975,8 @@ static int fdc_chkd77(int drive)
      * 初期化
      */
     for (i = 0; i < FDC_MEDIAS; i++) {
-	fdc_foffset[drive][i] = 0;
-	fdc_name[drive][i][0] = '\0';
+        fdc_foffset[drive][i] = 0;
+        fdc_name[drive][i][0] = '\0';
     }
     count = 0;
     offset = 0;
@@ -1985,8 +1985,8 @@ static int fdc_chkd77(int drive)
      * ファイルオープン
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
-    if (handle == -1) {
-	return count;
+    if (handle == NULL) {
+        return count;
     }
 
     /*
@@ -2056,35 +2056,35 @@ static int fdc_chkd77(int drive)
 static int fdc_chkvfd(int drive)
 {
     int             i;
-    int             handle;
+    SDL_RWops       *handle;
     BYTE            buf[0x20];
 
     /*
      * 初期化
      */
     for (i = 0; i < FDC_MEDIAS; i++) {
-	fdc_foffset[drive][i] = 0;
-	fdc_name[drive][i][0] = '\0';
+        fdc_foffset[drive][i] = 0;
+        fdc_name[drive][i][0] = '\0';
     }
 
     /*
      * ファイルオープン
      */
     handle = file_open(fdc_fname[drive], OPEN_R);
-    if (handle == -1) {
-	return 0;
+    if (handle == NULL) {
+        return 0;
     }
 
     /*
      * ヘッダのチェック
      */
     if (!file_seek(handle, 0)) {
-	file_close(handle);
-	return 0;
+        file_close(handle);
+        return 0;
     }
     if (!file_read(handle, buf, 0x0020)) {
-	file_close(handle);
-	return 0;
+        file_close(handle);
+        return 0;
     }
     file_close(handle);
 
@@ -2093,7 +2093,7 @@ static int fdc_chkvfd(int drive)
 	/*
 	 * トラック0のオフセットが0x01e0以外ならVFDではない(手抜きだ…)
 	 */
-	return 0;
+        return 0;
     }
 
     return 1;
@@ -2105,7 +2105,7 @@ static int fdc_chkvfd(int drive)
 int fdc_setdisk(int drive, char *fname)
 {
     BOOL            writep;
-    int             handle;
+    SDL_RWops       *handle;
     DWORD           fsize;
     int             count;
 
@@ -2115,30 +2115,29 @@ int fdc_setdisk(int drive, char *fname)
      * ノットレディにする場合
      */
     if (fname == NULL) {
-	fdc_ready[drive] = FDC_TYPE_NOTREADY;
-	fdc_fname[drive][0] = '\0';
-	return 1;
+        fdc_ready[drive] = FDC_TYPE_NOTREADY;
+        fdc_fname[drive][0] = '\0';
+        return 1;
     }
 
     /*
      * ファイルをオープンし、ファイルサイズを調べる
      */
    if (strlen(fname) < sizeof(fdc_fname[drive])) {
-	strcpy(fdc_fname[drive], fname);
-   }
-   else {
-      fdc_ready[drive] = FDC_TYPE_NOTREADY;
-	fdc_fname[drive][0] = '\0';
-	return 1;
+        strcpy(fdc_fname[drive], fname);
+   } else {
+        fdc_ready[drive] = FDC_TYPE_NOTREADY;
+        fdc_fname[drive][0] = '\0';
+        return 1;
    }
     writep = FALSE;
-   handle = file_open(fdc_fname[drive], OPEN_RW);
-    if (handle == -1) {
-	handle = file_open(fdc_fname[drive], OPEN_R);
-	if (handle == -1) {
-	    return 0;
-	}
-	writep = TRUE;
+    handle = file_open(fdc_fname[drive], OPEN_RW);
+    if (handle == NULL) {
+        handle = file_open(fdc_fname[drive], OPEN_R);
+        if (handle == NULL) {
+            return 0;
+        }
+        writep = TRUE;
     }
     fsize = file_getsize(handle);
     file_close(handle);

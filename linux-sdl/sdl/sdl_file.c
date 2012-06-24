@@ -22,7 +22,7 @@
     /*
      *  ファイルロード(ROM専用)
      */
-    BOOL FASTCALL file_load(char *fname, BYTE * buf, int size)
+BOOL file_load(char *fname, BYTE * buf, int size)
 {
     char           path[MAXPATHLEN];
 //    int            handle;
@@ -46,11 +46,11 @@
 
     if (SDL_RWread(handle, buf, 1, size) != size) {
         SDL_RWclose(handle);
-        SDL_FreeRW(handle);
+//        SDL_FreeRW(handle);
         return FALSE;
     }
     SDL_RWclose(handle);
-    SDL_FreeRW(handle);
+//    SDL_FreeRW(handle);
     return TRUE;
 }
 
@@ -58,7 +58,7 @@
     /*
      *  ファイルセーブ(学習RAM専用)
      */
-BOOL FASTCALL file_save(char *fname, BYTE * buf, int size)
+BOOL file_save(char *fname, BYTE * buf, int size)
 {
     char           path[MAXPATHLEN];
     SDL_RWops      *handle;
@@ -81,11 +81,11 @@ BOOL FASTCALL file_save(char *fname, BYTE * buf, int size)
     }
     if (SDL_RWwrite(handle, buf, 1, size) != size) {
         SDL_RWclose(handle);
-        SDL_FreeRW(handle);
+  //      SDL_FreeRW(handle);
         return FALSE;
     }
     SDL_RWclose(handle);
-    SDL_FreeRW(handle);
+ //   SDL_FreeRW(handle);
     return TRUE;
 }
 
@@ -93,8 +93,7 @@ BOOL FASTCALL file_save(char *fname, BYTE * buf, int size)
     /*
      *  ファイルオープン
      */
-int             FASTCALL
-file_open(char *fname, int mode)
+SDL_RWops *file_open(char *fname, int mode)
 {
 
 	/*
@@ -103,40 +102,39 @@ file_open(char *fname, int mode)
 	ASSERT(fname);
     switch (mode) {
     case OPEN_R:
-	return open(fname, O_RDONLY);
-	break;
+        return SDL_RWFromFile(fname, "r");
+        break;
     case OPEN_W:
-	return open(fname, O_CREAT | O_TRUNC | O_WRONLY,
-		     S_IWRITE | S_IRUSR | S_IWUSR);
-	break;
+        return SDL_RWFromFile(fname, "w");
+        break;
     case OPEN_RW:
-	return open(fname, O_RDWR);
-	break;
+        return SDL_RWFromFile(fname, "w+");
+        break;
+	defat:
+        return NULL;
+        break;
     }
-    ASSERT(FALSE);
-    return -1;
 }
 
 
-    /*
-     *  ファイルの属性を変える(Linuxなど)
-     */
-    void
-file_chmod(char *fname, int mode)
+/*
+ *  ファイルの属性を変える(Linuxなど)
+ */
+void file_chmod(char *fname, int mode)
 {
     switch (mode) {
     case OPEN_R:		/* 読み込み専用 */
-	chmod(fname, S_IRUSR);
-	break;
+        chmod(fname, S_IRUSR);
+        break;
     case OPEN_W:
-	chmod(fname, S_IRUSR | S_IWUSR);	/* 読み書き属性に変更する
+        chmod(fname, S_IRUSR | S_IWUSR);	/* 読み書き属性に変更する
 						 */
-	break;
+        break;
     case OPEN_RW:
-	chmod(fname, S_IRUSR | S_IWUSR);
-	break;
+        chmod(fname, S_IRUSR | S_IWUSR);
+        break;
     default:
-	break;
+        break;
     }
 }
 
@@ -144,20 +142,19 @@ file_chmod(char *fname, int mode)
     /*
      *  ファイルクローズ
      */
-void            FASTCALL
-file_close(int handle)
+void file_close(SDL_RWops *handle)
 {
 
 	/*
 	 * assert
 	 */
-	ASSERT(handle >= 0);
-    close(handle);
+	ASSERT(handle == NULL);
+    SDL_RWclose(handle);
 }
     /*
      *  ファイルサイズ取得
      */
-    DWORD FASTCALL file_getsize(int handle)
+DWORD file_getsize(SDL_RWops *handle)
 {
     long           now;
     long           end;
@@ -165,21 +162,21 @@ file_close(int handle)
 	/*
 	 * assert
 	 */
-	ASSERT(handle >= 0);
-    now = lseek(handle, 0L, SEEK_CUR);
+	ASSERT(handle == NULL);
+    now = SDL_RWtell(handle);
     if (now == -1) {
-	return 0;
+        return 0;
     }
-    end = lseek(handle, 0L, SEEK_END);
+    end = SDL_RWseek(handle, 0L, SEEK_END);
     lseek(handle, now, SEEK_SET);
     return end;
 }
 
 
-    /*
-     *  ファイルシーク
-     */
-    BOOL FASTCALL file_seek(int handle, DWORD offset)
+/*
+ *  ファイルシーク
+ */
+BOOL file_seek(SDL_RWops *handle, DWORD offset)
 {
     long           now;
 
@@ -198,19 +195,19 @@ file_close(int handle)
     /*
      *  ファイル読み出し
      */
-    BOOL FASTCALL file_read(int handle, BYTE * ptr, DWORD size)
+BOOL file_read(SDL_RWops *handle, BYTE * ptr, DWORD size)
 {
     unsigned int   cnt;
 
 	/*
 	 * assert
 	 */
-	ASSERT(handle >= 0);
+	ASSERT(handle == NULL);
     ASSERT(ptr);
     ASSERT(size > 0);
-    cnt = read(handle, ptr, size);
+    cnt = SDL_RWread(handle, ptr, 1, size);
     if (cnt != size) {
-	return FALSE;
+        return FALSE;
     }
     return TRUE;
 }
@@ -219,19 +216,19 @@ file_close(int handle)
     /*
      *  ファイル書き込み
      */
-    BOOL FASTCALL file_write(int handle, BYTE * ptr, DWORD size)
+BOOL file_write(SDL_RWops *handle, BYTE * ptr, DWORD size)
 {
     unsigned int   cnt;
 
 	/*
 	 * assert
 	 */
-	ASSERT(handle >= 0);
+	ASSERT(handle == NULL);
     ASSERT(ptr);
     ASSERT(size > 0);
-    cnt = write(handle, ptr, size);
+    cnt = SDL_RWwrite(handle, ptr, 1, size);
     if (cnt != size) {
-	return FALSE;
+        return FALSE;
     }
     return TRUE;
 }

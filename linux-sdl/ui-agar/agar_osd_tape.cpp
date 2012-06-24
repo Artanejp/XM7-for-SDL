@@ -486,7 +486,7 @@ void DrawTape(int override)
 	 * ナンバー計算
 	 */
 	num = 0;
-	if (tape_fileh != -1) {
+	if (tape_fileh != NULL) {
 	    bTapeIn = TRUE;
 		num = (int) ((tape_offset >> 8) % 10000);
 		if (tape_motor && tape_rec) {

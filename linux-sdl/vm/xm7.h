@@ -424,11 +424,11 @@ extern          "C" {
     /*
      * サブCPUメモリ 書き込み
      */
-    BOOL FASTCALL   submem_save(int fileh);
+    BOOL FASTCALL   submem_save(SDL_RWops *fileh);
     /*
      * サブCPUメモリ セーブ
      */
-    BOOL FASTCALL   submem_load(int fileh, int ver);
+    BOOL FASTCALL   submem_load(SDL_RWops *fileh, int ver);
     /*
      * サブCPUメモリ ロード
      */

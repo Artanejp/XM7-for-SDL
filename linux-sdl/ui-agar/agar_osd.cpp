@@ -204,13 +204,12 @@ static void InitMessages(AG_Widget *parent)
     //dummy = AG_BoxNewHoriz(parent, AG_BOX_HFILL);
 //    if(pwCaption == NULL) pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
      pwCaption = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCaptionWidth, nCaptionHeight);
-//     AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
+     AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
 
     for(i = 1; i >= 0 ; i--) {
 //        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
             pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
-
-//           AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
+           AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
     }
 //    AG_SurfaceFree(p);
 }
@@ -241,20 +240,24 @@ static int LinkSurface(void)
 
     // Caption
    nwCaption = 0;
+   if(pwCaption != NULL) {
  	  nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
+      AG_PixmapUpdateCurrentSurface(pwCaption);
+      AG_WidgetShow(pwCaption);
+   }
     // FD
    for(i = 0; i < 2 ; i++) {
-		nwFD[i][ID_EMPTY] = 0;
-		nwFD[i][ID_IN] = AG_PixmapAddSurface(pwFD[i], pFDNorm[i]);
-		nwFD[i][ID_READ] = AG_PixmapAddSurface(pwFD[i], pFDRead[i]);
-		nwFD[i][ID_WRITE] = AG_PixmapAddSurface(pwFD[i], pFDWrite[i]);
-		AG_WidgetShow(pwFD[i]);
+       if(pwFD[i] != NULL){
+            nwFD[i][ID_EMPTY] = 0;
+            nwFD[i][ID_IN] = AG_PixmapAddSurface(pwFD[i], pFDNorm[i]);
+            nwFD[i][ID_READ] = AG_PixmapAddSurface(pwFD[i], pFDRead[i]);
+            nwFD[i][ID_WRITE] = AG_PixmapAddSurface(pwFD[i], pFDWrite[i]);
+            AG_WidgetShow(pwFD[i]);
+       }
     }
     //CMT
    LinkSurfaceCMT();
    LinkSurfaceLeds();
-   AG_PixmapUpdateCurrentSurface(pwCaption);
-   AG_WidgetShow(pwCaption);
 }
 
 /*
@@ -416,7 +419,7 @@ void CreateStatus(AG_Widget *parent)
         InitLeds(parent);
         InitTapeOSD(parent);
         //CreateCMT(parent, TRUE);
-    //    LinkSurface();
+        LinkSurface();
     }
 }
 
@@ -531,7 +534,7 @@ static BOOL UpdateMainCaption(BOOL override)
 	/*
 	 * テープ
 	 */
-	if (tape_fileh != -1) {
+	if (tape_fileh != NULL) {
 
 		/*
 		 * ファイルネーム＋拡張子のみ取り出す
@@ -734,7 +737,7 @@ static void DrawDrive(int drive, BOOL override)
 
 void DrawStatus(void)
 {
-    return;
+//    return;
     DrawMainCaption(FALSE);
 	DrawCAP();
 	DrawKANA();
@@ -750,7 +753,7 @@ void DrawStatus(void)
  */
 void DrawStatusForce(void)
 {
-    return;
+//    return;
 	DrawMainCaption(TRUE);
 	DrawCAP();
 	DrawKANA();

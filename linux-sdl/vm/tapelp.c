@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <SDL/SDL.h>
 #include "xm7.h"
 #include "tapelp.h"
 #include "mainetc.h"
@@ -25,9 +26,9 @@ BOOL            tape_rec;	/* テープ RECフラグ */
 BOOL            tape_writep;	/* テープ 書き込み禁止 */
 WORD            tape_count;	/* テープ サイクルカウンタ */
 DWORD           tape_subcnt;	/* テープ サブカウンタ */
-int             tape_fileh;	/* テープ ファイルハンドル */
+SDL_RWops       *tape_fileh;	/* テープ ファイルハンドル */
 DWORD           tape_offset;	/* テープ ファイルオフセット */
-char            tape_fname[256 + 1];	/* テープ ファイルネーム 
+char            tape_fname[256 + 1];	/* テープ ファイルネーム
 					 */
 
 WORD            tape_incnt;	/* テープ 読み込みカウンタ */
@@ -50,7 +51,7 @@ BOOL            lp_pe;		/* プリンタ PEフラグ */
 BOOL            lp_ackng;	/* プリンタ ACKフラグ */
 BOOL            lp_online;	/* プリンタ オンライン */
 BOOL            lp_strobe;	/* プリンタ ストローブ */
-int             lp_fileh;	/* プリンタ ファイルハンドル */
+SDL_RWops        *lp_fileh;	/* プリンタ ファイルハンドル */
 
 char            lp_fname[256 + 1];	/* プリンタ
 					 * ファイルネーム */
@@ -58,7 +59,7 @@ char            lp_fname[256 + 1];	/* プリンタ
 /*
  *      プロトタイプ宣言
  */
-static void FASTCALL tape_flush(void);	/* テープ書き込みバッファフラッシュ 
+static void FASTCALL tape_flush(void);	/* テープ書き込みバッファフラッシュ
 					 */
 
 
@@ -66,18 +67,17 @@ static void FASTCALL tape_flush(void);	/* テープ書き込みバッファフ�
  *      カセットテープ＆プリンタ
  *      初期化
  */
-BOOL            FASTCALL
-tapelp_init(void)
+BOOL            FASTCALL tapelp_init(void)
 {
     /*
-     * ワークエリア初期化 
+     * ワークエリア初期化
      */
     tape_savebuf = NULL;
 
     /*
-     * テープ 
+     * テープ
      */
-    tape_fileh = -1;
+    tape_fileh = NULL;
     tape_fname[0] = '\0';
     tape_offset = 0;
     tape_fsize = 0;
@@ -91,13 +91,13 @@ tapelp_init(void)
 #endif
 
     /*
-     * プリンタ 
+     * プリンタ
      */
-    lp_fileh = -1;
+    lp_fileh = NULL;
     lp_fname[0] = '\0';
 
     /*
-     * テープ書き込みバッファ 
+     * テープ書き込みバッファ
      */
     tape_savebuf = (BYTE *) malloc(TAPE_SAVEBUFSIZE);
     if (tape_savebuf == NULL) {
@@ -111,38 +111,37 @@ tapelp_init(void)
  *      カセットテープ＆プリンタ
  *      クリーンアップ
  */
-void            FASTCALL
-tapelp_cleanup(void)
+void  FASTCALL tapelp_cleanup(void)
 {
     ASSERT(tape_savebuf);
 
     /*
-     * ファイルを開いていれば、閉じる 
+     * ファイルを開いていれば、閉じる
      */
-    if (tape_fileh != -1) {
-	tape_flush();
-	file_close(tape_fileh);
-	tape_fileh = -1;
+    if (tape_fileh != NULL) {
+        tape_flush();
+        file_close(tape_fileh);
+        tape_fileh = NULL;
     }
 
     /*
-     * モータOFF 
+     * モータOFF
      */
     tape_motor = FALSE;
 
     /*
-     * ファイルを開いていれば、閉じる 
+     * ファイルを開いていれば、閉じる
      */
-    if (lp_fileh != -1) {
-	file_close(lp_fileh);
-	lp_fileh = -1;
+    if (lp_fileh != NULL) {
+        file_close(lp_fileh);
+        lp_fileh = NULL;
     }
 
     /*
-     * 初期化途中で失敗した場合を考慮 
+     * 初期化途中で失敗した場合を考慮
      */
     if (tape_savebuf) {
-	free(tape_savebuf);
+        free(tape_savebuf);
     }
 }
 
@@ -150,17 +149,16 @@ tapelp_cleanup(void)
  *      カセットテープ＆プリンタ
  *      リセット
  */
-void            FASTCALL
-tapelp_reset(void)
+void            FASTCALL tapelp_reset(void)
 {
     /*
-     * 未出力データがあればフラッシュする 
+     * 未出力データがあればフラッシュする
      */
     tape_flush();
 
 #ifdef FDDSND
     /*
-     * カセットモータOFF 
+     * カセットモータOFF
      */
     if (tape_motor && tape_sound) {
 	wav_notify(SOUND_CMTMOTOROFF);
@@ -190,27 +188,26 @@ tapelp_reset(void)
  *      プリンタ
  *      データ出力
  */
-static void     FASTCALL
-lp_output(BYTE dat)
+static void FASTCALL lp_output(BYTE dat)
 {
     /*
-     * オープンしていなければ，開く 
+     * オープンしていなければ，開く
      */
-    if (lp_fileh == -1) {
-	if (lp_fname[0] != '\0') {
-	    lp_fileh = file_open(lp_fname, OPEN_W);
-	}
+    if (lp_fileh == NULL) {
+        if (lp_fname[0] != '\0') {
+            lp_fileh = file_open(lp_fname, OPEN_W);
+        }
     }
 
     /*
-     * オープンチェック 
+     * オープンチェック
      */
-    if (lp_fileh == -1) {
-	return;
+    if (lp_fileh == NULL) {
+        return;
     }
 
     /*
-     * アペンド 
+     * アペンド
      */
     file_write(lp_fileh, &dat, 1);
 }
@@ -223,15 +220,15 @@ void            FASTCALL
 lp_setfile(char *fname)
 {
     /*
-     * 一度開いていれば、閉じる 
+     * 一度開いていれば、閉じる
      */
-    if (lp_fileh != -1) {
+    if (lp_fileh != NULL) {
 	file_close(lp_fileh);
-	lp_fileh = -1;
+	lp_fileh = NULL;
     }
 
     /*
-     * ファイル名セット 
+     * ファイル名セット
      */
     if (fname == NULL) {
 	lp_fname[0] = '\0';
@@ -254,17 +251,17 @@ lp_setfile(char *fname)
 static void     FASTCALL
 tape_flush(void)
 {
-    if (tape_fileh != -1) {
+    if (tape_fileh != NULL) {
 	/*
-	 * 録音状態でバッファ内にデータがあればファイルに書き出す 
+	 * 録音状態でバッファ内にデータがあればファイルに書き出す
 	 */
-	if ((tape_rec) && (tape_saveptr > 0)) {
-	    file_write(tape_fileh, tape_savebuf, tape_saveptr);
-	}
+        if ((tape_rec) && (tape_saveptr > 0)) {
+            file_write(tape_fileh, tape_savebuf, tape_saveptr);
+        }
     }
 
     /*
-     * 書き込みポインタを初期化 
+     * 書き込みポインタを初期化
      */
     tape_saveptr = 0;
 }
@@ -277,12 +274,12 @@ static void     FASTCALL
 tape_byte_write(BYTE dat)
 {
     /*
-     * バッファにデータを追加 
+     * バッファにデータを追加
      */
     tape_savebuf[tape_saveptr++] = dat;
 
     /*
-     * バッファがいっぱいになったらデータを書き出す 
+     * バッファがいっぱいになったらデータを書き出す
      */
     if (tape_saveptr >= TAPE_SAVEBUFSIZE) {
 	tape_flush();
@@ -301,39 +298,39 @@ tape_input(BOOL flag)
     WORD            dat;
 
     /*
-     * モータが回っているか 
+     * モータが回っているか
      */
     if (!tape_motor) {
 	return;
     }
 
     /*
-     * 録音されていれば入力できない 
+     * 録音されていれば入力できない
      */
     if (tape_rec) {
 	return;
     }
 
     /*
-     * 本番でない場合、既にデータフェッチしている場合は何もしない 
+     * 本番でない場合、既にデータフェッチしている場合は何もしない
      */
     if (!flag && tape_fetch) {
 	return;
     }
 
     /*
-     * シングルカウンタが入力カウンタを越えていれば、0にする 
+     * シングルカウンタが入力カウンタを越えていれば、0にする
      */
     while (tape_count >= tape_incnt) {
 	tape_count -= tape_incnt;
 	tape_incnt = 0;
 
 	/*
-	 * データフェッチ 
+	 * データフェッチ
 	 */
 	tape_in = FALSE;
 
-	if (tape_fileh == -1) {
+	if (tape_fileh == NULL) {
 	    return;
 	}
 
@@ -352,7 +349,7 @@ tape_input(BOOL flag)
 	}
 
 	/*
-	 * データ設定 
+	 * データ設定
 	 */
 	dat = (WORD) (high * 256 + low);
 	if (dat > 0x7fff) {
@@ -360,24 +357,24 @@ tape_input(BOOL flag)
 	}
 
 	/*
-	 * データフェッチ済みフラグを設定 
+	 * データフェッチ済みフラグを設定
 	 */
 	tape_fetch = !flag;
 
 	/*
-	 * 本番の入力でない場合はここまで 
+	 * 本番の入力でない場合はここまで
 	 */
 	if (!flag) {
 	    return;
 	}
 
 	/*
-	 * カウンタ設定 
+	 * カウンタ設定
 	 */
 	tape_incnt = (WORD) (dat & 0x7fff);
 
 	/*
-	 * カウンタを先繰りする 
+	 * カウンタを先繰りする
 	 */
 	if (tape_count > tape_incnt) {
 	    tape_count -= tape_incnt;
@@ -388,7 +385,7 @@ tape_input(BOOL flag)
 	}
 
 	/*
-	 * オフセット更新 
+	 * オフセット更新
 	 */
 	tape_offset += 2;
     }
@@ -406,35 +403,35 @@ tape_output(BOOL flag)
                     low;
 
     /*
-     * テープが回っているか 
+     * テープが回っているか
      */
     if (!tape_motor) {
 	return;
     }
 
     /*
-     * 録音中か 
+     * 録音中か
      */
     if (!tape_rec) {
 	return;
     }
 
     /*
-     * カウンタが回っているか 
+     * カウンタが回っているか
      */
     if (tape_count == 0) {
 	return;
     }
 
     /*
-     * 書き込み可能か 
+     * 書き込み可能か
      */
     if (tape_writep) {
 	return;
     }
 
     /*
-     * ファイルがオープンされていれば、データ書き込み 
+     * ファイルがオープンされていれば、データ書き込み
      */
     dat = tape_count;
     if (dat >= 0x8000) {
@@ -445,7 +442,7 @@ tape_output(BOOL flag)
     }
     high = (BYTE) (dat >> 8);
     low = (BYTE) (dat & 0xff);
-    if (tape_fileh != -1) {
+    if (tape_fileh != NULL) {
 	tape_byte_write(high);
 	tape_byte_write(low);
 
@@ -456,7 +453,7 @@ tape_output(BOOL flag)
     }
 
     /*
-     * カウンタをリセット 
+     * カウンタをリセット
      */
     tape_count = 0;
     tape_subcnt = 0;
@@ -470,30 +467,30 @@ static void     FASTCALL
 tape_mark(void)
 {
     /*
-     * テープが回っているか 
+     * テープが回っているか
      */
     if (!tape_motor) {
 	return;
     }
 
     /*
-     * 録音中か 
+     * 録音中か
      */
     if (!tape_rec) {
 	return;
     }
 
     /*
-     * 書き込み可能か 
+     * 書き込み可能か
      */
     if (tape_writep) {
 	return;
     }
 
     /*
-     * ファイルがオープンされていれば、データ書き込み 
+     * ファイルがオープンされていれば、データ書き込み
      */
-    if (tape_fileh != -1) {
+    if (tape_fileh != NULL) {
 	tape_byte_write(0);
 	tape_byte_write(0);
 
@@ -514,14 +511,14 @@ tape_rew(void)
     WORD            dat;
 
     /*
-     * 条件判定 
+     * 条件判定
      */
-    if (tape_fileh == -1) {
+    if (tape_fileh == NULL) {
 	return;
     }
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(tape_fsize >= 16);
     ASSERT(tape_offset >= 16);
@@ -529,13 +526,13 @@ tape_rew(void)
     ASSERT(!(tape_offset & 0x01));
 
     /*
-     * 録音中ならいったんフラッシュ 
+     * 録音中ならいったんフラッシュ
      */
     tape_flush();
 
     while (tape_offset > 16) {
 	/*
-	 * ２バイト前に戻り、読み込み 
+	 * ２バイト前に戻り、読み込み
 	 */
 	tape_offset -= 2;
 	if (!file_seek(tape_fileh, tape_offset)) {
@@ -544,7 +541,7 @@ tape_rew(void)
 	file_read(tape_fileh, (BYTE *) & dat, 2);
 
 	/*
-	 * $0000なら、そこに設定 
+	 * $0000なら、そこに設定
 	 */
 	if (dat == 0) {
 	    file_seek(tape_fileh, tape_offset);
@@ -552,7 +549,7 @@ tape_rew(void)
 	}
 
 	/*
-	 * いま読み込んだ分だけ戻す 
+	 * いま読み込んだ分だけ戻す
 	 */
 	if (!file_seek(tape_fileh, tape_offset)) {
 	    return;
@@ -570,14 +567,14 @@ tape_ff(void)
     WORD            dat;
 
     /*
-     * 条件判定 
+     * 条件判定
      */
-    if (tape_fileh == -1) {
+    if (tape_fileh == NULL) {
 	return;
     }
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(tape_fsize >= 16);
     ASSERT(tape_offset >= 16);
@@ -585,13 +582,13 @@ tape_ff(void)
     ASSERT(!(tape_offset & 0x01));
 
     /*
-     * 録音中ならいったんフラッシュ 
+     * 録音中ならいったんフラッシュ
      */
     tape_flush();
 
     while (tape_offset < tape_fsize) {
 	/*
-	 * 先へ進める 
+	 * 先へ進める
 	 */
 	tape_offset += 2;
 	if (tape_offset >= tape_fsize) {
@@ -603,7 +600,7 @@ tape_ff(void)
 	file_read(tape_fileh, (BYTE *) & dat, 2);
 
 	/*
-	 * $0000なら、その次に設定 
+	 * $0000なら、その次に設定
 	 */
 	if (dat == 0) {
 	    tape_offset += 2;
@@ -627,14 +624,14 @@ tape_rew2(void)
     WORD            flag;
 
     /*
-     * 条件判定 
+     * 条件判定
      */
-    if (tape_fileh == -1) {
+    if (tape_fileh == NULL) {
 	return;
     }
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(tape_fsize >= 16);
     ASSERT(tape_offset >= 16);
@@ -642,18 +639,18 @@ tape_rew2(void)
     ASSERT(!(tape_offset & 0x01));
 
     /*
-     * 録音中ならいったんフラッシュ 
+     * 録音中ならいったんフラッシュ
      */
     tape_flush();
 
     /*
-     * データ状態を初期化 
+     * データ状態を初期化
      */
     flag = -1;
 
     while (tape_offset > 16) {
 	/*
-	 * ２バイト前に戻り、読み込み 
+	 * ２バイト前に戻り、読み込み
 	 */
 	tape_offset -= 2;
 	if (!file_seek(tape_fileh, tape_offset)) {
@@ -662,7 +659,7 @@ tape_rew2(void)
 	file_read(tape_fileh, (BYTE *) & dat, 2);
 
 	/*
-	 * しばらくデータが変化していなければ変化するまで戻す 
+	 * しばらくデータが変化していなければ変化するまで戻す
 	 */
 	if (((WORD) (dat & 0x8000) == flag) &&
 	    ((WORD) (dat & 0x7fff) == 0x7fff)) {
@@ -681,7 +678,7 @@ tape_rew2(void)
 	}
 
 	/*
-	 * データ状態を保存 
+	 * データ状態を保存
 	 */
 	flag = (WORD) (dat & 0x8000);
     }
@@ -698,14 +695,14 @@ tape_ff2(void)
     WORD            flag;
 
     /*
-     * 条件判定 
+     * 条件判定
      */
-    if (tape_fileh == -1) {
+    if (tape_fileh == NULL) {
 	return;
     }
 
     /*
-     * assert 
+     * assert
      */
     ASSERT(tape_fsize >= 16);
     ASSERT(tape_offset >= 16);
@@ -713,18 +710,18 @@ tape_ff2(void)
     ASSERT(!(tape_offset & 0x01));
 
     /*
-     * 録音中ならいったんフラッシュ 
+     * 録音中ならいったんフラッシュ
      */
     tape_flush();
 
     /*
-     * データ状態を初期化 
+     * データ状態を初期化
      */
     flag = -1;
 
     while (tape_offset < tape_fsize) {
 	/*
-	 * 先へ進める 
+	 * 先へ進める
 	 */
 	tape_offset += 2;
 	if (tape_offset >= tape_fsize) {
@@ -736,7 +733,7 @@ tape_ff2(void)
 	file_read(tape_fileh, (BYTE *) & dat, 2);
 
 	/*
-	 * しばらくデータが変化してければ変化するまで進める 
+	 * しばらくデータが変化してければ変化するまで進める
 	 */
 	if (((WORD) (dat & 0x8000) == flag) &&
 	    ((WORD) (dat & 0x7fff) == 0x7fff)) {
@@ -759,7 +756,7 @@ tape_ff2(void)
 	}
 
 	/*
-	 * データ状態を保存 
+	 * データ状態を保存
 	 */
 	flag = (WORD) (dat & 0x8000);
     }
@@ -777,34 +774,34 @@ tape_setfile(char *fname)
     char            buf[17];
 
     /*
-     * 一度開いていれば、閉じる 
+     * 一度開いていれば、閉じる
      */
-    if (tape_fileh != -1) {
-	tape_flush();
-	file_close(tape_fileh);
-	tape_fileh = -1;
-	tape_writep = FALSE;
-    }
+    if (tape_fileh != NULL) {
+        tape_flush();
+        file_close(tape_fileh);
+        tape_fileh = NULL;
+        tape_writep = FALSE;
+        }
 
     /*
-     * ファイル名セット 
+     * ファイル名セット
      */
     if (fname == NULL) {
-	tape_fname[0] = '\0';
+        tape_fname[0] = '\0';
     } else {
-	if (strlen(fname) < sizeof(tape_fname)) {
-	    strcpy(tape_fname, fname);
-	} else {
-	    tape_fname[0] = '\0';
-	}
+        if (strlen(fname) < sizeof(tape_fname)) {
+            strcpy(tape_fname, fname);
+        } else {
+            tape_fname[0] = '\0';
+        }
     }
 
     /*
-     * ファイルオープンを試みる 
+     * ファイルオープンを試みる
      */
     if (tape_fname[0] != '\0') {
 	tape_fileh = file_open(tape_fname, OPEN_RW);
-	if (tape_fileh != -1) {
+	if (tape_fileh != NULL) {
 	    tape_writep = FALSE;
 	} else {
 	    tape_fileh = file_open(tape_fname, OPEN_R);
@@ -813,20 +810,20 @@ tape_setfile(char *fname)
     }
 
     /*
-     * 開けていれば、ヘッダを読み込みチェック 
+     * 開けていれば、ヘッダを読み込みチェック
      */
-    if (tape_fileh != -1) {
+    if (tape_fileh != NULL) {
 	memset(buf, 0, sizeof(buf));
 	file_read(tape_fileh, (BYTE *) buf, 16);
 	if (strcmp(buf, header) != 0) {
 	    file_close(tape_fileh);
-	    tape_fileh = -1;
+	    tape_fileh = NULL;
 	    tape_writep = FALSE;
 	}
     }
 
     /*
-     * フラグの処理 
+     * フラグの処理
      */
     tape_setrec(FALSE);
     tape_count = 0;
@@ -834,9 +831,9 @@ tape_setfile(char *fname)
     tape_subcnt = 0;
 
     /*
-     * ファイルが開けていれば、ファイルサイズ、オフセットを決定 
+     * ファイルが開けていれば、ファイルサイズ、オフセットを決定
      */
-    if (tape_fileh != -1) {
+    if (tape_fileh != NULL) {
 	tape_fsize = file_getsize(tape_fileh);
 	tape_offset = 16;
     }
@@ -850,7 +847,7 @@ void            FASTCALL
 tape_setrec(BOOL flag)
 {
     /*
-     * モータが回っていれば、マーカを書き込む 
+     * モータが回っていれば、マーカを書き込む
      */
     if (tape_motor && !tape_rec) {
 	if (flag) {
@@ -860,7 +857,7 @@ tape_setrec(BOOL flag)
 	}
     } else {
 	/*
-	 * 録音終了なら、書き込みバッファをフラッシュ 
+	 * 録音終了なら、書き込みバッファをフラッシュ
 	 */
 	if (tape_motor && tape_rec) {
 	    if (!flag) {
@@ -882,14 +879,14 @@ tape_outsnd(void)
     if (tape_motor) {
 	if (tape_rec) {
 	    /*
-	     * 録音 
+	     * 録音
 	     */
 	    if (!tape_writep) {
 		tape_notify(tape_out);
 	    }
 	} else {
 	    /*
-	     * 再生 
+	     * 再生
 	     */
 	    tape_input(FALSE);
 	    tape_notify(tape_in);
@@ -912,14 +909,14 @@ tapelp_readb(WORD addr, BYTE * dat)
     BYTE            joy;
 
     /*
-     * アドレスチェック 
+     * アドレスチェック
      */
     if (addr != 0xfd02) {
 	return FALSE;
     }
 
     /*
-     * プリンタ ステータス作成 
+     * プリンタ ステータス作成
      */
     ret = 0x70;
     if (lp_busy) {
@@ -936,47 +933,47 @@ tapelp_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * プリンタ未接続なら、電波新聞社ジョイスティック 
+     * プリンタ未接続なら、電波新聞社ジョイスティック
      */
-    if ((lp_fileh == -1) || (lp_fname[0] == '\0')) {
+    if ((lp_fileh == NULL) || (lp_fname[0] == '\0')) {
 	/*
-	 * 初期化、取得 
+	 * 初期化、取得
 	 */
 	ret |= 0x0f;
 	joy = joy_request(2);
 
 	/*
-	 * 右 
+	 * 右
 	 */
 	if (!(lp_data & 0x01) && (joy & 0x08)) {
 	    ret &= ~0x08;
 	}
 	/*
-	 * 左 
+	 * 左
 	 */
 	if (!(lp_data & 0x02) && (joy & 0x04)) {
 	    ret &= ~0x08;
 	}
 	/*
-	 * 上 
+	 * 上
 	 */
 	if (!(lp_data & 0x04) && (joy & 0x01)) {
 	    ret &= ~0x08;
 	}
 	/*
-	 * 下 
+	 * 下
 	 */
 	if (!(lp_data & 0x08) && (joy & 0x02)) {
 	    ret &= ~0x08;
 	}
 	/*
-	 * J2 
+	 * J2
 	 */
 	if (!(lp_data & 0x10) && (joy & 0x20)) {
 	    ret &= ~0x08;
 	}
 	/*
-	 * J1 
+	 * J1
 	 */
 	if (!(lp_data & 0x20) && (joy & 0x10)) {
 	    ret &= ~0x08;
@@ -984,7 +981,7 @@ tapelp_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * カセット データ作成 
+     * カセット データ作成
      */
     tape_input(TRUE);
     if (tape_in) {
@@ -992,7 +989,7 @@ tapelp_readb(WORD addr, BYTE * dat)
     }
 
     /*
-     * ok 
+     * ok
      */
     *dat = ret;
     return TRUE;
@@ -1007,11 +1004,11 @@ tapelp_writeb(WORD addr, BYTE dat)
 {
     switch (addr) {
 	/*
-	 * カセット制御、プリンタ制御 
+	 * カセット制御、プリンタ制御
 	 */
     case 0xfd00:
 	/*
-	 * プリンタ オンライン 
+	 * プリンタ オンライン
 	 */
 	if (dat & 0x80) {
 	    lp_online = FALSE;
@@ -1020,7 +1017,7 @@ tapelp_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * プリンタ ストローブ 
+	 * プリンタ ストローブ
 	 */
 	if (dat & 0x40) {
 	    lp_strobe = TRUE;
@@ -1033,7 +1030,7 @@ tapelp_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * テープ 出力データ 
+	 * テープ 出力データ
 	 */
 	if (dat & 0x01) {
 	    if (!tape_out) {
@@ -1048,12 +1045,12 @@ tapelp_writeb(WORD addr, BYTE dat)
 	}
 
 	/*
-	 * テープ モータ 
+	 * テープ モータ
 	 */
 	if (dat & 0x02) {
 	    if (!tape_motor) {
 		/*
-		 * 新規スタート 
+		 * 新規スタート
 		 */
 		tape_count = 0;
 		tape_subcnt = 0;
@@ -1077,7 +1074,7 @@ tapelp_writeb(WORD addr, BYTE dat)
 	    schedule_delevent(EVENT_TAPEMON);
 
 	    /*
-	     * モータ停止 
+	     * モータ停止
 	     */
 	    tape_motor = FALSE;
 	    tape_flush();
@@ -1086,7 +1083,7 @@ tapelp_writeb(WORD addr, BYTE dat)
 	return TRUE;
 
 	/*
-	 * プリンタ出力データ 
+	 * プリンタ出力データ
 	 */
     case 0xfd01:
 	lp_data = dat;
@@ -1101,12 +1098,12 @@ tapelp_writeb(WORD addr, BYTE dat)
  *      セーブ
  */
 BOOL            FASTCALL
-tapelp_save(int fileh)
+tapelp_save(SDL_RWops *fileh)
 {
     BOOL            tmp;
 
     /*
-     * ステートセーブ前に書き込みバッファをフラッシュ 
+     * ステートセーブ前に書き込みバッファをフラッシュ
      */
     tape_flush();
 
@@ -1139,7 +1136,7 @@ tapelp_save(int fileh)
 	return FALSE;
     }
 
-    tmp = (tape_fileh != -1);
+    tmp = (tape_fileh != NULL);
     if (!file_bool_write(fileh, tmp)) {
 	return FALSE;
     }
@@ -1185,7 +1182,7 @@ tapelp_save(int fileh)
  *      ロード
  */
 BOOL            FASTCALL
-tapelp_load(int fileh, int ver)
+tapelp_load(SDL_RWops *fileh, int ver)
 {
     DWORD           offset;
     char            fname[256 + 1];
@@ -1195,7 +1192,7 @@ tapelp_load(int fileh, int ver)
 
 
     /*
-     * バージョンチェック 
+     * バージョンチェック
      */
     if (ver < 200) {
 	return FALSE;
@@ -1264,12 +1261,12 @@ tapelp_load(int fileh, int ver)
     }
 
     /*
-     * マウント 
+     * マウント
      */
     tape_setfile(NULL);
     if (flag) {
 	tape_setfile(fname);
-	if ((tape_fileh != -1) && ((tape_fsize + 1) >= offset)) {
+	if ((tape_fileh != NULL) && ((tape_fsize + 1) >= offset)) {
 	    file_seek(tape_fileh, offset);
 	    tape_offset = offset;
 	}
@@ -1279,7 +1276,7 @@ tapelp_load(int fileh, int ver)
 	return FALSE;
     }
     /*
-     * tape_fsizeは無効 
+     * tape_fsizeは無効
      */
     if (!file_dword_read(fileh, &offset)) {
 	return FALSE;
@@ -1314,7 +1311,7 @@ tapelp_load(int fileh, int ver)
     schedule_handle(EVENT_TAPEMON, tape_outsnd);
 
     /*
-     * その他のワークエリアを初期化 
+     * その他のワークエリアを初期化
      */
     tape_saveptr = 0;
     tape_fetch = FALSE;
