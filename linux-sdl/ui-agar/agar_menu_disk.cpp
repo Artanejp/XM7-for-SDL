@@ -136,7 +136,7 @@ static void OnOpenDiskSub(int Drive, char *sFilename)
     ResetSch();
     UnlockVM();
 #ifdef _WINDOWS
-    p = strrchr(sFilename, '\\');
+    p = _mbsrchr(sFilename, '\\');
 #else
     p = strrchr(sFilename, '/');
 #endif
@@ -171,7 +171,7 @@ static void OnOpenDiskBothSub(char *sFilename)
     ResetSch();
     UnlockVM();
 #ifdef _WINDOWS
-    p = strrchr(sFilename, '\\');
+    p = _mbsrchr(sFilename, '\\');
 #else
     p = strrchr(sFilename, '/');
 #endif

@@ -63,7 +63,10 @@ typedef unsigned int UINT;
 extern "C"
 {
 #endif	/*  */
-
+/*
+ * 外部変数
+ */
+extern unsigned char* _mbsrchr(const unsigned char* string, unsigned int c);
 /*
  *  主要エントリ
  */
