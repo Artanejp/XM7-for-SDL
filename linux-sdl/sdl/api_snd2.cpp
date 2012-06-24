@@ -218,6 +218,7 @@ void CleanSnd(void)
 	if(bWavCapture) {
 		CloseCaptureSnd();
 	}
+    Mix_CloseAudio();
     if(applySem) {
         SDL_SemWait(applySem);
     }

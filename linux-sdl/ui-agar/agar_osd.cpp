@@ -56,6 +56,8 @@ static AG_Surface      *pFDRead[2]; /* Drive0 Read */
 static AG_Surface      *pFDWrite[2]; /* Drive0 Write */
 static AG_Surface      *pFDNorm[2]; /* Drive0 Normal */
 static AG_Surface      *pCaption; /* Caption */
+static AG_Pixmap       *pwCaption;
+static AG_Pixmap       *ppwFD[2];
 
 /*  リサイズ */
 static int nVfdWidth;
@@ -73,8 +75,6 @@ static AG_Color 		black;
 static AG_Color			alpha;
 static BOOL bGLMode; /* 描画にOpenGLを使うか否か*/
 
-static AG_Pixmap *pwCaption;
-static AG_Pixmap *pwFD[2];
 
 static int nwCaption;
 static int nwFD[2][4]; // R/W/Noaccess/Empty
@@ -208,8 +208,8 @@ static void InitMessages(AG_Widget *parent)
 
     for(i = 1; i >= 0 ; i--) {
 //        if(pwFD[i] == NULL) pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
-            pwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
-           AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
+            ppwFD[i] = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nVfdWidth, nVfdHeight);
+           AG_WidgetSetSize(ppwFD[i], nVfdWidth, nVfdHeight);
     }
     AG_SurfaceFree(p);
 }
@@ -247,12 +247,12 @@ static int LinkSurface(void)
    }
     // FD
    for(i = 0; i < 2 ; i++) {
-       if(pwFD[i] != NULL){
+       if(ppwFD[i] != NULL){
             nwFD[i][ID_EMPTY] = 0;
-            nwFD[i][ID_IN] = AG_PixmapAddSurface(pwFD[i], pFDNorm[i]);
-            nwFD[i][ID_READ] = AG_PixmapAddSurface(pwFD[i], pFDRead[i]);
-            nwFD[i][ID_WRITE] = AG_PixmapAddSurface(pwFD[i], pFDWrite[i]);
-            AG_WidgetShow(pwFD[i]);
+            nwFD[i][ID_IN] = AG_PixmapAddSurface(ppwFD[i], pFDNorm[i]);
+            nwFD[i][ID_READ] = AG_PixmapAddSurface(ppwFD[i], pFDRead[i]);
+            nwFD[i][ID_WRITE] = AG_PixmapAddSurface(ppwFD[i], pFDWrite[i]);
+            AG_WidgetShow(ppwFD[i]);
        }
     }
     //CMT
@@ -398,7 +398,7 @@ void CreateStatus(AG_Widget *parent)
     pFDRead[1] = pFDWrite[1] = pFDNorm[1] = NULL;
     nVfdHeight = VFD_HEIGHT * 2;
     nVfdWidth = VFD_WIDTH * 2;
-    pwFD[0] = pwFD[1] = NULL;
+    ppwFD[0] = ppwFD[1] = NULL;
     pwCaption = NULL;
     CreateVFD(parent, TRUE);
     CreateCMT(parent, TRUE);
@@ -690,7 +690,7 @@ static void DrawDrive(int drive, BOOL override)
 		  */
 		 memset(szOldDrive[drive], 0, 16);
 		 strncpy(szOldDrive[drive], szDrive[drive], 16);
-	    if(pwFD[drive] == NULL) return;
+	    if(ppwFD[drive] == NULL) return;
 		 pIn = string;
 		 pOut = utf8;
 		 in = strlen(pIn);
@@ -711,23 +711,23 @@ static void DrawDrive(int drive, BOOL override)
 			 }
 			 old_writep[drive] = fdc_writep[drive];
 		 }
-	    if(pwFD[drive] != NULL){
-	       AG_ObjectLock(pwFD[drive]);
+	    if(ppwFD[drive] != NULL){
+	       AG_ObjectLock(ppwFD[drive]);
 	       UpdateVFDMessages(drive, outstr);
-	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_IN]);
-	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_READ]);
-	       AG_PixmapUpdateSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
-	       AG_ObjectUnlock(pwFD[drive]);
+	       AG_PixmapUpdateSurface(ppwFD[drive], nwFD[drive][ID_IN]);
+	       AG_PixmapUpdateSurface(ppwFD[drive], nwFD[drive][ID_READ]);
+	       AG_PixmapUpdateSurface(ppwFD[drive], nwFD[drive][ID_WRITE]);
+	       AG_ObjectUnlock(ppwFD[drive]);
 	    }
 	 }
 	 if (nDrive[drive] == FDC_ACCESS_READ) {
-	    if(nwFD[drive][ID_READ] >= 0)  AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_READ]);
+	    if(nwFD[drive][ID_READ] >= 0)  AG_PixmapSetSurface(ppwFD[drive], nwFD[drive][ID_READ]);
 	 } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
-	    if(nwFD[drive][ID_WRITE] >= 0) AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_WRITE]);
+	    if(nwFD[drive][ID_WRITE] >= 0) AG_PixmapSetSurface(ppwFD[drive], nwFD[drive][ID_WRITE]);
 	 } else {
-	    if(nwFD[drive][ID_IN] >= 0) AG_PixmapSetSurface(pwFD[drive], nwFD[drive][ID_IN]);
+	    if(nwFD[drive][ID_IN] >= 0) AG_PixmapSetSurface(ppwFD[drive], nwFD[drive][ID_IN]);
 	 }
-	   AG_Redraw(pwFD[drive]);
+	   AG_Redraw(ppwFD[drive]);
 }
 
 
@@ -740,9 +740,9 @@ void DrawStatus(void)
 {
 //    return;
     //DrawMainCaption(FALSE);
-	DrawCAP();
-	DrawKANA();
-	DrawINS();
+//	DrawCAP();
+//	DrawKANA();
+	//DrawINS();
 	//DrawDrive(0, FALSE);
 	//DrawDrive(1, FALSE);
 	//DrawTape(FALSE);
@@ -756,9 +756,9 @@ void DrawStatusForce(void)
 {
 //    return;
 	//DrawMainCaption(TRUE);
-	DrawCAP();
-	DrawKANA();
-	DrawINS();
+	//DrawCAP();
+	//DrawKANA();
+	//DrawINS();
 //	DrawDrive(0, TRUE);
 //	DrawDrive(1, TRUE);
 //	DrawTape(TRUE);
@@ -786,11 +786,13 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
    nFontSize = (int)(STAT_PT * (float)h * 1.0f) / (STAT_HEIGHT * 2.0f);
 
     if(parent) {
-    AG_ObjectLock(AGOBJECT(parent));
+//    AG_ObjectLock(AGOBJECT(parent));
 
        for(i = 0; i < 2; i++) {
-	  AG_WidgetHide(pwFD[i]);
-	  AG_ObjectDetach(AGOBJECT(pwFD[i]));
+        if(ppwFD[i] != NULL) {
+            AG_WidgetHide(ppwFD[i]);
+            AG_ObjectDetach(AGOBJECT(ppwFD[i]));
+        }
        }
        if(pwCaption != NULL) {
 	  AG_WidgetHide(pwCaption);
@@ -817,23 +819,23 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 	  nwFD[i][ID_EMPTY] = 0;
 	  UpdateVFDMessages(i, "               ");
 	  nwFD[i][ID_IN] = 0;
-	  pwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pFDNorm[i]);
-	  nwFD[i][ID_READ] = AG_PixmapAddSurface(pwFD[i], pFDRead[i]);
-	  nwFD[i][ID_WRITE] = AG_PixmapAddSurface(pwFD[i], pFDWrite[i]);
-	  AG_PixmapUpdateSurface(pwFD[i], nwFD[i][ID_IN]);
-	  AG_PixmapUpdateSurface(pwFD[i], nwFD[i][ID_READ]);
-	  AG_PixmapUpdateSurface(pwFD[i], nwFD[i][ID_WRITE]);
-	  AG_PixmapSetSurface(pwFD[i], nwFD[i][ID_IN]);
-	  AG_WidgetSetSize(pwFD[i], nVfdWidth, nVfdHeight);
-	  AG_WidgetShow(pwFD[i]);
-	  AG_Redraw(pwFD[i]);
+	  ppwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pFDNorm[i]);
+	  nwFD[i][ID_READ] = AG_PixmapAddSurface(ppwFD[i], pFDRead[i]);
+	  nwFD[i][ID_WRITE] = AG_PixmapAddSurface(ppwFD[i], pFDWrite[i]);
+	  AG_PixmapUpdateSurface(ppwFD[i], nwFD[i][ID_IN]);
+	  AG_PixmapUpdateSurface(ppwFD[i], nwFD[i][ID_READ]);
+	  AG_PixmapUpdateSurface(ppwFD[i], nwFD[i][ID_WRITE]);
+	  AG_PixmapSetSurface(ppwFD[i], nwFD[i][ID_IN]);
+	  AG_WidgetSetSize(ppwFD[i], nVfdWidth, nVfdHeight);
+	  AG_WidgetShow(ppwFD[i]);
+	  AG_Redraw(ppwFD[i]);
        }
 
 //       pad = AG_BoxNewHoriz(parent, 0);
        ResizeTapeOSD(parent, w, h);
        ResizeLeds(parent, w, h);
 //       pad = AG_BoxNewHoriz(parent, 0);
-       AG_ObjectUnlock(AGOBJECT(parent));
+  //     AG_ObjectUnlock(AGOBJECT(parent));
 
     }
    DrawStatusForce();

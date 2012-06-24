@@ -157,8 +157,11 @@ void LoadCfg(void)
 	SetCfgSection("General");
     InitDir[0] = '\0';
     if (LoadCfgString("Directory", dir, 128)) {
+#ifdef _WINDOWS
 	if (dir[strlen(dir) - 1] == '\\') {
-
+#else
+	if (dir[strlen(dir) - 1] == '/') {
+#endif
 		/*
 		 * 最後のパス区切り記号は強制的に削る
 		 */

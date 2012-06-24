@@ -227,7 +227,7 @@ static void OnOpenDiskBoth(AG_Event *event)
 //	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC );
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
-	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
+	AG_FileDlgSetDirectoryS(dlg,  InitialDir[0]);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskBothSubEv, NULL);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskBothSubEv, NULL);

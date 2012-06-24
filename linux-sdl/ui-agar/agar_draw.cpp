@@ -179,7 +179,7 @@ void ResizeWindow_Agar(int w, int h)
         pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
 
 	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * h * 2) / 800 + 5);
-        ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
+//        ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
 	  hh = hh + pStatusBar->wid.h;
        }
 #ifdef USE_OPENGL

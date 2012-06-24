@@ -38,6 +38,7 @@ private:
 	struct SpecialKey ResetKey;
 	struct SpecialKey MouseCapture;
 	struct SpecialKey ToggleMenu;
+	AG_Mutex mutex;
 	Uint32 oldsym;
 	Uint32 oldmod;
 };

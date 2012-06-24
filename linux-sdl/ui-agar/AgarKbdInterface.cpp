@@ -10,6 +10,7 @@
 
 AgarKbdInterface::AgarKbdInterface() {
 	// TODO Auto-generated constructor stub
+    AG_MutexInit(&mutex);
 	InitLocalVar();
 	InitKeyTable();
 	oldsym = 0x00;
@@ -19,6 +20,8 @@ AgarKbdInterface::AgarKbdInterface() {
 
 AgarKbdInterface::~AgarKbdInterface() {
 	// TODO Auto-generated destructor stub
+	AG_MutexLock(&mutex);
+	AG_MutexDestroy(&mutex);
 }
 
 
@@ -134,6 +137,7 @@ const struct KeyCode2_AG KeyTableAG[] = {
 void AgarKbdInterface::InitKeyTable(void){
 	int i;
 
+//    AG_MutexLock(&mutex);
 	memset(KeyCodeTable2, 0, sizeof(KeyCodeTable2));
 	for(i = 0; i<256 ; i++)
 	{
@@ -183,6 +187,7 @@ void AgarKbdInterface::InitKeyTable(void){
 
     ToggleMenu.sym = AG_KEY_F12;
     ToggleMenu.sym = AG_KEYMOD_NONE;
+//    AG_MutexUnlock(&mutex);
 
 }
 
@@ -192,61 +197,76 @@ void AgarKbdInterface::InitKeyTable(void){
 void AgarKbdInterface::LoadKeyTable(void *pMap){
 	int i;
 	struct XM7KeyCode *p = (struct XM7KeyCode *)pMap;
+    AG_MutexLock(&mutex);
 	for(i = 0; i<256 ; i++)
 	{
 	    if(p[i].code == -1) continue;
 		KeyCodeTable2[i].code = p[i].code;
 		KeyCodeTable2[i].mod = p[i].mod;
 		KeyCodeTable2[i].pushCode = p[i].pushCode;
-		if(p[i].code == 0xffff) return;
+		if(p[i].code == 0xffff) {
+            AG_MutexUnlock(&mutex);
+            return;
+		}
 	}
-
+    AG_MutexUnlock(&mutex);
 }
 
 void AgarKbdInterface::SaveKeyTable(void *pMap){
 	int i;
 	struct XM7KeyCode *p = (struct XM7KeyCode *)pMap;
+
+    AG_MutexLock(&mutex);
 	for(i = 0; i<256 ; i++)
 	{
 	    if(KeyCodeTable2[i].code == -1) continue; // Unused
 		p[i].code = KeyCodeTable2[i].code;
 		p[i].mod = KeyCodeTable2[i].mod;
 		p[i].pushCode = KeyCodeTable2[i].pushCode;
-		if(KeyCodeTable2[i].code == 0xffff) return;
+		if(KeyCodeTable2[i].code == 0xffff) {
+	        AG_MutexUnlock(&mutex);
+            return;
+		}
 	}
-
+    AG_MutexUnlock(&mutex);
 }
 
 void AgarKbdInterface::SetKeyCode(Uint8 code, Uint32 sym, Uint32 mod)
 {
 	int i;
 
+    AG_MutexLock(&mutex);
 	for(i = 0; i<256 ; i++)
 	{
 		if(code == KeyCodeTable2[i].pushCode) {
 			KeyCodeTable2[i].mod = mod;
 			KeyCodeTable2[i].code = sym;
+		    AG_MutexUnlock(&mutex);
 			return;
 		}
 	}
+    AG_MutexUnlock(&mutex);
 }
 
 void AgarKbdInterface::GetKeyCode(Uint8 code, XM7KeyCode *p)
 {
 	int i;
 	if(p == NULL) return;
+    AG_MutexLock(&mutex);
 	for(i = 0; i<256 ; i++)
 	{
 		if(code == KeyCodeTable2[i].pushCode) {
 			p->mod = KeyCodeTable2[i].mod;
 			p->code = KeyCodeTable2[i].code;
 			p->pushCode = KeyCodeTable2[i].pushCode;
+            AG_MutexUnlock(&mutex);
 			return;
 		}
 	}
 	p->mod = -1;
 	p->code = -1;
 	p->pushCode = 0;
+    AG_MutexUnlock(&mutex);
 }
 
 
@@ -269,11 +289,8 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
 //    Uint8 scan = event->key.keysym.scancode;
     struct XM7KeyCode  *p = KeyCodeTable2;
 
-//    if(kbd_snooped) {
-            //return SnoopedOnKeyPressedCallback(event);
-//    }
-//    printf("Key Agar:%04x %04x\n",code, modifier);
 
+    AG_MutexLock(&mutex);
 
     for (i = 0; i < 255; i++) {
         if (p[i].code == 0xffff)   break;
@@ -282,31 +299,9 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
             break;
 		}
     }
-#if 0
-//    if(oldmod != modifier) {
-        if((modifier & AG_KEYMOD_LSHIFT) != 0) {
-            PushKeyData(0x53, 0x80); /* Make */
-        }
-        if((modifier & AG_KEYMOD_RSHIFT) != 0) {
-            PushKeyData(0x54, 0x80); /* Make */
-        }
-        if((modifier & AG_KEYMOD_LCTRL) != 0) {
-            PushKeyData(0x52, 0x80); /* Make */
-        }
-        if((modifier & AG_KEYMOD_RCTRL) != 0) {
-            PushKeyData(0x5a, 0x80); /* Make */
-        }
-        if((modifier & AG_KEYMOD_LALT) != 0) {
-            PushKeyData(0x55, 0x80); /* Make */
-        }
-        if((modifier & AG_KEYMOD_RALT) != 0) {
-            PushKeyData(0x58, 0x80); /* Make */
-        }
-//    }
-#endif
     oldmod = modifier;
     oldsym = code;
-
+    AG_MutexUnlock(&mutex);
     return;
 }
 
@@ -324,28 +319,7 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
     Uint32 code = (Uint32)sym;
     struct XM7KeyCode *p = KeyCodeTable2;
 
-#if 0
-//    if(oldmod != modifier) {
-        if((modifier & AG_KEYMOD_LSHIFT) == 0) {
-            PushKeyData(0x53, 0x00); /* Make */
-        }
-        if((modifier & AG_KEYMOD_RSHIFT) == 0) {
-            PushKeyData(0x54, 0x00); /* Make */
-        }
-        if((modifier & AG_KEYMOD_LCTRL) == 0) {
-            PushKeyData(0x52, 0x00); /* Make */
-        }
-        if((modifier & AG_KEYMOD_RCTRL) == 0) {
-            PushKeyData(0x5a, 0x00); /* Make */
-        }
-        if((modifier & AG_KEYMOD_LALT) == 0) {
-            PushKeyData(0x55, 0x00); /* Make */
-        }
-        if((modifier & AG_KEYMOD_RALT) == 0) {
-            PushKeyData(0x58, 0x00); /* Make */
-        }
-#endif
-//    }
+    AG_MutexLock(&mutex);
     for (i = 0; i < 255; i++) {
     	if (p[i].code == 0xffff)   break;
     	if (code == (Uint32)p[i].code){
@@ -401,6 +375,7 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
             }
         }
     }
+    AG_MutexUnlock(&mutex);
 }
 
 

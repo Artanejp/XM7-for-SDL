@@ -463,13 +463,9 @@ void InitInstance(void)
 	} else {
         MainWindow = AG_WindowNew(AG_WINDOW_DIALOG );
 	}
-//	AG_WindowSetGeometry (MainWindow, 0, 0 , 640, 480);
 	AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
     AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
-//    hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-//    vb = AG_VBoxNew(AGWIDGET(MainWindow), 0);
-//   MenuBar = AG_MenuNew(AGWIDGET(hb), 0);
     MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
@@ -518,9 +514,9 @@ void InitInstance(void)
     }
     {
 //        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-//        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
-//        CreateStatus(AGWIDGET(pStatusBar));
-//        AG_WidgetShow(pStatusBar);
+     //   pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+     //   CreateStatus(AGWIDGET(pStatusBar));
+     //   AG_WidgetShow(pStatusBar);
     }
 
     //win = AG_GuiDebugger();
