@@ -409,6 +409,8 @@ void OnDestroy(AG_Event *event)
          * サウンド停止
          */
        StopSnd();
+        SaveCfg();
+    	AG_ConfigSave();
        /*
         * コンポーネント クリーンアップ
         */
@@ -421,8 +423,6 @@ void OnDestroy(AG_Event *event)
         DestroyStatus();
 
         CleanDraw();
-        SaveCfg();
-    	AG_ConfigSave();
 
         /*
          * 仮想マシン クリーンアップ

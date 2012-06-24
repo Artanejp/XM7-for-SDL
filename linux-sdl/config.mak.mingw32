@@ -19,8 +19,9 @@ USE_OPENMP      = Yes
 #CROSS_BUILD    = Yes
 
 # SET Arch specified
-ARCH_FLAGS       = -mmmx -msse -msse2
+#ARCH_FLAGS       = -mmmx -msse -msse2
 #ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
+ARCH_FLAGS      = 
 
 ################### VARIABLES ################################
 #XM7_VER		= 3
@@ -42,7 +43,7 @@ endif
 
 INSTALL          = install -c 
 PREFIX           = /mingw
-SHAREDIR         = $(PREFIX)/share/xm7/
+SHAREDIR         = /MinGW/msys/1.0/home/K.Ohta/xm7/
 
 ## SVNの時はコメントアウト外す
 #SVNVER = `svnversion`
@@ -53,10 +54,10 @@ UI_FONT            = ipagp.ttf
 UI_PT              = 13
 
 STAT_FONT          = ipagp.ttf
-STAT_PT            = 18
+STAT_PT            = 12
 
-VFD_FONT           = ipagui.ttf
-CMT_FONT           = ipagui.ttf
+VFD_FONT           = ipagp.ttf
+CMT_FONT           = ipagp.ttf
 #FONTPATH          = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki/:.:./.xm7/:./xm7/:
 FONTPATH           = :.:./.xm7/:./xm7/:
 
@@ -77,20 +78,21 @@ ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
 endif
 
-#CFLAGS += -D_NO_OLDNAMES
 CFLAGS +=  -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
 #CFLAGS += `/bin/sdl-config --cflags`
 CFLAGS += -I/mingw/include
 CFLAGS += -I/mingw/include/SDL
 CFLAGS += -I/mingw/include/freetype2
-CFLAGS += `agar-config --cflags`
+CFLAGS += -I/mingw/include/agar
+#CFLAGS += `/usr/local/i686-w64-mingw32/bin/agar-config --cflags`
 # OpenMP
 ifdef USE_OPENMP
 CFLAGS += -fopenmp
 endif
 
-CFLAGS_DEBUG = -pg -g -O0 
+#CFLAGS_DEBUG = -pg -g -O0 
+CFLAGS_DEBUG = -g -O0
 CFLAGS_DEBUG += $(CFLAGS)
 
 CFLAGS_RELEASE = $(CFLAGS)
