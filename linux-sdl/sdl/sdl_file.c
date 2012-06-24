@@ -102,15 +102,15 @@ SDL_RWops *file_open(char *fname, int mode)
 	ASSERT(fname);
     switch (mode) {
     case OPEN_R:
-        return SDL_RWFromFile(fname, "r");
+        return SDL_RWFromFile(fname, "rb");
         break;
     case OPEN_W:
-        return SDL_RWFromFile(fname, "w");
+        return SDL_RWFromFile(fname, "wb");
         break;
     case OPEN_RW:
-        return SDL_RWFromFile(fname, "w+");
+        return SDL_RWFromFile(fname, "r+b");
         break;
-	defat:
+	defalt:
         return NULL;
         break;
     }
@@ -168,7 +168,7 @@ DWORD file_getsize(SDL_RWops *handle)
         return 0;
     }
     end = SDL_RWseek(handle, 0L, SEEK_END);
-    lseek(handle, now, SEEK_SET);
+    SDL_RWseek(handle, now, SEEK_SET);
     return end;
 }
 
@@ -184,7 +184,7 @@ BOOL file_seek(SDL_RWops *handle, DWORD offset)
 	 * assert
 	 */
 	ASSERT(handle >= 0);
-    now = lseek(handle, (off_t) offset, SEEK_SET);
+    now = SDL_RWseek(handle, (off_t) offset, SEEK_SET);
     if (now != offset) {
 	return FALSE;
     }

@@ -135,7 +135,11 @@ static void OnOpenDiskSub(int Drive, char *sFilename)
     fdc_setdisk(Drive, sFilename);
     ResetSch();
     UnlockVM();
+#ifdef _WINDOWS
+    p = strrchr(sFilename, '\\');
+#else
     p = strrchr(sFilename, '/');
+#endif
     if (p != NULL) {
 	p[1] = '\0';
 	strcpy(InitialDir[0], sFilename);
@@ -166,7 +170,11 @@ static void OnOpenDiskBothSub(char *sFilename)
     }
     ResetSch();
     UnlockVM();
+#ifdef _WINDOWS
+    p = strrchr(sFilename, '\\');
+#else
     p = strrchr(sFilename, '/');
+#endif
     if (p != NULL) {
 	p[1] = '\0';
 	strcpy(InitialDir[0], sFilename);

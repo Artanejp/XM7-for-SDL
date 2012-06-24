@@ -241,7 +241,7 @@ static int LinkSurface(void)
     // Caption
    nwCaption = 0;
    if(pwCaption != NULL) {
- 	  nwCaption = AG_PixmapAddSurface(pwCaption, pCaption);
+	  nwCaption = AG_PixmapAddSurfaceCopy(pwCaption, pCaption);
       AG_PixmapUpdateCurrentSurface(pwCaption);
       AG_WidgetShow(pwCaption);
    }
@@ -413,13 +413,14 @@ void CreateStatus(AG_Widget *parent)
     pwCaption = NULL;
     nCaptionHeight = STAT_HEIGHT * 2;
     nCaptionWidth = STAT_WIDTH * 2;
-    CreateCaption(parent, TRUE);
+//    CreateCaption(parent, TRUE);
     if(parent) {
-        InitBox(parent);
+
+//        InitBox(parent);
         InitLeds(parent);
         InitTapeOSD(parent);
         //CreateCMT(parent, TRUE);
-        LinkSurface();
+//        LinkSurface();
     }
 }
 
@@ -738,13 +739,13 @@ static void DrawDrive(int drive, BOOL override)
 void DrawStatus(void)
 {
 //    return;
-    DrawMainCaption(FALSE);
+    //DrawMainCaption(FALSE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
-	DrawDrive(0, FALSE);
-	DrawDrive(1, FALSE);
-	DrawTape(FALSE);
+	//DrawDrive(0, FALSE);
+	//DrawDrive(1, FALSE);
+	//DrawTape(FALSE);
 }
 
 
@@ -754,13 +755,13 @@ void DrawStatus(void)
 void DrawStatusForce(void)
 {
 //    return;
-	DrawMainCaption(TRUE);
+	//DrawMainCaption(TRUE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
-	DrawDrive(0, TRUE);
-	DrawDrive(1, TRUE);
-	DrawTape(TRUE);
+//	DrawDrive(0, TRUE);
+//	DrawDrive(1, TRUE);
+//	DrawTape(TRUE);
 }
 
 void ResizeStatus(AG_Widget *parent, int w, int h, int y)
