@@ -171,8 +171,8 @@ void KbdInterface::ResetKeyMap(void)
 
 KbdInterface::KbdInterface() {
 	// TODO Auto-generated constructor stub
-	InitLocalVar();
-	InitKeyTable();
+//	InitLocalVar();
+//	InitKeyTable();
 	//LoadKeyTable();
 }
 

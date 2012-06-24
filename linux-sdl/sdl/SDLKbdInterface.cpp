@@ -176,8 +176,8 @@ void SDLKbdInterface::ResetKeyMap(void)
 
 SDLKbdInterface::SDLKbdInterface() {
 	// TODO Auto-generated constructor stub
-	InitLocalVar();
-	InitKeyTable();
+//	InitLocalVar();
+//	InitKeyTable();
 	//LoadKeyTable();
 }
 
