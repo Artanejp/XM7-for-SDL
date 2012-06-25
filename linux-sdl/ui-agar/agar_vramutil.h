@@ -33,6 +33,7 @@ extern void LockVram(void);
 extern void UnlockVram(void);
 extern void InitVramSemaphore(void);
 extern void DetachVramSemaphore(void);
+extern BOOL CheckVramSemaphore(void);
 extern Uint8 *vram_pb;
 extern Uint8 *vram_pr;
 extern Uint8 *vram_pg;

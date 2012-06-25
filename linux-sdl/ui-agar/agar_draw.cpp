@@ -83,6 +83,7 @@ void InitNonGL(int w, int h)
 void DetachDrawArea(void)
 {
     if(DrawArea == NULL) return;
+    if(CheckVramSemaphore) DetachVramSemaphore();
     XM7_SDLViewSurfaceDetach(DrawArea);
     AG_ObjectDetach(AGOBJECT(DrawArea));
 }

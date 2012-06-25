@@ -212,7 +212,7 @@ void OnDestroy(AG_Event *event)
 	}
 
         system_cleanup();
-	AG_Destroy();
+//	AG_Destroy();
         AG_Quit();
 
 }
