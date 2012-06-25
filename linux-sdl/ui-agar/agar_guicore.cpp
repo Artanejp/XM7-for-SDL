@@ -90,6 +90,7 @@ BOOL EventGUI(AG_Driver *drv)
 {
 	AG_DriverEvent dev;
 	BOOL r;
+	if(AG_PendingEvents(drv) <= 0) return FALSE;
 	do {
 		if (AG_GetNextEvent(drv, &dev) == 1) {
             r = EventGuiSingle(drv, &dev);
@@ -324,7 +325,7 @@ void InitInstance(void)
     {
       // hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
        pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
-     //   CreateStatus(AGWIDGET(pStatusBar));
+        //CreateStatus(AGWIDGET(pStatusBar));
         AG_WidgetShow(pStatusBar);
     }
 

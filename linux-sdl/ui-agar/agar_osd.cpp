@@ -740,9 +740,9 @@ void DrawStatus(void)
 {
 //    return;
     //DrawMainCaption(FALSE);
-//	DrawCAP();
-//	DrawKANA();
-	//DrawINS();
+	DrawCAP();
+	DrawKANA();
+	DrawINS();
 	//DrawDrive(0, FALSE);
 	//DrawDrive(1, FALSE);
 	//DrawTape(FALSE);
@@ -756,9 +756,9 @@ void DrawStatusForce(void)
 {
 //    return;
 	//DrawMainCaption(TRUE);
-	//DrawCAP();
-	//DrawKANA();
-	//DrawINS();
+	DrawCAP();
+	DrawKANA();
+	DrawINS();
 //	DrawDrive(0, TRUE);
 //	DrawDrive(1, TRUE);
 //	DrawTape(TRUE);
@@ -774,6 +774,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     float wFD = (float)VFD_WIDTH / (float)total;
     float wCaption = (float)STAT_WIDTH / (float)total;
     AG_Box *pad;
+    return;
     if(parent == NULL) return;
 //	return;
 
@@ -788,21 +789,22 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     if(parent) {
 //    AG_ObjectLock(AGOBJECT(parent));
 
-       for(i = 0; i < 2; i++) {
-        if(ppwFD[i] != NULL) {
-            AG_WidgetHide(ppwFD[i]);
-            AG_ObjectDetach(AGOBJECT(ppwFD[i]));
-        }
-       }
-       if(pwCaption != NULL) {
-	  AG_WidgetHide(pwCaption);
-	  AG_ObjectDetach(AGOBJECT(pwCaption));
-	  pwCaption = NULL;
-       }
+//       for(i = 0; i < 2; i++) {
+//        if(ppwFD[i] != NULL) {
+//            AG_WidgetHide(ppwFD[i]);
+//            AG_ObjectDetach(AGOBJECT(ppwFD[i]));
+ //       }
+//       }
+//       if(pwCaption != NULL) {
+//	  AG_WidgetHide(pwCaption);
+//	  AG_ObjectDetach(AGOBJECT(pwCaption));
+//	  pwCaption = NULL;
+//       }
 
-       pad = AG_BoxNewHoriz(parent, AG_HBOX_VFILL);
 
-       CreateCaption(parent, FALSE);
+  //     pad = AG_BoxNewHoriz(parent, AG_HBOX_VFILL);
+
+ //      CreateCaption(parent, FALSE);
        UpdateMainCaption(TRUE);
        {
 	  pwCaption = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE,  pCaption);

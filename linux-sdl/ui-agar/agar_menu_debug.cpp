@@ -47,6 +47,7 @@ extern void DBG_DumpAsc(char *str, Uint8 b);
 AG_Font *pDbgDialogTextFont;
 AG_Font *pDbgDialogSymFont;
 
+
 static void DbgInitFont(void)
 {
     AG_Surface *dummy;
@@ -64,14 +65,14 @@ static void DbgInitFont(void)
     if(pDbgDialogSymFont == NULL) { // Fallback
         pDbgDialogSymFont = AG_TextFontPts(DBG_TEXT_PT);//  16pts
     }
-    AG_PopTextState();
+AG_PopTextState();
 
 }
 
 static void DbgDetachFont(void)
 {
-    if(pDbgDialogTextFont != NULL) AG_DestroyFont(pDbgDialogTextFont);
-    if(pDbgDialogSymFont != NULL) AG_DestroyFont(pDbgDialogSymFont);
+//    if(pDbgDialogTextFont != NULL) AG_DestroyFont(pDbgDialogTextFont);
+//    if(pDbgDialogSymFont != NULL) AG_DestroyFont(pDbgDialogSymFont);
     pDbgDialogTextFont = NULL;
     pDbgDialogSymFont = NULL;
 }

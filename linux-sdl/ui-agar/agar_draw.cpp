@@ -113,7 +113,7 @@ void ResizeWindow_Agar(int w, int h)
 //	ofset = 40;
 	if(MainWindow) {
         if(pStatusBar != NULL) {
-            AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + AGWIDGET(pStatusBar)->h + MenuBar->wid.h );
+        //    AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + AGWIDGET(pStatusBar)->h + MenuBar->wid.h );
         } else {
             AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + MenuBar->wid.h );
         }
@@ -127,7 +127,7 @@ void ResizeWindow_Agar(int w, int h)
 
         win = AG_ParentWindow(DrawArea);
         if(win == NULL) return;
-        AG_WidgetSizeReq(AGWIDGET(win), &r);
+        //AG_WidgetSizeReq(AGWIDGET(win), &r);
         hh = h;
         ww = w;
 	    a.x = 0;
