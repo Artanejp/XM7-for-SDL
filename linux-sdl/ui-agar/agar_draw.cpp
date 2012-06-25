@@ -146,7 +146,7 @@ void ResizeWindow_Agar(int w, int h)
            rc.x = 0;
            rc.y = AGWIDGET(DrawArea)->y + AGWIDGET(DrawArea)->h;
             AG_WidgetSetGeometry(pStatusBar, rc);
-            nDrawHeight += pStatusBar->wid.h;
+            nDrawHeight += AGWIDGET(pStatusBar)->h;
        }
        if(MainWindow) {
 //           AG_ObjectLock(AGOBJECT(MainWindow));
@@ -174,13 +174,13 @@ void ResizeWindow_Agar(int w, int h)
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
        if(pStatusBar){
-	  AG_WidgetHide(pStatusBar);
-	  AG_ObjectDetach(AGOBJECT(pStatusBar));
-        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+//	  AG_WidgetHide(pStatusBar);
+//	  AG_ObjectDetach(AGOBJECT(pStatusBar));
+//        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
 
 	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * h * 2) / 800 + 5);
 //        ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
-	  hh = hh + pStatusBar->wid.h;
+	  hh = hh + AGWIDGET(pStatusBar)->h;
        }
 #ifdef USE_OPENGL
 	if(AG_UsingGL(NULL)) {
@@ -216,12 +216,12 @@ void ResizeWindow_Agar2(int w, int h)
             AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
         }
        if(pStatusBar){
-	  AG_WidgetHide(pStatusBar);
-	  AG_ObjectDetach(AGOBJECT(pStatusBar));
-          pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+//	  AG_WidgetHide(pStatusBar);
+//	  AG_ObjectDetach(AGOBJECT(pStatusBar));
+//          pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
 	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * hh * 2) / 800 + 5);
           ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * hh * 2) / 800, MenuBar->wid.h);
-	  hh = hh - pStatusBar->wid.h;
+	  hh = hh - AGWIDGET(pStatusBar)->h;
        }
 
 	    a.x = 0;
@@ -247,12 +247,12 @@ void ResizeWindow_Agar2(int w, int h)
             AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
         }
        if(pStatusBar){
-	  AG_WidgetHide(pStatusBar);
-	  AG_ObjectDetach(AGOBJECT(pStatusBar));
-          pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+//	  AG_WidgetHide(pStatusBar);
+//	  AG_ObjectDetach(AGOBJECT(pStatusBar));
+//          pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
 	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * hh * 2) / 800 + 5);
           ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * hh * 2) / 800, MenuBar->wid.h);
-	  hh = hh - pStatusBar->wid.h;
+	  hh = hh - AGWIDGET(pStatusBar)->h;
        }
         //if(MainWindow) {
         //    AG_WindowSetGeometry(MainWindow, 0, 0, ww, hh);

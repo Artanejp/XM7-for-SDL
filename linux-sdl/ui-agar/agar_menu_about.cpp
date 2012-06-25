@@ -5,7 +5,7 @@
  *      Author: whatisthis
  */
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <libintl.h>
 extern "C" {
 #include <agar/core.h>

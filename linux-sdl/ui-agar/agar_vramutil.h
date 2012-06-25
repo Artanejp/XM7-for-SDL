@@ -6,7 +6,7 @@
 #include <agar/gui.h>
 //#include <agar/gui/opengl.h>
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "api_draw.h"
 //#include "api_scaler.h"
 #include "api_vram.h"

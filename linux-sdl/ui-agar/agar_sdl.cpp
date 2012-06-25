@@ -6,7 +6,7 @@
  *      Agarでは処理しきれないSDLイベントなどのハンドラ
  */
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #ifdef USE_AGAR
 //#include "agar_xm7.h"
 #else

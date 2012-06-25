@@ -4,7 +4,7 @@
  *  Created on: 2010/11/08
  *      Author: whatisthis
  */
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <libintl.h>
 extern "C" {
 #include <agar/core.h>
@@ -289,7 +289,6 @@ void InitInstance(void)
           /*
          * OpenGL Capability
          */
-//        GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
         GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
         AG_WidgetSetSize(GLDrawArea, 640,400);
         AG_GLViewSizeHint(GLDrawArea, 640, 400);
@@ -307,7 +306,6 @@ void InitInstance(void)
 #endif /* USE_OPENGL */
      {
         // Non-GL
-//        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
@@ -324,10 +322,10 @@ void InitInstance(void)
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }
     {
-//        hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-     //   pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
+      // hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
+       pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
      //   CreateStatus(AGWIDGET(pStatusBar));
-     //   AG_WidgetShow(pStatusBar);
+        AG_WidgetShow(pStatusBar);
     }
 
     //win = AG_GuiDebugger();

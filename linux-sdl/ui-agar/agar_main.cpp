@@ -5,7 +5,7 @@
  *      Author: K.Ohta <whatisthis.soiwhat@gmail.com>
  */
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>

@@ -8,7 +8,7 @@
 #include <agar/gui.h>
 //#include <agar/gui/opengl.h>
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 

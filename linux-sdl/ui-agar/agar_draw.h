@@ -16,14 +16,14 @@
 
 //#include "DrawAGNonGL.h"
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
     extern XM7_SDLView *DrawArea;
     extern AG_Window *MainWindow;
     extern AG_Menu  *MenuBar;
-    extern AG_Box *pStatusBar;
+    extern AG_HBox *pStatusBar;
     extern void DrawStatus(void);
 #ifdef __cplusplus
 }

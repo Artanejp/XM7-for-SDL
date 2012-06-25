@@ -5,7 +5,7 @@
  *      Author: whatisthis
  */
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
@@ -79,7 +79,7 @@ static BOOL bGLMode; /* 描画にOpenGLを使うか否か*/
 static int nwCaption;
 static int nwFD[2][4]; // R/W/Noaccess/Empty
 extern "C" {
-AG_Box *pStatusBar;
+AG_HBox *pStatusBar;
 }
 
 extern void InitLeds(AG_Widget *parent);

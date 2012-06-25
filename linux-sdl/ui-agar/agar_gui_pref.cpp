@@ -11,7 +11,7 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 
 #include "xm7.h"
