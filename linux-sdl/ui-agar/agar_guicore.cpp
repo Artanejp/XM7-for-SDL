@@ -35,8 +35,7 @@ extern struct XM7_CPUID *pCpuID;
 
 extern "C" {
 void InitInstance(void);
-void OnDestroy(AG_Event *event);
-void OnDestroy2(void);
+extern void OnDestroy(AG_Event *event);
 }
 
 Uint32 nDrawTick1D;
@@ -240,201 +239,13 @@ extern void AG_detachsub(void);
 extern void ResizeWindow(int w, int h);
 extern Uint32 nDrawTick1;
 
-extern "C" {
-int  RootVideoWidth;
-int  RootVideoHeight;
-}
 
-void MainLoop(int argc, char *argv[])
-{
-	int c;
-	char *drivers = NULL;
-	char *optArg;
-        char strbuf[2048];
-	const SDL_VideoInfo *inf;
-	SDL_Surface *s;
-
-//	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
-	AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
-
-	AG_ConfigLoad();
-    AG_SetInt(agConfig, "font.size", UI_PT);
-
-    while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
-          != -1) {
-              switch (c) {
-              case 'd':
-                      drivers = optArg;
-                      break;
-              case 'f':
-                      /* Force full screen */
-                      AG_SetBool(agConfig, "view.full-screen", 1);
-                      break;
-              case 'W':
-                      /* Force Window */
-                      AG_SetBool(agConfig, "view.full-screen", 0);
-                      break;
-              case 'T':
-                      /* Set an alternate font directory */
-                      AG_SetString(agConfig, "font-path", optArg);
-                      break;
-              case 'F':
-                      /* Set an alternate font face */
-                      AG_SetString(agConfig, "font.face", optArg);
-                      break;
-              case 'S':
-                  /* Set an alternate font face */
-                  AG_SetInt(agConfig, "font.size", atoi(optArg));
-                  break;
-              case 'o':
-                  /* Set an alternate font face */
-                  AG_SetString(agConfig, "osdfont.face", optArg);
-                  break;
-              case 'O':
-                  /* Set an alternate font face */
-                  AG_SetInt(agConfig, "osdfont.size", atoi(optArg));
-                  break;
-              case 'l':
-                  /* Set an alternate font face */
-                  AG_SetString(agConfig, "load-path", optArg);
-                  break;
-              case 's':
-                  /* Set an alternate font face */
-                  AG_SetString(agConfig, "save-path", optArg);
-                  break;
-              case 'i':
-                  /* Set an alternate font face */
-                  AG_SetString(agConfig, "save-path", optArg);
-                  AG_SetString(agConfig, "load-path", optArg);
-                  break;
-              case 't':
-                  /* Change the default font */
-                  AG_TextParseFontSpec(optArg);
-                  break;
-          case '?':
-          default:
-                  printf("%s [-v] [-f|-W] [-d driver] [-r fps] [-t fontspec] "
-                         "[-w width] [-h height] "
-                	 "[-F font.face] [-S font.size]"
-			 "[-o osd-font.face] [-O osd-font.size]"
-			 "[-s SavePath] [-l LoadPath] "
-                         "[-T font-path]\n\n"
-			 "Usage:\n"
-			 "-f : FullScreen\n-W:Window Mode\n",
-                         agProgName);
-                  exit(0);
-          }
-    }
-    AG_GetString(agConfig, "font.face", strbuf, 511);
-    if(strlen(strbuf) <= 0)
-    {
-        AG_SetString(agConfig, "font.face", UI_FONT);
-    }
-
-    AG_GetString(agConfig, "font-path", strbuf, 2047);
-    if(strlen(strbuf) <= 0)
-    {
-     AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s:.", getenv("HOME"), getenv("HOME"), FONTPATH);
-    }
-
-    stopreq_flag = FALSE;
-    run_flag = TRUE;
-    // Debug
-#ifdef _XM7_FB_DEBUG
-drivers = "sdlfb:width=1280:height=880:depth=32";
-//    drivers = "glx";
-#endif
-	/*
-	 * Agar のメインループに入る
-	 */
-//    SDL_Init(SDL_INIT_VIDEO);
-
-    if(drivers == NULL)  {
-#ifdef USE_OPENGL
-		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
-    			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
-#else
-       		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
-    			AG_VIDEO_RESIZABLE );
-#endif
-    } else {
-        if (AG_InitGraphics(drivers) == -1) {
-                fprintf(stderr, "%s\n", AG_GetError());
-                return;
-        }
-    }
-    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_CDROM);
-    OnCreate((AG_Widget *)NULL);
-	InitInstance();
-	stopreq_flag = FALSE;
-	run_flag = TRUE;
-	AG_DrawInitsub();
-
-	inf = SDL_GetVideoInfo();
-    if(inf != NULL) {
-	   RootVideoWidth = inf->current_w;
-	   RootVideoHeight = inf->current_h;
-	} else {
-	   RootVideoWidth = 640;
-	   RootVideoHeight = 400;
-	}
-
-//	ResizeWindow_Agar(640, 400);
-	newResize = FALSE;
-        nDrawTick1D = SDL_GetTicks();
-	nDrawTick1E = nDrawTick1D;
-
-	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
-	AGDrawTaskEvent(TRUE);
-//	AG_Quit();
-}
-
-extern void Detach_DebugMenu(void);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-void OnDestroy2(void)
-{
-	OnDestroy(NULL);
-}
-
-void OnDestroy(AG_Event *event)
-{
-   // 20120610 GUI関連処理
-   Detach_DebugMenu();
-        /*
-         * サウンド停止
-         */
-       StopSnd();
-        SaveCfg();
-    	AG_ConfigSave();
-       /*
-        * コンポーネント クリーンアップ
-        */
-#ifdef FDDSND
-        CleanFDDSnd();
-#endif				/*  */
-        CleanSch();
-        CleanKbd();
-        CleanSnd();
-        DestroyStatus();
-
-        CleanDraw();
-
-        /*
-         * 仮想マシン クリーンアップ
-         */
-        if(pCpuID != NULL) {
-	   detachCpuID(pCpuID);
-	   pCpuID = NULL;
-	}
-
-        system_cleanup();
-        AG_Quit();
-}
 
 static void InitFont(void)
 {
