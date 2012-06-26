@@ -35,7 +35,7 @@
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
 
-struct OsdLEDPack 
+struct OsdLEDPack
 {
    int OldStat;
    BOOL init;
@@ -75,7 +75,7 @@ extern AG_Font *pStatusFont;
  * Draw LEDs(New)
  */
 
-struct OsdLEDPack *InitLED(int w, int h, const char *str)
+struct OsdLEDPack *InitLED(int w, int h, const char *str, int xoff, int yoff)
 {
    struct OsdLEDPack *p;
    AG_PixelFormat fmt;
@@ -122,31 +122,26 @@ struct OsdLEDPack *InitLED(int w, int h, const char *str)
    n.g = 255;
    n.b = 255;
    n.a = 255;
-   
-   if((pStatusFont != NULL) && (size > 2)){
+
+  if((pStatusFont != NULL) && (size > 2)){
       AG_PushTextState();
       AG_TextFont(pStatusFont);
       AG_TextFontPts(size);
+
+      AG_TextColor(n);
+      AG_TextBGColor(black);
+      AG_FillRect(p->pOFF, NULL, black);
+      tmps = AG_TextRender(str);
+      AG_SurfaceBlit(tmps, NULL, p->pOFF, xoff, yoff);
+      AG_SurfaceFree(tmps);
+
       AG_TextColor(black);
       AG_TextBGColor(r);
+      AG_FillRect(p->pON, NULL, r);
+      tmps = AG_TextRender(str);
+      AG_SurfaceBlit(tmps, NULL, p->pON, xoff, yoff);
+      AG_SurfaceFree(tmps);
 
-      AG_FillRect(p->pOFF, NULL, black);
-      tmps = AG_TextRender(str);
-      AG_SurfaceBlit(tmps, NULL, p->pOFF, 1, 0);
-      AG_SurfaceFree(tmps);
-      AG_FillRect(p->pOFF, NULL, black);
-      tmps = AG_TextRender(str);
-      AG_SurfaceBlit(tmps, NULL, p->pOFF, 1, 0);
-      AG_SurfaceFree(tmps);
-      
-      AG_FillRect(p->pON, NULL, black);
-      tmps = AG_TextRender(str);
-      AG_SurfaceBlit(tmps, NULL, p->pON, 1, 0);
-      AG_SurfaceFree(tmps);
-      AG_FillRect(p->pON, NULL, black);
-      tmps = AG_TextRender(str);
-      AG_SurfaceBlit(tmps, NULL, p->pON, 1, 0);
-      AG_SurfaceFree(tmps);
       AG_PopTextState();
    }
 
@@ -162,76 +157,105 @@ void DeleteLED(struct OsdLEDPack *p)
    free(p);
 }
 
-
+extern "C" {
 static void DrawLEDFn(AG_Event *event)
 {
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
-   struct OsdLEDPack *disp = (struct OsdLEDPack *)AG_PTR(1);
-   int *stat = (int *)AG_PTR(2);
+   int *stat = (int *)AG_PTR(1);
+   struct OsdLEDPack *disp = (struct OsdLEDPack *)AG_PTR(2);
    AG_Surface *dst;
-   
-   if(disp == NULL) return;
-   if(my == NULL) return;
+   AG_Color black, r;
+   AG_Rect rect;
+
+   if((disp == NULL)  || (my == NULL)) return;
+
+
    dst = XM7_SDLViewGetSrcSurface(my);
    if(dst == NULL) return;
+    r.r = 255;
+    r.g = 0;
+    r.b = 0;
+    r.a = 255;
+
+    black.r = 0;
+    black.g = 0;
+    black.b = 0;
+    black.a = 255;
+
    AG_MutexLock(&(disp->mutex));
-   if(stat == NULL) {
-	if((disp->OldStat != TRUE) || (disp->init == TRUE)) {
-	   AG_SurfaceBlit(disp->pON, NULL, dst, 1, 0); 
-	}
-        disp->OldStat = TRUE;
-        disp->init = FALSE;
-        AG_MutexUnlock(&(disp->mutex));
-        return;
+   if((*stat == disp->OldStat) && (disp->init == FALSE)) {
+       AG_MutexUnlock(&(disp->mutex));
+       return;
    }
+   rect.w = dst->w;
+   rect.h = dst->h;
+   rect.x = 0;
+   rect.y = 0;
    if(*stat == FALSE) {
-      if((disp->init == TRUE) || (disp->OldStat != *stat)) AG_SurfaceBlit(disp->pOFF, NULL, dst, 1, 0); 
+      AG_SurfaceCopy(dst, disp->pOFF);
    } else {
-      if((disp->init == TRUE) || (disp->OldStat != *stat)) AG_SurfaceBlit(disp->pON, NULL, dst, 1, 0); 
+      AG_SurfaceCopy(dst, disp->pON);
    }
+   AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    disp->init = FALSE;
    disp->OldStat = *stat;
    AG_MutexUnlock(&(disp->mutex));
-
 }
 
+}
 static void CreateLEDs(AG_Widget *parent)
 {
     AG_PixelFormat fmt;
     AG_SizeAlloc a;
+    AG_Surface *stmp;
+    AG_Color black;
     int size;
     int w, h;
-   
+
+
    w = LED_WIDTH * 2;
    nLedWidth = w;
    h = LED_HEIGHT * 2;
    nLedHeight = w;
    SetPixelFormat(&fmt);
-
-   pIns = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
-   pCaps = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
-   pKana = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
+   black.r = 0;
+   black.g = 0;
+   black.b = 0;
+   black.a = 255;
 
    pWidIns = XM7_SDLViewNew(parent, NULL, NULL);
    pWidCaps = XM7_SDLViewNew(parent, NULL, NULL);
    pWidKana = XM7_SDLViewNew(parent, NULL, NULL);
-   pOsdLEDIns = InitLED(nLedWidth, nLedHeight, "INS");
-   pOsdLEDCAPS = InitLED(nLedWidth, nLedHeight, "CAPS");
-   pOsdLEDKana = InitLED(nLedWidth, nLedHeight, "カナ");
+
    nCAP = 0;
    nINS = 0;
    nKANA = 0;
-   XM7_SDLViewDrawFn(pWidIns, DrawLEDFn, "%p%p", pOsdLEDIns, &nINS);
-   XM7_SDLViewDrawFn(pWidCaps, DrawLEDFn, "%p%p", pOsdLEDCAPS, &nCAP);
-   XM7_SDLViewDrawFn(pWidKana, DrawLEDFn, "%p%p", pOsdLEDKana, &nKANA);
+
+   pOsdLEDIns = InitLED(nLedWidth, nLedHeight, "INS", 4, 4);
+   XM7_SDLViewSurfaceNew(pWidIns, w, h);
+   stmp = XM7_SDLViewGetSrcSurface(pWidIns);
+   AG_FillRect(stmp, NULL, black);
+   XM7_SDLViewDrawFn(pWidIns, DrawLEDFn, "%p,%p", &nINS, pOsdLEDIns);
+
+   pOsdLEDCAPS = InitLED(nLedWidth, nLedHeight, "CAP", 0, 4);
+   XM7_SDLViewSurfaceNew(pWidCaps, w, h);
+   stmp = XM7_SDLViewGetSrcSurface(pWidCaps);
+   AG_FillRect(stmp, NULL, black);
+   XM7_SDLViewDrawFn(pWidCaps, DrawLEDFn, "%p,%p", &nCAP, pOsdLEDCAPS);
+
+   pOsdLEDKana = InitLED(nLedWidth, nLedHeight, "カナ", 6, 4);
+   XM7_SDLViewSurfaceNew(pWidKana, w, h);
+   stmp = XM7_SDLViewGetSrcSurface(pWidKana);
+   AG_FillRect(stmp, NULL, black);
+   XM7_SDLViewDrawFn(pWidKana, DrawLEDFn, "%p,%p", &nKANA, pOsdLEDKana);
 
    a.w = w;
    a.h = h;
    a.x = 0;
    a.y = 0;
-   AG_WidgetSizeAlloc(pWidIns, &a);
-   AG_WidgetSizeAlloc(pWidCaps, &a);
-   AG_WidgetSizeAlloc(pWidKana, &a);
+//   AG_WidgetSizeAlloc(pWidIns, &a);
+//   AG_WidgetSizeAlloc(pWidCaps, &a);
+//   AG_WidgetSizeAlloc(pWidKana, &a);
    AG_WidgetSetSize(pWidIns, w, h);
    AG_WidgetSetSize(pWidCaps, w, h);
    AG_WidgetSetSize(pWidKana, w, h);
@@ -274,19 +298,25 @@ void DrawCAP(void)
 void DrawKANA(void)
 {
 	int            num;
+	AG_Surface *p;
 
 	/*
 	 * 番号決定
 	 */
+    if(pOsdLEDKana == NULL) return;
 	if (kana_flag) {
 		num = 1;
+		p = pOsdLEDKana->pON;
 	} else {
 		num = 0;
+		p = pOsdLEDKana->pOFF;
 	}
-
 	/*
 	 * 描画、ワーク更新
 	 */
+    if(nKANA != num){
+        AG_SurfaceBlit(p , NULL, pWidKana->Surface, 0, 0);
+    }
 	nKANA = num;
 }
 
@@ -338,7 +368,7 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     float wLed = (float)LED_WIDTH / (float)total;
     float ww = (float)w;
     int nFontSize;
-   
+
     nLedHeight = h;
     nLedWidth = (int)(ww * wLed);
     if(nLedWidth <= 0) return;
@@ -346,7 +376,6 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     AG_WidgetSetSize(pWidIns, w, h);
     AG_WidgetSetSize(pWidCaps, w, h);
     AG_WidgetSetSize(pWidKana, w, h);
-
 
 }
 

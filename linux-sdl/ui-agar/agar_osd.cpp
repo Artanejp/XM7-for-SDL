@@ -394,7 +394,7 @@ void CreateStatus(AG_Widget *parent)
 	// Init Var
 
 
-       pFDRead[0] = pFDWrite[0] = pFDNorm[0] = NULL;
+    pFDRead[0] = pFDWrite[0] = pFDNorm[0] = NULL;
     pFDRead[1] = pFDWrite[1] = pFDNorm[1] = NULL;
     nVfdHeight = VFD_HEIGHT * 2;
     nVfdWidth = VFD_WIDTH * 2;
