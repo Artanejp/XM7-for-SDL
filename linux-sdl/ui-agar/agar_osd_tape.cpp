@@ -35,182 +35,78 @@
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
 
+
+enum {
+    OSD_CMT_EMPTY = 0,
+    OSD_CMT_NORM,
+    OSD_CMT_READ,
+    OSD_CMT_WRITE
+};
+
+struct OsdCMTPack {
+    AG_Surface *pRead;
+    AG_Surface *pWrite;
+    AG_Surface *pNorm;
+    AG_Surface *pEmpty;
+    int OldStat;
+    int OldCount;
+    int stat;
+    BOOL init;
+    AG_Mutex mutex;
+};
+
 static int     nTape;           /* テープ */
 static int     nOldTape;        /* テープ(過去) */
-static AG_Pixmap *pwCMT;
-static AG_Surface      *pCMTReadLetter[10]; /* Tape Read */
-static AG_Surface      *pCMTWriteLetter[10]; /* Tape Write */
-static AG_Surface      *pCMTNormLetter[10]; /* Tape Normal */
-static AG_Surface      *pCMTRead; /* Tape Read */
-static AG_Surface      *pCMTWrite; /* Tape Write */
-static AG_Surface      *pCMTNorm; /* Tape Normal */
+static XM7_SDLView *pwCMT;
 static int nCMTWidth;
 static int nCMTHeight;
-static int nwCMT[4]; // R/W/Noaccess/Empty
-static AG_Surface *pCMTLetters[10]; // 0123456789
-static AG_Surface *pCMTBlank; // 0123456789
 static BOOL bTapeRecOld;
 static BOOL bTapeInOld;
+static struct OsdCMTPack *pCMTStat;
+static AG_Surface *pDrawCMT;
 
 extern int getnFontSize(void);
 extern void SetPixelFormat(AG_PixelFormat *fmt);
 extern AG_Font *pStatusFont;
 
-static void DetachTapeLetters(void)
+static void UpdateCMTCount(AG_Surface *dst, int count,struct OsdCMTPack *pStatus);
+
+extern "C" {
+static void DrawCMTFn(AG_Event *event)
 {
-    int i;
-    for(i = 0; i < 10; i++){
-        if(pCMTReadLetter[i] != NULL) AG_SurfaceFree(pCMTReadLetter[i]);
-        if(pCMTWriteLetter[i] != NULL) AG_SurfaceFree(pCMTWriteLetter[i]);
-        if(pCMTNormLetter[i] != NULL) AG_SurfaceFree(pCMTNormLetter[i]);
-        pCMTWriteLetter[i] = NULL;
-        pCMTReadLetter[i] = NULL;
-        pCMTNormLetter[i] = NULL;
-    }
+   XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
+   struct OsdCMTPack *disp = (struct OsdCMTPack *)AG_PTR(1);
+   AG_Surface *dst;
+   int count = nTape;
 
-}
-static void InitTapeLetters(void)
-{
-   int i;
-   int size = getnFontSize();
-   char table[10][4] = { "0", "1", "2", "3", "4",
-                        "5", "6", "7", "8", "9"};
-   AG_Color r, n, b, black;
-   AG_Rect rec;
-   AG_PixelFormat fmt;
-
-   char string[16];
-   AG_Surface *tmp;
-   r.r = 255;
-   r.g = 0;
-   r.b = 0;
-   r.a = 255;
-
-   black.r = 0;
-   black.g = 0;
-   black.b = 0;
-   black.a = 255;
-
-   b.r = 0;
-   b.g = 0;
-   b.b = 255;
-   b.a = 255;
-
-   n.r = 255;
-   n.g = 255;
-   n.b = 255;
-   n.a = 255;
-   SetPixelFormat(&fmt);
-
-
-   AG_PushTextState();
-   AG_TextFont(pStatusFont);
-   AG_TextFontPts(size);
-   rec.x = 0;
-   rec.y = 0;
-
-   for(i = 0; i < 10; i++){
-    strcpy(string, table[i]);
-	AG_TextColor(black);
-	AG_TextBGColor(r);
-	tmp = AG_TextRender(string);
-    rec.h = CMT_HEIGHT;
-    rec.w = tmp->w;
-    pCMTReadLetter[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-    AG_FillRect(pCMTReadLetter[i], &rec, r);
-	AG_SurfaceBlit(tmp, NULL, pCMTReadLetter[i], 0, 0);
-	AG_SurfaceFree(tmp);
-
-	AG_TextColor(black);
-	AG_TextBGColor(b);
-	tmp = AG_TextRender(string);
-    rec.h = CMT_HEIGHT;
-    rec.w = tmp->w;
-    pCMTWriteLetter[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-    AG_FillRect(pCMTWriteLetter[i], &rec, b);
-	AG_SurfaceBlit(tmp, NULL, pCMTWriteLetter[i], 0, 0);
-	AG_SurfaceFree(tmp);
-
-	AG_TextColor(n);
-	AG_TextBGColor(black);
-	tmp = AG_TextRender(string);
-    rec.h = CMT_HEIGHT;
-    rec.w = tmp->w;
-
-    pCMTNormLetter[i] = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-	AG_FillRect(pCMTNormLetter[i], &rec, black);
-	AG_SurfaceBlit(tmp, NULL, pCMTNormLetter[i], 0, 0);
-	AG_SurfaceFree(tmp);
+   if((disp == NULL)  || (my == NULL)) return;
+   dst = XM7_SDLViewGetSrcSurface(my);
+   if(dst == NULL) return;
+   AG_MutexLock(&(disp->mutex));
+   if((count == disp->OldCount) && (disp->stat == disp->OldStat)
+       && (disp->init == FALSE)) {
+    disp->init = FALSE;
+    disp->OldStat = disp->stat;
+    disp->OldCount = count;
+    AG_MutexUnlock(&(disp->mutex));
+    return;
    }
-    strcpy(string, "       ");
-    pCMTBlank = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-
-    AG_TextColor(n);
-    AG_TextBGColor(black);
-    tmp = AG_TextRender(string);
-    AG_SurfaceBlit(tmp, NULL, pCMTBlank, 0, 0);
-    AG_SurfaceFree(tmp);
-    AG_PopTextState();
+   UpdateCMTCount(dst, count, disp);
+//   AG_SurfaceCopy(dst, pDrawCMT);
+   AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
+   disp->init = FALSE;
+   disp->OldStat = disp->stat;
+   disp->OldCount = count;
+   AG_MutexUnlock(&(disp->mutex));
+}
 
 }
 
 
-static AG_Surface *UpdateCMTSub(int n, int stat)
-{
-   switch(stat){
-    case ID_IN:
-      return pCMTNormLetter[n % 10];
-      break;
-    case ID_READ:
-      return pCMTReadLetter[n % 10];
-      break;
-    case ID_WRITE:
-      return pCMTWriteLetter[n % 10];
-      break;
-    default:
-      break;
-   }
- return NULL;
-}
 
-static void SetCMTBlank()
-{
-   AG_Color r, b, n, black;
-   r.r = 255;
-   r.g = 0;
-   r.b = 0;
-   r.a = 255;
-
-   black.r = 0;
-   black.g = 0;
-   black.b = 0;
-   black.a = 255;
-
-   b.r = 0;
-   b.g = 0;
-   b.b = 255;
-   b.a = 255;
-
-   n.r = 255;
-   n.g = 255;
-   n.b = 255;
-   n.a = 255;
-   if(pCMTRead == NULL) return;
-   if(pCMTWrite == NULL) return;
-   if(pCMTNorm == NULL) return;
-   AG_FillRect(pCMTRead, NULL, r);
-   AG_FillRect(pCMTWrite, NULL, b);
-   AG_FillRect(pCMTNorm, NULL, black);
-   if(pwCMT == NULL) return;
-   AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-   AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-   AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-}
-
-static void UpdateCMTCount(int count)
+static void UpdateCMTCount(AG_Surface *dst, int count, struct OsdCMTPack *pStatus)
 {
    AG_Rect rect;
-   AG_Surface *tmp;
    int i;
    int x;
    int y;
@@ -220,6 +116,7 @@ static void UpdateCMTCount(int count)
    char string[16];
    AG_Color r, b, n, black;
 
+    if((dst == NULL) || (pStatusFont == NULL))return;
    r.r = 255;
    r.g = 0;
    r.b = 0;
@@ -239,194 +136,111 @@ static void UpdateCMTCount(int count)
    n.g = 255;
    n.b = 255;
    n.a = 255;
+    AG_SurfaceLock(dst);
+    {
+        AG_Color fg, bg;
+        AG_Surface *tmp;
+        sprintf(string, "%04d", count % 10000);
+        size = getnFontSize();
+        AG_PushTextState();
+        AG_TextFont(pStatusFont);
+        AG_TextFontPts(size);
+        switch(pStatus->stat){
+        case OSD_CMT_EMPTY:
+            bg = black;
+            fg = black;
+            break;
+        case OSD_CMT_NORM:
+            bg = black;
+            fg = n;
+            break;
+        case OSD_CMT_READ:
+            bg = r;
+            fg = black;
+            break;
+        case OSD_CMT_WRITE:
+            bg = b;
+            fg = black;
+            break;
+        default:
+            bg = black;
+            fg = black;
+            pStatus->stat = OSD_CMT_EMPTY;
+            break;
+        }
+        if(pStatus->stat != OSD_CMT_EMPTY){
+            AG_TextColor(fg);
+            AG_TextBGColor(bg);
+            tmp = AG_TextRender(string);
+            AG_FillRect(dst, NULL, bg);
+            AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
+            AG_SurfaceFree(tmp);
+        } else {
+            AG_FillRect(dst, NULL, bg);
+        }
 
-   if(pCMTRead == NULL) return;
-   if(pCMTWrite == NULL) return;
-   if(pCMTNorm == NULL) return;
-
-   sprintf(string, "%04d", count);
-   AG_SurfaceLock(pCMTRead);
-   AG_SurfaceLock(pCMTWrite);
-   AG_SurfaceLock(pCMTNorm);
-//   AG_ObjectLock(pStatusFont);
-   size = getnFontSize();
-   AG_PushTextState();
-   AG_TextFont(pStatusFont);
-   AG_TextFontPts(size);
-
-   AG_TextColor(black);
-   AG_TextBGColor(r);
-   tmp = AG_TextRender(string);
-   AG_FillRect(pCMTRead, NULL, r);
-   AG_SurfaceBlit(tmp, NULL, pCMTRead, 0, 0);
-   AG_SurfaceFree(tmp);
-
-   AG_TextColor(black);
-   AG_TextBGColor(b);
-   tmp = AG_TextRender(string);
-   AG_FillRect(pCMTWrite, NULL, b);
-   AG_SurfaceBlit(tmp, NULL, pCMTWrite, 0, 0);
-   AG_SurfaceFree(tmp);
-
-   AG_TextColor(n);
-   AG_TextBGColor(black);
-   tmp = AG_TextRender(string);
-   AG_FillRect(pCMTNorm, NULL, black);
-   AG_SurfaceBlit(tmp, NULL, pCMTNorm, 0, 0);
-   AG_SurfaceFree(tmp);
-   AG_PopTextState();
-//   AG_ObjecUnLock(pStatusFont);
-   AG_SurfaceUnlock(pCMTRead);
-   AG_SurfaceUnlock(pCMTWrite);
-   AG_SurfaceUnlock(pCMTNorm);
-
+        AG_PopTextState();
+    }
+    AG_SurfaceUnlock(dst);
+    pStatus->OldStat = pStatus->stat;
    return;
-
-   x = 4;
-   tmp = UpdateCMTSub(count / 1000, ID_READ);
-   w = tmp->w;
-   h = tmp->h;
-   rect.w = w;
-   rect.h = h;
-   rect.x = 0;
-   rect.y = 0;
-
-//   tmp = UpdateCMTSub(count / 1000, ID_READ);
-   AG_SurfaceBlit(tmp, &rect, pCMTRead, x, 0);
-   tmp = UpdateCMTSub(count / 1000, ID_WRITE);
-   AG_SurfaceBlit(tmp, &rect, pCMTWrite, x, 0);
-   tmp = UpdateCMTSub(count / 1000, ID_IN);
-   AG_SurfaceBlit(tmp, &rect, pCMTNorm, x, 0);
-   x = x + w + 2;
-
-   tmp = UpdateCMTSub(count / 100, ID_READ);
-   AG_SurfaceBlit(tmp, &rect, pCMTRead, x, 0);
-   tmp = UpdateCMTSub(count / 100, ID_WRITE);
-   AG_SurfaceBlit(tmp, &rect, pCMTWrite, x, 0);
-   tmp = UpdateCMTSub(count / 100, ID_IN);
-   AG_SurfaceBlit(tmp, &rect, pCMTNorm, x, 0);
-   x = x + w + 2;
-
-   tmp = UpdateCMTSub(count / 10, ID_READ);
-   AG_SurfaceBlit(tmp, &rect, pCMTRead, x, 0);
-   tmp = UpdateCMTSub(count / 10, ID_WRITE);
-   AG_SurfaceBlit(tmp, &rect, pCMTWrite, x, 0);
-   tmp = UpdateCMTSub(count / 10, ID_IN);
-   AG_SurfaceBlit(tmp, &rect, pCMTNorm, x, 0);
-   x = x + w + 2;
-
-   tmp = UpdateCMTSub(count % 10, ID_READ);
-   AG_SurfaceBlit(tmp, &rect, pCMTRead, x, 0);
-   tmp = UpdateCMTSub(count % 10, ID_WRITE);
-   AG_SurfaceBlit(tmp, &rect, pCMTWrite, x, 0);
-   tmp = UpdateCMTSub(count % 10, ID_IN);
-   AG_SurfaceBlit(tmp, &rect, pCMTNorm, x, 0);
-//   x = x + w + 2;
-
-   AG_SurfaceUnlock(pCMTRead);
-   AG_SurfaceUnlock(pCMTWrite);
-   AG_SurfaceUnlock(pCMTNorm);
-
-//   AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-//   AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-//   AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-
 }
 
 
 void CreateCMT(AG_Widget *parent, bool initflag)
 {
-   AG_Rect rec;
-   AG_PixelFormat fmt;
-   AG_Color r, b, n, black;
-   bTapeRecOld = FALSE;
-   bTapeInOld = FALSE;
-   r.r = 255;
-   r.g = 0;
-   r.b = 0;
-   r.a = 255;
+    AG_Surface *out;
+    AG_Color black;
+    AG_PixelFormat fmt;
 
-   black.r = 0;
-   black.g = 0;
-   black.b = 0;
-   black.a = 255;
+    SetPixelFormat(&fmt);
 
-   b.r = 0;
-   b.g = 0;
-   b.b = 255;
-   b.a = 255;
-
-   n.r = 255;
-   n.g = 255;
-   n.b = 255;
-   n.a = 255;
-
-   SetPixelFormat(&fmt);
-
-
-   if(pStatusFont == NULL) return;
-
-   rec.x = 0;
-   rec.y = 0;
-   rec.w = nCMTWidth;
-   rec.h = nCMTHeight;
-    DetachTapeLetters();
-
-  if(pCMTRead != NULL){
-     AG_SurfaceResize(pCMTRead, rec.w, rec.h);
-  } else {
-     pCMTRead = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-  }
-  if(pCMTNorm != NULL){
-     AG_SurfaceResize(pCMTNorm, rec.w, rec.h);
-  } else {
-     pCMTNorm = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-  }
-  if(pCMTWrite != NULL){
-     AG_SurfaceResize(pCMTWrite, rec.w, rec.h);
-  } else {
-     pCMTWrite = AG_SurfaceNew(AG_SURFACE_PACKED , rec.w, rec.h, &fmt, AG_SRCALPHA);
-  }
-   InitTapeLetters();
-
-   AG_FillRect(pCMTRead, NULL, r);
-   AG_FillRect(pCMTWrite, NULL, b);
-   AG_FillRect(pCMTNorm, NULL, black);
+    black.r = black.g = black.b = 0;
+    black.a = 255;
+    pwCMT = XM7_SDLViewNew(parent, NULL, NULL);
+    if(pwCMT == NULL) return;
+    out = XM7_SDLViewSurfaceNew(pwCMT, nCMTWidth, nCMTHeight);
+    pDrawCMT = AG_SurfaceNew(AG_SURFACE_PACKED, nCMTWidth, nCMTHeight, &fmt, AG_SRCALPHA);
+    AG_FillRect(out, NULL, black);
+    XM7_SDLViewDrawFn(pwCMT, DrawCMTFn,"%p", pCMTStat);
+    AG_WidgetShow(pwCMT);
 }
 
 
 void InitTapeOSD(AG_Widget *parent)
 {
     if(parent == NULL) return;
-    nCMTHeight = CMT_HEIGHT;
+    pDrawCMT = NULL;
+    nCMTHeight = CMT_HEIGHT * 2;
     nCMTWidth = CMT_WIDTH;
+    pCMTStat = (struct OsdCMTPack *)malloc(sizeof(struct OsdCMTPack));
+    if(pCMTStat == NULL) return;
+    memset(pCMTStat, 0x00, sizeof(struct OsdCMTPack));
+    pCMTStat->init = TRUE;
+    pCMTStat->OldCount = 0;
+    pCMTStat->stat = OSD_CMT_EMPTY;
+    pCMTStat->OldStat = -1;
     CreateCMT(parent, TRUE);
-    pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pCMTNorm);
-//    pwCMT = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCMTWidth, nCMTHeight);
-    AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
-
-    nwCMT[ID_EMPTY] = 0;
 }
 
 void DestroyTapeOSD(void)
 {
-
-   if(pCMTNorm != NULL) AG_SurfaceFree(pCMTNorm);
-   if(pCMTRead != NULL) AG_SurfaceFree(pCMTRead);
-   if(pCMTWrite != NULL) AG_SurfaceFree(pCMTWrite);
-   pCMTNorm = pCMTRead = pCMTWrite = NULL;
+    if(pCMTStat != NULL){
+        AG_MutexDestroy(&(pCMTStat->mutex));
+        if(pCMTStat->pEmpty != NULL) AG_SurfaceFree(pCMTStat->pEmpty);
+        if(pCMTStat->pNorm != NULL) AG_SurfaceFree(pCMTStat->pNorm);
+        if(pCMTStat->pRead != NULL) AG_SurfaceFree(pCMTStat->pRead);
+        if(pCMTStat->pWrite != NULL) AG_SurfaceFree(pCMTStat->pWrite);
+        free(pCMTStat);
+    }
+    if(pDrawCMT != NULL) AG_SurfaceFree(pDrawCMT);
    if(pwCMT != NULL) AG_ObjectDetach(AGOBJECT(pwCMT));
    pwCMT = NULL;
-
 }
 
 
 void LinkSurfaceCMT(void)
 {
-    nwCMT[ID_EMPTY] = 0;
-    nwCMT[ID_IN] = AG_PixmapAddSurface(pwCMT, pCMTNorm);
-    nwCMT[ID_READ] = AG_PixmapAddSurface(pwCMT, pCMTRead);
-    nwCMT[ID_WRITE] = AG_PixmapAddSurface(pwCMT, pCMTWrite);
 }
 
 void ResizeTapeOSD(AG_Widget *parent, int w, int h)
@@ -436,22 +250,11 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
        float ww = (float)w;
        float wCMT = (float)CMT_WIDTH / (float)total;
 
-       AG_ObjectLock(pwCMT);
-       AG_WidgetHide(pwCMT);
-       AG_ObjectDetach(AGOBJECT(pwCMT));
-
+       if(pwCMT == NULL) return;
        nCMTWidth = (int)(ww * wCMT);
        nCMTHeight = h;
-//       pwCMT = AG_PixmapNew(parent, AG_PIXMAP_RESCALE , nCMTWidth, nCMTHeight);
-       pwCMT = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE, pCMTNorm);
-       AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
-       CreateCMT(parent, FALSE);
-       LinkSurfaceCMT();
-       AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-       AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-       AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-   //    AG_ObjectUnlock(pwCMT);
-      AG_WidgetShow(pwCMT);
+       AG_WidgetSetSize(pwCMT, w, h);
+
 }
 
 void ClearTapeOSD(void)
@@ -474,9 +277,6 @@ void DrawTape(int override)
 	BOOL bTapeRec = FALSE;
 
     if(pwCMT == NULL) return;
-    if(pCMTNorm == NULL) return;
-    if(pCMTWrite == NULL) return;
-    if(pCMTRead == NULL) return;
 	if(tape_writep){
 		strcpy(protect, "■");
 	} else {
@@ -505,57 +305,41 @@ void DrawTape(int override)
 	/*
 	 * 描画
 	 */
-    AG_ObjectLock(pwCMT);
-
+    AG_MutexLock(&(pCMTStat->mutex));
 	if ((!bTapeIn) && (bTapeIn != bTapeInOld)) {
 	        if(pwCMT == NULL) return;
-	        SetCMTBlank();
-            AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-		    AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-		    AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
             bTapeInOld = bTapeIn;
             nTape = 0;
+            pCMTStat->stat = OSD_CMT_EMPTY;
 	} else if((num != nTape)  || (bTapeInOld != bTapeIn)
        || (override = TRUE)){
 		bTapeInOld = bTapeIn;
+        pCMTStat->stat = OSD_CMT_NORM;
 		/*
 		 * カウンタ番号レンダリング(仮)
 		 */
-		   if(pwCMT != NULL){
-		      if(bTapeIn) UpdateCMTCount(num % 10000);
-		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_IN]);
-		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_READ]);
-		      AG_PixmapUpdateSurface(pwCMT, nwCMT[ID_WRITE]);
-		   }
 	}
-
-		if (((nTape != num) || (bTapeRec != bTapeRecOld))
+	if (((nTape != num) || (bTapeRec != bTapeRecOld))
             && bTapeIn) {
 			nTape = num;
 			bTapeRecOld = bTapeRec;
 			bTapeInOld = bTapeIn;
 			if (bTapeRec) {
-			   if(nwCMT[ID_WRITE] >= 0) {
-			      AG_PixmapSetSurface(pwCMT, nwCMT[ID_WRITE]);
-			   }
+			    pCMTStat->stat = OSD_CMT_WRITE;
 			}   else {
-			   if(nwCMT[ID_READ] >= 0) {
-			      AG_PixmapSetSurface(pwCMT, nwCMT[ID_READ]);
-			   }
+			    pCMTStat->stat = OSD_CMT_READ;
 			}
 		} else if(bTapeIn){
    			nTape = num;
 			bTapeRecOld = bTapeRec;
 			bTapeInOld = bTapeIn;
-		   if(nwCMT[ID_IN] >= 0) {
-			   AG_PixmapSetSurface(pwCMT, nwCMT[ID_IN]);
-		   }
+		    pCMTStat->stat = OSD_CMT_NORM;
         } else {
 			nTape = num;
 			bTapeRecOld = bTapeRec;
 			bTapeInOld = bTapeIn;
+		    pCMTStat->stat = OSD_CMT_EMPTY;
         }
+        AG_MutexUnlock(&(pCMTStat->mutex));
 
-	   AG_ObjectUnlock(pwCMT);
-//	   AG_Redraw(pwCMT);
 }

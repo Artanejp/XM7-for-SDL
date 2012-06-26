@@ -66,7 +66,7 @@
 #define VFD_WIDTH 110
 #define VFD_HEIGHT 14
 
-#define CMT_WIDTH 50
+#define CMT_WIDTH 70
 #define CMT_HEIGHT 14
 
 #define STAT_WIDTH 250

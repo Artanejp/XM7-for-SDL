@@ -330,8 +330,8 @@ void InitInstance(void)
         AG_WidgetShow(pStatusBar);
     }
 
-    win = AG_GuiDebugger();
-    AG_WindowShow(win);
+//    win = AG_GuiDebugger();
+//    AG_WindowShow(win);
 
 }
 

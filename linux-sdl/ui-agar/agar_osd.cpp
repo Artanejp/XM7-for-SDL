@@ -416,6 +416,7 @@ void CreateStatus(AG_Widget *parent)
 //    CreateCaption(parent, TRUE);
     if(parent) {
 
+        InitTapeOSD(parent);
 //        InitBox(parent);
         InitLeds(parent);
 //        InitTapeOSD(parent);
@@ -429,6 +430,7 @@ void DestroyStatus(void)
 	int i, j;
 
      DestroyLeds();
+     DestroyTapeOSD();
 //     DestroyTapeOSD();
 #if 0
    if(pCaption !=NULL ) {
@@ -746,7 +748,7 @@ void DrawStatus(void)
 	DrawINS();
 	//DrawDrive(0, FALSE);
 	//DrawDrive(1, FALSE);
-	//DrawTape(FALSE);
+	DrawTape(FALSE);
 }
 
 
@@ -762,7 +764,7 @@ void DrawStatusForce(void)
 	DrawINS();
 //	DrawDrive(0, TRUE);
 //	DrawDrive(1, TRUE);
-//	DrawTape(TRUE);
+	DrawTape(TRUE);
 }
 
 void ResizeStatus(AG_Widget *parent, int w, int h, int y)
