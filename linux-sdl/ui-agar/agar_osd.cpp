@@ -400,8 +400,8 @@ void CreateStatus(AG_Widget *parent)
     nVfdWidth = VFD_WIDTH * 2;
     ppwFD[0] = ppwFD[1] = NULL;
     pwCaption = NULL;
-    CreateVFD(parent, TRUE);
-    CreateCMT(parent, TRUE);
+//    CreateVFD(parent, TRUE);
+//    CreateCMT(parent, TRUE);
    // Create Widgets;
    nFontSize = STAT_PT;
 
@@ -418,7 +418,7 @@ void CreateStatus(AG_Widget *parent)
 
 //        InitBox(parent);
         InitLeds(parent);
-        InitTapeOSD(parent);
+//        InitTapeOSD(parent);
         //CreateCMT(parent, TRUE);
 //        LinkSurface();
     }
@@ -429,8 +429,8 @@ void DestroyStatus(void)
 	int i, j;
 
      DestroyLeds();
-     DestroyTapeOSD();
-
+//     DestroyTapeOSD();
+#if 0
    if(pCaption !=NULL ) {
 		AG_SurfaceFree(pCaption);
 		pCaption = NULL;
@@ -453,6 +453,7 @@ void DestroyStatus(void)
 		AG_DestroyFont(pStatusFont);
 		pStatusFont = NULL;
 	}
+#endif
 }
 /*
  *  キャプション描画
@@ -776,7 +777,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     AG_Box *pad;
     return;
     if(parent == NULL) return;
-//	return;
+	return;
 
     nVfdHeight = nCaptionHeight = h;
     nVfdWidth = (int)(ww * wFD);

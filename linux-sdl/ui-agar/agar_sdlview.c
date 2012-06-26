@@ -137,7 +137,7 @@ void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...)
     XM7_SDLView *my = p;
 
     AG_ObjectLock(my);
-    my->draw_ev = AG_SetEvent(my, NULL,fn , NULL);
+    my->draw_ev = AG_SetEvent(my, NULL, fn , NULL);
     AG_EVENT_GET_ARGS(my->draw_ev, fmt);
     AG_ObjectUnlock(my);
 

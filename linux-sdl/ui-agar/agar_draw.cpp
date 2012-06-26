@@ -114,7 +114,7 @@ void ResizeWindow_Agar(int w, int h)
 //	ofset = 40;
 	if(MainWindow) {
         if(pStatusBar != NULL) {
-        //    AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + AGWIDGET(pStatusBar)->h + MenuBar->wid.h );
+            AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + AGWIDGET(pStatusBar)->h + MenuBar->wid.h );
         } else {
             AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + MenuBar->wid.h );
         }

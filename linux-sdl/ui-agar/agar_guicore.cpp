@@ -325,12 +325,13 @@ void InitInstance(void)
     {
       // hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
        pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
-        //CreateStatus(AGWIDGET(pStatusBar));
+       AG_WidgetSetSize(pStatusBar, 640, 40);
+        CreateStatus(AGWIDGET(pStatusBar));
         AG_WidgetShow(pStatusBar);
     }
 
-    //win = AG_GuiDebugger();
-    //AG_WindowShow(win);
+    win = AG_GuiDebugger();
+    AG_WindowShow(win);
 
 }
 
