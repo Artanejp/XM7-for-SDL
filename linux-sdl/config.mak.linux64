@@ -52,7 +52,7 @@ UI_FONT            = ipagp.ttf
 UI_PT              = 13
 
 STAT_FONT          = ipagp.ttf
-STAT_PT            = 18
+STAT_PT            = 13
 
 VFD_FONT           = ipagui.ttf
 CMT_FONT           = ipagui.ttf

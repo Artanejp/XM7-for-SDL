@@ -65,16 +65,6 @@ struct OsdStatPack *InitStat(int w,int h)
     p->init = TRUE;
     p->Changed = FALSE;
     p->message[0] = '\0';
-//    p->surface = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, AG_SRCALPHA);
-//    if(p->surface == NULL) {
-//            free(p);
-//            return NULL;
-//    }
-//    black.r = 0;
-//    black.g = 0;
-//    black.b = 0;
-//    black.a = 255;
-//    AG_FillRect(p->surface, NULL, black);
     AG_MutexInit(&(p->mutex));
     p->width = w;
     p->height = h;
@@ -151,10 +141,14 @@ static void DrawStatFn(AG_Event *event)
 
 static void CreateStat(AG_Widget *parent, struct OsdStatPack *p)
 {
+   AG_Surface *out;
+   
   if(p == NULL) return;
   if(parent == NULL) return;
   pwSTAT = XM7_SDLViewNew(parent, NULL, NULL);
   if(pwSTAT == NULL) return;
+  out = XM7_SDLViewSurfaceNew(pwSTAT, STAT_WIDTH * 2, STAT_HEIGHT * 2);
+  AG_WidgetSetSize(pwSTAT, STAT_WIDTH * 2, STAT_HEIGHT * 2);
   XM7_SDLViewDrawFn(pwSTAT, DrawStatFn, "%p", p);
   AG_WidgetShow(pwSTAT);
 }
@@ -272,9 +266,9 @@ void DrawMainCaption(BOOL redraw)
 			 * ファイルネーム＋拡張子のみ取り出す
 			 */
 #ifdef _WINDOWS
-		p = strrchr(fdc_fname[0], '\\');
+		p = strrchr(fdc_fname[1], '\\');
 #else
-		p = strrchr(fdc_fname[0], '/');
+		p = strrchr(fdc_fname[1], '/');
 #endif
 			if (p == NULL) {
 				p = fdc_fname[1];
@@ -295,9 +289,9 @@ void DrawMainCaption(BOOL redraw)
 		 * ファイルネーム＋拡張子のみ取り出す
 		 */
 #ifdef _WINDOWS
-		p = strrchr(fdc_fname[0], '\\');
+		p = strrchr(tape_fname, '\\');
 #else
-		p = strrchr(fdc_fname[0], '/');
+		p = strrchr(tape_fname, '/');
 #endif
 		if (p == NULL) {
 			p = tape_fname;

@@ -85,6 +85,9 @@ AG_HBox *pStatusBar;
 extern void DrawMainCaption(BOOL redraw);
 extern void ClearStatOSD(void);
 extern void ResizeStatOSD(AG_Widget *parent, int w, int h);
+extern void InitStatOSD(AG_Widget *parent);
+extern void DestroyStatOSD(void);
+extern void LinkSurfaceSTAT(void);
 
 extern void InitLeds(AG_Widget *parent);
 extern void DestroyLeds(void);
@@ -395,7 +398,7 @@ void CreateStatus(AG_Widget *parent)
 
 	// Surfaceつくる
     SetPixelFormat(&fmt);
-	pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT * 4, 0);
+    pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT * 4, 0);
 	// Init Var
 
 
@@ -418,15 +421,10 @@ void CreateStatus(AG_Widget *parent)
     pwCaption = NULL;
     nCaptionHeight = STAT_HEIGHT * 2;
     nCaptionWidth = STAT_WIDTH * 2;
-//    CreateCaption(parent, TRUE);
     if(parent) {
-
-        InitTapeOSD(parent);
-//        InitBox(parent);
-        InitLeds(parent);
-//        InitTapeOSD(parent);
-        //CreateCMT(parent, TRUE);
-//        LinkSurface();
+       InitStatOSD(parent);
+       InitTapeOSD(parent);
+       InitLeds(parent);
     }
 }
 
@@ -434,6 +432,7 @@ void DestroyStatus(void)
 {
 	int i, j;
 
+     DestroyStatOSD();
      DestroyLeds();
      DestroyTapeOSD();
 //     DestroyTapeOSD();
@@ -747,7 +746,7 @@ static void DrawDrive(int drive, BOOL override)
 void DrawStatus(void)
 {
 //    return;
-    //DrawMainCaption(FALSE);
+    DrawMainCaption(FALSE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
@@ -763,7 +762,7 @@ void DrawStatus(void)
 void DrawStatusForce(void)
 {
 //    return;
-	//DrawMainCaption(TRUE);
+	DrawMainCaption(TRUE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
@@ -813,35 +812,9 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
   //     pad = AG_BoxNewHoriz(parent, AG_HBOX_VFILL);
 
  //      CreateCaption(parent, FALSE);
-       UpdateMainCaption(TRUE);
-       {
-	  pwCaption = AG_PixmapFromSurfaceCopy(parent, AG_PIXMAP_RESCALE,  pCaption);
-	  nwCaption = 0;
-	  AG_WidgetSetSize(pwCaption, nCaptionWidth, nCaptionHeight);
-//	  AG_PixmapUpdateSurface(pwCaption, nwCaption);
-	  AG_PixmapSetSurface(pwCaption, nwCaption);
-	  AG_WidgetShow(pwCaption);
-	  AG_Redraw(pwCaption);
-       }
+//       UpdateMainCaption(TRUE);
 //       pad = AG_BoxNewHoriz(parent, 0);
-       CreateVFD(parent, FALSE);
-       for(i = 1; i >= 0 ; i--) {
-	  nwFD[i][ID_EMPTY] = 0;
-	  UpdateVFDMessages(i, "               ");
-	  nwFD[i][ID_IN] = 0;
-	  ppwFD[i] = AG_PixmapFromSurface(parent, AG_PIXMAP_RESCALE , pFDNorm[i]);
-	  nwFD[i][ID_READ] = AG_PixmapAddSurface(ppwFD[i], pFDRead[i]);
-	  nwFD[i][ID_WRITE] = AG_PixmapAddSurface(ppwFD[i], pFDWrite[i]);
-	  AG_PixmapUpdateSurface(ppwFD[i], nwFD[i][ID_IN]);
-	  AG_PixmapUpdateSurface(ppwFD[i], nwFD[i][ID_READ]);
-	  AG_PixmapUpdateSurface(ppwFD[i], nwFD[i][ID_WRITE]);
-	  AG_PixmapSetSurface(ppwFD[i], nwFD[i][ID_IN]);
-	  AG_WidgetSetSize(ppwFD[i], nVfdWidth, nVfdHeight);
-	  AG_WidgetShow(ppwFD[i]);
-	  AG_Redraw(ppwFD[i]);
-       }
-
-//       pad = AG_BoxNewHoriz(parent, 0);
+       ResizeStatOSD(parent, w, h);
        ResizeTapeOSD(parent, w, h);
        ResizeLeds(parent, w, h);
 //       pad = AG_BoxNewHoriz(parent, 0);
