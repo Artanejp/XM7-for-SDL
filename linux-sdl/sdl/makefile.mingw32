@@ -61,7 +61,7 @@ LIBS +=   -lSDL_mixer
 
 
 #LIBS += -lGL -lGLU -lpthread
-LIBS += -lopengl32 -lpthread -lintl -liconv
+LIBS += -lopengl32 -lpthread -lintl /mingw/lib/libiconv.a
 #LIBS += -lGLU -lpthread libGL.so.1
 LIBS += -lpng -lfreetype
 LIBS += -lgomp
