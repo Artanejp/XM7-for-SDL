@@ -7,7 +7,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="libxm7-win32-ui-agar" prefix_auto="1" extension_auto="1" />
+				<Option output="xm7-win32-ui-agar" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj\Debug\" />
 				<Option type="2" />
@@ -23,7 +23,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="libxm7-win32-ui-agar" prefix_auto="1" extension_auto="1" />
+				<Option output="xm7-win32-ui-agar" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj\Release\" />
 				<Option type="2" />
@@ -59,6 +59,7 @@
 			<Add option="-D_WINDOWS" />
 			<Add option="-D_NDEBUG" />
 			<Add option="-DUSE_AGAR" />
+			<Add option="-D_XM7_FB_DEBUG" />
 			<Add directory="..\..\ui-agar" />
 			<Add directory="..\..\sdl" />
 			<Add directory="..\..\vm" />
@@ -99,7 +100,9 @@
 		<Unit filename="..\agar_osd.cpp" />
 		<Unit filename="..\agar_osd.h" />
 		<Unit filename="..\agar_osd_led.cpp" />
+		<Unit filename="..\agar_osd_stat.cpp" />
 		<Unit filename="..\agar_osd_tape.cpp" />
+		<Unit filename="..\agar_osd_vfd.cpp" />
 		<Unit filename="..\agar_sch.cpp" />
 		<Unit filename="..\agar_sdl.cpp" />
 		<Unit filename="..\agar_sdlscaler.cpp" />

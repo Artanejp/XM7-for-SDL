@@ -1,1 +1,1883 @@
 # depslib dependency file v1.0
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_guicore.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"agar_toolbox.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	"agar_osd.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"api_kbd.h"
+	"sdl_inifile.h"
+	"api_draw.h"
+	"sdl_cpuid.h"
+
+1300679029 c:\mingw\include\agar\agar\core.h
+	<agar/core/core_begin.h>
+	<agar/core/core_init.h>
+	<agar/core/error.h>
+	<agar/core/string_compat.h>
+	<agar/core/snprintf.h>
+	<agar/core/vsnprintf.h>
+	<agar/core/vasprintf.h>
+	<agar/core/data_source.h>
+	<agar/core/load_den.h>
+	<agar/core/load_integral.h>
+	<agar/core/load_real.h>
+	<agar/core/load_string.h>
+	<agar/core/load_version.h>
+	<agar/core/version.h>
+	<agar/core/object.h>
+	<agar/core/list.h>
+	<agar/core/tree.h>
+	<agar/core/tbl.h>
+	<agar/core/config.h>
+	<agar/core/rcs.h>
+	<agar/core/file.h>
+	<agar/core/dir.h>
+	<agar/core/dso.h>
+	<agar/core/time.h>
+	<agar/core/db.h>
+	<agar/core/dbobject.h>
+	<agar/core/getopt.h>
+	<agar/core/exec.h>
+	<agar/core/core_close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\core_begin.h
+	<agar/config/ag_debug.h>
+	<agar/config/ag_legacy.h>
+	<agar/config/ag_threads.h>
+	<agar/core/threads.h>
+	<agar/config/_mk_have_stdlib_h.h>
+	<stdlib.h>
+	<agar/config/_mk_have_unistd_h.h>
+	<unistd.h>
+	<string.h>
+	<stdio.h>
+	<agar/core/limits.h>
+	<agar/core/queue.h>
+	<agar/core/cpuinfo.h>
+	<agar/config/_mk_big_endian.h>
+	<agar/config/_mk_little_endian.h>
+
+1300679027 c:\mingw\include\agar\agar\config\ag_debug.h
+
+1300679027 c:\mingw\include\agar\agar\config\ag_legacy.h
+
+1300679027 c:\mingw\include\agar\agar\config\ag_threads.h
+
+1300679021 c:\mingw\include\agar\agar\core\threads.h
+	<agar/config/have_pthreads.h>
+	<pthread.h>
+	<signal.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679028 c:\mingw\include\agar\agar\config\have_pthreads.h
+
+1300679019 c:\mingw\include\agar\agar\core\begin.h
+	<agar/core/types.h>
+	<agar/core/attributes.h>
+	<agar/config/enable_nls.h>
+	<libintl.h>
+
+1300679021 c:\mingw\include\agar\agar\core\types.h
+	<agar/config/have_cygwin.h>
+	<basetyps.h>
+	<agar/config/_mk_have_sys_types_h.h>
+	<sys/types.h>
+	<agar/config/have_64bit.h>
+	<agar/config/have_long_double.h>
+
+1300679027 c:\mingw\include\agar\agar\config\have_cygwin.h
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_have_sys_types_h.h
+
+1300679027 c:\mingw\include\agar\agar\config\have_64bit.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_long_double.h
+
+1300679019 c:\mingw\include\agar\agar\core\attributes.h
+	<agar/config/have_aligned_attribute.h>
+	<agar/config/have_bounded_attribute.h>
+	<agar/config/have_const_attribute.h>
+	<agar/config/have_deprecated_attribute.h>
+	<agar/config/have_format_attribute.h>
+	<agar/config/have_nonnull_attribute.h>
+	<agar/config/have_noreturn_attribute.h>
+	<agar/config/have_packed_attribute.h>
+	<agar/config/have_pure_attribute.h>
+	<agar/config/have_warn_unused_result_attribute.h>
+
+1300679027 c:\mingw\include\agar\agar\config\have_aligned_attribute.h
+
+1300679027 c:\mingw\include\agar\agar\config\have_bounded_attribute.h
+
+1300679027 c:\mingw\include\agar\agar\config\have_const_attribute.h
+
+1300679027 c:\mingw\include\agar\agar\config\have_deprecated_attribute.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_format_attribute.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_nonnull_attribute.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_noreturn_attribute.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_packed_attribute.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_pure_attribute.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_warn_unused_result_attribute.h
+
+1300679027 c:\mingw\include\agar\agar\config\enable_nls.h
+
+1300679019 c:\mingw\include\agar\agar\core\close.h
+	<agar/core/close_types.h>
+	<agar/core/close_attributes.h>
+
+1300679020 c:\mingw\include\agar\agar\core\close_types.h
+
+1300679020 c:\mingw\include\agar\agar\core\close_attributes.h
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_have_stdlib_h.h
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_have_unistd_h.h
+
+1300679020 c:\mingw\include\agar\agar\core\limits.h
+	<agar/config/_mk_have_limits_h.h>
+	<agar/config/_mk_have_float_h.h>
+	<agar/config/have_long_long.h>
+	<agar/config/have_long_double.h>
+	<limits.h>
+	<float.h>
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_have_limits_h.h
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_have_float_h.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_long_long.h
+
+1300679021 c:\mingw\include\agar\agar\core\queue.h
+
+1300679020 c:\mingw\include\agar\agar\core\cpuinfo.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_big_endian.h
+
+1300679027 c:\mingw\include\agar\agar\config\_mk_little_endian.h
+
+1300679020 c:\mingw\include\agar\agar\core\core_init.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\error.h
+	<agar/config/_mk_have_stdlib_h.h>
+	<stdlib.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\string_compat.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\snprintf.h
+	<agar/config/_mk_have_sys_types_h.h>
+	<sys/types.h>
+	<agar/config/have_snprintf.h>
+	<stdio.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679028 c:\mingw\include\agar\agar\config\have_snprintf.h
+
+1300679021 c:\mingw\include\agar\agar\core\vsnprintf.h
+	<agar/config/_mk_have_sys_types_h.h>
+	<agar/config/have_vsnprintf.h>
+	<sys/types.h>
+	<stdarg.h>
+	<stdio.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679028 c:\mingw\include\agar\agar\config\have_vsnprintf.h
+
+1300679021 c:\mingw\include\agar\agar\core\vasprintf.h
+	<stdarg.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\data_source.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\load_den.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\load_integral.h
+	<agar/core/byteswap.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679019 c:\mingw\include\agar\agar\core\byteswap.h
+	<agar/config/have_64bit.h>
+	<agar/config/have_long_double.h>
+	<agar/config/_mk_big_endian.h>
+	<agar/config/_mk_little_endian.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\load_real.h
+	<agar/config/have_long_double.h>
+	<agar/core/byteswap.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\load_string.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\load_version.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\version.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\object.h
+	<agar/core/timeout.h>
+	<agar/core/class.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+	<agar/core/variable.h>
+	<agar/core/event.h>
+	<agar/core/prop.h>
+
+1300679021 c:\mingw\include\agar\agar\core\timeout.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679019 c:\mingw\include\agar\agar\core\class.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\variable.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\event.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\prop.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\list.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\tree.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\tbl.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\config.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\rcs.h
+	<agar/config/ag_network.h>
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679027 c:\mingw\include\agar\agar\config\ag_network.h
+
+1300679020 c:\mingw\include\agar\agar\core\file.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\dir.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\dso.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679021 c:\mingw\include\agar\agar\core\time.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\db.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\dbobject.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\getopt.h
+	<agar/core/begin.h>
+	<agar/core/close.h>
+
+1300679020 c:\mingw\include\agar\agar\core\exec.h
+	<agar/core/begin.h>
+	<agar/config/have_execvp.h>
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<agar/core/close.h>
+
+1300679028 c:\mingw\include\agar\agar\config\have_execvp.h
+
+1300679020 c:\mingw\include\agar\agar\core\core_close.h
+
+1300679029 c:\mingw\include\agar\agar\gui.h
+	<agar/core/core_begin.h>
+	<agar/gui/gui.h>
+	<agar/gui/icons.h>
+	<agar/gui/primitive.h>
+	<agar/gui/box.h>
+	<agar/gui/button.h>
+	<agar/gui/checkbox.h>
+	<agar/gui/combo.h>
+	<agar/gui/console.h>
+	<agar/gui/dir_dlg.h>
+	<agar/gui/editable.h>
+	<agar/gui/file_dlg.h>
+	<agar/gui/file_selector.h>
+	<agar/gui/fixed.h>
+	<agar/gui/font_selector.h>
+	<agar/gui/fspinbutton.h>
+	<agar/gui/fixed_plotter.h>
+	<agar/gui/glview.h>
+	<agar/gui/graph.h>
+	<agar/gui/hbox.h>
+	<agar/gui/hsvpal.h>
+	<agar/gui/icon.h>
+	<agar/gui/keymap.h>
+	<agar/gui/label.h>
+	<agar/gui/menu.h>
+	<agar/gui/mfspinbutton.h>
+	<agar/gui/mpane.h>
+	<agar/gui/mspinbutton.h>
+	<agar/gui/notebook.h>
+	<agar/gui/numerical.h>
+	<agar/gui/objsel.h>
+	<agar/gui/pane.h>
+	<agar/gui/pixmap.h>
+	<agar/gui/progress_bar.h>
+	<agar/gui/radio.h>
+	<agar/gui/scrollbar.h>
+	<agar/gui/scrollview.h>
+	<agar/gui/separator.h>
+	<agar/gui/socket.h>
+	<agar/gui/spinbutton.h>
+	<agar/gui/slider.h>
+	<agar/gui/statusbar.h>
+	<agar/gui/table.h>
+	<agar/gui/treetbl.h>
+	<agar/gui/text.h>
+	<agar/gui/textbox.h>
+	<agar/gui/text_cache.h>
+	<agar/gui/tlist.h>
+	<agar/gui/toolbar.h>
+	<agar/gui/ucombo.h>
+	<agar/gui/units.h>
+	<agar/gui/vbox.h>
+	<agar/gui/load_surface.h>
+	<agar/gui/load_color.h>
+	<agar/gui/cursors.h>
+	<agar/gui/sdl.h>
+	<agar/core/core_close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\gui.h
+	<agar/config/have_sdl.h>
+	<agar/gui/widget.h>
+	<agar/gui/window.h>
+	<agar/gui/text.h>
+	<agar/gui/iconmgr.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679028 c:\mingw\include\agar\agar\config\have_sdl.h
+
+1300679024 c:\mingw\include\agar\agar\gui\widget.h
+	<agar/config/have_sdl.h>
+	<agar/config/have_opengl.h>
+	<agar/gui/geometry.h>
+	<agar/gui/colors.h>
+	<agar/gui/surface.h>
+	<agar/gui/anim.h>
+	<agar/gui/style.h>
+	<agar/gui/mouse.h>
+	<agar/gui/keyboard.h>
+	<agar/gui/drv.h>
+	<agar/gui/begin.h>
+	<agar/gui/widget_legacy.h>
+	<agar/gui/close.h>
+
+1300679028 c:\mingw\include\agar\agar\config\have_opengl.h
+
+1300679022 c:\mingw\include\agar\agar\gui\geometry.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\begin.h
+	<agar/core/types.h>
+	<agar/core/attributes.h>
+	<agar/config/enable_nls.h>
+	<libintl.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\close.h
+	<agar/core/close_types.h>
+	<agar/core/close_attributes.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\colors.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\surface.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\anim.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\style.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\mouse.h
+	<agar/gui/input_device.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\input_device.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\keyboard.h
+	<agar/gui/input_device.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\drv.h
+	<agar/gui/begin.h>
+	<agar/gui/drv_mw.h>
+	<agar/gui/drv_sw.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\drv_mw.h
+
+1300679022 c:\mingw\include\agar\agar\gui\drv_sw.h
+
+1300679024 c:\mingw\include\agar\agar\gui\widget_legacy.h
+
+1300679024 c:\mingw\include\agar\agar\gui\window.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\text.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\iconmgr.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\icons.h
+	<agar/gui/iconmgr.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\primitive.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\box.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\button.h
+	<agar/gui/widget.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\label.h
+	<agar/gui/widget.h>
+	<agar/gui/text.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\checkbox.h
+	<agar/gui/widget.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\combo.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/window.h>
+	<agar/gui/tlist.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\textbox.h
+	<agar/gui/widget.h>
+	<agar/gui/editable.h>
+	<agar/gui/label.h>
+	<agar/gui/scrollbar.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\editable.h
+	<agar/gui/widget.h>
+	<agar/gui/text.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\scrollbar.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679024 c:\mingw\include\agar\agar\gui\tlist.h
+	<agar/gui/scrollbar.h>
+	<agar/gui/menu.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\menu.h
+	<agar/gui/widget.h>
+	<agar/gui/window.h>
+	<agar/gui/toolbar.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679024 c:\mingw\include\agar\agar\gui\toolbar.h
+	<agar/gui/widget.h>
+	<agar/gui/box.h>
+	<agar/gui/button.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\console.h
+	<agar/gui/widget.h>
+	<agar/gui/scrollbar.h>
+	<agar/gui/text.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\dir_dlg.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/window.h>
+	<agar/gui/tlist.h>
+	<agar/gui/combo.h>
+	<agar/gui/pane.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\pane.h
+	<agar/gui/widget.h>
+	<agar/gui/box.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\file_dlg.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/window.h>
+	<agar/gui/tlist.h>
+	<agar/gui/combo.h>
+	<agar/gui/pane.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\file_selector.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/window.h>
+	<agar/gui/file_dlg.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\fixed.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\font_selector.h
+	<agar/gui/pane.h>
+	<agar/gui/box.h>
+	<agar/gui/tlist.h>
+	<agar/gui/numerical.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\numerical.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/ucombo.h>
+	<agar/gui/units.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679024 c:\mingw\include\agar\agar\gui\ucombo.h
+	<agar/gui/widget.h>
+	<agar/gui/button.h>
+	<agar/gui/window.h>
+	<agar/gui/tlist.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679024 c:\mingw\include\agar\agar\gui\units.h
+	<agar/config/historical_units.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679029 c:\mingw\include\agar\agar\config\historical_units.h
+
+1300679022 c:\mingw\include\agar\agar\gui\fspinbutton.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/ucombo.h>
+	<agar/gui/units.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\fixed_plotter.h
+	<agar/gui/widget.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\glview.h
+	<agar/gui/widget.h>
+	<agar/config/have_opengl.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\graph.h
+	<agar/gui/widget.h>
+	<agar/gui/scrollbar.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\hbox.h
+	<agar/gui/box.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\hsvpal.h
+	<agar/gui/scrollbar.h>
+	<agar/gui/menu.h>
+	<agar/gui/window.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\icon.h
+	<agar/gui/widget.h>
+	<agar/gui/text.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\keymap.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\mfspinbutton.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/ucombo.h>
+	<agar/gui/units.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\mpane.h
+	<agar/gui/widget.h>
+	<agar/gui/box.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\mspinbutton.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\notebook.h
+	<agar/gui/widget.h>
+	<agar/gui/box.h>
+	<agar/gui/text.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\objsel.h
+	<agar/gui/widget.h>
+	<agar/gui/combo.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\pixmap.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\progress_bar.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\radio.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\scrollview.h
+	<agar/gui/widget.h>
+	<agar/gui/scrollbar.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\separator.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\socket.h
+	<agar/gui/widget.h>
+	<agar/gui/text.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\spinbutton.h
+	<agar/gui/widget.h>
+	<agar/gui/textbox.h>
+	<agar/gui/button.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\slider.h
+	<agar/gui/widget.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\statusbar.h
+	<agar/gui/widget.h>
+	<agar/gui/box.h>
+	<agar/gui/label.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\table.h
+	<agar/gui/scrollbar.h>
+	<agar/gui/menu.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679024 c:\mingw\include\agar\agar\gui\treetbl.h
+	<agar/gui/label.h>
+	<agar/gui/scrollbar.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\text_cache.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679024 c:\mingw\include\agar\agar\gui\vbox.h
+	<agar/gui/box.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\load_surface.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\load_color.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679021 c:\mingw\include\agar\agar\gui\cursors.h
+	<agar/gui/drv.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1300679023 c:\mingw\include\agar\agar\gui\sdl.h
+	<agar/config/have_sdl.h>
+	<agar/gui/drv_sdl_common.h>
+
+1300679022 c:\mingw\include\agar\agar\gui\drv_sdl_common.h
+	<agar/config/have_sdl.h>
+	<SDL.h>
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1325738638 c:\mingw\include\sdl\sdl.h
+	"SDL_main.h"
+	"SDL_stdinc.h"
+	"SDL_audio.h"
+	"SDL_cdrom.h"
+	"SDL_cpuinfo.h"
+	"SDL_endian.h"
+	"SDL_error.h"
+	"SDL_events.h"
+	"SDL_loadso.h"
+	"SDL_mutex.h"
+	"SDL_rwops.h"
+	"SDL_thread.h"
+	"SDL_timer.h"
+	"SDL_video.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_main.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_stdinc.h
+	"SDL_config.h"
+	<sys/types.h>
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<stdarg.h>
+	<stdlib.h>
+	<malloc.h>
+	<stddef.h>
+	<stdarg.h>
+	<memory.h>
+	<string.h>
+	<strings.h>
+	<inttypes.h>
+	<stdint.h>
+	<ctype.h>
+	<iconv.h>
+	"begin_code.h"
+	<alloca.h>
+	<malloc.h>
+	<malloc.h>
+	<malloc.h>
+	<stdlib.h>
+	"close_code.h"
+
+1326110986 c:\mingw\include\sdl\sdl_config.h
+	"SDL_platform.h"
+	"SDL_config_dreamcast.h"
+	"SDL_config_macos.h"
+	"SDL_config_macosx.h"
+	"SDL_config_symbian.h"
+	"SDL_config_win32.h"
+	"SDL_config_os2.h"
+	"SDL_config_minimal.h"
+
+1325738638 c:\mingw\include\sdl\sdl_platform.h
+
+1326110994 c:\mingw\include\sdl\sdl_config_win32.h
+	"SDL_platform.h"
+
+1326111000 c:\mingw\include\sdl\begin_code.h
+
+1325738638 c:\mingw\include\sdl\close_code.h
+
+1325738638 c:\mingw\include\sdl\sdl_audio.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_endian.h"
+	"SDL_mutex.h"
+	"SDL_thread.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_error.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_endian.h
+	"SDL_stdinc.h"
+	<endian.h>
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_mutex.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_thread.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_mutex.h"
+	"begin_code.h"
+	<process.h>
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_rwops.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_cdrom.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_cpuinfo.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_events.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_active.h"
+	"SDL_keyboard.h"
+	"SDL_mouse.h"
+	"SDL_joystick.h"
+	"SDL_quit.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_active.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_keyboard.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_keysym.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_keysym.h
+
+1325738638 c:\mingw\include\sdl\sdl_mouse.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_video.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_joystick.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_quit.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+
+1325738638 c:\mingw\include\sdl\sdl_loadso.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_timer.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_version.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1300679023 c:\mingw\include\agar\agar\gui\opengl.h
+	<agar/config/have_opengl.h>
+	<agar/core/win32.h>
+	<OpenGL/gl.h>
+	<GL/gl.h>
+	<agar/config/have_glx.h>
+	<GL/glx.h>
+	<agar/gui/drv_gl_common.h>
+
+1300679021 c:\mingw\include\agar\agar\core\win32.h
+	<agar/config/have_cygwin.h>
+	<agar/core/queue_close.h>
+	<windows.h>
+	<agar/core/queue_close.h>
+	<agar/core/queue.h>
+	<agar/core/queue_close.h>
+	<windows.h>
+	<agar/core/queue_close.h>
+	<agar/core/queue.h>
+
+1300679021 c:\mingw\include\agar\agar\core\queue_close.h
+
+1300679028 c:\mingw\include\agar\agar\config\have_glx.h
+
+1300679022 c:\mingw\include\agar\agar\gui\drv_gl_common.h
+	<agar/gui/begin.h>
+	<agar/gui/close.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\xm7.h
+	<stdio.h>
+	"build_config.h"
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"xm7_types.h"
+	<SDL/SDL.h>
+	<memwatch.h>
+	<assert.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\build_config.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\xm7_types.h
+	<stdint.h>
+	<stddef.h>
+	<windef.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\fdc.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_xm7.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"xm7.h"
+	<stdlib.h>
+	<sys/param.h>
+	<gtk/gtk.h>
+	<SDL/SDL.h>
+	<libintl.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_cfg.h
+	"KbdInterface.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+	"sdl_inifile.h"
+	"agar_cfg.h"
+	"sdl_prop.h"
+	"sdl_sch.h"
+	"api_snd.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_mouse.h"
+	"api_draw.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\kbdinterface.h
+	<SDL.h>
+	"xm7.h"
+	"api_kbd.h"
+	"api_mouse.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_kbd.h
+	<memory.h>
+	"xm7.h"
+	"mainetc.h"
+	"keyboard.h"
+	"device.h"
+	"mouse.h"
+	"event.h"
+	<SDL/SDL.h>
+	<SDL/SDL_syswm.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"agar_xm7.h"
+	<SDL/SDL.h>
+	<SDL/SDL_syswm.h>
+	"xm7_sdl.h"
+	"sdl_sch.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\mainetc.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\keyboard.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\device.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\mouse.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\event.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\xm7_sdl.h
+	<stdlib.h>
+	<sys/param.h>
+	<gtk/gtk.h>
+	<SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdl_sch.h
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_mouse.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdl_inifile.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdl_prop.h
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_snd.h
+	"xm7.h"
+	"device.h"
+	"mainetc.h"
+	"tapelp.h"
+	"../fmgen/types.h"
+	"../fmgen/misc.h"
+	"../fmgen/opna.h"
+	"../fmgen/psg.h"
+	"opn.h"
+	"xm7_sdl.h"
+	"sdl_sch.h"
+	"api_wavwriter.h"
+	"SndDrvIF.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\tapelp.h
+	<SDL/SDL.h>
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\fmgen\types.h
+	<stdint.h>
+	<stddef.h>
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\fmgen\misc.h
+	<math.h>
+	<string.h>
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\fmgen\opna.h
+	"fmgen.h"
+	"psg.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\fmgen\fmgen.h
+	"misc.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\fmgen\psg.h
+	"misc.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\opn.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_wavwriter.h
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/time.h>
+	<errno.h>
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7_types.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\snddrvif.h
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	<math.h>
+	"xm7.h"
+	"xm7_sdl.h"
+	<vector>
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_js.h
+	"xm7.h"
+	"api_kbd.h"
+	<vector>
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_draw.h
+	<gtk/gtk.h>
+	<gdk/gdk.h>
+	<gdk/gdkx.h>
+	<gdk/gdkkeysyms.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL.h>
+	<SDL_syswm.h>
+	<SDL_opengl.h>
+	"xm7.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"xm7.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+
+1325738638 c:\mingw\include\sdl\sdl_syswm.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_version.h"
+	"begin_code.h"
+	<X11/Xlib.h>
+	<X11/Xatom.h>
+	<microwin/nano-X.h>
+	<windows.h>
+	<sys/neutrino.h>
+	<Ph.h>
+	"close_code.h"
+
+1325738638 c:\mingw\include\sdl\sdl_opengl.h
+	"SDL_config.h"
+	<windows.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<gl.h>
+	<glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<windows.h>
+	<stddef.h>
+
+1301111164 c:\mingw\include\gl\gl.h
+
+1301111165 c:\mingw\include\gl\glu.h
+	<stddef.h>
+	<GL/gl.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\multipag.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\ttlpalet.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\apalet.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\subctrl.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\display.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_toolbox.h
+	<agar/core.h>
+	<agar/gui.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_gldraw.h
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"api_draw.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_glutil.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_vramutil.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	"api_draw.h"
+	"api_vram.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\api_vram.h
+	<SDL/SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_xm7.h"
+	"xm7_types.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_draw.h
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"api_draw.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	<SDL/SDL.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_sdlview.h
+	<agar/core.h>
+	<agar/gui.h>
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_glutil.h
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	"api_draw.h"
+	"agar_xm7.h"
+	"agar_vramutil.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdl_cpuid.h
+	<cpuid.h>
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_ui_vkey.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"fdc.h"
+	"AgarKbdInterface.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agarkbdinterface.h
+	"SDLKbdInterface.h"
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdlkbdinterface.h
+	"KbdInterface.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_dbg_fdcdump.cpp
+	"agar_surfaceconsole.h"
+	"agar_debugger.h"
+	"xm7.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_surfaceconsole.h
+	<SDL/SDL.h>
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"xm7.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_debugger.h
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"xm7.h"
+	"fdc.h"
+	"agar_surfaceconsole.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_gui_pref.cpp
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	<SDL/SDL_mixer.h>
+	"xm7.h"
+	"device.h"
+	"fdc.h"
+	"tapelp.h"
+	"opn.h"
+	"keyboard.h"
+	"mmr.h"
+	"mouse.h"
+	"aluline.h"
+	"multipag.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"display.h"
+	"device.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+	"sdl_inifile.h"
+	"agar_cfg.h"
+	"xm7.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\mmr.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\aluline.h
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_dbg_disasm.cpp
+	"agar_surfaceconsole.h"
+	"agar_debugger.h"
+	"xm7.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_gui_menu.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"agar_cmd.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"api_draw.h"
+	"agar_toolbox.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_cmd.h
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_toolbox.cpp
+	<libintl.h>
+	<iconv.h>
+	<sys/stat.h>
+	<SDL/SDL.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"xm7.h"
+	"fdc.h"
+	"tapelp.h"
+	"tools.h"
+	"mouse.h"
+	"rtc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"agar_cmd.h"
+	"sdl_prop.h"
+	"api_snd.h"
+	"sdl_sch.h"
+	"api_kbd.h"
+	"agar_toolbox.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\tools.h
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\vm\rtc.h
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_svram.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	<omp.h>
+	"api_draw.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_cmd.cpp
+	<gtk/gtk.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	"xm7.h"
+	"fdc.h"
+	"tapelp.h"
+	"tools.h"
+	"mouse.h"
+	"rtc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"sdl_prop.h"
+	"agar_cmd.h"
+	"agar_toolbox.h"
+	"gtk_toolbox.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_glutil.cpp
+	"agar_glutil.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_gldraw2.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	<GL/glx.h>
+	<GL/glxext.h>
+	<omp.h>
+	"api_draw.h"
+	"api_kbd.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_surfaceconsole.cpp
+	"agar_surfaceconsole.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_cfg.cpp
+	"xm7.h"
+	"device.h"
+	"fdc.h"
+	"tapelp.h"
+	"opn.h"
+	"keyboard.h"
+	"mmr.h"
+	"mouse.h"
+	"aluline.h"
+	"agar_xm7.h"
+	"xm7_sdl.h"
+	"sdl_inifile.h"
+	"agar_cfg.h"
+	"agar_osd.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_sdlview.c
+	"agar_sdlview.h"
+	<SDL/SDL.h>
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agarkbdinterface.cpp
+	"AgarKbdInterface.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_draw.cpp
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	<SDL/SDL.h>
+	"api_draw.h"
+	"agar_xm7.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_sdlscaler.cpp
+	"agar_sdlview.h"
+	"api_vram.h"
+	"api_draw.h"
+	"api_kbd.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_sdl.cpp
+	<SDL/SDL.h>
+	"xm7_sdl.h"
+	<agar/core.h>
+	<agar/gui.h>
+	"api_js.h"
+	"SDLJoyInterface.h"
+
+1340896098 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\sdl\sdljoyinterface.h
+	<SDL/SDL.h>
+	"xm7.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_dbg_regdump.cpp
+	"agar_surfaceconsole.h"
+	"agar_debugger.h"
+	"xm7.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_sch.cpp
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<SDL/SDL.h>
+	"xm7.h"
+	"tapelp.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"mouse.h"
+	"agar_xm7.h"
+	"agar_osd.h"
+	"sdl_sch.h"
+	"api_snd.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_draw.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_dbg_mmr.cpp
+	"agar_surfaceconsole.h"
+	"agar_debugger.h"
+	"mmr.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd_tape.cpp
+	<SDL/SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<iconv.h>
+	"xm7.h"
+	"keyboard.h"
+	"tapelp.h"
+	"display.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_gldraw.h"
+	"xm7_sdl.h"
+	"agar_osd.h"
+	"sdl_sch.h"
+	"api_draw.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_dbg_memdump.cpp
+	"agar_surfaceconsole.h"
+	"agar_debugger.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd_led.cpp
+	<SDL/SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<iconv.h>
+	"xm7.h"
+	"keyboard.h"
+	"tapelp.h"
+	"display.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_gldraw.h"
+	"xm7_sdl.h"
+	"agar_osd.h"
+	"sdl_sch.h"
+	"api_draw.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd.cpp
+	<SDL/SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	"xm7.h"
+	"keyboard.h"
+	"tapelp.h"
+	"display.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_gldraw.h"
+	"xm7_sdl.h"
+	"agar_osd.h"
+	"sdl_sch.h"
+	"api_draw.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+	<iconv.h>
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_menu_tool.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"tools.h"
+	"rtc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"api_draw.h"
+	"agar_toolbox.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd_stat.cpp
+	<SDL/SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<iconv.h>
+	"xm7.h"
+	"keyboard.h"
+	"tapelp.h"
+	"display.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_gldraw.h"
+	"xm7_sdl.h"
+	"agar_osd.h"
+	"sdl_sch.h"
+	"api_draw.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_menu_tape.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"tapelp.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"agar_toolbox.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_osd_vfd.cpp
+	<SDL/SDL.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<iconv.h>
+	"xm7.h"
+	"keyboard.h"
+	"tapelp.h"
+	"display.h"
+	"ttlpalet.h"
+	"apalet.h"
+	"subctrl.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_gldraw.h"
+	"xm7_sdl.h"
+	"agar_osd.h"
+	"sdl_sch.h"
+	"api_draw.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"agar_sdlview.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_menu_disk.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<iconv.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"fdc.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"sdl_inifile.h"
+	"agar_toolbox.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_menu_debug.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"tapelp.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"sdl_sch.h"
+	"agar_toolbox.h"
+	"agar_debugger.h"
+	"agar_surfaceconsole.h"
+	<time.h>
+	"../xm7-debugger/memread.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\xm7-debugger\memread.h
+	"xm7.h"
+	"memdef.h"
+
+1340896099 c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\xm7-debugger\memdef.h
+	"../vm/xm7.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_menu_about.cpp
+	<SDL/SDL.h>
+	<libintl.h>
+	<agar/core.h>
+	<agar/core/types.h>
+	<agar/gui.h>
+	<agar/gui/opengl.h>
+	"xm7.h"
+	"agar_xm7.h"
+	"agar_cfg.h"
+	"xm7_sdl.h"
+	"sdl_cfg.h"
+	"sdl_sch.h"
+	"sdl_inifile.h"
+	"agar_toolbox.h"
+	"agar_cmd.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_main.cpp
+	<SDL/SDL.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<dirent.h>
+	<locale.h>
+	<libintl.h>
+	<agar/core/types.h>
+	<agar/core.h>
+	<agar/gui.h>
+	"xm7.h"
+	"mouse.h"
+	"tapelp.h"
+	"keyboard.h"
+	"agar_xm7.h"
+	"agar_osd.h"
+	"api_draw.h"
+	"api_kbd.h"
+	"api_js.h"
+	"api_mouse.h"
+	"api_snd.h"
+	"sdl_sch.h"
+	"agar_cfg.h"
+	"agar_draw.h"
+	"agar_gldraw.h"
+	"sdl_inifile.h"
+	"sdl_cpuid.h"
+
+1340896099 source:c:\mingw\msys\1.0\home\k.ohta\src\xm7-for-sdl\linux-sdl\ui-agar\agar_vramutil.cpp
+	"xm7.h"
+	"display.h"
+	"subctrl.h"
+	"device.h"
+	"agar_vramutil.h"
+

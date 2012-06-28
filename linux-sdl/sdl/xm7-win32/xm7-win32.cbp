@@ -72,8 +72,8 @@
 			<Add library="C:\MinGW\lib\libvorbis.a" />
 			<Add library="C:\MinGW\lib\libogg.dll.a" />
 			<Add library="..\..\ui-agar\xm7-win32-ui-agar\libxm7-win32-ui-agar.a" />
-			<Add library="..\..\xm7-debugger\xm7-debugger-win32\libxm7-debugger-win32.a" />
 			<Add library="..\..\vm\xm7-win32-vm\libxm7-win32-vm.a" />
+			<Add library="..\..\xm7-debugger\xm7-debugger-win32\libxm7-debugger-win32.a" />
 			<Add library="..\..\fmgen\fmgen-win32\libfmgen-win32.a" />
 			<Add library="C:\MinGW\lib\libgdi32.a" />
 			<Add library="C:\MinGW\lib\libag_dev.a" />
@@ -90,7 +90,6 @@
 			<Add library="C:\MinGW\lib\libiconv.dll.a" />
 			<Add library="C:\MinGW\lib\libintl.dll.a" />
 			<Add library="C:\MinGW\lib\libfreetype.dll.a" />
-			<Add library="C:\MinGW\lib\libpthreadGCE2.dll.a" />
 			<Add library="C:\MinGW\lib\libpthread.dll.a" />
 			<Add library="C:\MinGW\lib\libopengl32.a" />
 			<Add library="C:\MinGW\lib\libz.a" />
