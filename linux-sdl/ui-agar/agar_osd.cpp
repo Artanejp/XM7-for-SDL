@@ -82,6 +82,10 @@ extern "C" {
 AG_HBox *pStatusBar;
 }
 
+extern void DrawMainCaption(BOOL redraw);
+extern void ClearStatOSD(void);
+extern void ResizeStatOSD(AG_Widget *parent, int w, int h);
+
 extern void InitLeds(AG_Widget *parent);
 extern void DestroyLeds(void);
 extern void DrawCAP(void);
@@ -90,6 +94,7 @@ extern void DrawINS(void);
 extern void ResizeLeds(AG_Widget *parent, int w, int h);
 extern void LinkSurfaceLeds(void);
 extern void ClearLeds(void);
+
 extern void InitTapeOSD(AG_Widget *parent);
 extern void DestroyTapeOSD(void);
 extern void LinkSurfaceCMT(void);
@@ -588,17 +593,17 @@ static BOOL UpdateMainCaption(BOOL override)
 }
 
 
-static void DrawMainCaption(BOOL override)
-{
-   if( !UpdateMainCaption(override)) return;
-   if(pwCaption != NULL) {
-	AG_ObjectLock(pwCaption);
+//static void DrawMainCaption(BOOL override)
+//{
+//   if( !UpdateMainCaption(override)) return;
+//   if(pwCaption != NULL) {
+//	AG_ObjectLock(pwCaption);
 //	      AG_PixmapSetSurface(pwCaption, nwCaption);
 //	      AG_PixmapUpdateSurface(pwCaption, nwCaption);
-	      AG_Redraw(pwCaption);
-	AG_ObjectUnlock(pwCaption);
-	}
-}
+//	      AG_Redraw(pwCaption);
+//	AG_ObjectUnlock(pwCaption);
+//	}
+//}
 
 
 

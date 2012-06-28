@@ -1,0 +1,322 @@
+/*
+ * agar_osd_stat.cpp
+ * Created on: 2012/06/28
+ *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
+ *     History: June,28,2012 Split from agar_osd.cpp
+ */
+#include <SDL/SDL.h>
+#include <agar/core.h>
+#include <agar/core/types.h>
+#include <agar/gui.h>
+#include <iconv.h>
+
+#include "xm7.h"
+#include "keyboard.h"
+#include "tapelp.h"
+#include "display.h"
+#include "ttlpalet.h"
+#include "apalet.h"
+#include "subctrl.h"
+#include "fdc.h"
+
+#ifdef USE_AGAR
+#include "agar_xm7.h"
+#include "agar_gldraw.h"
+#else
+#include "xm7_sdl.h"
+#endif
+
+#include "agar_osd.h"
+#include "sdl_sch.h"
+#include "api_draw.h"
+#include "agar_draw.h"
+#include "agar_gldraw.h"
+#include "agar_sdlview.h"
+
+#define OSD_STRLEN 256
+struct OsdStatPack
+{
+        int Changed;
+        BOOL init;
+        char message[OSD_STRLEN + 1];
+        AG_Mutex mutex;
+        int width;
+        int height;
+};
+static struct OsdStatPack *pOsdStat;
+static struct XM7_SDLView *pwSTAT;
+static char MsgString[OSD_STRLEN + 1];
+
+extern int getnFontSize(void);
+extern void SetPixelFormat(AG_PixelFormat *fmt);
+extern AG_Font *pStatusFont;
+
+struct OsdStatPack *InitStat(int w,int h)
+{
+    struct OsdStatPack *p;
+    AG_PixelFormat fmt;
+    AG_Color black;
+    int size = getnFontSize();
+
+    SetPixelFormat(&fmt);
+    p = (struct OsdStatPack *)malloc(sizeof(struct OsdStatPack));
+    if(p == NULL) return NULL;
+    memset(p, 0x00, sizeof(struct OsdStatPack));
+    p->init = TRUE;
+    p->Changed = FALSE;
+    p->message[0] = '\0';
+//    p->surface = AG_SurfaceNew(AG_SURFACE_PACKED, w, h, &fmt, AG_SRCALPHA);
+//    if(p->surface == NULL) {
+//            free(p);
+//            return NULL;
+//    }
+//    black.r = 0;
+//    black.g = 0;
+//    black.b = 0;
+//    black.a = 255;
+//    AG_FillRect(p->surface, NULL, black);
+    AG_MutexInit(&(p->mutex));
+    p->width = w;
+    p->height = h;
+    return p;
+}
+
+void DeleteStat(struct OsdStatPack *p)
+{
+   if(p == NULL) return;
+   AG_MutexDestroy(&(p->mutex));
+//   if(p->surface != NULL) AG_SurfaceFree(p->surface);
+   free(p);
+}
+
+extern "C" {
+static void DrawStatFn(AG_Event *event)
+{
+   XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
+   struct OsdStatPack *disp = (struct OsdStatPack *)AG_PTR(1);
+   AG_Surface *dst;
+   AG_Color black, n;
+   AG_Rect rect;
+   int size;
+   int len;
+
+   if((disp == NULL)  || (my == NULL)) return;
+
+
+   dst = XM7_SDLViewGetSrcSurface(my);
+   if(dst == NULL) return;
+    n.r = 255;
+    n.g = 255;
+    n.b = 255;
+    n.a = 255;
+
+    black.r = 0;
+    black.g = 0;
+    black.b = 0;
+    black.a = 255;
+
+   AG_MutexLock(&(disp->mutex));
+   if((disp->Changed == FALSE) && (disp->init == FALSE)) {
+       AG_MutexUnlock(&(disp->mutex));
+       return;
+   }
+   rect.w = dst->w;
+   rect.h = dst->h;
+   rect.x = 0;
+   rect.y = 0;
+   AG_FillRect(dst, NULL, black);
+   size = getnFontSize();
+   len = strlen(disp->message);
+
+   if((pStatusFont != NULL) && (size > 2) & (len <= OSD_STRLEN) && (len >= 0)){
+      AG_Surface *tmps;
+
+      AG_PushTextState();
+      AG_TextFont(pStatusFont);
+      AG_TextFontPts(size);
+
+      AG_TextColor(n);
+      AG_TextBGColor(black);
+      tmps = AG_TextRender(disp->message);
+      AG_SurfaceBlit(tmps, NULL, dst, 4, 4);
+      AG_SurfaceFree(tmps);
+      AG_PopTextState();
+   }
+   AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
+   disp->init = FALSE;
+   disp->Changed = FALSE;
+   AG_MutexUnlock(&(disp->mutex));
+}
+}
+
+static void CreateStat(AG_Widget *parent, struct OsdStatPack *p)
+{
+  if(p == NULL) return;
+  if(parent == NULL) return;
+  pwSTAT = XM7_SDLViewNew(parent, NULL, NULL);
+  if(pwSTAT == NULL) return;
+  XM7_SDLViewDrawFn(pwSTAT, DrawStatFn, "%p", p);
+  AG_WidgetShow(pwSTAT);
+}
+
+void InitStatOSD(AG_Widget *parent)
+{
+   if(parent == NULL) return;
+   pOsdStat = NULL;
+   pOsdStat = InitStat(STAT_WIDTH, STAT_HEIGHT * 2);
+   if(pOsdStat == NULL) return;
+   CreateStat(parent, pOsdStat);
+}
+
+void DestroyStatOSD(void)
+{
+   if(pOsdStat != NULL) {
+     DeleteStat(pOsdStat);
+     pOsdStat = NULL;
+   }
+}
+
+void LinkSurfaceSTAT(void)
+{
+}
+
+void ResizeStatOSD(AG_Widget *parent, int w, int h)
+{
+  int total =  STAT_WIDTH + VFD_WIDTH * 2
+          + CMT_WIDTH + LED_WIDTH * 3 + 50;
+  float ww = (float)w;
+  float wSTAT = (float)STAT_WIDTH / (float)total;
+
+  if(pwSTAT == NULL) return;
+  if(pOsdStat == NULL) return;
+  AG_MutexLock(&(pOsdStat->mutex));
+  pOsdStat->width = (int)(ww * wSTAT);
+  pOsdStat->height = h;
+  AG_WidgetSetSize(pwSTAT, pOsdStat->width, pOsdStat->height);
+  AG_MutexUnlock(&(pOsdStat->mutex));
+}
+
+void ClearStatOSD(void)
+{
+   if(pOsdStat == NULL) return;
+//   MsgString[0] = '\0';
+   pOsdStat->message[0] = '\0';
+   pOsdStat->Changed = TRUE;
+}
+
+void DrawMainCaption(BOOL redraw)
+{
+   char string[1024];
+   char tmp[128];
+   char *p;
+
+   string[0] = '\0';
+   if(pOsdStat == NULL) return;
+   /*
+    * RUN MODE
+    */
+   if (run_flag) {
+       strcpy(string, "XM7[実行]");
+	} else {
+       strcpy(string, "XM7[停止]");
+	}
+   /*
+    * BOOT MODE
+    */
+   if(boot_mode == BOOT_BASIC){
+      strcat(string, "[BAS]");
+   } else if(boot_mode == BOOT_DOS) {
+        strcat(string, "[DOS]");
+    } else {
+        strcat(string, "[???]");
+    }
+	strcat(string, " ");
+
+	/*
+	 * CPU速度比率
+	 */
+	if (bAutoSpeedAdjust) {
+		sprintf(tmp, "(%3d%%) ", speed_ratio / 100);
+		strcat(string, tmp);
+	}
+
+	/*
+	 * フロッピーディスクドライブ 0
+	 */
+	if (fdc_ready[0] != FDC_TYPE_NOTREADY) {
+
+		/*
+		 * ファイルネーム＋拡張子のみ取り出す
+		 */
+#ifdef _WINDOWS
+		p = strrchr(fdc_fname[0], '\\');
+#else
+		p = strrchr(fdc_fname[0], '/');
+#endif
+		if (p == NULL) {
+			p = fdc_fname[0];
+		} else {
+			p++;
+		}
+		sprintf(tmp, "- %s ", p);
+		strcat(string, tmp);
+	}
+
+	/*
+	 * フロッピーディスクドライブ 1
+	 */
+	if (fdc_ready[1] != FDC_TYPE_NOTREADY) {
+		if ((strcmp(fdc_fname[0], fdc_fname[1]) != 0) ||
+				(fdc_ready[0] == FDC_TYPE_NOTREADY)) {
+			/*
+			 * ファイルネーム＋拡張子のみ取り出す
+			 */
+#ifdef _WINDOWS
+		p = strrchr(fdc_fname[0], '\\');
+#else
+		p = strrchr(fdc_fname[0], '/');
+#endif
+			if (p == NULL) {
+				p = fdc_fname[1];
+			} else {
+				p++;
+			}
+			sprintf(tmp, "(%s) ", p);
+			strcat(string, tmp);
+		}
+	}
+
+	/*
+	 * テープ
+	 */
+	if (tape_fileh != NULL) {
+
+		/*
+		 * ファイルネーム＋拡張子のみ取り出す
+		 */
+#ifdef _WINDOWS
+		p = strrchr(fdc_fname[0], '\\');
+#else
+		p = strrchr(fdc_fname[0], '/');
+#endif
+		if (p == NULL) {
+			p = tape_fname;
+		} else {
+			p++;
+		}
+		sprintf(tmp, "- %s ", p);
+		strcat(string, tmp);
+	}
+    /*
+     * Compare
+     */
+    if((strncmp(string, pOsdStat->message, OSD_STRLEN - 1) != 0) ||
+       (redraw == TRUE)){
+            AG_MutexLock(&(pOsdStat->mutex));
+            pOsdStat->Changed = TRUE;
+            strncpy(pOsdStat->message, string, OSD_STRLEN - 1);
+            AG_MutexUnlock(&(pOsdStat->mutex));
+    }
+
+}
+

@@ -253,7 +253,7 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
        if(pwCMT == NULL) return;
        nCMTWidth = (int)(ww * wCMT);
        nCMTHeight = h;
-       AG_WidgetSetSize(pwCMT, w, h);
+       AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
 
 }
 
