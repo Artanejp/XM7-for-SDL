@@ -136,7 +136,7 @@ static void UpdateCMTCount(AG_Surface *dst, int count, struct OsdCMTPack *pStatu
    n.g = 255;
    n.b = 255;
    n.a = 255;
-    AG_SurfaceLock(dst);
+ //   AG_SurfaceLock(dst);
     {
         AG_Color fg, bg;
         AG_Surface *tmp;
@@ -181,7 +181,7 @@ static void UpdateCMTCount(AG_Surface *dst, int count, struct OsdCMTPack *pStatu
 
         AG_PopTextState();
     }
-    AG_SurfaceUnlock(dst);
+//    AG_SurfaceUnlock(dst);
     pStatus->OldStat = pStatus->stat;
    return;
 }
@@ -220,6 +220,7 @@ void InitTapeOSD(AG_Widget *parent)
     pCMTStat->OldCount = 0;
     pCMTStat->stat = OSD_CMT_EMPTY;
     pCMTStat->OldStat = -1;
+    AG_MutexInit(&(pCMTStat->mutex));
     CreateCMT(parent, TRUE);
 }
 
