@@ -259,7 +259,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 
     if(parent) {
  //      ResizeStatOSD(parent, w, h);
- //      ResizeVFD(parent, w, h);
+       ResizeVFD(parent, w, h);
  //      ResizeTapeOSD(parent, w, h);
  //      ResizeLeds(parent, w, h);
     }

@@ -85,19 +85,21 @@ static void DrawVFDFn(AG_Event *event)
    if(dst == NULL) return;
    AG_MutexLock(&(disp->mutex));
    if((disp->stat == disp->OldStat)
-       && (disp->init == FALSE)) {
+       && (disp->init == FALSE) && (disp->Changed == FALSE)) {
     disp->init = FALSE;
     disp->OldStat = disp->stat;
+    disp->Changed = FALSE;
     AG_MutexUnlock(&(disp->mutex));
     return;
    }
    if(UpdateVFD(dst, disp)) {
 //   AG_SurfaceCopy(dst, pDrawCMT);
-   AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
+      AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    }
    
    disp->init = FALSE;
    disp->OldStat = disp->stat;
+   disp->Changed = FALSE;
    AG_MutexUnlock(&(disp->mutex));
 }
 
@@ -218,6 +220,10 @@ void InitVFD(AG_Widget *parent)
     nVFDHeight = VFD_HEIGHT * 2;
     nVFDWidth = VFD_WIDTH * 2;
     for(i = 1; i >= 0 ;i--) {
+       old_writep[i] = FALSE;
+       szOldDrive[i][0] = '\0';
+       szDrive[i][0] = '\0';
+       
        pVFDStat[i] = (struct OsdVFDPack *)malloc(sizeof(struct OsdVFDPack));
        if(pVFDStat[i] == NULL) return;
        memset(pVFDStat[i], 0x00, sizeof(struct OsdVFDPack));
@@ -318,7 +324,9 @@ void DrawDrive(int drive, BOOL override)
 	AG_Surface *tmp;
 	AG_Rect		rect;
         int stat;
+        BOOL changed = override;
 
+         if(pVFDStat[drive] == NULL) return;
 	memset(string, 0x00, sizeof(string));
 	memset(utf8, 0x00, sizeof(utf8));
 	memset(outstr, 0x00, sizeof(outstr));
@@ -355,49 +363,30 @@ void DrawDrive(int drive, BOOL override)
 	 }
 
 	 /*
-	  * 番号比較
-	  */
-	 if (nDrive[drive] == num) {
-		 if (fdc_ready[drive] == FDC_TYPE_NOTREADY) {
-			 if(strlen(szDrive[drive]) > 0) {
-				 //レンダリング
-			 }
-			 szDrive[drive][0] = '\0';
-			 szOldDrive[drive][0] = '\0';
-			 /*
-			  * テクスチャ破棄必要か？
-			  */
-			 return;
-		 }
-		 if (strcmp(szDrive[drive], name) == 0) {
-		 }
-	 }
-
-	 /*
 	  * 描画
 	  */
-	 nDrive[drive] = num;
 	 memset(szDrive[drive], 0, 16);
 	 strncpy(szDrive[drive], name, 16);
-	 if (nDrive[drive] == 255) {
+	 if (num == 255) {
 		 strcpy(string, "");
 	 } else {
 		 strcpy(string, szDrive[drive]);
 	 }
 
-         if(pVFDStat[drive] == NULL) return;
    
-	 if (nDrive[drive] == FDC_ACCESS_READ) {
+         if((fdc_ready[drive] == FDC_TYPE_NOTREADY) && (nDrive[drive] == num)){
+	    stat = OSD_VFD_EMPTY;
+	 } else if (nDrive[drive] == FDC_ACCESS_READ) {
 	    stat = OSD_VFD_READ;
 	 } else if (nDrive[drive] == FDC_ACCESS_WRITE) {
 	    stat = OSD_VFD_WRITE;
-	 } else if(fdc_ready[drive] == FDC_TYPE_NOTREADY){
-	    stat = OSD_VFD_EMPTY;
 	 } else {
 	    stat = OSD_VFD_NORM;
 	 }
    
+	 nDrive[drive] = num;
          AG_MutexLock(&(pVFDStat[drive]->mutex));
+         pVFDStat[drive]->stat = stat;
 	 if((stat != pVFDStat[drive]->OldStat) || (strcmp(szDrive[drive], szOldDrive[drive]) != 0) || 
 	    (old_writep[drive] != fdc_writep[drive]) || (override == TRUE)) {
 		 /*
@@ -423,11 +412,11 @@ void DrawDrive(int drive, BOOL override)
 			 } else {
 				 sprintf(outstr, "　 %s", utf8); // 書込み許可
 			 }
-			 old_writep[drive] = fdc_writep[drive];
 		 }
+		 old_writep[drive] = fdc_writep[drive];
 	         strncpy(pVFDStat[drive]->VFDLetter, outstr, 63);
 	         pVFDStat[drive]->Changed = TRUE;
-	         pVFDStat[drive]->stat = stat;
+	         AG_WidgetUpdateSurface(AGWIDGET(pwVFD[drive]), pwVFD[drive]->mySurface);
 	 }
 	 AG_MutexUnlock(&(pVFDStat[drive]->mutex));
          
