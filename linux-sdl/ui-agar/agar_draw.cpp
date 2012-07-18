@@ -112,6 +112,8 @@ void ResizeWindow_Agar(int w, int h)
 	    drv = AGDRIVER(MainWindow);
 	}
 //	ofset = 40;
+        nDrawWidth = w;
+        nDrawHeight = h;
 	if(MainWindow) {
         if(pStatusBar != NULL) {
             AG_WindowSetGeometry(MainWindow, 0, 0 , w, h + AGWIDGET(pStatusBar)->h + MenuBar->wid.h );
@@ -135,8 +137,8 @@ void ResizeWindow_Agar(int w, int h)
 	    a.y = 0;
 	    a.w = ww;
 	    a.h = hh;
-        nDrawWidth = ww;
-        nDrawHeight = hh;
+//        nDrawWidth = w;
+//        nDrawHeight = h;
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
        AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
        AG_WidgetSetSize(DrawArea, ww, hh);
@@ -147,12 +149,12 @@ void ResizeWindow_Agar(int w, int h)
            rc.x = 0;
            rc.y = AGWIDGET(DrawArea)->y + AGWIDGET(DrawArea)->h;
             AG_WidgetSetGeometry(pStatusBar, rc);
-            nDrawHeight += AGWIDGET(pStatusBar)->h;
+//            nDrawHeight += AGWIDGET(pStatusBar)->h;
        }
        if(MainWindow) {
-//           AG_ObjectLock(AGOBJECT(MainWindow));
-//           AG_WindowSetGeometry(MainWindow, 0, 0, nDrawWidth, nDrawHeight);
-//           AG_ObjectUnlock(AGOBJECT(MainWindow));
+           AG_ObjectLock(AGOBJECT(MainWindow));
+           AG_WindowSetGeometry(MainWindow, 0, 0, nDrawWidth, AGWIDGET(DrawArea)->y + AGWIDGET(DrawArea)->h);
+           AG_ObjectUnlock(AGOBJECT(MainWindow));
            AG_Redraw(AGWIDGET(MainWindow));
        }
 	}
@@ -179,8 +181,17 @@ void ResizeWindow_Agar(int w, int h)
 //	  AG_ObjectDetach(AGOBJECT(pStatusBar));
 //        pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
 
-	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * h * 2) / 800 + 5);
-//        ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * h * 2) / 800, hh);
+//	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * h * 2) / 800 + 5);
+	  float hhh;
+	  if(DrawArea != NULL) {
+	       hhh = (float)(AGWIDGET(DrawArea)->h);
+	  }
+#ifdef USE_OPENGL
+	  else if(GLDrawArea != NULL) {
+	       hhh = (float)(AGWIDGET(GLDrawArea)->h);
+	  }
+#endif	  
+          ResizeStatus(AGWIDGET(pStatusBar), w, (int)((float)STAT_HEIGHT / 800.0f * hhh) , (int)hh);
 	  hh = hh + AGWIDGET(pStatusBar)->h;
        }
 #ifdef USE_OPENGL
@@ -230,12 +241,16 @@ void ResizeWindow_Agar2(int w, int h)
 	    a.w = ww;
 	    a.h = hh;
 	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 4, 0);
+        if(pStatusBar != NULL) {
+	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, AGWIDGET(pStatusBar)->h);
+	} else {
+	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
+	}
 	   AG_WidgetSetSize(DrawArea, ww, hh);
        if(MainWindow) {
            AG_Redraw(AGWIDGET(MainWindow));
        }
-	}
+       }
 
 #ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
@@ -261,7 +276,11 @@ void ResizeWindow_Agar2(int w, int h)
         //    AG_WindowFocus(MainWindow);
         //}
         AG_GLViewSizeHint(GLDrawArea, ww, hh);
-        AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
+        if(pStatusBar != NULL) {
+	   AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, AGWIDGET(pStatusBar)->h);
+	} else {
+	   AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
+	}
         AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
 	}
 	nDrawWidth = w;

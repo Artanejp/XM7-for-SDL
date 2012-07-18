@@ -187,6 +187,7 @@ void ResizeStatOSD(AG_Widget *parent, int w, int h)
   pOsdStat->width = (int)(ww * wSTAT);
   pOsdStat->height = h;
   AG_WidgetSetSize(pwSTAT, pOsdStat->width, pOsdStat->height);
+  AG_WidgetSetPosition(pwSTAT, 0, 0);
   AG_MutexUnlock(&(pOsdStat->mutex));
 }
 

@@ -183,7 +183,7 @@ static void DrawLEDFn(AG_Event *event)
     black.a = 255;
 
    AG_MutexLock(&(disp->mutex));
-   if((*stat == disp->OldStat) && (disp->init == FALSE)) {
+   if((disp->init == FALSE) && (*stat == disp->OldStat)){
        AG_MutexUnlock(&(disp->mutex));
        return;
    }
@@ -288,6 +288,10 @@ void DrawCAP(void)
 	/*
 	 * 描画、ワーク更新
 	 */
+    if(nCAP != num){
+	   nCAP = num;
+	   if(pWidCaps != NULL) AG_WidgetUpdate(pWidCaps);
+    }
 	nCAP = num;
 }
 
@@ -306,16 +310,15 @@ void DrawKANA(void)
     if(pOsdLEDKana == NULL) return;
 	if (kana_flag) {
 		num = 1;
-		p = pOsdLEDKana->pON;
 	} else {
 		num = 0;
-		p = pOsdLEDKana->pOFF;
 	}
 	/*
 	 * 描画、ワーク更新
 	 */
     if(nKANA != num){
-        AG_SurfaceBlit(p , NULL, pWidKana->Surface, 0, 0);
+	   nKANA = num;
+	   if(pWidKana != NULL) AG_Redraw(pWidKana);
     }
 	nKANA = num;
 }
@@ -340,7 +343,13 @@ void DrawINS(void)
 	/*
 	 * 描画、ワーク更新
 	 */
-	nINS = num;
+        if(nINS != num) {
+	   nINS = num;
+	   if(pWidIns != NULL) AG_Redraw(pWidIns);
+	}
+   
+        nINS = num;
+
 }
 
 
@@ -372,10 +381,25 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     nLedHeight = h;
     nLedWidth = (int)(ww * wLed);
     if(nLedWidth <= 0) return;
+    if((pOsdLEDIns == NULL) || (pOsdLEDCAPS == NULL) || (pOsdLEDKana == NULL)) return; 
+    if((pWidIns == NULL) || (pWidCaps == NULL) || (pWidKana == NULL)) return; 
     nFontSize = (int)(STAT_PT * (float)h * 1.0f) / (STAT_HEIGHT * 2.0f);
+    AG_MutexLock(&(pOsdLEDIns->mutex));
+    AG_MutexLock(&(pOsdLEDCAPS->mutex));
+    AG_MutexLock(&(pOsdLEDKana->mutex));
+   
     AG_WidgetSetSize(pWidIns, w, h);
+    AG_WidgetSetPosition(pWidIns, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH) / (float)total) *  ww), 0);
     AG_WidgetSetSize(pWidCaps, w, h);
+    AG_WidgetSetPosition(pWidCaps, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH) / (float)total) *  ww), 0);
     AG_WidgetSetSize(pWidKana, w, h);
+    AG_WidgetSetPosition(pWidKana, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH * 2) / (float)total) *  ww), 0);
+
+    AG_MutexUnlock(&(pOsdLEDIns->mutex));
+    AG_MutexUnlock(&(pOsdLEDCAPS->mutex));
+    AG_MutexUnlock(&(pOsdLEDKana->mutex));
+
+
 
 }
 

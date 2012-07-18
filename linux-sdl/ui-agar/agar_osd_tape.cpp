@@ -251,10 +251,13 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
        float ww = (float)w;
        float wCMT = (float)CMT_WIDTH / (float)total;
 
-       if(pwCMT == NULL) return;
+       if((pwCMT == NULL) || (pCMTStat == NULL)) return;
        nCMTWidth = (int)(ww * wCMT);
        nCMTHeight = h;
+       AG_MutexLock(&(pCMTStat->mutex));
        AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
+       AG_WidgetSetPosition(pwCMT, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2) / (float)total) *  ww), 0);
+       AG_MutexUnlock(&(pCMTStat->mutex));
 
 }
 
