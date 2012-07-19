@@ -163,9 +163,9 @@ void ResizeWindow_Agar(int w, int h)
 	       hhh = (float)(AGWIDGET(GLDrawArea)->h);
 	  }
 #endif	  
-	  AG_WidgetSetSize(pStatusBar, w, (hhh * STAT_HEIGHT) / 400);
-          ResizeStatus(AGWIDGET(pStatusBar), w, (hhh * STAT_HEIGHT) / 400 , hh);
-	  hh = hh + (hhh * STAT_HEIGHT) / 400;
+	  AG_WidgetSetSize(pStatusBar, w, hhh);
+          ResizeStatus(AGWIDGET(pStatusBar), w, hhh , hh);
+	  hh = hh + AGWIDGET(pStatusBar)->h;
        }
    
       if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);

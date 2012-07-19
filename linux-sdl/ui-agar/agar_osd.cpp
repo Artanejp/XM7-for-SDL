@@ -248,16 +248,15 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
                 + CMT_WIDTH + LED_WIDTH * 3 + 50;
     int pos = 0;
     float ww = (float)w;
-    float wFD = (float)VFD_WIDTH / (float)total;
-    float wCaption = (float)STAT_WIDTH / (float)total;
+    int hh;
     AG_Box *pad;
 
     if(parent == NULL) return;
 
+   hh = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
+   nFontSize = (int)(STAT_PT * ww) / 800.0f;
 
-   nFontSize = (int)(STAT_PT * ww) / ((float)total * 2.0f);
-
-   AG_WidgetSetSize(parent, w, (w * h) / total);
+   AG_WidgetSetSize(parent, w, hh);
    ResizeStatOSD(parent, w, h);
    ResizeVFD(parent, w, h);
    ResizeTapeOSD(parent, w, h);

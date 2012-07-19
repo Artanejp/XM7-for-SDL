@@ -264,15 +264,15 @@ void LinkSurfaceVFD(void)
 
 void ResizeVFD(AG_Widget *parent, int w, int h)
 {
-       int total =  STAT_WIDTH + VFD_WIDTH * 2 * 2
-                + CMT_WIDTH + LED_WIDTH * 3 + 50;
+       int total =  STAT_WIDTH + VFD_WIDTH * 2
+                + CMT_WIDTH + LED_WIDTH * 3;
        float ww = (float)w;
        float wVFD = (float)VFD_WIDTH / (float)total;
        AG_Surface *surface;
        int i;
 
-       nVFDWidth = (int)(ww * wVFD);
-       nVFDHeight = (int)(wVFD * (float)STAT_HEIGHT);
+       nVFDWidth = (int)(ww / 640.0f * (float)VFD_WIDTH);
+       nVFDHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
        for(i = 0; i < 2; i++) {
 	  if((pVFDStat[i] == NULL) || (pwVFD[i] == NULL)) return;
        }

@@ -211,7 +211,7 @@ void InitTapeOSD(AG_Widget *parent)
 {
     if(parent == NULL) return;
     pDrawCMT = NULL;
-    nCMTHeight = CMT_HEIGHT * 2;
+    nCMTHeight = CMT_HEIGHT;
     nCMTWidth = CMT_WIDTH;
     pCMTStat = (struct OsdCMTPack *)malloc(sizeof(struct OsdCMTPack));
     if(pCMTStat == NULL) return;
@@ -247,13 +247,13 @@ void LinkSurfaceCMT(void)
 void ResizeTapeOSD(AG_Widget *parent, int w, int h)
 {
        int total =  STAT_WIDTH + VFD_WIDTH * 2
-                + CMT_WIDTH + LED_WIDTH * 3 + 50;
+                + CMT_WIDTH + LED_WIDTH * 3;
        float ww = (float)w;
        float wCMT = (float)CMT_WIDTH / (float)total;
 
        if((pwCMT == NULL) || (pCMTStat == NULL)) return;
-       nCMTWidth = (int)(ww * wCMT);
-       nCMTHeight = (int)(wCMT * STAT_HEIGHT);
+       nCMTWidth = (int)(int)(ww / 640.0f * (float)CMT_WIDTH);
+       nCMTHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
        AG_MutexLock(&(pCMTStat->mutex));
        AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
        //AG_WidgetSetPosition(pwCMT, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2) / (float)total) *  ww), 0);

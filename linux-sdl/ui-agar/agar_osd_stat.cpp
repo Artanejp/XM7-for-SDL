@@ -147,8 +147,8 @@ static void CreateStat(AG_Widget *parent, struct OsdStatPack *p)
   if(parent == NULL) return;
   pwSTAT = XM7_SDLViewNew(parent, NULL, NULL);
   if(pwSTAT == NULL) return;
-  out = XM7_SDLViewSurfaceNew(pwSTAT, STAT_WIDTH * 2, STAT_HEIGHT * 2);
-  AG_WidgetSetSize(pwSTAT, STAT_WIDTH * 2, STAT_HEIGHT * 2);
+  out = XM7_SDLViewSurfaceNew(pwSTAT, STAT_WIDTH , STAT_HEIGHT);
+  AG_WidgetSetSize(pwSTAT, STAT_WIDTH , STAT_HEIGHT);
   XM7_SDLViewDrawFn(pwSTAT, DrawStatFn, "%p", p);
   AG_WidgetShow(pwSTAT);
 }
@@ -177,18 +177,27 @@ void LinkSurfaceSTAT(void)
 void ResizeStatOSD(AG_Widget *parent, int w, int h)
 {
   int total =  STAT_WIDTH + VFD_WIDTH * 2
-          + CMT_WIDTH + LED_WIDTH * 3 + 50;
+          + CMT_WIDTH + LED_WIDTH * 3;
   float ww = (float)w;
   float wSTAT = (float)STAT_WIDTH / (float)total;
 
   if(pwSTAT == NULL) return;
   if(pOsdStat == NULL) return;
   AG_MutexLock(&(pOsdStat->mutex));
-  pOsdStat->width = (int)(ww * wSTAT);
-  pOsdStat->height =  (int)(wSTAT * (float)STAT_HEIGHT);
+  pOsdStat->width = (int)(ww / 640.0f * (float)STAT_WIDTH);
+  pOsdStat->height =  (int)((float)h / 400.0f * (float)STAT_HEIGHT);
   AG_WidgetSetSize(pwSTAT, pOsdStat->width, pOsdStat->height);
-  AG_WidgetSetPosition(pwSTAT, 0, 0);
+
   AG_MutexUnlock(&(pOsdStat->mutex));
+  {
+     AG_SizeAlloc a;
+     a.w = pOsdStat->width;
+     a.h = pOsdStat->height;
+     a.x = 0;
+     a.y = 0;
+     AG_WidgetSizeAlloc(pwSTAT, &a);
+  
+  }
 }
 
 void ClearStatOSD(void)

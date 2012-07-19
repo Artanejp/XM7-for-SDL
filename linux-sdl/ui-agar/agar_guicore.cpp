@@ -329,10 +329,11 @@ void InitInstance(void)
         CreateStatus(AGWIDGET(pStatusBar));
         AG_WidgetShow(pStatusBar);
     }
-
-//    win = AG_GuiDebugger();
-//    AG_WindowShow(win);
-
+    {
+//     win = AG_GuiDebugger();
+//     AG_WindowShow(win);
+    }
+   
 }
 
 /*

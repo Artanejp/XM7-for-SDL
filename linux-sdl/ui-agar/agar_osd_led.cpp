@@ -213,9 +213,9 @@ static void CreateLEDs(AG_Widget *parent)
     int w, h;
 
 
-   w = LED_WIDTH * 2;
+   w = LED_WIDTH;
    nLedWidth = w;
-   h = LED_HEIGHT * 2;
+   h = LED_HEIGHT;
    nLedHeight = w;
    SetPixelFormat(&fmt);
    black.r = 0;
@@ -249,13 +249,6 @@ static void CreateLEDs(AG_Widget *parent)
    AG_FillRect(stmp, NULL, black);
    XM7_SDLViewDrawFn(pWidKana, DrawLEDFn, "%p,%p", &nKANA, pOsdLEDKana);
 
-   a.w = w;
-   a.h = h;
-   a.x = 0;
-   a.y = 0;
-//   AG_WidgetSizeAlloc(pWidIns, &a);
-//   AG_WidgetSizeAlloc(pWidCaps, &a);
-//   AG_WidgetSizeAlloc(pWidKana, &a);
    AG_WidgetSetSize(pWidIns, w, h);
    AG_WidgetSetSize(pWidCaps, w, h);
    AG_WidgetSetSize(pWidKana, w, h);
@@ -370,37 +363,130 @@ void LinkSurfaceLeds(void)
 
 }
 
+static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *str)
+{
+   AG_Surface *src;
+   AG_Color n, r, black;
+   AG_PixelFormat fmt;
+   int size =  getnFontSize();
+   int w = nLedWidth;
+   int h = nLedHeight;
+   
+   if((wid == NULL) || (p == NULL)) return NULL;
+   SetPixelFormat(&fmt);
+
+   src = XM7_SDLViewGetSrcSurface(wid);
+   if(src == NULL) {
+      src = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
+      if(src == NULL) return NULL;
+      wid->Surface = src;
+   } else {
+      AG_SurfaceResize(src, w, h);
+   }
+   
+    r.r = 255;
+    r.g = 0;
+    r.b = 0;
+    r.a = 255;
+
+    black.r = 0;
+    black.g = 0;
+    black.b = 0;
+    black.a = 255;
+
+    n.r = 255;
+    n.g = 255;
+    n.b = 255;
+    n.a = 255;
+   
+   if(p->pON != NULL) AG_SurfaceFree(p->pON);
+   if(p->pOFF != NULL) AG_SurfaceFree(p->pOFF);
+
+   p->pON = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
+   if(p->pON == NULL) {
+//	free(p);
+        return NULL;
+   }
+
+   p->pOFF = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
+   if(p->pOFF == NULL) {
+//	free(p);
+        AG_SurfaceFree(p->pON);
+        return NULL;
+   }
+     if((pStatusFont != NULL) && (size > 2)){
+      AG_Surface *tmps;
+      int xoff = (3 * nLedWidth) / LED_WIDTH;
+      int yoff = (3 * nLedHeight) / LED_HEIGHT;
+      AG_PushTextState();
+      AG_TextFont(pStatusFont);
+      AG_TextFontPts(size);
+
+      AG_TextColor(n);
+      AG_TextBGColor(black);
+      AG_FillRect(p->pOFF, NULL, black);
+      tmps = AG_TextRender(str);
+      AG_SurfaceBlit(tmps, NULL, p->pOFF, xoff, yoff);
+      AG_SurfaceFree(tmps);
+
+      AG_TextColor(black);
+      AG_TextBGColor(r);
+      AG_FillRect(p->pON, NULL, r);
+      tmps = AG_TextRender(str);
+      AG_SurfaceBlit(tmps, NULL, p->pON, xoff, yoff);
+      AG_SurfaceFree(tmps);
+
+      AG_PopTextState();
+   }
+   AG_WidgetUpdateSurface(AGWIDGET(wid), wid->mySurface);
+
+   return src;
+}
+
+   
+
 void ResizeLeds(AG_Widget *parent, int w, int h)
 {
     int total =  STAT_WIDTH + VFD_WIDTH * 2
-                + CMT_WIDTH + LED_WIDTH * 3 + 50;
+                + CMT_WIDTH + LED_WIDTH * 3;
     float wLed = (float)LED_WIDTH / (float)total;
     float ww = (float)w;
     int nFontSize;
 
-    nLedHeight = (int)(wLed * (float)STAT_HEIGHT);
-    nLedWidth = (int)(ww * wLed);
+    nLedHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
+    nLedWidth = (int)(ww / 640.0f * (float)LED_WIDTH);
     if(nLedWidth <= 0) return;
     if((pOsdLEDIns == NULL) || (pOsdLEDCAPS == NULL) || (pOsdLEDKana == NULL)) return; 
     if((pWidIns == NULL) || (pWidCaps == NULL) || (pWidKana == NULL)) return; 
-    nFontSize = (int)(STAT_PT * (float)h * 1.0f) / (STAT_HEIGHT * 2.0f);
+//    nFontSize = (int)(STAT_PT * (float)h * 1.0f) / (STAT_HEIGHT * 2.0f);
     AG_MutexLock(&(pOsdLEDIns->mutex));
     AG_MutexLock(&(pOsdLEDCAPS->mutex));
     AG_MutexLock(&(pOsdLEDKana->mutex));
-   
-    AG_WidgetSetSize(pWidIns, nLedWidth, nLedHeight);
-    //AG_WidgetSetPosition(pWidIns, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH) / (float)total) *  ww), 0);
-    AG_WidgetSetSize(pWidCaps, nLedWidth, nLedHeight);
-    //AG_WidgetSetPosition(pWidCaps, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH) / (float)total) *  ww), 0);
-    AG_WidgetSetSize(pWidKana, nLedWidth, nLedHeight);
-    //AG_WidgetSetPosition(pWidKana, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH * 2) / (float)total) *  ww), 0);
-
+    {
+       AG_WidgetSetSize(pWidIns, nLedWidth, nLedHeight);
+       ResizeOneLed(pWidIns, pOsdLEDIns, "Ins");
+       AG_WidgetSetSize(pWidCaps, nLedWidth, nLedHeight);
+       ResizeOneLed(pWidCaps, pOsdLEDCAPS, "CAP");
+       AG_WidgetSetSize(pWidKana, nLedWidth, nLedHeight);
+       ResizeOneLed(pWidKana, pOsdLEDKana, "カナ");
+    }
     AG_MutexUnlock(&(pOsdLEDIns->mutex));
     AG_MutexUnlock(&(pOsdLEDCAPS->mutex));
     AG_MutexUnlock(&(pOsdLEDKana->mutex));
+//    {
+//       AG_SizeAlloc a;
+//       a.w = nLedWidth;
+//       a.h = nLedHeight;
+//       a.x = 0;
+//       a.y = 0;
 
-
-
+//       AG_WidgetSizeAlloc(pWidIns, &a);
+//       AG_WidgetUpdate(pWidIns);
+//       AG_WidgetSizeAlloc(pWidCaps, &a);
+//       AG_WidgetUpdate(pWidCaps);
+//       AG_WidgetSizeAlloc(pWidKana, &a);
+//       AG_WidgetUpdate(pWidKana);
+//    }
 }
 
 void ClearLeds(void)

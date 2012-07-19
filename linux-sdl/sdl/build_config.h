@@ -60,17 +60,17 @@
 /*
  * Embedの場合にはサイズと表示レイアウトを変更する必要がある？
  */
-#define LED_WIDTH 20
-#define LED_HEIGHT 14
+#define LED_WIDTH 30
+#define LED_HEIGHT 25
 
 #define VFD_WIDTH 110
-#define VFD_HEIGHT 14
+#define VFD_HEIGHT 25
 
-#define CMT_WIDTH 70
-#define CMT_HEIGHT 14
+#define CMT_WIDTH 80
+#define CMT_HEIGHT 25
 
 #define STAT_WIDTH 250
-#define STAT_HEIGHT 14
+#define STAT_HEIGHT 25
 
 #ifndef SHAREDIR
 #define SHAREDIR "/usr/local/share/xm7/"
