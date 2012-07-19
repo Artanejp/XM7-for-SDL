@@ -251,19 +251,19 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     float wFD = (float)VFD_WIDTH / (float)total;
     float wCaption = (float)STAT_WIDTH / (float)total;
     AG_Box *pad;
-    return;
+
     if(parent == NULL) return;
-	return;
+
 
    nFontSize = (int)(STAT_PT * ww) / ((float)total * 2.0f);
 
-    if(parent) {
- //      ResizeStatOSD(parent, w, h);
-       ResizeVFD(parent, w, h);
- //      ResizeTapeOSD(parent, w, h);
- //      ResizeLeds(parent, w, h);
-    }
+   AG_WidgetSetSize(parent, w, (w * h) / total);
+   ResizeStatOSD(parent, w, h);
+   ResizeVFD(parent, w, h);
+   ResizeTapeOSD(parent, w, h);
+   ResizeLeds(parent, w, h);
    DrawStatusForce();
+   AG_WidgetUpdate(parent);
 }
 
 /*

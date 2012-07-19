@@ -378,7 +378,7 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     float ww = (float)w;
     int nFontSize;
 
-    nLedHeight = h;
+    nLedHeight = (int)(wLed * (float)STAT_HEIGHT);
     nLedWidth = (int)(ww * wLed);
     if(nLedWidth <= 0) return;
     if((pOsdLEDIns == NULL) || (pOsdLEDCAPS == NULL) || (pOsdLEDKana == NULL)) return; 
@@ -388,12 +388,12 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     AG_MutexLock(&(pOsdLEDCAPS->mutex));
     AG_MutexLock(&(pOsdLEDKana->mutex));
    
-    AG_WidgetSetSize(pWidIns, w, h);
-    AG_WidgetSetPosition(pWidIns, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH) / (float)total) *  ww), 0);
-    AG_WidgetSetSize(pWidCaps, w, h);
-    AG_WidgetSetPosition(pWidCaps, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH) / (float)total) *  ww), 0);
-    AG_WidgetSetSize(pWidKana, w, h);
-    AG_WidgetSetPosition(pWidKana, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH * 2) / (float)total) *  ww), 0);
+    AG_WidgetSetSize(pWidIns, nLedWidth, nLedHeight);
+    //AG_WidgetSetPosition(pWidIns, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH) / (float)total) *  ww), 0);
+    AG_WidgetSetSize(pWidCaps, nLedWidth, nLedHeight);
+    //AG_WidgetSetPosition(pWidCaps, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH) / (float)total) *  ww), 0);
+    AG_WidgetSetSize(pWidKana, nLedWidth, nLedHeight);
+    //AG_WidgetSetPosition(pWidKana, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2 + CMT_WIDTH + LED_WIDTH * 2) / (float)total) *  ww), 0);
 
     AG_MutexUnlock(&(pOsdLEDIns->mutex));
     AG_MutexUnlock(&(pOsdLEDCAPS->mutex));

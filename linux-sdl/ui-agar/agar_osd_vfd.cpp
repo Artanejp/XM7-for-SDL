@@ -272,7 +272,7 @@ void ResizeVFD(AG_Widget *parent, int w, int h)
        int i;
 
        nVFDWidth = (int)(ww * wVFD);
-       nVFDHeight = h;
+       nVFDHeight = (int)(wVFD * (float)STAT_HEIGHT);
        for(i = 0; i < 2; i++) {
 	  if((pVFDStat[i] == NULL) || (pwVFD[i] == NULL)) return;
        }
@@ -285,7 +285,7 @@ void ResizeVFD(AG_Widget *parent, int w, int h)
 	  if(surface != NULL) AG_SurfaceResize(surface, nVFDWidth, nVFDHeight);
 	  AG_ObjectUnlock(pwVFD[i]);
 	  AG_WidgetSetSize(pwVFD[i], nVFDWidth, nVFDHeight);
-	  AG_WidgetSetPosition(pwVFD[i], (int)(((float)(STAT_WIDTH + VFD_WIDTH * (i - 1)) / (float)total) *  ww), 0);
+	  //AG_WidgetSetPosition(pwVFD[i], (int)(((float)(STAT_WIDTH + VFD_WIDTH * (i - 1)) / (float)total) *  ww), 0);
 	  AG_MutexUnlock(&(pVFDStat[i]->mutex));
        }
    
