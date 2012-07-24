@@ -144,7 +144,7 @@ struct OsdLEDPack *InitLED(int w, int h, const char *str, int xoff, int yoff)
 
       AG_PopTextState();
    }
-
+   p->init = TRUE;
    return p;
 }
 
@@ -417,7 +417,7 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
      if((pStatusFont != NULL) && (size > 2)){
       AG_Surface *tmps;
       int xoff = (3 * nLedWidth) / LED_WIDTH;
-      int yoff = (3 * nLedHeight) / LED_HEIGHT;
+      int yoff = (2 * nLedHeight) / LED_HEIGHT;
       AG_PushTextState();
       AG_TextFont(pStatusFont);
       AG_TextFontPts(size);
@@ -439,7 +439,7 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
       AG_PopTextState();
    }
    AG_WidgetUpdateSurface(AGWIDGET(wid), wid->mySurface);
-
+   p->init = TRUE;
    return src;
 }
 
@@ -473,20 +473,6 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     AG_MutexUnlock(&(pOsdLEDIns->mutex));
     AG_MutexUnlock(&(pOsdLEDCAPS->mutex));
     AG_MutexUnlock(&(pOsdLEDKana->mutex));
-//    {
-//       AG_SizeAlloc a;
-//       a.w = nLedWidth;
-//       a.h = nLedHeight;
-//       a.x = 0;
-//       a.y = 0;
-
-//       AG_WidgetSizeAlloc(pWidIns, &a);
-//       AG_WidgetUpdate(pWidIns);
-//       AG_WidgetSizeAlloc(pWidCaps, &a);
-//       AG_WidgetUpdate(pWidCaps);
-//       AG_WidgetSizeAlloc(pWidKana, &a);
-//       AG_WidgetUpdate(pWidKana);
-//    }
 }
 
 void ClearLeds(void)
