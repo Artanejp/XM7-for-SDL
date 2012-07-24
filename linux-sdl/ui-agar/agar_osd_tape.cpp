@@ -44,10 +44,6 @@ enum {
 };
 
 struct OsdCMTPack {
-    AG_Surface *pRead;
-    AG_Surface *pWrite;
-    AG_Surface *pNorm;
-    AG_Surface *pEmpty;
     int OldStat;
     int OldCount;
     int stat;
@@ -228,10 +224,6 @@ void DestroyTapeOSD(void)
 {
     if(pCMTStat != NULL){
         AG_MutexDestroy(&(pCMTStat->mutex));
-        if(pCMTStat->pEmpty != NULL) AG_SurfaceFree(pCMTStat->pEmpty);
-        if(pCMTStat->pNorm != NULL) AG_SurfaceFree(pCMTStat->pNorm);
-        if(pCMTStat->pRead != NULL) AG_SurfaceFree(pCMTStat->pRead);
-        if(pCMTStat->pWrite != NULL) AG_SurfaceFree(pCMTStat->pWrite);
         free(pCMTStat);
     }
     if(pDrawCMT != NULL) AG_SurfaceFree(pDrawCMT);
@@ -255,6 +247,7 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
        nCMTWidth = (int)(int)(ww / 640.0f * (float)CMT_WIDTH);
        nCMTHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
        AG_MutexLock(&(pCMTStat->mutex));
+       pCMTStat->init = TRUE;
        AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
        //AG_WidgetSetPosition(pwCMT, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2) / (float)total) *  ww), 0);
        AG_MutexUnlock(&(pCMTStat->mutex));

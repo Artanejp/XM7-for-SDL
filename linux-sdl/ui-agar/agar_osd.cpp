@@ -244,8 +244,6 @@ void DrawStatusForce(void)
 void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 {
     int i;
-    int total =  STAT_WIDTH + VFD_WIDTH * 2
-                + CMT_WIDTH + LED_WIDTH * 3 + 50;
     int pos = 0;
     float ww = (float)w;
     int hh;
@@ -256,7 +254,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
    hh = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
    nFontSize = (int)(STAT_PT * ww) / 800.0f;
 
-   AG_WidgetSetSize(parent, w, hh);
+   AG_WidgetSetSize(parent, w - 5, hh);
    ResizeStatOSD(parent, w, h);
    ResizeVFD(parent, w, h);
    ResizeTapeOSD(parent, w, h);
