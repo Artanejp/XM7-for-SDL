@@ -7,7 +7,7 @@
 
 #################### Build flags ############################
 # Uncomment if using OpenGL
-USE_OPENGL      = Yes
+#USE_OPENGL      = Yes
 
 # Uncomment if using OpenMP
 USE_OPENMP      = Yes
@@ -21,7 +21,7 @@ USE_OPENMP      = Yes
 # SET Arch specified
 #ARCH_FLAGS       = -mmmx -msse -msse2
 #ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
-ARCH_FLAGS      = 
+ARCH_FLAGS      = -mwindows -march=i486
 
 ################### VARIABLES ################################
 #XM7_VER		= 3
