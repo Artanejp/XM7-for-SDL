@@ -54,14 +54,26 @@ void DetachVramSemaphore(void)
 
 void InitVirtualVram()
 {
+   int size;
     if(pVirtualVram != NULL) return;
-    pVirtualVram = (struct VirtualVram *)malloc(sizeof(struct VirtualVram));
+#ifndef _WINDOWS
+    if(posix_memalign((void **)&pVirtualVram, 32, sizeof(struct VirtualVram)) < 0) return;
+   if(posix_memalign((void **)&pVram2, 32, sizeof(Uint32) * 640 * 400) < 0) {
+      free(pVirtualVram);
+      pVirtualVram = NULL;
+   }
+   
+#else
+    size = ((sizeof(struct VirtualVram) + 31 ) / 32) * 32;
+    pVirtualVram = (struct VirtualVram *)malloc(size);
     if(pVirtualVram == NULL) return;
-    pVram2 = (Uint32 *)malloc(640*400*sizeof(Uint32));
+    size = ((640 * 400 * sizeof(Uint32) + 31 ) / 32) * 32;
+    pVram2 = (Uint32 *)malloc(size);
     if(pVram2 == NULL) {
         free(pVirtualVram);
         pVirtualVram = NULL;
     }
+#endif   
     bVramUpdateFlag= FALSE;
    // Phase 1
     memset(pVirtualVram, 0x00, sizeof(struct VirtualVram) );

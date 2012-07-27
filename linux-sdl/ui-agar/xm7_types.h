@@ -27,7 +27,7 @@ typedef int     BOOL;
 // Vector
 #if defined(_X86INTRIN_H_INCLUDED) 
 typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
-typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(16)));
+typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(32)));
 typedef union 
 {
         v4si v;
@@ -38,7 +38,7 @@ typedef union
         int32_t si[4];
         int16_t ss[8];
         int8_t  sb[16];
-} v4hi;
+} v4hi __attribute__ ((aligned(16)));
 
 typedef union 
 {
@@ -50,11 +50,11 @@ typedef union
         int32_t si[8];
         int16_t ss[16];
         int8_t  sb[32];
-} v8hi;
+} v8hi __attribute__ ((aligned(32)));
 
 #else // Normal
 typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
-typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(16)));
+typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(32)));
 typedef union 
 {
         v4si v;
@@ -65,7 +65,7 @@ typedef union
         int32_t si[4];
         int16_t ss[8];
         int8_t  sb[16];
-} v4hi;
+} v4hi __attribute__ ((aligned(16)));
 
 typedef union 
 {
@@ -77,7 +77,7 @@ typedef union
         int32_t si[8];
         int16_t ss[16];
         int8_t  sb[32];
-} v8hi;
+} v8hi __attribute__ ((aligned(32)));
 
 #endif // !defined(_X86INTRIN_H_INCLUDED)
 #endif //#ifndef __XM7_TYPES_H
