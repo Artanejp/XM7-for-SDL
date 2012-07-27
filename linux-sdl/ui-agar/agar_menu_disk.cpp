@@ -351,10 +351,11 @@ static void OnSelectDiskMedia(AG_Event *event)
 		 box2 = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
          pIn =  fdc_name[Drive][i];
          pOut = utf8;
+	 pOut[0] = '\0';
           in = strlen(pIn);
           out = 512;
           hd = iconv_open("utf8", "cp932");
-          if(hd >= 0) {
+          if((hd >= 0) && (in > 0)){
                   while(in>0) {
                           iconv(hd, &pIn, &in, &pOut, &out);
                   }
