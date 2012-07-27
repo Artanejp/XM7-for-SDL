@@ -14,20 +14,23 @@
 * Definition of Convertsion Tables.
 */
 // Reduce Tables 20120131
-static v4hi aPlaneB0[256];
-static v4hi aPlaneB1[256];
-static v4hi aPlaneB2[256];
-static v4hi aPlaneB3[256];
 
-static v4hi aPlaneR0[256];
-static v4hi aPlaneR1[256];
-static v4hi aPlaneR2[256];
-static v4hi aPlaneR3[256];
+static v4hi aPlaneB0[256] __attribute__((aligned(32)));
+static v4hi aPlaneB1[256] __attribute__((aligned(32)));
+static v4hi aPlaneB2[256] __attribute__((aligned(32)));
+static v4hi aPlaneB3[256] __attribute__((aligned(32)));
 
-static v4hi aPlaneG0[256];
-static v4hi aPlaneG1[256];
-static v4hi aPlaneG2[256];
-static v4hi aPlaneG3[256];
+static v4hi aPlaneR0[256] __attribute__((aligned(32)));
+static v4hi aPlaneR1[256] __attribute__((aligned(32)));
+static v4hi aPlaneR2[256] __attribute__((aligned(32)));
+static v4hi aPlaneR3[256] __attribute__((aligned(32)));
+
+static v4hi aPlaneG0[256] __attribute__((aligned(32)));
+static v4hi aPlaneG1[256] __attribute__((aligned(32)));
+static v4hi aPlaneG2[256] __attribute__((aligned(32)));
+static v4hi aPlaneG3[256] __attribute__((aligned(32)));
+
+
 
 static inline void initvramtblsub_vec(int x, v4hi *p)
 {
@@ -132,9 +135,8 @@ v4hi getvram_8_vec(Uint32 addr)
     dat[PLAINB] = vram_pb[addr];
     dat[PLAINW] = 0;
 
-    cbuf.v =
-        aPlaneB0[dat[PLAINB]].v+
-        aPlaneB1[dat[PLAINR]].v+
-        aPlaneB2[dat[PLAING]].v;
+    cbuf.v = aPlaneB0[dat[PLAINB]].v;
+    cbuf.v = cbuf.v + aPlaneB1[dat[PLAINR]].v;
+    cbuf.v = cbuf.v + aPlaneB2[dat[PLAING]].v;
    return cbuf;
 }
