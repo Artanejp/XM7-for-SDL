@@ -92,12 +92,12 @@ static inline void getvram_8to8(Uint32 addr, Uint8 *cbuf)
 //void getvram_400l(Uint32 addr,Uint32 *p, Uint32 mpage)
 void getvram_400l(Uint32 addr,v4hi *p, Uint32 mpage)
 {
-   *p = getvram_8_vec(addr);
+   *p = (v4hi)getvram_8_vec(addr);
 }
 
 void getvram_200l(Uint32 addr,v4hi *p, Uint32 mpage)
 {
-   *p = getvram_8_vec(addr);
+   *p = (v4hi)getvram_8_vec(addr);
 }
 
 void CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode)
@@ -152,42 +152,42 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp, c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
     addr += 80;
     disp += pitch;
 
-    c = getvram_8_vec(addr);
+    c = (v4hi)getvram_8_vec(addr);
     putword8_vec((Uint32 *)disp,  c);
 //    addr += 80;
 //    disp += pitch;
