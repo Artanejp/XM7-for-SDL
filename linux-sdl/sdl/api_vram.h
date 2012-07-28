@@ -53,8 +53,8 @@ extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int m
 extern "C" {
 #endif
 
-extern volatile v4hi getvram_4096_vec(Uint32 addr);
-static inline void putword2_vec(Uint32 *disp, v4hi cbuf)
+extern v4hi getvram_4096_vec(Uint32 addr);
+static inline void putword2_vec(Uint32 *disp, volatile v4hi cbuf)
 {
    disp[0] = rgbAnalogGDI[cbuf.s[0]];
    disp[1] = rgbAnalogGDI[cbuf.s[1]];
@@ -71,11 +71,11 @@ extern void initvramtbl_4096_vec(void);
 extern void detachvramtbl_8_vec(void);
 extern void detachvramtbl_4096_vec(void);
 
-extern volatile v4hi getvram_8_vec(Uint32 addr);
+extern v4hi getvram_8_vec(Uint32 addr);
 
    
    
-static inline void  putword8_vec(Uint32 *disp, v4hi p)
+static inline void  putword8_vec(Uint32 *disp, volatile v4hi p)
 {
    v8hi *pal =(v8hi *)rgbTTLGDI;
    v8hi *dst = (v8hi *)disp;

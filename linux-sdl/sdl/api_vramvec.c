@@ -33,8 +33,8 @@ enum {
 
 static inline void initvramtblsub_vec(int x, v4hi *p)
 {
-    v4si mask __attribute__((align(32))); 
-    mask =(v4si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+    v4si mask; 
+    mask = (v4si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
     p->v = (v4si){x,x,x,x,x,x,x,x};
 
     p->v = p->v & mask;
@@ -159,10 +159,10 @@ v4hi getvram_4096_vec(Uint32 addr)
 v4hi getvram_8_vec(Uint32 addr)
 {
     uint8_t dat[4];
-    v4hi cbuf __attribute__((aligned(32)));
+    volatile v4hi cbuf __attribute__((aligned(32)));
     if(aPlanes == NULL) {
        cbuf.v = (v4si){0,0,0,0,0,0,0,0};
-       return cbuf;
+       return (v4hi)cbuf;
      }
         /*
          * R,G,Bについて8bit単位で描画する。
@@ -178,5 +178,5 @@ v4hi getvram_8_vec(Uint32 addr)
     cbuf.v = aPlanes[B0 + dat[PLAINB]].v |
              aPlanes[B1 + dat[PLAINR]].v |
              aPlanes[B2 + dat[PLAING]].v;
-   return cbuf;
+   return (v4hi)cbuf;
 }
