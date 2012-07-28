@@ -33,7 +33,8 @@ enum {
 
 static inline void initvramtblsub_vec(int x, v4hi *p)
 {
-    v4si mask =(v4si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+    v4si mask __attribute__((align(32))); 
+    mask =(v4si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
     p->v = (v4si){x,x,x,x,x,x,x,x};
 
     p->v = p->v & mask;
@@ -58,7 +59,7 @@ static v4hi *initvramtblsub(int size)
 #ifndef _WINDOWS
    if(posix_memalign((void **)&p, 32, sizeof(v4hi) * size) != 0) return NULL;
 #else
-   p = (v4hi *)_aligned_malloc(32, sizeof(v4hi) * size);
+   p = (v4hi *)__mingw_aligned_malloc(sizeof(v4hi) * size, 32, 0);
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -102,7 +103,7 @@ void detachvramtbl_4096_vec(void)
 #ifndef _WINDOWS
       free(aPlanes);
 #else
-      _aligned_free(aPlanes);
+      __mingw_aligned_free(aPlanes);
 #endif
       aPlanes = NULL;
    }
