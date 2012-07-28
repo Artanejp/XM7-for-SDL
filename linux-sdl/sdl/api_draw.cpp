@@ -454,6 +454,8 @@ void	CleanDraw(void)
 			DrawMutex = NULL;
 		}
 #endif
+   //		 detachvramtbl_8_vec();
+		 detachvramtbl_4096_vec();
 		detachsub();
 }
 

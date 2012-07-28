@@ -15,22 +15,21 @@
 */
 // Reduce Tables 20120131
 
-static v4hi aPlaneB0[256] __attribute__((aligned(32)));
-static v4hi aPlaneB1[256] __attribute__((aligned(32)));
-static v4hi aPlaneB2[256] __attribute__((aligned(32)));
-static v4hi aPlaneB3[256] __attribute__((aligned(32)));
-
-static v4hi aPlaneR0[256] __attribute__((aligned(32)));
-static v4hi aPlaneR1[256] __attribute__((aligned(32)));
-static v4hi aPlaneR2[256] __attribute__((aligned(32)));
-static v4hi aPlaneR3[256] __attribute__((aligned(32)));
-
-static v4hi aPlaneG0[256] __attribute__((aligned(32)));
-static v4hi aPlaneG1[256] __attribute__((aligned(32)));
-static v4hi aPlaneG2[256] __attribute__((aligned(32)));
-static v4hi aPlaneG3[256] __attribute__((aligned(32)));
-
-
+static v4hi *aPlanes;
+enum {
+   B0 = 0,
+   B1 = 256,
+   B2 = 512,
+   B3 = 768,
+   R0 = 1024,
+   R1 = 1280,
+   R2 = 1536,
+   R3 = 1792,
+   G0 = 2048,
+   G1 = 2304,
+   G2 = 2560,
+   G3 = 2816
+};
 
 static inline void initvramtblsub_vec(int x, v4hi *p)
 {
@@ -53,29 +52,62 @@ void initvramtbl_8_vec(void)
 {
 }
 
+static v4hi *initvramtblsub(int size)
+{
+   v4si *p;
+#ifndef _WINDOWS
+   if(posix_memalign((void **)&p, 32, sizeof(v4hi) * size) != 0) return NULL;
+#else
+   p = _aligned_malloc(32, sizeof(v4hi) * size);
+   if(p == NULL) return NULL;
+#endif
+   return p;
+}
+
+
 void initvramtbl_4096_vec(void)
 {
     int i;
     v4si shift = (v4si){2,2,2,2,2,2,2,2};
+    aPlanes = (v4hi *)initvramtblsub(12 * 256);
+    if(aPlanes == NULL) return;
     // Init Mask Table
     // 20120131 Shift op is unstable, change to multiply.
    for(i = 0; i < 256; i++){
-        initvramtblsub_vec(i, &aPlaneB0[i]);
-        aPlaneB1[i].v = aPlaneB0[i].v * shift;
-        aPlaneB2[i].v = aPlaneB1[i].v * shift;
-        aPlaneB3[i].v = aPlaneB2[i].v * shift;
+        initvramtblsub_vec(i, &(aPlanes[B0 + i]));
+        aPlanes[B1 + i].v = aPlanes[B0 + i].v * shift;
+        aPlanes[B2 + i].v = aPlanes[B1 + i].v * shift;
+        aPlanes[B3 + i].v = aPlanes[B2 + i].v * shift;
 
-        aPlaneR0[i].v = aPlaneB3[i].v * shift;
-        aPlaneR1[i].v = aPlaneR0[i].v * shift;
-        aPlaneR2[i].v = aPlaneR1[i].v * shift;
-        aPlaneR3[i].v = aPlaneR2[i].v * shift;
+        aPlanes[R0 + i].v = aPlanes[B3 + i].v * shift;
+        aPlanes[R1 + i].v = aPlanes[R0 + i].v * shift;
+        aPlanes[R2 + i].v = aPlanes[R1 + i].v * shift;
+        aPlanes[R3 + i].v = aPlanes[R2 + i].v * shift;
 
-        aPlaneG0[i].v = aPlaneR3[i].v * shift;
-        aPlaneG1[i].v = aPlaneG0[i].v * shift;
-        aPlaneG2[i].v = aPlaneG1[i].v * shift;
-        aPlaneG3[i].v = aPlaneG2[i].v * shift;
+        aPlanes[G0 + i].v = aPlanes[R3 + i].v * shift;
+        aPlanes[G1 + i].v = aPlanes[G0 + i].v * shift;
+        aPlanes[G2 + i].v = aPlanes[G1 + i].v * shift;
+        aPlanes[G3 + i].v = aPlanes[G2 + i].v * shift;
     }
 }
+
+void detachvramtbl_8_vec(void)
+{
+   
+}
+
+void detachvramtbl_4096_vec(void)
+{
+   if(aPlanes != NULL) {
+#ifndef _WINDOWS
+      free(aPlanes);
+#else
+      _aligned_free(aPlanes);
+#endif
+      aPlanes = NULL;
+   }
+}
+
 
 v4hi getvram_4096_vec(Uint32 addr)
 {
@@ -102,18 +134,18 @@ v4hi getvram_4096_vec(Uint32 addr)
     dat[PLAINB1] = vram_pb[addr + 0x04000];
     dat[PLAINB0] = vram_pb[addr + 0x06000];
     cbuf.v =
-        aPlaneB0[dat[PLAINB0]].v |
-        aPlaneB1[dat[PLAINB1]].v |
-        aPlaneB2[dat[PLAINB2]].v |
-        aPlaneB3[dat[PLAINB3]].v |
-        aPlaneR0[dat[PLAINR0]].v |
-        aPlaneR1[dat[PLAINR1]].v |
-        aPlaneR2[dat[PLAINR2]].v |
-        aPlaneR3[dat[PLAINR3]].v |
-        aPlaneG0[dat[PLAING0]].v |
-        aPlaneG1[dat[PLAING1]].v |
-        aPlaneG2[dat[PLAING2]].v |
-        aPlaneG3[dat[PLAING3]].v ;
+        aPlanes[B0 + dat[PLAINB0]].v |
+        aPlanes[B1 + dat[PLAINB1]].v |
+        aPlanes[B2 + dat[PLAINB2]].v |
+        aPlanes[B3 + dat[PLAINB3]].v |
+        aPlanes[R0 + dat[PLAINR0]].v |
+        aPlanes[R1 + dat[PLAINR1]].v |
+        aPlanes[R2 + dat[PLAINR2]].v |
+        aPlanes[R3 + dat[PLAINR3]].v |
+        aPlanes[G0 + dat[PLAING0]].v |
+        aPlanes[G1 + dat[PLAING1]].v |
+        aPlanes[G2 + dat[PLAING2]].v |
+        aPlanes[G3 + dat[PLAING3]].v ;
    return cbuf;
 }
 
@@ -133,10 +165,10 @@ v4hi getvram_8_vec(Uint32 addr)
     dat[PLAING] = vram_pg[addr];
     dat[PLAINR] = vram_pr[addr];
     dat[PLAINB] = vram_pb[addr];
-    dat[PLAINW] = 0;
+//    dat[PLAINW] = 0;
 
-    cbuf.v = aPlaneB0[dat[PLAINB]].v;
-    cbuf.v = cbuf.v + aPlaneB1[dat[PLAINR]].v;
-    cbuf.v = cbuf.v + aPlaneB2[dat[PLAING]].v;
+    cbuf.v = aPlanes[B0 + dat[PLAINB]].v |
+             aPlanes[B1 + dat[PLAINR]].v |
+             aPlanes[B2 + dat[PLAING]].v;
    return cbuf;
 }

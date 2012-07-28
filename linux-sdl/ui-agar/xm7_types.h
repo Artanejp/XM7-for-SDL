@@ -38,7 +38,7 @@ typedef union
         int32_t si[4];
         int16_t ss[8];
         int8_t  sb[16];
-} v4hi __attribute__ ((aligned(16)));
+} v4hi;
 
 typedef union 
 {
@@ -50,7 +50,7 @@ typedef union
         int32_t si[8];
         int16_t ss[16];
         int8_t  sb[32];
-} v8hi __attribute__ ((aligned(32)));
+} v8hi;
 
 #else // Normal
 typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
@@ -65,7 +65,7 @@ typedef union
         int32_t si[4];
         int16_t ss[8];
         int8_t  sb[16];
-} v4hi __attribute__ ((aligned(16)));
+} v4hi;
 
 typedef union 
 {
@@ -77,7 +77,7 @@ typedef union
         int32_t si[8];
         int16_t ss[16];
         int8_t  sb[32];
-} v8hi __attribute__ ((aligned(32)));
+} v8hi;
 
 #endif // !defined(_X86INTRIN_H_INCLUDED)
 #endif //#ifndef __XM7_TYPES_H
