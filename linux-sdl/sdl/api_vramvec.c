@@ -54,11 +54,11 @@ void initvramtbl_8_vec(void)
 
 static v4hi *initvramtblsub(int size)
 {
-   v4si *p;
+   v4hi *p;
 #ifndef _WINDOWS
    if(posix_memalign((void **)&p, 32, sizeof(v4hi) * size) != 0) return NULL;
 #else
-   p = _aligned_malloc(32, sizeof(v4hi) * size);
+   p = (v4hi *)_aligned_malloc(32, sizeof(v4hi) * size);
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -111,14 +111,17 @@ void detachvramtbl_4096_vec(void)
 
 v4hi getvram_4096_vec(Uint32 addr)
 {
-    v4hi cbuf;
+    v4hi cbuf __attribute__((aligned(32)));
     uint8_t dat[12];
         /*
          * R,G,Bについて8bit単位で描画する。
          * 高速化…キャッシュヒット率の向上とVector演算(MMXetc)の速度効果を考慮して、
          * ループの廃止を同時に行う
          */
-
+    if(aPlanes == NULL) {
+       cbuf.v = (v4si){0,0,0,0,0,0,0,0};
+       return cbuf;
+    }
     dat[PLAING3] = vram_pg[addr + 0x00000];
     dat[PLAING2] = vram_pg[addr + 0x02000];
     dat[PLAING1] = vram_pg[addr + 0x04000];
@@ -155,7 +158,11 @@ v4hi getvram_4096_vec(Uint32 addr)
 v4hi getvram_8_vec(Uint32 addr)
 {
     uint8_t dat[4];
-    v4hi cbuf;
+    v4hi cbuf __attribute__((aligned(32)));
+    if(aPlanes == NULL) {
+       cbuf.v = (v4si){0,0,0,0,0,0,0,0};
+       return cbuf;
+     }
         /*
          * R,G,Bについて8bit単位で描画する。
          * 高速化…キャッシュヒット率の向上とVector演算(MMXetc)の速度効果を考慮して、
