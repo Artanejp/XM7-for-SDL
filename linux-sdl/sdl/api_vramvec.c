@@ -112,7 +112,7 @@ void detachvramtbl_4096_vec(void)
 
 v4hi getvram_4096_vec(Uint32 addr)
 {
-    v4hi cbuf __attribute__((aligned(32)));
+    volatile v4hi cbuf __attribute__((aligned(32)));
     uint8_t dat[12];
         /*
          * R,G,Bについて8bit単位で描画する。
@@ -121,7 +121,7 @@ v4hi getvram_4096_vec(Uint32 addr)
          */
     if(aPlanes == NULL) {
        cbuf.v = (v4si){0,0,0,0,0,0,0,0};
-       return cbuf;
+       return (v4hi)cbuf;
     }
     dat[PLAING3] = vram_pg[addr + 0x00000];
     dat[PLAING2] = vram_pg[addr + 0x02000];
