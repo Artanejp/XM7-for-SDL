@@ -406,7 +406,7 @@ void DrawDrive(int drive, BOOL override)
 		 in = strlen(pIn);
 
 		 out = 256;
-		 hd = iconv_open("utf8", "cp932");
+		 hd = iconv_open("utf-8", "cp932");
 		 if((hd >= 0) && (in > 0)){
 			 while(in>0) {
 				 iconv(hd, &pIn, &in, &pOut, &out);
