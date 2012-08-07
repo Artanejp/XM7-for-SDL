@@ -62,8 +62,6 @@ WORD            jsub_runadr;	/* 日本語サブCPUの前回実行アドレス
  */
 static BOOL     break_flag;	/* ブレークポイント有効フラグ
 				 */
-static int      exec0;		/* 高精度合成用実行時間補助カウンタ
-				 */
 
 /*
  *      スケジューラ
@@ -107,7 +105,6 @@ schedule_init(void)
     jsub_overcycles = 0;
 #endif
 #endif
-    exec0 = 0;
 
     /*
      * 仮想時間初期化
@@ -159,7 +156,6 @@ schedule_reset(void)
     jsubcpu.total = 0;
     jsub_overcycles = 0;
 #endif
-    exec0 = 0;
 
     /*
      * 仮想時間初期化
@@ -662,8 +658,8 @@ schedule_main_fullspeed(void)
 void            FASTCALL
 schedule_fullspeed(void)
 {
-    ASSERT(run_flag);
-    ASSERT(!stopreq_flag);
+   ASSERT(run_flag);
+   ASSERT(!stopreq_flag);
 
     if (break_flag) {
 	/*
@@ -764,7 +760,10 @@ schedule_exec(DWORD microsec)
     WORD            jsub;
 #endif
 
-    ASSERT(run_flag);
+    /* ASSERT(run_flag); */
+    if (!run_flag) {
+        return 0;
+    }
     ASSERT(!stopreq_flag);
 
     /*
@@ -1348,7 +1347,40 @@ schedule_save(SDL_RWops *fileh)
 	return FALSE;
     }
 #endif
-
+    /* Ver9.16/7.16/3.06拡張 */
+    if (!file_bool_write(fileh, cycle_steal)) {
+        return FALSE;
+    }
+    if (!file_dword_write(fileh, main_speed)) {
+        return FALSE;
+    }
+   
+    if (!file_dword_write(fileh, mmr_speed)) {
+        return FALSE;
+    }
+#if XM7_VER >= 3
+    if (!file_dword_write(fileh, fmmr_speed)) {
+        return FALSE;
+    }
+#endif
+    if (!file_dword_write(fileh, sub_speed)) {
+          return FALSE;
+    }
+#if XM7_VER == 1
+    if (!file_dword_write(fileh, main_speed_low)) {
+               return FALSE;
+    }
+    if (!file_dword_write(fileh, sub_speed_low)) {
+	
+               return FALSE;
+    }
+#ifdef JSUB
+    if (!file_dword_write(fileh, jsub_speed)) {
+              return FALSE;
+    }
+#endif
+#endif
+    
     return TRUE;
 }
 
@@ -1491,10 +1523,47 @@ schedule_load(SDL_RWops *fileh, int ver, BOOL old)
 	jsub_overcycles = 0;
 #endif
     }
-
-    /*
-     * 実行速度比率初期化
-     */
+    /* Ver9.16/7.16/3.06拡張 */
+#if XM7_VER >= 3
+    if ((ver >= 916) || ((ver >= 716) && (ver <= 799))) {
+#elif XM7_VER >= 2
+    if (ver >= 716) {
+#else
+    if (ver >= 306) {
+#endif
+        if (!file_bool_read(fileh, &cycle_steal)) {
+            return FALSE;
+        }
+	if (!file_dword_read(fileh, &main_speed)) {
+	   return FALSE;
+	}
+        if (!file_dword_read(fileh, &mmr_speed)) {
+           return FALSE;
+        }
+#if XM7_VER >= 3
+        if (!file_dword_read(fileh, &fmmr_speed)) {
+           return FALSE;
+	}
+#endif
+        if (!file_dword_read(fileh, &sub_speed)) {
+           return FALSE;
+	}
+#if XM7_VER == 1
+        if (!file_dword_read(fileh, &main_speed_low)) {
+           return FALSE;
+	}
+			    
+        if (!file_dword_read(fileh, &sub_speed_low)) {
+           return FALSE;
+        }
+#ifdef JSUB
+        if (!file_dword_read(fileh, &jsub_speed)) {
+           return FALSE;
+	}
+#endif
+#endif
+    }
+    /* 実行速度比率初期化 */
     speed_ratio = 10000;
 
     return TRUE;

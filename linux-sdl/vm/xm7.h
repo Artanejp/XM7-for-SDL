@@ -37,17 +37,25 @@
 #define	VERSION		"V1.1"
 #endif
 #if XM7_VER == 1
-#define	LEVEL		"L30a"
+#define	LEVEL		"L40a"
 // #define BETAVER
 #else
-#define	LEVEL		"L40"
+#define	LEVEL		"L50a"
 // #define BETAVER
 #endif
 
-#define          LOCALVER         "SDL/Agar/OpenGL 0.2β"
+#ifdef USE_OPENGL
+#define          LOCALVER         "SDL/Agar/OpenGL 0.3.2"
+#else
+#define          LOCALVER         "SDL/Agar/OpenGL 0.3.2"
+#endif
+#define	DATE		"2012/08/07"
 
-#define	DATE		"2012/04/21"
-//#define	DATE		"2011/04/23"
+/* 未使用変数の処理 */
+#ifndef UNUSED
+#define UNUSED(x)              ((void)(x))
+#endif
+
 
 /*
  *      定数、型定義
@@ -220,38 +228,51 @@ typedef struct
  * ROMファイル名定義
  */
 
-#define FBASIC_ROM		"FBASIC30.ROM"
+#define FBASIC_ROM		"FBASIC30.ROM" /* F-BASIC 3.0 */
 #define FBASIC10_ROM	"FBASIC10.ROM"	/* F-BASIC V1.0 */
-#define BOOTBAS_ROM		"BOOT_BAS.ROM"
-#define BOOTDOS_ROM		"BOOT_DOS.ROM"
+#define BOOTBAS_ROM		"BOOT_BAS.ROM" /* FM-7 BASIC BOOT */
+#define BOOTDOS_ROM		"BOOT_DOS.ROM" /* FM-7 5inch DOS BOOT */
 #define BOOT1MB_ROM		"BOOT_1MB.ROM"	/* FM-77 1MB BOOT */
 #define BOOTMMR_ROM		"BOOT_MMR.ROM"	/* FM-77 MMR BOOT */
 #define BOOTBAS8_ROM	"BOOTBAS8.ROM"	/* MICRO 8 BASIC BOOT */
 #define BOOTDOS8_ROM	"BOOTDOS8.ROM"	/* MICRO 8 5inchDOS BOOT */
 #define BOOTBBL8_ROM	"BOOTBBL8.ROM"	/* MICRO 8 Bubble BOOT */
 #define BOOTSFD8_ROM	"BOOTSFD8.ROM"	/* MICRO 8 8inchDOS BOOT */
-#define SUBSYSC_ROM		"SUBSYS_C.ROM"
+#define SUBSYSC_ROM		"SUBSYS_C.ROM"  /* FM-7 SUBSYSTEM */
 #define SUBSYS8_ROM		"SUBSYS_8.ROM"	/* MICRO 8 SUBSYSTEM */
 #define SUBSYSL4_ROM	"SUBSYSL4.ROM"	/* FM-77L4 400LINE SUBSYSTEM */
-#define ANKCG16_ROM		"ANKCG16.ROM"	/* FM-77L4 400LINE ANK
-* FONT */
-#define KANJI_ROM		"KANJI.ROM"
-#define JSUBSYS_ROM		"JSUBMON.ROM"
-#define JSUBDIC_ROM		"DICROM.ROM"
-#define EXTSUB_ROM		"EXTSUB.ROM"
+#define ANKCG16_ROM		"ANKCG16.ROM"	/* FM-77L4 400LINE ANK FONT */
+#define KANJI_ROM              "KANJI1.ROM"    /* JIS83 FIRST STANDARD KANJI ROM */
+#define KANJI_ROM_J78   "KANJI.ROM"             /* JIS78 FIRST STANDARD KANJI ROM */
+#define JSUBSYS_ROM            "JSUBMON.ROM"   /* FM77-101 DICTIONARY ACCESS ROM */
+#define JSUBDIC_ROM            "DICROM.ROM"    /* FM77-101/FM77-211 DICTIONARY ROM */
+#define EXTSUB_ROM             "EXTSUB.ROM"    /* FM77AV40EX/SX EXTEND SUBSYSTEM */
 
 #if XM7_VER >= 2
-#define INITIATE_ROM	"INITIATE.ROM"
-#define SUBSYSA_ROM		"SUBSYS_A.ROM"
-#define SUBSYSB_ROM		"SUBSYS_B.ROM"
-#define SUBSYSCG_ROM	"SUBSYSCG.ROM"
+#define INITIATE_ROM   "INITIATE.ROM"  /* FM77AV INITIATER ROM */
+#define SUBSYSA_ROM            "SUBSYS_A.ROM"  /* FM77AV Type-A SUBSYSTEM 3 */
+#define SUBSYSB_ROM            "SUBSYS_B.ROM"  /* FM77AV Type-B SUBSYSTEM 3 */
+#define SUBSYSCG_ROM   "SUBSYSCG.ROM"  /* FM77AV CGROM/SUBSYSTEM 1/2 */
 #endif
 
 #if XM7_VER >= 3
-#define KANJI_ROM2		"KANJI2.ROM"
-#define DICT_ROM		"DICROM.ROM"
-#define	DICT_RAM		"USERDIC.DAT"
+#define KANJI_ROM2             "KANJI2.ROM"    /* JIS83 SECOND STANDARD KANJI ROM */
+#define DICT_ROM               "DICROM.ROM"    /* FM77-101/FM77-211 DICTIONARY ROM */
+#define DICT_RAM                "USERDIC.DAT"   /* FM77-211 BATTERY BACKUP RAM */
 #endif
+
+/*
+ *     Borland C++での鬼のようなWarning対策
+ */
+#ifdef __BORLANDC__
+#undef MAKELONG
+#define MAKELONG(l, h)                 (LONG)(((WORD)(l)) | ((DWORD)(h) << 16))
+#undef MAKEWPARAM
+#define MAKEWPARAM(l, h)               (WPARAM)(MAKELONG(l, h))
+#undef MAKELPARAM
+#define MAKELPARAM(l, h)               (LPARAM)(MAKELONG(l, h))
+#endif
+
 
 #ifdef __cplusplus
 extern          "C" {
@@ -785,6 +806,7 @@ extern          "C" {
     /*
      * 400ラインカード発見フラグ
      */
+extern BOOL detect_400linecard_tmp; /* 400ラインカード発見フラグ(tmp) */
 #endif
 #endif
 //    extern BYTE    *boot_ram;

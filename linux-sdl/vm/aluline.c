@@ -102,7 +102,7 @@ aluline_reset(void)
     alu_mask = 0;
     alu_cmpstat = 0;
     memset(alu_cmpdat, 0x80, sizeof(alu_cmpdat));
-    alu_disable = 0x0f;
+    alu_disable = 0x00;
     memset(alu_tiledat, 0, sizeof(alu_tiledat));
 
     line_busy = FALSE;
@@ -1370,10 +1370,10 @@ aluline_writeb(WORD addr, BYTE dat)
 	/*
 	 * BUSY時間の小数部調整を行う
 	 */
-	line_count_sub += (BYTE) (line_count & 15);
+	line_count_sub += (BYTE) (line_count & 0x0f);
 	if (line_count_sub >= 16) {
 	    tmp++;
-	    line_count_sub &= (BYTE) 15;
+	    line_count_sub &= (BYTE) 0x0f;
 	}
 
 	/*

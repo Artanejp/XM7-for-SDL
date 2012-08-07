@@ -711,6 +711,10 @@ subctrl_load(SDL_RWops *fileh, int ver)
     if (!file_bool_read(fileh, &select_400line)) {
 	return FALSE;
     }
+    /* 400ラインカード整合性チェック */
+    if (select_400line && !detect_400linecard) {
+        return FALSE;
+    }
     if (!file_bool_read(fileh, &subkanji_flag)) {
 	return FALSE;
     }

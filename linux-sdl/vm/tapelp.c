@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2012 Ryu Takegami
  *
  *      [ カセットテープ＆プリンタ ]
  */
@@ -190,14 +190,6 @@ void            FASTCALL tapelp_reset(void)
  */
 static void FASTCALL lp_output(BYTE dat)
 {
-    /*
-     * オープンしていなければ，開く
-     */
-    if (lp_fileh == NULL) {
-        if (lp_fname[0] != '\0') {
-            lp_fileh = file_open(lp_fname, OPEN_W);
-        }
-    }
 
     /*
      * オープンチェック
@@ -234,12 +226,14 @@ lp_setfile(char *fname)
 	lp_fname[0] = '\0';
 	return;
     }
+    strcpy(lp_fname, fname);
 
-    if (strlen(fname) < sizeof(lp_fname)) {
-	strcpy(lp_fname, fname);
-    } else {
-	lp_fname[0] = '\0';
-    }
+   /* オープンしていなければ，開く */
+   if (lp_fileh == -1) {
+        if (lp_fname[0] != '\0') {
+                lp_fileh = file_open(lp_fname, OPEN_W);
+        }
+  }
 }
 
 /*-[ テープ ]---------------------------------------------------------------*/
@@ -612,156 +606,6 @@ tape_ff(void)
     }
 }
 
-#if 0
-/*
- *      テープ
- *      巻き戻し(無音部分検索)
- */
-void            FASTCALL
-tape_rew2(void)
-{
-    WORD            dat;
-    WORD            flag;
-
-    /*
-     * 条件判定
-     */
-    if (tape_fileh == NULL) {
-	return;
-    }
-
-    /*
-     * assert
-     */
-    ASSERT(tape_fsize >= 16);
-    ASSERT(tape_offset >= 16);
-    ASSERT(!(tape_fsize & 0x01));
-    ASSERT(!(tape_offset & 0x01));
-
-    /*
-     * 録音中ならいったんフラッシュ
-     */
-    tape_flush();
-
-    /*
-     * データ状態を初期化
-     */
-    flag = -1;
-
-    while (tape_offset > 16) {
-	/*
-	 * ２バイト前に戻り、読み込み
-	 */
-	tape_offset -= 2;
-	if (!file_seek(tape_fileh, tape_offset)) {
-	    return;
-	}
-	file_read(tape_fileh, (BYTE *) & dat, 2);
-
-	/*
-	 * しばらくデータが変化していなければ変化するまで戻す
-	 */
-	if (((WORD) (dat & 0x8000) == flag) &&
-	    ((WORD) (dat & 0x7fff) == 0x7fff)) {
-	    while ((WORD) (dat & 0x8000) == flag) {
-		tape_offset -= 2;
-		if (!file_seek(tape_fileh, tape_offset)) {
-		    return;
-		}
-		file_read(tape_fileh, (BYTE *) & dat, 2);
-	    }
-	    tape_offset += 2;
-	    if (!file_seek(tape_fileh, tape_offset)) {
-		return;
-	    }
-	    return;
-	}
-
-	/*
-	 * データ状態を保存
-	 */
-	flag = (WORD) (dat & 0x8000);
-    }
-}
-
-/*
- *      テープ
- *      早送り(無音部分検索)
- */
-void            FASTCALL
-tape_ff2(void)
-{
-    WORD            dat;
-    WORD            flag;
-
-    /*
-     * 条件判定
-     */
-    if (tape_fileh == NULL) {
-	return;
-    }
-
-    /*
-     * assert
-     */
-    ASSERT(tape_fsize >= 16);
-    ASSERT(tape_offset >= 16);
-    ASSERT(!(tape_fsize & 0x01));
-    ASSERT(!(tape_offset & 0x01));
-
-    /*
-     * 録音中ならいったんフラッシュ
-     */
-    tape_flush();
-
-    /*
-     * データ状態を初期化
-     */
-    flag = -1;
-
-    while (tape_offset < tape_fsize) {
-	/*
-	 * 先へ進める
-	 */
-	tape_offset += 2;
-	if (tape_offset >= tape_fsize) {
-	    return;
-	}
-	if (!file_seek(tape_fileh, tape_offset)) {
-	    return;
-	}
-	file_read(tape_fileh, (BYTE *) & dat, 2);
-
-	/*
-	 * しばらくデータが変化してければ変化するまで進める
-	 */
-	if (((WORD) (dat & 0x8000) == flag) &&
-	    ((WORD) (dat & 0x7fff) == 0x7fff)) {
-	    do {
-		tape_offset += 2;
-		if (tape_offset >= tape_fsize) {
-		    return;
-		}
-		if (!file_seek(tape_fileh, tape_offset)) {
-		    return;
-		}
-		file_read(tape_fileh, (BYTE *) & dat, 2);
-	    }
-	    while ((WORD) (dat & 0x8000) == flag);
-	    tape_offset += 2;
-	    if (tape_offset >= tape_fsize) {
-		tape_fsize = tape_offset;
-	    }
-	    return;
-	}
-
-	/*
-	 * データ状態を保存
-	 */
-	flag = (WORD) (dat & 0x8000);
-    }
-}
-#endif
 
 /*
  *      テープ

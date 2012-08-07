@@ -64,11 +64,11 @@ BYTE            fetch_op;	/* 直前にフェッチした命令 */
  *      ステートファイルヘッダ
  */
 #if XM7_VER >= 3
-const char     *state_header = "XM7 VM STATE 915";
+const char     *state_header = "XM7 VM STATE 916";
 #elif XM7_VER >= 2
-const char     *state_header = "XM7 VM STATE 715";
+const char     *state_header = "XM7 VM STATE 716";
 #else
-const char     *state_header = "XM7 VM STATE 305";
+const char     *state_header = "XM7 VM STATE 306";
 #endif
 
 /*
@@ -86,6 +86,11 @@ system_init(void)
     available_mmrboot = TRUE;
 #elif XM7_VER >= 2
     fm7_ver = 2;		/* FM77AV相当に設定 */
+    fm_subtype = FMSUB_FM77;
+    lowspeed_mode = TRUE;
+    available_fm8roms = FALSE;
+    available_fm7roms = TRUE;
+    available_mmrboot = TRUE;
 #else
     fm7_ver = 1;		/* FM-77+192KB RAM相当に設定 */
     fm_subtype = FMSUB_FM77;
@@ -571,7 +576,6 @@ system_load(char *filename)
      * フラグ初期化
      */
     flag = TRUE;
-    old_scheduler = FALSE;
 
     /*
      * ヘッダをロード

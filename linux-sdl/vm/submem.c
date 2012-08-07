@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2012 Ryu Takegami
  *
  *      [ サブCPUメモリ ]
  */
@@ -62,6 +62,7 @@ BOOL            enable_400linecard;	/* 400ラインカードイネーブル
 					 */
 BOOL            detect_400linecard;	/* 400ラインカード発見フラグ
 					 */
+BOOL detect_400linecard_tmp;           /* 400ラインカード発見フラグ */
 #endif
 #endif
 
@@ -219,24 +220,18 @@ BOOL FASTCALL submem_init(void)
 	/*
 	 * 400ライン対応処理
 	 */
+        detect_400linecard_tmp = FALSE;
 	if (!file_load(SUBSYSL4_ROM, subrom_l4, 0x4800)) {
 		enable_400linecard = FALSE;
 		detect_400linecard = FALSE;
 	} else {
 		enable_400linecard = TRUE;
 		detect_400linecard = TRUE;
+                /* ANKCG16.ROM,EXTSUB.ROMのどちらもない場合内蔵フォントを使用 */
 
 		if (!file_load(ANKCG16_ROM, subcg_l4, 0x1000)) {
 			if (!file_load(EXTSUB_ROM, subcg_l4, 0x1000)) {
-#if 1
 				memcpy(subcg_l4, subcg_internal, 4096);
-#else
-				int             addr;
-				for (addr = 0x7ff; addr >= 0; addr--) {
-					subcg_l4[addr * 2 + 0] = subrom_c[addr];
-					subcg_l4[addr * 2 + 1] = subrom_c[addr];
-				}
-#endif
 			}
 		}
 	}
@@ -245,6 +240,11 @@ BOOL FASTCALL submem_init(void)
 	if (!available_fm8roms && !available_fm7roms) {
 		return FALSE;
 	}
+        /* FM-8のROMイメージしかない場合のドライブ番号表示等への対処 */
+        /* 本来、先頭の2048バイトのみコピーすればよいが念のため全体をコピー */
+        if (available_fm8roms && !available_fm7roms) {
+                memcpy(subrom_c, subrom_8, 0x2800);
+        }
 #endif
 
 	return TRUE;
@@ -1228,6 +1228,9 @@ BOOL FASTCALL submem_save(SDL_RWops *fileh)
 	if (!file_bool_write(fileh, detect_400linecard)) {
 		return FALSE;
 	}
+       if (!file_bool_write(fileh, enable_400linecard)) {
+               return FALSE;
+       }
 #endif
 
 	return TRUE;
@@ -1356,12 +1359,15 @@ BOOL FASTCALL submem_load(SDL_RWops *fileh, int ver)
 	if (!file_read(fileh, tvram_c, 0x1000)) {
 		return FALSE;
 	}
-	if (!file_bool_read(fileh, &tmp)) {
+        if (!file_bool_read(fileh, &detect_400linecard_tmp)) {
 		return FALSE;
 	}
-	if (!detect_400linecard && tmp) {
-		return FALSE;
-	}
+
+        /* Ver3.06拡張 */
+        if (ver >= 306) {
+               if (!file_bool_read(fileh, &enable_400linecard)) {
+                       return FALSE;
+               }
 #endif
 
 	return TRUE;

@@ -360,7 +360,8 @@ jsub_readb(WORD addr, BYTE * dat)
 	case 0xfd2b:		/* 第1データRIGHT */
          if (fm_subtype == FMSUB_FM77) {
 		offset = jsub_kanji_addr << 1;
-		if ((offset >= 0x6000) && (offset < 0x8000)) {
+		if ((offset >= 0x6000) && (offset < 0x8000) &&
+		   !kanji_asis_flag) {
 		/* $6000〜$7FFFは未定義領域 */
 			*dat = (BYTE)(addr & 1);
 		}

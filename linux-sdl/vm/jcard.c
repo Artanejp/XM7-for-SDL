@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2012 Ryu Takegami
  *
  *      [ 日本語カード / 拡張サブシステムROM ]
  */
@@ -202,7 +202,13 @@ jcard_readb(WORD addr)
 			return kanji_rom_jis78[addr | dicrom_addr];
 		}
 		if (dicrom_bank < 8) {
-			return (BYTE)(addr & 1);
+                       if (kanji_asis_flag) {
+                           return kanji_rom_jis78[addr | dicrom_addr];
+                       }
+		       else {
+			   return (BYTE)(addr & 1);
+		       }
+		      		   //return (BYTE)(addr & 1);
 		}
 
 		if (dicrom_bank < 32) {

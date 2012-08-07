@@ -19,6 +19,7 @@
  *	グローバル ワーク
  */
 BOOL opn_enable;						/* OPN有効・無効フラグ(7 only) */
+BOOL opn_use;                                                  /* OPN使用フラグ */
 BOOL whg_enable;						/* WHG有効・無効フラグ */
 BOOL whg_use;							/* WHG使用フラグ */
 BOOL thg_enable;						/* THG有効・無効フラグ */
@@ -70,7 +71,16 @@ BOOL FASTCALL opn_init(void)
 
 	/* デフォルトはOPN有効 */
 	opn_enable = TRUE;
-
+#if XM7_VER == 1
+        opn_use = FALSE;
+#else
+        if (fm7_ver >= 2) {
+            opn_use = TRUE;
+        } else {
+            opn_use = FALSE;
+        }
+#endif
+     
 	return TRUE;
 }
 
@@ -89,7 +99,18 @@ void FASTCALL opn_cleanup(void)
  */
 void FASTCALL opn_reset(void)
 {
-	/* リセット */
+     /* 動作モードによって使用フラグを設定する */
+#if XM7_VER == 1
+        opn_use = FALSE;
+#else
+        if (fm7_ver >= 2) {
+                opn_use = TRUE;
+        }
+        else {
+                opn_use = FALSE;
+        }
+#endif
+     /* リセット */
 	opn_reset_common(OPN_STD);
 }
 
@@ -337,7 +358,8 @@ static void FASTCALL opn_set_irq_flag(int no, BOOL flag)
 
 #if XM7_VER == 1
 	if (fm_subtype == FMSUB_FM8) {
-		return;
+             /* ありえないが */
+	     return;
 	}
 #endif
 	maincpu_irq();
@@ -524,9 +546,14 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
 #endif
 
 	ASSERT ((no >= 0) && (no <= 2));
+        if (no == OPN_STD) {
+	
+              /* 標準OPNフラグオン */
+              opn_use = TRUE;
+        }
 
 	if (no == OPN_WHG) {
-		/* フラグオン */
+		/* WHGフラグオン */
 		whg_use = TRUE;
 	}
 
@@ -591,11 +618,11 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
 		}
 
 		/* データ記憶 */
-		opn_reg[no][reg] = dat;
+//		opn_reg[no][reg] = dat;
 
 		/* モードのみ出力 */
-		opn_notify_no(no, 0x27, (BYTE)(dat & 0xc0));
-		return;
+//		opn_notify_no(no, 0x27, (BYTE)(dat & 0xc0));
+//		return;
 	}
 
 	/* データ記憶 */
@@ -1098,10 +1125,16 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
  */
 BOOL FASTCALL opn_save(SDL_RWops *fileh)
 {
-	if (!opn_save_common(OPN_STD, fileh)) {
+   if (!file_bool_write(fileh, opn_enable)) {
+               return FALSE;
+   }
+   if (!file_bool_write(fileh, opn_use)) {
+                return FALSE;
+   }
+   if (!opn_save_common(OPN_STD, fileh)) {
 		return FALSE;
-	}
-	return TRUE;
+   }
+   return TRUE;
 }
 
 /*
@@ -1116,13 +1149,32 @@ BOOL FASTCALL opn_load(SDL_RWops *fileh, int ver)
 	if (ver < 200) {
 		return FALSE;
 	}
-
+       /* Ver9.16/7.16/3.06拡張 */
+#if XM7_VER >= 3
+      if ((ver >= 916) || ((ver >= 716) && (ver <= 799))) 
+      {
+#elif XM7_VER >= 2
+      if (ver >= 716) 
+      {
+#else
+      if (ver >= 306) 
+      {
+#endif
+           if (!file_bool_read(fileh, &opn_enable)) {
+                       return FALSE;
+           }
+			
+           if (!file_bool_read(fileh, &opn_use)) {
+                       return FALSE;
+	   }
+			
+        }
 	if (!opn_load_common(OPN_STD, fileh)) {
 		return FALSE;
 	}
 
 	/* OPNレジスタ復旧 */
-	opn_notify(0x27, (BYTE)(opn_reg[OPN_STD][0x27] & 0xc0));
+	opn_notify(0x27, (BYTE)opn_reg[OPN_STD][0x27] );
 
 	for (i=0; i<3; i++) {
 		opn_notify(0x28, (BYTE)i);
@@ -1280,7 +1332,7 @@ BOOL FASTCALL whg_load(SDL_RWops *fileh, int ver)
 	}
 
 	/* WHGレジスタ復旧 */
-	whg_notify(0x27, (BYTE)(opn_reg[OPN_WHG][0x27] & 0xc0));
+	whg_notify(0x27, (BYTE)opn_reg[OPN_WHG][0x27]);
 
 	for (i=0; i<3; i++) {
 		whg_notify(0x28, (BYTE)i);
@@ -1522,7 +1574,7 @@ BOOL FASTCALL thg_load(SDL_RWops *fileh, int ver)
 	}
 
 	/* THGレジスタ復旧 */
-	thg_notify(0x27, (BYTE)(opn_reg[OPN_THG][0x27] & 0xc0));
+	thg_notify(0x27, (BYTE)opn_reg[OPN_THG][0x27]);
 
 	for (i=0; i<3; i++) {
 		thg_notify(0x28, (BYTE)i);

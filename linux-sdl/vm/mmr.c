@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2012 Ryu Takegami
  *
  *      [ MMR,TWR / I/O型RAMディスクカード ]
  */
@@ -29,8 +29,8 @@ BYTE            twr_reg;	/* TWRレジスタ */
 BOOL            mmr_ext;	/* 拡張MMR有効フラグ */
 BOOL            mmr_fastmode;	/* MMR高速フラグ */
 BOOL            mmr_extram;	/* 拡張RAM有効フラグ */
-BOOL            mmr_fast_refresh;	/* 高速リフレッシュフラグ
-					 */
+BOOL            mmr_fast_refresh;	/* 高速リフレッシュフラグ */
+BOOL            twr_fastmode;   /* TWR高速モード */
 #else
 BYTE            mmr_reg[0x40];	/* MMRレジスタ */
 BOOL            twr_flag;	/* TWR有効フラグ */
@@ -92,13 +92,12 @@ void FASTCALL mmr_reset(void)
     mmr_modify = FALSE;
 
 #if XM7_VER >= 3
-    /*
-     * MMR(AV40拡張)
-     */
-    mmr_ext = FALSE;
-    mmr_fastmode = FALSE;
-    mmr_fast_refresh = FALSE;
-
+   /* MMR/TWR(AV40拡張) */
+   mmr_ext = FALSE;
+   mmr_fastmode = FALSE;
+   mmr_fast_refresh = FALSE;
+   twr_fastmode = FALSE;
+   
     /*
      * I/O型RAMディスク
      */
@@ -116,7 +115,6 @@ void FASTCALL mmr_reset(void)
  */
 static BOOL FASTCALL mmr_trans_twr(WORD addr, DWORD * taddr)
 {
-    ASSERT(fm7_ver >= 2);
 
     /*
      * TWR有効か
@@ -157,8 +155,6 @@ static DWORD   FASTCALL mmr_trans_mmr(WORD addr)
 {
     DWORD           maddr;
     int             offset;
-
-    ASSERT(fm7_ver >= 2);
 
     /*
      * MMR有効か
@@ -217,9 +213,6 @@ BOOL FASTCALL mmr_extrb(WORD * addr, BYTE * dat)
     DWORD           raddr,
                     rsegment;
 
-#if XM7_VER >= 2
-    ASSERT(fm7_ver >= 2);
-#endif
 
     /*
      * $FC00〜$FFFFは常駐空間
@@ -231,10 +224,13 @@ BOOL FASTCALL mmr_extrb(WORD * addr, BYTE * dat)
     /*
      * TWR,MMRを通す
      */
-    if (!mmr_trans_twr(*addr, &raddr)) {
+#ifdef FMT
+     raddr = mmr_trans_twr_and_mmr(*addr);
+#else
+     if (!mmr_trans_twr(*addr, &raddr)) {
 	raddr = mmr_trans_mmr(*addr);
     }
-
+#endif
     rsegment = (raddr & 0xf0000);
 
     /*
@@ -355,9 +351,6 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
     DWORD           raddr,
                     rsegment;
 
-#if XM7_VER >= 2
-    ASSERT(fm7_ver >= 2);
-#endif
 
     /*
      * $FC00〜$FFFFは常駐空間
@@ -369,10 +362,14 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
     /*
      * TWR,MMRを通す
      */
-    if (!mmr_trans_twr(*addr, &raddr)) {
+#ifdef FMT
+     raddr = mmr_trans_twr_and_mmr(*addr);
+#else
+     if (!mmr_trans_twr(*addr, &raddr)) {
 	raddr = mmr_trans_mmr(*addr);
     }
-
+#endif
+   
     rsegment = (raddr & 0xf0000);
 
     /*
@@ -494,9 +491,6 @@ BOOL FASTCALL mmr_extwb(WORD * addr, BYTE dat)
     DWORD           raddr,
                     rsegment;
 
-#if XM7_VER >= 2
-    ASSERT(fm7_ver >= 2);
-#endif
 
     /*
      * $FC00〜$FFFFは常駐空間
@@ -508,10 +502,13 @@ BOOL FASTCALL mmr_extwb(WORD * addr, BYTE dat)
     /*
      * TWR,MMRを通す
      */
-    if (!mmr_trans_twr(*addr, &raddr)) {
+#ifdef FMT
+    raddr = mmr_trans_twr_and_mmr(*addr);
+#else
+     if (!mmr_trans_twr(*addr, &raddr)) {
 	raddr = mmr_trans_mmr(*addr);
     }
-
+#endif
     rsegment = (raddr & 0xf0000);
 
     /*
@@ -625,12 +622,10 @@ static DWORD    FASTCALL
 mr2_address(void)
 {
     DWORD           tmp;
-
+    ASSERT (XM7_VER >= 3);
+     
     if (mr2_secreg <= 0x0bff) {
-	/*
-	 * 計算方法は適当なので違っている可能性、大(^^;
-	 * 2002/07/29
-	 */
+	/* 計算方法は適当なので違っている可能性、大(^^; 2002/07/29 */
 	tmp = (0xbff - mr2_secreg) << 8;
 	tmp |= mr2_nowcnt;
     } else {
@@ -648,6 +643,7 @@ static BYTE     FASTCALL
 mr2_read_data(void)
 {
     BYTE            dat;
+    ASSERT (XM7_VER >= 3);
 
     /*
      * セクタレジスタが異常の場合は読み出せない
@@ -669,6 +665,7 @@ mr2_read_data(void)
 static void     FASTCALL
 mr2_write_data(BYTE dat)
 {
+    ASSERT (XM7_VER >= 3);
     /*
      * セクタレジスタが異常の場合は書き込めない
      */
@@ -685,6 +682,7 @@ mr2_write_data(BYTE dat)
 static void     FASTCALL
 mr2_update_sector(WORD addr, BYTE dat)
 {
+    ASSERT (XM7_VER >= 3);
     /*
      * セクタレジスタを更新
      */
@@ -1010,11 +1008,25 @@ mmr_writeb(WORD addr, BYTE dat)
 		    }
 		}
 	    }
-	    /*
-	     * bit0:ウィンドウスピード XM7では未対応
-	     */
-	}
-	return TRUE;
+        /* bit0:ウィンドウスピード */
+        if (dat & 0x01) {
+            if (!twr_fastmode) {
+                twr_fastmode = TRUE;
+                if (!mmr_fastmode) {
+                    mmr_modify = TRUE;
+                }
+            }
+        }
+        else {
+           if (twr_fastmode) {
+               twr_fastmode = FALSE;
+               if (!mmr_fastmode) {
+                   mmr_modify = TRUE;
+               }
+           }
+       }
+     }
+     return TRUE;
 
 	/*
 	 * モードセレクト２
@@ -1152,7 +1164,11 @@ mmr_save(SDL_RWops *fileh)
     if (!file_byte_write(fileh, twr_reg)) {
 	return FALSE;
     }
-
+#if XM7_VER >=3
+   if (!file_bool_write(fileh, twr_fastmode)) {
+       return FALSE;
+   }
+#endif
     return TRUE;
 }
 
@@ -1252,6 +1268,13 @@ mmr_load(SDL_RWops *fileh, int ver)
     if (!file_byte_read(fileh, &twr_reg)) {
 	return FALSE;
     }
-
+    /* Ver9.16拡張 */
+#if XM7_VER >= 3
+    if (ver >= 916) {
+       if (!file_bool_read(fileh, &twr_fastmode)) {
+           return FALSE;
+       }
+    }
+#endif
     return TRUE;
 }

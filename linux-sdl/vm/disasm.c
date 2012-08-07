@@ -1345,7 +1345,11 @@ disline(int cpu, WORD pcreg, char *buffer)
     /*
      * assert 
      */
+#if XM7_VER == 1 && defined(JSUB)
+    ASSERT((cpu == MAINCPU) || (cpu == SUBCPU) || (cpu == JSUBCPU));
+#else
     ASSERT((cpu == MAINCPU) || (cpu == SUBCPU));
+#endif
     ASSERT(buffer);
 
     /*

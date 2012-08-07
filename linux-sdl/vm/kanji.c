@@ -26,14 +26,13 @@ BYTE           *kanji_rom;	/* 第１水準ROM */
 BYTE           *kanji_rom_jis78;		/* 第１水準ROM (JIS78準拠) */
 BYTE           *kanji_rom2;	/* 第２水準ROM */
 #endif
+BOOL           kanji_asis_flag = FALSE; /* JIS78エミュレーション無効化フラグ */
 
 /*
 *	スタティック ワーク
 */
-#if XM7_VER == 1
-static BOOL kanjirom_available;			/* 漢字ROM使用可能フラグ */
-#endif
-
+static BOOL kanji_rom_available;			/* 漢字ROM使用可能フラグ */
+static BOOL kanji_rom_mode;                                    /* 漢字ROMエミュレーションモード */
 /*
  *	プロトタイプ宣言
  */
@@ -52,32 +51,44 @@ kanji_init(void)
      * メモリ確保
      */
 #if XM7_VER >= 3
-   kanji_rom_jis78 = (BYTE *)malloc(0x6000);
+   kanji_rom_jis78 = (BYTE *)malloc(0x20000);
    if (!kanji_rom_jis78) {
 	return FALSE;
    }
-    kanji_rom = (BYTE *) malloc(0x40000);
+   kanji_rom = (BYTE *) malloc(0x40000);
 #else
-    kanji_rom = (BYTE *) malloc(0x20000);
+   kanji_rom = (BYTE *) malloc(0x20000);
 #endif
     if (!kanji_rom) {
 	return FALSE;
     }
 
-    /*
-     * 第1水準 ファイル読み込み
-     */
-    if (!file_load(KANJI_ROM, kanji_rom, 0x20000)) {
-#if XM7_VER >= 2
-	return FALSE;
+    /* 第1水準(JIS78) ファイル読み込み */
+#if XM7_VER >= 3
+    if (!file_load(KANJI_ROM_J78, kanji_rom_jis78, 0x20000)) {
 #else
-	kanjirom_available = FALSE;
-	}
-	else {
-	kanjirom_available = TRUE;
+    if (!file_load(KANJI_ROM_J78, kanji_rom, 0x20000)) {
 #endif
+        kanji_rom_available = FALSE;
+    }
+    else {
+	kanji_rom_available = TRUE;
+        kanji_rom_mode = TRUE;
     }
 #if XM7_VER >= 3
+    /* 第1水準(JIS83) ファイル読み込み */
+    if (!file_load(KANJI_ROM, kanji_rom, 0x20000)) {
+        return FALSE;
+    }
+    else {
+    /* 漢字ROMエミュレーションをJIS78フォントの有無で判断する */
+        if (kanji_rom_available) {
+                  kanji_rom_mode = FALSE;
+        }
+        else {
+	        kanji_rom_mode = TRUE;
+	}
+   }
     /*
      * 第2水準 ファイル読み込み
      */
@@ -85,15 +96,35 @@ kanji_init(void)
     if (!file_load(KANJI_ROM2, kanji_rom2, 0x20000)) {
 	return FALSE;
     }
+#else
+       /* 第1水準(JIS83) ファイル読み込み */
+       if (!kanji_rom_available) {
+               if (file_load(KANJI_ROM, kanji_rom, 0x20000)) {
+                       /* 強制的にJIS78漢字ROMエミュレーションを行う */
+                       kanji_rom_available = TRUE;
+                       kanji_rom_mode = TRUE;
+               }
+#if XM7_VER >= 2
+               else {
+                       return FALSE;
+               }
+#endif
+       }
 #endif
 	/* JIS78準拠漢字ROMデータ生成 */
+       if (kanji_rom_available) {
 #if XM7_VER >= 3
-	memcpy(kanji_rom_jis78, kanji_rom, 0x6000);
-	kanji_make_jis78(kanji_rom_jis78);
+               if (kanji_rom_mode) {
+                       memcpy(kanji_rom_jis78, kanji_rom, 0x20000);
+                       kanji_make_jis78(kanji_rom_jis78);
+               }
 #else
-	kanji_make_jis78(kanji_rom);
+               if (kanji_rom_mode) {
+                       kanji_make_jis78(kanji_rom);
+               }
 #endif
-    return TRUE;
+       }
+       return TRUE;
 }
 
 /*
@@ -159,7 +190,7 @@ kanji_readb(WORD addr, BYTE * dat)
     case 0xfd22:		/* 第1データLEFT */
     case 0xfd23:		/* 第1データRIGHT */
 #if XM7_VER == 1
-			if (!kanjirom_available) {
+			if (!kanji_rom_available) {
 				*dat = 0xff;
 				return TRUE;
 			}
@@ -177,7 +208,7 @@ kanji_readb(WORD addr, BYTE * dat)
 #endif
 
 			offset = kanji_addr << 1;
-			if ((fm7_ver <= 2) && (offset < 0x6000)) {
+			if ((fm7_ver <= 2) && (offset < 0x6000) && !kanji_asis_flag) {
 				/* FM-7/FM77AVモード時の$0000〜$5FFFはJIS78準拠 */
 #if XM7_VER >= 3
 				*dat = kanji_rom_jis78[offset + (addr & 1)];
@@ -185,13 +216,22 @@ kanji_readb(WORD addr, BYTE * dat)
 				*dat = kanji_rom[offset + (addr & 1)];
 #endif
 			}
-			else if ((fm7_ver <= 1) && (offset < 0x8000)) {
+			else if ((fm7_ver <= 1) && (offset < 0x8000) && !kanji_asis_flag) {
 				/* FM-7モード時の$6000〜$7FFFは未定義領域 */
 				*dat = (BYTE)(addr & 1);
 
 	} else {
   	/* 通常領域 */
-	    *dat = kanji_rom[offset + (addr & 1)];
+#if XM7_VER >= 3
+                               if ((fm7_ver >= 3) || kanji_asis_flag) {
+                                       *dat = kanji_rom[offset + (addr & 1)];
+                               }
+                               else {
+                                       *dat = kanji_rom_jis78[offset + (addr & 1)];
+                               }
+#else
+                              *dat = kanji_rom[offset + (addr & 1)];
+#endif
 	}
 	return TRUE;
 
@@ -305,7 +345,8 @@ kanji_writeb(WORD addr, BYTE dat)
  */
 static void FASTCALL kanji_make_jis78(BYTE *rom)
 {
-   static const DWORD jis78_table[] = {
+       /* JIS78準拠未定義文字テーブル(初代FM77AV準拠) */
+       static const DWORD jis78_table[] = {
 		0xffffffff, 0x00000001, 0xffff8001, 0xfc00ffff,
 		0x00000001, 0x00000001, 0xfe000001, 0x00000001,
 		0xffffffff, 0x80000000, 0xffffffff, 0xf8000001,
@@ -315,7 +356,11 @@ static void FASTCALL kanji_make_jis78(BYTE *rom)
 	};
 	DWORD addr;
 	DWORD i;
-
+        /* パッチ当て不要フラグが立っている場合は処理をスキップ */
+        if (kanji_asis_flag) 
+        {
+	     return;
+        }
 	/* JIS78準拠漢字ROMでは未定義になっている部分を未定義とする */
 	for (addr = 0; addr < 0x6000; addr += 32) {
 		if (jis78_table[addr >> 10] & (1 << (addr >> 5))) {

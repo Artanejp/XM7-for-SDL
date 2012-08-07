@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2011 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2011 Ryu Takegami
+ *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2012 Ryu Takegami
  *
  *      [ ディスプレイ ]
  */
@@ -152,7 +152,7 @@ extern void     memcpy400l(BYTE *, BYTE *, int);
 #endif
 
 /*
- *      24/32bit Color用輝度テーブル
+ *      24/32bit Color用26万色モード輝度テーブル
  */
 #if XM7_VER >= 3
 const BYTE      truecolorbrightness[64] = {
@@ -1037,7 +1037,7 @@ vram_scroll(WORD offset)
 	vram = (BYTE *) (vram_c + 0x4000 * i);
 #endif
 #ifdef USE_AGAR
-    LockVram();
+        LockVram();
 #endif
 
 	/*
@@ -1351,7 +1351,8 @@ display_readb(WORD addr, BYTE * dat)
 	     * アドレスはワード単位で、8bitのみ取得
 	     */
 	    offset = sub_kanji_addr << 1;
-	   if ((offset >= 0x6000) && (offset < 0x8000)) {
+	   if ((offset >= 0x6000) && (offset < 0x8000) &&
+	      !kanji_asis_flag ) {
 	      /* FM-7モード時の$6000〜$7FFFは未定義領域 */
 	      *dat = (BYTE)(addr & 1);
 	   }
@@ -2224,6 +2225,14 @@ display_save(SDL_RWops *fileh)
     if (!file_bool_write(fileh, enable_400line)) {
 	return FALSE;
     }
+    /* 400ラインカード整合性チェック */
+    if (enable_400line && !detect_400linecard) 
+    {
+       return FALSE;
+    }
+    /* submem.cに代行して400ラインカード発見フラグをセット */
+    detect_400linecard = detect_400linecard_tmp;
+        
     if (!file_bool_write(fileh, workram_select)) {
 	return FALSE;
     }
@@ -2323,7 +2332,7 @@ display_load(SDL_RWops *fileh, int ver)
      * Ver6拡張
      */
 #if XM7_VER >= 2
-    if ((ver >= 600) || ((ver >= 300) && (ver <= 499))) {
+    if (ver >= 600) {
 #else
     if (ver >= 300) {
 #endif

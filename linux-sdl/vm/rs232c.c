@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2010 Ryu Takegami
+ *	Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2012 Ryu Takegami
  *
  *	[ RS-232Cインタフェース ]
  */
@@ -72,13 +72,13 @@ void FASTCALL rs232c_reset(void)
 	rs_selectmc = TRUE;
 #if XM7_VER >= 3
 	if (fm7_ver <= 2) {
-		rs_baudrate = (rs_baudrate_v2 << 2);
+		rs_baudrate = (BYTE)(rs_baudrate_v2 << 2);
 	}
 	else {
 		rs_baudrate = 0x00;
 	}
 #else
-	rs_baudrate = (rs_baudrate_v2 << 2);
+	rs_baudrate = (BYTE)(rs_baudrate_v2 << 2);
 #endif
 	rs_modecmd = 0x0c;
 	rs_command = 0x40;
@@ -111,8 +111,13 @@ void FASTCALL rs232c_txrdy(BOOL flag)
 	}
 
 	/* 割り込み */
-	if (!txrdy_irq_mask && !rs_cts && (rs_status & RSS_TXEMPTY)) {
-		txrdy_irq_flag = TRUE;
+#if XM7_VER == 1
+        if ((fm_subtype == FMSUB_FM8 || !txrdy_irq_mask) &&
+               !rs_cts && (rs_status & RSS_TXEMPTY)) {
+#else
+        if (!txrdy_irq_mask && !rs_cts && (rs_status & RSS_TXEMPTY)) {
+#endif
+	        txrdy_irq_flag = TRUE;
 	}
 	else {
 		txrdy_irq_flag = FALSE;
@@ -166,8 +171,13 @@ void FASTCALL rs232c_rxrdy(BOOL flag)
 	}
 
 	/* 割り込み */
-	if (!rxrdy_irq_mask && (rs_status & RSS_RXRDY)) {
-		rxrdy_irq_flag = TRUE;
+#if XM7_VER == 1
+          if ((fm_subtype == FMSUB_FM8 || !rxrdy_irq_mask) &&
+              (rs_status & RSS_RXRDY)) {
+#else
+	  if (!rxrdy_irq_mask && (rs_status & RSS_RXRDY)) {
+#endif
+	     rxrdy_irq_flag = TRUE;
 	}
 	else {
 		rxrdy_irq_flag = FALSE;
@@ -215,8 +225,13 @@ void FASTCALL rs232c_syndet(BOOL flag)
 	}
 
 	/* 割り込み */
-	if (!syndet_irq_mask && (rs_status & RSS_SYNDET)) {
-		syndet_irq_flag = TRUE;
+#if XM7_VER == 1
+          if ((fm_subtype == FMSUB_FM8 || !syndet_irq_mask) &&
+              (rs_status & RSS_SYNDET)) {
+#else
+	  if (!syndet_irq_mask && (rs_status & RSS_SYNDET)) {
+#endif
+	     syndet_irq_flag = TRUE;
 	}
 	else {
 		syndet_irq_flag = FALSE;
@@ -400,7 +415,7 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
 				return TRUE;
 			}
 #endif
-
+		 default:
 			return FALSE;
 	}
 
