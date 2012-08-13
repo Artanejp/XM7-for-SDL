@@ -291,6 +291,7 @@ void InitInstance(void)
          * OpenGL Capability
          */
         GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
+        GLDrawArea->wid.flags |= AG_WIDGET_CATCH_TAB;
         AG_WidgetSetSize(GLDrawArea, 640,400);
         AG_GLViewSizeHint(GLDrawArea, 640, 400);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
@@ -308,6 +309,7 @@ void InitInstance(void)
      {
         // Non-GL
         DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
+        AGWIDGET(DrawArea)->flags |= AG_WIDGET_CATCH_TAB;
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
         AG_SetEvent(DrawArea, "key-up", ProcessKeyUp, NULL);
