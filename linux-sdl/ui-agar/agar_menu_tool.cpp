@@ -47,11 +47,17 @@ extern void OnConfigInputMenu(AG_Event *event);
 extern void OnConfigSoundMenu(AG_Event *event);
 
 
+struct D77Attr {
+   char name[18];
+   BOOL b2DD;
+   BOOL bFormat;
+};
+
 
 static void OnPushCancelDisk(AG_Event *event)
 {
 	AG_Button *self = (AG_Button *)AG_SELF();
-        char *alloc = AG_STRING(1);
+        struct D77Attr *alloc = (struct D77Attr *)AG_PTR(1);
         if(alloc != NULL) free(alloc);
 	AG_WindowHide(self->wid.window);
 	AG_ObjectDetach(self->wid.window);
@@ -64,13 +70,19 @@ static void OnPushCancelDisk(AG_Event *event)
 static void OnNewDiskCreate(AG_Event *event)
 {
     AG_Button *btn = (AG_Button *)AG_SELF();
-	char *filename = AG_STRING(4);
-        char *DiskTitle = AG_STRING(1);
-        BOOL b2DD = AG_INT(2);
-        BOOL bFormat = AG_INT(3);
+	char *filename = AG_STRING(2);
+        struct D77Attr *pVDisk = (struct D77Attr*)AG_PTR(1);
+        char DiskTitle[18];
+        BOOL b2DD;
+        BOOL bFormat;
 	int err;
 	char *p;
 
+        if(pVDisk == NULL) return;
+        strncpy(DiskTitle, pVDisk->name, 17);
+        b2DD = pVDisk->b2DD;
+        bFormat = pVDisk->bFormat;
+   
 	LockVM();
 	StopSnd();
 	if (bFormat) {
@@ -86,7 +98,7 @@ static void OnNewDiskCreate(AG_Event *event)
 		p[1] = '\0';
 		strcpy(InitialDir[0], filename);
 	}
-        if(DiskTitle != NULL) free(DiskTitle);
+        if(pVDisk != NULL) free(pVDisk);
     //	AG_FILEDLG_CLOSEWIN指定してるので後始末要らない
 }
 
@@ -100,17 +112,17 @@ static void OnNewDisk(AG_Event *event)
 	AG_Textbox *textbox;
 	AG_Checkbox *check;
 	AG_FileDlg *dlg;
-        BOOL b2DD;
-        BOOL bFormat;
+        struct D77Attr *pVDisk;
         char *DiskTitle;
    
 
 	if((InitialDir[0] == NULL) || strlen(InitialDir[0]) <= 0) {
 		strcpy(InitialDir[0], "./");
 	}
-        DiskTitle =(char *)malloc(sizeof(char) * 128);
-        if(DiskTitle == NULL) return;
-        memset(DiskTitle, 0x00, sizeof(char) * 128);
+   
+        pVDisk =(struct D77Attr *)malloc(sizeof(struct D77Attr));
+        if(pVDisk == NULL) return;
+        memset(pVDisk, 0x00, sizeof(struct D77Attr));
    
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT );
 	AG_WindowSetMinSize(w, 280, 120);
@@ -119,13 +131,19 @@ static void OnNewDisk(AG_Event *event)
 	AG_WidgetSetSize(box, 280, 32);
 	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s", gettext("Make Disk Image") );
 	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
-	textbox = AG_TextboxNew(w,  AG_TEXTBOX_STATIC | AG_TEXTBOX_HFILL, "%s:", gettext("Title"));
+        pVDisk->b2DD = FALSE; 
+        pVDisk->bFormat = FALSE;
+        pVDisk->name[0] = NULL;
+  
+        textbox = AG_TextboxNew(w,  AG_TEXTBOX_STATIC | AG_TEXTBOX_HFILL, "%s:", gettext("Title"));
 	AG_TextboxSizeHint(textbox, "XXXXXXXXXXXXXXXX");
-	AG_TextboxPrintf(textbox, "Default");
-	AG_TextboxBindUTF8(textbox, DiskTitle, sizeof(DiskTitle));
+        strcpy(pVDisk->name, "Default");
+	AG_TextboxPrintf(textbox, pVDisk->name);
+	AG_TextboxBindUTF8(textbox, &(pVDisk->name[0]), sizeof(pVDisk->name));
 	AG_WidgetFocus(AGWIDGET(textbox));
-	check = AG_CheckboxNewInt(w, 0, "2DD", &b2DD);
-	check = AG_CheckboxNewInt(w, 0, gettext("Disk Format"), &bFormat);
+   
+	check = AG_CheckboxNewInt(w, 0, gettext("2DD"), &(pVDisk->b2DD));
+	check = AG_CheckboxNewInt(w, 0, gettext("Disk Format"), &(pVDisk->bFormat));
 
 	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
 	AG_WidgetSetSize(box, 280, 16);
@@ -135,10 +153,10 @@ static void OnNewDisk(AG_Event *event)
 	AG_WidgetSetSize(box, 280, 200);
     dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
-	AG_FileDlgAddType(dlg, "D77 Image File", "*.d77,*.D77", OnNewDiskCreate, "%s,%i,%i", DiskTitle, b2DD, bFormat );
-    AG_FileDlgCancelAction (dlg, OnPushCancelDisk, "%s", DiskTitle);
-    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancelDisk, "%s", DiskTitle);
-    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancelDisk, "%s", DiskTitle);
+	AG_FileDlgAddType(dlg, "D77 Image File", "*.d77,*.D77", OnNewDiskCreate, "%p", pVDisk);
+    AG_FileDlgCancelAction (dlg, OnPushCancelDisk, "%p", pVDisk);
+    AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancelDisk, "%p", pVDisk);
+    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancelDisk, "%p", pVDisk);
 
 	AG_WindowSetCaption(w, gettext("Create Disk "));
 	AG_WindowShow(w);

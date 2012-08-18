@@ -25,13 +25,6 @@ extern "C" {
 #include "sdl_cfg.h"
 #endif
 
-//#include "sdl_bar.h"
-//#include "api_kbd.h"
-//#include "sdl_sch.h"
-//#include "sdl_snd.h"
-//#include "sdl_inifile.h"
-//#include "api_draw.h"
-//#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 
 extern void OnPushCancel(AG_Event *event);
@@ -189,10 +182,10 @@ static void OnTapeRec(AG_Event *event)
 	if(tape_writep || (tape_fname[0] == '\0')) {
 		btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("OK"), OnPushCancel, NULL);
 	} else {
-    if (tape_rec) {
-    	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Start"), OnRec, "%i", FALSE);
+    if (!tape_rec) {
+    	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Start Recording"), OnRec, "%i", TRUE);
     } else {
-    	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Stop"), OnRec, "%i", TRUE);
+    	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Stop Recording"), OnRec, "%i", FALSE);
     }
     box2 = AG_BoxNewVert(box, 0);
 	box2 = AG_BoxNewVert(box, 0);
