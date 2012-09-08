@@ -200,10 +200,10 @@ void AGDrawTaskEvent(BOOL flag)
 
 
 		// 20120109 - Timer Event
-        if (AG_TIMEOUTS_QUEUED())
+//        if (AG_TIMEOUTS_QUEUED())
 		{
-			DWORD tim = 0;
-			tim = SDL_GetTicks();
+			Uint32 tim = 0;
+			tim = AG_GetTicks();
                 	AG_ProcessTimeouts(tim);
 		}
 		SDL_Delay(1);
