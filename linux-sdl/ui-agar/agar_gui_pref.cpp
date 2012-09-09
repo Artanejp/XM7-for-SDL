@@ -38,6 +38,8 @@
 #include "xm7_sdl.h"
 #endif
 
+
+
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
 //#include "sdl_prop.h"
@@ -180,22 +182,38 @@ static AG_Numerical *NumSub;
 static AG_Numerical *NumMainMMR;
 static AG_Numerical *NumMainFMMR;
 
+
+static void OnChangeCycles(AG_Event *event)
+{
+   AG_Numerical *me = (AG_Numerical *)AG_SELF();
+   double d;
+   //AG_NumericalValue d;
+   if(me == NULL) return;
+   if(me->input == NULL) return;
+   d = AG_TextboxDbl(me->input);
+   //d.u = AG_TextboxInt(me->input);
+   AG_NumericalSetValue(me, d);
+}
+   
+   
 static void OnResetCycles(AG_Event *event)
 {
-//	localconfig.main_speed = MAINCYCLES;
-//	localconfig.sub_speed = SUBCYCLES;
-//	localconfig.mmr_speed = MAINCYCLES_MMR;
-//	localconfig.fmmr_speed = MAINCYCLES_FMMR;
-
-	AG_NumericalSetValue(NumMain, (double)MAINCYCLES);
-	AG_NumericalSetValue(NumSub, (double)SUBCYCLES);
-	AG_NumericalSetValue(NumMainMMR, (double)MAINCYCLES_MMR);
-	AG_NumericalSetValue(NumMainFMMR, (double)MAINCYCLES_FMMR);
-        AG_WidgetUpdate(AGWIDGET(NumMain));
-	localconfig.main_speed = MAINCYCLES;
+        double  v;
+//        AG_NumericalValue v;  
+        localconfig.main_speed = MAINCYCLES;
 	localconfig.sub_speed = SUBCYCLES;
 	localconfig.mmr_speed = MAINCYCLES_MMR;
 	localconfig.fmmr_speed = MAINCYCLES_FMMR;
+
+        v = MAINCYCLES;
+	AG_NumericalSetValue(NumMain, v);
+        v = SUBCYCLES;
+	AG_NumericalSetValue(NumSub, v);
+        v = MAINCYCLES_MMR;
+	AG_NumericalSetValue(NumMainMMR, v);
+        v = MAINCYCLES_FMMR;
+	AG_NumericalSetValue(NumMainFMMR, v);
+
 }
 
 void ConfigMenuVMSpeed(AG_NotebookTab *parent)
@@ -203,32 +221,39 @@ void ConfigMenuVMSpeed(AG_NotebookTab *parent)
 	AG_Box *box;
 	AG_Label *lbl;
 	AG_Button *btn;
+        AG_Event *ev;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
-	NumMain = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Main CPU"));
-	AG_NumericalSetRangeInt(NumMain, 2, 9999);
-	AG_NumericalSetIncrement(NumMain, 1);
-	AG_BindUint32(NumMain, "value", &localconfig.main_speed);
-
+	NumMain = AG_NumericalNewUintR(AGWIDGET(box), 
+					0, gettext("cycles"), 
+					gettext("Main CPU"), &localconfig.main_speed, 2, 9999);
+//	AG_NumericalSetIncrement(NumMain, 1.0);
+	AG_NumericalSetWriteable(NumMain, 1);
+        ev = AG_SetEvent (AGOBJECT(NumMain), "numerical-return", OnChangeCycles, NULL);
    
    
-	NumSub = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Sub CPU") );
-	AG_NumericalSetRangeInt(NumSub, 2, 9999);
-	AG_NumericalSetIncrement(NumSub, 1);
-	AG_BindUint32(NumSub, "value", &localconfig.sub_speed);
+	NumSub = AG_NumericalNewUintR(AGWIDGET(box), 
+				       0, NULL,
+				       gettext("Sub CPU") , &localconfig.sub_speed, 2, 9999);
+//	AG_NumericalSetIncrement(NumSub, 1.0);
+	AG_NumericalSetWriteable(NumSub, 1);
+        ev = AG_SetEvent (AGOBJECT(NumSub), "numerical-return", OnChangeCycles, NULL);
 
-	NumMainMMR = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Main CPU MMR"));
-	AG_NumericalSetRangeInt(NumMainMMR, 2, 9999);
-	AG_NumericalSetIncrement(NumMainMMR, 1);
-	AG_BindUint32(NumMainMMR, "value", &localconfig.mmr_speed);
+	NumMainMMR = AG_NumericalNewUintR(AGWIDGET(box), 
+				       0, NULL,
+				       gettext("Main MMR") , &localconfig.mmr_speed, 2, 9999);
+//	AG_NumericalSetIncrement(NumMainMMR, 1.0);
+	AG_NumericalSetWriteable(NumMainMMR, 1);
+        ev = AG_SetEvent (AGOBJECT(NumMainMMR), "numerical-return", OnChangeCycles, NULL);
 
-	NumMainFMMR = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("cycles"), gettext("Main CPU Fast MMR"));
-	AG_NumericalSetRangeInt(NumMainFMMR, 2, 9999);
-	AG_NumericalSetIncrement(NumMainFMMR, 1);
-	AG_BindUint32(NumMainFMMR, "value", &localconfig.fmmr_speed);
+	NumMainFMMR = AG_NumericalNewUintR(AGWIDGET(box),
+					   0, NULL,
+					   gettext("Main CPU Fast MMR"), &localconfig.fmmr_speed, 2, 9999);
+//	AG_NumericalSetIncrement(NumMainFMMR, 1.0);
+	AG_NumericalSetWriteable(NumMainFMMR, 1);
+        ev = AG_SetEvent (AGOBJECT(NumMainFMMR), "numerical-return", OnChangeCycles, NULL);
 
 	btn = AG_ButtonNew(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, NULL);
-
 }
 
 

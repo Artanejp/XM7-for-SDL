@@ -136,7 +136,12 @@ static void UpdateCMTCount(AG_Surface *dst, int count, struct OsdCMTPack *pStatu
     {
         AG_Color fg, bg;
         AG_Surface *tmp;
-        sprintf(string, "%04d", count % 10000);
+        if(tape_rec) {
+	   sprintf(string, "Ｒ%04d", count % 10000);
+	} else {
+	   sprintf(string, "　%04d", count % 10000);
+	}
+       
         size = getnFontSize();
         AG_PushTextState();
         AG_TextFont(pStatusFont);
