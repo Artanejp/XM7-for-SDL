@@ -37,10 +37,10 @@
 #define	VERSION		"V1.1"
 #endif
 #if XM7_VER == 1
-#define	LEVEL		"L40a"
+#define	LEVEL		"L41"
 // #define BETAVER
 #else
-#define	LEVEL		"L50a"
+#define	LEVEL		"L51"
 // #define BETAVER
 #endif
 
@@ -216,6 +216,8 @@ typedef struct
 
 #define BOOT_BASIC		0	/* BASICモード */
 #define BOOT_DOS		1	/* DOSモード */
+#define BOOT_BUBBLE		2	/* BUBBLEモード */
+
 
 #define STATELOAD_ERROR		0	/* ステートロードエラー */
 #define STATELOAD_SUCCESS	1	/* ステートロード成功 */
@@ -232,6 +234,7 @@ typedef struct
 #define FBASIC10_ROM	"FBASIC10.ROM"	/* F-BASIC V1.0 */
 #define BOOTBAS_ROM		"BOOT_BAS.ROM" /* FM-7 BASIC BOOT */
 #define BOOTDOS_ROM		"BOOT_DOS.ROM" /* FM-7 5inch DOS BOOT */
+#define BOOTBBL_ROM             "BOOT_BBL.ROM"  /* FM-7 Bubble BOOT */
 #define BOOT1MB_ROM		"BOOT_1MB.ROM"	/* FM-77 1MB BOOT */
 #define BOOTMMR_ROM		"BOOT_MMR.ROM"	/* FM-77 MMR BOOT */
 #define BOOTBAS8_ROM	"BOOTBAS8.ROM"	/* MICRO 8 BASIC BOOT */
@@ -751,6 +754,9 @@ extern          "C" {
     /*
      * FM-8 ROM使用可能フラグ
      */
+#ifdef BUBBLE
+    extern BOOL bubble_available;  /* バブル使用可能フラグ */
+#endif
 #endif
 #if (XM7_VER == 1) || (XM7_VER >= 3)
     extern BYTE *boot_mmr;    /* BOOT (隠し)       $200 */

@@ -454,12 +454,55 @@ make_new_t77(char *fname)
     file_close(fileh);
     return TRUE;
 }
++
++#if XM7_VER == 1 && defined(BUBBLE)
++/*
++ *	ブランクバブルカセット作成
++ */
+BOOL FASTCALL make_new_bubble(char *fname)
+{
+	static const BYTE volumelabel[] = "VOL00000";
+
+	SDL_RWops *fileh;
+	BYTE buffer[0x40];
+	DWORD i;
+	/* assert */
+	ASSERT(fname);
+
+	/* ファイルオープン */
+	fileh = file_open(fname, OPEN_W);
+	if (fileh == -1) {
+		return FALSE;
+	}
+
+	/* ヌルデータ書き込み */
+	for (i=0; i<=0x03ff; i++) {
+		memset(buffer, 0, sizeof(buffer));
+		if (i == 0) {
+			/* IDセクタ作成 */
+			memcpy(buffer, volumelabel, strlen(volumelabel));
+			buffer[8] = 0x08;
+			buffer[9] = 0x00;
+		        buffer[10] = 0x00;
+			buffer[11] = 0x01;
+		}
+		if (!file_write(fileh, buffer, 32)) {
+			file_close(fileh);
+			return FALSE;
+		}
+	}
+
+	/* ok */
+	file_close(fileh);
+	return TRUE;
+}
+#endif
+
 
 /*
  *      VFD→D77変換
  */
-BOOL            FASTCALL
-conv_vfd_to_d77(char *src, char *dst, char *name)
+BOOL FASTCALL conv_vfd_to_d77(char *src, char *dst, char *name)
 {
     SDL_RWops       *files;
     SDL_RWops       *filed;

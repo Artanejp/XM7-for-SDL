@@ -224,13 +224,9 @@ BOOL FASTCALL mmr_extrb(WORD * addr, BYTE * dat)
     /*
      * TWR,MMRを通す
      */
-#ifdef FMT
-     raddr = mmr_trans_twr_and_mmr(*addr);
-#else
      if (!mmr_trans_twr(*addr, &raddr)) {
 	raddr = mmr_trans_mmr(*addr);
     }
-#endif
     rsegment = (raddr & 0xf0000);
 
     /*
@@ -362,13 +358,9 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
     /*
      * TWR,MMRを通す
      */
-#ifdef FMT
-     raddr = mmr_trans_twr_and_mmr(*addr);
-#else
      if (!mmr_trans_twr(*addr, &raddr)) {
 	raddr = mmr_trans_mmr(*addr);
     }
-#endif
    
     rsegment = (raddr & 0xf0000);
 
@@ -502,13 +494,9 @@ BOOL FASTCALL mmr_extwb(WORD * addr, BYTE dat)
     /*
      * TWR,MMRを通す
      */
-#ifdef FMT
-    raddr = mmr_trans_twr_and_mmr(*addr);
-#else
      if (!mmr_trans_twr(*addr, &raddr)) {
 	raddr = mmr_trans_mmr(*addr);
     }
-#endif
     rsegment = (raddr & 0xf0000);
 
     /*

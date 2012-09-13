@@ -2080,6 +2080,7 @@ display_writeb(WORD addr, BYTE dat)
 
 	check_window_open();
 	break;
+	return TRUE;
 #endif
     }
 
@@ -2230,8 +2231,6 @@ display_save(SDL_RWops *fileh)
     {
        return FALSE;
     }
-    /* submem.cに代行して400ラインカード発見フラグをセット */
-    detect_400linecard = detect_400linecard_tmp;
         
     if (!file_bool_write(fileh, workram_select)) {
 	return FALSE;

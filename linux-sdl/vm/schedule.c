@@ -1541,9 +1541,12 @@ schedule_load(SDL_RWops *fileh, int ver, BOOL old)
            return FALSE;
         }
 #if XM7_VER >= 3
-        if (!file_dword_read(fileh, &fmmr_speed)) {
-           return FALSE;
-	}
+       if (ver >= 916) {
+	  if (!file_dword_read(fileh, &fmmr_speed)) {
+	     return FALSE;
+	  }
+       }
+       
 #endif
         if (!file_dword_read(fileh, &sub_speed)) {
            return FALSE;

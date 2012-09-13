@@ -29,6 +29,9 @@ extern          "C" {
     /*
      * ブランクテープ作成 
      */
+#if XM7_VER == 1 && defined(BUBBLE)
+    BOOL FASTCALL make_new_bubble(char *fname);	/* ブランクバブルカセット作成 */
+#endif
     BOOL FASTCALL   conv_vfd_to_d77(char *src, char *dst, char *name);
     /*
      * VFD→D77変換 

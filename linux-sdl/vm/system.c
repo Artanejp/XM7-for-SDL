@@ -28,6 +28,7 @@
 #include "mouse.h"
 #include "rs232c.h"
 #include "jsubsys.h"
+#include "bubble.h"
 
 #ifdef MIDI
 #include "midi.h"
@@ -68,7 +69,7 @@ const char     *state_header = "XM7 VM STATE 916";
 #elif XM7_VER >= 2
 const char     *state_header = "XM7 VM STATE 716";
 #else
-const char     *state_header = "XM7 VM STATE 306";
+const char     *state_header = "XM7 VM STATE 307";
 #endif
 
 /*
@@ -133,6 +134,11 @@ system_init(void)
     if (!jsubsys_init()) {
 	return FALSE;
     }
+#endif
+#if (XM7_VER == 1) && defined(BUBBLE)
+	if (!bmc_init()) {
+		return FALSE;
+	}
 #endif
 
     /*
@@ -217,6 +223,9 @@ system_cleanup(void)
     /*
      * その他デバイス
      */
+#if (XM7_VER == 1) && defined(BUBBLE)
+	bmc_cleanup();
+#endif
 #ifdef MOUSE
     mos_cleanup();
 #endif
@@ -319,6 +328,9 @@ system_reset(void)
     subcpu_reset();
 #if (XM7_VER == 1) && defined(JSUB)
     jsubsys_reset();
+#endif
+#if (XM7_VER == 1) && defined(BUBBLE)
+	bmc_reset();
 #endif
 
     /*
@@ -539,6 +551,11 @@ system_save(char *filename)
         flag = FALSE;
     }
 #endif
+#if (XM7_VER == 1) && defined(BUBBLE)
+	if (!bmc_save(fileh)) {
+		flag = FALSE;
+	}
+#endif
     file_close(fileh);
 
     return flag;
@@ -576,6 +593,9 @@ system_load(char *filename)
      * フラグ初期化
      */
     flag = TRUE;
+#if XM7_VER >= 2
+   old_scheduler = FALSE;
+#endif
 
     /*
      * ヘッダをロード
@@ -659,8 +679,6 @@ system_load(char *filename)
 	}
 #endif
     }
-#else
-    old_scheduler = FALSE;
 #endif
 
     /*
@@ -813,6 +831,11 @@ system_load(char *filename)
     if (!jsubsys_load(fileh, ver)) {
 	flag = FALSE;
     }
+#endif
+#if (XM7_VER == 1) && defined(BUBBLE)
+	if (!bmc_load(fileh, ver)) {
+		flag = FALSE;
+	}
 #endif
     file_close(fileh);
 

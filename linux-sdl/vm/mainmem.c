@@ -32,6 +32,9 @@
 #if (XM7_VER == 1 && defined(JSUB))
 #include "jsubsys.h"
 #endif
+#if (XM7_VER == 1 && defined(BUBBLE))
+#include "bubble.h"
+#endif
 
 /*
  *	グローバル ワーク
@@ -47,7 +50,11 @@ BYTE *boot_bas;							/* ブート(BASIC,FM-7)  $200 */
 BYTE *boot_dos;							/* ブート(DOS,FM-7)    $200 */
 BYTE *boot_bas8;						/* ブート(BASIC,FM-8)  $200 */
 BYTE *boot_dos8;						/* ブート(DOS,FM-8)    $200 */
+BYTE *boot_bbl8;						/* ブート(BUBBLE,FM-8) $200 */
 BYTE *boot_mmr;							/* ブート(隠し)        $200 */
+#if defined(BUBBLE)
+BOOL bubble_available;					/* バブル使用可能フラグ */
+#endif
 #endif
 BYTE *boot_ram;							/* ブートRAM           $200 */
 BOOL bootram_rw;						/* ブートRAM 書き込みフラグ */
@@ -94,6 +101,10 @@ BOOL FASTCALL mainmem_init(void)
 	boot_mmr = NULL;
 	boot_bas8 = NULL;
 	boot_dos8 = NULL;
+	boot_bbl8 = NULL;
+#if defined(BUBBLE)
+	bubble_available = TRUE;
+#endif
 #else
 	patch_branewboottfr = NULL;
 	patch_jmpnewboot = NULL;
@@ -175,6 +186,10 @@ BOOL FASTCALL mainmem_init(void)
 	}
 	boot_dos8 = (BYTE *)malloc(0x200);
 	if (boot_dos8 == NULL) {
+		return FALSE;
+	}
+	boot_bbl8 = (BYTE *)malloc(0x200);
+	if (boot_bbl8 == NULL) {
 		return FALSE;
 	}
 #endif
@@ -287,9 +302,12 @@ BOOL FASTCALL mainmem_init(void)
 	if (!file_load(BOOTDOS8_ROM, boot_dos8, 0x1e0)) {
 		available_fm8roms = FALSE;
 	}
+	if (!file_load(BOOTBBL8_ROM, boot_bbl8, 0x1e0)) {
+		bubble_available = FALSE;
+	}
 
 	/* 旧ブート高速起動(FM-7/NEW7(1st lot)/8) */
-	for (i=0; i<5; i++) {
+	for (i=0; i<6; i++) {
 		switch (i) {
 			case 0:		p = boot_bas;
 						break;
@@ -300,6 +318,8 @@ BOOL FASTCALL mainmem_init(void)
 			case 3:		p = boot_bas8;
 						break;
 			case 4:		p = boot_dos8;
+						break;
+			case 5:		p = boot_bbl8;
 						break;
 			default:	ASSERT(FALSE);
 						break;
@@ -322,6 +342,9 @@ BOOL FASTCALL mainmem_init(void)
 		}
 		if (p[0x165] == 0x26) {
 			p[0x165] = 0x21;
+		}
+		if (p[0x155] == 0x26) {
+			p[0x155] = 0x21;
 		}
 		p[0x1fe] = 0xfe;
 		p[0x1ff] = 0x00;
@@ -366,6 +389,7 @@ void FASTCALL mainmem_cleanup(void)
 	ASSERT(boot_dos);
 	ASSERT(boot_bas8);
 	ASSERT(boot_dos8);
+	ASSERT(boot_bbl8);
 #endif
 #if (XM7_VER == 1) || (XM7_VER >= 3)
 	ASSERT(boot_mmr);
@@ -415,6 +439,9 @@ void FASTCALL mainmem_cleanup(void)
 	}
 	if (boot_dos8) {
 		free(boot_dos8);
+	}
+	if (boot_bbl8) {
+		free(boot_bbl8);
 	}
 #endif
 #if (XM7_VER == 1) || (XM7_VER >= 3)
@@ -655,8 +682,11 @@ BYTE FASTCALL mainmem_readb(WORD addr)
 				if (boot_mode == BOOT_BASIC) {
 					return boot_bas8[addr - 0xfe00];
 				}
+				else if (boot_mode == BOOT_DOS) {
+ 					return boot_dos8[addr - 0xfe00];
+ 				}
 				else {
-					return boot_dos8[addr - 0xfe00];
+					return boot_bbl8[addr - 0xfe00];
 				}
 			}
 			else {
@@ -664,8 +694,11 @@ BYTE FASTCALL mainmem_readb(WORD addr)
 				if (boot_mode == BOOT_BASIC) {
 					return boot_bas[addr - 0xfe00];
 				}
+				else if (boot_mode == BOOT_DOS) {
+ 					return boot_dos8[addr - 0xfe00];
+ 				}
 				else {
-					return boot_dos[addr - 0xfe00];
+					return boot_bbl8[addr - 0xfe00];
 				}
 			}
 		}
@@ -731,6 +764,11 @@ BYTE FASTCALL mainmem_readb(WORD addr)
 #endif
 #if (XM7_VER == 1 && defined(JSUB))
 	if (jsub_readb(addr, &dat)) {
+		return dat;
+	}
+#endif
+#if (XM7_VER == 1 && defined(BUBBLE))
+	if (bmc_readb(addr, &dat)) {
 		return dat;
 	}
 #endif
@@ -990,6 +1028,11 @@ void FASTCALL mainmem_writeb(WORD addr, BYTE dat)
 #endif
 #if (XM7_VER == 1 && defined(JSUB))
 	if (jsub_writeb(addr, dat)) {
+		return;
+	}
+#endif
+#if (XM7_VER == 1 && defined(BUBBLE))
+	if (bmc_writeb(addr, dat)) {
 		return;
 	}
 #endif

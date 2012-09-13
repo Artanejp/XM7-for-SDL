@@ -212,11 +212,10 @@ jcard_readb(WORD addr)
 		}
 
 		if (dicrom_bank < 32) {
-		    return kanji_rom[addr | dicrom_addr];
+		    return kanji_rom_jis78[addr | dicrom_addr];
 		}
 		/*
-		 * バンク32〜43 :
-		 * 拡張サブシステムROM(extsub.rom)
+		 * バンク32〜43 : 拡張サブシステムROM(extsub.rom)
 		 */
 		/*
 		 * バンク56〜63 : F-BASIC V3.0 ROM ($8000-$EFFF)

@@ -10,6 +10,7 @@ include ../config.mak
 COMMONSRC = \
         aluline.c \
         apalet.c \
+	bubble.c \
         disasm.c \
         display.c \
 	dmac.c \

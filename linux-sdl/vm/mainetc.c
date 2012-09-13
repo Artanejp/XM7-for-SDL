@@ -45,6 +45,12 @@ BOOL            speaker_flag;	/* スピーカフラグ */
 #if XM7_VER == 1
 BOOL banksel_en;					/* バンク切り換えイネーブルフラグ */
 #endif
+/*
+ *	スタティック ワーク
+ */
+#if XM7_VER == 1 && defined(BUBBLE)
+static BYTE boot_mode_reset;		/* リセット時のブートROMバンク */
+#endif
 
 
 /*
@@ -62,6 +68,9 @@ BOOL FASTCALL mainetc_init(void)
 #if XM7_VER == 1
 	/* FM-8モードの標準はバンク切り換え無効 */
 	banksel_en = FALSE;
+#if defined(BUBBLE)
+	boot_mode_reset = BOOT_BASIC;
+#endif
 #endif
     return TRUE;
 }
@@ -134,6 +143,11 @@ mainetc_reset(void)
      * 通知
      */
     beep_notify();
+
+	/* リセット時のブートモードを記憶 */
+#if XM7_VER == 1 && defined(BUBBLE)
+	boot_mode_reset = boot_mode;
+#endif
 }
 
 /*
@@ -478,7 +492,16 @@ mainetc_writeb(WORD addr, BYTE dat)
 #if XM7_VER == 1
 	/* FM-8モード時はブートモードが切り替わる仕様 */
 	if (fm_subtype == FMSUB_FM8) {
+#if defined(BUBBLE)
+				if (boot_mode_reset == BOOT_BASIC) {
+					boot_mode = BOOT_DOS;
+				}
+				else {
+					boot_mode = boot_mode_reset;
+				}
+#else
 		boot_mode = BOOT_DOS;
+#endif
 	}
 #endif
 	return TRUE;
