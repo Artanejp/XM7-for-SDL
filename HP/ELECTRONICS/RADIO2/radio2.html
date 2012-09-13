@@ -1,0 +1,139 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>AM(MW) STREIGHT RADIO.</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>高一ストレートラジオ(2012-09-13)</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#WHAT">これは何か</A><BR>
+<A HREF="#HOW">どのようなものか</A><BR>
+<A HREF="#MAKING">製作</A><BR>
+<A HREF="#TRIM">調整</A><BR>
+<A HREF="#TRIM">更に調整</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<A NAME="WHAT"></A>
+<H3>これは何か</H3>
+&nbsp;　中波帯（所謂AM）のラジオ。です<BR>
+&nbsp;　スーパーヘテロダインラジオを一気に作ろうとしていまいちうまく行かなかったので、少し立ち戻ってストレートラジオを作ることにしました。<BR>
+&nbsp;
+<BR>
+<A NAME="HOW"></A>
+<H3>どのようなものか</H3>
+&nbsp; 高周波増幅したAM放送を、コイルで受けてダイオードで検波、低周波増幅した上でLM386でスピーカーを鳴らします。<BR>
+&nbsp; <B>それだけでは面白くないので、可能な限り表面実装で作ります(^_^;</B><BR>
+<BR>
+<A HREF="Radio_S1_v0.sch.gz"><IMG SRC="Radio_S1_v0.png" ALT="回路図その１"><BR>
+&nbsp;&nbsp; 初期の回路図（このままでは動かないです）</A><BR>
+<A HREF="Radio_S2_E.sch.gz"><IMG SRC="Radio_S2_E.png" ALT="回路図"><BR>
+&nbsp;&nbsp; オーディオアンプ部回路図</A><BR>
+<BR>
+&nbsp; れいによってトランジスタは2SC1815が生産終了になったのもあって<A
+HREF="http://www.semicon.toshiba.co.jp/openb2b/websearch/productDetails.jsp?partKey=2SC4116"
+target="_blank">2SC4116GR</A>です。
+&nbsp; 実装基板は<A HREF="http://akizukidenshi.com/catalog/g/gP-03811/"
+target="_blank">秋月電子から出ている「プロトタイピング基板」</A>(矢島製作所製）を加工して使うことにしました。
+<BR>
+&nbsp;
+そして、抵抗やコンデンサは表面実装品(2012サイズ)を使います…が、これはサンプルブックとか入手できる人でないと購入できない
+…と思ったら、町田や横浜に店舗のある<A
+HREF="http://www.maroon.dti.ne.jp/satodenki/index.html" target="_blank">サトー電気</A>で抵抗のセットとコンデンサのセットを各々千円前後売っています…これだと種類が限られて数も多くはないけど何とか購入出来なくはない。<BR>
+&nbsp; 後、<A HREF="https://www.sengoku.co.jp/" target="_blank">千石電商とかでも<A HREF="https://www.sengoku.co.jp/mod/sgk_cart/search.php?cid=3328" target="_blank">一品種１０個単位</A>で売ってます
+<A NAME="MAKING"></A>
+<H3>製作</H3>
+<BR>
+<IMG SRC="P8314838.JPG" ALT="プロトタイピング基板"><BR>
+&nbsp; この基板は、1.25mm間隔で表面実装部品をハンダ付けしやすいランドが並んでいます。ここに、トランジスタや抵抗を乗せていきます。<BR>
+&nbsp; 又、裏側はベタアースに使われることを期待して、一枚の銅箔で作られています。この面を加工し、穴を開けてケミコンやコイル、バリコンをつけていきます。
+<BR>
+<IMG SRC="P8314841.JPG" ALT="穴を開ける"><BR>
+&nbsp; バリコンの穴とかを開けていきます<BR><BR>
+<BR>
+<IMG SRC="P8314844.JPG" ALT="穴を開ける"><BR>
+&nbsp; ピンや電極など金属が露出する所とバーアンテナの直下の銅箔を剥がします。<BR>
+<BR>
+<IMG SRC="P9044851.JPG" ALT="回路実装"><BR>
+<IMG SRC="P9044853.JPG" ALT="回路実装""><BR>
+&nbsp; ランド側に表面実装部品を実装後、バリコンやケミコン、コイルを付けます。<BR>
+<BR>
+<A NAME="TRIM"></A>
+<H3>調整</H3>
+<BR>
+&nbsp; とりあえず、配線や実装を点検して電源を入れましょう。点検時はルーペやテスターなどを使うほうが吉です<BR>
+&nbsp;
+<B>あれれ、発振してる(；´Д｀)</B>。ゲインが大きすぎるようです。ちまちまとR3を小さくしたりR2・R1の組み合わせを大きくしたりして電流を下げていくが、ゲインが未だに高すぎる。<BR>
+&nbsp;
+で、少し考えて、C3を外して、なおかつL2を大きくしたりR1,R2,R3を再調整…<B>なんとか、NHK第一(594KHz)だけは聞こえるようになった(；´Д｀)</B><BR>
+<BR>
+<A HREF="Radio_S1_v02.sch.gz"><IMG SRC="Radio_S1_v02.png" ALT="回路図その１"><BR>
+&nbsp;&nbsp; 中途の回路図（動くか動かないかびみょー）</A><BR>
+<BR>
+<A NAME="TRIM2"></A>
+<H3>更に調整</H3>
+<BR>
+&nbsp; 少し頭を冷やしてカフェで回路図を見直します…とりあえず、<BR>
+&nbsp;&nbsp;  ・C3で帰還させないとゲインは上がらない。C3,L2やRでゲインを再調整しよう<BR>
+&nbsp;&nbsp; ・C11が小さ過ぎないか？<BR>
+&nbsp;&nbsp; ・Q1のB-C間に中和コンデンサを入れてみよう<BR>
+<BR>
+&nbsp; と方針を決めて、再び作業机に向かう<BR>
+&nbsp;&nbsp; ・中和コンデンサは13pFで発振し3pF足すと増幅自体が止まるので、微妙すぎて使えない<BR>
+&nbsp;
+と言う事がわかったので、C3でゲイン調整することに。<BR>100pFでやってみます。そうしてくと<BR>
+&nbsp;&nbsp; ・発振は止まらないとはいえもう一息で音声が復調できそうな微妙な発振の仕方になった<BR>
+&nbsp; で、少しゲインを下げようとL2を4mHに下げました…<B>発振が停まったヽ(´▽`)ノ</B><BR>
+&nbsp; 試しに、L2を2mHにする…発振し始めた(T_T)<BR>
+&nbsp; しょうがないので、4mHに戻して、C3を少しづつ大きくします…音声が大きくなっていくヽ(´▽`)ノ<BR>
+&nbsp; とりあえずC3を470pFにして、とりあえず調整終了。未だR1〜R3を調整したりC3をギリギリで増やせば感度が上がりそうな余地がありそうではありますが<BR>
+&nbsp; NHK第一、第二と<A HREF="http://ja.wikipedia.org/wiki/AFN" target="_blank">AFN(810KHz)</A>までは聞こえるようになりました。<BR>
+&nbsp; これよりも高い周波数の局は、L2の自己共振周波数の絡みか、音声が再生できるところまでは行かないですが、まぁ、現状ではこれでいいと云うことにしておきます（次の設計で聞こえるようにする予定は未定）<BR>
+&nbsp; とりあえず、GRクラスのトランジスタはhfeが高すぎるし2SC4116は手ではんだづけするには小さすぎるので、もう少し大きなパッケージで増幅度の小さい(Yとか)トランジスタを探したほうが良さそうです(；´Д｀)<BR>
+<BR>
+<A HREF="Radio_S1_E.sch.gz"><IMG SRC="Radio_S1_Ev1.0.png" ALT="回路図"><BR>
+&nbsp;&nbsp; フロントエンド回路図(まだ調整の余地がありそうだがとりあえず完成)</A><BR>
+<BR>
+
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">Oscilator</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 27 Feb.2012 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
