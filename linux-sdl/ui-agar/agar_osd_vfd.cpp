@@ -177,8 +177,11 @@ static BOOL UpdateVFD(AG_Surface *dst, struct OsdVFDPack *pStatus)
             AG_TextBGColor(bg);
             tmp = AG_TextRender(pStatus->VFDLetter);
             AG_FillRect(dst, NULL, bg);
-            AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
-            AG_SurfaceFree(tmp);
+            if(tmp != NULL){
+	     AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
+             AG_SurfaceFree(tmp);
+	    }
+       
         } else {
             AG_FillRect(dst, NULL, bg);
         }
