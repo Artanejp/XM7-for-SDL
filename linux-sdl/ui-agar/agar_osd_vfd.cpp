@@ -333,7 +333,7 @@ void DrawDrive(int drive, BOOL override)
 	size_t        in, out;
 	AG_Surface *tmp;
 	AG_Rect		rect;
-        int stat;
+        int stat = OSD_VFD_EMPTY;
         BOOL changed = override;
 
          if(pVFDStat[drive] == NULL) return;
@@ -371,14 +371,20 @@ void DrawDrive(int drive, BOOL override)
 	 if (fdc_ready[drive] == FDC_TYPE_VFD) {
 		 strcpy(name, "VFD DISK");
 	 }
-
+         
 	 /*
 	  * 描画
 	  */
+         if(strlen(name) < 0) {
+	    sprintf(name, "*INSERTED*", drive);
+	 }
+   
 	 memset(szDrive[drive], 0, 16);
 	 strncpy(szDrive[drive], name, 16);
 	 if (num == 255) {
-		 strcpy(string, "");
+	         char dstr[32];
+	         dstr[0] = '\0';
+		 strcpy(string, dstr);
 	 } else {
 		 strcpy(string, szDrive[drive]);
 	 }
@@ -397,7 +403,7 @@ void DrawDrive(int drive, BOOL override)
 	 nDrive[drive] = num;
          AG_MutexLock(&(pVFDStat[drive]->mutex));
          pVFDStat[drive]->stat = stat;
-	 if((stat != pVFDStat[drive]->OldStat) || (strcmp(szDrive[drive], szOldDrive[drive]) != 0) || 
+         if((stat != pVFDStat[drive]->OldStat) || (strcmp(szDrive[drive], szOldDrive[drive]) != 0) || 
 	    (old_writep[drive] != fdc_writep[drive]) || (override == TRUE)) {
 		 /*
 		  * 過去のファイルネームと違う
@@ -418,11 +424,24 @@ void DrawDrive(int drive, BOOL override)
 		 }
 		 if(strlen(utf8) >0) {
 			 if(fdc_writep[drive]) {
-				 sprintf(outstr, "■ %s", utf8); // 書込み禁止
+				 sprintf(outstr, "■ %d:%s", drive, utf8); // 書込み禁止
 			 } else {
-				 sprintf(outstr, "　 %s", utf8); // 書込み許可
+				 sprintf(outstr, "　 %d:%s", drive, utf8); // 書込み許可
 			 }
+		 } else {
+		    if(stat == OSD_VFD_EMPTY) {
+         			 sprintf(outstr, "□ %d:*EMPTY*", drive); // 書込み禁止
+		    } else {
+			 if(fdc_writep[drive]) {
+				 sprintf(outstr, "■ %d:*INSERTED*", drive); // 書込み禁止
+			 } else {
+				 sprintf(outstr, "　 %d:*INSERTED*", drive); // 書込み許可
+			 }
+		    }
+		    
+		    
 		 }
+	    
 		 old_writep[drive] = fdc_writep[drive];
 	         strncpy(pVFDStat[drive]->VFDLetter, outstr, 63);
 	         pVFDStat[drive]->Changed = TRUE;
