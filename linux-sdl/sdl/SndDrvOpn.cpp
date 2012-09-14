@@ -271,10 +271,11 @@ void SndDrvOpn::SetRenderVolume(int ch, int fm, int psg)
 
 void SndDrvOpn::SetLRVolume(void)
 {
-    l_vol[0][0] = l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
+    uChanSep = uChSeparation;
+    l_vol[0][1] = l_vol[1][2] = l_vol[2][3] =
     r_vol[1][1] = r_vol[0][2] = r_vol[1][3] = 16 + uChanSep;
-    r_vol[0][0] = r_vol[0][1] = r_vol[1][2] = r_vol[2][3] =
-    l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - 	uChanSep ;
+    r_vol[0][1] = r_vol[1][2] = r_vol[2][3] =
+    l_vol[1][1] = l_vol[0][2] = l_vol[1][3] = 16 - uChanSep ;
 }
 
 int *SndDrvOpn::GetLVolume(int num)
