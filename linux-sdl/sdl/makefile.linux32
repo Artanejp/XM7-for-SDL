@@ -65,7 +65,7 @@ LIBS += -lGL -lGLU -lpthread
 #endif
 
 
-LIBS += -ljpeg -lpng -lfreetype
+LIBS += -ljpeg -lpng -lfreetype -lfontconfig
 
 ifdef USE_OPENMP
 LIBS += -lgomp

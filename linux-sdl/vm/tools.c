@@ -454,11 +454,11 @@ make_new_t77(char *fname)
     file_close(fileh);
     return TRUE;
 }
-+
-+#if XM7_VER == 1 && defined(BUBBLE)
-+/*
-+ *	ブランクバブルカセット作成
-+ */
+
+#if XM7_VER == 1 && defined(BUBBLE)
+/*
+ *	ブランクバブルカセット作成
+ */
 BOOL FASTCALL make_new_bubble(char *fname)
 {
 	static const BYTE volumelabel[] = "VOL00000";

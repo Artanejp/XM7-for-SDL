@@ -321,7 +321,7 @@ static void fdc_make_track(void)
 	/*
 	 * 2D/VFDファイルのアンフォーマットチェック処理は共通
 	 */
-	if (fdc_track[fdc_drvreg] > 79) {
+	if (fdc_track[fdc_drvreg] > 79) {  // オーバートラック対応
 	    /*
 	     * アンフォーマット
 	     */
