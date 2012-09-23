@@ -100,6 +100,7 @@ BOOL EventGUI(AG_Driver *drv)
 	return TRUE;
 }
 
+
 void AGDrawTaskEvent(BOOL flag)
 {
 	Uint32 nDrawTick2D;
@@ -200,13 +201,14 @@ void AGDrawTaskEvent(BOOL flag)
 
 
 		// 20120109 - Timer Event
-//        if (AG_TIMEOUTS_QUEUED())
+//        if (!AG_TAILQ_EMPTY(&agTimerObjQ))
+        if (!AG_TAILQ_EMPTY(&agTimeoutObjQ))
 		{
 			Uint32 tim = 0;
 			tim = AG_GetTicks();
                 	AG_ProcessTimeouts(tim);
 		}
-		SDL_Delay(1);
+		AG_Delay(1);
 	}
 
 }

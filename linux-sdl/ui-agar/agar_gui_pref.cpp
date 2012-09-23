@@ -34,6 +34,7 @@
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
+//#include "numerical.h"
 #else
 #include "xm7_sdl.h"
 #endif
@@ -187,11 +188,11 @@ static void OnChangeCycles(AG_Event *event)
 {
    AG_Numerical *me = (AG_Numerical *)AG_SELF();
    double d;
-   //AG_NumericalValue d;
+//   AG_NumericalValue d;
    if(me == NULL) return;
    if(me->input == NULL) return;
    d = AG_TextboxDbl(me->input);
-   //d.u = AG_TextboxInt(me->input);
+//   d.u = AG_TextboxInt(me->input);
    AG_NumericalSetValue(me, d);
 }
    
