@@ -82,26 +82,6 @@ static void OnDiskTemp(AG_Event *event)
 }
 
 
-/*
- *  ディスク書き込み禁止
- */
-void OnDiskProtect(AG_Event *event)
-{
-    int            Drive = AG_INT(1);
-
-	/*
-	 * 書き込み禁止切り替え
-	 */
-	LockVM();
-    if (fdc_writep[Drive]) {
-	fdc_setwritep(Drive, FALSE);
-    } else {
-	fdc_setwritep(Drive, TRUE);
-    }
-    ResetSch();
-    UnlockVM();
-}
-
 
 /*
  *  メディア切り替え
@@ -257,7 +237,9 @@ static void DisplayWriteProtectDisk(AG_Event *event)
 	AG_MenuSetLabel(item, Label);
 }
 
-
+/*
+ * Set write-protect flag on logical-volume.
+ */
 static void SetWriteProtectDisk(AG_Event *event)
 {
 	BOOL flag = AG_INT(1);
@@ -265,11 +247,12 @@ static void SetWriteProtectDisk(AG_Event *event)
 	AG_Button *self = (AG_Button *)AG_SELF();
 
     LockVM();
-	fdc_writep[Drive] = flag;
+//	fdc_writep[Drive] = flag;
+    fdc_setwritep(Drive, flag);
     ResetSch();
     UnlockVM();
-	AG_WindowHide(self->wid.window);
-	AG_ObjectDetach(self->wid.window);
+    AG_WindowHide(self->wid.window);
+    AG_ObjectDetach(self->wid.window);
 }
 
 static void OnWriteProtectDisk(AG_Event *event)

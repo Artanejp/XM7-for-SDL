@@ -202,11 +202,11 @@ BOOL file_read(SDL_RWops *handle, BYTE * ptr, DWORD size)
 	/*
 	 * assert
 	 */
-	ASSERT(handle == NULL);
+    ASSERT(handle == NULL);
     ASSERT(ptr);
     ASSERT(size > 0);
-    cnt = SDL_RWread(handle, ptr, 1, size);
-    if (cnt != size) {
+    cnt = SDL_RWread(handle, ptr,  size, 1);
+    if (cnt != 1) {
         return FALSE;
     }
     return TRUE;
@@ -226,8 +226,8 @@ BOOL file_write(SDL_RWops *handle, BYTE * ptr, DWORD size)
 	ASSERT(handle == NULL);
     ASSERT(ptr);
     ASSERT(size > 0);
-    cnt = SDL_RWwrite(handle, ptr, 1, size);
-    if (cnt != size) {
+    cnt = SDL_RWwrite(handle, ptr, size, 1);
+    if (cnt != 1) {
         return FALSE;
     }
     return TRUE;

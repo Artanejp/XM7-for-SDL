@@ -1851,6 +1851,7 @@ BOOL fdc_setwritep(int drive, BOOL writep)
 	    file_close(handle);
 	    return FALSE;
 	}
+
 	if (!file_read(handle, header, 0x2b0)) {
 	    file_close(handle);
 	    return FALSE;
@@ -1860,6 +1861,7 @@ BOOL fdc_setwritep(int drive, BOOL writep)
 	} else {
 	    header[0x1a] &= ~0x10;
 	}
+
 	if (!file_seek(handle, offset)) {
 	    file_close(handle);
 	    return FALSE;
