@@ -1,0 +1,29 @@
+FM-7系TrueTypeフォント F-Font
+
+■このフォントについて
+FM-7シリーズで使われているANK文字フォントをTrueTypeフォントにしたものです。
+PC-8x01系TrueTypeフォントのN-Fontを制作されたモ～リンさんに作っていただきました。
+Windows環境でのF-BASICリストの表示、編集、打ち込みに最適です。
+
+■ファイル構成
+F-Font.ttf			フォントファイル（ノーマルなF-BASICのフォント）
+F-Font_400line.ttf		フォントファイル（400ラインモードで使用されているフォント）
+F-Font_Symbol.ttf		フォントファイル（キャラクターグラフィックスも表示可能な欧文シンボルフォント）
+F-Font_Symbol_400line.ttf	フォントファイル（F-Font_Symbol.ttfの400ラインモード版フォント）
+F-Font.txt			このファイル
+Sample.txt			表示、印刷用テストファイル
+
+■使い方
+WindowsのFontsフォルダーにコピーしてご利用下さい。
+アルファベット、数字、記号、カナ（&h20-&h7E,&hA1-&hDF）は、F-Font.ttf、F-Font_400line.ttfで表示可能です。
+ただし、キャラクターグラフィックス（&h80-&h9F,&hE0-&hFE）は正しく表示されません。
+すべてのフォントを正しく表示させるには、欧文フォント対応のエディターでF-Font_Symbol.ttf、F-Font_Symbol_400line.ttfを指定する必要があります。
+フォントサイズは12が最も綺麗に表示されるようです。
+
+■最後に
+配布を許可していただいたモ～リンさんにお礼申し上げます。ありがとうございました。
+お気づきの点などありましたら、以下へお願いします。
+
+Name : Laver
+URL : http://retropc.net/fm-7/
+E-Mail : mb25010@gmail.com
