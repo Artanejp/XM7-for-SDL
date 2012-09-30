@@ -55,17 +55,24 @@ static void DbgInitFont(void)
     AG_PushTextState();
     pDbgDialogTextFont = AG_TextFontLookup(DBG_TEXT_FONT, DBG_TEXT_PT, 0);
     if(pDbgDialogTextFont == NULL) { // Fallback
+       pDbgDialogTextFont = AG_FetchFont(DBG_TEXT_FONT, DBG_TEXT_PT, 0);
+       if(pDbgDialogTextFont == NULL) { // Fallback2
         pDbgDialogTextFont = AG_TextFontPts(DBG_TEXT_PT); //  16pts
+       }
     }
+   
     AG_PopTextState();
 
     AG_PushTextState();
     pDbgDialogSymFont = AG_TextFontLookup(DBG_SYM_FONT, DBG_TEXT_PT, 0);
-//    SymFont = AG_TextFontLookup("F-Font_Symbol.ttf", 16, 0);
     if(pDbgDialogSymFont == NULL) { // Fallback
+       pDbgDialogSymFont = AG_FetchFont(DBG_SYM_FONT, DBG_TEXT_PT, 0);
+       if(pDbgDialogSymFont == NULL) { // Fallback
         pDbgDialogSymFont = AG_TextFontPts(DBG_TEXT_PT);//  16pts
+       }
     }
-AG_PopTextState();
+   
+   AG_PopTextState();
 
 }
 

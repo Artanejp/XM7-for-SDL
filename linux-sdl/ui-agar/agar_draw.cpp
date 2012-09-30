@@ -302,7 +302,7 @@ void AGDrawTaskMain(void)
 	} else {
 		fps = 500;
 	}
-	nDrawTick2E = SDL_GetTicks();
+	nDrawTick2E = AG_GetTicks();
 	if(nDrawTick1E > nDrawTick2E) {
 		nDrawTick1E = 0;
 	}

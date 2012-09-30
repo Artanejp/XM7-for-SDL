@@ -130,7 +130,7 @@ void AGDrawTaskEvent(BOOL flag)
 		}
         if(oldfps != nDrawFPS){ // FPS Change 20120120
                 oldfps = nDrawFPS;
- #ifdef USE_OPENGL
+#ifdef USE_OPENGL
 	   if(DrawArea != NULL) {
                     AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
                 } else if(GLDrawArea != NULL){
@@ -142,7 +142,7 @@ void AGDrawTaskEvent(BOOL flag)
                 }
 #endif
         }
-		nDrawTick2D = SDL_GetTicks();
+		nDrawTick2D = AG_GetTicks();
 		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
 		if((nDrawTick2D - nDrawTick1D) > fps) {
 			// ここにGUIの処理入れる
@@ -201,16 +201,19 @@ void AGDrawTaskEvent(BOOL flag)
 
 
 		// 20120109 - Timer Event
-//        if (!AG_TAILQ_EMPTY(&agTimerObjQ))
-        if (!AG_TAILQ_EMPTY(&agTimeoutObjQ))
+        if (AG_TIMEOUTS_QUEUED())
+//        if (!AG_TAILQ_EMPTY(&agTimeoutObjQ))
 		{
 			Uint32 tim = 0;
 			tim = AG_GetTicks();
                 	AG_ProcessTimeouts(tim);
+		} else {
+		
+		   AG_Delay(1);
 		}
-		AG_Delay(1);
+	   
 	}
-
+ 
 }
 
 

@@ -56,7 +56,7 @@ STAT_PT            = 13
 
 VFD_FONT           = ipagui.ttf
 CMT_FONT           = ipagui.ttf
-FONTPATH           = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki/:.:./.xm7/:./xm7/:
+FONTPATH           = /usr/local/share/xm7/fonts:/usr/local/share/fonts/F-Font/:/usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki/:.:
 
 
 LDFLAGS = 

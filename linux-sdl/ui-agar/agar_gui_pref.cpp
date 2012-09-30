@@ -191,29 +191,29 @@ static void OnChangeCycles(AG_Event *event)
 //   AG_NumericalValue d;
    if(me == NULL) return;
    if(me->input == NULL) return;
-   d = AG_TextboxDbl(me->input);
+//   d = AG_TextboxDbl(me->input);
 //   d.u = AG_TextboxInt(me->input);
-   AG_NumericalSetValue(me, d);
+//  AG_NumericalSetValue(me, d);
 }
    
    
 static void OnResetCycles(AG_Event *event)
 {
-        double  v;
+//        double  v;
 //        AG_NumericalValue v;  
         localconfig.main_speed = MAINCYCLES;
 	localconfig.sub_speed = SUBCYCLES;
 	localconfig.mmr_speed = MAINCYCLES_MMR;
 	localconfig.fmmr_speed = MAINCYCLES_FMMR;
 
-        v = MAINCYCLES;
-	AG_NumericalSetValue(NumMain, v);
-        v = SUBCYCLES;
-	AG_NumericalSetValue(NumSub, v);
-        v = MAINCYCLES_MMR;
-	AG_NumericalSetValue(NumMainMMR, v);
-        v = MAINCYCLES_FMMR;
-	AG_NumericalSetValue(NumMainFMMR, v);
+//        v.u = MAINCYCLES;
+//	AG_NumericalSetValue(NumMain, v);
+//        v.u = SUBCYCLES;
+//	AG_NumericalSetValue(NumSub, v);
+//        v.u = MAINCYCLES_MMR;
+//	AG_NumericalSetValue(NumMainMMR, v);
+//        v.u = MAINCYCLES_FMMR;
+//	AG_NumericalSetValue(NumMainFMMR, v);
 
 }
 

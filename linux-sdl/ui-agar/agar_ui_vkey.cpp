@@ -152,7 +152,7 @@ static void OnPressVkey(AG_Event *event) {
 	Uint code = AG_INT(1);
 	Uint state = AG_INT(2);
 	PushKeyData(code, 0x80); /* Make */
-	SDL_Delay(50);
+	AG_Delay(50);
 	PushKeyData(code, 0x00); /* Break */
 }
 

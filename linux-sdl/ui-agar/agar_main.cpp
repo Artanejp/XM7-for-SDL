@@ -308,10 +308,11 @@ void MainLoop(int argc, char *argv[])
         AG_SetString(agConfig, "font.face", UI_FONT);
     }
 
-    AG_GetString(agConfig, "font-path", strbuf, 2047);
-    if(strlen(strbuf) <= 0)
+//    AG_GetString(agConfig, "font-path", strbuf, 2047);
+//    if(strlen(strbuf) <= 0)
     {
-     AG_PrtString(agConfig, "font-path", "%s:%s/.xm7:%s:.", getenv("HOME"), getenv("HOME"), FONTPATH);
+     AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
+		  getenv("HOME"), getenv("HOME"), getenv("HOME"), FONTPATH);
     }
 
     stopreq_flag = FALSE;
@@ -358,7 +359,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 
 //	ResizeWindow_Agar(640, 400);
 	newResize = FALSE;
-        nDrawTick1D = SDL_GetTicks();
+        nDrawTick1D = AG_GetTicks();
 	nDrawTick1E = nDrawTick1D;
 
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
