@@ -122,14 +122,14 @@ void AGDrawTaskEvent(BOOL flag)
         }
 #endif
     }
-	for(;;) {
-		if(nDrawFPS > 2) {
-			fps = 1000 / nDrawFPS;
-		} else {
-			fps = 500;
-		}
-        if(oldfps != nDrawFPS){ // FPS Change 20120120
-                oldfps = nDrawFPS;
+   for(;;) {
+      if(nDrawFPS > 2) {
+	 fps = 1000 / nDrawFPS;
+      } else {
+	 fps = 500;
+      }
+      if(oldfps != nDrawFPS){ // FPS Change 20120120
+	 oldfps = nDrawFPS;
 #ifdef USE_OPENGL
 	   if(DrawArea != NULL) {
                     AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
@@ -138,82 +138,80 @@ void AGDrawTaskEvent(BOOL flag)
                 }
 #else
 	   if(DrawArea != NULL) {
-                    AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
-                }
+	      AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+	   }
 #endif
-        }
-		nDrawTick2D = AG_GetTicks();
-		if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
-		if((nDrawTick2D - nDrawTick1D) > fps) {
-			// ここにGUIの処理入れる
-			AG_LockVFS(&agDrivers);
-			if (agDriverSw) {
-			   drv = &agDriverSw->_inherit;
-				/* With single-window drivers (e.g., sdlfb). */
-				AG_BeginRendering(agDriverSw);
-				AG_FOREACH_WINDOW(win, agDriverSw) {
-					AG_ObjectLock(win);
-					AG_WindowDraw(win);
-					AG_ObjectUnlock(win);
-				}
-				nDrawTick1D = nDrawTick2D;
-				AG_EndRendering(agDriverSw);
-			} else  {
-			/* With multiple-window drivers (e.g., glx). */
-			AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver)
-			  {
-			     if (!AGDRIVER_MULTIPLE(drv)) {
-				  continue;
-			       }
+      }
+      nDrawTick2D = AG_GetTicks();
+      if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
+      if((nDrawTick2D - nDrawTick1D) > fps) {
+	 // ここにGUIの処理入れる
+	 AG_LockVFS(&agDrivers);
+	 if (agDriverSw) {
+	    drv = &agDriverSw->_inherit;
+	    /* With single-window drivers (e.g., sdlfb). */
+	    AG_BeginRendering(agDriverSw);
+	    AG_FOREACH_WINDOW(win, agDriverSw) {
+	       AG_ObjectLock(win);
+	       AG_WindowDraw(win);
+	       AG_ObjectUnlock(win);
+	    }
+	    nDrawTick1D = nDrawTick2D;
+	    AG_EndRendering(agDriverSw);
+	 } else  {
+//	    AG_Window *miniwin;
+	    /* With multiple-window drivers (e.g., glx). */
+	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver) {
+	       if (!AGDRIVER_MULTIPLE(drv)) {
+		  continue;
+	       }
+	       win = AGDRIVER_MW(drv)->win;
+	       if (!win->visible || !win->dirty){
+		  continue;
+	       }
+	       AG_BeginRendering(drv);
+	       AG_ObjectLock(win);
+	       AG_WindowDraw(win);
+	       AG_ObjectUnlock(win);
+	       AG_EndRendering(drv);
+	    }
+	 }
+	 
+	 AG_UnlockVFS(&agDrivers);
+      }
+      {//if(AG_PendingEvents(NULL) > 0) {
+	 if(agDriverSw) { // Single Window
+	    drv = &agDriverSw->_inherit;
+	    if (AG_PendingEvents(drv) > 0){
+	       if(EventSDL(drv) == FALSE) return;
+	       //EventGUI(drv);
+	    }
+	 } else { // Multi windows
+	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
+	       if (AG_PendingEvents(drv) > 0){
+		  if(EventSDL(drv) == FALSE) continue;
+		  if(EventGUI(drv) == FALSE) continue;
+	       }
+	    }
+	 }
+      }
+      
+      
+      
+      {
+      // 20120109 - Timer Event
+	 if (AG_TIMEOUTS_QUEUED()){
+	    Uint32 tim = 0;
+	    tim = AG_GetTicks();
+	    AG_ProcessTimeouts(tim);
+	 } else {
+	    AG_Delay(1);
+	 }
+      }
+      
+   }	// Process Event per 1Ticks;
+   
 
-			     win = AGDRIVER_MW(drv)->win;
-			     if (win->visible) {
-				  AG_BeginRendering(drv);
-				  AG_ObjectLock(win);
-				  AG_WindowDraw(win);
-				  AG_ObjectUnlock(win);
-				  AG_EndRendering(drv);
-			       }
-			  }
-		     }
-		   AG_UnlockVFS(&agDrivers);
-		}	// Process Event per 1Ticks;
-        if(agDriverSw) { // Single Window
-	   drv = &agDriverSw->_inherit;
-
-            if (AG_PendingEvents(drv) > 0){
-                if(EventSDL(drv) == FALSE) {
-		   return;
-		}
-
-//                if(EventGUI(drv) == FALSE) return;
-            }
-        } else { // Multi windows
-       		AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
-                    if (AG_PendingEvents(drv) > 0){
-                    if((EventSDL(drv) == FALSE) || (EventGUI(drv) == FALSE)) {
-		       return;
-		    }
-
-                }
-             }
-        }
-
-
-		// 20120109 - Timer Event
-        if (AG_TIMEOUTS_QUEUED())
-//        if (!AG_TAILQ_EMPTY(&agTimeoutObjQ))
-		{
-			Uint32 tim = 0;
-			tim = AG_GetTicks();
-                	AG_ProcessTimeouts(tim);
-		} else {
-		
-		   AG_Delay(1);
-		}
-	   
-	}
- 
 }
 
 
@@ -261,7 +259,7 @@ static void InitFont(void)
 void InitInstance(void)
 {
 	AG_HBox *hb;
-    AG_VBox *vb;
+        AG_VBox *vb;
 	AG_Window *win;
 //	AG_Driver *drv;
 
@@ -275,15 +273,16 @@ void InitInstance(void)
 
 	//  最初にカスタムウイジェットをつける
     AG_RegisterClass(&XM7_SDLViewClass);
-	if(agDriverSw) {
-        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
-	} else {
-        MainWindow = AG_WindowNew(AG_WINDOW_DIALOG );
-	}
+   if(agDriverSw) {
+      MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
+   } else {
+      MainWindow = AG_WindowNew(AG_WINDOW_DIALOG | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS );
+//        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
+   }
 	AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
 	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-    AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
-    MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
+        AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
+        MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
 	Create_AGMainBar(AGWIDGET(NULL));
    	AG_WidgetSetPosition(MenuBar, 0, 0);
 	AG_WidgetShow(AGWIDGET(MenuBar));
