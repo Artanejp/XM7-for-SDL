@@ -232,7 +232,7 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
     }
 //    AG_SurfaceUnlock(my->Surface);
     AG_ObjectUnlock(my);
-    Draw(my); // Dirty?
+//    Draw(my); // Dirty?
 	return (0);
 }
 
