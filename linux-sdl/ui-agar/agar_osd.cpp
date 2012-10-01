@@ -252,13 +252,15 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
     if(parent == NULL) return;
 
    hh = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
-   nFontSize = (int)(STAT_PT * ww) / 640.0f;
+   nFontSize = (int)((float)STAT_PT * ww / 640.0f);
+//   nFontSize = (int)((float)STAT_PT * h / 400.0f);
+
 
    AG_WidgetSetSize(parent, w - 5, hh);
-   ResizeStatOSD(parent, w, h);
-   ResizeVFD(parent, w, h);
-   ResizeTapeOSD(parent, w, h);
-   ResizeLeds(parent, w, h);
+   ResizeStatOSD(parent, w, y);
+   ResizeVFD(parent, w, y);
+   ResizeTapeOSD(parent, w, y);
+   ResizeLeds(parent, w, y);
    DrawStatusForce();
    AG_WidgetUpdate(parent);
 }

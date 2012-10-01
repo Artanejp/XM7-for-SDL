@@ -44,7 +44,7 @@
 #endif
 
 #ifndef STAT_PT
-#define STAT_PT 12
+#define STAT_PT 13
 #endif
 
 #ifndef UI_PT
@@ -61,16 +61,16 @@
  * Embedの場合にはサイズと表示レイアウトを変更する必要がある？
  */
 #define LED_WIDTH 25
-#define LED_HEIGHT 25
+#define LED_HEIGHT 20
 
 #define VFD_WIDTH 110
-#define VFD_HEIGHT 25
+#define VFD_HEIGHT 20
 
-#define CMT_WIDTH 80
-#define CMT_HEIGHT 25
+#define CMT_WIDTH 55
+#define CMT_HEIGHT 20
 
 #define STAT_WIDTH 250
-#define STAT_HEIGHT 25
+#define STAT_HEIGHT 20
 
 #ifndef SHAREDIR
 #define SHAREDIR "/usr/local/share/xm7/"

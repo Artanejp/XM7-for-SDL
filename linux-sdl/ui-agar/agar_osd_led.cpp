@@ -368,7 +368,8 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
    AG_Surface *src;
    AG_Color n, r, black;
    AG_PixelFormat fmt;
-   int size =  getnFontSize();
+//   int size =  getnFontSize();
+   int size =  (nLedWidth * STAT_PT) / LED_WIDTH;
    int w = nLedWidth;
    int h = nLedHeight;
    
@@ -416,11 +417,14 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
    }
      if((pStatusFont != NULL) && (size > 2)){
       AG_Surface *tmps;
+      AG_Font *font;
       int xoff = (3 * nLedWidth) / LED_WIDTH;
       int yoff = (2 * nLedHeight) / LED_HEIGHT;
+      int ratio = (nLedWidth * 100) / LED_WIDTH;
+	
       AG_PushTextState();
       AG_TextFont(pStatusFont);
-      AG_TextFontPts(size);
+      font = AG_TextFontPct(ratio);
 
       AG_TextColor(n);
       AG_TextBGColor(black);

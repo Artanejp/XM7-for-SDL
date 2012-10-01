@@ -247,11 +247,16 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
                 + CMT_WIDTH + LED_WIDTH * 3;
        float ww = (float)w;
        float wCMT = (float)CMT_WIDTH / (float)total;
+       AG_Surface *surface;
 
        if((pwCMT == NULL) || (pCMTStat == NULL)) return;
-       nCMTWidth = (int)(int)(ww / 640.0f * (float)CMT_WIDTH);
+       nCMTWidth = (int)(ww / 640.0f * (float)CMT_WIDTH);
        nCMTHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
        AG_MutexLock(&(pCMTStat->mutex));
+       surface = XM7_SDLViewGetSrcSurface(pwCMT);
+       AG_ObjectLock(pwCMT);
+       if(surface != NULL) AG_SurfaceResize(surface, nCMTWidth, nCMTHeight);
+       AG_ObjectUnlock(pwCMT);
        pCMTStat->init = TRUE;
        AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
        //AG_WidgetSetPosition(pwCMT, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2) / (float)total) *  ww), 0);
