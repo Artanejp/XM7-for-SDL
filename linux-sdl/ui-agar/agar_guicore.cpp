@@ -143,6 +143,7 @@ void AGDrawTaskEvent(BOOL flag)
 #endif
       }
       nDrawTick2D = AG_GetTicks();
+
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
       if((nDrawTick2D - nDrawTick1D) > fps) {
 	 // ここにGUIの処理入れる
@@ -179,7 +180,7 @@ void AGDrawTaskEvent(BOOL flag)
 	 
 	 AG_UnlockVFS(&agDrivers);
       }
-      {//if(AG_PendingEvents(NULL) > 0) {
+//      if(AG_PendingEvents(NULL) > 0) {
 	 if(agDriverSw) { // Single Window
 	    drv = &agDriverSw->_inherit;
 	    if (AG_PendingEvents(drv) > 0){
@@ -189,12 +190,13 @@ void AGDrawTaskEvent(BOOL flag)
 	 } else { // Multi windows
 	    BOOL b;
 	    b = FALSE;
+	    EventSDL(NULL);
 	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
 	       if (AG_PendingEvents(drv) > 0){
-		  if(EventSDL(drv) == FALSE) {
-		     b = TRUE;
-		     continue;
-		  }
+//		  if(EventSDL(drv) == FALSE) {
+//		     b = TRUE;
+//		     continue;
+//		  }
 		  if(EventGUI(drv) == FALSE) {
 		     b = TRUE;
 		     continue;
@@ -203,18 +205,17 @@ void AGDrawTaskEvent(BOOL flag)
 	    }
 	    if(b == TRUE) return;
 	 }
-      }
       
-      {
+//      }       
       // 20120109 - Timer Event
 	 if (AG_TIMEOUTS_QUEUED()){
 	    Uint32 tim = 0;
 	    tim = AG_GetTicks();
 	    AG_ProcessTimeouts(tim);
-	 } else {
-	    AG_Delay(1);
-	 }
-      }
+	 } //else {
+	   // AG_Delay(1);
+	 //}
+      AG_Delay(1);
       
    }	// Process Event per 1Ticks;
    
