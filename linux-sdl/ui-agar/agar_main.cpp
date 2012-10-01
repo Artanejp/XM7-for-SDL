@@ -341,7 +341,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 return;
         }
     }
-    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER );
+    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
 	stopreq_flag = FALSE;
