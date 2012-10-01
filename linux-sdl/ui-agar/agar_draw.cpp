@@ -37,13 +37,13 @@ void InitGL(int w, int h)
 {
     AG_Driver *drv;
 
-    if(agDriverSw) {
-        drv = &agDriverSw->_inherit;
-    } else if(MainWindow != NULL) {
-        drv = AGDRIVER(MainWindow);
-    } else {
-        return;
-    }
+//    if(agDriverSw) {
+//        drv = &agDriverSw->_inherit;
+//    } else if(MainWindow != NULL) {
+//        drv = AGDRIVER(MainWindow);
+//    }// else {
+//        return;
+//    }
     SDL_SemWait(DrawInitSem);
 #ifdef USE_OPENGL
    if(AG_UsingGL(NULL)) {

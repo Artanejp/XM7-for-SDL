@@ -187,16 +187,23 @@ void AGDrawTaskEvent(BOOL flag)
 	       //EventGUI(drv);
 	    }
 	 } else { // Multi windows
+	    BOOL b;
+	    b = FALSE;
 	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
 	       if (AG_PendingEvents(drv) > 0){
-		  if(EventSDL(drv) == FALSE) continue;
-		  if(EventGUI(drv) == FALSE) continue;
+		  if(EventSDL(drv) == FALSE) {
+		     b = TRUE;
+		     continue;
+		  }
+		  if(EventGUI(drv) == FALSE) {
+		     b = TRUE;
+		     continue;
+		  }
 	       }
 	    }
+	    if(b == TRUE) return;
 	 }
       }
-      
-      
       
       {
       // 20120109 - Timer Event
@@ -276,7 +283,7 @@ void InitInstance(void)
    if(agDriverSw) {
       MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    } else {
-      MainWindow = AG_WindowNew(AG_WINDOW_DIALOG | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS );
+      MainWindow = AG_WindowNew(AG_WINDOW_DIALOG | AG_WINDOW_MODKEYEVENTS );
 //        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    }
 	AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
@@ -291,10 +298,11 @@ void InitInstance(void)
 	AG_WindowFocus(MainWindow);
 #if USE_OPENGL
     if(AG_UsingGL(NULL) != 0) {
+        hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
           /*
          * OpenGL Capability
          */
-        GLDrawArea = AG_GLViewNew(AGWIDGET(MainWindow) , 0);
+        GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
         GLDrawArea->wid.flags |= AG_WIDGET_CATCH_TAB;
         AG_WidgetSetSize(GLDrawArea, 640,400);
         AG_GLViewSizeHint(GLDrawArea, 640, 400);
@@ -304,15 +312,16 @@ void InitInstance(void)
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
         //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
-		bUseOpenGL = TRUE;
-		DrawArea = NULL;
-	    AG_WidgetShow(GLDrawArea);
-	    AG_WidgetFocus(AGWIDGET(GLDrawArea));
+	bUseOpenGL = TRUE;
+	DrawArea = NULL;
+        AG_WidgetShow(GLDrawArea);
+        AG_WidgetFocus(AGWIDGET(GLDrawArea));
     } else
 #endif /* USE_OPENGL */
      {
         // Non-GL
-        DrawArea = XM7_SDLViewNew(AGWIDGET(MainWindow), NULL, NULL);
+        hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
+        DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         AGWIDGET(DrawArea)->flags |= AG_WIDGET_CATCH_TAB;
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
@@ -335,10 +344,12 @@ void InitInstance(void)
         CreateStatus(AGWIDGET(pStatusBar));
         AG_WidgetShow(pStatusBar);
     }
-    {
-//     win = AG_GuiDebugger();
-//     AG_WindowShow(win);
+#if 0 // GUI-DEBUG
+     {
+     win = AG_GuiDebugger(AGWIDGET(MainWindow));
+     AG_WindowShow(win);
     }
+#endif
    
 }
 

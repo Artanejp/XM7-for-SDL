@@ -119,11 +119,11 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
       base = i * 6;
       vertex[base] = -1.0f; // x
       vertex[base + 1] = y; // y
-      vertex[base + 2] = 0.98f; // z
+      vertex[base + 2] = -0.99f; // z
 
       vertex[base + 3] = 1.0f; // x
       vertex[base + 4] = y; // y
-      vertex[base + 5] = 0.98f; // z
+      vertex[base + 5] = -0.99f; // z
 
   }
 }
@@ -513,7 +513,7 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
             break;
      }
-    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.99f;
+    Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.98f;
     Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
     Vertexs[0][1] = Vertexs[1][1] = yend;  // Yend
     Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
