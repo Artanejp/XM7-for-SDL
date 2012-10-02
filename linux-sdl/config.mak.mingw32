@@ -109,7 +109,7 @@ CXXFLAGS += $(CFLAGS)
 CXXFLAGS_DEBUG = -pg -g -O0 
 CXXFLAGS_DEBUG += $(CXXFLAGS)
 
-CXXFLAGS_RELEASE =  $(CXXFLAGS) -O3
+CXXFLAGS_RELEASE =  $(CXXFLAGS) -O3 -ftree-vectorize
 #CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -pthread
 CFLAGS_RELEASE +=  -O3

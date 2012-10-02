@@ -20,7 +20,7 @@ USE_OPENMP      = Yes
 
 # SET Arch specified
 #ARCH_FLAGS       = -mmmx -msse -msse2
-ARCH_FLAGS       = -mmmx -msse -msse2 -msse3
+ARCH_FLAGS       = -mmmx -msse -msse2 -msse3 
 
 ################### VARIABLES ################################
 #XM7_VER		= 3
@@ -92,7 +92,7 @@ CFLAGS_DEBUG += $(CFLAGS)
 
 CFLAGS_RELEASE = $(CFLAGS)
 CFLAGS_RELEASE += -pthread
-CFLAGS_RELEASE +=  -O3 
+CFLAGS_RELEASE +=  -O3 -ftree-vectorize
 CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 

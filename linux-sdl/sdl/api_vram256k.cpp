@@ -26,7 +26,7 @@ static inline void putword(Uint32 *disp, Uint32 *cbuf)
 
 static inline Uint32 lshift_5bit1v(v4hi *v)
 {
-   Uint8 ret;
+   Uint32 ret;
    ret =   (v->b[0] & 0x80)>>5 | (v->b[1] & 0x80)>>4 | (v->b[2] & 0x80)>>3 
 	      | (v->b[3] & 0x80)>>2 | (v->b[4] & 0x80)>>1 | (v->b[5] & 0x80);
    if((ret & 0x0000f8)!=0) ret |= 0x000003;
@@ -158,70 +158,6 @@ static void getvram_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
     qb = (v4hi *)bbuf;
 
    
-#if 0
-    if(!(mpage & 0x40)){
-    	g[5] = vram_p[addr + 0x10000];
-    	g[4] = vram_p[addr + 0x12000];
-    	g[3] = vram_p[addr + 0x14000];
-    	g[2] = vram_p[addr + 0x16000];
-    	g[1] = vram_p[addr + 0x28000];
-    	g[0] = vram_p[addr + 0x2a000];
-    }
-    if(!(mpage & 0x20)){
-    	r[5] = vram_p[addr + 0x08000];
-    	r[4] = vram_p[addr + 0x0a000];
-    	r[3] = vram_p[addr + 0x0c000];
-    	r[2] = vram_p[addr + 0x0e000];
-    	r[1] = vram_p[addr + 0x20000]; // 28
-    	r[0] = vram_p[addr + 0x22000]; // 2a
-    }
-    if(!(mpage & 0x10)){
-    	b[5] = vram_p[addr + 0x00000];
-    	b[4] = vram_p[addr + 0x02000];
-    	b[3] = vram_p[addr + 0x04000];
-    	b[2] = vram_p[addr + 0x06000];
-    	b[1] = vram_p[addr + 0x18000];
-    	b[0] = vram_p[addr + 0x1a000];
-    }
-
- for(i = 7; i >= 0;i--){
-	 rr = 0;
-	 gg = 0;
-	 bb = 0;
-	 aa = 255;
-   if(!(mpage & 0x20)){
-	   rr= (r[0] & 0x80)>>5 | (r[1] & 0x80)>>4 | (r[2] & 0x80)>>3 | (r[3] & 0x80)>>2 | (r[4] & 0x80)>>1 | (r[5] & 0x80);
-	    r[0]<<=1;
-	    r[1]<<=1;
-	    r[2]<<=1;
-	    r[3]<<=1;
-	    r[4]<<=1;
-	    r[5]<<=1;
-	    if((rr & 0x0000f8)!=0) rr |= 0x000003;
-   }
-   if(!(mpage & 0x40)){
-	   gg = (g[0] & 0x80)>>5 | (g[1] & 0x80)>>4 | (g[2] & 0x80)>>3 | (g[3] & 0x80)>>2 | (g[4] & 0x80)>>1 | (g[5] & 0x80);
-	    g[0]<<=1;
-	    g[1]<<=1;
-	    g[2]<<=1;
-	    g[3]<<=1;
-	    g[4]<<=1;
-	    g[5]<<=1;
-	    if((gg & 0x0000f8)!=0) gg |= 0x000003;
-   }
-   if(!(mpage & 0x10)){
-	   bb = (b[0] & 0x80)>>5 | (b[1] & 0x80)>>4 | (b[2] & 0x80)>>3 | (b[3] & 0x80)>>2 | (b[4] & 0x80)>>1 | (b[5] & 0x80);
-	    b[0]<<=1;
-	    b[1]<<=1;
-	    b[2]<<=1;
-	    b[3]<<=1;
-	    b[4]<<=1;
-	    b[5]<<=1;
-	    if((bb & 0x0000f8)!=0) bb |= 0x000003;
-   }
-	cbuf[i] =rr + (gg << 8)+ (bb << 16) + (aa<<24);
- }
-#else
    bpixel2cbuf(addr, bbuf, mpage);
    rpixel2cbuf(addr, rbuf, mpage);
    gpixel2cbuf(addr, gbuf, mpage);
@@ -231,7 +167,6 @@ static void getvram_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
    qg++;
    qb++;
    p->v = qr->v + qg->v + qb->v;
-#endif   
 }
 
 
