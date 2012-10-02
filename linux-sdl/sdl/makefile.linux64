@@ -57,7 +57,6 @@ LIBS += -L/usr/local/lib
 #LIBS += `pkg-config --libs sdl`
 LIBS += `sdl-config --libs`
 LIBS +=  -lSDL_mixer -lSDL_ttf
-LIBS += `agar-config --libs`
 #LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
 
 #ifdef USE_OPENGL
@@ -73,12 +72,14 @@ LIBS += -lgomp
 endif
 
 ## Uncomment below if you *not* wish static-link agar.
-#LIBS += `agar-config --libs`
+LIBS += `agar-config --libs`
 
 ## Uncomment below if you wish static-link agar.
-LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a /usr/local/lib/libag_dev.a -lXinerama
+#LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a \
+#        /usr/local/lib/libag_dev.a \
+#	-lXinerama -ljpeg -lpng -lfreetype \
+#	-lfontconfig
 
-#LIBS_RELEASE = ../libemugrph/Release/libemugrph.a
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a
 LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a

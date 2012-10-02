@@ -20,7 +20,7 @@ USE_OPENMP      = Yes
 
 # SET Arch specified
 #ARCH_FLAGS       = -mmmx -msse -msse2
-ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
+ARCH_FLAGS       = -mmmx -msse -msse2 -msse3
 
 ################### VARIABLES ################################
 #XM7_VER		= 3
@@ -56,15 +56,15 @@ STAT_PT            = 13
 
 VFD_FONT           = ipagui.ttf
 CMT_FONT           = ipagui.ttf
-FONTPATH           = /usr/local/share/xm7/fonts:/usr/local/share/fonts/F-Font/:/usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki/:.:
-
+FONTPATH           = /usr/local/share/xm7/fonts:/usr/local/share/fonts/F-Font/:/usr/local/share/xm7/fonts:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont
+#FONTPATH          = /usr/local/share/xm7/fonts:/usr/share/fonts
 
 LDFLAGS = 
 
-#CC = gcc
-#CXX = g++
-CC = gcc-4.7
-CXX = g++-4.7
+CC = gcc
+CXX = g++
+#CC = gcc-4.7
+#CXX = g++-4.7
 AR = ar
 
 CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION)  -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
@@ -91,6 +91,10 @@ CFLAGS_DEBUG = -pg -g -O0
 CFLAGS_DEBUG += $(CFLAGS)
 
 CFLAGS_RELEASE = $(CFLAGS)
+CFLAGS_RELEASE += -pthread
+CFLAGS_RELEASE +=  -O3 
+CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+#CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 
 CXXFLAGS = -fpermissive 
 CXXFLAGS += $(CFLAGS) 
@@ -98,13 +102,11 @@ CXXFLAGS += $(CFLAGS)
 CXXFLAGS_DEBUG = -pg -g -O0 
 CXXFLAGS_DEBUG += $(CXXFLAGS)
 
-CXXFLAGS_RELEASE =  $(CXXFLAGS) -O3
-#CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
-#CFLAGS_RELEASE += -pthread
-CFLAGS_RELEASE +=  -O3
-CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
-#CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
-#CFLAGS_RELEASE += -pthread
+CXXFLAGS_RELEASE =  $(CXXFLAGS)
+CXXFLAGS_RELEASE +=  -O3
+CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CXXFLAGS_RELEASE += -pthread
+
 
 # Architecture Depend Flag
 

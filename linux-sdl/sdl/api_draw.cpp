@@ -303,8 +303,6 @@ void ChangeResolution(void)
         displayArea = SDL_GetVideoSurface();
         realDrawArea = SDL_GetVideoSurface();
 #endif
-// 後でコメント解除
-//        SelectScaler(nOldDrawWidth, nOldDrawHeight);
         SDL_SemPost(DrawInitSem);
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
@@ -468,23 +466,25 @@ void SetDrawFlag(BOOL flag)
 {
     int x;
     int y;
+    v4hi *pr, *pw;
+    v4hi v;
+   
+    v.b[0] =  v.b[1]  = v.b[2]  = v.b[3] = 
+    v.b[4] =  v.b[5]  = v.b[6]  = v.b[7] = 
+    v.b[8] =  v.b[9]  = v.b[10] = v.b[11] = 
+    v.b[12] = v.b[13] = v.b[14] = v.b[15] = (uint8_t)flag;
+    pr = (v4hi *)(&SDLDrawFlag.read[0][0]);
+    pw = (v4hi *)(&SDLDrawFlag.write[0][0]);
+   
 //		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
 #ifdef _OPENMP
-       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
+//       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
+       #pragma omp parallel for shared(v, pr, pw) private(x)
 #endif
    for(y = 0; y < 50 ; y++) {
-        for(x = 0; x < 80; x+=4){
-                SDLDrawFlag.read[x][y] = flag;
-                SDLDrawFlag.write[x][y] = flag;
-
-	        SDLDrawFlag.read[x+1][y] = flag;
-                SDLDrawFlag.write[x+1][y] = flag;
-
-                SDLDrawFlag.read[x+2][y] = flag;
-                SDLDrawFlag.write[x+2][y] = flag;
-
-                SDLDrawFlag.read[x+3][y] = flag;
-                SDLDrawFlag.write[x+3][y] = flag;
+        for(x = 0; x < 5; x++){
+	   pr[x + y * 5] = v;
+	   pw[x + y * 5] = v;
         }
     }
     SDLDrawFlag.Drawn = flag;
@@ -740,13 +740,15 @@ void AllClear(void)
 	SDL_Surface *p;
 	SDL_Rect rect;
 #endif
-    for(y = 0; y < 50; y++) {
-        for (x = 0; x < 80; x++) {
-            SDLDrawFlag.read[x][y] = TRUE;
-            SDLDrawFlag.write[x][y] = TRUE;
-        }
-        SDLDrawFlag.ForcaReDraw = TRUE;
-        SDLDrawFlag.Drawn = TRUE;    }
+//    for(y = 0; y < 50; y++) {
+//        for (x = 0; x < 80; x++) {
+//            SDLDrawFlag.read[x][y] = TRUE;
+//            SDLDrawFlag.write[x][y] = TRUE;
+//        }
+//        SDLDrawFlag.ForcaReDraw = TRUE;
+//        SDLDrawFlag.Drawn = TRUE;
+//    }
+     SetDrawFlag(TRUE);
 #ifdef USE_AGAR
 #ifdef USE_OPENGL
    if(DrawArea != NULL) {
