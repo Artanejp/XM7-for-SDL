@@ -112,10 +112,10 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
 
     yinc = 2.0f / ((float)h - 1.0f);
     ybegin = 1.0f;
-    yofset = -3.0f / 402.0f;
+    yofset = -5.0f / 402.0f;
   if(vertex == NULL) return;
   y = ybegin + yofset;
-  for(i = 0; i < h; i++, y -= yinc){
+  for(i = 0; y >= -1.0f ; i++, y -= yinc){
       base = i * 6;
       vertex[base] = -1.0f; // x
       vertex[base + 1] = y; // y
@@ -130,11 +130,11 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
 
 static void InitGridVertexs(void)
 {
-    GridVertexs200l = (GLfloat *)malloc(201 * 6 * sizeof(GLfloat));
+    GridVertexs200l = (GLfloat *)malloc(202 * 6 * sizeof(GLfloat));
     if(GridVertexs200l != NULL) {
         InitGridVertexsSub(201, GridVertexs200l);
     }
-    GridVertexs400l = (GLfloat *)malloc(401 * 6 * sizeof(GLfloat));
+    GridVertexs400l = (GLfloat *)malloc(402 * 6 * sizeof(GLfloat));
     if(GridVertexs400l != NULL) {
         InitGridVertexsSub(401, GridVertexs400l);
     }
