@@ -499,7 +499,7 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
             TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
+            TexCoords[2][1] = TexCoords[3][1] = 198.0f / 400.0f; // Yend
             break;
         case SCR_262144:
         case SCR_4096:
@@ -510,7 +510,7 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
             TexCoords[2][0] = TexCoords[1][0] = 320.0f / 640.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
+            TexCoords[2][1] = TexCoords[3][1] = 198.0f / 400.0f; // Yend
             break;
      }
     Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.98f;
