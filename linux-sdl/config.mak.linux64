@@ -19,8 +19,8 @@ USE_OPENMP      = Yes
 #CROSS_BUILD    = Yes
 
 # SET Arch specified
-#ARCH_FLAGS       = -mmmx -msse -msse2
-ARCH_FLAGS       = -mmmx -msse -msse2 -msse3 
+ARCH_FLAGS       = -mmmx -msse -msse2
+#ARCH_FLAGS       = -march=amdfam10
 
 ################### VARIABLES ################################
 #XM7_VER		= 3

@@ -1,5 +1,5 @@
 ****
-* FM-7/77/AV エミュレータ、XM7 V3.4L51a for SDL/Linux(amd64)
+* FM-7/77/AV エミュレータ、XM7 V3.4L51 for SDL/Linux(amd64)
 *  Version 0.3.2 (γレベル / Agar / OpenGL)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
@@ -7,7 +7,7 @@
 *  Copyright (C) 2004 GIMONS
 *  Copyright (C) 2010-2012 K.Ohta 
 *
-* 2012.10.04 Artane.
+* 2012.10.05 Artane. <whatisthis.sowhat@gmail.com>
 * HP:
 * http://sky.geocities.jp/artanejp/XM7-SDL/
 * http://sites.google.com/site/artanejp
@@ -119,8 +119,11 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
     以下に必要なファイルがインストールされます。Windowsの場合は
     適当なディレクトリに手動コピーして下さい(^_^;
  b. GNU/Linuxなどの場合は、~/.xm7 ディレクトリを作って、ROM一式をコピー
-　　して下さい。3.4L51ベースなので、*kanji1.romが必須です*。
-    Windowsでmingwシェルを使ってる場合は、~/xm7にROMとフォントをコピーして下さい。
+　　して下さい。3.4L51ベースなので、* KANJI1.ROM が必須です*。
+    GNU/Linuxなどファイル名の大文字と小文字を区別する場合、ROMやWAVは大文字の
+    ファイル名にして下さい。
+    Windowsでmingwシェルを使ってる場合は、~/xm7にROMとフォント(IPA Gothic P
+    フォント含む)をコピーして下さい。
     mingwのシェル以外から起動する場合は、インストールしたカレントディレクトリに
     xm7と言うディレクトリを作って、ROMとフォントをコピーして下さい。
  c. xm7(デバッグの場合はxm7.debug)を起動して下さい。準備がOKならF-BASICの画面

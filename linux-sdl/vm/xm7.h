@@ -45,11 +45,11 @@
 #endif
 
 #ifdef USE_OPENGL
-#define          LOCALVER         "SDL/Agar/OpenGL 0.3.2"
+#define          LOCALVER         "SDL/Agar/OpenGL 0.3.2pre1"
 #else
-#define          LOCALVER         "SDL/Agar/OpenGL 0.3.2"
+#define          LOCALVER         "SDL/Agar 0.3.2pre1"
 #endif
-#define	DATE		"2012/08/07"
+#define	DATE		"2012/10/05"
 
 /* 未使用変数の処理 */
 #ifndef UNUSED
@@ -741,10 +741,6 @@ extern          "C" {
     /*
      * BOOT (DOS,FM-8) $200
      */
-//    extern BYTE *boot_mmr;
-    /*
-     * BOOT (MMR)        $200
-     */
 
     extern BOOL     available_fm7roms;
     /*
@@ -815,14 +811,6 @@ extern          "C" {
 extern BOOL detect_400linecard_tmp; /* 400ラインカード発見フラグ(tmp) */
 #endif
 #endif
-//    extern BYTE    *boot_ram;
-//    /*
-//     * BOOT (RAM) $200
-//     */
-//    extern BOOL     bootram_rw;
-//    /*
-//     * ブートRAM 書き込み可能
-//     */
 
     /*
      *      メモリ (FM77AV)
