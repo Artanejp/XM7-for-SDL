@@ -68,7 +68,7 @@ GIMONS氏がX11/GTKに移植されていて(*1)、そのコードをベースに
 ・GCC 4(4.6以降推奨)
 ・SDL_ttf
 ・SDL_mixer ( http://www.libsdl.org/cgi/docwiki.cgi/SDL_mixer )
-・AGAR ( http://www.libagar.org/ SVN r9049以降推奨)
+・AGAR ( http://www.libagar.org/ GNU/Linuxの場合 SVN r9399推奨)
 ・IPA ゴシック一式(ビルド時に変更可能)
 ・F-Font (F-Font/ 以下にバンドルされてます)
 ・GNU MAKE
@@ -118,7 +118,9 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
  a. GNU/Linux等の場合は、make installで /usr/local/share/xm7/
     以下に必要なファイルがインストールされます。Windowsの場合は
     適当なディレクトリに手動コピーして下さい(^_^;
- b. GNU/Linuxなどの場合は、~/.xm7 ディレクトリを作って、ROM一式をコピー
+ b. GNU/Linuxの場合、lib/amd64/ 以下のファイルを /usr/local/libにインストール
+    してsudo  ldconfigして下さい。現状 amd64のみです。
+ c. GNU/Linuxなどの場合は、~/.xm7 ディレクトリを作って、ROM一式をコピー
 　　して下さい。3.4L51ベースなので、* KANJI1.ROM が必須です*。
     GNU/Linuxなどファイル名の大文字と小文字を区別する場合、ROMやWAVは大文字の
     ファイル名にして下さい。
@@ -126,7 +128,7 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
     フォント含む)をコピーして下さい。
     mingwのシェル以外から起動する場合は、インストールしたカレントディレクトリに
     xm7と言うディレクトリを作って、ROMとフォントをコピーして下さい。
- c. xm7(デバッグの場合はxm7.debug)を起動して下さい。準備がOKならF-BASICの画面
+ d. xm7(デバッグの場合はxm7.debug)を起動して下さい。準備がOKならF-BASICの画面
     が起動します。
  
 6.コマンドラインオプション一覧
