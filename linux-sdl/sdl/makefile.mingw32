@@ -68,7 +68,7 @@ LIBS += -lgomp
 
 
 ## Uncomment below if you *not* wish static-link agar.
-LIBS += `agar-config --libs`
+LIBS += `agar-config --libs` -lwinmm
 
 ## Uncomment below if you wish static-link agar.
 #LIBS += $(PREFIX)/lib/libag_gui.a $(PREFIX)/lib/libag_core.a $(PREFIX)/lib/libag_dev.a 
