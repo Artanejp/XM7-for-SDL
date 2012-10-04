@@ -21,7 +21,7 @@ USE_OPENMP      = Yes
 # SET Arch specified
 #ARCH_FLAGS       = -mmmx -msse -msse2
 #ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
-ARCH_FLAGS      = -mwindows  -msse -msse2 -mmmx
+ARCH_FLAGS      = -mwindows  -msse -mmmx
 
 ################### VARIABLES ################################
 #XM7_VER		= 3
@@ -59,18 +59,17 @@ STAT_PT            = 12
 VFD_FONT           = ipagp.ttf
 CMT_FONT           = ipagp.ttf
 #FONTPATH          = /usr/local/share/xm7:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:/usr/share/fonts/truetype/mona:/usr/share/fonts/truetype/misaki/:.:./.xm7/:./xm7/:
-FONTPATH           = :.:./.xm7/:./xm7/:\c\XM7\share:
+FONTPATH           = :.:./.xm7/:./xm7/:
 
-LDFLAGS = -L/opt/MinGW/lib
+LDFLAGS = 
 
+#CC = gcc
+#CXX = g++
 CC = gcc
 CXX = g++
 AR = ar
-#CC = i686-w64-mingw32-gcc
-#CXX = i686-w64-mingw32-g++
-#AR = i686-w64-mingw32-ar
 
-CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -DRSSDIR=\"\\XM7\\share\"
+CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION) -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
 CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
@@ -86,11 +85,6 @@ CFLAGS += -I/mingw/include
 CFLAGS += -I/mingw/include/SDL
 CFLAGS += -I/mingw/include/freetype2
 CFLAGS += -I/mingw/include/agar
-#CFLAGS += -I/opt/MinGW/include
-#CFLAGS += -I/opt/MinGW/include/SDL
-#CFLAGS += -I/opt/MinGW/include/freetype2
-#CFLAGS += -I/opt/MinGW/include/agar
-
 #CFLAGS += `/usr/local/i686-w64-mingw32/bin/agar-config --cflags`
 # OpenMP
 ifdef USE_OPENMP
@@ -101,7 +95,7 @@ endif
 CFLAGS_DEBUG = -g -O0
 CFLAGS_DEBUG += $(CFLAGS)
 
-CFLAGS_RELEASE = $(CFLAGS) 
+CFLAGS_RELEASE = $(CFLAGS) -O3 -ftree-vectorize
 
 CXXFLAGS = -fpermissive 
 CXXFLAGS += $(CFLAGS) 
