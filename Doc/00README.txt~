@@ -1,6 +1,6 @@
 ****
 * FM-7/77/AV エミュレータ、XM7 V3.4L51a for SDL/Linux(amd64)
-*  Version 0.3.2 (γレベル / Agar / OpenGL)
+*  Version 0.3.2 (βレベル / Agar / OpenGL)
 *
 *  Copyright (C) 1999-2003 ＰＩ．(ytanaka@ipc-tokai.or.jp) 
 *  Copyright (C) 2001-2003 Ryu Takegami
@@ -126,7 +126,7 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
  c. xm7(デバッグの場合はxm7.debug)を起動して下さい。準備がOKならF-BASICの画面
     が起動します。
  
-6.コマンドラインオプション一覧
+6.コマンドライン
   -d drivername
      Set Display driver.
   -f 
@@ -143,20 +143,7 @@ amd64環境の方はクロスビルドする必要がありますが、そのま
      Set alternate OSD font-face.
   -O font-size
      Set alternate OSD font-size.
-  -l load-path
-     Set path to load config.
-  -s save-path
-     Set path to save config.
-  -i path
-     Set path to save/load config.
-  -t font-spec
-     Set alternate font-spec.
-  -w width
-     Set screen width.
-  -h height
-     Set screen height.
-  -? 
-     Show help.
+  
 		      
 
 7. gitのおさそい
@@ -167,7 +154,7 @@ $ git clone http://github.com/Artanejp/XM7-for-SDL.git
 8.TIPS
 
 a.GNU/Linuxの場合、サウンドドライバとしてALSAを使っていると音飛びなどが
-目立つ場合があると思います。
+目立つと思います。
 　これは、カーネルのタスクスケジューラの優先度の問題なので、
 /etc/security/limits.confを変えてやるとほぼ解消出来ます（重い処理の時
 には厳しいですが。)
@@ -186,3 +173,11 @@ c.WAVファイル、ROMファイルを~/.xm7/にコピーしたのに動かな�
 d.Agar使用に伴い、フォントを検索します。が、IPAゴシックのipag*.ttfが必要なのは同じです＿|￣|●
   かえる必要があるときはMakefileもしくはbuildconfig.hを弄ってください
 
+-- 過去の情報 ---
+d.r42から、UI定義をGTKBUILDERベースにしました。
+　/usr/local/share/xm7/gtk_prop.ui などがないと
+　動きませんΣ（￣□￣；）！！
+e.現状では、フォントを決め打ちしています。
+  (/usr/share/fonts/truetype/ipafont-jisx0208/ipagui0208_for_legacy_compatibility.ttf )
+  かえる必要があるときは MakefileのUIFONT = の行、もしくはXM7.INIを弄ってください（Todo)
+--- 過去の情報 ---
