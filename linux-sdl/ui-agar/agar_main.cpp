@@ -72,7 +72,7 @@ BOOL            bFMTV151;               /* チャンネルコールフラグ */
 
 }
 
-static AG_Mutex *VMMutex;
+static AG_Mutex VMMutex;
 
 
 /*-[ 同期 ]-----------------------------------------------------------------*/
@@ -90,7 +90,7 @@ int  RootVideoHeight;
 void LockVM(void)
 {
 //	if(VMMutex == NULL) return;
-//	AG_MutexLock(VMMutex);
+	AG_MutexLock(&VMMutex);
 }
 /*
  *  VMをアンロック
@@ -99,7 +99,7 @@ void
 UnlockVM(void)
 {
 //	if(VMMutex == NULL) return;
-//	AG_MutexUnlock(VMMutex);
+	AG_MutexUnlock(&VMMutex);
 }
 /*-[ ドローウインドウ ]-----------------------------------------------------*/
 
@@ -130,6 +130,7 @@ void OnCreate(AG_Widget *parent)
         bSyncDisasm[0] = TRUE;
         bSyncDisasm[1] = TRUE;
         bActivate = FALSE;
+        AG_MutexInit(&VMMutex);
 /*
  * コンポーネント初期化
  */
@@ -212,6 +213,7 @@ void OnDestroy(AG_Event *event)
 	}
 
         system_cleanup();
+        AG_MutexDestroy(&VMMutex);
 //	AG_Destroy();
         AG_Quit();
 

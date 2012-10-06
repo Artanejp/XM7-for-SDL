@@ -46,7 +46,7 @@
 
 #include "agar_toolbox.h"
 
-extern AG_Mutex nRunMutex;
+//extern AG_Mutex nRunMutex;
 
 static Disk   disk[2][FDC_MEDIAS];
 static char   StatePath[MAXPATHLEN];
@@ -121,13 +121,13 @@ static void OnLoadStatusSub(char *filename)
      * ステートロード
      */
     LockVM();
-    AG_MutexLock(&nRunMutex);
+//    AG_MutexLock(&nRunMutex);
     StopSnd();
     StateLoad(filename);
     PlaySnd();
     ResetSch();
     UnlockVM();
-    AG_MutexUnlock(&nRunMutex);
+//    AG_MutexUnlock(&nRunMutex);
     /*
      * 画面再描画
      */
@@ -196,7 +196,7 @@ static void OnSaveStatusSub(char *filename)
      * ステートセーブ
      */
     LockVM();
-    AG_MutexLock(&nRunMutex);
+//    AG_MutexLock(&nRunMutex);
     StopSnd();
     AG_Delay(10);
     if (!system_save(filename)) {
@@ -207,7 +207,7 @@ static void OnSaveStatusSub(char *filename)
     PlaySnd();
     ResetSch();
     UnlockVM();
-    AG_MutexUnlock(&nRunMutex);
+//    AG_MutexUnlock(&nRunMutex);
     p = strrchr(filename, '/');
     if (p != NULL) {
 	p[1] = '\0';

@@ -43,7 +43,7 @@ BOOL bFullSpeed;		/* 全力駆動フラグ */
 BOOL bAutoSpeedAdjust;		/* 速度自動調整フラグ */
 DWORD dwNowTime;		/* timeGetTimeの値 */
 BOOL bTapeModeType;		/* テープ高速モードタイプ */
-AG_Mutex nRunMutex;
+//AG_Mutex nRunMutex;
    
    
 /*
@@ -111,7 +111,7 @@ void CleanSch(void)
 	void *ret;
 	bCloseReq = TRUE; // 終了要求
 	AG_ThreadJoin(SchThread,&ret); // スケジューラが終わるのを待つ
-        AG_MutexDestroy(&nRunMutex);
+//        AG_MutexDestroy(&nRunMutex);
 }
 /*
  *  セレクト
@@ -122,7 +122,7 @@ BOOL SelectSch(void)
 	/*
 	 * スレッド生成
 	 */
-        AG_MutexInit(&nRunMutex);
+//        AG_MutexInit(&nRunMutex);
 	AG_ThreadCreate(&SchThread, &ThreadSch, NULL);
 	return TRUE;
 }
@@ -249,7 +249,7 @@ static void *ThreadSch(void *param)
 		 * いきなりロック
 		 */
 		LockVM();
-	        AG_MutexLock(&nRunMutex);
+//	        AG_MutexLock(&nRunMutex);
 
 		/*
 		 * 実行指示が変化したかチェック
@@ -276,7 +276,7 @@ static void *ThreadSch(void *param)
 			 */
 			ProcessSnd(TRUE);
 			UnlockVM();
-		        AG_MutexUnlock(&nRunMutex);
+//		        AG_MutexUnlock(&nRunMutex);
 
 			XM7_Sleep(10);
 			ResetSch();
@@ -325,7 +325,7 @@ static void *ThreadSch(void *param)
 			}
 			if (dwTempTime > dwExecTime) {
 				UnlockVM();
-			        AG_MutexUnlock(&nRunMutex);
+//			        AG_MutexUnlock(&nRunMutex);
 				continue;
 			}
 
@@ -342,7 +342,7 @@ static void *ThreadSch(void *param)
 					 * あまった時間もCPUを動かす
 					 */
 					UnlockVM();
-				        AG_MutexUnlock(&nRunMutex);
+//				        AG_MutexUnlock(&nRunMutex);
 					while (!stopreq_flag) {
 						if (dwTempTime != XM7_timeGetTime()) {
 							break;
@@ -366,7 +366,7 @@ static void *ThreadSch(void *param)
 				else {
 					XM7_Sleep(1);
 					UnlockVM();
-				        AG_MutexUnlock(&nRunMutex);
+//				        AG_MutexUnlock(&nRunMutex);
 					continue;
 				}
 			}
@@ -440,7 +440,7 @@ static void *ThreadSch(void *param)
 		 */
 		if (bCloseReq) {
 			UnlockVM();
-		        AG_MutexUnlock(&nRunMutex);
+//		        AG_MutexUnlock(&nRunMutex);
 			break;
 		}
 
@@ -452,7 +452,7 @@ static void *ThreadSch(void *param)
 			bDrawVsync = FALSE;
 			nFrameSkip = 0;
 			UnlockVM();
-		        AG_MutexUnlock(&nRunMutex);
+//		        AG_MutexUnlock(&nRunMutex);
 			continue;
 		}
 
@@ -513,7 +513,7 @@ static void *ThreadSch(void *param)
 				bDrawVsync = FALSE;
 			}
 			UnlockVM();
-		        AG_MutexUnlock(&nRunMutex);
+//		        AG_MutexUnlock(&nRunMutex);
 		}
 
 		/*
