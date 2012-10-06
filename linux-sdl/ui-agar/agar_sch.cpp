@@ -122,8 +122,8 @@ BOOL SelectSch(void)
 	/*
 	 * スレッド生成
 	 */
-	AG_ThreadCreate(&SchThread, &ThreadSch, NULL);
         AG_MutexInit(&nRunMutex);
+	AG_ThreadCreate(&SchThread, &ThreadSch, NULL);
 	return TRUE;
 }
 
