@@ -95,7 +95,8 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
         }
     }
 //    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, AG_SURFACE_GLTEXTURE);
-    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, AG_SRCALPHA);
+//    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, AG_SRCALPHA);
+    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, 0);
     my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
     my->forceredraw = 1;
 
