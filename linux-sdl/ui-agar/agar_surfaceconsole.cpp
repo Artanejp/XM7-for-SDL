@@ -274,9 +274,7 @@ void DumpObject::PutCharScreen(BYTE c)
     }
    if(r != NULL){
         if(Screen != NULL){
-	    AG_ObjectLock(AGOBJECT(Screen));
             AG_SurfaceBlit(r, NULL, Screen, X * CHRW, Y * CHRH);
-	    AG_ObjectUnlock(AGOBJECT(Screen));
         }
         AG_SurfaceFree(r);
     }
@@ -415,13 +413,11 @@ void DumpObject::ClearScreen(void)
 	 pos += W;
       }
    if(Screen != NULL) {
-//      AG_ObjectLock(AGOBJECT(Screen));
       rect.w = Screen->w;
       rect.h = Screen->h;
       rect.x = 0;
       rect.y = 0;
       AG_FillRect(Screen, &rect, bgColor);
-//      AG_ObjectUnlock(AGOBJECT(Screen));
    }
    AG_MutexUnlock(&mutex);
 }
