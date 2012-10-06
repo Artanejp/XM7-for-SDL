@@ -473,13 +473,13 @@ static void *ThreadSch(void *param)
 
 #endif				/*  */
 					/*
-					 * 4096色/26万色モードでは最高16fps
+					 * 4096色/26万色モードでは最高20fps
 					 */
 //					if (tmp < 66) {
 //						tmp = 66;
 //					}
-					if (tmp < 16) {
-						tmp = 16;
+					if (tmp < 50) {
+						tmp = 50;
 					}
 				}
 
