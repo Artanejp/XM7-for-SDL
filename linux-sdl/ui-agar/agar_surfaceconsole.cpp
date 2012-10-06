@@ -274,7 +274,9 @@ void DumpObject::PutCharScreen(BYTE c)
     }
    if(r != NULL){
         if(Screen != NULL){
+	    AG_ObjectLock(AGOBJECT(Screen));
             AG_SurfaceBlit(r, NULL, Screen, X * CHRW, Y * CHRH);
+	    AG_ObjectUnlock(AGOBJECT(Screen));
         }
         AG_SurfaceFree(r);
     }
