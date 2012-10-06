@@ -473,20 +473,26 @@ static void *ThreadSch(void *param)
 
 #endif				/*  */
 					/*
-					 * 4096色/26万色モードでは最高15fps
+					 * 4096色/26万色モードでは最高16fps
 					 */
-					if (tmp < 66) {
-						tmp = 66;
+//					if (tmp < 66) {
+//						tmp = 66;
+//					}
+					if (tmp < 16) {
+						tmp = 16;
 					}
 				}
 
 				else {
 
 					/*
-					 * 8色モードでは最高30fps
+					 * 8色モードでは最高60fps
 					 */
-					if (tmp < 33) {
-						tmp = 33;
+//					if (tmp < 33) {
+//						tmp = 33;
+//					}
+					if (tmp < 16) {
+						tmp = 16;
 					}
 				}
 				if (tmp > 500) {
@@ -528,7 +534,8 @@ static DWORD XM7_timeGetTime(void)
 	// struct timeval t;
 	// gettimeofday(&t, 0);
 	// return (t.tv_sec*1000000 + t.tv_usec)/1000;
-   return AG_GetTicks();
+//   return AG_GetTicks();
+   return SDL_GetTicks();
 }
 
 
@@ -537,7 +544,8 @@ static DWORD XM7_timeGetTime(void)
  */
 static void XM7_Sleep(DWORD t)
 {
-   AG_Delay(t);
+//   AG_Delay(t);
+   SDL_Delay(t);
 }
    
 #ifdef __cplusplus
