@@ -296,7 +296,7 @@ void LoadCfg(void)
 #endif
 
    configdat.uChSeparation = LoadCfgInt("ChannelSeparation", CHSEPARATION_DEFAULT);
-   if ((configdat.uChSeparation <= 0 ) || (configdat.uChSeparation > 15)) {/* 最大値変更 */
+   if ((configdat.uChSeparation < 0 ) || (configdat.uChSeparation > 16)) {/* 最大値変更 */
            configdat.uChSeparation = CHSEPARATION_DEFAULT;
     }
 
