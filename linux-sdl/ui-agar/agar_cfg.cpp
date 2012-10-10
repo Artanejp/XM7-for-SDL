@@ -20,6 +20,7 @@
 #include "mouse.h"
 #include "aluline.h"
 
+#include <SDL.h>
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #else
@@ -824,7 +825,9 @@ void ApplyCfg(void)
     nAspect = configdat.nAspect;
     bSyncToVSYNC = configdat.bSyncToVSYNC;
     bSmoosing = configdat.bSmoosing;
-
+#ifdef USE_OPENGL   
+    if(bUseOpenGL) SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, bSyncToVSYNC);
+#endif
     display_notify();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 //	ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
