@@ -104,18 +104,19 @@ PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
 static void InitGridVertexsSub(int h, GLfloat *vertex)
 {
   int i;
+  int j;
   GLfloat ybegin;
   GLfloat yofset;
   GLfloat yinc;
   GLfloat y;
   int base;
-
-    yinc = 2.0f / ((float)h - 1.0f);
+    j = h;
+    yinc = -4.0f / 400.0f;
     ybegin = 1.0f;
-    yofset = -5.0f / 402.0f;
+    yofset = -5.0f / 400.0f;
   if(vertex == NULL) return;
   y = ybegin + yofset;
-  for(i = 0; y >= -1.0f ; i++, y -= yinc){
+  for(i = 0; j > 0 ; j--, i++, y += yinc){
       base = i * 6;
       vertex[base] = -1.0f; // x
       vertex[base + 1] = y; // y
@@ -132,11 +133,11 @@ static void InitGridVertexs(void)
 {
     GridVertexs200l = (GLfloat *)malloc(202 * 6 * sizeof(GLfloat));
     if(GridVertexs200l != NULL) {
-        InitGridVertexsSub(201, GridVertexs200l);
+        InitGridVertexsSub(200, GridVertexs200l);
     }
     GridVertexs400l = (GLfloat *)malloc(402 * 6 * sizeof(GLfloat));
     if(GridVertexs400l != NULL) {
-        InitGridVertexsSub(401, GridVertexs400l);
+        InitGridVertexsSub(400, GridVertexs400l);
     }
 
 }
@@ -216,6 +217,7 @@ void InitGL_AG2(int w, int h)
     InitGLExtensionVars();
     InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
                // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // Double buffer
     InitGridVertexs(); // Grid初期化
     fBrightR = 1.0; // 輝度の初期化
     fBrightG = 1.0;
@@ -383,6 +385,7 @@ static void drawGrids(void *pg,int w, int h)
         }
         if(vertex == NULL) goto e1;
     	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+
         if(bGL_EXT_VERTEX_ARRAY) {
                 glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
                 glEnable(GL_VERTEX_ARRAY_EXT);
@@ -489,8 +492,8 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
-            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 1.0f; // Yend
+            TexCoords[2][0] = TexCoords[1][0] = 639.0f / 640.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 400.0f / 400.0f; // Yend
             break;
         case SCR_200LINE:
             w = 640;
@@ -498,8 +501,8 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
-            TexCoords[2][0] = TexCoords[1][0] = 1.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 199.0f / 400.0f; // Yend
+            TexCoords[2][0] = TexCoords[1][0] = 640.0f / 640.0f; // Xend
+            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
             break;
         case SCR_262144:
         case SCR_4096:
@@ -510,9 +513,10 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
             TexCoords[2][0] = TexCoords[1][0] = 320.0f / 640.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 199.0f / 400.0f; // Yend
+            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
             break;
      }
+
     Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.98f;
     Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
     Vertexs[0][1] = Vertexs[1][1] = yend;  // Yend
@@ -521,7 +525,8 @@ void AGEventDrawGL2(AG_Event *event)
 
 
     if(uVramTextureID == 0) {
-        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
+//        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
+        uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
         }
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
@@ -613,6 +618,7 @@ void AGEventDrawGL2(AG_Event *event)
     glPopAttrib();
     glPopAttrib();
     glPopAttrib();
+    glFlush();
 }
 
 void AGEventKeyUpGL(AG_Event *event)

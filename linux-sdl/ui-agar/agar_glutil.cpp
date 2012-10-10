@@ -165,4 +165,5 @@ void InitGLExtensionVars(void)
     bGL_EXT_VERTEX_ARRAY = QueryGLExtensions("GL_EXT_vertex_array");
 
 }
+   
 }
