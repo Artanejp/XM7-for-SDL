@@ -117,10 +117,10 @@ void ResizeWindow_Agar(int w, int h)
         AG_ObjectLock(AGOBJECT(drv));
         ww = w;
         hh = 0;
-      if(MenuBar) {
-        hh = hh + MenuBar->wid.h;
+        if(MenuBar) {
+            hh = hh + MenuBar->wid.h;
 	}
-       if(GLDrawArea) {
+   if(GLDrawArea) {
 	  AG_SizeAlloc a;
 	  a.w = w;
 	  a.h = h;
@@ -143,37 +143,29 @@ void ResizeWindow_Agar(int w, int h)
 	  hh += h;
        }
 
-   
        if(pStatusBar){
 	  float hhh;
-	  hhh = ((float)h / 400.0) * 30.0 + 2.0; 
+	  hhh = ((float)h / 800.0) * (float)STAT_HEIGHT + 2.0; 
 	  AG_WidgetSetSize(pStatusBar, w, (int)hhh);
           ResizeStatus(AGWIDGET(pStatusBar), w, (int)hhh, h);
-	  hh = hh + hhh;
+	  hh = hh + (int)hhh;
        }
-   
-      if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
       if(MenuBar) {
 	AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
         AG_WidgetEnable(AGWIDGET(MenuBar));
         AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
-//        hh = hh + MenuBar->wid.h;
+        hh = hh + MenuBar->wid.h;
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
+     if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh + 10);
 
     printf("Resize to %d x %d\n", ww, hh );
 
-#ifdef USE_OPENGL
-//	if(AG_UsingGL(NULL)) {
-        if((GLDrawArea != NULL) && MainWindow) {
-	   AG_ResizeDisplay(w, hh + 10);
-	}
-   
-//	}
-#endif /* USE_OPENGL */
+     if(agDriverSw && (AG_UsingGL(NULL) != 0)) {
+	   AG_ResizeDisplay(w, hh);
+     }
 
    AG_ObjectUnlock(AGOBJECT(drv));
-//    AG_Redraw(AGWIDGET(MenuBar));
 }
 
 /*
@@ -185,95 +177,15 @@ void ResizeWindow_Agar2(int w, int h)
 	int ww;
 	AG_Driver *drv;
 
-        if((w < 100) || (h < 100)) return;
-   return;
-	if(DrawArea != NULL) {
-        AG_SizeAlloc a;
-        AG_SizeReq r;
-        AG_Window *win;
-
-        win = AG_ParentWindow(DrawArea);
-        if(win == NULL) return;
-        AG_WidgetSizeReq(AGWIDGET(win), &r);
-        hh = h - (STAT_HEIGHT * h * 2) / 800;
-        ww = w;
-        if(MenuBar){
-            hh = hh - MenuBar->wid.h;
-            AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
-        }
-       if(pStatusBar){
-//	  AG_WidgetHide(pStatusBar);
-//	  AG_ObjectDetach(AGOBJECT(pStatusBar));
-//          pStatusBar = AG_BoxNewHoriz(AGWIDGET(MainWindow), AG_BOX_HFILL);
-	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * hh * 2) / 800 + 5);
-          ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * hh * 2) / 800, MenuBar->wid.h);
-	  hh = hh - AGWIDGET(pStatusBar)->h;
-       }
-
-	    a.x = 0;
-	    a.y = 0;
-	    a.w = ww;
-	    a.h = hh;
-	   AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-        if(pStatusBar != NULL) {
-	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, AGWIDGET(pStatusBar)->h);
-	} else {
-	   AG_WidgetSetPosition(AGWIDGET(DrawArea), 0, 0);
-	}
-	   AG_WidgetSetSize(DrawArea, ww, hh);
-       if(MainWindow) {
-           AG_Redraw(AGWIDGET(MainWindow));
-       }
-       }
-
-#ifdef USE_OPENGL
-   if(GLDrawArea != NULL) {
-        AG_SizeReq r;
-        AG_SizeAlloc a;
-      
-        hh = h - (STAT_HEIGHT * h * 2) / 800;
-        ww = w;
-        if(MenuBar){
-            hh = hh - MenuBar->wid.h;
-            AG_WidgetSetSize(MenuBar, w, MenuBar->wid.h);
-        }
-       if(pStatusBar){
-	  AG_WidgetSetSize(pStatusBar, w, (STAT_HEIGHT * hh * 2) / 800 + 5);
-          ResizeStatus(AGWIDGET(pStatusBar), w, (STAT_HEIGHT * hh * 2) / 800, MenuBar->wid.h);
-	  hh = hh - AGWIDGET(pStatusBar)->h;
-       }
-        a.w = ww;
-        a.h = hh;
-        a.x = 0;
-        a.y = 0;
-        AG_GLViewSizeHint(GLDrawArea, ww, hh);
-	AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
+//        if((w < 100) || (h < 100)) return;
         if(MenuBar != NULL) {
-	   AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, AGWIDGET(MenuBar)->h);
-	} else {
-	   AG_WidgetSetPosition(AGWIDGET(GLDrawArea), 0, 0);
+	   AG_Redraw(AGWIDGET(MenuBar));
 	}
-        AG_WidgetSetSize(AGWIDGET(GLDrawArea), ww, hh);
-	}
-	nDrawWidth = w;
-	nDrawHeight = hh;
-#else
-   {
         if(pStatusBar != NULL) {
-	   int hhh;
-	   hhh = hh + AGWIDGET(pStatusBar)->h;
-	   AG_ResizeDisplay(ww, hhh);
-	} else {
-	   AG_ResizeDisplay(ww, hh);
+	   AG_Redraw(AGWIDGET(pStatusBar));
 	}
-
-
-   }
-   nDrawWidth = w;
-   nDrawHeight = hh;
-
-#endif /* USE_OPENGL */
-     printf("Resize2 to %d x %d\n", w, h);
+   
+//        printf("Resize2 to %d x %d\n", w, h);
 }
 
 

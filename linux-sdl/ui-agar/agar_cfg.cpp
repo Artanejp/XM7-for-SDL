@@ -463,7 +463,6 @@ void LoadCfg(void)
     	}
     	break;
     }
-    configdat.bSyncToVSYNC = LoadCfgBool("SYNCTOVSYNC", 1);
     configdat.bSmoosing = LoadCfgBool("SMOOSING", 1);
 
 /*
@@ -698,7 +697,6 @@ void SaveCfg(void)
     	break;
     }
     SaveCfgInt("Aspect", configdat.nAspect);
-    SaveCfgBool("SYNCTOVSYNC", configdat.bSyncToVSYNC);
     SaveCfgBool("SMOOSING", configdat.bSmoosing);
 
 /*
@@ -823,11 +821,7 @@ void ApplyCfg(void)
     nDrawFPS = configdat.nDrawFPS;
     nEmuFPS = configdat.nEmuFPS;
     nAspect = configdat.nAspect;
-    bSyncToVSYNC = configdat.bSyncToVSYNC;
     bSmoosing = configdat.bSmoosing;
-#ifdef USE_OPENGL   
-    if(bUseOpenGL) SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, bSyncToVSYNC);
-#endif
     display_notify();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
 //	ResizeWindow_Agar2(nDrawWidth, nDrawHeight);

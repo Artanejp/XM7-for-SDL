@@ -75,7 +75,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 	case AG_DRIVER_VIDEORESIZE:
 		w = ev->data.videoresize.w;
 		h = ev->data.videoresize.h;
-//		ResizeWindow_Agar2(w, h);
+		ResizeWindow_Agar2(w, h);
 		break;
 	default:
 		break;

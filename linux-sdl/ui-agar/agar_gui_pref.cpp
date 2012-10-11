@@ -398,8 +398,6 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
-		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Sync to VSYNC"), &localconfig.bSyncToVSYNC);
-		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("SMOOSING"), &localconfig.bSmoosing);
 	}
 }
