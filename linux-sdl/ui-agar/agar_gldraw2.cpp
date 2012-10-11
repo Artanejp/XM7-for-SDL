@@ -217,7 +217,7 @@ void InitGL_AG2(int w, int h)
     InitGLExtensionVars();
     InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
                // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // Double buffer
+//    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // Double buffer
     InitGridVertexs(); // Grid初期化
     fBrightR = 1.0; // 輝度の初期化
     fBrightG = 1.0;
@@ -470,9 +470,10 @@ void AGEventDrawGL2(AG_Event *event)
 	Uint32 *pp;
 	int x;
 	int y;
-    GLfloat TexCoords[4][2];
-    GLfloat Vertexs[4][3];
-    GLfloat TexCoords2[4][2];
+        int isDoubleBuf = 0;
+        GLfloat TexCoords[4][2];
+        GLfloat Vertexs[4][3];
+        GLfloat TexCoords2[4][2];
 
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
@@ -484,7 +485,8 @@ void AGEventDrawGL2(AG_Event *event)
 //    ybegin = 400.0f/460.0f;
     yend = 1.0f;
             // Z Axis
-
+//     SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &isDoubleBuf); // Double buffer
+   
      switch(bMode) {
         case SCR_400LINE:
             w = 640;
@@ -618,7 +620,12 @@ void AGEventDrawGL2(AG_Event *event)
     glPopAttrib();
     glPopAttrib();
     glPopAttrib();
-    glFlush();
+    if(isDoubleBuf) {
+       SDL_GL_SwapBuffers();
+    } else {
+       glFlush();
+    }
+   
 }
 
 void AGEventKeyUpGL(AG_Event *event)

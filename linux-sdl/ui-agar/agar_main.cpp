@@ -327,15 +327,24 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	/*
 	 * Agar のメインループに入る
 	 */
-//    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO);
 
     if(drivers == NULL)  {
 #ifdef USE_OPENGL
-		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
-    			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
+       if(AG_InitGraphics(NULL) == -1){
+                fprintf(stderr, "%s\n", AG_GetError());
+                return;
+        }
+	    
+//		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
+//  			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
 #else
-       		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
-    			AG_VIDEO_RESIZABLE );
+       if(AG_InitGraphics("cocoa,sdlfb") == -1){
+                fprintf(stderr, "%s\n", AG_GetError());
+                return;
+        }
+//       		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
+//    			AG_VIDEO_RESIZABLE );
 #endif
     } else {
         if (AG_InitGraphics(drivers) == -1) {
@@ -344,8 +353,10 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
         }
     }
     SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
+    
     OnCreate((AG_Widget *)NULL);
 	InitInstance();
+    
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	AG_DrawInitsub();
