@@ -423,19 +423,18 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        int hh;
        int ofset;
 
-       glPushAttrib(GL_TEXTURE_BIT);
+//       glPushAttrib(GL_TEXTURE_BIT);
        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
        ww = w >> 3;
        hh = h >> 3;
 
-#ifdef _OPENMP
-       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
-#endif
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
+//#endif
        for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
                for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
                     pu = &p[(xx + yy * ww) * 64];
-//                    UpdateTexturePiece(pu, uVramTextureID, xx << 3, yy << 3, 8, 8);
                     UpdateFramebufferPiece(pu, xx << 3, yy << 3);
                     SDLDrawFlag.write[xx][yy] = FALSE;
                     }
@@ -443,9 +442,9 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
             }
 
             if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
-            glPopAttrib();
+//            glPopAttrib();
     }
-    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+//    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
@@ -470,7 +469,6 @@ void AGEventDrawGL2(AG_Event *event)
 	Uint32 *pp;
 	int x;
 	int y;
-        int isDoubleBuf = 0;
         GLfloat TexCoords[4][2];
         GLfloat Vertexs[4][3];
         GLfloat TexCoords2[4][2];
@@ -485,7 +483,6 @@ void AGEventDrawGL2(AG_Event *event)
 //    ybegin = 400.0f/460.0f;
     yend = 1.0f;
             // Z Axis
-//     SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &isDoubleBuf); // Double buffer
    
      switch(bMode) {
         case SCR_400LINE:
@@ -558,7 +555,6 @@ void AGEventDrawGL2(AG_Event *event)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
-//        LockVram();
         if(bGL_EXT_VERTEX_ARRAY) {
             glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
             glEnable(GL_VERTEX_ARRAY_EXT);
@@ -584,10 +580,8 @@ void AGEventDrawGL2(AG_Event *event)
             glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
             glEnd();
         }
-//        UnlockVram();
      }
      // 20120502 輝度調整
-//    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0); // 20111023
     glDisable(GL_TEXTURE_2D);
    
@@ -620,11 +614,7 @@ void AGEventDrawGL2(AG_Event *event)
     glPopAttrib();
     glPopAttrib();
     glPopAttrib();
-    if(isDoubleBuf) {
-       SDL_GL_SwapBuffers();
-    } else {
-       glFlush();
-    }
+    glFlush();
    
 }
 
