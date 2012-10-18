@@ -32,7 +32,7 @@ extern Uint32 lshift_5bit1v(v4hi *v);
 extern v8hi lshift_6bit8v(v4hi *v);
 }
 
-static void gpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
+static v8hi gpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
    v4hi v;
@@ -48,37 +48,27 @@ static void gpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
         v.b[2] = vram_p[addr + 0x16000]; 
         v.b[1] = vram_p[addr + 0x28000]; 
         v.b[0] = vram_p[addr + 0x2a000]; 
-
-//        b[7] = lshift_5bit1v(&v) << 8;
-//        b[6] = lshift_5bit1v(&v) << 8;
-//        b[5] = lshift_5bit1v(&v) << 8;
-//        b[4] = lshift_5bit1v(&v) << 8;
-//        b[3] = lshift_5bit1v(&v) << 8;
-//        b[2] = lshift_5bit1v(&v) << 8;
-//        b[1] = lshift_5bit1v(&v) << 8;
-//        b[0] = lshift_5bit1v(&v) << 8;
-    p = (v8hi *)b;
-       
-    v1 = lshift_6bit8v(&v);
-    v1.i[0] <<= 8;
-    v1.i[1] <<= 8;
-    v1.i[2] <<= 8;
-    v1.i[3] <<= 8;
-    v1.i[4] <<= 8;
-    v1.i[5] <<= 8;
-    v1.i[6] <<= 8;
-    v1.i[7] <<= 8;
-    *p = v1;
+        v1 = lshift_6bit8v(&v);
+        v1.i[0] <<= 8;
+        v1.i[1] <<= 8;
+        v1.i[2] <<= 8;
+        v1.i[3] <<= 8;
+        v1.i[4] <<= 8;
+        v1.i[5] <<= 8;
+        v1.i[6] <<= 8;
+        v1.i[7] <<= 8;
+        return v1;
     
     } else {
-        p = (v8hi *)b;
-	p->v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       v8hi r;
+       r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       return r;
    }
    
 
 }
 
-static void rpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
+static v8hi rpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
    v4hi v;
@@ -94,26 +84,16 @@ static void rpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
         v.b[2] = vram_p[addr + 0x0e000]; 
         v.b[1] = vram_p[addr + 0x20000]; 
         v.b[0] = vram_p[addr + 0x22000]; 
-
-//        b[7] = lshift_5bit1v(&v);
-//        b[6] = lshift_5bit1v(&v);
-//        b[5] = lshift_5bit1v(&v);
-//        b[4] = lshift_5bit1v(&v);
-//        b[3] = lshift_5bit1v(&v);
-//        b[2] = lshift_5bit1v(&v);
-//        b[1] = lshift_5bit1v(&v);
-//        b[0] = lshift_5bit1v(&v);
-    p = (v8hi *)b;
-    v1 = lshift_6bit8v(&v);
-    *p = v1;
-    
+        v1 = lshift_6bit8v(&v);
+        return v1;
    } else {
-        p = (v8hi *)b;
-	p->v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       v8hi r;
+       r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       return r;
    }
 }
 
-static void bpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
+static v8hi bpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
    v4hi v;
@@ -131,29 +111,20 @@ static void bpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
         v.b[0] = vram_p[addr + 0x1a000]; 
         
 
-//        b[7] = lshift_5bit1v(&v) << 16;
-//        b[6] = lshift_5bit1v(&v) << 16;
-//        b[5] = lshift_5bit1v(&v) << 16;
-//        b[4] = lshift_5bit1v(&v) << 16;
-//        b[3] = lshift_5bit1v(&v) << 16;
-//        b[2] = lshift_5bit1v(&v) << 16;
-//        b[1] = lshift_5bit1v(&v) << 16;
-//        b[0] = lshift_5bit1v(&v) << 16;
-    p = (v8hi *)b;
-       
-    v1 = lshift_6bit8v(&v);
-    v1.i[0] <<= 16;
-    v1.i[1] <<= 16;
-    v1.i[2] <<= 16;
-    v1.i[3] <<= 16;
-    v1.i[4] <<= 16;
-    v1.i[5] <<= 16;
-    v1.i[6] <<= 16;
-    v1.i[7] <<= 16;
-    *p = v1;
+        v1 = lshift_6bit8v(&v);
+        v1.i[0] <<= 16;
+        v1.i[1] <<= 16;
+        v1.i[2] <<= 16;
+        v1.i[3] <<= 16;
+        v1.i[4] <<= 16;
+        v1.i[5] <<= 16;
+        v1.i[6] <<= 16;
+        v1.i[7] <<= 16;
+        return v1;
    } else {
-        p = (v8hi *)b;
-	p->v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       v8hi r;
+       r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       return r;
    }
 }
 
@@ -162,34 +133,20 @@ static void bpixel2cbuf(Uint32 addr, Uint32 *b, Uint32 mpage)
 
 static void getvram_256k(Uint32 addr, Uint32 *cbuf, Uint32 mpage)
 {
-    Uint8           b[6],
-                    r[6],
-                    g[6];
-    Uint32 	rr, gg, bb, aa;
-    Uint32 rbuf[8], gbuf[8], bbuf[8];
-    int i;
-    Uint8 *vram_p = vram_pb;
-    v4hi *p, *qb, *qg, *qr;
-    /*
+   v8hi *p;
+   v8hi r, g, b;
+   /*
      * R,G,Bについて8bit単位で描画する。
      * 高速化…キャッシュヒット率の向上を考慮して、
      * インライン展開と細かいループの廃止を同時に行う
      */
-    p = (v4hi *)cbuf;
-    qr = (v4hi *)rbuf;
-    qg = (v4hi *)gbuf;
-    qb = (v4hi *)bbuf;
+   p = (v8hi *)cbuf;
 
    
-   bpixel2cbuf(addr, bbuf, mpage);
-   rpixel2cbuf(addr, rbuf, mpage);
-   gpixel2cbuf(addr, gbuf, mpage);
-   p->v = qr->v + qg->v + qb->v;
-   p++;
-   qr++;
-   qg++;
-   qb++;
-   p->v = qr->v + qg->v + qb->v;
+   b = bpixel2cbuf(addr, mpage);
+   r = rpixel2cbuf(addr, mpage);
+   g = gpixel2cbuf(addr, mpage);
+   p->v = r.v + g.v + b.v;
 }
 
 
