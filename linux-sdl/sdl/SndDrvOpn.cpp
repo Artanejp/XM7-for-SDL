@@ -33,11 +33,11 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     int         i, j;
     Sint32       *p = (Sint32 *) from;
     Sint16       *t = (Sint16 *) to;
-    register Sint32       tmp1;
-    v4hi   *l;
+    Sint32       tmp1;
+    v4hi *l;
     v8hi *h;
-    register v8hi tmp2;
-    register v4hi tmp3;
+    v8hi tmp2;
+    v4hi tmp3;
     
 
     if (p == NULL) {
@@ -49,7 +49,6 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     h = (v8hi *)p;
     l = (v4hi *)t;
     i = (size >> 3) << 3;
-    
     for (j = 0; j < i; j += 8) {
         tmp2 = *h++;
         tmp3.ss[0] =_clamp(tmp2.si[0]);
@@ -61,14 +60,14 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         tmp3.ss[6] =_clamp(tmp2.si[6]);
         tmp3.ss[7] =_clamp(tmp2.si[7]);
         *l++ = tmp3;
-        }
-        p = (Sint32 *)h;
-        t = (Sint16 *)l;
-        if(i >= size) return;
-        for (j = 0; j < (size - i); j++) {
-            tmp1 = *p++;
-	    *t++ = _clamp(tmp1);
-        }
+   }
+   p = (Sint32 *)h;
+   t = (Sint16 *)l;
+   if(i >= size) return;
+   for (j = 0; j < (size - i); j++) {
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+   }
 }
 
 
