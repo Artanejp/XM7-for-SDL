@@ -153,9 +153,6 @@ v4hi getvram_4096_vec(Uint32 addr)
    return cbuf;
 }
 
-
-
-
 v4hi getvram_8_vec(Uint32 addr)
 {
     uint8_t dat[4];
@@ -180,3 +177,51 @@ v4hi getvram_8_vec(Uint32 addr)
              aPlanes[B2 + dat[PLAING]].v;
    return (v4hi)cbuf;
 }
+
+Uint32 lshift_5bit1v(v4hi *v)
+{
+   Uint32 ret;
+   ret =(v->b[0] & 0x80)>>5 | (v->b[1] & 0x80)>>4 | (v->b[2] & 0x80)>>3 
+      | (v->b[3] & 0x80)>>2 | (v->b[4] & 0x80)>>1 | (v->b[5] & 0x80);
+   if((ret & 0x000000f8)!=0) ret |= 0x000003;
+   v->v = v->v << 1;
+   return ret;
+}
+
+v8hi lshift_6bit8v(v4hi *v)
+{
+   v8hi r;
+   v4hi cbuf __attribute__((aligned(32)));
+   v8hi mask;
+   mask.v = (v8si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
+   cbuf.v =
+        aPlanes[B2 + v->b[0]].v |
+        aPlanes[B3 + v->b[1]].v |
+        aPlanes[R0 + v->b[2]].v |
+        aPlanes[R1 + v->b[3]].v |
+        aPlanes[R2 + v->b[4]].v |
+        aPlanes[R3 + v->b[5]].v;
+   r.i[0] = (uint32_t)cbuf.s[7];
+   r.i[1] = (uint32_t)cbuf.s[6];
+   r.i[2] = (uint32_t)cbuf.s[5];
+   r.i[3] = (uint32_t)cbuf.s[4];
+   r.i[4] = (uint32_t)cbuf.s[3];
+   r.i[5] = (uint32_t)cbuf.s[2];
+   r.i[6] = (uint32_t)cbuf.s[1];
+   r.i[7] = (uint32_t)cbuf.s[0];
+   
+   mask.v = mask.v & r.v;
+   if(mask.i[0] != 0) r.i[0] |= 0x03;
+   if(mask.i[1] != 0) r.i[1] |= 0x03;
+   if(mask.i[2] != 0) r.i[2] |= 0x03;
+   if(mask.i[3] != 0) r.i[3] |= 0x03;
+   if(mask.i[4] != 0) r.i[4] |= 0x03;
+   if(mask.i[5] != 0) r.i[5] |= 0x03;
+   if(mask.i[6] != 0) r.i[6] |= 0x03;
+   if(mask.i[7] != 0) r.i[7] |= 0x03;
+  return r;
+}
+
+
+
+
