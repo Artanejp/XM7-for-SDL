@@ -221,6 +221,24 @@ void OnDestroy(AG_Event *event)
 
 }
 
+extern void OnPushCancel(AG_Event *event);
+static void ErrorPopup(char *message)
+{
+   AG_Window *win;
+   win = AG_WindowNew(0);
+   if(win == NULL) {
+        if(message == NULL) return;
+	fprintf(stderr,"ERR: %s\n", message);
+        return;
+   } else {
+      AG_VBox *vb;
+      AG_Textbox *tb;
+        vb = AG_VBoxNew(AGWIDGET(win), AG_HBOX_HFILL);
+        if(message != NULL) tb = AG_TextboxNew(hb, AG_TEXTBOX_MULTILINE, "%s", message);
+        AG_ButtonNewFn(AGWIDGET(vb), 0, gettext("Close"), OnPushCancel, NULL);
+   }
+   
+}
 
 
 
@@ -335,16 +353,11 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 fprintf(stderr, "%s\n", AG_GetError());
                 return;
         }
-	    
-//		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
-//  			AG_VIDEO_RESIZABLE | AG_VIDEO_OPENGL_OR_SDL );
 #else
        if(AG_InitGraphics("cocoa,sdlfb") == -1){
                 fprintf(stderr, "%s\n", AG_GetError());
                 return;
         }
-//       		   AG_InitVideo(640, 480, 32, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_ASYNCBLIT |
-//    			AG_VIDEO_RESIZABLE );
 #endif
     } else {
         if (AG_InitGraphics(drivers) == -1) {
@@ -355,8 +368,22 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
     SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     
     OnCreate((AG_Widget *)NULL);
-	InitInstance();
-    
+    InitInstance();
+    switch(nErrorCode) 
+     {
+      case 0:
+	break;
+      case 1:
+	ErrorPopup(gettext("Error init VM.\nPlease check ROMS and system-memory.\n"));
+	break;
+      case 2:
+	ErrorPopup(gettext("Error init Emulator.\nPlease check window system, display and more.\n"));
+	break;
+      default:
+	ErrorPopup(gettext("Unknown error on setup.\nPlease email to author."));
+	break;
+     }
+       
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
 	AG_DrawInitsub();
