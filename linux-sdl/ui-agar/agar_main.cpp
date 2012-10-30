@@ -234,8 +234,9 @@ static void ErrorPopup(char *message)
       AG_VBox *vb;
       AG_Textbox *tb;
         vb = AG_VBoxNew(AGWIDGET(win), AG_HBOX_HFILL);
-        if(message != NULL) tb = AG_TextboxNew(hb, AG_TEXTBOX_MULTILINE, "%s", message);
+        if(message != NULL) tb = AG_TextboxNew(vb, AG_TEXTBOX_MULTILINE, "%s", message);
         AG_ButtonNewFn(AGWIDGET(vb), 0, gettext("Close"), OnPushCancel, NULL);
+        AG_WindowShow(win);
    }
    
 }
@@ -369,20 +370,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
     
     OnCreate((AG_Widget *)NULL);
     InitInstance();
-    switch(nErrorCode) 
-     {
-      case 0:
-	break;
-      case 1:
-	ErrorPopup(gettext("Error init VM.\nPlease check ROMS and system-memory.\n"));
-	break;
-      case 2:
-	ErrorPopup(gettext("Error init Emulator.\nPlease check window system, display and more.\n"));
-	break;
-      default:
-	ErrorPopup(gettext("Unknown error on setup.\nPlease email to author."));
-	break;
-     }
        
 	stopreq_flag = FALSE;
 	run_flag = TRUE;
@@ -403,6 +390,20 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	nDrawTick1E = nDrawTick1D;
 
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+    switch(nErrorCode) 
+     {
+      case 0:
+	break;
+      case 1:
+	ErrorPopup(gettext("Error init VM.\nPlease check ROMS and system-memory.\n"));
+	break;
+      case 2:
+	ErrorPopup(gettext("Error init Emulator.\nPlease check window system, display and more.\n"));
+	break;
+      default:
+	ErrorPopup(gettext("Unknown error on setup.\nPlease email to author."));
+	break;
+     }
 	AGDrawTaskEvent(TRUE);
 //	AG_Quit();
 }
