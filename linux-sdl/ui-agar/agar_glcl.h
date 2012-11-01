@@ -51,5 +51,7 @@ class GLCLDraw {
    cl_mem inbuf = NULL;
    cl_mem outbuf = NULL;
    cl_mem palette = NULL;
+   cl_context_properties *properties = NULL;	
+
 };
 

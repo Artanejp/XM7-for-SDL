@@ -417,6 +417,7 @@ e1:
 static void drawUpdateTexture(Uint32 *p, int w, int h)
 {
     LockVram();
+//    if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
     if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
        Uint32 *pu;
        Uint32 *pq;
@@ -453,9 +454,9 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        
 //    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 
+    }
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
-    }
    
 
 }
@@ -463,6 +464,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 /*
  * "Draw"イベントハンドラ
  */
+extern const char *cl_render;
 void AGEventDrawGL2(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
@@ -535,33 +537,21 @@ void AGEventDrawGL2(AG_Event *event)
 //        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
         if(cldraw == NULL) {
-	    char *srcs;
-	    FILE *fp;
-	    int size;
 	    cl_int r;
 	   
-	    cldraw = new GLCLDraw;
-	    srcs = malloc(1024*1024);
-	    if(srcs == NULL) {
-		delete cldraw;
-	        cldraw = NULL;
-	        
-	    } else {
-		fp = fopen("cl_getvram.cl", r);
-	        size = fread(srcs, 1, 1024 * 1024 - 1, fp);
-	        fclose(fp);
-	        r = cldraw->BuildFromSource(srcs);
-	        cldraw->SetupBuffer(uVramTextureID);
-
+	//    cldraw = new GLCLDraw;
+	    if(cldraw != NULL) {
+	       r = cldraw->BuildFromSource(cl_render);
+	       cldraw->SetupBuffer(uVramTextureID);
 	    }
+	   
 	}
     }
    
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
-     drawUpdateTexture(p, w, h);
-
+   
     glPushAttrib(GL_TEXTURE_BIT);
     glPushAttrib(GL_TRANSFORM_BIT);
     glPushAttrib(GL_ENABLE_BIT);
@@ -569,6 +559,7 @@ void AGEventDrawGL2(AG_Event *event)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glEnable(GL_TEXTURE_2D);
+    drawUpdateTexture(p, w, h);
    
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);

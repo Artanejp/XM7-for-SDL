@@ -295,7 +295,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT, VKeyTableAG_6[j].KeyName);
 			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_6[j].KeyCode);
 		}
-		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s",
+		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"                        ");
 		AG_WidgetDisable(p);
 		i = sizeof(VKeyTableAG_14) / sizeof(struct KeyCode_Vkey);
@@ -327,7 +327,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 				break;
 			}
 		}
-		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s",
+		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"         ");
 		AG_WidgetDisable(p);
 		i = sizeof(VKeyTableAG_15) / sizeof(struct KeyCode_Vkey);
@@ -340,7 +340,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
 	{
-		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s",
+		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"  ");
 		AG_WidgetDisable(p);
 		AG_WidgetHide(p);
@@ -363,7 +363,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			}
 //			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_8[j].KeyCode);
 		}
-		p = AG_ButtonNew(box, AG_BUTTON_MOUSEOVER | AG_BUTTON_STICKY, "%s",
+		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"        ");
 		AG_WidgetDisable(p);
 		AG_WidgetHide(p);
