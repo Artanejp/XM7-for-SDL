@@ -17,6 +17,7 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #endif
+#include <agar_glcl.h>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -36,7 +37,7 @@
 
 
 GLuint uVramTextureID;
-
+static class GLCLDraw *cldraw = NULL;
 
 static int bModeOld;
 static Uint32 *pFrameBuffer;
@@ -81,6 +82,7 @@ void DetachGL_AG2(void)
        free(pFrameBuffer);
        pFrameBuffer = NULL;
     }
+    if(cldraw != NULL) delete cldraw;
 
 //    pGetVram = NULL;
 }
@@ -154,7 +156,7 @@ static void DetachGridVertexs(void)
     }
 }
 
-static void InitFBO(void)
+void InitFBO(void)
 {
 #ifndef _WINDOWS // glx is for X11.
     glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
@@ -184,6 +186,7 @@ void InitGL_AG2(int w, int h)
     vram_pb = NULL;
     vram_pg = NULL;
     vram_pr = NULL;
+    cldraw = NULL;
 
 	flags = SDL_OPENGL | SDL_RESIZABLE;
     switch (bpp) {
@@ -431,8 +434,11 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 //#ifdef _OPENMP
 //       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
 //#endif
-       for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
-               for(xx = 0; xx < ww; xx++) {
+       if(cldraw != NULL) {
+	  cldraw->GetVram(bMode);
+       } else {
+	  for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
+	     for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
                     pu = &p[(xx + yy * ww) * 64];
                     UpdateFramebufferPiece(pu, xx << 3, yy << 3);
@@ -443,12 +449,14 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 
             if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
 //            glPopAttrib();
-    }
+       }
+       
 //    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 
     SDLDrawFlag.Drawn = FALSE;
     UnlockVram();
-
+    }
+   
 
 }
 
@@ -526,7 +534,29 @@ void AGEventDrawGL2(AG_Event *event)
     if(uVramTextureID == 0) {
 //        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
-        }
+        if(cldraw == NULL) {
+	    char *srcs;
+	    FILE *fp;
+	    int size;
+	    cl_int r;
+	   
+	    cldraw = new GLCLDraw;
+	    srcs = malloc(1024*1024);
+	    if(srcs == NULL) {
+		delete cldraw;
+	        cldraw = NULL;
+	        
+	    } else {
+		fp = fopen("cl_getvram.cl", r);
+	        size = fread(srcs, 1, 1024 * 1024 - 1, fp);
+	        fclose(fp);
+	        r = cldraw->BuildFromSource(srcs);
+	        cldraw->SetupBuffer(uVramTextureID);
+
+	    }
+	}
+    }
+   
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
