@@ -259,6 +259,7 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
         bClearFlag = FALSE;
         UnlockVram();
     }
+    if(cldraw == NULL) {
 	switch (bMode) {
 	case SCR_400LINE:
         CreateVirtualVram8(pp, x, y, w, h, bMode);
@@ -273,6 +274,8 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
         CreateVirtualVram8(pp, x, y, w, h, bMode);
 		break;
 	}
+    }
+   
 }
 
 

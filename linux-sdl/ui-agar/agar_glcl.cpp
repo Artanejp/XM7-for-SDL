@@ -104,7 +104,10 @@ cl_int GLCLDraw::GetVram(int bmode)
    int h;
    Uint8 *pr,*pg,*pb;
    Uint32 *pal;
-
+   size_t gws[] = {200}; // Parallel jobs.
+   size_t lws[] = {4}; // local jobs.
+   size_t *goff = NULL;
+	
 //   printf("STS: %d\n", ret);
 
    
@@ -148,7 +151,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       pg = (Uint8 *)vram_pg;
       pr = (Uint8 *)vram_pr;
       pb = (Uint8 *)vram_pb;
-      pal = &rgbTTLGDI[0];
+//      pal = &rgbTTLGDI[0];
       if((pb == NULL) || (pg == NULL) || (pr == NULL)) return;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
@@ -166,7 +169,7 @@ cl_int GLCLDraw::GetVram(int bmode)
                               0x4000 * sizeof(unsigned char), (void *)pg
                               , 0, NULL, &event_uploadvram[2]);
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-                              8 * sizeof(Uint32), (void *)rgbTTLGDI
+                              8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
       break;
     case SCR_262144:
@@ -200,8 +203,11 @@ cl_int GLCLDraw::GetVram(int bmode)
 				  1, (cl_mem *)&outbuf,
 				  4, event_uploadvram, &event_copytotexture);
   
-   ret |= clEnqueueTask (command_queue,
-			 kernel, 1, &event_copytotexture, &event_exec);
+//   ret |= clEnqueueTask (command_queue,
+//			 kernel, 1, &event_copytotexture, &event_exec);
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				 goff, gws, lws, 
+				 1, &event_copytotexture,  &event_exec);
    
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
