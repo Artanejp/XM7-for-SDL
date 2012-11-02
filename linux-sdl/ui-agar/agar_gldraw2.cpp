@@ -41,6 +41,7 @@ static class GLCLDraw *cldraw = NULL;
 
 static int bModeOld;
 static Uint32 *pFrameBuffer;
+extern const char *cl_render;
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
@@ -97,11 +98,6 @@ static float fBrightG;
 static float fBrightB;
 
 
-// FBO API
-PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
-PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
-PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
-
 
 static void InitGridVertexsSub(int h, GLfloat *vertex)
 {
@@ -156,22 +152,6 @@ static void DetachGridVertexs(void)
     }
 }
 
-void InitFBO(void)
-{
-#ifndef _WINDOWS // glx is for X11.
-    glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
-    if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
-    glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)glXGetProcAddress((const GLubyte *)"glDrawArraysEXT");
-    if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
-    glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glTexCoordPointerEXT");
-    if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
-#else
-    bGL_EXT_VERTEX_ARRAY = FALSE;
-    glVertexPointerEXT = NULL;
-    glDrawArraysEXT = NULL;
-    glTexCoordPointerEXT = NULL;
-#endif // _WINDOWS    
-}
 
 void InitGL_AG2(int w, int h)
 {
@@ -217,9 +197,9 @@ void InitGL_AG2(int w, int h)
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
 	InitVirtualVram();
-    InitGLExtensionVars();
-    InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
+        InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
                // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
+        InitGLExtensionVars();
 //    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // Double buffer
     InitGridVertexs(); // Grid初期化
     fBrightR = 1.0; // 輝度の初期化
@@ -428,16 +408,30 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        int ofset;
 
 //       glPushAttrib(GL_TEXTURE_BIT);
-       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
        ww = w >> 3;
        hh = h >> 3;
 
 //#ifdef _OPENMP
 //       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
 //#endif
-       if(cldraw != NULL) {
+       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	  cldraw->GetVram(bMode);
+	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
+	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	  // Copy pbo to texture 
+	  glTexSubImage2D(GL_TEXTURE_2D, 
+			  0,
+			  0,
+			  0,
+			  w,
+			  h,
+			  GL_RGBA,
+			  GL_UNSIGNED_BYTE,
+			  NULL);
+	  glBindTexture(GL_TEXTURE_2D, 0);
+	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
        } else {
+	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
 	     for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
@@ -464,7 +458,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 /*
  * "Draw"イベントハンドラ
  */
-extern const char *cl_render;
+
 void AGEventDrawGL2(AG_Event *event)
 {
 	AG_GLView *glv = (AG_GLView *)AG_SELF();
@@ -536,22 +530,22 @@ void AGEventDrawGL2(AG_Event *event)
     if(uVramTextureID == 0) {
 //        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
-        if(cldraw == NULL) {
+    }
+     if((cldraw == NULL)  && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	    cl_int r;
 	   
-	//    cldraw = new GLCLDraw;
+	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
 	       r = cldraw->BuildFromSource(cl_render);
-	       cldraw->SetupBuffer(uVramTextureID);
+	       cldraw->SetupBuffer();
 	    }
-	   
-	}
+
     }
    
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
-   
+    drawUpdateTexture(p, w, h);   
     glPushAttrib(GL_TEXTURE_BIT);
     glPushAttrib(GL_TRANSFORM_BIT);
     glPushAttrib(GL_ENABLE_BIT);
@@ -559,7 +553,7 @@ void AGEventDrawGL2(AG_Event *event)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glEnable(GL_TEXTURE_2D);
-    drawUpdateTexture(p, w, h);
+
    
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);

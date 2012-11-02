@@ -4,10 +4,41 @@
 // History: Nov 01,2012 Initial.
 // License: Apache License 2.0
 
-__kernel void getvram8(__global uchar *src, int w, int h, __global uint *out, __global uint *pal)
+
+inline uchar4 putpixel(int n)
+{
+  uchar4 cbuf;
+#if 0
+  cbuf.s0 = (n & 0x000000ff); // R
+  cbuf.s1 = (n & 0x0000ff00) >> 8; // G
+  cbuf.s2 = (n & 0x00ff0000) >> 16; // B
+  cbuf.s3 = 0xff;  // A
+#else
+  cbuf.s0 = (n & 0x000000ff) ; // R
+  cbuf.s1 = (n & 0x00ff0000) >> 16; // G
+  cbuf.s2 = (n & 0x0000ff00) >> 8; // B
+  cbuf.s3 = 0xff; //A 
+#endif
+  return cbuf;
+}
+
+inline uint8 pixeldecode8(uchar rc, uchar gc, uchar bc, __global uint *pal)
+{
+  uint8 av;
+	av.s0 = pal[((bc & 0x80) >> 7) + ((rc & 0x80) >> 6) + ((gc & 0x80) >> 5)];
+	av.s1 = pal[((bc & 0x40) >> 6) + ((rc & 0x40) >> 5) + ((gc & 0x40) >> 4)];
+	av.s2 = pal[((bc & 0x20) >> 5) + ((rc & 0x20) >> 4) + ((gc & 0x20) >> 3)];
+	av.s3 = pal[((bc & 0x10) >> 4) + ((rc & 0x10) >> 3) + ((gc & 0x10) >> 2)];
+	av.s4 = pal[((bc & 0x08) >> 3) + ((rc & 0x08) >> 2) + ((gc & 0x08) >> 1)];
+	av.s5 = pal[((bc & 0x04) >> 2) + ((rc & 0x04) >> 1) + (gc & 0x04)];
+	av.s6 = pal[((bc & 0x02) >> 1) + (rc & 0x02)      + ((gc & 0x02) << 1)];
+	av.s7 = pal[(bc & 0x01)      + ((rc & 0x01) << 1) + ((gc & 0x01) << 2)];
+  return av;
+}
+
+__kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out, __global uint *pal)
 {
   int ofset = 0x4000;
-  int i;
   int x;
   int y;
   int ybegin = 0;
@@ -16,52 +47,39 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uint *out, __
   int xend;
   int hh;
   int ww;
-  int addr;
-  uint r,g,b;
+  uint addr;
+  uint addr2;
   uchar rc,bc,gc;
-  uint8 cv;
   uint8 av;
-  uint8 palette;
-  __global uint *p;
-  __global uint8 *pv;
+  uint palette[8];
+  __global uchar4 *p;
   
   hh = h;
+  ww = w >> 3;
   yend = ybegin + hh;
-  addr = ybegin * w; 
-  ww = w;
+
   xend = xbegin + ww;
-  palette.s0 = pal[0];
-  palette.s1 = pal[1];
-  palette.s2 = pal[2];
-  palette.s3 = pal[3];
-  palette.s4 = pal[4];
-  palette.s5 = pal[5];
-  palette.s6 = pal[6];
-  palette.s7 = pal[7];
-  
   if(h > 200) ofset = 0x8000;
-  for(y = ybegin; y< yend; y++) {
+  for(y = ybegin; y < yend; y++) {
+     addr = y * ww + xbegin; 
+     addr2 = addr << 3;
+     p = &(out[addr2]);
      for(x = xbegin; x < xend; x++) {
         bc = src[addr];
 	rc = src[addr + ofset];
 	gc = src[addr + ofset + ofset];
-	p = &out[y * 640 + x * 8];
-	pv = (__global uint8 *)p;
-	b = (uint)bc;
-	g = (uint)gc;
-	r = (uint)rc;
-	//cv.s0 = (b & 0x80) >> 7 + (r & 0x80) >> 6 + (g & 0x80) >> 5;
-	//cv.s1 = (b & 0x40) >> 6 + (r & 0x40) >> 5 + (g & 0x40) >> 4;
-	//cv.s2 = (b & 0x20) >> 5 + (r & 0x20) >> 4 + (g & 0x20) >> 3;
-	//cv.s3 = (b & 0x10) >> 4 + (r & 0x10) >> 3 + (g & 0x10) >> 2;
-	//cv.s4 = (b & 0x08) >> 3 + (r & 0x08) >> 2 + (g & 0x08) >> 1;
-	//cv.s5 = (b & 0x04) >> 2 + (r & 0x04) >> 1 + (g & 0x04);
-	//cv.s6 = (b & 0x02) >> 1 + (r & 0x02)      + (g & 0x02) << 1;
-	//cv.s7 = (b & 0x01)      + (r & 0x01) << 1 + (g & 0x01) << 2;
-	//*pv = shuffle(palette, cv);
-	cv = (uint8){0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-	             0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
-	*pv = cv;
+	av = pixeldecode8(rc, bc, gc, pal);
+	*p++ = putpixel(av.s0);
+	*p++ = putpixel(av.s1);
+	*p++ = putpixel(av.s2);
+	*p++ = putpixel(av.s3);
+	*p++ = putpixel(av.s4);
+	*p++ = putpixel(av.s5);
+	*p++ = putpixel(av.s6);
+	*p++ = putpixel(av.s7);
+
+        addr++;
+	addr2 += 8;
 	}
     }
 }	

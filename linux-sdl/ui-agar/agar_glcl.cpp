@@ -32,6 +32,8 @@ extern Uint8 *vram_pr;
 extern Uint8 *vram_pg;
 }
 
+extern PFNGLBINDBUFFERPROC glBindBuffer;
+
 
 GLCLDraw::GLCLDraw()
 {
@@ -164,7 +166,7 @@ cl_int GLCLDraw::GetVram(int bmode)
                               0x4000 * sizeof(unsigned char), (void *)pg
                               , 0, NULL, &event_uploadvram[2]);
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-                              8 * sizeof(Uint32), (void *)(&rgbTTLGDI[0])
+                              8 * sizeof(Uint32), (void *)rgbTTLGDI
                               , 0, NULL, &event_uploadvram[3]);
       break;
     case SCR_262144:
@@ -211,13 +213,27 @@ cl_int GLCLDraw::GetVram(int bmode)
 				   
 }
 
-cl_int GLCLDraw::SetupBuffer(GLuint texid)
+cl_int GLCLDraw::SetupBuffer(void)
 {
    cl_int ret = 0;
    cl_int r;
-   outbuf = clCreateFromGLTexture (context, CL_MEM_WRITE_ONLY,
-			      GL_TEXTURE_2D, 0, texid, &r);
-   ret |= r;
+   unsigned int size = 640 * 400 * sizeof(cl_uchar4);
+   // Texture直接からPBO使用に変更 20121102
+
+   if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+      glGenBuffers(1, &pbo);
+      glBindBuffer(GL_ARRAY_BUFFER, pbo);
+   
+      glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
+		                 pbo, &r);
+      ret |= r;
+   }
+   
+//   outbuf = clCreateFromGLTexture (context, CL_MEM_WRITE_ONLY,
+//			      GL_TEXTURE_2D, 0, texid, &r);
+
      
    inbuf = clCreateBuffer(context, CL_MEM_READ_WRITE,
  		  (size_t)(320 * 200 * 24 * sizeof(Uint8)), NULL, &r);
@@ -226,6 +242,11 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    palette = clCreateBuffer(context, CL_MEM_READ_WRITE,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
    ret |= r;
-   printf("Alloc STS: %d texid = %d\n", ret, texid);
+   printf("Alloc STS: %d \n", ret);
    return ret;
+}
+
+GLuint GLCLDraw::GetPbo(void)
+{
+   return pbo;
 }

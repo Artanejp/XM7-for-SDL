@@ -48,16 +48,21 @@ DEBUGSRC = \
 
 GLSRC = \
 	agar_gldraw2.cpp \
-	agar_glutil.cpp
-	
-.SUFFIXES: .c .cpp .asm .o
+	agar_glutil.cpp \
+	agar_glcl.cpp
 
-SRCS =	$(COMMONSRC) $(GLSRC) $(GUISRC) $(DEBUGSRC)
+CLSRC = cl_render.cl
+
+.SUFFIXES: .cl .c .cpp .asm .o
+
+SRCS =	$(COMMONSRC) $(GLSRC) $(GUISRC) $(DEBUGSRC) $(CLSRC)
 CSRCS =	$(filter %.c, $(SRCS))
 CXXSRCS = $(filter %.cpp, $(SRCS))
+CLSRCS = $(filter %.cl, $(SRCS))
 
 OBJS = $(patsubst %.c,%.o,$(CSRCS))
 OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
+OBJS += $(patsubst %.cl,%.o,$(CLSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
@@ -79,6 +84,12 @@ Release/%.o: %.cpp
 	mkdir -p Release
 	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
 
+Release/%.o: %.cl
+	mkdir -p Release
+	gawk -f cl2cpp.awk -v VARNAME=$(patsubst %.cl,%,$<) $(filter %.cl, $<) > $(patsubst %.cl,%.cpp,$<)
+	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(patsubst %.cl,%.cpp,$<)
+	rm $(patsubst %.cl,%.cpp,$<)
+
 Debug/%.o: %.c
 	mkdir -p Debug
 	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
@@ -87,6 +98,11 @@ Debug/%.o: %.cpp
 	mkdir -p Debug
 	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
 
+Debug/%.o: %.cl
+	mkdir -p Debug
+	gawk -f cl2cpp.awk -v VARNAME=$(patsubst %.cl,%,$<) $(filter %.cl, $<) > $(patsubst %.cl,%.cpp,$<)
+	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(patsubst %.cl,%.cpp,$<)
+	rm $(patsubst %.cl,%.cpp,$<)
 	
 
 .asm.o:

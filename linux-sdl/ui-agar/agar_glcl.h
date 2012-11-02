@@ -30,8 +30,9 @@ class GLCLDraw {
    ~GLCLDraw();
    cl_int GetVram(int bmode);
    cl_int BuildFromSource(const char *p);
-   cl_int SetupBuffer(GLuint texid);
-
+   cl_int SetupBuffer(void);
+   GLuint GLCLDraw::GetPbo(void);
+   
    cl_platform_id platform_id = NULL;
    cl_uint ret_num_platforms;
    cl_device_id device_id = NULL;
@@ -52,6 +53,6 @@ class GLCLDraw {
    cl_mem outbuf = NULL;
    cl_mem palette = NULL;
    cl_context_properties *properties = NULL;	
-
+   GLuint pbo = 0;
 };
 

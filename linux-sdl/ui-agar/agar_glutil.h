@@ -8,8 +8,13 @@
 //#include <agar/gui/opengl.h>
 
 #include <SDL/SDL.h>
+#ifdef _WINDOWS
 #include <GL/gl.h>
 #include <GL/glext.h>
+#else
+#include <GL/glx.h>
+#include <GL/glxext.h>
+#endif
 
 #include "api_draw.h"
 //#include "api_scaler.h"
@@ -31,7 +36,18 @@ extern BOOL bGL_SGIS_PIXEL_TEXTURE; // テクスチャアップデート用
 extern BOOL bGL_EXT_PACKED_PIXEL; // PackedPixelを使ってアップデートを高速化？
 extern BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
 extern BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
+extern BOOL bGL_PIXEL_UNPACK_BUFFER_BINDING; // Pixel buffer
 
+// FBO API
+extern PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
+extern PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
+extern PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
+extern PFNGLBINDBUFFERPROC glBindBuffer;
+extern PFNGLBUFFERDATAPROC glBufferData;
+extern PFNGLGENBUFFERSPROC glGenBuffers;
+   
+extern void InitFBO(void);
+   
 extern void InitGLExtensionVars(void);
 extern BOOL QueryGLExtensions(const char *str);
 #ifdef __cplusplus

@@ -4,6 +4,7 @@
  */
 
 #include "agar_glutil.h"
+
 extern "C" {
     AG_GLView *GLDrawArea;
 }
@@ -118,7 +119,16 @@ BOOL bGL_SGIS_PIXEL_TEXTURE; // テクスチャアップデート用
 BOOL bGL_EXT_PACKED_PIXEL; // PackedPixelを使ってアップデートを高速化？
 BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
 BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
+BOOL bGL_PIXEL_UNPACK_BUFFER_BINDING; // ピクセルバッファがあるか？
 
+   
+// FBO API
+PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
+PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
+PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
+PFNGLBINDBUFFERPROC glBindBuffer;
+PFNGLBUFFERDATAPROC glBufferData;
+PFNGLGENBUFFERSPROC glGenBuffers;
 
 BOOL QueryGLExtensions(const char *str)
 {
@@ -163,7 +173,33 @@ void InitGLExtensionVars(void)
     bGL_EXT_PACKED_PIXEL = QueryGLExtensions("GL_EXT_packed_pixel");
     bGL_EXT_PALETTED_TEXTURE = QueryGLExtensions("GL_EXT_paletted_texture");
     bGL_EXT_VERTEX_ARRAY = QueryGLExtensions("GL_EXT_vertex_array");
+//    bGL_PIXEL_UNPACK_BUFFER_BINDING = QueryGLExtensions("GL_pixel_unpack_buffer_binding");
+    bGL_PIXEL_UNPACK_BUFFER_BINDING = TRUE;
 
 }
-   
+
+void InitFBO(void)
+{
+#ifndef _WINDOWS // glx is for X11.
+    glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
+    if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+    glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)glXGetProcAddress((const GLubyte *)"glDrawArraysEXT");
+    if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+    glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glTexCoordPointerEXT");
+    if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+    glBindBuffer = (PFNGLBINDBUFFERPROC)glXGetProcAddress((const GLubyte *)"glBindBuffer");
+    if(glBindBuffer == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+    glBufferData = (PFNGLBUFFERDATAPROC)glXGetProcAddress((const GLubyte *)"glBufferData");
+    if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+    glGenBuffers = (PFNGLGENBUFFERSPROC)glXGetProcAddress((const GLubyte *)"glGenBuffers");
+    if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+
+#else
+    bGL_EXT_VERTEX_ARRAY = FALSE;
+    glVertexPointerEXT = NULL;
+    glDrawArraysEXT = NULL;
+    glTexCoordPointerEXT = NULL;
+#endif // _WINDOWS    
+}
+
 }
