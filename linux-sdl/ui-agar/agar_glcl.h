@@ -54,5 +54,8 @@ class GLCLDraw {
    cl_mem palette = NULL;
    cl_context_properties *properties = NULL;	
    GLuint pbo = 0;
+   cl_int window_copy8(void);
+   cl_int GLCLDraw::window_copy8_400l(void);
+   cl_int copysub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int multi_page, int vramoffset);
 };
 

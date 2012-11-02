@@ -103,7 +103,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out, 
 	*p++ = putpixel(av.s7);
 
         addr++;
-	addr2 += 8;
+//	addr2 += 8;
 	}
     }
 }	
