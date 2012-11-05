@@ -149,9 +149,6 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
 
-#if 1
-   return;
-#endif
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
