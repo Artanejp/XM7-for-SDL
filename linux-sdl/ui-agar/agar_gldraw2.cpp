@@ -246,35 +246,35 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 	}
 	if(drv == NULL) return;
 //	if(AG_UsingGL(drv) == 0) return; // Non-GL
-
+    if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING)  return; // Skip when OpenCL.
+   
     if(pVirtualVram == NULL) return;
     pp = &(pVirtualVram->pVram[0][0]);
 
-    if(pp == NULL) return;
-	if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
+   
+   if(pp == NULL) return;
+   if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
 
-    if(bClearFlag) {
-        LockVram();
-        memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
-        bClearFlag = FALSE;
-        UnlockVram();
-    }
-    if(cldraw == NULL) {
-	switch (bMode) {
-	case SCR_400LINE:
-        CreateVirtualVram8(pp, x, y, w, h, bMode);
-		break;
-	case SCR_262144:
-        CreateVirtualVram256k(pp, x, y, w, h, bMode, mpage);
-		break;
-	case SCR_4096:
-        CreateVirtualVram4096(pp, x, y, w, h, bMode, mpage);
-		break;
-	case SCR_200LINE:
-        CreateVirtualVram8(pp, x, y, w, h, bMode);
-		break;
-	}
-    }
+   if(bClearFlag) {
+      LockVram();
+      memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
+      bClearFlag = FALSE;
+      UnlockVram();
+   }
+   switch (bMode) {
+    case SCR_400LINE:
+      CreateVirtualVram8(pp, x, y, w, h, bMode);
+      break;
+    case SCR_262144:
+      CreateVirtualVram256k(pp, x, y, w, h, bMode, mpage);
+      break;
+    case SCR_4096:
+      CreateVirtualVram4096(pp, x, y, w, h, bMode, mpage);
+      break;
+    case SCR_200LINE:
+      CreateVirtualVram8(pp, x, y, w, h, bMode);
+      break;
+   }
    
 }
 
@@ -418,7 +418,9 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 //       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
 //#endif
        if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+	  LockVram();
 	  cldraw->GetVram(bMode);
+	  UnlockVram();
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  // Copy pbo to texture 

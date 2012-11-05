@@ -35,14 +35,14 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
      Uint32 ds;
 
 //     if((index > 10) || (index < 0)) return;
-     LockVram();
+//     LockVram();
 #ifdef AG_LITTLE_ENDIAN
 	ds =r + (g << 8)+ (b << 16) + (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
     rgbTTLGDI[index] = ds;
-    UnlockVram();
+//    UnlockVram();
 }
 
 static inline void putword(Uint32 *disp, Uint8 *cbuf)
