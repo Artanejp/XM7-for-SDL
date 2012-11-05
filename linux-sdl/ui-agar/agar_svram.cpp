@@ -181,8 +181,8 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
         SetDrawFlag(TRUE);
         bClearFlag = FALSE;
     }
-	switch (bMode) {
-	case SCR_400LINE:
+     switch (bMode) {
+      case SCR_400LINE:
         BuildVirtualVram8(pp, x, y, w, h, bMode);
 		break;
 	case SCR_262144:
@@ -195,5 +195,6 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
         BuildVirtualVram8(pp, x, y, w, h, bMode);
 		break;
 	}
+
 	UnlockVram();
 }
