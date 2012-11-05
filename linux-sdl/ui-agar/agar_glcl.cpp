@@ -33,6 +33,16 @@ extern Uint8 *vram_pg;
 }
 
 extern PFNGLBINDBUFFERPROC glBindBuffer;
+struct DisplayDesc {
+  cl_int w;  
+  cl_int h;  
+  cl_int window_open;
+  cl_int window_dx1;
+  cl_int window_dx2;
+  cl_int window_dy1;
+  cl_int window_dy2;
+  cl_int vramoffset;
+};
 
 
 GLCLDraw::GLCLDraw()
@@ -40,8 +50,8 @@ GLCLDraw::GLCLDraw()
    cl_int ret;
    
    properties = malloc(16 * sizeof(intptr_t));
-    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
+   ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
                          &ret_num_devices);
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();
@@ -120,6 +130,9 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
    if((drawwidth / 8) ==  w) {
       int offset = (drawwidth / 8) * ybegin;
       int band = (drawwidth  / 8) * h;
+      pb = &pb[offset + xb];
+      pr = &pr[offset + xb];
+      pg = &pg[offset + xb];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset,
                               band * sizeof(unsigned char), (void *)pb
                               , 0, NULL, &event_uploadvram[0]);
@@ -130,7 +143,7 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
                               band * sizeof(unsigned char), (void *)pg
                               , 0, NULL, &event_uploadvram[2]);
    } else {
-      int dwb = drawwidth >> 3;
+      int dwb = drawwidth / 8;
       int offset = dwb * ybegin + xb;
       size_t buffer_origin[3];
       size_t host_origin[3];
@@ -138,12 +151,17 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
       buffer_origin[0] = xb;
       buffer_origin[1] = ybegin;
       buffer_origin[2] = 0;
-      host_origin[0] = xb;
-      host_origin[1] = ybegin;
+      host_origin[0] = 0;
+      host_origin[1] = 0;
       host_origin[2] = 0;
       region[0] = ww;
       region[1] = h;
-      region[2] = 3;
+      region[2] = 1;
+      printf("Window: %d x %d -> %d,%d \n",ww, h, xb, ybegin);
+      //pb = &pb[offset];
+      //pr = &pr[offset];
+      //pg = &pg[offset];
+      buffer_origin[2] = 0;
       ret |= clEnqueueWriteBufferRect ( command_queue,
 				inbuf,
 				CL_TRUE,
@@ -158,6 +176,36 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
 				0,
 				NULL,
 			        &event_uploadvram[0]);
+      buffer_origin[2] = 1;
+      ret |= clEnqueueWriteBufferRect ( command_queue,
+				inbuf,
+				CL_TRUE,
+				buffer_origin,
+				host_origin,
+				region,
+				dwb,
+				vramoffset,
+				dwb,
+				vramoffset,
+				(void *)pr,
+				0,
+				NULL,
+			        &event_uploadvram[1]);
+      buffer_origin[2] = 2;
+      ret |= clEnqueueWriteBufferRect ( command_queue,
+				inbuf,
+				CL_TRUE,
+				buffer_origin,
+				host_origin,
+				region,
+				dwb,
+				vramoffset,
+				dwb,
+				vramoffset,
+				(void *)pg,
+				0,
+				NULL,
+			        &event_uploadvram[2]);
    }
   
    return ret;
@@ -234,6 +282,15 @@ cl_int GLCLDraw::window_copy8_400l(void)
    
    if (bClearFlag) {
       AllClear();
+   }
+   if(bPaletFlag) { // 描画モードでVRAM変更
+      //Palet640();
+      bPaletFlag = FALSE;
+      nDrawTop = 0;
+      nDrawBottom = 400;
+      nDrawLeft = 0;
+      nDrawRight = 640;
+//      SetDrawFlag(TRUE);
    }
 //   nDrawTop = 0;
 //   nDrawBottom = 400;
@@ -356,7 +413,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    clFinish(command_queue);
    ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
-				  0, NULL, &event_copytotexture);
+				  4, event_uploadvram, &event_copytotexture);
   
 //   ret |= clEnqueueTask (command_queue,
 //			 kernel, 1, &event_copytotexture, &event_exec);

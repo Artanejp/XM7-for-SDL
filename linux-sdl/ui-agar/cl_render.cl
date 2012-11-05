@@ -4,7 +4,17 @@
 // History: Nov 01,2012 Initial.
 // License: Apache License 2.0
 
-
+struct DisplayDesc {
+  int w  __attribute__((endian(host)));
+  int h  __attribute__((endian(host)));
+  int window_open __attribute__((endian(host)));
+  int window_dx1  __attribute__((endian(host)));
+  int window_dx2  __attribute__((endian(host)));
+  int window_dy1  __attribute__((endian(host)));
+  int window_dy2  __attribute__((endian(host)));
+  int vramoffset  __attribute__((endian(host)));
+};
+  
 inline uchar4 putpixel(int n)
 {
   uchar4 cbuf;
