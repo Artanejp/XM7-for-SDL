@@ -1477,7 +1477,7 @@ void Palet320(void)
 	 if (!(multi_page & 0x40)) {
 		 amask |= 0x0f00;
 	 }
-     LockVram();
+//     LockVram();
 	 for (i = 0; i < 4096; i++) {
 		 /*
 		  * 最下位から5bitづつB,G,R
@@ -1494,7 +1494,7 @@ void Palet320(void)
 		  }
 		  Palet320Sub(i, r, g, b, 255);
 	 }
-     UnlockVram();
+//     UnlockVram();
 
 }
 

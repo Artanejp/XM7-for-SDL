@@ -49,22 +49,6 @@ GLCLDraw::GLCLDraw()
 {
    cl_int ret;
    
-   properties = malloc(16 * sizeof(intptr_t));
-   ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
-                         &ret_num_devices);
-   properties[0] = CL_GL_CONTEXT_KHR;
-   properties[1] = (cl_context_properties)glXGetCurrentContext();
-   properties[2] = CL_GLX_DISPLAY_KHR;
-   properties[3] = (cl_context_properties)glXGetCurrentDisplay();
-   properties[4] = CL_CONTEXT_PLATFORM;
-   properties[5] = (cl_context_properties)platform_id;
-   properties[6] = 0;
-
-   context = clCreateContext(properties, 1, &device_id, NULL, NULL, &ret);
-       
-   command_queue = clCreateCommandQueue(context, device_id,
-                                         CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
 }
 
 GLCLDraw::~GLCLDraw()
@@ -78,7 +62,35 @@ GLCLDraw::~GLCLDraw()
     if(inbuf != NULL) ret |= clReleaseMemObject(inbuf);
     if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
     if(palette != NULL) ret |= clReleaseMemObject(palette);
+    if(table != NULL) ret |= clReleaseMemObject(table);
 }
+
+cl_int GLCLDraw::InitContext(void)
+{
+   cl_int ret;
+   properties = malloc(16 * sizeof(intptr_t));
+   ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+   if(ret != CL_SUCCESS) return ret;
+   
+   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
+                         &ret_num_devices);
+   properties[0] = CL_GL_CONTEXT_KHR;
+   properties[1] = (cl_context_properties)glXGetCurrentContext();
+   properties[2] = CL_GLX_DISPLAY_KHR;
+   properties[3] = (cl_context_properties)glXGetCurrentDisplay();
+   properties[4] = CL_CONTEXT_PLATFORM;
+   properties[5] = (cl_context_properties)platform_id;
+   properties[6] = 0;
+   if(ret != CL_SUCCESS) return ret;
+
+   context = clCreateContext(properties, 1, &device_id, NULL, NULL, &ret);
+   if(ret != CL_SUCCESS) return ret;
+       
+   command_queue = clCreateCommandQueue(context, device_id,
+                                         CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
+   return ret;
+}
+
 
 cl_int GLCLDraw::BuildFromSource(const char *p)
 {
@@ -617,8 +629,8 @@ cl_int GLCLDraw::GetVram(int bmode)
 //   printf("STS: %d\n", ret);
 
    
-   if(inbuf == NULL) return;
-   if(outbuf == NULL) return;
+   if(inbuf == NULL) return -1;
+   if(outbuf == NULL) return -1;
 
    switch(bmode) {
     case SCR_400LINE:
@@ -631,6 +643,8 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
+      ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
@@ -646,6 +660,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
+      ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
@@ -663,6 +678,8 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
+      ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+      
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
@@ -689,6 +706,53 @@ cl_int GLCLDraw::GetVram(int bmode)
    kernel = NULL;
    return ret;
 				   
+}
+
+
+cl_int GLCLDraw::SetupTable(void)
+{
+   cl_int r = 0;
+   unsigned int i;
+   unsigned int j;
+   cl_uint *tbl;
+   cl_uint v[8];
+  
+   tbl = (cl_uint *)malloc(0x100 * 8 * 20 * sizeof(cl_uint));
+    for(j = 0; j < 256; j++) {
+       v[0] = (j & 0x80) >> 7;
+       v[1] = (j & 0x40) >> 6;
+       v[2] = (j & 0x20) >> 5;
+       v[3] = (j & 0x10) >> 4;
+       v[4] = (j & 0x08) >> 3;
+       v[5] = (j & 0x04) >> 2;
+       v[6] = (j & 0x02) >> 1;
+       v[7] = (j & 0x01);
+       for(i = 0; i < 20 ; i++) {
+	  tbl[i * 0x800 + j * 8 + 0] = v[0]; 
+	  tbl[i * 0x800 + j * 8 + 1] = v[1]; 
+	  tbl[i * 0x800 + j * 8 + 2] = v[2]; 
+	  tbl[i * 0x800 + j * 8 + 3] = v[3]; 
+	  tbl[i * 0x800 + j * 8 + 4] = v[4]; 
+	  tbl[i * 0x800 + j * 8 + 5] = v[5]; 
+	  tbl[i * 0x800 + j * 8 + 6] = v[6]; 
+	  tbl[i * 0x800 + j * 8 + 7] = v[7];
+	  v[0] = v[0] * 2;
+	  v[1] = v[1] * 2;
+	  v[2] = v[2] * 2;
+	  v[3] = v[3] * 2;
+	  v[4] = v[4] * 2;
+	  v[5] = v[5] * 2;
+	  v[6] = v[6] * 2;
+	  v[7] = v[7] * 2;
+       }
+    }
+    if(table != NULL) {
+      r |= clEnqueueWriteBuffer(command_queue, table, CL_TRUE, 0,
+                              0x100 * 8 * 20 * sizeof(cl_uint), (void *)tbl
+                              , 0, NULL, NULL);
+    }
+   free(tbl);
+   return r;
 }
 
 cl_int GLCLDraw::SetupBuffer(void)
@@ -718,6 +782,10 @@ cl_int GLCLDraw::SetupBuffer(void)
    palette = clCreateBuffer(context, CL_MEM_READ_WRITE,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
    ret |= r;
+   table = clCreateBuffer(context, CL_MEM_READ_WRITE,
+ 		  (size_t)(0x100 * 8 * 20 * sizeof(cl_uint)), NULL, &r);
+   ret |= r;
+   
    printf("Alloc STS: %d \n", ret);
    return ret;
 }

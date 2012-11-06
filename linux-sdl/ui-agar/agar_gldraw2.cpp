@@ -17,7 +17,9 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #endif
-#include <agar_glcl.h>
+#ifdef _USE_OPENCL
+# include <agar_glcl.h>
+#endif
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -37,10 +39,13 @@
 
 
 GLuint uVramTextureID;
+#ifdef _USE_OPENCL
 static class GLCLDraw *cldraw = NULL;
+#endif
 
 static int bModeOld;
 static Uint32 *pFrameBuffer;
+static BOOL bInitCL;
 extern const char *cl_render;
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
@@ -83,8 +88,9 @@ void DetachGL_AG2(void)
        free(pFrameBuffer);
        pFrameBuffer = NULL;
     }
-    if(cldraw != NULL) delete cldraw;
-
+#ifdef _USE_OPENCL
+   if(cldraw != NULL) delete cldraw;
+#endif
 //    pGetVram = NULL;
 }
 
@@ -166,8 +172,9 @@ void InitGL_AG2(int w, int h)
     vram_pb = NULL;
     vram_pg = NULL;
     vram_pr = NULL;
-    cldraw = NULL;
-
+#ifdef _USE_OPENCL
+   cldraw = NULL;
+#endif
 	flags = SDL_OPENGL | SDL_RESIZABLE;
     switch (bpp) {
          case 8:
@@ -196,6 +203,7 @@ void InitGL_AG2(int w, int h)
 	InitVramSemaphore();
 	uVramTextureID = 0;
 	pVirtualVram = NULL;
+        bInitCL = FALSE;
 	InitVirtualVram();
         InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
                // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
@@ -246,7 +254,9 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 	}
 	if(drv == NULL) return;
 //	if(AG_UsingGL(drv) == 0) return; // Non-GL
+#ifdef _USE_OPENCL
     if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING)  return; // Skip when OpenCL.
+#endif
    
     if(pVirtualVram == NULL) return;
     pp = &(pVirtualVram->pVram[0][0]);
@@ -417,6 +427,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 //#ifdef _OPENMP
 //       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
 //#endif
+#ifdef _USE_OPENCL
        if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	  LockVram();
 	  cldraw->GetVram(bMode);
@@ -436,6 +447,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
        } else {
+#endif
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
 	     for(xx = 0; xx < ww; xx++) {
@@ -449,7 +461,9 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 
             if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
 //            glPopAttrib();
+#ifdef _USE_OPENCL
        }
+#endif       
        
 //    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 
@@ -536,17 +550,37 @@ void AGEventDrawGL2(AG_Event *event)
 //        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
     }
-     if((cldraw == NULL)  && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+#ifdef _USE_OPENCL   
+     if((cldraw == NULL)  && bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
 	    cl_int r;
-	   
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
-	       r = cldraw->BuildFromSource(cl_render);
-	       cldraw->SetupBuffer();
+	       r = cldraw->InitContext();
+	       printf("CTX: STS = %d \n", r);
+	       if(r == CL_SUCCESS){  
+		 r = cldraw->BuildFromSource(cl_render);
+		  printf("Build: STS = %d \n", r);
+	         if(r == CL_SUCCESS) {
+		    r = cldraw->SetupBuffer();
+		    r |= cldraw->SetupTable();
+		    if(r != CL_SUCCESS){
+		       delete cldraw;
+		       cldraw = NULL;
+		    }
+		 } else {
+		    delete cldraw;
+		    cldraw = NULL;
+		 }
+	       } else {
+		  delete cldraw;
+		  cldraw = NULL;
+	       }
+	       
+	
 	    }
-
+	bInitCL = TRUE;
     }
-   
+#endif // _USE_OPENCL   
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */

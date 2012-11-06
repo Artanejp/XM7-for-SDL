@@ -16,11 +16,11 @@
 #include <GL/glxext.h>
 #endif
 
-//#ifdef __USE_OPENCLGL
+#ifdef _USE_OPENCL
  #include <CL/cl.h>
  #include <CL/cl_gl.h>
  #include <CL/cl_gl_ext.h>
-//#endif /* __USE_OPENCLGL */
+
 
 extern GLuint uVramTextureID;
 
@@ -31,6 +31,8 @@ class GLCLDraw {
    cl_int GetVram(int bmode);
    cl_int BuildFromSource(const char *p);
    cl_int SetupBuffer(void);
+   cl_int SetupTable(void);
+   cl_int InitContext(void);
    GLuint GLCLDraw::GetPbo(void);
    
    cl_platform_id platform_id = NULL;
@@ -52,6 +54,7 @@ class GLCLDraw {
    cl_mem inbuf = NULL;
    cl_mem outbuf = NULL;
    cl_mem palette = NULL;
+   cl_mem table = NULL;
    cl_context_properties *properties = NULL;	
    GLuint pbo = 0;
    cl_int window_copy8(void);
@@ -61,3 +64,4 @@ class GLCLDraw {
    cl_int copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int multi_page);
 };
 
+#endif /* _USE_OPENCL */
