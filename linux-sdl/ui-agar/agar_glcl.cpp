@@ -230,15 +230,15 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
       
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset,
                               band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, &event_uploadvram[0]);
+                              , 0, NULL, NULL);
       pb = &pb[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset,
                               band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, &event_uploadvram[0]);
+                              , 0, NULL, NULL);
       pb = &pb[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 2,
                               band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, &event_uploadvram[0]);
+                              , 0, NULL, NULL);
       pb = &pb[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 3,
                               band * sizeof(unsigned char), (void *)pb
@@ -246,15 +246,15 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
 
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 4,
                               band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, &event_uploadvram[1]);
+                              , 0, NULL, NULL);
       pr = &pr[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 5,
                               band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, &event_uploadvram[1]);
+                              , 0, NULL, NULL);
       pr = &pr[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 6,
                               band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, &event_uploadvram[1]);
+                              , 0, NULL, NULL);
       pr = &pr[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 7,
                               band * sizeof(unsigned char), (void *)pr
@@ -262,15 +262,15 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
 
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 8,
                               band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, &event_uploadvram[2]);
+                              , 0, NULL, NULL);
       pg = &pg[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 9,
                               band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, &event_uploadvram[2]);
+                              , 0, NULL, NULL);
       pg = &pg[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 10,
                               band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, &event_uploadvram[2]);
+                              , 0, NULL, NULL);
       pg = &pg[vramoffset];
       ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_TRUE, offset + voffset * 11,
                               band * sizeof(unsigned char), (void *)pg
@@ -623,7 +623,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    Uint8 *pr,*pg,*pb;
    Uint32 *pal;
    size_t gws[] = {200}; // Parallel jobs.
-   size_t lws[] = {8}; // local jobs.
+   size_t *lws = NULL; // local jobs.
    size_t *goff = NULL;
 	
 //   printf("STS: %d\n", ret);
@@ -636,7 +636,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_400LINE:
       w = 640;
       h = 400;
-      gws[0] = h * 2;
+      gws[0] = h / 4;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -653,7 +653,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_200LINE:
       w = 640;
       h = 200;
-      gws[0] = h * 2;
+      gws[0] = h / 4;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -671,7 +671,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_4096:
       w = 320;
       h = 200;
-      gws[0] = h * 2;
+      gws[0] = h / 4;
       kernel = clCreateKernel(program, "getvram4096", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);

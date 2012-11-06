@@ -254,9 +254,6 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 	}
 	if(drv == NULL) return;
 //	if(AG_UsingGL(drv) == 0) return; // Non-GL
-#ifdef _USE_OPENCL
-    if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING)  return; // Skip when OpenCL.
-#endif
    
     if(pVirtualVram == NULL) return;
     pp = &(pVirtualVram->pVram[0][0]);
@@ -271,6 +268,9 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
       bClearFlag = FALSE;
       UnlockVram();
    }
+#ifdef _USE_OPENCL
+    if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING)  return; // Skip when OpenCL.
+#endif
    switch (bMode) {
     case SCR_400LINE:
       CreateVirtualVram8(pp, x, y, w, h, bMode);
@@ -410,7 +410,7 @@ e1:
 static void drawUpdateTexture(Uint32 *p, int w, int h)
 {
     LockVram();
-//    if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
+
     if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
        Uint32 *pu;
        Uint32 *pq;
@@ -446,6 +446,8 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 			  NULL);
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+//	  bVramUpdateFlag = TRUE;
+
        } else {
 #endif
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
@@ -524,7 +526,7 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
             TexCoords[2][0] = TexCoords[1][0] = 640.0f / 640.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
+            TexCoords[2][1] = TexCoords[3][1] = 199.0f / 400.0f; // Yend
             break;
         case SCR_262144:
         case SCR_4096:
@@ -535,7 +537,7 @@ void AGEventDrawGL2(AG_Event *event)
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
             TexCoords[2][0] = TexCoords[1][0] = 320.0f / 640.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 200.0f / 400.0f; // Yend
+            TexCoords[2][1] = TexCoords[3][1] = 199.0f / 400.0f; // Yend
             break;
      }
 

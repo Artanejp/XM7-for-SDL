@@ -37,24 +37,15 @@ void InitGL(int w, int h)
 {
     AG_Driver *drv;
 
-//    if(agDriverSw) {
-//        drv = &agDriverSw->_inherit;
-//    } else if(MainWindow != NULL) {
-//        drv = AGDRIVER(MainWindow);
-//    }// else {
-//        return;
-//    }
     SDL_SemWait(DrawInitSem);
 #ifdef USE_OPENGL
    if(AG_UsingGL(NULL)) {
         InitGL_AG2(w, h);
     } else {
         InitNonGL(w, h);
-//        AG_ResizeDisplay(w, h);
     }
 #else
-        InitNonGL(w, h);
-   //     AG_ResizeDisplay(w, h);
+   InitNonGL(w, h);
 #endif
     SDL_SemPost(DrawInitSem);
 }
@@ -71,12 +62,12 @@ void InitNonGL(int w, int h)
     vram_pg = NULL;
     vram_pr = NULL;
 
-	flags = SDL_RESIZABLE;
-
-	InitVramSemaphore();
-	pVirtualVram = NULL;
-	InitVirtualVram();
-    return;
+   flags = SDL_RESIZABLE;
+   
+   InitVramSemaphore();
+   pVirtualVram = NULL;
+   InitVirtualVram();
+   return;
 }
 
 

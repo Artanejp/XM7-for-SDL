@@ -42,6 +42,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   int xend;
   int hh;
   int ww;
+  int xx;
   int t;
   int gid;
   uint addr;
@@ -64,9 +65,10 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   
   t = get_global_size(0);
   gid = get_global_id(0);
-
+  
+  
   ww = w >> 3;
-  ybegin = (gid * h) / t;
+  ybegin = (gid * h) / t; 
   hh = ((gid + 1) * h) / t;
   if(hh > h) {
      hh = h - ybegin;
@@ -82,8 +84,8 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   palette.s5 = pal[5];
   palette.s6 = pal[6];
   palette.s7 = pal[7];
+  
   yend = ybegin + hh;
-
   xend = xbegin + ww;
   if(h > 200) ofset = 640 * 400 / 8;
 
@@ -151,14 +153,17 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   t = get_global_size(0);
   gid = get_global_id(0);
 
+  
   ww = w >> 3;
-  ybegin = (gid * h) / t;
+  ybegin = (gid * h) / t; 
   hh = ((gid + 1) * h) / t;
   if(hh > h) {
      hh = h - ybegin;
   } else {
      hh = hh - ybegin;
   }
+
+
 
   yend = ybegin + hh;
 
