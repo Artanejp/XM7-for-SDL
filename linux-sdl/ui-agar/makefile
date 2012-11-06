@@ -36,7 +36,8 @@ GUISRC = \
 	agar_menu_tool.cpp \
 	agar_ui_vkey.cpp \
 	agar_toolbox.cpp \
-	
+
+ifdef WITH_DEBUGGER
 DEBUGSRC = \
 	agar_surfaceconsole.cpp \
 	agar_dbg_disasm.cpp \
@@ -45,6 +46,9 @@ DEBUGSRC = \
 	agar_dbg_mmr.cpp \
 	agar_dbg_regdump.cpp \
 
+else
+DEBUGSRC = 
+endif
 
 GLSRC = \
 	agar_gldraw2.cpp \

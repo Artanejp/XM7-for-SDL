@@ -1,6 +1,7 @@
 #ifndef AGAR_DEBUGGER_H_INCLUDED
 #define AGAR_DEBUGGER_H_INCLUDED
 
+#ifdef _WITH_DEBUGGER
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
@@ -257,5 +258,5 @@ static inline void byte2chr(BYTE b, char *str)
 }
 
 
-
+#endif // #ifdef _WITH_DEBUGGER
 #endif // AGAR_DEBUGGER_H_INCLUDED

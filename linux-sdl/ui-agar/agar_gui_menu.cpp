@@ -40,7 +40,9 @@ extern void Create_Drive0Menu(AG_MenuItem *self);
 extern void Create_Drive1Menu(AG_MenuItem *self);
 extern void Create_TapeMenu(AG_MenuItem *self);
 extern void Create_ToolsMenu(AG_MenuItem *parent);
+#ifdef _WITH_DEBUGGER
 extern void Create_DebugMenu(AG_MenuItem *parent);
+#endif
 extern void Create_AboutMenu(AG_MenuItem *self);
 extern void OnPushCancel(AG_Event *event);
 
@@ -157,10 +159,10 @@ void Create_AGMainBar(AG_Widget *Parent)
 
  	item = AG_MenuNode(MenuBar->root, gettext("Tape"), NULL);
 	Create_TapeMenu(item);
-
+#ifdef _WITH_DEBUGGER
  	item = AG_MenuNode(MenuBar->root, gettext("Debug"), NULL);
         Create_DebugMenu(item);
-
+#endif //_WITH_DEBUGGER
  	item = AG_MenuNode(MenuBar->root, gettext("Tools"), NULL);
  	Create_ToolsMenu(item);
  	item = AG_MenuNode(MenuBar->root, gettext("Help"), NULL);

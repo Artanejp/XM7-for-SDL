@@ -18,12 +18,19 @@ all: Release Debug
 #Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug libfmgen009-debug
 #	make -C sdl xm7.debug
 
+ifdef WITH_DEBUGGER
 Release: ui-agar-release vm-release debugger-release libfmgen008-release
 	make -C sdl xm7
 
 Debug: ui-agar-debug vm-debug debugger-debug libfmgen008-debug
 	make -C sdl xm7.debug
+else
+Release: ui-agar-release vm-release libfmgen008-release
+	make -C sdl xm7
 
+Debug: ui-agar-debug vm-debug libfmgen008-debug
+	make -C sdl xm7.debug
+endif
 
 libfmgen008-release:
 	make -C fmgen Release/libfmgen007a.a

@@ -41,8 +41,9 @@
 
 extern Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
+#ifdef _WITH_DEBUGGER
 extern void Detach_DebugMenu(void);
-
+#endif
 
 extern "C" {
 extern void InitInstance(void);
@@ -184,38 +185,40 @@ void OnCreate(AG_Widget *parent)
 void OnDestroy(AG_Event *event)
 {
    // 20120610 GUI関連処理
+#ifdef _WITH_DEBUGGER
    Detach_DebugMenu();
-        /*
-         * サウンド停止
-         */
-       StopSnd();
-        SaveCfg();
-    	AG_ConfigSave();
-       /*
-        * コンポーネント クリーンアップ
-        */
+#endif
+   /*
+    * サウンド停止
+    */
+   StopSnd();
+   SaveCfg();
+   AG_ConfigSave();
+   /*
+    * コンポーネント クリーンアップ
+    */
 #ifdef FDDSND
-        CleanFDDSnd();
+   CleanFDDSnd();
 #endif				/*  */
-        CleanSch();
-        CleanKbd();
-        CleanSnd();
-        DestroyStatus();
+   CleanSch();
+   CleanKbd();
+   CleanSnd();
+   DestroyStatus();
 
-        CleanDraw();
+   CleanDraw();
 
-        /*
-         * 仮想マシン クリーンアップ
-         */
-        if(pCpuID != NULL) {
-	   detachCpuID(pCpuID);
-	   pCpuID = NULL;
-	}
+   /*
+    * 仮想マシン クリーンアップ
+    */
+   if(pCpuID != NULL) {
+      detachCpuID(pCpuID);
+      pCpuID = NULL;
+   }
 
-        system_cleanup();
-        AG_MutexDestroy(&VMMutex);
-//	AG_Destroy();
-        AG_Quit();
+   system_cleanup();
+   AG_MutexDestroy(&VMMutex);
+   //	AG_Destroy();
+   AG_Quit();
 
 }
 

@@ -5,6 +5,7 @@
  *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
+#ifdef _WITH_DEBUGGER
 #include <SDL/SDL.h>
 #include <libintl.h>
 extern "C" {
@@ -40,6 +41,7 @@ extern void DBG_Bin2Hex1(char *str, Uint8 b);
 extern void DBG_Bin2Hex2(char *str, Uint16 w);
 extern void DBG_Bin2Hex4(char *str, Uint32 dw);
 extern void DBG_DumpAsc(char *str, Uint8 b);
+
 
 /*
  * Fix Fonts
@@ -639,4 +641,5 @@ void Detach_DebugMenu(void)
   DbgDetachFont();
 }
 
+#endif // _WITH_DEBUGGER
   

@@ -82,14 +82,18 @@ LIBS += `agar-config --libs`
 
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a
+ifdef WITH_DEBUGGER
 LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a
+endif
 LIBS_RELEASE += ../fmgen/Release/libfmgen007a.a
 
 
 #LIBS_DEBUG = ../libemugrph/Debug/libemugrph.a
 LIBS_DEBUG += ../ui-agar/Debug/libui-agar.a
 LIBS_DEBUG += ../vm/Debug/libxm7_vm.a
+ifdef WITH_DEBUGGER
 LIBS_DEBUG += ../xm7-debugger/Debug/libxm7_debug.a
+endif
 LIBS_DEBUG += ../fmgen/Debug/libfmgen007a.a
 
 
