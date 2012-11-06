@@ -188,8 +188,8 @@ static void OnOpenDisk(AG_Event *event)
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskSubEv, "%i", Drive);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
-	AG_FileDlgAddType(dlg, "2D Disk Image File", "*.2d,*.2D", OnOpenDiskSubEv, NULL);
-	AG_FileDlgAddType(dlg, "VFD Disk Image File", "*.vfd,*.VFD", OnOpenDiskSubEv, NULL);
+	AG_FileDlgAddType(dlg, "2D Disk Image File", "*.2d,*.2D", OnOpenDiskSubEv, "%i", Drive);
+	AG_FileDlgAddType(dlg, "VFD Disk Image File", "*.vfd,*.VFD", OnOpenDiskSubEv, "%i", Drive);
     AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
     AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);

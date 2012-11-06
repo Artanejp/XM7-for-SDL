@@ -366,7 +366,7 @@ void DrawDrive(int drive, BOOL override)
 		 strncpy(name, fdc_name[drive][fdc_media[drive]], 126);
 	 }
 	 if (fdc_ready[drive] == FDC_TYPE_2D) {
-		 strcpy(name, "2D DISK");
+		 strcpy(name, "*2D*");
 	 }
 	 if (fdc_ready[drive] == FDC_TYPE_VFD) {
 		 strcpy(name, "VFD DISK");

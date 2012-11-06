@@ -40,7 +40,7 @@
 
 GLuint uVramTextureID;
 #ifdef _USE_OPENCL
-static class GLCLDraw *cldraw = NULL;
+class GLCLDraw *cldraw = NULL;
 #endif
 
 static int bModeOld;

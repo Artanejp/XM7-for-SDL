@@ -14,7 +14,6 @@ extern "C" {
 #include <agar/gui/opengl.h>
 }
 #include "xm7.h"
-//#include "tapelp.h"
 
 
 #ifdef USE_AGAR
@@ -25,17 +24,19 @@ extern "C" {
 #include "sdl_cfg.h"
 #endif
 
-//#include "sdl_bar.h"
-//#include "api_kbd.h"
 #include "sdl_sch.h"
-//#include "sdl_snd.h"
 #include "sdl_inifile.h"
-//#include "api_draw.h"
-//#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 #include "agar_cmd.h"
+#ifdef _USE_OPENCL
+#include "agar_glcl.h"
+extern class GLCLDraw *cldraw;
+#endif
 
 extern void OnPushCancel(AG_Event *event);
+#ifdef USE_OPENGL
+extern AG_GLView *GLDrawArea;
+#endif
 
 static void Dialog_OnPushOK(AG_Event *event)
 {
@@ -81,9 +82,23 @@ void OnAboutDialog(AG_Event *event)
 			AG_PixmapFromSurface(vbox1, 0, mark);
 		}
 	}
-
+       if(GLDrawArea != NULL) {
+#ifdef _USE_OPENCL
+	  if(cldraw != NULL) {	
+	     strcpy(string, "Render: OpenCL+OpenGL");
+	  } else {
+	     strcpy(string, "Render: OpenGL");
+	  }
+#else
+	  strcpy(string, "Render: OpenGL");
+#endif	  
+       } else {
+	  strcpy(string, "Render: DirectDraw");
+       }
+   
+	  
 	vbox2 = AG_VBoxNew(hbox, AG_VBOX_VFILL);
-	label = AG_LabelNew(vbox2, 0, "FM-7/77AV/SX Emulateor \"XM7\"""\n "VERSTR);
+	label = AG_LabelNew(vbox2, 0, "FM-7/77AV/SX Emulateor \"XM7\"""\n "VERSTR"%s\n", string);
 	AG_LabelJustify(label, AG_TEXT_RIGHT);
 
 
