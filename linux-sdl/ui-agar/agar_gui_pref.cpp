@@ -399,10 +399,12 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("SMOOSING"), &localconfig.bSmoosing);
+		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use OpenCL(Need REBOOT)"), &localconfig.bUseOpenCL);
 	}
 }
 
-static float fBright0;
+float fBright0;
 #ifdef USE_OPENGL
 extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 static void OnChangeBright(AG_Event *event)
@@ -411,7 +413,7 @@ static void OnChangeBright(AG_Event *event)
         if(fBright0 < 0.0f) fBright0 = 0.0f;
         if(fBright0 > 1.0f) fBright0 = 1.0f;
         SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
-   
+        localconfig.nBrightness = (Uint16)(fBright0 * 255.0f);
 }
 #endif /* USE_OPENGL */
 

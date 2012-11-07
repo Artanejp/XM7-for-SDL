@@ -41,6 +41,11 @@
 GLuint uVramTextureID;
 #ifdef _USE_OPENCL
 class GLCLDraw *cldraw = NULL;
+extern "C" 
+{
+extern BOOL bUseOpenCL;
+}
+
 #endif
 
 static int bModeOld;
@@ -242,7 +247,7 @@ void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 	Uint32 c[8];
 	Uint32 *pp;
 	AG_Driver *drv;
-    GLuint tid;
+        GLuint tid;
 
 	if(GLDrawArea == NULL) return;
 	// Test
@@ -552,8 +557,8 @@ void AGEventDrawGL2(AG_Event *event)
 //        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
     }
-#ifdef _USE_OPENCL   
-     if((cldraw == NULL)  && bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
+#ifdef _USE_OPENCL
+     if(bUseOpenCL && (cldraw == NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
 	    cl_int r;
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {

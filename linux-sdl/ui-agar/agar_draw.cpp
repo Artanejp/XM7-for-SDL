@@ -30,6 +30,9 @@ extern void ResizeStatus(AG_Widget *parent, int w, int h, int y);
 
 extern "C" {
 XM7_SDLView *DrawArea;
+#ifdef _USE_OPENCL
+BOOL bUseOpenCL;
+#endif   
 }
 
 
@@ -43,6 +46,7 @@ void InitGL(int w, int h)
         InitGL_AG2(w, h);
     } else {
         InitNonGL(w, h);
+//        bUseOpenCL = FALSE;
     }
 #else
    InitNonGL(w, h);

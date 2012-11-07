@@ -33,16 +33,7 @@ extern Uint8 *vram_pg;
 }
 
 extern PFNGLBINDBUFFERPROC glBindBuffer;
-struct DisplayDesc {
-  cl_int w;  
-  cl_int h;  
-  cl_int window_open;
-  cl_int window_dx1;
-  cl_int window_dx2;
-  cl_int window_dy1;
-  cl_int window_dy2;
-  cl_int vramoffset;
-};
+
 
 
 GLCLDraw::GLCLDraw()

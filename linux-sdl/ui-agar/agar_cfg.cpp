@@ -36,13 +36,23 @@ configdat_t configdat;	/* コンフィグ用データ */
  *  スタティック ワーク
  */
 static char   *pszSection;	/* セクション名 */
+
+/*
+ * Ecternal functions
+ */
 extern void SetKeyCodeAG(Uint8 code, int sym, int mod);
 extern void GetKeyCodeAG(Uint8 code, void *p);
 
 extern void LoadKeyMapAG(struct XM7KeyCode *pMap);
 extern void InitKeyMapAG(void);
 extern void GetDefMapAG(struct XM7KeyCode *pMap);
+extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 
+/*
+ * 追加Configエントリ
+ */
+extern float fBright0;
+extern BOOL bUseOpenCL;
 /*
  *  パス保存用キー名
  */
@@ -409,6 +419,21 @@ void LoadCfg(void)
     	configdat.nEmuFPS = 2;
     }
     /*
+     * BrightNess 20121107
+     */
+    configdat.nBrightness = LoadCfgInt("Brightness", 255);
+    if(configdat.nBrightness > 255) {
+    	configdat.nBrightness = 255;
+    }
+    if(configdat.nBrightness < 0) {
+    	configdat.nBrightness = 0;
+    }
+    /*
+     * OpenCL 20121107
+     */
+    configdat.bUseOpenCL = LoadCfgBool("UseOpenCL", 1);
+
+    /*
     * ASPECT比追加
     */
     configdat.nAspect = LoadCfgInt("Aspect", nAspect43);
@@ -647,6 +672,10 @@ void SaveCfg(void)
      * Emu FPS追加 20110123
      *
      */
+    
+    SaveCfgInt("EmuFPS", configdat.nEmuFPS);
+    SaveCfgBool("UseOpenCL", configdat.bUseOpenCL);
+    SaveCfgInt("Brightness", configdat.nBrightness);
     SaveCfgInt("EmuFPS", configdat.nEmuFPS);
     /*
     * ASPECT比追加
@@ -821,6 +850,10 @@ void ApplyCfg(void)
     nDrawFPS = configdat.nDrawFPS;
     nEmuFPS = configdat.nEmuFPS;
     nAspect = configdat.nAspect;
+    bUseOpenCL = configdat.bUseOpenCL;
+    fBright0 = (float)configdat.nBrightness / 255.0f;
+    SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
+   
     bSmoosing = configdat.bSmoosing;
     display_notify();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
