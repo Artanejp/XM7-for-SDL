@@ -6,10 +6,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XM 7-for-SDL\n"
-"Report-Msgid-Bugs-To: K.Ohta <whatisthis.sowhat@gmail.com>\n"
-"POT-Creation-Date: 2012-11-07 12:48+0900\n"
-"PO-Revision-Date: 2012-11-07 12:50+0900\n"
-"Last-Translator: K.Ohta <whatisthis.sowhat@gmail.com>\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-11-07 12:01+0900\n"
+"PO-Revision-Date: 2012-11-07 12:09+0900\n"
+"Last-Translator:  <whatisthis.sowhat@gmail.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -333,25 +333,21 @@ msgstr "閉じる"
 msgid ""
 "Error init VM.\n"
 "Please check ROMS and system-memory.\n"
-msgstr ""
-"VM初期化に失敗しました。\n"
+msgstr "VM初期化に失敗しました。\n"
 "システムメモリとROMをチェックして下さい。\n"
 
 #: agar_main.cpp:404
 msgid ""
 "Error init Emulator.\n"
 "Please check window system, display and more.\n"
-msgstr ""
-"エミュレータの初期化に失敗しました。\n"
+msgstr "エミュレータの初期化に失敗しました。\n"
 "Windowシステムやディスプレィなどをチェックして下さい。\n"
 
 #: agar_main.cpp:407
-#, fuzzy
 msgid ""
 "Unknown error on setup.\n"
-"Please email to author."
-msgstr ""
-"不明なエラーです。\n"
+"Please email to author.\n"
+msgstr "不明なエラーです。\n"
 "作者に連絡して下さい\n"
 
 #: agar_menu_about.cpp:66
@@ -560,9 +556,8 @@ msgid "Capture to BMP"
 msgstr "BMPファイルに画面を取り込む"
 
 #: agar_menu_tool.cpp:321
-#, fuzzy
-msgid "Capture to BMP without Scaling."
-msgstr "BMPファイルに画面を取り込む(拡大なし)"
+msgid "Capture to BMP 2"
+msgstr "BMPファイルに画面を取り込む"
 
 #: agar_menu_tool.cpp:387
 msgid "Capture Sound"
@@ -603,14 +598,6 @@ msgstr "入力設定"
 #: agar_menu_tool.cpp:427
 msgid "Configure Sound"
 msgstr "音声設定"
-
-#: agar_toolbox.cpp:155
-msgid "Load status as"
-msgstr "ステートファイルを読む"
-
-#: agar_toolbox.cpp:237
-msgid "Save status as"
-msgstr "ステートファイルを保存する"
 
 #: agar_ui_vkey.cpp:423
 msgid "Press Key"
