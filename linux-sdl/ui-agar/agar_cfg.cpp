@@ -46,7 +46,9 @@ extern void GetKeyCodeAG(Uint8 code, void *p);
 extern void LoadKeyMapAG(struct XM7KeyCode *pMap);
 extern void InitKeyMapAG(void);
 extern void GetDefMapAG(struct XM7KeyCode *pMap);
+#ifdef USE_OPENGL
 extern void SetBrightRGB_AG_GL2(float r, float g, float b);
+#endif
 
 /*
  * 追加Configエントリ
@@ -852,8 +854,9 @@ void ApplyCfg(void)
     nAspect = configdat.nAspect;
     bUseOpenCL = configdat.bUseOpenCL;
     fBright0 = (float)configdat.nBrightness / 255.0f;
+#ifdef USE_OPENGL   
     SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
-   
+#endif   
     bSmoosing = configdat.bSmoosing;
     display_notify();
 	ResizeWindow_Agar(nDrawWidth, nDrawHeight);

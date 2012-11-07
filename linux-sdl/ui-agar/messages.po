@@ -6,15 +6,15 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-07 12:01+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Project-Id-Version: 0.3.2pre2\n"
+"Report-Msgid-Bugs-To: K.Ohta <whatisthis.sowhat@gmail.com>\n"
+"POT-Creation-Date: 2012-11-07 12:48+0900\n"
+"PO-Revision-Date: 2012-11-07 12:49+0900\n"
+"Last-Translator: K.Ohta <whatisthis.sowhat@gmail.com>\n"
+"Language-Team: K.Ohta <whatisthis.sowhat@gmail.com>\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: agar_gui_menu.cpp:104
@@ -553,7 +553,7 @@ msgid "Capture to BMP"
 msgstr ""
 
 #: agar_menu_tool.cpp:321
-msgid "Capture to BMP 2"
+msgid "Capture to BMP without Scaling."
 msgstr ""
 
 #: agar_menu_tool.cpp:387
@@ -594,6 +594,14 @@ msgstr ""
 
 #: agar_menu_tool.cpp:427
 msgid "Configure Sound"
+msgstr ""
+
+#: agar_toolbox.cpp:155
+msgid "Load status as"
+msgstr ""
+
+#: agar_toolbox.cpp:237
+msgid "Save status as"
 msgstr ""
 
 #: agar_ui_vkey.cpp:423

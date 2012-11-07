@@ -30,9 +30,9 @@ extern void ResizeStatus(AG_Widget *parent, int w, int h, int y);
 
 extern "C" {
 XM7_SDLView *DrawArea;
-#ifdef _USE_OPENCL
+//#ifdef _USE_OPENCL
 BOOL bUseOpenCL;
-#endif   
+//#endif   
 }
 
 
@@ -115,7 +115,8 @@ void ResizeWindow_Agar(int w, int h)
         if(MenuBar) {
             hh = hh + MenuBar->wid.h;
 	}
-   if(GLDrawArea) {
+#ifdef USE_OPENGL
+      if(GLDrawArea) {
 	  AG_SizeAlloc a;
 	  a.w = w;
 	  a.h = h;
@@ -125,7 +126,9 @@ void ResizeWindow_Agar(int w, int h)
 	  AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
 	  AG_GLViewSizeHint(GLDrawArea, w, h);
 	  hh += h;
-       } else if(DrawArea) {
+       } else 
+#endif
+       if(DrawArea) {
 	  AG_SizeAlloc a;
 	  a.w = w;
 	  a.h = h;

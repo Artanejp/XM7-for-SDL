@@ -452,7 +452,7 @@ void OnConfigEmulationMenu(AG_Event *event)
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
-    	 * ここに、メニューの実体を置く
+    	 * 
     	 */
     	tab = AG_NotebookAddTab(note, gettext("Emulation"), AG_BOX_HORIZ);
     	ConfigMenuEmulation(tab);
@@ -571,7 +571,7 @@ void OnConfigInputMenu(AG_Event *event)
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
-    	 * ここに、メニューの実体を置く
+    	 * 
     	 */
 
     	tab = AG_NotebookAddTab(note, gettext("Keyboard"), AG_BOX_HORIZ);
@@ -762,7 +762,7 @@ void OnConfigSoundMenu(AG_Event *event)
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
-    	 * ここに、メニューの実体を置く
+    	 * 
     	 */
 
     	tab = AG_NotebookAddTab(note, gettext("Volume"), AG_BOX_VERT);

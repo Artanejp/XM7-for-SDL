@@ -1,0 +1,591 @@
+# Japanese translations for xm package.
+# Copyright (C) 2012 THE xm'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the xm package.
+#  <whatisthis.sowhat@gmail.com>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: xm 7-sdl\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-05-26 22:10+0900\n"
+"PO-Revision-Date: 2012-05-26 21:18+0900\n"
+"Last-Translator:  <whatisthis.sowhat@gmail.com>\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: agar_gui_menu.cpp:102
+msgid "Select mode (Notice: If select , reboot.)"
+msgstr "ブートモードを選択してください（選択後リブート）"
+
+#: agar_gui_menu.cpp:111
+msgid "BASIC"
+msgstr "BASIC"
+
+#: agar_gui_menu.cpp:113
+msgid "DOS"
+msgstr "DOS"
+
+#: agar_gui_menu.cpp:115 agar_gui_pref.cpp:450 agar_gui_pref.cpp:565
+#: agar_gui_pref.cpp:756 agar_menu_disk.cpp:301 agar_menu_disk.cpp:358
+#: agar_menu_tape.cpp:199 agar_ui_vkey.cpp:379 agar_ui_vkey.cpp:428
+msgid "Cancel"
+msgstr "いいえ"
+
+#: agar_gui_menu.cpp:117 agar_gui_menu.cpp:135
+msgid "Boot Mode"
+msgstr "ブートモード"
+
+#: agar_gui_menu.cpp:126
+msgid "Quick Save"
+msgstr "クイックセーブ"
+
+#: agar_gui_menu.cpp:127
+msgid "Quick Load"
+msgstr "クイックロード"
+
+#: agar_gui_menu.cpp:129
+msgid "Save As..."
+msgstr "保存する..."
+
+#: agar_gui_menu.cpp:130
+msgid "Load"
+msgstr "読み込む"
+
+#: agar_gui_menu.cpp:132
+msgid "Cold Reset"
+msgstr "リセット"
+
+#: agar_gui_menu.cpp:133
+msgid "Hot Reset"
+msgstr "ホットリセット"
+
+#: agar_gui_menu.cpp:137
+msgid "Quit"
+msgstr "終了"
+
+#: agar_gui_menu.cpp:149
+msgid "File"
+msgstr "ファイル"
+
+#: agar_gui_menu.cpp:152
+msgid "Drive 1"
+msgstr "1:"
+
+#: agar_gui_menu.cpp:155
+msgid "Drive 0"
+msgstr "0:"
+
+#: agar_gui_menu.cpp:158
+msgid "Tape"
+msgstr "テープ"
+
+#: agar_gui_menu.cpp:161
+msgid "Debug"
+msgstr "デバッガ"
+
+#: agar_gui_menu.cpp:164
+msgid "Tools"
+msgstr "ツール"
+
+#: agar_gui_menu.cpp:166
+msgid "Help"
+msgstr "ヘルプ"
+
+#: agar_gui_menu.cpp:167
+#, fuzzy
+msgid "About"
+msgstr "XM7について"
+
+#: agar_gui_pref.cpp:157
+msgid "Emulation Type"
+msgstr "エミュレーションタイプ"
+
+#: agar_gui_pref.cpp:162
+msgid "Cycle Steal"
+msgstr "サイクルスチール"
+
+#: agar_gui_pref.cpp:169
+msgid "Auto Speed Adjust"
+msgstr "自動速度調整する"
+
+#: agar_gui_pref.cpp:170
+msgid "Full Speed"
+msgstr "全力で動かす"
+
+#: agar_gui_pref.cpp:171
+msgid "Disable Speed adjust when motor on"
+msgstr "モーターがONの時は速度調整省略"
+
+#: agar_gui_pref.cpp:172
+msgid "Full Speed adjust when motor on"
+msgstr "モーターがONの時は全速"
+
+#: agar_gui_pref.cpp:173
+msgid "Wait on accessing FDD"
+msgstr "フロッピーアクセスで待つ"
+
+#: agar_gui_pref.cpp:207 agar_gui_pref.cpp:212 agar_gui_pref.cpp:217
+#: agar_gui_pref.cpp:222
+msgid "cycles"
+msgstr "サイクル数"
+
+#: agar_gui_pref.cpp:207
+msgid "Main CPU"
+msgstr "メイン"
+
+#: agar_gui_pref.cpp:212
+msgid "Sub CPU"
+msgstr "サブ"
+
+#: agar_gui_pref.cpp:217
+msgid "Main CPU MMR"
+msgstr "メイン MMR"
+
+#: agar_gui_pref.cpp:222
+msgid "Main CPU Fast MMR"
+msgstr "高速MMR"
+
+#: agar_gui_pref.cpp:227
+msgid "Reset Default"
+msgstr "デフォルトに戻す"
+
+#: agar_gui_pref.cpp:358
+msgid "Display rate"
+msgstr "表示レート"
+
+#: agar_gui_pref.cpp:364
+msgid "Emulation rate"
+msgstr ""
+
+#: agar_gui_pref.cpp:370
+msgid "Full Scan (15KHz)"
+msgstr "フルスキャン(15KHz)"
+
+#: agar_gui_pref.cpp:372
+msgid "Sync to VSYNC"
+msgstr "VSYNCに合わせる"
+
+#: agar_gui_pref.cpp:374
+msgid "SMOOSING"
+msgstr "ぼかす"
+
+#: agar_gui_pref.cpp:398
+msgid "Bright"
+msgstr "輝度"
+
+#: agar_gui_pref.cpp:428
+msgid "Emulation"
+msgstr "エミュレーション"
+
+#: agar_gui_pref.cpp:431
+msgid "Cycle"
+msgstr "サイクル"
+
+#: agar_gui_pref.cpp:434
+msgid "Screen"
+msgstr "画面"
+
+#: agar_gui_pref.cpp:437
+msgid "Display"
+msgstr "ディスプレィ"
+
+#: agar_gui_pref.cpp:446 agar_gui_pref.cpp:561 agar_gui_pref.cpp:752
+#: agar_menu_about.cpp:93 agar_menu_tape.cpp:190
+msgid "OK"
+msgstr "はい"
+
+#: agar_gui_pref.cpp:452
+msgid "Preferences"
+msgstr "設定"
+
+#: agar_gui_pref.cpp:487
+msgid "Joystick #0"
+msgstr "ジョイスティック#0"
+
+#: agar_gui_pref.cpp:495
+msgid "Joystick #1"
+msgstr "ジョイスティック#1"
+
+#: agar_gui_pref.cpp:519
+msgid "Bind multi-pressed cursor as oblique direction"
+msgstr "複数押しを斜めに割り当てる"
+
+#: agar_gui_pref.cpp:520
+msgid "Bind Cursor as Ten-Key"
+msgstr "カーソルキーをテンキーに割り当てる"
+
+#: agar_gui_pref.cpp:521
+msgid "Pseudo Realtime Scan"
+msgstr "擬似リアルタイムスキャン"
+
+#: agar_gui_pref.cpp:522 agar_ui_vkey.cpp:389
+msgid "Virtual Keyboard"
+msgstr "仮想キーボード"
+
+#: agar_gui_pref.cpp:523
+msgid "Assign Keyboard"
+msgstr "キーボードの割り当て"
+
+#: agar_gui_pref.cpp:548
+msgid "Keyboard"
+msgstr "キーボード"
+
+#: agar_gui_pref.cpp:551
+msgid "Joystick"
+msgstr "ジョイスティック"
+
+#: agar_gui_pref.cpp:554 agar_gui_pref.cpp:743
+msgid "Misc"
+msgstr "その他"
+
+#: agar_gui_pref.cpp:567
+msgid "Configure Input"
+msgstr "入力設定"
+
+#: agar_gui_pref.cpp:619
+msgid "Sample Rate"
+msgstr "サンプル周波数"
+
+#: agar_gui_pref.cpp:623
+msgid "HQ Rendering"
+msgstr "高品質"
+
+#: agar_gui_pref.cpp:627
+msgid "Per Second"
+msgstr "毎秒"
+
+#: agar_gui_pref.cpp:627
+msgid "Sound Buffer"
+msgstr "バッファサイズ"
+
+#: agar_gui_pref.cpp:630
+msgid "Force Stereo"
+msgstr "強制的にステレオ"
+
+#: agar_gui_pref.cpp:631
+msgid "FDD Seek & Motor"
+msgstr "FDDシーク音とモーター音"
+
+#: agar_gui_pref.cpp:632
+msgid "CMT Monitor"
+msgstr "カセット音声"
+
+#: agar_gui_pref.cpp:650
+msgid "Enable OPN"
+msgstr "OPN使用する"
+
+#: agar_gui_pref.cpp:651
+msgid "Enable WHG"
+msgstr "WHG使用する"
+
+#: agar_gui_pref.cpp:652
+msgid "Enable THG"
+msgstr "THG使用する"
+
+#: agar_gui_pref.cpp:681
+msgid "Main Volume"
+msgstr "主音量"
+
+#: agar_gui_pref.cpp:687
+msgid "PSG"
+msgstr "PSG音量"
+
+#: agar_gui_pref.cpp:691
+msgid "FM"
+msgstr "FM音量"
+
+#: agar_gui_pref.cpp:695
+msgid "BEEP"
+msgstr "ブザー音量"
+
+#: agar_gui_pref.cpp:699
+msgid "CMT"
+msgstr "カセット音量"
+
+#: agar_gui_pref.cpp:703
+msgid "SFX"
+msgstr "FDDとモーターリレー"
+
+#: agar_gui_pref.cpp:707
+msgid "Channel Separation"
+msgstr "チャンネルセパレーション"
+
+#: agar_gui_pref.cpp:739
+msgid "Volume"
+msgstr "音量"
+
+#: agar_gui_pref.cpp:741
+msgid "Rendering"
+msgstr "音声レンダリング"
+
+#: agar_gui_pref.cpp:758
+msgid "Sound Preferences"
+msgstr "音声設定"
+
+#: agar_menu_about.cpp:65
+msgid "About XM7/SDL"
+msgstr "XM7/SDLについて"
+
+#: agar_menu_about.cpp:101
+msgid "About XM7"
+msgstr "XM7について"
+
+#: agar_menu_debug.cpp:206
+#, fuzzy
+msgid "Dump Main memory"
+msgstr "メインメモリのダンプ"
+
+#: agar_menu_debug.cpp:211
+#, fuzzy
+msgid "Dump Sub memory"
+msgstr "サブメモリのダンプ"
+
+#: agar_menu_debug.cpp:218 agar_menu_debug.cpp:300
+msgid "Addr"
+msgstr ""
+
+#: agar_menu_debug.cpp:222 agar_menu_debug.cpp:304 agar_menu_debug.cpp:381
+#: agar_menu_debug.cpp:455 agar_menu_debug.cpp:533
+msgid "Poll"
+msgstr ""
+
+#: agar_menu_debug.cpp:241 agar_menu_debug.cpp:318 agar_menu_debug.cpp:393
+#: agar_menu_debug.cpp:467 agar_menu_debug.cpp:545
+msgid "Close"
+msgstr "閉じる"
+
+#: agar_menu_debug.cpp:290
+#, fuzzy
+msgid "Disasm Main memory"
+msgstr "メインメモリの逆アセンブル"
+
+#: agar_menu_debug.cpp:294
+#, fuzzy
+msgid "Disasm Sub memory"
+msgstr "サブメモリの逆アセンブル"
+
+#: agar_menu_debug.cpp:365
+#, fuzzy
+msgid "Main CPU Registers"
+msgstr "メイン MMR"
+
+#: agar_menu_debug.cpp:371
+msgid "Sub CPU Registers"
+msgstr "サブMPUレジスタ"
+
+#: agar_menu_debug.cpp:454
+#, fuzzy
+msgid "FDC Registers"
+msgstr "FDCレジスタ"
+
+#: agar_menu_debug.cpp:532
+msgid "MMR Bank-map"
+msgstr "MMRバンク"
+
+#: agar_menu_debug.cpp:559
+msgid "Pause"
+msgstr "ポーズ"
+
+#: agar_menu_debug.cpp:561
+msgid "Dump Main-Memory"
+msgstr "メインメモリのダンプ"
+
+#: agar_menu_debug.cpp:562
+msgid "Dump Sub-Memory"
+msgstr "サブメモリのダンプ"
+
+#: agar_menu_debug.cpp:564
+msgid "Disasm Main-Memory"
+msgstr "メインメモリの逆アセンブル"
+
+#: agar_menu_debug.cpp:565
+msgid "Disasm Sub-Memory"
+msgstr "サブメモリの逆アセンブル"
+
+#: agar_menu_debug.cpp:567
+msgid "Dump Main-Regs"
+msgstr "レジスタダンプ（メイン）"
+
+#: agar_menu_debug.cpp:568
+msgid "Dump Sub-Regs"
+msgstr "レジスタダンプ（サブ）"
+
+#: agar_menu_debug.cpp:570
+msgid "Dump FDC Regs"
+msgstr "FDCレジスタのダンプ"
+
+#: agar_menu_debug.cpp:572
+msgid "Dump MMR"
+msgstr "MMR状態のダンプ"
+
+#: agar_menu_disk.cpp:193
+msgid "Open Disk Image"
+msgstr "ディスクイメージを開く"
+
+#: agar_menu_disk.cpp:216
+msgid "Open Disk Image Both"
+msgstr "両ドライブでディスクイメージを開く"
+
+#: agar_menu_disk.cpp:240 agar_menu_disk.cpp:382
+msgid "Write Protect"
+msgstr "書き込み保護設定"
+
+#: agar_menu_disk.cpp:284
+msgid "Switch Write Protect on"
+msgstr "書き込み保護オン"
+
+#: agar_menu_disk.cpp:297
+msgid "ON"
+msgstr "ON"
+
+#: agar_menu_disk.cpp:299
+msgid "OFF"
+msgstr "OFF"
+
+#: agar_menu_disk.cpp:325
+msgid "Select Disk Image on "
+msgstr "ディスクイメージを選択："
+
+#: agar_menu_disk.cpp:359
+msgid "Select Image"
+msgstr "イメージを選択"
+
+#: agar_menu_disk.cpp:369 agar_menu_tape.cpp:210
+msgid "Open"
+msgstr "開く"
+
+#: agar_menu_disk.cpp:370
+msgid "Open Both"
+msgstr "両方で開く"
+
+#: agar_menu_disk.cpp:372 agar_menu_tape.cpp:212
+msgid "Eject"
+msgstr "取り出す"
+
+#: agar_menu_disk.cpp:377
+msgid "Eject Temp"
+msgstr "一時的に取り出す"
+
+#: agar_menu_disk.cpp:387
+msgid "Image Select"
+msgstr "イメージを選択"
+
+#: agar_menu_tape.cpp:74
+msgid "Open Tape Image"
+msgstr "テープイメージを開く"
+
+#: agar_menu_tape.cpp:172
+msgid "NO Tape Exists"
+msgstr "テープはありません"
+
+#: agar_menu_tape.cpp:174
+msgid "Tape: Write Protected"
+msgstr "テープの書き込み保護"
+
+#: agar_menu_tape.cpp:176
+msgid "Recording to Virtual Tape"
+msgstr "テープイメージに録音する"
+
+#: agar_menu_tape.cpp:193
+msgid "Start"
+msgstr "再生"
+
+#: agar_menu_tape.cpp:195
+msgid "Stop"
+msgstr "停止"
+
+#: agar_menu_tape.cpp:201
+msgid "Recording to Tape"
+msgstr "テープに録音する"
+
+#: agar_menu_tape.cpp:223
+msgid "Rewind"
+msgstr "巻き戻し"
+
+#: agar_menu_tape.cpp:224
+msgid "Fast Forward"
+msgstr "先送り"
+
+#: agar_menu_tape.cpp:227
+msgid "Record Tape"
+msgstr "テープに録音する"
+
+#: agar_menu_tool.cpp:120 agar_menu_tool.cpp:188
+msgid "Make Disk Image"
+msgstr "ディスクイメージを作成する"
+
+#: agar_menu_tool.cpp:122
+msgid "Title"
+msgstr "タイトル"
+
+#: agar_menu_tool.cpp:128
+msgid "Disk Format"
+msgstr "デイスクをフォーマットする"
+
+#: agar_menu_tool.cpp:143
+msgid "Create Disk "
+msgstr "ディスクイメージを作る"
+
+#: agar_menu_tool.cpp:200
+msgid "Create Tape"
+msgstr "テープイメージを作る"
+
+#: agar_menu_tool.cpp:252
+msgid "Capture to BMP"
+msgstr "画面をBMPで取り込む"
+
+#: agar_menu_tool.cpp:303
+msgid "Capture to BMP 2"
+msgstr "画面をBMPで取り込む（拡大なし）"
+
+#: agar_menu_tool.cpp:369
+msgid "Capture Sound"
+msgstr "音声を記録する"
+
+#: agar_menu_tool.cpp:397
+msgid "Capture Screen "
+msgstr "画面を取り込む"
+
+#: agar_menu_tool.cpp:398
+msgid "Capture Screen (Non-Scaled)"
+msgstr "画面を取り込む（拡大なし）"
+
+#: agar_menu_tool.cpp:399
+msgid "Capture WAV"
+msgstr "WAVで取り込む"
+
+#: agar_menu_tool.cpp:401
+msgid "Adjust Clock"
+msgstr "時計合わせ"
+
+#: agar_menu_tool.cpp:403
+msgid "Create Virtual Disk"
+msgstr "仮想ディスクを作る"
+
+#: agar_menu_tool.cpp:404
+msgid "Create Virtual Tape"
+msgstr "仮想テープを作る"
+
+#: agar_menu_tool.cpp:407
+msgid "Configure Emulation"
+msgstr "エミュレーション設定"
+
+#: agar_menu_tool.cpp:408
+msgid "Configure Inputs"
+msgstr "入力設定"
+
+#: agar_menu_tool.cpp:409
+msgid "Configure Sound"
+msgstr "音声設定"
+
+#: agar_ui_vkey.cpp:423
+msgid "Press Key"
+msgstr "キーを押してください"
+
+#: agar_ui_vkey.cpp:435
+msgid "Assign Keycode"
+msgstr "キーコードの割り当て"

@@ -152,6 +152,7 @@ void OnLoadStatus(AG_Event *event)
     AG_FileDlg *dlg;
     dlgWin = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     if(dlgWin == NULL) return;
+    AG_WindowSetCaption(dlgWin, "%s", gettext("Load status as"));
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
@@ -233,6 +234,7 @@ void OnSaveAs(AG_Event *event)
     dlgWin = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
 //    dlgWin = MainWindow;
     if(dlgWin == NULL) return;
+    AG_WindowSetCaption(dlgWin, "%s", gettext("Save status as"));
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);

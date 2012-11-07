@@ -82,6 +82,7 @@ void OnAboutDialog(AG_Event *event)
 			AG_PixmapFromSurface(vbox1, 0, mark);
 		}
 	}
+#ifdef USE_OPENGL   
        if(GLDrawArea != NULL) {
 #ifdef _USE_OPENCL
 	  if(cldraw != NULL) {	
@@ -93,9 +94,11 @@ void OnAboutDialog(AG_Event *event)
 	  strcpy(string, "Render: OpenGL");
 #endif	  
        } else {
-	  strcpy(string, "Render: DirectDraw");
+#endif // USE_OPENGL
+	  strcpy(string, "Render: DirectDraw/SDLFB");
+#ifdef USE_OPENGL
        }
-   
+#endif   
 	  
 	vbox2 = AG_VBoxNew(hbox, AG_VBOX_VFILL);
 	label = AG_LabelNew(vbox2, 0, "FM-7/77AV/SX Emulateor \"XM7\"""\n "VERSTR"%s\n", string);

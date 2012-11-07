@@ -12,6 +12,12 @@ USE_OPENGL      = Yes
 # Uncomment if using OpenMP
 USE_OPENMP      = Yes
 
+# Uncomment if using OpenCL for rendering
+USE_OPENCL      = Yes
+
+# Uncomment if using debugger.
+WITH_DEBUGGER   = Yes
+
 # Uncomment if BIG-ENDIAN
 #BIG_ENDIAN      = Yes
 
@@ -74,6 +80,14 @@ CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
 
 ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
+endif
+
+ifdef USE_OPENCL
+CFLAGS += -D_USE_OPENCL
+endif
+
+ifdef WITH_DEBUGGER
+CFLAGS += -D_WITH_DEBUGGER
 endif
 
 CFLAGS +=  -I. 

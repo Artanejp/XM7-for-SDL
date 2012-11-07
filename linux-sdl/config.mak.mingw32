@@ -12,6 +12,13 @@ USE_OPENGL      = Yes
 # Uncomment if using OpenMP
 USE_OPENMP      = Yes
 
+# Uncomment if using OpenCL for rendering
+#USE_OPENCL      = Yes
+
+# Uncomment if using debugger.
+WITH_DEBUGGER   = Yes
+
+
 # Uncomment if BIG-ENDIAN
 #BIG_ENDIAN      = Yes
 
@@ -21,7 +28,7 @@ USE_OPENMP      = Yes
 # SET Arch specified
 #ARCH_FLAGS       = -mmmx -msse -msse2
 #ARCH_FLAGS       = -mmmx -msse -msse2 -march=amdfam10
-ARCH_FLAGS      = -mwindows  -msse -mmmx
+ARCH_FLAGS      = -mwindows  -m32 -msse -mmmx
 
 ################### VARIABLES ################################
 #XM7_VER		= 3
@@ -77,6 +84,15 @@ CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
 ifdef SVNVER
 CFLAGS += -DSVNVER=\"$(SVNVER)\"
 endif
+
+ifdef USE_OPENCL
+CFLAGS += -D_USE_OPENCL
+endif
+
+ifdef WITH_DEBUGGER
+CFLAGS += -D_WITH_DEBUGGER
+endif
+
 
 CFLAGS +=  -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../

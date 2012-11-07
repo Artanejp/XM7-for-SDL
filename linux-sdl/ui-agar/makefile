@@ -50,16 +50,28 @@ else
 DEBUGSRC = 
 endif
 
+
 GLSRC = \
 	agar_gldraw2.cpp \
-	agar_glutil.cpp \
-	agar_glcl.cpp
+	agar_glutil.cpp 
 
-CLSRC = cl_render.cl
+CLSRC = cl_render.cl \
+	agar_glcl.cpp
 
 .SUFFIXES: .cl .c .cpp .asm .o
 
-SRCS =	$(COMMONSRC) $(GLSRC) $(GUISRC) $(DEBUGSRC) $(CLSRC)
+SRCS =	$(COMMONSRC) $(GUISRC) 
+
+ifdef USE_OPENGL
+SRCS += $(GLSRC)
+endif
+ifdef USE_OPENCL
+SRCS += $(CLSRC)
+endif
+ifdef WITH_DEBUGGER
+SRCS += $(DEBUGSRC) 
+endif
+
 CSRCS =	$(filter %.c, $(SRCS))
 CXXSRCS = $(filter %.cpp, $(SRCS))
 CLSRCS = $(filter %.cl, $(SRCS))

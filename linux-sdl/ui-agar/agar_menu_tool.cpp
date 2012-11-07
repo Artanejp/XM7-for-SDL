@@ -318,7 +318,7 @@ static void OnGrpCapture2(AG_Event *event)
     AG_ActionFn(AGWIDGET(w), "window-close", OnPushCancel, NULL);
     AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
     AG_WidgetFocus(dlg);
-	AG_WindowSetCaption(w, gettext("Capture to BMP 2"));
+	AG_WindowSetCaption(w, gettext("Capture to BMP without Scaling."));
 	AG_WindowShow(w);
 }
 
