@@ -888,8 +888,10 @@ cl_int GLCLDraw::SetupBuffer(void)
    
 
      
-   inbuf = clCreateBuffer(context, CL_MEM_READ_WRITE,
- 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
+//   inbuf = clCreateBuffer(context, CL_MEM_READ_WRITE,
+// 		  (size_t)(0xc000 * 6 * sizeof(Uint8)), NULL, &r);
+   inbuf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
+ 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
    ret |= r;
    
    palette = clCreateBuffer(context, CL_MEM_READ_WRITE,
