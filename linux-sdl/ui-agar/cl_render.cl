@@ -4,29 +4,41 @@
 // History: Nov 01,2012 Initial.
 // License: Apache License 2.0
 
-  
-uint8 putpixel(uint8 n, 
-               uint rmask, uint gmask, uint bmask,
-	       uint rshift, uint gshift, uint bshift)
+
+#if __ENDIAN_LITTLE__
+#define  rmask 0x000000ff
+#define  gmask 0x00ff0000
+#define  bmask 0x0000ff00
+#define  amask 0xff000000
+#define  rshift 0
+#define  gshift 16
+#define  bshift 8
+#define  ashift 24
+#else
+#define  amask 0x000000ff
+#define  bmask 0x00ff0000
+#define  gmask 0x0000ff00
+#define  rmask 0xff000000
+#define  rshift 24
+#define  gshift 8
+#define  bshift 16
+#define  ashift 0
+#endif
+
+uint8 putpixel(uint8 n)
 {
-  uint8 rbuf;
-  uint8 gbuf;
-  uint8 bbuf;
   uint8 abuf;
   uint8 ret;
-  uint8 rmask8;
-  uint8 gmask8;
-  uint8 bmask8;
-  uint n1;
   
-  abuf = (uint8){0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff};
-  rmask8 = (uint8){rmask, rmask, rmask, rmask, rmask, rmask, rmask, rmask};
-  gmask8 = (uint8){gmask, gmask, gmask, gmask, gmask, gmask, gmask, gmask};
-  bmask8 = (uint8){bmask, bmask, bmask, bmask, bmask, bmask, bmask, bmask};
-  rbuf = (n & rmask8) >> rshift;
-  gbuf = (n & gmask8) >> gshift;
-  bbuf = (n & bmask8) >> bshift;
-  ret = (rbuf << 0) + (gbuf << 16) + (bbuf << 8) + (abuf << 24); 
+  abuf = (uint8){amask, amask, amask, amask, amask, amask, amask, amask};
+//  rmask8 = (uint8){rmask, rmask, rmask, rmask, rmask, rmask, rmask, rmask};
+//  gmask8 = (uint8){gmask, gmask, gmask, gmask, gmask, gmask, gmask, gmask};
+//  bmask8 = (uint8){bmask, bmask, bmask, bmask, bmask, bmask, bmask, bmask};
+//  rbuf = (n & rmask8);
+//  gbuf = (n & gmask8);
+//  bbuf = (n & bmask8);
+//  ret = (rbuf << rshift)  + (gbuf << gshift) + (bbuf << bshift) + (abuf << ashift); 
+  ret = n | abuf;
   return ret;
 }
 
@@ -53,16 +65,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   __global uint8 *tbl8;
   uint8 c8;
   __global uint8 *p8;
-  uint rmask, gmask, bmask;
-  uint rshift, gshift, bshift;
 
-  rmask = 0x000000ff;
-  gmask = 0x00ff0000;
-  bmask = 0x0000ff00;
-  rshift = 0;
-  gshift = 16;
-  bshift = 8;
-  
   t = get_global_size(0);
   gid = get_global_id(0);
   
@@ -103,7 +106,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
         c8 = tbl8[bc] | tbl8[rc + 256] | tbl8[gc + 256 * 2];
 	c8 &= (uint8){0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f};
 	av = shuffle(palette, c8);
-	*p8 = putpixel(av, rmask, gmask, bmask, rshift, gshift, bshift);
+	*p8 = putpixel(av);
 	p8++;
         addr++;
 	}
@@ -138,15 +141,6 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   uint8 cv;
   __global uint8 *p8;
   __global uint8 *tbl8;
-  uint rmask, gmask, bmask;
-  uint rshift, gshift, bshift;
-
-  rmask = 0x000000ff;
-  gmask = 0x00ff0000;
-  bmask = 0x0000ff00;
-  rshift = 0;
-  gshift = 16;
-  bshift = 8;
   tbl8 = (__global uint8 *)table;
 
 
@@ -219,7 +213,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	av.s6 = pal[cv.s6];
 	av.s7 = pal[cv.s7];
 	
-	*p8 = putpixel(av, rmask, gmask, bmask, rshift, gshift, bshift);
+	*p8 = putpixel(av);
 	p8++;
         addr++;
 	}
