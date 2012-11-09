@@ -733,7 +733,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_400LINE:
       w = 640;
       h = 400;
-      gws[0] = h / 4;
+      gws[0] = h * 4;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -750,7 +750,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_200LINE:
       w = 640;
       h = 200;
-      gws[0] = h / 4;
+      gws[0] = h * 4;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -767,7 +767,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret = copy256ksub(0, 0, 320, 200, 320, 200, mpage);
       w = 320;
       h = 200;
-      gws[0] = h / 4;
+      gws[0] = h * 4;
       kernel = clCreateKernel(program, "getvram256k", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
