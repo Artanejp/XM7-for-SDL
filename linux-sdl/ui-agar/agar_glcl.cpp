@@ -587,7 +587,7 @@ cl_int GLCLDraw::window_copy8_400l(void)
       AllClear();
    }
    if(bPaletFlag) { // 描画モードでVRAM変更
-      //Palet640();
+      Palet640();
       bPaletFlag = FALSE;
       nDrawTop = 0;
       nDrawBottom = 400;

@@ -47,10 +47,6 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   int ofset = 640 * 200 / 8;
   int x;
   int y;
-  int ybegin = 0;
-  int yend;
-  int xbegin = 0;
-  int xend;
   int hh;
   int ww;
   int xx;
@@ -65,19 +61,25 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   __global uint8 *tbl8;
   uint8 c8;
   __global uint8 *p8;
+  uint pb1, pbegin, col;
 
   t = get_global_size(0);
   gid = get_global_id(0);
   
   
   ww = w >> 3;
-  ybegin = (gid * h) / t; 
-  hh = ((gid + 1) * h) / t;
-  if(hh > h) {
-     hh = h - ybegin;
+  col = ww * h;
+  pbegin = (gid * col) / t; 
+  pb1 = ((gid + 1) * col) / t;
+  if(pb1 > col) {
+     ww = col - pbegin;
   } else {
-     hh = hh - ybegin;
+     ww = pb1 - pbegin;
   }
+  
+  addr = pbegin; 
+  addr2 = pbegin << 3;
+  p8 = (__global uint8 *)(&(out[addr2]));
 
   palette.s0 = pal[0];
   palette.s1 = pal[1];
@@ -88,18 +90,12 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   palette.s6 = pal[6];
   palette.s7 = pal[7];
   
-  yend = ybegin + hh;
-  xend = xbegin + ww;
   if(h > 200) ofset = 640 * 400 / 8;
 
   tbl8 = (__global uint8 *)table;
-  
-  for(y = ybegin; y < yend; y++) {
-     addr = y * ww + xbegin; 
-     addr2 = addr << 3;
-     //p = (__global uchar4 *)(&(out[addr2]));
-     p8 = (__global uint8 *)(&(out[addr2]));
-     for(x = xbegin; x < xend; x++) {
+  //p = (__global uchar4 *)(&(out[addr2]));
+  p8 = (__global uint8 *)(&(out[addr2]));
+  for(x = 0; x < ww; x++) {
         bc = src[addr];
 	rc = src[addr + ofset];
 	gc = src[addr + ofset + ofset];
@@ -110,7 +106,6 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
 	p8++;
         addr++;
 	}
-    }
 }	
 	
 
@@ -121,10 +116,6 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   int ofset = (4 * 320 * 200)  / 8;
   int x;
   int y;
-  int ybegin = 0;
-  int yend;
-  int xbegin = 0;
-  int xend;
   int hh;
   int ww;
   int t;
@@ -140,6 +131,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   uint8 cv;
   __global uint8 *p8;
   __global uint8 *tbl8;
+  uint pb1, pbegin, col;
   uint8 abuf = (uint8){amask, amask, amask, amask, amask, amask, amask, amask};
 
   tbl8 = (__global uint8 *)table;
@@ -148,26 +140,20 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   t = get_global_size(0);
   gid = get_global_id(0);
 
-  
   ww = w >> 3;
-  ybegin = (gid * h) / t; 
-  hh = ((gid + 1) * h) / t;
-  if(hh > h) {
-     hh = h - ybegin;
+  col = ww * h;
+  pbegin = (gid * col) / t; 
+  pb1 = ((gid + 1) * col) / t;
+  if(pb1 > col) {
+     ww = col - pbegin;
   } else {
-     hh = hh - ybegin;
+     ww = pb1 - pbegin;
   }
-
-
-
-  yend = ybegin + hh;
-
-  xend = xbegin + ww;
-  for(y = ybegin; y < yend; y++) {
-     addr = y * ww + xbegin; 
-     addr2 = addr << 3;
-     p8 = (__global uint8 *)(&(out[addr2]));
-     for(x = xbegin; x < xend; x++) {
+  
+  addr = pbegin; 
+  addr2 = pbegin << 3;
+  p8 = (__global uint8 *)(&(out[addr2]));
+  for(x = 0; x < ww; x++) {
         b = &src[addr];
 	r = &src[addr + ofset];
 	g = &src[addr + ofset + ofset];
@@ -209,7 +195,6 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	p8++;
         addr++;
 	}
-    }
 }	
 	
 __kernel void getvram256k(__global uchar *src, int w, int h, 
@@ -219,10 +204,6 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   int ofset = (6 * 320 * 200)  / 8;
   int x;
   int y;
-  int ybegin = 0;
-  int yend;
-  int xbegin = 0;
-  int xend;
   int hh;
   int ww;
   int t;
@@ -240,31 +221,27 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   __global uint8 *tbl8;
   uint8 abuf = (uint8){amask, amask, amask, amask, amask, amask, amask, amask};
   tbl8 = (__global uint8 *)table;
-
+  uint col;
+  uint pbegin, pb1;
 
   t = get_global_size(0);
   gid = get_global_id(0);
 
   
   ww = w >> 3;
-  ybegin = (gid * h) / t; 
-  hh = ((gid + 1) * h) / t;
-  if(hh > h) {
-     hh = h - ybegin;
+  col = ww * h;
+  pbegin = (gid * col) / t; 
+  pb1 = ((gid + 1) * col) / t;
+  if(pb1 > col) {
+     ww = col - pbegin;
   } else {
-     hh = hh - ybegin;
+     ww = pb1 - pbegin;
   }
-
-
-
-  yend = ybegin + hh;
-
-  xend = xbegin + ww;
-  for(y = ybegin; y < yend; y++) {
-     addr = y * ww + xbegin; 
-     addr2 = addr << 3;
-     p8 = (__global uint8 *)(&(out[addr2]));
-     for(x = xbegin; x < xend; x++) {
+  
+  addr = pbegin; 
+  addr2 = pbegin << 3;
+  p8 = (__global uint8 *)(&(out[addr2]));
+  for(x = 0; x < ww; x++) {
         b = &src[addr];
 	r = &src[addr + ofset];
 	g = &src[addr + ofset + ofset];
@@ -329,6 +306,5 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	p8++;
         addr++;
 	}
-    }
 }	
 	
