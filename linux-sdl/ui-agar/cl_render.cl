@@ -277,34 +277,46 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	    b1 = (uint)(b[32000]) + 0x100;
 	    b0 = (uint)(b[40000]) + 0x000;
 	    b8 =  tbl8[b0] | tbl8[b1] | tbl8[b2] | tbl8[b3] | tbl8[b4] | tbl8[b5];
-	    b8 <<= 2; // 6bit -> 8bit
+#if __ENDIAN_LITTLE__
+            b8 <<= 18; // 6bit -> 8bit
+#else
+            b8 <<= 10; // 6bit -> 8bit
+#endif
 	} else {
 	    //b5 = b4 = b3 = b2 = b1 = b0 = 0;
 	    b8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
 	}
 	if(!(mpage & 0x20)) {
-	    r5 = (uint)(r[0    ]) + 0xb00;
-	    r4 = (uint)(r[8000 ]) + 0xa00;
-	    r3 = (uint)(r[16000]) + 0x900;
-	    r2 = (uint)(r[24000]) + 0x800;
-	    r1 = (uint)(r[32000]) + 0x700;
-	    r0 = (uint)(r[40000]) + 0x600;
+	    r5 = (uint)(r[0    ]) + 0x500;
+	    r4 = (uint)(r[8000 ]) + 0x400;
+	    r3 = (uint)(r[16000]) + 0x300;
+	    r2 = (uint)(r[24000]) + 0x200;
+	    r1 = (uint)(r[32000]) + 0x100;
+	    r0 = (uint)(r[40000]) + 0x000;
 	    r8 =  tbl8[r0] | tbl8[r1] | tbl8[r2] | tbl8[r3] | tbl8[r4] | tbl8[r5];
-	    r8 <<= 4;
+#if __ENDIAN_LITTLE__
+            r8 <<= 2; // 6bit -> 8bit
+#else
+            r8 <<= 26; // 6bit -> 8bit
+#endif
 	} else {
 	    //b5 = b4 = b3 = b2 = b1 = b0 = 0;
 	    r8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
 	}
 
 	if(!(mpage & 0x40)) {
-	    g5 = (uint)(g[0    ]) + 0x1100;
-	    g4 = (uint)(g[8000 ]) + 0x1000;
-	    g3 = (uint)(g[16000]) + 0x0f00;
-	    g2 = (uint)(g[24000]) + 0x0e00;
-	    g1 = (uint)(g[32000]) + 0x0d00;
-	    g0 = (uint)(g[40000]) + 0x0c00;
+	    g5 = (uint)(g[0    ]) + 0x500;
+	    g4 = (uint)(g[8000 ]) + 0x400;
+	    g3 = (uint)(g[16000]) + 0x300;
+	    g2 = (uint)(g[24000]) + 0x200;
+	    g1 = (uint)(g[32000]) + 0x100;
+	    g0 = (uint)(g[40000]) + 0x000;
 	    g8 =  tbl8[g0] | tbl8[g1] | tbl8[g2] | tbl8[g3] | tbl8[g4] | tbl8[g5];
-	    g8 <<= 6;
+#if __ENDIAN_LITTLE__
+            g8 <<= 10; // 6bit -> 8bit
+#else
+            g8 <<= 18; // 6bit -> 8bit
+#endif
 	} else {
 	    //b5 = b4 = b3 = b2 = b1 = b0 = 0;
 	    g8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
