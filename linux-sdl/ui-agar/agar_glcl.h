@@ -60,8 +60,9 @@ class GLCLDraw {
    cl_int window_copy8(void);
    cl_int window_copy8_400l(void);
    cl_int window_copy4096(void);
-   cl_int copysub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int multi_page);
-   cl_int copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int multi_page);
+   cl_int copysub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
+   cl_int copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
+   cl_int copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
 };
 
 #endif /* _USE_OPENCL */
