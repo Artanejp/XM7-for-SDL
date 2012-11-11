@@ -369,30 +369,31 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 return;
         }
     }
-    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
+   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     
     OnCreate((AG_Widget *)NULL);
-    InitInstance();
+   InitInstance();
+//   OnCreate((AG_Widget *)NULL);
        
-	stopreq_flag = FALSE;
-	run_flag = TRUE;
-	AG_DrawInitsub();
+   stopreq_flag = FALSE;
+   run_flag = TRUE;
+   AG_DrawInitsub();
 
-	inf = SDL_GetVideoInfo();
-    if(inf != NULL) {
-	   RootVideoWidth = inf->current_w;
-	   RootVideoHeight = inf->current_h;
-	} else {
-	   RootVideoWidth = 640;
-	   RootVideoHeight = 400;
-	}
+   inf = SDL_GetVideoInfo();
+   if(inf != NULL) {
+      RootVideoWidth = inf->current_w;
+      RootVideoHeight = inf->current_h;
+   } else {
+      RootVideoWidth = 640;
+      RootVideoHeight = 400;
+   }
 
 //	ResizeWindow_Agar(640, 400);
-	newResize = FALSE;
-        nDrawTick1D = AG_GetTicks();
-	nDrawTick1E = nDrawTick1D;
+   newResize = FALSE;
+   nDrawTick1D = AG_GetTicks();
+   nDrawTick1E = nDrawTick1D;
 
-	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+   ResizeWindow_Agar(nDrawWidth, nDrawHeight);
     switch(nErrorCode) 
      {
       case 0:

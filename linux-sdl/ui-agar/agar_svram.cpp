@@ -26,38 +26,13 @@
 #include "subctrl.h"
 #include "device.h"
 
+#ifdef USE_OPENGL
+extern AG_GLView *GLDrawArea;
+#ifdef _USE_OPENCL
+extern class GLCLDraw *cldraw;
+#endif // _USE_OPENCL
+#endif // USE_OPENGL
 // void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage)
-
-BOOL CheckDrawMode(void)
-{
-    BOOL t;
-    int x;
-    int y;
-
-    if((SDLDrawFlag.APaletteChanged
-               | SDLDrawFlag.DPaletteChanged
-               | SDLDrawFlag.ForcaReDraw
-               | bClearFlag) == TRUE){
-        t = TRUE;
-    } else {
-        t = FALSE;
-    }
-
-    if(t){
-        LockVram();
-#ifdef _OPENMP
-       #pragma omp parallel for shared(SDLDrawFlag) private(x)
-#endif
-        for(y = 0; y < 50; y++){
-            for(x = 0; x < 80 ; x++){
-                SDLDrawFlag.write[x][y] = TRUE;
-                SDLDrawFlag.read[x][y] = TRUE;
-            }
-        }
-        UnlockVram();
-    }
-    return t;
-}
 
 static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 {
@@ -67,11 +42,11 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
     int hh;
     Uint32 *p;
 
-    if(pp == NULL) return;
-	ww = (w + x) >> 3;
-	hh = (h + y) >> 3;
-
-    LockVram();
+   if(pp == NULL) return;
+   ww = (w + x) >> 3;
+   hh = (h + y) >> 3;
+  
+//    LockVram();
 //    p = pp;
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
@@ -89,7 +64,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
         }
     }
     bVramUpdateFlag = TRUE;
-    UnlockVram();
+//    UnlockVram();
 }
 
 static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mode)
@@ -100,11 +75,11 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
     int hh;
     Uint32 *p;
 
-    if(pp == NULL) return;
-	ww = (w + x) >> 3;
-	hh = (h + y) >> 3;
+   if(pp == NULL) return;
+   ww = (w + x) >> 3;
+   hh = (h + y) >> 3;
 
-    LockVram();
+//   LockVram();
 //    p = pp;
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
@@ -122,7 +97,7 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
         }
     }
     bVramUpdateFlag = TRUE;
-    UnlockVram();
+//    UnlockVram();
 }
 
 static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mpage)
@@ -133,11 +108,10 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
     int hh;
     Uint32 *p;
 
-    if(pp == NULL) return;
-	ww = (w + x) >> 3;
-	hh = (h + y) >> 3;
-
-    LockVram();
+   if(pp == NULL) return;
+   ww = (w + x) >> 3;
+   hh = (h + y) >> 3;
+//   LockVram();
 //    p = pp;
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww) private(p, xx)
@@ -154,7 +128,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
         }
     }
     bVramUpdateFlag = TRUE;
-    UnlockVram();
+//    UnlockVram();
 }
 
 void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
@@ -172,7 +146,7 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
     pp = &(pVirtualVram->pVram[0][0]);
 
     if(pp == NULL) return;
-	if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
+    if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
 
     LockVram();
 
@@ -181,6 +155,14 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
         SetDrawFlag(TRUE);
         bClearFlag = FALSE;
     }
+   if((cldraw != NULL) && (GLDrawArea != NULL)){ // Snip builing-viryual-vram if GLCL mode.
+	bVramUpdateFlag = TRUE;
+        SDLDrawFlag.Drawn = TRUE;
+        UnlockVram();
+        return;
+   }
+   
+ 
      switch (bMode) {
       case SCR_400LINE:
         BuildVirtualVram8(pp, x, y, w, h, bMode);
@@ -196,5 +178,5 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 		break;
 	}
 
-	UnlockVram();
+   UnlockVram();
 }
