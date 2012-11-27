@@ -333,15 +333,15 @@ int DrawThreadMain(void *p)
 			SDL_mutexP(DrawMutex);
 			SDL_CondWait(DrawCond, DrawMutex);
 #endif
-			if(DrawSHUTDOWN) {
+		   if(DrawSHUTDOWN) {
 #ifdef USE_AGAR
-                AG_DrawDetachsub();
+		      AG_DrawDetachsub();
 #else
-                SDL_DrawDetachsub();
+		      SDL_DrawDetachsub();
 #endif
-                DrawSHUTDOWN = FALSE;
-				return 0; /* シャットダウン期間 */
-			}
+		      DrawSHUTDOWN = FALSE;
+		      return 0; /* シャットダウン期間 */
+		   }
 
 			if(nDrawCount > 0) {
 				nDrawCount --;

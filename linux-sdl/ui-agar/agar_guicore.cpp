@@ -39,6 +39,7 @@ extern void OnDestroy(AG_Event *event);
 }
 
 Uint32 nDrawTick1D;
+BOOL   bResizeGUIFlag;
 extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
@@ -103,11 +104,12 @@ BOOL EventGUI(AG_Driver *drv)
 
 void AGDrawTaskEvent(BOOL flag)
 {
-	Uint32 nDrawTick2D;
-	AG_Window *win;
-	AG_Driver *drv;
-	Uint32 fps;
-	Uint32 oldfps = nDrawFPS;
+   Uint32 nDrawTick2D;
+   AG_Window *win;
+   AG_Driver *drv;
+   Uint32 fps;
+   Uint32 oldfps = nDrawFPS;
+   bResizeGUIFlag = FALSE;
 
     if(nDrawFPS > 2) {
 #ifdef USE_OPENGL
@@ -143,6 +145,7 @@ void AGDrawTaskEvent(BOOL flag)
 #endif
       }
       nDrawTick2D = AG_GetTicks();
+      if(bResizeGUIFlag) continue;
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
       if((nDrawTick2D - nDrawTick1D) > fps) {
@@ -212,10 +215,10 @@ void AGDrawTaskEvent(BOOL flag)
 	    Uint32 tim = 0;
 	    tim = AG_GetTicks();
 	    AG_ProcessTimeouts(tim);
-	 } //else {
-	   // AG_Delay(1);
-	 //}
-      AG_Delay(1);
+	 } else {
+	    AG_Delay(1);
+	 }
+//      AG_Delay(1);
       
    }	// Process Event per 1Ticks;
    

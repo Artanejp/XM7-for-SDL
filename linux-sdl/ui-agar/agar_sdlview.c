@@ -208,6 +208,7 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
             AG_SurfaceLock(my->Surface);
             if(AG_SurfaceResize(my->Surface, a->w, a->h) < 0) {
                 AG_SurfaceUnlock(my->Surface);
+	        AG_ObjectUnlock(my);
                 return (-1);
             }
             AG_SurfaceUnlock(my->Surface);

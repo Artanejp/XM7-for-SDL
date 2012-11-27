@@ -13,7 +13,6 @@
 
 
 #include "api_draw.h"
-//#include "api_scaler.h"
 
 #include "agar_xm7.h"
 #include "agar_draw.h"
@@ -25,6 +24,7 @@ extern BYTE bMode;
 
 Uint32 nDrawTick1E;
 static BYTE oldBMode;
+extern BOOL   bResizeGUIFlag;
 
 extern void ResizeStatus(AG_Widget *parent, int w, int h, int y);
 
@@ -33,8 +33,8 @@ XM7_SDLView *DrawArea;
 //#ifdef _USE_OPENCL
 BOOL bUseOpenCL;
 //#endif   
+SDL_Surface *DrawSurface = NULL;
 }
-
 
 void InitGL(int w, int h)
 {
@@ -56,18 +56,19 @@ void InitGL(int w, int h)
 
 void InitNonGL(int w, int h)
 {
-	Uint32 flags;
-	char *ext;
+   Uint32 flags;
+   char *ext;
 
-	if(InitVideo) return;
-    InitVideo = TRUE;
+   if(InitVideo) return;
+   InitVideo = TRUE;
 
-    vram_pb = NULL;
-    vram_pg = NULL;
-    vram_pr = NULL;
+   vram_pb = NULL;
+   vram_pg = NULL;
+   vram_pr = NULL;
 
    flags = SDL_RESIZABLE;
-   
+//   DrawSurface = SDL_SetVideoMode(w, h, 24, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
+//   AG_InitVideoSDL (->s, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_RESIZABLE);
    InitVramSemaphore();
    pVirtualVram = NULL;
    InitVirtualVram();
@@ -82,8 +83,6 @@ void DetachDrawArea(void)
     XM7_SDLViewSurfaceDetach(DrawArea);
     AG_ObjectDetach(AGOBJECT(DrawArea));
 }
-
-
 
 
 
@@ -161,8 +160,13 @@ void ResizeWindow_Agar(int w, int h)
 
      if(agDriverSw && (AG_UsingGL(NULL) != 0)) {
 	   AG_ResizeDisplay(w, hh);
+     } else {
+#if 0
+	if((DrawArea != NULL)  && agDriverSw) {
+	   AG_ResizeDisplay(w, hh);
+	}
+#endif
      }
-
    AG_ObjectUnlock(AGOBJECT(drv));
 }
 

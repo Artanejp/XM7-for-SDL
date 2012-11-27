@@ -868,21 +868,26 @@ cl_int GLCLDraw::SetupTable(void)
    return r;
 }
 
-cl_int GLCLDraw::SetupBuffer(void)
+
+cl_int GLCLDraw::SetupBuffer(GLuint texid)
 {
    cl_int ret = 0;
    cl_int r;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    // Texture直接からPBO使用に変更 20121102
-
+   // Texture直接使用に再変更 20121127
    if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
-      glGenBuffers(1, &pbo);
-      glBindBuffer(GL_ARRAY_BUFFER, pbo);
    
-      glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
-		                 pbo, &r);
+//      glGenBuffers(1, &pbo);
+//      glBindBuffer(GL_ARRAY_BUFFER, pbo);
+//      glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+//      glBindBuffer(GL_ARRAY_BUFFER, 0);
+//      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
+//		                 pbo, &r);
+      if(texid != 0) {
+	 outbuf = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, 
+		                 GL_TEXTURE_BUFFER, 0, uVramTextureID, &r);
+      }
       ret |= r;
    }
    

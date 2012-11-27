@@ -437,18 +437,18 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  LockVram();
 	  cldraw->GetVram(bMode);
 	  UnlockVram();
-	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
-	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+//	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
+//	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  // Copy pbo to texture 
-	  glTexSubImage2D(GL_TEXTURE_2D, 
-			  0,
-			  0,
-			  0,
-			  w,
-			  h,
-			  GL_RGBA,
-			  GL_UNSIGNED_BYTE,
-			  NULL);
+//	  glTexSubImage2D(GL_TEXTURE_2D, 
+//			  0,
+//			  0,
+//			  0,
+//			  w,
+//			  h,
+//			  GL_RGBA,
+//			  GL_UNSIGNED_BYTE,
+//			  NULL);
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
 //	  bVramUpdateFlag = TRUE;
@@ -568,7 +568,7 @@ void AGEventDrawGL2(AG_Event *event)
 		 r = cldraw->BuildFromSource(cl_render);
 		  printf("Build: STS = %d \n", r);
 	         if(r == CL_SUCCESS) {
-		    r = cldraw->SetupBuffer();
+		    r = cldraw->SetupBuffer(uVramTextureID);
 		    r |= cldraw->SetupTable();
 		    if(r != CL_SUCCESS){
 		       delete cldraw;

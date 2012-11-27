@@ -1229,7 +1229,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    if(my->Surface == NULL) return;
    w = my->Surface->w;
    h = my->Surface->h;
-
+ 
    if(pVirtualVram == NULL) return;
    switch(bMode){
     case SCR_200LINE:

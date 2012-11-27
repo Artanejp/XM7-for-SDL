@@ -283,9 +283,9 @@ void DumpObject::PutCharScreen(BYTE c)
 void DumpObject::PutChar(BYTE c)
 {
     curpos = X + Y * W;
-    AG_MutexLock(&mutex);
+//    AG_MutexLock(&mutex);
     ConsoleBuf[curpos] = c;
-    AG_MutexUnlock(&mutex);
+//    AG_MutexUnlock(&mutex);
 }
 
 
