@@ -215,10 +215,11 @@ void AGDrawTaskEvent(BOOL flag)
 	    Uint32 tim = 0;
 	    tim = AG_GetTicks();
 	    AG_ProcessTimeouts(tim);
+	    AG_Delay(1);
 	 } else {
 	    AG_Delay(1);
 	 }
-//      AG_Delay(1);
+
       
    }	// Process Event per 1Ticks;
    

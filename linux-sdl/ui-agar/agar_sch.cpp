@@ -273,7 +273,7 @@ static void *ThreadSch(void *param)
 			ProcessSnd(TRUE);
 			UnlockVM();
 
-			XM7_Sleep(10);
+			XM7_Sleep(1);
 			ResetSch();
 			ResetSpeedAdjuster();
 			continue;
@@ -450,6 +450,7 @@ static void *ThreadSch(void *param)
 		 * スキップカウンタが規定値以下なら、続けて実行
 		 */
 		if (bAutoSpeedAdjust) {
+//		{
 			tmp = (10000 - speed_ratio) / 10;
 
 			/*
@@ -489,7 +490,6 @@ static void *ThreadSch(void *param)
 					tmp = 500;
 				}
 			}
-
 			else {
 				tmp = 500;
 			}
@@ -533,8 +533,8 @@ static DWORD XM7_timeGetTime(void)
  */
 static void XM7_Sleep(DWORD t)
 {
-//   AG_Delay(t);
-   SDL_Delay(t);
+   AG_Delay(t);
+//   SDL_Delay(t);
 }
    
 #ifdef __cplusplus
