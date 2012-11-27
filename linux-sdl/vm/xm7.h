@@ -400,11 +400,11 @@ extern          "C" {
     /*
      * メインCPUメモリ ブート転送
      */
-    volatile BYTE FASTCALL mainmem_readb(WORD addr);
+    BYTE FASTCALL mainmem_readb(WORD addr);
     /*
      * メインCPUメモリ 読み出し
      */
-    volatile BYTE mainmem_readbnio(WORD addr);
+    BYTE mainmem_readbnio(WORD addr);
     /*
      * メインCPUメモリ 読み出し(I/Oなし)
      */
@@ -436,11 +436,11 @@ extern          "C" {
     /*
      * サブCPUメモリ リセット
      */
-    volatile BYTE FASTCALL   submem_readb(WORD addr);
+    BYTE FASTCALL   submem_readb(WORD addr);
     /*
      * サブCPUメモリ 読み出し
      */
-    volatile BYTE submem_readbnio(WORD addr);
+    BYTE submem_readbnio(WORD addr);
     /*
      * サブCPUメモリ 読み出し(I/Oなし)
      */

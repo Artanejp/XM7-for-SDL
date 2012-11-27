@@ -369,7 +369,7 @@ void  FASTCALL submem_reset(void)
  *      サブCPUメモリ
  *      １バイト取得
  */
-volatile BYTE FASTCALL submem_readb(WORD addr)
+BYTE FASTCALL submem_readb(WORD addr)
 {
 	BYTE            dat;
 
@@ -631,7 +631,7 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
  *      １バイト取得(I/Oなし)
  */
 //BYTE            FASTCALL
-volatile BYTE submem_readbnio(WORD addr)
+BYTE FASTCALL submem_readbnio(WORD addr)
 {
 #if XM7_VER == 1 && defined(L4CARD)
 	/*
