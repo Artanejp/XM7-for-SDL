@@ -63,7 +63,9 @@ cl_int GLCLDraw::InitContext(void)
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
    
-   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
+//   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
+//                         &ret_num_devices);
+   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id,
                          &ret_num_devices);
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();
@@ -719,7 +721,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    Uint8 *pr,*pg,*pb;
    Uint32 *pal;
    size_t gws[] = {200}; // Parallel jobs.
-   size_t *lws = NULL; // local jobs.
+   size_t lws[] = {4}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
 	
@@ -733,7 +735,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_400LINE:
       w = 640;
       h = 400;
-      gws[0] = h * 4;
+      gws[0] = h;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -750,7 +752,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_200LINE:
       w = 640;
       h = 200;
-      gws[0] = h * 4;
+      gws[0] = h;
       kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -767,7 +769,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret = copy256ksub(0, 0, 320, 200, 320, 200, mpage);
       w = 320;
       h = 200;
-      gws[0] = h * 4;
+      gws[0] = h / 2;
       kernel = clCreateKernel(program, "getvram256k", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -784,7 +786,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_4096:
       w = 320;
       h = 200;
-      gws[0] = h / 4;
+      gws[0] = h / 2;
       kernel = clCreateKernel(program, "getvram4096", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
