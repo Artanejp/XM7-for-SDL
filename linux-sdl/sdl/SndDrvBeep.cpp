@@ -226,10 +226,13 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 	int i;
 	int ss2;
 
-	Sint16          *wbuf;
+	Sint16 *wbuf;
+        Uint32 *wwbuf;
 	int sf;
         int sf2;
 	Sint16 level;
+        Sint16 hi, lo;
+        Uint32 hi32, lo32;
 
 	if(pBuf == NULL) return 0;
 	channels = 2;
@@ -249,75 +252,74 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 //	printf("Beep Called: @%08d bufsize=%d start=%d rend.size=%d enable=%d bzero=%d clear=%d\n", dwSoundTotal,  s, start, ss2, enable, bZero, clear);
 
 	if(clear)  memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16)); // 全消去
+        wwbuf = (Uint32 *) wbuf;
 	if(!enable)  {
 	   if(channels == 1) {
 	        for(i = 0; i < ss2 ; i++){ 
 		   wbuf[i] = 0;
 		}
 	   } else {
-	        for(i = 0; i < (ss2 * 2) ; i++){ 
-		   wbuf[i] = 0;
+	        for(i = 0; i < ss2 ; i++){ 
+		   wwbuf[i] = 0;
 		}
 	   }
-	   
-		
 //		memset(wbuf, 0x00, ss2 * channels * sizeof(Sint16)); // Not Enable →サンプル数分の領域をクリア
-		SDL_SemPost(RenderSem);
-		return ss2;
+	   SDL_SemPost(RenderSem);
+	   return ss2;
 	}
 	if(enable) {
-		if(bZero) {
-			memset(wbuf, 0, sizeof(Sint16) * ss2 * channels);
-			SDL_SemPost(RenderSem);
-            RenderCounter += ss2;
-			return ss2;
-		}
+	   if(bZero) {
+	      memset(wbuf, 0, sizeof(Sint16) * ss2 * channels);
+	      SDL_SemPost(RenderSem);
+	      RenderCounter += ss2;
+	      return ss2;
+	   }
 
-		/*
-		 * ここにレンダリング関数ハンドリング
-		 */
-
-		/*
-		 * サンプル書き込み
-		 */
-	        sf2 =(int)(counter * freq) << 1;
-	        
-		for (i = 0; i < ss2; i++) {
-			/*
-			 * 矩形波を作成
-			 */
-			sf = sf2 / srate;
-			/*
-			 * 偶・奇に応じてサンプル書き込み
-			 */
-			if (channels == 1) {
-				if (sf & 1) {
-					wbuf[i] = level;
-				}
-				else {
-					wbuf[i] = -level;
-				}
-			} else {
-				if (sf & 1) {
-					wbuf[i * 2] = level;
-					wbuf[i * 2 + 1] = level;
-				} else {
-					wbuf[i * 2] = -level;
-					wbuf[i * 2 + 1] = -level;
-//					wbuf[i * 2] = 0;
-//					wbuf[i * 2 + 1] = 0;
-				}
-			}
-			/*
-			 * カウンタアップ
-			 */
-			counter += 1;
-		        sf2 += (freq << 1);
-			if (counter >= srate) {
-			        sf2 = 0;
-				counter = 0;
-			}
-		}
+	   /*
+	    * ここにレンダリング関数ハンドリング
+	    */
+	   
+	   /*
+	    * サンプル書き込み
+	    */
+	   sf2 =(int)(counter * freq) << 1;
+	   hi = (level & 0x7fff);
+	   lo = -hi;
+	   hi32 = (hi * 65536) | hi;
+	   lo32 = (lo << 16) + lo;
+	   
+	   for (i = 0; i < ss2; i++) {
+	      /*
+	       * 矩形波を作成
+	       */
+	      sf = sf2 / srate;
+	      /*
+	       * 偶・奇に応じてサンプル書き込み
+	       */
+	      if (channels == 1) {
+		 if (sf & 1) {
+		    wbuf[i] = hi;
+		 }
+		 else {
+		    wbuf[i] = lo;
+		 }
+	      } else {
+		 if (sf & 1) {
+		    wwbuf[i] = hi32;
+		 } else {
+		    wwbuf[i] = lo32;
+		 }
+	      }
+	      /*
+	       * カウンタアップ
+	       */
+	      counter += 1;
+	      sf2 += (freq << 1);
+	      if (counter >= srate) {
+		 sf2 = 0;
+		 counter = 0;
+	      }
+	   }
 	}
 	SDL_SemPost(RenderSem);
 	RenderCounter += ss2;
