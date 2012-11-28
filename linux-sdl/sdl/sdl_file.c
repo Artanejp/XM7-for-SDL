@@ -13,11 +13,7 @@
 #include "xm7.h"
 #include "device.h"
 #include <SDL/SDL_rwops.h>
-#ifdef USE_AGAR
 #include "agar_xm7.h"
-#else
-#include "sdl.h"
-#endif
 
     /*
      *  ファイルロード(ROM専用)

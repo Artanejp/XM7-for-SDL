@@ -9,24 +9,10 @@
  */
 
 
-#ifdef USE_GTK
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <gdk/gdkkeysyms.h>
-#endif
-
 #include <SDL.h>
-#ifdef USE_AGAR
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-#else
-#include <SDL_syswm.h>
-#ifdef USE_OPENGL
-#include <SDL_opengl.h>
-#endif
-#endif
 
 #include "xm7.h"
 #include "multipag.h"
@@ -36,13 +22,11 @@
 #include "display.h"
 #include "device.h"
 
-#ifdef USE_AGAR
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #ifdef USE_OPENGL
   #include "agar_gldraw.h"
 #endif /* USE_OPENGL */
-#endif /* USE_AGAR */
 
 //#include "sdl.h"
 
@@ -113,15 +97,10 @@ BOOL DrawINGFlag;
 BOOL DrawSHUTDOWN;
 BOOL DrawWaitFlag;
 
-#ifdef USE_AGAR
+
 AG_Cond DrawCond;
 AG_Mutex DrawMutex;
 AG_Thread DrawThread;
-#else
-static SDL_Thread *DrawThread;
-SDL_cond *DrawCond;
-SDL_mutex *DrawMutex;
-#endif
 
 int newDrawWidth;
 int newDrawHeight;
@@ -142,25 +121,18 @@ extern GLuint uVramTextureID;
  * ビデオドライバ関連
  */
 
-#ifdef USE_GTK
-extern GtkWidget       *gtkDrawArea;
-#endif
 
 void ResizeWindow(int w, int h)
 {
 //    char          EnvMainWindow[64]; /* メインウィンドウのIDを取得して置く環境変数 */
 //    SDL_SysWMinfo sdlinfo;
-#ifdef USE_AGAR
             ResizeWindow_Agar(w, h);
-#else
-            InitGL(w, h);
-#endif
 }
 
 static void initsub(void);
 static void detachsub(void);
 
-#ifdef USE_AGAR
+
 void AG_DrawInitsub(void)
 {
 //	initsub();
@@ -169,16 +141,6 @@ void AG_DrawDetachsub(void)
 {
 //	detachsub();
 }
-#else
-void SDL_DrawInitsub(void)
-{
-	initsub();
-}
-void SDL_DrawDetachsub(void)
-{
-	detachsub();
-}
-#endif
 
 void Flip(void)
 {
@@ -191,11 +153,7 @@ BOOL XM7_BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 			int nSrcLeft, int nSrcTop)
 {
 
-#ifdef USE_AGAR
 	AG_Rect srcrect, dstrect;
-#else
-	SDL_Rect srcrect, dstrect;
-#endif
 
 	if(bUseOpenGL) {
 		Flip();
@@ -213,9 +171,6 @@ BOOL XM7_BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 		/*
 		 * データ転送
 		 */
-#ifndef USE_AGAR
-	displayArea = SDL_GetVideoSurface();
-#endif
 		/*
 		 * 擬似インタレース設定をここでやる
 		 */
@@ -225,9 +180,6 @@ BOOL XM7_BitBlt(int nDestLeft, int nDestTop, int nWidth, int nHeight,
 			} else {
 				RenderFullScan();
 			}
-		} else {
-//			SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-//			SDL_Flip(displayArea);
 		}
 		bOldFullScan = bFullScan;
 		return TRUE;
@@ -253,11 +205,8 @@ static void initsub()
 }
 
 
-#ifdef __cplusplus
 extern "C"
 {
-#endif
-
 
 void ResizeGL(int w, int h)
 {
@@ -266,18 +215,12 @@ void ResizeGL(int w, int h)
 	newResize = TRUE;
 }
 
-
-
-
 /*
  *  初期化
  */
 
 void ChangeResolution(void)
 {
-#ifndef USE_AGAR
-        SDL_Surface *p;
-#endif
         if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth) && (bOldFullScan == bFullScan)){
                 return;
         }
@@ -291,18 +234,8 @@ void ChangeResolution(void)
          * KILL Thread
   い       */
         SDL_SemWait(DrawInitSem);
-#ifdef USE_AGAR
         ResizeWindow_Agar(nDrawWidth, nDrawHeight);
-#else
-#ifdef USE_GTK
-        ChangeResolutionGTK(nDrawWidth, nDrawHeight, nDrawWidth, nDrawHeight);
-#endif
-#endif
 
-#ifndef USE_AGAR
-        displayArea = SDL_GetVideoSurface();
-        realDrawArea = SDL_GetVideoSurface();
-#endif
         SDL_SemPost(DrawInitSem);
         nOldDrawHeight = nDrawHeight;
         nOldDrawWidth = nDrawWidth;
@@ -363,11 +296,6 @@ void	InitDraw(void)
 		nWindowDy2 = 0;
 #endif				/*  */
 		bDirectDraw = TRUE;
-#ifndef USE_AGAR
-		DrawCond = NULL;
-		DrawMutex = NULL;
-		DrawThread = NULL;
-#endif
 		DrawINGFlag = FALSE;
 		DrawSHUTDOWN = FALSE;
 		DrawWaitFlag = FALSE;
@@ -376,28 +304,12 @@ void	InitDraw(void)
 		/*
 		 * 直接書き込み→間接書き込み
 		 */
-#ifdef USE_AGAR
+
 //        realDrawArea = GetDrawSurface();
 		AG_MutexInit(&DrawMutex);
 		AG_CondInit(&DrawCond);
 		AG_MutexUnlock(&DrawMutex);
-#else
-		realDrawArea = SDL_GetVideoSurface();
-		if(!DrawMutex) {
-			DrawMutex = SDL_CreateMutex();
-		}
-		if(!DrawCond) {
-			DrawCond = SDL_CreateCond();
-		}
-#endif
-#ifdef USE_AGAR
 		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
-#else
-		if(!DrawThread) {
-			DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
-			SDL_mutexV(DrawMutex);
-		}
-#endif
 		if(!DrawInitSem) {
 			DrawInitSem = SDL_CreateSemaphore(1);
 			SDL_SemPost(DrawInitSem);
@@ -420,7 +332,6 @@ void	CleanDraw(void)
 {
 
 		DrawSHUTDOWN = TRUE;
-#ifdef USE_AGAR
 		AG_CondSignal(&DrawCond);
 		AG_ThreadJoin(DrawThread, NULL);
 
@@ -428,30 +339,10 @@ void	CleanDraw(void)
 //		AG_CondDestroy(&DrawCond);
 //                DrawThread = NULL;
 
-#else
-		if(DrawCond != NULL) {
-			SDL_CondSignal(DrawCond);
-		}
-		if(DrawThread != NULL) {
-			//			SDL_KillThread(DrawThread);
-			SDL_WaitThread(DrawThread, &reti);
-			DrawThread = NULL;
-		}
-		if(DrawCond != NULL) {
-			SDL_DestroyCond(DrawCond);
-			DrawCond = NULL;
-		}
-#endif
 		if(DrawInitSem != NULL) {
 			SDL_DestroySemaphore(DrawInitSem);
 		}
 
-#ifndef USE_AGAR
-		if(DrawMutex != NULL) {
-			SDL_DestroyMutex(DrawMutex);
-			DrawMutex = NULL;
-		}
-#endif
    //		 detachvramtbl_8_vec();
 		 detachvramtbl_4096_vec();
 		detachsub();
@@ -499,29 +390,27 @@ void SetDrawFlag(BOOL flag)
 BOOL Select640(void)
 {
 
-/*
- * 全領域無効
- */
-        nDrawTop = 0;
-        nDrawBottom = 200;
-        nDrawLeft = 0;
-        nDrawRight = 640;
-        bPaletFlag = TRUE;
-        SetDrawFlag(TRUE);
+   /*
+    * 全領域無効
+    */
+   nDrawTop = 0;
+   nDrawBottom = 200;
+   nDrawLeft = 0;
+   nDrawRight = 640;
+   bPaletFlag = TRUE;
+   SetDrawFlag(TRUE);
 #if XM7_VER >= 3
-/*
- * デジタル/200ラインモード
- */
-        bMode = SCR_200LINE;
-
+   /*
+    * デジタル/200ラインモード
+    */
+   bMode = SCR_200LINE;
 #else				/*  */
-/*
- * デジタルモード
- */
-        bAnalog = FALSE;
-
+   /*
+    * デジタルモード
+    */
+   bAnalog = FALSE;
 #endif				/*  */
-        return TRUE;
+   return TRUE;
 }
 
 
@@ -531,21 +420,20 @@ BOOL Select640(void)
      */
 BOOL Select400l(void)
 {
-
-/*
- * 全領域無効
- */
-        nDrawTop = 0;
-        nDrawBottom = 400;
-        nDrawLeft = 0;
-        nDrawRight = 640;
-        bPaletFlag = TRUE;
-        SetDrawFlag(TRUE);
-/*
- * デジタル/400ラインモード
- */
-        bMode = SCR_400LINE;
-        return TRUE;
+   /*
+    * 全領域無効
+    */
+   nDrawTop = 0;
+   nDrawBottom = 400;
+   nDrawLeft = 0;
+   nDrawRight = 640;
+   bPaletFlag = TRUE;
+   SetDrawFlag(TRUE);
+   /*
+    * デジタル/400ラインモード
+    */
+   bMode = SCR_400LINE;
+   return TRUE;
 }
 
 
@@ -559,143 +447,95 @@ BOOL Select320(void)
 /*
  * 全領域無効
  */
-        nDrawTop = 0;
-        nDrawBottom = 200;
-        nDrawLeft = 0;
-        nDrawRight = 320;
-        bPaletFlag = TRUE;
-        SetDrawFlag(TRUE);
+   nDrawTop = 0;
+   nDrawBottom = 200;
+   nDrawLeft = 0;
+   nDrawRight = 320;
+   bPaletFlag = TRUE;
+   SetDrawFlag(TRUE);
 #if XM7_VER >= 3
-/*
- * アナログ/200ラインモード
- */
-        bMode = SCR_4096;
+   /*
+    * アナログ/200ラインモード
+    */
+   bMode = SCR_4096;
 
 #else				/*  */
-/*
- * アナログモード
- */
-        bAnalog = TRUE;
-
+   /*
+    * アナログモード
+    */
+   bAnalog = TRUE;
 #endif				/*  */
-        return TRUE;
+   return TRUE;
 }
 
 
 #if XM7_VER >= 3
-    /*
-     *  320x200、26万色モード セレクト
-     */
+   /*
+    *  320x200、26万色モード セレクト
+    */
 BOOL Select256k()
 {
-
-/*
- * 全領域無効
- */
-        nDrawTop = 0;
-        nDrawBottom = 200;
-        nDrawLeft = 0;
-        nDrawRight = 320;
-        bPaletFlag = TRUE;
-        SetDrawFlag(TRUE);
-
-/*
- * アナログ(26万色)/200ラインモード
- */
-        bMode = SCR_262144;
-        return TRUE;
+   /*
+    * 全領域無効
+    */
+   nDrawTop = 0;
+   nDrawBottom = 200;
+   nDrawLeft = 0;
+   nDrawRight = 320;
+   bPaletFlag = TRUE;
+   SetDrawFlag(TRUE);
+   
+   /*
+    * アナログ(26万色)/200ラインモード
+    */
+   bMode = SCR_262144;
+   return TRUE;
 }
-
+#endif
+   
 /*
  *  セレクト
  */
 BOOL SelectDraw(void)
 {
 	BOOL ret;
-#ifdef USE_AGAR
+
 //	AG_Driver *drv;
-	AG_Color nullcolor;
-	AG_Rect rect;
-	AG_Widget *w;
+   AG_Color nullcolor;
+   AG_Rect rect;
+   AG_Widget *w;
 
-#else
-	SDL_Surface *p;
-	Uint32 nullcolor;
-	SDL_Rect rect;
 
-	p = SDL_GetVideoSurface();
-	displayArea = p;
-#endif
-
-	rect.h = nDrawWidth;
-	rect.w = nDrawHeight;
-	rect.x = 0;
-	rect.y = 0;
-	DrawSHUTDOWN = FALSE;
-#ifdef USE_AGAR
+   rect.h = nDrawWidth;
+   rect.w = nDrawHeight;
+   rect.x = 0;
+   rect.y = 0;
+   DrawSHUTDOWN = FALSE;
 //	if(drv == NULL) return TRUE;
-#else
-	if(p == NULL) return TRUE;
-#endif
-	/*
-	 * すべてクリア
-	 */
-	 if(!bUseOpenGL) {
-#ifdef USE_AGAR
+   /*
+    * すべてクリア
+    */
+   if(!bUseOpenGL) {
     if(DrawArea != NULL) {
-		 AG_ObjectLock(DrawArea);
-		 nullcolor.r = 0;
-		 nullcolor.g = 0;
-		 nullcolor.b = 0;
-		 nullcolor.a = 255;
-         AG_FillRect(AGWIDGET(DrawArea)->drv->sRef , &rect, nullcolor);
-		 AG_ObjectUnlock(DrawArea);
+       AG_ObjectLock(DrawArea);
+       nullcolor.r = 0;
+       nullcolor.g = 0;
+       nullcolor.b = 0;
+       nullcolor.a = 255;
+       AG_FillRect(AGWIDGET(DrawArea)->drv->sRef , &rect, nullcolor);
+       AG_ObjectUnlock(DrawArea);
     }
-#else
-		 SDL_LockSurface(p);
-		 nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
-		 SDL_FillRect(p, &rect, nullcolor);
-		 SDL_UnlockSurface(p);
-#endif
-	 } else { // OpenGLのとき
-	 }
-	 /*
-	  * すべてクリア
-	  */
-#ifndef USE_AGAR
-	 if((realDrawArea != p) && (realDrawArea != NULL)) {
-		 if(!bUseOpenGL) {
-			 SDL_LockSurface(realDrawArea);
-			 rect.h = realDrawArea->h;
-			 rect.w = realDrawArea->w;
-			 rect.x = 0;
-			 rect.y = 0;
-			 nullcolor = SDL_MapRGBA(realDrawArea->format, 0, 0, 0, 255);
-			 SDL_FillRect(realDrawArea, &rect, nullcolor);
-			 SDL_UnlockSurface(realDrawArea);
-		 } else { // OpenGLのときここ
-		 }
-	 }
-#endif
+   } else { // OpenGLのとき
+   }
+   /*
+    * すべてクリア
+    */
 	 bOldFullScan = bFullScan;
-#ifdef USE_AGAR
 //	 AG_MutexInit(&DrawMutex);
 //	 AG_CondInit(&DrawCond);
 //	 if(!DrawThread) {
 //		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
 //	 }
-#else
-	 if(!DrawMutex) {
-		 DrawMutex = SDL_CreateMutex();
-	 }
-	 if(!DrawCond) {
-		 DrawCond = SDL_CreateCond();
-	 }
-	 if(!DrawThread) {
-		 DrawThread = SDL_CreateThread(DrawThreadMain,NULL);
-		 SDL_mutexV(DrawMutex);
-	 }
-#endif
 	 /*
 	  * セレクト
 	  */
@@ -730,16 +570,10 @@ void AllClear(void)
 {
 	int x;
 	int y;
-#ifdef USE_AGAR
 	AG_Color nullcolor;
 	AG_Rect rect;
 	AG_Driver *drv;
 	AG_Widget *w;
-#else
-	Uint32 nullcolor;
-	SDL_Surface *p;
-	SDL_Rect rect;
-#endif
 //    for(y = 0; y < 50; y++) {
 //        for (x = 0; x < 80; x++) {
 //            SDLDrawFlag.read[x][y] = TRUE;
@@ -749,7 +583,6 @@ void AllClear(void)
 //        SDLDrawFlag.Drawn = TRUE;
 //    }
      SetDrawFlag(TRUE);
-#ifdef USE_AGAR
 #ifdef USE_OPENGL
    if(DrawArea != NULL) {
         drv = AGWIDGET(DrawArea)->drv;
@@ -772,62 +605,33 @@ void AllClear(void)
     }
 
 #endif /* USE_OPENGL */
-#else
-	p = SDL_GetVideoSurface();
-	if(p == NULL) return;
-#endif
-	if(!bUseOpenGL) {
-		rect.h = nDrawHeight;
-		rect.w = nDrawWidth;
-		rect.x = 0;
-		rect.y = 0;
-		/*
-		 * すべてクリア
-		 */
-#ifdef USE_AGAR
-		 AG_ObjectLock(w);
-		 nullcolor.r = 0;
-		 nullcolor.g = 0;
-		 nullcolor.b = 0;
-		 nullcolor.a = 255;
-		 AG_FillRect(drv->sRef, &rect, nullcolor);
-		 AG_ObjectUnlock(w);
-#else
-		SDL_LockSurface(p);
-		nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
-		SDL_FillRect(p, &rect, nullcolor);
-		SDL_UnlockSurface(p);
-		if (bDirectDraw){
-			realDrawArea = p;
-		} else	{
-			if(realDrawArea != NULL) {
-				rect.h = realDrawArea->h;
-				rect.w = realDrawArea->w;
-				rect.x = 0;
-				rect.y = 0;
-				/*
-				 * すべてクリア
-				 */
-				SDL_LockSurface(realDrawArea);
-				nullcolor = SDL_MapRGBA(realDrawArea->format, 0, 0, 0, 255);
-				SDL_FillRect(realDrawArea, &rect, nullcolor);
-				SDL_UnlockSurface(realDrawArea);
-			}
-		}
-		Flip();
-#endif
-	} else {
-		// OpenGL
-	}
-	/*
-	 * 全領域をレンダリング対象とする
-	 */
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
-	SetDrawFlag(TRUE);
-	bClearFlag = FALSE;
+   if(!bUseOpenGL) {
+      rect.h = nDrawHeight;
+      rect.w = nDrawWidth;
+      rect.x = 0;
+      rect.y = 0;
+      /*
+       * すべてクリア
+       */
+      AG_ObjectLock(w);
+      nullcolor.r = 0;
+      nullcolor.g = 0;
+      nullcolor.b = 0;
+      nullcolor.a = 255;
+      AG_FillRect(drv->sRef, &rect, nullcolor);
+      AG_ObjectUnlock(w);
+   } else {
+      // OpenGL
+   }
+   /*
+    * 全領域をレンダリング対象とする
+    */
+   nDrawTop = 0;
+   nDrawBottom = 400;
+   nDrawLeft = 0;
+   nDrawRight = 640;
+   SetDrawFlag(TRUE);
+   bClearFlag = FALSE;
 }
 
 
@@ -836,85 +640,7 @@ void AllClear(void)
  */
 void RenderFullScan(void)
 {
-	BYTE * p;
-	BYTE * q;
-	WORD u;
-	Uint32 pitch;
-
-#ifdef USE_AGAR
-	AG_Driver *drv;
-	AG_Surface *s;
-	AG_Widget *w;
-
-#ifdef USE_OPENGL
-   if(DrawArea != NULL) {
-        drv = AGWIDGET(DrawArea)->drv;
-        if(drv == NULL) return;
-        w = AGWIDGET(DrawArea);
-    } else if(GLDrawArea != NULL) {
-        drv = AGWIDGET(GLDrawArea)->drv;
-        if(drv == NULL) return;
-        w = AGWIDGET(GLDrawArea);
-    } else {
-        return;
-    }
-#else /* USE_OPENGL */
-   if(DrawArea != NULL) {
-        drv = AGWIDGET(DrawArea)->drv;
-        if(drv == NULL) return;
-        w = AGWIDGET(DrawArea);
-    } else {
-        return;
-    }
-
-#endif /* USE_OPENGL */
-#else /* USE_AGAR */
-	SDL_Surface *s = SDL_GetVideoSurface();
-	Uint32 nullcolor;
-#endif /* USE_AGAR */
-#ifdef USE_OPENGL
-     if(bUseOpenGL) {
-		return;
-	}
-#endif /* USE_OPENGL */
-	if(s == NULL) {
-		return;
-	}
-
-#ifdef USE_OPENGL
-	if(!bUseOpenGL) {
-#endif /* USE_OPENGL */
-# ifdef USE_AGAR
-		AG_ObjectLock(w);
-#else
-		SDL_LockSurface(s);
-#endif
-		/*
-		 * ポインタ初期化
-		 */
-
-		p = (BYTE *) s->pixels;
-		pitch = s->pitch;
-		q = p + pitch;
-
-		/*
-		 * ループ
-		 */
-		for (u = 0; u < nDrawBottom; u += (WORD) 2) {
-			memcpy(q, p, pitch);
-			p += pitch * 2;
-			q += pitch * 2;
-		}
-#ifdef USE_AGAR
-		AG_ObjectUnlock(w);
-#else
-		SDL_UnlockSurface(s);
-#endif
-//		SDL_UpdateRect(s, 0, 0, s->w, s->h);
-#ifdef USE_OPENGL
-	   }
-#endif /* USE_OPENGL */
-	Flip();
+   return; // Scalerがやるので
 }
 
 
@@ -923,94 +649,7 @@ void RenderFullScan(void)
  */
 void RenderSetOddLine(void)
 {
-	WORD u;
-
-#ifdef USE_AGAR
-	AG_Driver *drv;
-	AG_Color nullcolor;
-	AG_Surface *s;
-	AG_Rect r;
-	AG_Widget *w;
-	return;
-	if(agDriverOps == NULL) return;
-	    if(DrawArea != NULL) {
-        drv = AGWIDGET(DrawArea)->drv;
-        if(drv == NULL) return;
-        w = AGWIDGET(DrawArea);
-    } else if(GLDrawArea != NULL) {
-        drv = AGWIDGET(GLDrawArea)->drv;
-        if(drv == NULL) return;
-        w = AGWIDGET(GLDrawArea);
-    } else {
-        return;
-    }
-	s = drv->sRef;
-#else
-	SDL_Surface *s = SDL_GetVideoSurface();
-	SDL_Rect r;
-	Uint32 nullcolor;
-#endif
-	if(bUseOpenGL) {
-#ifdef USE_AGAR
-#endif
-		return;
-	}
-	if(s == NULL) {
-#ifdef USE_AGAR
-#endif
-		return;
-	}
-
-	if(!bUseOpenGL) {
-#ifdef USE_AGAR
-		AG_ObjectLock(w);
-		nullcolor.r = 0;
-		nullcolor.g = 0;
-		nullcolor.b = 0;
-		nullcolor.a = 255;
-#else
-		SDL_LockSurface(s);
-		nullcolor = SDL_MapRGBA(s->format, 0, 0, 0, 255);
-#endif
-
-		switch (nDrawWidth) {
-		case 1280:
-			r.x = 0;
-			r.w = s->w;
-			for (u = 2 ; u < nDrawBottom; u += (WORD) 4) {
-				r.y = u;
-				r.h = 2;
-#ifdef USE_AGAR
-				AG_FillRect(drv->sRef, &r, nullcolor);
-#else
-				SDL_FillRect(s, &r, nullcolor);
-#endif
-			}
-			break;
-		case 640:
-		default:
-			r.x = 0;
-			r.w = s->w;
-			for (u = 1; u < nDrawBottom; u += (WORD) 2) {
-				r.y = u;
-				r.h = 1;
-#ifdef USE_AGAR
-				AG_FillRect(drv->sRef, &r, nullcolor);
-#else
-				SDL_FillRect(s, &r, nullcolor);
-#endif
-			}
-			break;
-		}
-#ifdef USE_AGAR
-		AG_ObjectUnlock(w);
-#else
-		SDL_UnlockSurface(s);
-		displayArea = SDL_GetVideoSurface();
-		SDL_UpdateRect(displayArea, 0, 0, displayArea->w, displayArea->h);
-#endif
-	}
-	Flip();
+   return; // Scalerがやるので
 }
 
 
@@ -1019,16 +658,10 @@ void RenderSetOddLine(void)
  */
 void OnDraw(void)
 {
-	/*
-	 * 描画スレッドのKICKを1/60secごとにする。
-	 */
-#ifdef USE_AGAR
-		AG_CondSignal(&DrawCond);
-#else
-		if(DrawCond) SDL_CondSignal(DrawCond);
-#endif
-//	}
-#endif
+   /*
+    * 描画スレッドのKICKを1/60secごとにする。
+    */
+   AG_CondSignal(&DrawCond);
 }
 
 
@@ -1036,11 +669,7 @@ void OnDraw(void)
  *  描画(PAINT) *GTK依存だが、ダミー。
  */
 
-#ifdef USE_GTK
-gint OnPaint(GtkWidget * widget, GdkEventExpose * event)
-#else
 int OnPaint(void)
-#endif
 {
     return 1;
 }
@@ -1373,31 +1002,15 @@ void window_notify(void)
 #endif				/*  */
 void OnFullScreen(void)
 {
-	SDL_Surface *p;
-#ifdef USE_AGAR
-    p = GetDrawSurface();
-#else
-	p = SDL_GetVideoSurface();
-#endif
-	if(p != NULL) {
-		SDL_WM_ToggleFullScreen(p);
-	}
+   return; // Full Screenは実装考える 20121128
 }
 void	OnWindowedScreen(void)
 {
-	SDL_Surface *p;
-#ifdef USE_AGAR
-    p = GetDrawSurface();
-#else
-	p = SDL_GetVideoSurface();
-#endif
-	if(p != NULL) {
-		SDL_WM_ToggleFullScreen(p);
-	}
+   return; // Full Screenは実装考える 20121128
 }
-#ifdef __cplusplus
+
 }
-#endif
+
 /*
  * パレット関連処理
  */
@@ -1509,118 +1122,98 @@ void Palet320(void)
  */
 
 
-#ifdef __cplusplus
 extern "C"
 {
-#endif
-
-
 
 void Draw640All(void)
 {
-	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
-	WORD wdtop, wdbtm;
-	SDL_Surface *p;
+   void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
+   WORD wdtop, wdbtm;
+   SDL_Surface *p;
 
-#ifdef USE_AGAR
-	if(agDriverOps == NULL) return;
-	p = GetDrawSurface();
-#else
-	p = SDL_GetVideoSurface();
-//	if(p == NULL) return;
-#endif
+   if(agDriverOps == NULL) return;
+   p = GetDrawSurface();
+   /*
+    * パレット設定
+    */
+   /*
+    *描画モードを変えたら強制的にPalet640すること。
+    */
+   if(bPaletFlag) { // 描画モードでVRAM変更
+      Palet640();
+      bPaletFlag = FALSE;
+      nDrawTop = 0;
+      nDrawBottom = 400;
+      nDrawLeft = 0;
+      nDrawRight = 640;
+      SetDrawFlag(TRUE);
+   }
+   /*
+    * クリア処理
+    */
+   if (bClearFlag) {
+      AllClear();
+   }
+   PutVramFunc = &PutVram_AG_SP;
+   /*
+    * レンダリング
+    */
+   if(PutVramFunc == NULL) return;
+   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
+      if(window_open) { // ハードウェアウインドウ開いてる
+	 if ((nDrawTop >> 1) < window_dy1) {
+	    SetVram_200l(vram_dptr);
+	    PutVramFunc(p, 0, nDrawTop >> 1, 640, window_dy1, multi_page);
+	 }
+	 /* ウィンドウ内の描画 */
+	 if ((nDrawTop >> 1) > window_dy1) {
+	    wdtop = nDrawTop >> 1;
+	 } else {
+	    wdtop = window_dy1;
+	 }
 
-	/*
-	 * パレット設定
-	 */
-	/*
-	 *描画モードを変えたら強制的にPalet640すること。
-	 */
-	//SetVramReader_200l();
-	if(bPaletFlag) { // 描画モードでVRAM変更
-		Palet640();
-		bPaletFlag = FALSE;
-		nDrawTop = 0;
-		nDrawBottom = 400;
-		nDrawLeft = 0;
-		nDrawRight = 640;
-		SetDrawFlag(TRUE);
-	}
-	/*
-	 * クリア処理
-	 */
-	if (bClearFlag) {
-		AllClear();
-	}
-    PutVramFunc = &PutVram_AG_SP;
-	/*
-	 * レンダリング
-	 */
-	if(PutVramFunc == NULL) return;
-//	if(vramhdr_400l == NULL) return;
-	if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-		if(window_open) { // ハードウェアウインドウ開いてる
-			if ((nDrawTop >> 1) < window_dy1) {
-	//			vramhdr->SetVram(vram_dptr, 80, 200);
-                SetVram_200l(vram_dptr);
-				PutVramFunc(p, 0, nDrawTop >> 1, 640, window_dy1, multi_page);
-			}
-			/* ウィンドウ内の描画 */
-			if ((nDrawTop >> 1) > window_dy1) {
-				wdtop = nDrawTop >> 1;
-			}
-			else {
-				wdtop = window_dy1;
-			}
-
-			if ((nDrawBottom >> 1)< window_dy2) {
-				wdbtm = nDrawBottom >> 1;
-			}
-			else {
-				wdbtm = window_dy2;
-			}
-
-			if (wdbtm > wdtop) {
-		//		vramhdr->SetVram(vram_bdptr, 80, 200);
-			    SetVram_200l(vram_bdptr);
-				PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
-			}
-			/* ハードウェアウインドウ外下部 */
-			if ((nDrawBottom >> 1) > window_dy2) {
-			//	vramhdr->SetVram(vram_dptr, 80, 200);
-                SetVram_200l(vram_dptr);
-				PutVramFunc(p, 0 , wdbtm, 640, (nDrawBottom >> 1) - wdbtm, multi_page);
-			}
-		} else { // ハードウェアウィンドウ開いてない
-		//	vramhdr->SetVram(vram_dptr, 80, 200);
-		    SetVram_200l(vram_dptr);
-			PutVramFunc(p, 0, 0, 640, 200, multi_page);
-		}
-	}
-	nDrawTop = 0;
-	nDrawBottom = 400;
-	nDrawLeft = 0;
-	nDrawRight = 640;
+	 if ((nDrawBottom >> 1)< window_dy2) {
+	    wdbtm = nDrawBottom >> 1;
+	 }
+	 else {
+	    wdbtm = window_dy2;
+	 }
+	 
+	 if (wdbtm > wdtop) {
+	    //		vramhdr->SetVram(vram_bdptr, 80, 200);
+	    SetVram_200l(vram_bdptr);
+	    PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
+	 }
+	 /* ハードウェアウインドウ外下部 */
+	 if ((nDrawBottom >> 1) > window_dy2) {
+	    //	vramhdr->SetVram(vram_dptr, 80, 200);
+	    SetVram_200l(vram_dptr);
+	    PutVramFunc(p, 0 , wdbtm, 640, (nDrawBottom >> 1) - wdbtm, multi_page);
+	 }
+      } else { // ハードウェアウィンドウ開いてない
+	 //	vramhdr->SetVram(vram_dptr, 80, 200);
+	 SetVram_200l(vram_dptr);
+	 PutVramFunc(p, 0, 0, 640, 200, multi_page);
+      }
+   }
+   nDrawTop = 0;
+   nDrawBottom = 400;
+   nDrawLeft = 0;
+   nDrawRight = 640;
 }
 
 
 void Draw400l(void)
 {
 
-	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
-	WORD wdtop, wdbtm;
-
-#ifdef USE_AGAR
-	SDL_Surface *p;
-	if(agDriverOps == NULL) return;
-	p = GetDrawSurface();
-#else
-	SDL_Surface *p;
-	p = SDL_GetVideoSurface();
-#endif
-	/*
-	 * パレット設定
-	 */
+   void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
+   WORD wdtop, wdbtm;
+   SDL_Surface *p;
+   if(agDriverOps == NULL) return;
+   p = GetDrawSurface();
+   /*
+    * パレット設定
+    */
 //	SetVramReader_400l();
 	if (bPaletFlag) {
 		Palet640();
@@ -1642,65 +1235,57 @@ void Draw400l(void)
 	 /*
 	  * レンダリング
 	  */
-#ifdef USE_AGAR
-    PutVramFunc = &PutVram_AG_SP;
-#else
-	 if(!bUseOpenGL) {
-	    PutVramFunc = &SwScaler;
+   PutVramFunc = &PutVram_AG_SP;
+   if(PutVramFunc == NULL) return;
+   // if(vramhdr_400l == NULL) return;
+   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
+      if(window_open) { // ハードウェアウインドウ開いてる
+	 if (nDrawTop < window_dy1) {
+	    //		 vramhdr_400l->SetVram(vram_dptr, 80, 400);
+	    SetVram_200l(vram_dptr);
+	    PutVramFunc(p, 0, nDrawTop, 640, window_dy1 - nDrawTop, multi_page);
+	 }
+	 /* ウィンドウ内の描画 */
+	 if (nDrawTop > window_dy1) {
+	    wdtop = nDrawTop;
 	 } else {
-        PutVramFunc = &Scaler_GL;
+	    wdtop = window_dy1;
 	 }
-#endif
-	 if(PutVramFunc == NULL) return;
-	// if(vramhdr_400l == NULL) return;
-	 if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-		 if(window_open) { // ハードウェアウインドウ開いてる
-			 if (nDrawTop < window_dy1) {
-		//		 vramhdr_400l->SetVram(vram_dptr, 80, 400);
-			         SetVram_200l(vram_dptr);
-				 PutVramFunc(p, 0, nDrawTop, 640, window_dy1 - nDrawTop, multi_page);
-			 }
-			 /* ウィンドウ内の描画 */
-			 if (nDrawTop > window_dy1) {
-				 wdtop = nDrawTop;
-			 } else {
-				 wdtop = window_dy1;
-			 }
-
-			 if (nDrawBottom < window_dy2) {
-				 wdbtm = nDrawBottom;
-			 } else {
-				 wdbtm = window_dy2;
-			 }
-
-			 if (wdbtm > wdtop) {
-			//	 vramhdr_400l->SetVram(vram_bdptr, 80, 400);
-			         SetVram_200l(vram_bdptr);
-			         PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
-			 }
-			 /* ハードウェアウインドウ外下部 */
-			 if (nDrawBottom  > window_dy2) {
-			//	 vramhdr_400l->SetVram(vram_dptr, 80, 400);
-			         SetVram_200l(vram_dptr);
-				 PutVramFunc(p, 0 , wdbtm, 640, nDrawBottom - wdbtm, multi_page);
-			 }
-		 } else { // ハードウェアウィンドウ開いてない
- //           vramhdr_400l->SetVram(vram_dptr, 80, 400);
-            SetVram_200l(vram_dptr);
-            PutVramFunc(p, 0, 0, 640, 400, multi_page);
-		 }
+	 
+	 if (nDrawBottom < window_dy2) {
+	    wdbtm = nDrawBottom;
+	 } else {
+	    wdbtm = window_dy2;
 	 }
-         if (bPaletFlag) {
-            nDrawTop = 0;
-            nDrawBottom = 400;
-            nDrawLeft = 0;
-            nDrawRight = 640;
-	    SetDrawFlag(TRUE);
+	 
+	 if (wdbtm > wdtop) {
+	    //	 vramhdr_400l->SetVram(vram_bdptr, 80, 400);
+	    SetVram_200l(vram_bdptr);
+	    PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
 	 }
-
-         bPaletFlag = FALSE;
-	 //SetDrawFlag(FALSE);
-
+	 /* ハードウェアウインドウ外下部 */
+	 if (nDrawBottom  > window_dy2) {
+	    //	 vramhdr_400l->SetVram(vram_dptr, 80, 400);
+	    SetVram_200l(vram_dptr);
+	    PutVramFunc(p, 0 , wdbtm, 640, nDrawBottom - wdbtm, multi_page);
+	 }
+      } else { // ハードウェアウィンドウ開いてない
+	 //           vramhdr_400l->SetVram(vram_dptr, 80, 400);
+	 SetVram_200l(vram_dptr);
+	 PutVramFunc(p, 0, 0, 640, 400, multi_page);
+      }
+   }
+   if (bPaletFlag) {
+      nDrawTop = 0;
+      nDrawBottom = 400;
+      nDrawLeft = 0;
+      nDrawRight = 640;
+      SetDrawFlag(TRUE);
+   }
+   
+   bPaletFlag = FALSE;
+   //SetDrawFlag(FALSE);
+   
 }
 
 
@@ -1710,136 +1295,116 @@ void Draw320(void)
 	SDL_Surface *p;
 	WORD wdtop, wdbtm;
 
-#ifdef USE_AGAR
 	if(agDriverOps == NULL) return;
 	p = GetDrawSurface();
-#else
-	p = SDL_GetVideoSurface();
-	if(p == NULL) return;
-#endif
-	/*
-	 * パレット設定
-	 */
+   /*
+    * パレット設定
+    */
     PutVramFunc = &PutVram_AG_SP;
-	if(bPaletFlag) {
-        Palet320();
-        SDLDrawFlag.APaletteChanged = TRUE;
-//        SetVramReader_4096();
-        nDrawTop = 0;
-        nDrawBottom = 200;
-        nDrawLeft = 0;
-        nDrawRight = 320;
-        SetDrawFlag(TRUE);
-        bPaletFlag = FALSE;
-	}
-	/*
-	 * クリア処理
-	 */
-	if (bClearFlag) {
-		AllClear();
-	}
-//	SetVramReader_4096();
-	/*
-	 * レンダリング
-	 */
-	if(PutVramFunc == NULL) return;
-	//if(vramhdr == NULL) return;
-	if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-		if(window_open) { // ハードウェアウインドウ開いてる
-			if (nDrawTop < window_dy1) {
-//			vramhdr_4096->SetVram(vram_dptr, 40, 200);
+   if(bPaletFlag) {
+      Palet320();
+      SDLDrawFlag.APaletteChanged = TRUE;
+      //        SetVramReader_4096();
+      nDrawTop = 0;
+      nDrawBottom = 200;
+      nDrawLeft = 0;
+      nDrawRight = 320;
+      SetDrawFlag(TRUE);
+      bPaletFlag = FALSE;
+   }
+   /*
+    * クリア処理
+    */
+   if (bClearFlag) {
+      AllClear();
+   }
+   /*
+    * レンダリング
+    */
+   if(PutVramFunc == NULL) return;
+   //if(vramhdr == NULL) return;
+   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
+      if(window_open) { // ハードウェアウインドウ開いてる
+	 if (nDrawTop < window_dy1) {
+	    //			vramhdr_4096->SetVram(vram_dptr, 40, 200);
             SetVram_200l(vram_dptr);
-			PutVramFunc(p, 0, nDrawTop, 320, window_dy1, multi_page);
-			}
-			/* ウィンドウ内の描画 */
-			if (nDrawTop > window_dy1) {
-				wdtop = nDrawTop;
-			}
-			else {
-				wdtop = window_dy1;
-			}
-
-			if (nDrawBottom < window_dy2) {
-				wdbtm = nDrawBottom;
-			}
-			else {
-				wdbtm = window_dy2;
-			}
-
-			if (wdbtm > wdtop) {
-//				vramhdr_4096->SetVram(vram_bdptr, 40, 200);
-                SetVram_200l(vram_bdptr);
-				PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
-			}
-			/* ハードウェアウインドウ外下部 */
-			if (nDrawBottom  > window_dy2) {
-//				vramhdr_4096->SetVram(vram_dptr, 40, 200);
-                SetVram_200l(vram_dptr);
-				PutVramFunc(p, 0 , wdbtm, 320, nDrawBottom - wdbtm, multi_page);
-			}
-		} else { // ハードウェアウィンドウ開いてない
-//			vramhdr_4096->SetVram(vram_dptr, 40, 200);
-            SetVram_200l(vram_dptr);
-			PutVramFunc(p, 0, 0, 320, 200, multi_page);
-		}
-	}
-
-	nDrawTop = 0;
-	nDrawBottom = 200;
-	nDrawLeft = 0;
-	nDrawRight = 320;
-	bPaletFlag = FALSE;
-	//    SetDrawFlag(FALSE);
+	    PutVramFunc(p, 0, nDrawTop, 320, window_dy1, multi_page);
+	 }
+	 /* ウィンドウ内の描画 */
+	 if (nDrawTop > window_dy1) {
+	    wdtop = nDrawTop;
+	 } else {
+	    wdtop = window_dy1;
+	 }
+	 
+	 if (nDrawBottom < window_dy2) {
+	    wdbtm = nDrawBottom;
+	 } else {
+	    wdbtm = window_dy2;
+	 }
+	 
+	 if (wdbtm > wdtop) {
+	    //				vramhdr_4096->SetVram(vram_bdptr, 40, 200);
+	    SetVram_200l(vram_bdptr);
+	    PutVramFunc(p, window_dx1, wdtop, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
+	 }
+	 /* ハードウェアウインドウ外下部 */
+	 if (nDrawBottom  > window_dy2) {
+	    //				vramhdr_4096->SetVram(vram_dptr, 40, 200);
+	    SetVram_200l(vram_dptr);
+	    PutVramFunc(p, 0 , wdbtm, 320, nDrawBottom - wdbtm, multi_page);
+	 }
+      } else { // ハードウェアウィンドウ開いてない
+	 //			vramhdr_4096->SetVram(vram_dptr, 40, 200);
+	 SetVram_200l(vram_dptr);
+	 PutVramFunc(p, 0, 0, 320, 200, multi_page);
+      }
+   }
+   
+   nDrawTop = 0;
+   nDrawBottom = 200;
+   nDrawLeft = 0;
+   nDrawRight = 320;
+   bPaletFlag = FALSE;
+   //    SetDrawFlag(FALSE);
 }
 
 void Draw256k(void)
 {
-	SDL_Surface *p;
-	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
-#ifdef USE_AGAR
-	if(agDriverOps == NULL) return;
-	p = GetDrawSurface();
-#else
-	p = SDL_GetVideoSurface();
-	if(p == NULL) return;
-#endif
+   SDL_Surface *p;
+   void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
+   if(agDriverOps == NULL) return;
+   p = GetDrawSurface();
 
-    PutVramFunc = &PutVram_AG_SP;
-	nDrawTop = 0;
-	nDrawBottom = 200;
-	nDrawLeft = 0;
-	nDrawRight = 320;
-	//    SetDrawFlag(TRUE);
-
-	/*
-	 * クリア処理
-	 */
-	if (bClearFlag) {
-		AllClear();
-	}
-
-	/*
-	 * レンダリング
-	 */
-	if(PutVramFunc == NULL) return;
-//	if(vramhdr_256k == NULL) return;
-	/*
-	 * 26万色モードの時は、ハードウェアウィンドウを考慮しない。
-	 */
-	//vramhdr_256k->SetVram(vram_dptr, 40, 200);
-	//SetVramReader_256k();
-
-	PutVramFunc(p, 0, 0, 320, 200, multi_page);
-
-	nDrawTop = 0;
-	nDrawBottom = 200;
-	nDrawLeft = 0;
-	nDrawRight = 320;
-	bPaletFlag = FALSE;
-	//    SetDrawFlag(FALSE);
+   PutVramFunc = &PutVram_AG_SP;
+   nDrawTop = 0;
+   nDrawBottom = 200;
+   nDrawLeft = 0;
+   nDrawRight = 320;
+   //    SetDrawFlag(TRUE);
+   // 
+   /*
+    * クリア処理
+    */
+   if (bClearFlag) {
+      AllClear();
+   }
+   
+   /*
+    * レンダリング
+    */
+   if(PutVramFunc == NULL) return;
+   /*
+    * 26万色モードの時は、ハードウェアウィンドウを考慮しない。
+    */
+   PutVramFunc(p, 0, 0, 320, 200, multi_page);
+   
+   nDrawTop = 0;
+   nDrawBottom = 200;
+   nDrawLeft = 0;
+   nDrawRight = 320;
+   bPaletFlag = FALSE;
 }
 
-
-#ifdef __cplusplus
 }
-#endif
+

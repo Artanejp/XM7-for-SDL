@@ -15,10 +15,8 @@
 #include "device.h"
 #include "mouse.h"
 #include "event.h"
-#ifdef USE_AGAR
 #ifndef _WINDOWS
 #include <SDL/SDL.h>
-
 #include <SDL/SDL_syswm.h>
 #endif
 #include <agar/core.h>
@@ -26,11 +24,6 @@
 #include <agar/gui.h>
 
 #include "agar_xm7.h"
-#else
-#include <SDL/SDL.h>
-#include <SDL/SDL_syswm.h>
-#include "xm7_sdl.h"
-#endif
 #include "sdl_sch.h"
 //#include "sdl_kbd.h"
 //#include "gtk_propkeyboard.h"
@@ -38,9 +31,9 @@
 
 
 
-    /*
-     *  定数、型定義
-     */
+/*
+ *  定数、型定義
+ */
 #define KNT_KANJI		0
 #define KNT_KANA		1
 #define KNT_CAPS		2
@@ -59,57 +52,44 @@
 extern          "C" {
 
 #endif				/*  */
-    extern BOOL OnKeyPress(SDL_Event * event);
-    extern BOOL OnKeyRelease(SDL_Event * event);
-
-#ifdef USE_GTK
-        gboolean OnKeyPressGtk(GtkWidget * widget, GdkEventKey * event,
-                               gpointer data);
-        gboolean OnKeyReleaseGtk(GtkWidget * widget, GdkEventKey * event,
-                                 gpointer data);
-#endif
-
-     extern BOOL kbd_snooped;
-    void FASTCALL InitKbd(void);
-    void FASTCALL   CleanKbd(void);
-    BOOL FASTCALL SelectKbd(void);
-    void FASTCALL   PollKbd(void);
-    void        GetDefMapKbd(BYTE * pMap, int mode);
-    void        SetMapKbd(BYTE *pMap);
-    BOOL FASTCALL GetKbd(BYTE * pBuf);
-    void PushKeyData(Uint8 code,Uint8 MakeBreak);
-#ifdef USE_AGAR
-    BOOL OnKeyPressAG(int sym, int mod, Uint32 unicode);
-    BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode);
-    void SetKeyCodeAG(Uint8 code, int sym, int mod);
-    void GetKeyCodeAG(Uint8 code, void *p);
-#endif
-
-
-
+   extern BOOL OnKeyPress(SDL_Event * event);
+   extern BOOL OnKeyRelease(SDL_Event * event);
+   extern BOOL kbd_snooped;
+   void FASTCALL InitKbd(void);
+   void FASTCALL   CleanKbd(void);
+   BOOL FASTCALL SelectKbd(void);
+   void FASTCALL   PollKbd(void);
+   void        GetDefMapKbd(BYTE * pMap, int mode);
+   void        SetMapKbd(BYTE *pMap);
+   BOOL FASTCALL GetKbd(BYTE * pBuf);
+   void PushKeyData(Uint8 code,Uint8 MakeBreak);
+   BOOL OnKeyPressAG(int sym, int mod, Uint32 unicode);
+   BOOL OnKeyReleaseAG(int sym, int mod, Uint32 unicode);
+   void SetKeyCodeAG(Uint8 code, int sym, int mod);
+   void GetKeyCodeAG(Uint8 code, void *p);
 /*
  *  主要ワーク
  */
-        struct local_sdlkeymap {
-                Uint16 keysym;
-                BYTE code;
-        };
+   struct local_sdlkeymap {
+      Uint16 keysym;
+      BYTE code;
+   };
     extern BYTE kbd_map[256];
 
-	/*
-	 * キーボード マップ
-	 */
-//    extern struct local_sdlkeymap kbd_table[256];
-	/*
-	 * 対応するFM-7物理コード
-	 */
-    extern BOOL     bKbdReal;
-    extern BOOL     bTenCursor;
-    extern BOOL     bArrow8Dir;
-    extern BOOL     bNTkeyPushFlag[3];
-    extern BOOL     bNTkeyMakeFlag[128];
-    extern BOOL     bNTkbMode;
-
+   /*
+    * キーボード マップ
+    */
+   //    extern struct local_sdlkeymap kbd_table[256];
+   /*
+    * 対応するFM-7物理コード
+    */
+   extern BOOL     bKbdReal;
+   extern BOOL     bTenCursor;
+   extern BOOL     bArrow8Dir;
+   extern BOOL     bNTkeyPushFlag[3];
+   extern BOOL     bNTkeyMakeFlag[128];
+   extern BOOL     bNTkbMode;
+   
 #ifdef __cplusplus
 }
 #endif				/*  */

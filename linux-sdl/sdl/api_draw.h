@@ -8,25 +8,18 @@
 #ifndef API_DRAW_H_
 #define API_DRAW_H_
 
-#ifdef USE_GTK
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <gdk/gdkkeysyms.h>
-#endif
 
-#ifdef USE_AGAR
+
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-#endif
 
 #ifdef USE_SDL
 #include <SDL.h>
 #include <SDL_syswm.h>
-#ifdef USE_OPENGL
-#include <SDL_opengl.h>
-#endif
+ #ifdef USE_OPENGL
+ #include <SDL_opengl.h>
+ #endif
 #endif
 
 #include "xm7.h"
@@ -37,11 +30,7 @@
 #include "display.h"
 #include "device.h"
 #include "xm7.h"
-#ifdef USE_AGAR
 #include "agar_xm7.h"
-#else
-#include "xm7_sdl.h"
-#endif
 
 
 
@@ -84,9 +73,6 @@ extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */
 //extern BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
 extern BOOL            bFullScan;		/* フルスキャン(Window) */
 extern BOOL            bDirectDraw;		/* 直接書き込みフラグ */
-#ifndef USE_AGAR
-extern SDL_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
-#endif
 extern WORD            nDrawTop;			/* 描画範囲上 */
 extern WORD            nDrawBottom;		/* 描画範囲下 */
 extern WORD            nDrawLeft;		/* 描画範囲左 */
@@ -123,11 +109,7 @@ extern void RenderFullScan(void);
 extern void RenderSetOddLine(void);
 
 extern void OnDraw(void);
-#ifdef USE_GTK
-extern gint OnPaint(GtkWidget * widget, GdkEventExpose * event);
-#else
 extern int OnPaint(void);
-#endif
 
 extern BOOL Select640(void);
 extern BOOL Select400l(void);
@@ -176,7 +158,6 @@ extern void ResizeGL(int w, int h);
 #ifdef __cplusplus
 }
 #endif
-#ifdef USE_AGAR
 extern void ResizeWindow_Agar(int w, int h);
 extern void ResizeWindow_Agar2(int w, int h);
 extern void AGDrawTaskEvent(BOOL Flag);
@@ -184,11 +165,6 @@ extern void AGDrawTaskMain(void);
 extern void *DrawThreadMain(void *p);
 extern void AG_DrawInitsub(void);
 extern void AG_DrawDetachsub(void);
-#else
-extern void SDL_DrawInitsub(void);
-extern void SDL_DrawDetachsub(void);
-extern int DrawThreadMain(void *p);
-#endif
 extern void Flip(void);
 
 

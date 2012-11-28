@@ -6,19 +6,10 @@
  *      Author: K.Ohta<whatisthis.sowhat@gmail.com>
  */
 
-#ifdef USE_GTK
-#include<X11/Xlib.h>
-#include<gtk/gtk.h>
-#include<gdk/gdkx.h>
-#include<gdk/gdkkeysyms.h>
-#endif
-
-#ifdef USE_AGAR
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #include <agar/gui/cursors.h>
-#endif
 
 #include<memory.h>
 #include <SDL.h>
@@ -31,28 +22,16 @@
 #include "mouse.h"
 #include "event.h"
 
-#ifdef USE_AGAR
 #include "agar_xm7.h"
-#else
-#include "sdl.h"
-#endif
 #include "sdl_sch.h"
 
 #include "api_kbd.h"
 #include "api_js.h"
 #include "api_mouse.h"
 
-#ifdef USE_GTK
-#include "gtk_propkeyboard.h"
-#endif
 
 extern "C" {
-#ifdef USE_GTK
-static GdkCursor *nullcursor;	/* 透明カーソル */
-#endif
-#ifdef USE_AGAR
 AG_Cursor *nullcursor;
-#endif
 
 #ifdef MOUSE
 static DWORD    mostime;	/* マウスポーリング時間 */
@@ -75,7 +54,6 @@ static BOOL    rgbButtons[3];	/* マウスボタン押下状態 */
 BYTE nMidBtnMode;
 BOOL bMouseCaptureFlag;
 
-//static SDL_Cursor *nullcursor;	/* 透明カーソル */
 
 
 #endif				/*  */
@@ -109,9 +87,6 @@ void InitMouse()
 /*
  * 透明カーソル生成
  */
-#ifdef USE_AGAR
-
-#endif
 
 #endif
 
@@ -123,13 +98,7 @@ void SetMouseCapture(BOOL en)
 {
 	int   x;
 	int   y;
-#ifdef USE_GTK
-	GdkModifierType state;
-	GdkCursor * cursor;
-#endif
-#ifdef USE_AGAR
 	AG_Cursor *cursor;
-#endif
 	//    SDL_Cursor * cursor;
 	//SDL_SysWMinfo sdlinfo;
 	/*
@@ -240,8 +209,7 @@ void SetMouseCapture(BOOL en)
 /*
  *  マウス 移動データリクエスト
  */
-void
-mospos_request(BYTE * move_x, BYTE * move_y)
+void mospos_request(BYTE * move_x, BYTE * move_y)
 {
 	if (bCapture) {
 
@@ -379,26 +347,7 @@ mosbtn_request(void)
 /*
  *  マウスボタンプレスアクション
  */
-#ifdef USE_GTK
-gboolean OnButtonPress(GtkWidget * widget, GdkEventButton * event,
-		gpointer data)
-{
-	rgbButtons[event->button - 1] = TRUE;
-	return FALSE;
-}
 
-
-/*
- *  マウスボタンリリースアクション
- */
-gboolean OnButtonRelease(GtkWidget * widget, GdkEventButton * event,
-		gpointer data)
-{
-	rgbButtons[event->button - 1] = FALSE;
-	return FALSE;
-}
-#endif
-#ifdef USE_AGAR
 void OnButtonPress(AG_Event *event)
 {
 
@@ -409,7 +358,6 @@ void OnButtonRelease(AG_Event *event)
 {
 
 }
-#endif
 #endif
 
 /*

@@ -16,23 +16,15 @@
 #include <sys/param.h>
 #endif				/*  */
 
-#ifdef  USE_GTK
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
-#endif /* USE_GTK */				/*  */
-
 #ifndef _SDL_H
 #ifndef _WINDOWS
 # include <SDL.h>
 #endif
 #endif				/*  */
 
-#ifdef USE_AGAR
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-#endif
 
 #ifdef __cplusplus
 extern          "C" {
@@ -58,53 +50,23 @@ typedef unsigned int UINT;
 /*
  * VMアンロック
  */
-        extern void     CreateDrawSDL(void);
-#ifdef USE_GTK
-        extern void     OnCreate(GtkWidget *parent);
-#else
-#ifdef USE_AGAR
-    //    extern void     OnCreate(AG_Widget *parent);
-#else
-        extern void     OnCreate(void *parent);
-#endif
-#endif
+   //    extern void     OnCreate(AG_Widget *parent);
 /*
  * 以下、Toolkit依存部分
  */
-#ifdef USE_GTK
-        extern void     ChangeResolutionGTK(int width, int height, int oldwidth, int oldheight);
-        extern void     InitGtk(int argc, char *argv[]);
-        extern void     InitInstanceGtk(void);
-        extern void     OnCreateGtk(GtkWidget *parent);
-        extern void     CreateDrawGTK(GtkWidget * parent);
-        extern void     SetIconGtk(int ver);
-        extern void     ui_update_gtk(void);
-        extern void     InitGtk(int argc, char *argv[]);
-        extern void     MainLoopGtk(int argc, char *argv[]);
-#endif
-
 
 /*
  *  主要ワーク
  */
-        extern char             ModuleDir[MAXPATHLEN];  /* XM7実行モジュールパス */
-#ifdef USE_GTK
-        extern GtkWidget        *wndMain;	     /* メインウィンドウ  */
-        extern GtkWidget        *gtkDrawArea;
-        extern GtkBuilder       *gbuilderMain;
-#endif
-#ifndef USE_AGAR
-        extern SDL_Surface      *drawArea;	     /* スクリーン描画エリア */
-        extern SDL_Surface      *displayArea;           /* スクリーン表示エリア */
-#endif
-        extern char             InitialDir[5][MAXPATHLEN]; /* 初期ディレクトリ */
-        extern int              nErrorCode;             /* エラーコード */
-        extern BOOL             bMenuLoop;              /* メニューループ中 */
-        extern BOOL             bCloseReq;              /* 終了要求フラグ */
-        extern BOOL             bSync;                  /* 実行に同期  */
-        extern BOOL             bSyncDisasm[2];         /* 逆アセンブルをPCに同期 */
-        extern BOOL             bActivate;              /* アクティベートフラグ */
-        extern BOOL             bMMXflag;               /* MMXサポートフラグ */
+   extern char             ModuleDir[MAXPATHLEN];  /* XM7実行モジュールパス */
+   extern char             InitialDir[5][MAXPATHLEN]; /* 初期ディレクトリ */
+   extern int              nErrorCode;             /* エラーコード */
+   extern BOOL             bMenuLoop;              /* メニューループ中 */
+   extern BOOL             bCloseReq;              /* 終了要求フラグ */
+   extern BOOL             bSync;                  /* 実行に同期  */
+   extern BOOL             bSyncDisasm[2];         /* 逆アセンブルをPCに同期 */
+   extern BOOL             bActivate;              /* アクティベートフラグ */
+   extern BOOL             bMMXflag;               /* MMXサポートフラグ */
 
 #if ((XM7_VER <= 2) && defined(FMTV151))
         extern BOOL             bFMTV151;               /* チャンネルコールエミュレーション */

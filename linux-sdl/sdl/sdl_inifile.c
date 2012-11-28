@@ -7,11 +7,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include "xm7.h"
-#ifdef USE_AGAR
 #include "agar_xm7.h"
-#else
-#include "sdl.h"
-#endif
 #include "sdl_inifile.h"
 
 

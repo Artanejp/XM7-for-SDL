@@ -9,24 +9,10 @@
  *   20111009 : Separate from "api_draw.cpp"
  */
 
- #ifdef USE_GTK
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <gdk/gdkkeysyms.h>
-#endif
-
 #include <SDL.h>
-#ifdef USE_AGAR
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-#else
-#include <SDL_syswm.h>
-#ifdef USE_OPENGL
-#include <SDL_opengl.h>
-#endif
-#endif
 
 #include "xm7.h"
 #include "multipag.h"
@@ -36,14 +22,12 @@
 #include "display.h"
 #include "device.h"
 
-#ifdef USE_AGAR
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #ifdef USE_OPENGL
 #include "agar_gldraw.h"
 #endif /* USE_OPENGL */
 #include "agar_glutil.h"
-#endif /* USE_AGAR */
 
 #include "xm7_sdl.h"
 
@@ -52,13 +36,11 @@
 //#include "api_scaler.h"
 
 
-#ifdef USE_AGAR
 extern void AG_DrawInitsub(void);
 extern void AG_DrawDetachsub(void);
-#else
-extern void SDL_DrawInitsub(void);
-extern void SDL_DrawDetachsub(void);
-#endif
+extern AG_Mutex DrawMutex;
+extern AG_Cond DrawCond;
+
 
 extern Uint32 nDrawTick1D;
 extern Uint32 nDrawTick1E;
@@ -146,216 +128,88 @@ static BOOL SelectCheck(void)
  */
 BOOL SelectDraw2(void)
 {
-#ifdef USE_AGAR
     AG_Widget *wid;
-#else // SDL
-		Uint32 nullcolor;
-		SDL_Surface *p;
-		SDL_Rect rect;
-#endif
-
-
-
-		/*
-		 * 一致しているかチェック
-		 */
-		if (SelectCheck()) {
-			return TRUE;
-		}
-#ifdef USE_AGAR
+   /*
+    * 一致しているかチェック
+    */
+   if (SelectCheck()) {
+      return TRUE;
+   }
 //		if(agDriverOps == NULL) return FALSE;
 #ifdef USE_OPENGL
-               if(GLDrawArea != NULL) {
-		   wid = AGWIDGET(GLDrawArea);
-		} else if(DrawArea != NULL) {
-		   wid = AGWIDGET(DrawArea);
-		} else {
-		   return FALSE;
-		}
+   if(GLDrawArea != NULL) {
+      wid = AGWIDGET(GLDrawArea);
+   } else if(DrawArea != NULL) {
+      wid = AGWIDGET(DrawArea);
+   } else {
+      return FALSE;
+   }
+   if(!bUseOpenGL) {
 #else
-                if(DrawArea != NULL) {
-		   wid = AGWIDGET(DrawArea);
-		} else {
-		   return FALSE;
-		}
-   
-#endif /* USE_OPENGL */
-#else
-		p = SDL_GetVideoSurface();
-		if(p == NULL) return FALSE;
-		rect.h = nDrawWidth;
-		rect.w = nDrawHeight;
-		rect.x = 0;
-		rect.y = 0;
-#endif
+   if(DrawArea != NULL) {
+      wid = AGWIDGET(DrawArea);
+   } else {
+      return FALSE;
+   }
+#endif   
+
+      /*
+       * すべてクリア
+       */
+      //AG_DriverClose(drv);
+      bClearFlag = TRUE;
+      SDLDrawFlag.ForcaReDraw = TRUE;
 #ifdef USE_OPENGL
-		if(!bUseOpenGL) {
+   }
 #endif /* USE_OPENGL */
-		   /*
-			 * すべてクリア
-			 */
-#ifndef USE_AGAR
-			SDL_LockSurface(p);
-			nullcolor = SDL_MapRGBA(p->format, 0, 0, 0, 255);
-			SDL_FillRect(p, &rect, nullcolor);
-			SDL_UnlockSurface(p);
-#endif
-			/*
-			 * すべてクリア
-			 */
-#ifdef USE_AGAR
-			//AG_DriverClose(drv);
-			bClearFlag = TRUE;
-			SDLDrawFlag.ForcaReDraw = TRUE;
-#else
-			if(realDrawArea != p) {
-				SDL_LockSurface(realDrawArea);
-				rect.h = realDrawArea->h;
-				rect.w = realDrawArea->w;
-				rect.x = 0;
-				rect.y = 0;
-				nullcolor = SDL_MapRGBA(realDrawArea->format, 0, 0, 0, 255);
-				SDL_FillRect(realDrawArea, &rect, nullcolor);
-				SDL_UnlockSurface(realDrawArea);
-			}
-#endif /* USE_AGAR */
-#ifdef USE_OPENGL
-		}
-#endif /* USE_OPENGL */
-		bOldFullScan = bFullScan;
-		/*
-		 * セレクト
-		 */
+   bOldFullScan = bFullScan;
+   /*
+    * セレクト
+    */
 #if XM7_VER >= 3
-		switch (screen_mode) {
-		case SCR_400LINE:
-			return Select400l();
-		case SCR_262144:
-			return Select256k();
-		case SCR_4096:
-			return Select320();
-		default:
-			return Select640();
-		}
+   switch (screen_mode) {
+    case SCR_400LINE:
+      return Select400l();
+    case SCR_262144:
+      return Select256k();
+    case SCR_4096:
+      return Select320();
+    default:
+      return Select640();
+   }
 
-#else				/*  */
-		if (mode320) {
-			return Select320();
-		}
-		return Select640();
-
-#endif				/*  */
-		return TRUE;
+#else /*  */
+   if (mode320) {
+      return Select320();
+   }
+   return Select640();
+#endif /*  */
+   return TRUE;
 }
 
-#ifndef USE_AGAR
-static int DrawTaskMain(void *arg)
-{
-		if(newResize) {
-			nDrawWidth = newDrawWidth;
-			nDrawHeight = newDrawHeight;
-			ResizeWindow(nDrawWidth, nDrawHeight);
-//			SetupGL(nDrawWidth, nDrawHeight);
-			newResize = FALSE;
-		}
-		ChangeResolution();
-		SelectDraw2();
-#if XM7_VER >= 3
-		/*
-		 *    いずれかを使って描画
-		 */
-		SDL_SemWait(DrawInitSem);
-		switch (bMode) {
-		case SCR_400LINE:
-			Draw400l();
-			break;
-		case SCR_262144:
-			Draw256k();
-			break;
-		case SCR_4096:
-			Draw320();
-			break;
-		case SCR_200LINE:
-			Draw640All();
-			break;
-		}
-		SDL_SemPost(DrawInitSem);
-#else				/*  */
-		/*
-		 * どちらかを使って描画
-		 */
-		if (bAnalog) {
-			Draw320All();
-		}
-		else {
-			Draw640All();
-		}
-#endif				/*  */
-		//        SDL_UnlockSurface(p);
-		Flip();
-		return 0;
-}
-#endif /* !USE_AGAR */
-
-#ifdef USE_AGAR
-extern AG_Mutex DrawMutex;
-extern AG_Cond DrawCond;
-#endif
-
-#ifdef USE_AGAR
 void *DrawThreadMain(void *p)
-#else
-int DrawThreadMain(void *p)
-#endif
 {
-#ifdef USE_AGAR
-		//nDrawTick1D = AG_GetTicks();
-		AG_DrawInitsub();
-#else
-        SDL_DrawInitsub();
-#endif
-		InitGL(640,480);
-		nDrawCount = DrawCountSet(nDrawFPS);
-		while(1) {
-#ifndef USE_AGAR
-			if(DrawMutex == NULL) {
-				SDL_Delay(1);
-				continue;
-			}
-			if(DrawCond == NULL) {
-				SDL_Delay(1);
-				continue;
-			}
-#endif
-#ifdef USE_AGAR
-			AG_CondWait(&DrawCond, &DrawMutex);
-#else
-			SDL_mutexP(DrawMutex);
-			SDL_CondWait(DrawCond, DrawMutex);
-#endif
-		   if(DrawSHUTDOWN) {
-#ifdef USE_AGAR
-		      AG_DrawDetachsub();
-#else
-		      SDL_DrawDetachsub();
-#endif
-		      DrawSHUTDOWN = FALSE;
-		      return 0; /* シャットダウン期間 */
-		   }
+   //nDrawTick1D = AG_GetTicks();
+   AG_DrawInitsub();
+   InitGL(640,480);
+   nDrawCount = DrawCountSet(nDrawFPS);
+   while(1) {
+      AG_CondWait(&DrawCond, &DrawMutex);
+      if(DrawSHUTDOWN) {
+	 AG_DrawDetachsub();
+	 DrawSHUTDOWN = FALSE;
+	 return; /* シャットダウン期間 */
+      }
 
-			if(nDrawCount > 0) {
-				nDrawCount --;
-				continue;
-			} else {
-			   nDrawCount = DrawCountSet(nDrawFPS);
-			}
-#ifdef USE_AGAR
-			AGDrawTaskMain();
-#else
-			DrawTaskMain(NULL);
-#endif
-			DrawINGFlag = FALSE;
-			DrawWaitFlag = FALSE;
-		}
+      if(nDrawCount > 0) {
+	 nDrawCount --;
+	 continue;
+      } else {
+	 nDrawCount = DrawCountSet(nDrawFPS);
+      }
+      AGDrawTaskMain();
+      DrawINGFlag = FALSE;
+      DrawWaitFlag = FALSE;
+   }
 }
 

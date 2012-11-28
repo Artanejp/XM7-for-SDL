@@ -12,21 +12,14 @@
 #include <vector>
 #include "SDLJoyInterface.h"
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 #include "xm7.h"
 #include "mainetc.h"
 #include "keyboard.h"
 #include "device.h"
 #include "mouse.h"
 #include "event.h"
-#ifdef USE_AGAR
 #include "agar_xm7.h"
-#else
-#include "xm7_sdl.h"
-#endif
 #include "sdl_sch.h"
 #include "api_kbd.h"
 #include "api_js.h"
@@ -961,6 +954,4 @@ BOOL OnReleaseJoy(SDL_Event * event)
 	for(i = 0; i< MAX_SDL_JOY; i++) SDLDrv[i].OnRelease(event);
 	return TRUE;
 }
-#ifdef __cplusplus
 }
-#endif
