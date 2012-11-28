@@ -531,7 +531,7 @@ cl_int GLCLDraw::window_copy8(void)
       nDrawBottom = 400;
       nDrawLeft = 0;
       nDrawRight = 640;
-      SetDrawFlag(TRUE);
+//      SetDrawFlag(TRUE);
    }
    if (bClearFlag) {
       AllClear();
@@ -659,7 +659,7 @@ cl_int GLCLDraw::window_copy4096(void)
       nDrawBottom = 200;
       nDrawLeft = 0;
       nDrawRight = 320;
-      SetDrawFlag(TRUE);
+//      SetDrawFlag(TRUE);
    }
    if (bClearFlag) {
       AllClear();
@@ -721,7 +721,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    Uint8 *pr,*pg,*pb;
    Uint32 *pal;
    size_t gws[] = {200}; // Parallel jobs.
-   size_t lws[] = {4}; // local jobs.
+   size_t lws[] = {1}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
 	

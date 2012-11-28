@@ -142,24 +142,27 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 
 	// Test
 
-    if(pVirtualVram == NULL) return;
-    pp = &(pVirtualVram->pVram[0][0]);
-
-    if(pp == NULL) return;
     if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
 
     LockVram();
-
-    if((bClearFlag)) {
-        memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
-        SetDrawFlag(TRUE);
-        bClearFlag = FALSE;
-    }
    if((cldraw != NULL) && (GLDrawArea != NULL)){ // Snip builing-viryual-vram if GLCL mode.
 	bVramUpdateFlag = TRUE;
         SDLDrawFlag.Drawn = TRUE;
         UnlockVram();
         return;
+   }
+   if(pVirtualVram == NULL) return;
+   pp = &(pVirtualVram->pVram[0][0]);
+
+   if(pp == NULL) {
+      UnlockVram();
+      return;
+   }
+   
+   if((bClearFlag)) {
+      memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
+      SetDrawFlag(TRUE);
+      bClearFlag = FALSE;
    }
    
  

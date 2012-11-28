@@ -119,12 +119,13 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
   GLfloat yinc;
   GLfloat y;
   int base;
-    j = h;
+    j = h + 1;
     yinc = -4.0f / 400.0f;
     ybegin = 1.0f;
     yofset = -5.0f / 400.0f;
   if(vertex == NULL) return;
-  y = ybegin + yofset;
+//  y = ybegin + yofset;
+  y = ybegin + yofset / 4.0f;
   for(i = 0; j > 0 ; j--, i++, y += yinc){
       base = i * 6;
       vertex[base] = -1.0f; // x
@@ -388,16 +389,16 @@ static void drawGrids(void *pg,int w, int h)
     	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
         if(bGL_EXT_VERTEX_ARRAY) {
-                glVertexPointerEXT(3, GL_FLOAT, 0, h * 2, vertex);
+                glVertexPointerEXT(3, GL_FLOAT, 0, h + 1, vertex);
                 glEnable(GL_VERTEX_ARRAY_EXT);
-                glDrawArraysEXT(GL_LINES, 0, h  * 2);
+                glDrawArraysEXT(GL_LINES, 0, h + 1);
                 glDisable(GL_VERTEX_ARRAY_EXT);
         } else {
 	    int i;
             GLfloat *v;
             // VERTEX_ARRAYなしの場合
             glBegin(GL_LINES);
-            for(i = 0; i < (h - 1); i++) {
+            for(i = 0; i < (h + 1); i++) {
                 v = &vertex[i * 6];
                 glVertex3f(v[0], v[1], v[2]);
                 glVertex3f(v[3], v[4], v[5]);

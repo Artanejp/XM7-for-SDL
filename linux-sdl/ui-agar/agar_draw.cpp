@@ -18,7 +18,9 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
-
+#ifdef _USE_OPENCL
+extern class GLCLDraw *cldraw;
+#endif // _USE_OPENCL
 
 extern BYTE bMode;
 
