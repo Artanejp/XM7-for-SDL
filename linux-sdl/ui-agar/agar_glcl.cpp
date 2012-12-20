@@ -65,7 +65,7 @@ cl_int GLCLDraw::InitContext(void)
    
 //   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
 //                         &ret_num_devices);
-   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id,
+   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
                          &ret_num_devices);
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();

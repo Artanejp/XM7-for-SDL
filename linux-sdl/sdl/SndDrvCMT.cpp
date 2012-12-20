@@ -257,9 +257,7 @@ int SndDrvCMT::Render(Sint16 *pBuf, int start, int uSamples,  BOOL clear, BOOL b
 	 */
 	if ((srate == 48000) || (srate == 96000)) {
 		tmp = (srate * 5 * 2) / 48000;
-	}
-
-	else {
+	} else {
 		tmp = (srate * 4 * 2) / 44100;
 	}
 	/*
