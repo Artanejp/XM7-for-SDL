@@ -63,6 +63,7 @@ install: all
 	$(INSTALL) ./sdl/xm7 $(PREFIX)/bin/xm7
 	$(INSTALL) ./sdl/xm7.debug $(PREFIX)/bin/xm7.debug
 	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.png $(SHAREDIR)
 	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
 	$(INSTALL) -m 0644 ./locales/ja_JP/*.mo ./locales/ja_JP/*.po $(SHAREDIR)ja/LC_MESSAGES/
 	$(INSTALL) -m 0644 ./locales/C/*.mo ./locales/C/*.po $(SHAREDIR)C/LC_MESSAGES/
