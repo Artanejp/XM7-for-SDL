@@ -5,6 +5,17 @@
  *      Copyright (C) 2001-2010 Ryu Takegami
  *
  *      [ システム管理 ]
+ *
+ *	RHG履歴
+ *	  2001.08.07		ホットリセット機能を追加
+ *	  2001.11.19		旧ステートファイル(イベント16個タイプ)のロードに対応
+ *						V2.5L21で作成されたステートファイルの読み込みに対応
+ *	  2002.03.06		V3でのステートファイルVer.7のロードに対応
+ *						ステートファイルバージョンを全面的に3桁化
+ *	  2002.12.04		ホットリセットの方法を変更
+ *	  2004.05.04		ステートファイルVer.5がロードできない問題を修正
+ *	  2004.12.01		F-BASIC V3.5でのホットリセットに対応
+ *	  2006.11.08		日本語サブシステムのステートセーブ・ロードに対応
  */
 
 #include <string.h>
@@ -572,7 +583,9 @@ system_load(char *filename)
     int             ver;
     char            header[16];
     BOOL            flag;
+#if XM7_VER >= 2   
     BOOL            old_scheduler;
+#endif   
     WORD            tmp;
     int             filesize;
 #if XM7_VER == 1
@@ -735,11 +748,16 @@ system_load(char *filename)
     if (!subcpu_load(fileh, ver)) {
 	flag = FALSE;
     }
-
+#if XM7_VER == 1
+	if (!schedule_load(fileh, ver)) {
+		flag = FALSE;
+	}
+#else
     if (!schedule_load(fileh, ver, old_scheduler)) {
 	flag = FALSE;
     }
-
+#endif
+   
     if (!display_load(fileh, ver)) {
 	flag = FALSE;
     }

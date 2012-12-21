@@ -43,7 +43,7 @@ BOOL bmc_fwritep[BMC_UNITS_32];			/* ライトプロテクト状態 */
 BYTE bmc_access[BMC_UNITS_32];			/* アクセスLED */
 
 BOOL bmc_enable;						/* 有効・無効フラグ */
-BOOL bmc_use;						/* 使用フラグ */
+BOOL bmc_use;   						/* 使用フラグ */
 
 /*
  *	スタティック ワーク
@@ -492,6 +492,10 @@ BOOL FASTCALL bmc_readb(WORD addr, BYTE *dat)
 	if (fm_subtype != FMSUB_FM8) {
 		return FALSE;
 	}
+	/* アドレスチェック */
+	if ((addr & 0xfff8) != 0xfd10) {
+		return FALSE;
+	}
 
 	bmc_use = TRUE;
 
@@ -509,7 +513,7 @@ BOOL FASTCALL bmc_readb(WORD addr, BYTE *dat)
 
 					bmc_countreg--;
 					if ((bmc_countreg > 0)
-					 && (bmc_pagereg < BMC_MAXADDR_32)) {
+					 && ((bmc_pagereg & BMC_MAXADDR_32)< BMC_MAXADDR_32)) {
 						/* マルチページ処理 */
 						bmc_status |= (BYTE)BMC_ST_BUSY;
 						bmc_status &= (BYTE)(~BMC_ST_CME);
@@ -586,6 +590,10 @@ BOOL FASTCALL bmc_writeb(WORD addr, BYTE dat)
 	if (fm_subtype != FMSUB_FM8) {
 		return FALSE;
 	}
+	/* アドレスチェック */
+	if ((addr & 0xfff8) != 0xfd10) {
+		return FALSE;
+	}
 
 	bmc_use = TRUE;
 
@@ -610,7 +618,7 @@ BOOL FASTCALL bmc_writeb(WORD addr, BYTE dat)
 
 					bmc_countreg--;
 					if ((bmc_countreg > 0)
-					 && (bmc_pagereg < BMC_MAXADDR_32)) {
+					 && ((bmc_pagereg & BMC_MAXADDR_32)< BMC_MAXADDR_32)) {
 						/* マルチページ処理 */
 						bmc_status |= (BYTE)BMC_ST_BUSY;
 #ifdef FDDSND

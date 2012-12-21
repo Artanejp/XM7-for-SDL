@@ -68,7 +68,7 @@ BOOL FASTCALL bmc_save(int fileh);
 										/* セーブ */
 BOOL FASTCALL bmc_load(int fileh, int ver);
 										/* ロード */
-int FASTCALL bmc_setfile(int unit, char *fname);
+BOOL FASTCALL bmc_setfile(int unit, char *fname);
 										/* セット */
 BOOL FASTCALL bmc_setwritep(int unit, BOOL writep);
 										/* ライトプロテクト指定 */

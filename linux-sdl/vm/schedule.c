@@ -5,6 +5,32 @@
  *      Copyright (C) 2001-2010 Ryu Takegami
  *
  *      [ スケジューラ ]
+ *
+ *	RHG履歴
+ *	  2001.11.19		旧ステートファイル(イベント16個タイプ)のロードに対応
+ *	  2001.11.24		サブHALTタイミングを変更
+ *	  2002.03.06		VM仮想時間カウンタ(機種依存部とは別)を追加
+ *	  2002.03.07		設定可能ブレークポイント数を16個に変更
+ *	  2002.06.21		VRAMアクセスフラグON時のサブCPU速度を某資料(^^;)をもと
+ *						に3分の1に変更
+ *	  2002.07.17		リセット時にRTCイベントのみクリアしないように変更
+ *	  2002.08.03		全力駆動実行中はDMACを動かさないように変更
+ *	  2002.11.12		実行サイクル数の理論値と実際の値を調整する処理を追加
+ *						サブHALT時の実行サイクル設定方法を変更
+ *						サブCPUが命令を実行しすぎることがある問題を修正
+ *	  2002.12.17		FDDウェイトモード時、ディスク動作中は全力駆動しないよう
+ *						に変更
+ *	  2003.05.02		サブCPUのデフォルト実行サイクル数を変更
+ *	  2003.06.03		メインCPU・サブCPUのデフォルト実行サイクル数を微調整
+ *	  2003.06.19		MMR関連レジスタ変更時の速度補正を導入
+ *	  2003.11.21		XM7 V1.1対応
+ *						ブレークポイント判定のCPUチェックを厳密化
+ *	  2004.01.24		サウンド生成の時間精度を向上
+ *	  2004.01.25		テープ音モニタ処理をtapelp.cから移動
+ *	  2008.01.20		↑なかったことにした
+ *	  2012.04.20		実行サイクル数/サイクルスチールモードのステートデータへ
+ *						の保存/復帰機能を実装
+ *						長らく使途不明になっていたexec0を廃止
  */
 
 #include <string.h>
@@ -1388,8 +1414,11 @@ schedule_save(SDL_RWops *fileh)
  *      スケジューラ
  *      ロード
  */
-BOOL            FASTCALL
-schedule_load(SDL_RWops *fileh, int ver, BOOL old)
+#if XM7_VER == 1
+BOOL FASTCALL schedule_load(int fileh, int ver)
+#else
+BOOL FASTCALL schedule_load(SDL_RWops *fileh, int ver, BOOL old)
+#endif
 {
     int             i;
     BYTE            tmp;
@@ -1426,10 +1455,15 @@ schedule_load(SDL_RWops *fileh, int ver, BOOL old)
 	if (!file_byte_read(fileh, &MAXNUM)) {
 	    return FALSE;
 	}
-    } else {
-	MAXNUM = BREAKP_MAXNUM_OLD;
     }
-
+       
+#if XM7_VER >= 2
+	 else {
+	    /* V1.1では事実上使われない */
+	    MAXNUM = BREAKP_MAXNUM_OLD;
+    }
+#endif
+       
     /*
      * いったん初期化する
      */
@@ -1471,14 +1505,17 @@ schedule_load(SDL_RWops *fileh, int ver, BOOL old)
 	if (!file_byte_read(fileh, &MAXNUM)) {
 	    return FALSE;
 	}
-    } else {
+    }
+#if XM7_VER >= 2
+    else {
 	if (old) {
 	    MAXNUM = EVENT_MAXNUM_L30;
 	} else {
 	    MAXNUM = EVENT_MAXNUM_L31;
 	}
     }
-
+#endif
+       
     for (i = 0; i < MAXNUM; i++) {
 	/*
 	 * コールバック以外を設定
