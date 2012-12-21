@@ -37,6 +37,10 @@ extern void OnPushCancel(AG_Event *event);
 #ifdef USE_OPENGL
 extern AG_GLView *GLDrawArea;
 #endif
+extern "C" {
+   extern int fm7_ver;
+   extern BOOL cycle_steal;
+}
 
 static void Dialog_OnPushOK(AG_Event *event)
 {
@@ -71,10 +75,33 @@ void OnAboutDialog(AG_Event *event)
 #ifdef RSSDIR
 	strcat(iconpath, RSSDIR);
 #else
-	strcat(path, "./.xm7/");
+	strcat(iconpath, "./.xm7/");
 #endif
 	strcpy(file, iconpath); // 複数ディレクトリサーチに置き換える
-	strcat(file, "xm7.png"); // アイコンはPNGで…
+        switch(fm7_ver) {
+	 case 1: // FM-7/77
+	   if(cycle_steal == TRUE) {
+		strcat(file, "tenfm77.png");
+	   } else {
+		strcat(file, "tenfm7.png");
+	   }
+	   break;
+	 case 2: // FM77AV
+	   strcat(file, "tenfm77av.png");
+	   break;
+	 case 3:  // FM77AV40EX
+	   strcat(file, "ten40ex.png");
+	   break;
+	 default:
+	    strcat(file, "xm7.png");
+	    break;
+	}
+   
+        if(!AG_FileExists(file)) { // Fallback
+	   strcpy(file, iconpath); // 複数ディレクトリサーチに置き換える
+	   strcat(file, "xm7.png"); // アイコンはPNGで…
+	}
+   
 	if(AG_FileExists(file)) {
 		mark = AG_SurfaceFromPNG(file);
 		if(mark != NULL) {
@@ -82,6 +109,7 @@ void OnAboutDialog(AG_Event *event)
 			AG_PixmapFromSurface(vbox1, 0, mark);
 		}
 	}
+   
 #ifdef USE_OPENGL   
        if(GLDrawArea != NULL) {
 #ifdef _USE_OPENCL
