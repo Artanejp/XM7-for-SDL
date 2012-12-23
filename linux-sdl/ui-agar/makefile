@@ -36,6 +36,7 @@ GUISRC = \
 	agar_menu_tool.cpp \
 	agar_ui_vkey.cpp \
 	agar_toolbox.cpp \
+	agar_mouse.cpp \
 
 ifdef WITH_DEBUGGER
 DEBUGSRC = \
