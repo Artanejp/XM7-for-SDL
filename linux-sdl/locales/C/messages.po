@@ -6,13 +6,13 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.3.2pre2\n"
-"Report-Msgid-Bugs-To: K.Ohta <whatisthis.sowhat@gmail.com>\n"
-"POT-Creation-Date: 2012-11-07 12:48+0900\n"
-"PO-Revision-Date: 2012-11-07 12:49+0900\n"
-"Last-Translator: K.Ohta <whatisthis.sowhat@gmail.com>\n"
-"Language-Team: K.Ohta <whatisthis.sowhat@gmail.com>\n"
-"Language: en\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-12-23 21:28+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -29,8 +29,8 @@ msgstr ""
 msgid "DOS"
 msgstr ""
 
-#: agar_gui_menu.cpp:117 agar_gui_pref.cpp:479 agar_gui_pref.cpp:594
-#: agar_gui_pref.cpp:785 agar_menu_disk.cpp:294 agar_menu_disk.cpp:352
+#: agar_gui_menu.cpp:117 agar_gui_pref.cpp:479 agar_gui_pref.cpp:616
+#: agar_gui_pref.cpp:807 agar_menu_disk.cpp:294 agar_menu_disk.cpp:352
 #: agar_menu_tape.cpp:192 agar_ui_vkey.cpp:379 agar_ui_vkey.cpp:428
 msgid "Cancel"
 msgstr ""
@@ -191,8 +191,8 @@ msgstr ""
 msgid "Display"
 msgstr ""
 
-#: agar_gui_pref.cpp:475 agar_gui_pref.cpp:590 agar_gui_pref.cpp:781
-#: agar_menu_about.cpp:108 agar_menu_tape.cpp:183
+#: agar_gui_pref.cpp:475 agar_gui_pref.cpp:612 agar_gui_pref.cpp:803
+#: agar_menu_about.cpp:139 agar_menu_tape.cpp:183
 msgid "OK"
 msgstr ""
 
@@ -228,99 +228,111 @@ msgstr ""
 msgid "Assign Keyboard"
 msgstr ""
 
-#: agar_gui_pref.cpp:577
+#: agar_gui_pref.cpp:569
+msgid "Connect Inteligent Mouse"
+msgstr ""
+
+#: agar_gui_pref.cpp:570
+msgid "Connected port"
+msgstr ""
+
+#: agar_gui_pref.cpp:598
 msgid "Keyboard"
 msgstr ""
 
-#: agar_gui_pref.cpp:580
+#: agar_gui_pref.cpp:601
 msgid "Joystick"
 msgstr ""
 
-#: agar_gui_pref.cpp:583 agar_gui_pref.cpp:772
-msgid "Misc"
+#: agar_gui_pref.cpp:604
+msgid "Mouse"
 msgstr ""
 
-#: agar_gui_pref.cpp:596
+#: agar_gui_pref.cpp:618
 msgid "Configure Input"
 msgstr ""
 
-#: agar_gui_pref.cpp:648
+#: agar_gui_pref.cpp:670
 msgid "Sample Rate"
 msgstr ""
 
-#: agar_gui_pref.cpp:652
+#: agar_gui_pref.cpp:674
 msgid "HQ Rendering"
 msgstr ""
 
-#: agar_gui_pref.cpp:656
+#: agar_gui_pref.cpp:678
 msgid "Per Second"
 msgstr ""
 
-#: agar_gui_pref.cpp:656
+#: agar_gui_pref.cpp:678
 msgid "Sound Buffer"
 msgstr ""
 
-#: agar_gui_pref.cpp:659
+#: agar_gui_pref.cpp:681
 msgid "Force Stereo"
 msgstr ""
 
-#: agar_gui_pref.cpp:660
+#: agar_gui_pref.cpp:682
 msgid "FDD Seek & Motor"
 msgstr ""
 
-#: agar_gui_pref.cpp:661
+#: agar_gui_pref.cpp:683
 msgid "CMT Monitor"
 msgstr ""
 
-#: agar_gui_pref.cpp:679
+#: agar_gui_pref.cpp:701
 msgid "Enable OPN"
 msgstr ""
 
-#: agar_gui_pref.cpp:680
+#: agar_gui_pref.cpp:702
 msgid "Enable WHG"
 msgstr ""
 
-#: agar_gui_pref.cpp:681
+#: agar_gui_pref.cpp:703
 msgid "Enable THG"
 msgstr ""
 
-#: agar_gui_pref.cpp:710
+#: agar_gui_pref.cpp:732
 msgid "Main Volume"
 msgstr ""
 
-#: agar_gui_pref.cpp:716
+#: agar_gui_pref.cpp:738
 msgid "PSG"
 msgstr ""
 
-#: agar_gui_pref.cpp:720
+#: agar_gui_pref.cpp:742
 msgid "FM"
 msgstr ""
 
-#: agar_gui_pref.cpp:724
+#: agar_gui_pref.cpp:746
 msgid "BEEP"
 msgstr ""
 
-#: agar_gui_pref.cpp:728
+#: agar_gui_pref.cpp:750
 msgid "CMT"
 msgstr ""
 
-#: agar_gui_pref.cpp:732
+#: agar_gui_pref.cpp:754
 msgid "SFX"
 msgstr ""
 
-#: agar_gui_pref.cpp:736
+#: agar_gui_pref.cpp:758
 msgid "Channel Separation"
 msgstr ""
 
-#: agar_gui_pref.cpp:768
+#: agar_gui_pref.cpp:790
 msgid "Volume"
 msgstr ""
 
-#: agar_gui_pref.cpp:770
+#: agar_gui_pref.cpp:792
 msgid "Rendering"
 msgstr ""
 
-#: agar_gui_pref.cpp:787
+#: agar_gui_pref.cpp:794
+msgid "Misc"
+msgstr ""
+
+#: agar_gui_pref.cpp:809
 msgid "Sound Preferences"
 msgstr ""
 
@@ -329,29 +341,29 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: agar_main.cpp:401
+#: agar_main.cpp:403
 msgid ""
 "Error init VM.\n"
 "Please check ROMS and system-memory.\n"
 msgstr ""
 
-#: agar_main.cpp:404
+#: agar_main.cpp:406
 msgid ""
 "Error init Emulator.\n"
 "Please check window system, display and more.\n"
 msgstr ""
 
-#: agar_main.cpp:407
+#: agar_main.cpp:409
 msgid ""
 "Unknown error on setup.\n"
 "Please email to author."
 msgstr ""
 
-#: agar_menu_about.cpp:66
+#: agar_menu_about.cpp:70
 msgid "About XM7/SDL"
 msgstr ""
 
-#: agar_menu_about.cpp:116
+#: agar_menu_about.cpp:147
 msgid "About XM7"
 msgstr ""
 
