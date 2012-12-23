@@ -274,7 +274,6 @@ static void MouseMotion(AG_Event *event)
 	XM7_SDLView *my = AG_SELF();
 	int x = AG_INT(1);
 	int y = AG_INT(2);
-
 	/* ... */
 }
 

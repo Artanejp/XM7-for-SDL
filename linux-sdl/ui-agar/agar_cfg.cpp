@@ -511,6 +511,9 @@ void LoadCfg(void)
 #ifdef MOUSE
     configdat.bMouseCapture = LoadCfgBool("MouseEmulation", FALSE);
     configdat.nMousePort = (BYTE) LoadCfgInt("MousePort", 1);
+    if(configdat.nMousePort < 1) configdat.nMousePort = 1;
+    if(configdat.nMousePort > 2) configdat.nMousePort = 2;
+       
     configdat.nMidBtnMode =
 	(BYTE) LoadCfgInt("MidBtnMode", MOSCAP_WMESSAGE);
 
@@ -746,6 +749,9 @@ void SaveCfg(void)
 #endif				/*  */
 #ifdef MOUSE
     SaveCfgBool("MouseEmulation", configdat.bMouseCapture);
+    if(configdat.nMousePort < 1) configdat.nMousePort = 1;
+    if(configdat.nMousePort > 2) configdat.nMousePort = 2;
+   
     SaveCfgInt("MousePort", configdat.nMousePort);
 
 	/*
@@ -877,6 +883,8 @@ void ApplyCfg(void)
 #endif				/*  */
 #ifdef MOUSE
     mos_capture = configdat.bMouseCapture;
+    if(configdat.nMousePort < 1) configdat.nMousePort = 1;
+    if(configdat.nMousePort > 2) configdat.nMousePort = 2;
     mos_port = configdat.nMousePort;
     nMidBtnMode = configdat.nMidBtnMode;
 

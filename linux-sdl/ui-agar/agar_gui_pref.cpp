@@ -554,6 +554,27 @@ void InputMenuKbd(AG_NotebookTab *parent)
 
 }
 
+void InputMenuMisc(AG_NotebookTab *parent)
+{
+	AG_Box *box;
+	AG_Checkbox *check;
+	AG_Box *vbox;
+	AG_Numerical *port;
+
+	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
+
+
+	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
+	{
+		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Connect Inteligent Mouse"), &localconfig.bMouseCapture);
+		port = AG_NumericalNewUintR(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Display rate"), &localconfig.nMousePort,
+					   1, 2);
+//		AG_BindUint16(fps, "value", &localconfig.nDrawFPS);
+
+	}
+
+}
+
 void OnConfigInputMenu(AG_Event *event)
 {
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
@@ -581,6 +602,7 @@ void OnConfigInputMenu(AG_Event *event)
     	InputMenuJS(tab);
 
     	tab = AG_NotebookAddTab(note, gettext("Misc"), AG_BOX_HORIZ);
+        InputMenuMisc(tab);
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
     AG_WidgetSetSize(AGWIDGET(box), 320, 24);

@@ -36,6 +36,7 @@ extern struct XM7_CPUID *pCpuID;
 extern "C" {
 void InitInstance(void);
 extern void OnDestroy(AG_Event *event);
+
 }
 
 Uint32 nDrawTick1D;
@@ -63,16 +64,6 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
    if(ev == NULL) return FALSE;
 	/* Retrieve the next queued event. */
 	switch (ev->type) {
-	case AG_DRIVER_KEY_UP:
-//        if(bi) {
-//            OnKeyReleaseAG(ev->data.key.ks, drv->kbd->modState , ev->data.key.ucs);
-//        }
-    break;
-	case AG_DRIVER_KEY_DOWN:
-//        if(bi) {
-//            OnKeyPressAG(ev->data.key.ks, drv->kbd->modState, ev->data.key.ucs);
-//        }
-    break;
 	case AG_DRIVER_VIDEORESIZE:
 		w = ev->data.videoresize.w;
 		h = ev->data.videoresize.h;
@@ -257,9 +248,15 @@ extern Uint32 nDrawTick1;
 
 
 
-#ifdef __cplusplus
+
 extern "C" {
-#endif
+
+extern void OnMouseMotionSDL(AG_Event *event);
+extern void OnMouseButtonUpSDL(AG_Event *event);
+extern void OnMouseButtonDownSDL(AG_Event *event);
+extern void OnMouseMotionGL(AG_Event *event);
+extern void OnMouseButtonUpGL(AG_Event *event);
+extern void OnMouseButtonDownGL(AG_Event *event);
 
 
 
@@ -316,7 +313,9 @@ void InitInstance(void)
         AG_GLViewKeyupFn (GLDrawArea, AGEventKeyUpGL, NULL);
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
-        //	AG_GLViewMotionFn(GLDrawArea, AGEventMouseMove_AG_GL, NULL);
+        AG_GLViewMotionFn(GLDrawArea, OnMouseMotionGL, NULL);
+        AG_GLViewButtondownFn(GLDrawArea, OnMouseButtonDownGL, NULL);
+        AG_GLViewButtonupFn(GLDrawArea, OnMouseButtonUpGL, NULL);
 	bUseOpenGL = TRUE;
 	DrawArea = NULL;
         AG_WidgetShow(GLDrawArea);
@@ -332,6 +331,9 @@ void InitInstance(void)
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
         AG_SetEvent(DrawArea, "key-up", ProcessKeyUp, NULL);
         AG_SetEvent(DrawArea, "key-down", ProcessKeyDown, NULL);
+        AG_SetEvent(DrawArea, "mouse-motion", OnMouseMotionSDL, NULL);
+        AG_SetEvent(DrawArea, "mouse-button-down", OnMouseButtonDownSDL, NULL);
+        AG_SetEvent(DrawArea, "mouse-button-up", OnMouseButtonUpSDL, NULL);
 
         AG_WidgetSetSize(DrawArea, 640, 400);
         bUseOpenGL = FALSE;
@@ -366,6 +368,6 @@ void ui_update(void)
 	AG_WindowUpdate(MainWindow);
 }
 
-#ifdef __cplusplus
+
 }
-#endif
+

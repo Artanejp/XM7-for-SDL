@@ -337,10 +337,10 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
 	if (code == MouseCapture.sym) {
     	if(bMouseCaptureFlag) {
 			bMouseCaptureFlag = FALSE;
-			SDL_WM_GrabInput(SDL_GRAB_OFF);
+			//SDL_WM_GrabInput(SDL_GRAB_OFF);
 		} else {
 			bMouseCaptureFlag = TRUE;
-			SDL_WM_GrabInput(SDL_GRAB_ON);
+			//SDL_WM_GrabInput(SDL_GRAB_ON);
 		}
 
     }

@@ -24,27 +24,30 @@
 
 #include "agar_xm7.h"
 #include "sdl_sch.h"
+#include "agar_sdlview.h"
 
 #include "api_kbd.h"
 #include "api_js.h"
 #include "api_mouse.h"
 
+extern void InitMouseSub(void);
+void GetMousePos(int *x, int *y);
 
 extern "C" {
-AG_Cursor *nullcursor;
-
+extern AG_GLView *GLDrawArea;
+extern XM7_SDLView *DrawArea;
+   
 #ifdef MOUSE
+extern int     nMouseX;	/* マウス X軸移動距離 */
+extern int     nMouseY;	/* マウス Y軸移動距離 */
+extern BYTE    nMouseButton;	/* マウス ボタン押下状態 */
+
+BOOL    bMouseCaptureFlag;	/* マウスキャプチャフラグ(Win32)*/
+
 static DWORD    mostime;	/* マウスポーリング時間 */
-static BOOL    bCapture;	/* マウスキャプチャフラグ(Win32)
-				 */
-static int     nMouseX;	/* マウス X軸移動距離 */
-static int     nMouseY;	/* マウス Y軸移動距離 */
-static BYTE    nMouseButton;	/* マウス ボタン押下状態 */
+				
 static BYTE    nMouseButtons;	/* マウス ボタン数 */
 static BYTE    nCenterButton;	/* マウス 中央ボタン押下状態 */
-static BOOL    bMouseCursor;	/* マウス カーソル表示状態 */
-static int     nMouseSX;	/* マウス X座標保存 */
-static int     nMouseSY;	/* マウス Y座標保存 */
 static int		nMousePX;
 static int     nMousePY;	/* マウス Y座標保存(一時) */
 static int     nDAreaW;	/* ドローイングエリアの幅 */
@@ -52,8 +55,6 @@ static int     nDAreaH;	/* ドローイングエリアの高さ */
 static BOOL    rgbButtons[3];	/* マウスボタン押下状態 */
 
 BYTE nMidBtnMode;
-BOOL bMouseCaptureFlag;
-
 
 
 #endif				/*  */
@@ -68,18 +69,14 @@ void InitMouse()
 	 * ワークエリア初期化(マウス)
 	 */
     mostime = 0;
-    bCapture = FALSE;
     bMouseCaptureFlag = FALSE;
     nMouseX = 0;
     nMouseY = 0;
     nCenterButton = 0;
-    bMouseCursor = TRUE;
     nMouseButton = 0xf0;
     nMidBtnMode = MOSCAP_NONE;
     nMouseButtons = 3;
-
-    //nullcursor = SDL_CreateCursor(nullcursor_img, nullcursor_mask, 8, 8, 0, 0);
-    //nullcursor = NULL;
+    InitMouseSub();
 #endif				/*  */
 
 
@@ -91,119 +88,6 @@ void InitMouse()
 #endif
 
 }
-/*
- *  マウス キャプチャ状態設定
- */
-void SetMouseCapture(BOOL en)
-{
-	int   x;
-	int   y;
-	AG_Cursor *cursor;
-	//    SDL_Cursor * cursor;
-	//SDL_SysWMinfo sdlinfo;
-	/*
-	 * キャプチャ停止中/VM停止中/非アクティブ時は強制的に無効
-	 */
-	if (!mos_capture || stopreq_flag || !run_flag || !bActivate) {
-		en = FALSE;
-	}
-
-	/*
-	 * カーソル表示/消去
-	 */
-	if (bMouseCursor == en) {
-		if (en) {
-			cursor = nullcursor;
-		} else {
-			cursor = NULL;
-		}
-		bMouseCursor = !en;
-	}
-
-	/*
-	 * キャプチャ状態に変化がなければ帰る
-	 */
-	if (bCapture == en) {
-		return;
-	}
-	if (en) {
-
-		/*
-		 * カーソル位置を保存
-		 */
-		// gtk_widget_get_pointer(drawArea, &x, &y);
-		nMouseSX = x;
-		nMouseSY = y;
-
-		/*
-		 * 描画ウィンドウのサイズを求める
-		 */
-		// gdk_window_get_size(drawArea->window, &nDAreaW, &nDAreaH);
-
-		/*
-		 * 中心座標を求める
-		 */
-		x = nDAreaW / 2;
-		y = nDAreaH / 2;
-
-		/*
-		 * カーソルをウィンドウ中央に固定
-		 */
-		// XWarpPointer(
-		// GDK_WINDOW_XDISPLAY(drawArea->window),
-		// None,
-		// GDK_WINDOW_XWINDOW(drawArea->window),
-		// 0,
-		// 0,
-		// 0,
-		// 0,
-		// x,
-		// y
-		// );
-		SDL_WM_GrabInput(SDL_GRAB_ON);
-		//if(SDL_GetWMInfo(&sdlinfo)) {
-		//        XGrabPointer(sdlinfo.info.x11.display, sdlinfo.info.x11.window, true,  0, GrabModeSync,  GrabModeSync,  sdlinfo.info.x11.window, None, CurrentTime);
-		//}
-
-	}
-	else {
-
-		/*
-		 * クリップ解除
-		 */
-		//gdk_pointer_ungrab(GDK_CURRENT_TIME);
-		//        if(SDL_GetWMInfo(&sdlinfo)) {
-		//        XUngrabPointer(sdlinfo.info.x11.display, CurrentTime);
-		//}
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
-		/*
-		 * カーソル位置を復元
-		 */
-		// XWarpPointer(
-		// / GDK_WINDOW_XDISPLAY(drawArea->window),
-		// None,
-		// GDK_WINDOW_XWINDOW(drawArea->window),
-		// 0,
-		// 0,
-		// 0,
-		// 0,
-		// nMouseSX,
-		// nMouseSY
-		// );
-
-	}
-
-	/*
-	 * キャプチャ状態を保存
-	 */
-	bCapture = en;
-
-	/*
-	 * マウス移動距離をクリア
-	 */
-	nMouseX = 0;
-	nMouseY = 0;
-}
 
 
 /*
@@ -211,7 +95,7 @@ void SetMouseCapture(BOOL en)
  */
 void mospos_request(BYTE * move_x, BYTE * move_y)
 {
-	if (bCapture) {
+	if (bMouseCaptureFlag) {
 
 		/*
 		 * 移動距離を符号付き８ビットの範囲に収める
@@ -248,6 +132,7 @@ void mospos_request(BYTE * move_x, BYTE * move_y)
 	 */
 	nMouseX = 0;
 	nMouseY = 0;
+//        printf("Pos: %d %d\n", *move_x, *move_y);
 }
 
 #ifdef MOUSE
@@ -274,55 +159,35 @@ void FASTCALL PollMos(void)
 	 /*
 	  * 移動距離・ボタン状態の設定
 	  */
-	 if (bCapture && mos_capture) {
+	 if (bMouseCaptureFlag && mos_capture) {
 		 /*
 		  * マウス移動距離を蓄積
 		  */
-//		 nMouseX -= lX;
-//		 nMouseY -= lY;
 
 		 /*
 		  * ボタン状態を設定
 		  */
-		 nMouseButton = 0xf0;
-		 if (rgbButtons[0]) {
-
-			 /*
-			  * 左ボタン押下
-			  */
-			 nMouseButton &= ~0x10;
-		 }
-		 if (rgbButtons[2]) {
-
-			 /*
-			  * 右ボタン押下
-			  */
-			 nMouseButton &= ~0x20;
-		 }
 	 }
-	 if (nMouseButtons >= 3) {
+   
+//	 if (nMouseButtons >= 3) {
+//
+//		 /*
+//		  * 中央ボタンが押されたらマウスモードを切り換える
+//		  */
+//		 if (rgbButtons[1] && !nCenterButton) {
+//
+//			 /*
+//			  * マウスキャプチャフラグを反転させてモード切り替え
+//			  */
+//			 mos_capture = (!mos_capture);
+//			 SetMouseCapture(bActivate);
+//		 }
 
-		 /*
-		  * 中央ボタンが押されたらマウスモードを切り換える
-		  */
-		 if (rgbButtons[1] && !nCenterButton) {
-
-			 /*
-			  * マウスキャプチャフラグを反転させてモード切り替え
-			  */
-			 mos_capture = (!mos_capture);
-#ifdef USE_GTK
-			 gdk_threads_enter();
-			 SetMouseCapture(bActivate);
-			 gdk_threads_leave();
-#endif
-		 }
-
-		 /*
-		  * 現在の中央ボタンの状態を保存
-		  */
-		 nCenterButton = rgbButtons[1];
-	 }
+//		 /*
+//		  * 現在の中央ボタンの状態を保存
+//		  */
+//		 nCenterButton = rgbButtons[1];
+//	 }
 }
 
 
@@ -338,7 +203,7 @@ mosbtn_request(void)
 	/*
 	 * ボタン情報を返す
 	 */
-	return nMouseButton;
+	return (BYTE)nMouseButton;
 }
 
 
@@ -347,74 +212,6 @@ mosbtn_request(void)
 /*
  *  マウスボタンプレスアクション
  */
-
-void OnButtonPress(AG_Event *event)
-{
-
-}
-
-
-void OnButtonRelease(AG_Event *event)
-{
-
-}
 #endif
 
-/*
- * マウスクリックした(SDL)
- */
-void OnClickPress(SDL_Event *event)
-{
-	Uint8 state = event->button.state;
-	Uint8 button = event->button.button;
-	switch(button){
-	case SDL_BUTTON_LEFT:
-		rgbButtons[0] = TRUE;
-		break;
-	case SDL_BUTTON_MIDDLE:
-		rgbButtons[1] = TRUE;
-		break;
-	case SDL_BUTTON_RIGHT:
-		rgbButtons[2] = TRUE;
-		break;
-	default:
-		break;
-	}
-}
-
-void OnClickRelease(SDL_Event *event)
-{
-	Uint8 state = event->button.state;
-	Uint8 button = event->button.button;
-	switch(button){
-	case SDL_BUTTON_LEFT:
-		rgbButtons[0] =FALSE;
-		break;
-	case SDL_BUTTON_MIDDLE:
-		rgbButtons[1] =FALSE;
-		break;
-	case SDL_BUTTON_RIGHT:
-		rgbButtons[2] =FALSE;
-		break;
-	default:
-		break;
-	}
-
-}
-
-/*
- * マウス移動した(SDL)
- */
-void OnMoveMouse(SDL_Event *event)
-{
-	Uint16 x = event->motion.x;
-	Uint16 y = event->motion.x;
-	Sint16 xrel = event->motion.xrel;
-	Sint16 yrel = event->motion.yrel;
-	Uint8 state = event->motion.state;
-
-	nMouseX += (int)xrel;
-	nMouseY += (int)yrel;
-
-}
 }

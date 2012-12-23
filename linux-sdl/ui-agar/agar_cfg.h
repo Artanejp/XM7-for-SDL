@@ -94,7 +94,7 @@ typedef struct {
 #endif				/*  */
 #ifdef MOUSE
 	BOOL bMouseCapture;	/* マウスキャプチャフラグ  */
-	BYTE nMousePort;	/* マウス接続ポート */
+	DWORD nMousePort;	/* マウス接続ポート */
 	BYTE nMidBtnMode;	/* 中央ボタン状態取得モード */
 
 #endif				/*  */
