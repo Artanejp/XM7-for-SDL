@@ -1,0 +1,11 @@
+* Installation of XM7/SDL
+* 2012/12/24 K.Ohta <whatisthis.sowhat@gmail.com>
+*
+1. cd bin/linux-${ARCH}-${Features}/
+2. Do script, "sudo ./install-bin.sh" .
+   Installing libagar, too.
+   These are installed to /usr/local/foo.
+3. do xm7 or xm7.debug. If you need with debugger, use xm7.debug.
+   If you need to build, cd src/ and edit config.mak, Makefile
+   before do make.
+Enjoy!                                K.Ohta
