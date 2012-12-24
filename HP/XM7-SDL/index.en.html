@@ -34,21 +34,15 @@ https://sites.google.com/site/artanejp/<BR>
 &nbsp; <A HREF="http://sky.geocities.jp/artanejp/">Back to home.</A><BR>
 <BR>
 <B>Releases,<BR>
-*  Version 0.3.2pre1 (OpenGL or SDLFB + Agar Spec  / γ) Oct 05,2012<BR>
+*  Version 0.3.2pre2 (OpenCL or OpenGL or SDLFB + Agar Spec  / γ) Dec 24,2012<BR>
 *  Version 0.1r129 (alpha level) Oct 26,2010<BR>
 </B><BR>
 You need <A HREF="http://sevenzip.sourceforge.jp/" target="_blank">7zip</A> on extract<BR>
 <BR>
 <BR>
 <H2>Downloads：</H2>
-<A HREF="xm7-for-sdl_0.3.2pre1.amd64_win32.7z">
-Source codes + GNU/Linux amd64 binaries + Win32 binaries (OpenGL or SDLFB 0.3.2)<BR>
-I hope rc release with debugging and a few features / But in win32,
-with terrible buggy ;_;</A><BR>
-<BR>
-<BR>
-<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/agar-svn-head.r9134.src.7z">
-Sourcecode of libagar svn r9134</A><BR>
+<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-for-sdl_0.3.2pre2.amd64.linux.7z">
+V0.3.2pre2 Sourcecode + GNU/Linux amd64 binaries(More faster using OpenCL, need victim's report;) and merry X'mas!!ヽ(｀▽´)/)</A>
 <BR>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
 GNU/Linux amd64 binaries with sourcecode.(r128 Unstable, but functional, maybe... )</A><BR>
@@ -66,11 +60,22 @@ cd linux-sdl <BR>
 <BR>
 <A NAME="changelogs"></A>
 <H2>Changes:</H2>
+- <B>Upstream 3.4L52 based.</B><BR>
+- <B>Add install bash script, for only *nix.</B><BR>
+- <B>Use OpenCL to vram drawing. Improbe speed for poor CPU and rich
+GPU, such as Intel atom or AMD E Series APU.<BR>
+This was tested only ATI/AMD FGLRX driver and Radeon HD7770,I need
+report another environment, NVidia's GPU or Intel,etc.<BR>
+ So, bundle Non-OpenCL version of xm7.</B><BR>
+- <B>Start supporing inteligent mouse emulation.</B><BR> 
+- <B>Bundle <A HREF="http://www.retropc.net/fm-7/museum/exhibition/f-font/index.html">F-Font
+by モ〜リン</A> for Original debuggeer.</B><BR>
+- <B>More, more, Bug Fixed(NEW!)</B><BR>
+<BR>
+<H2>Older Changes:</H2>
 - <B>Change OSDs from AG_Pixmap to XM7_SDLView, issue of Win32.(NEW!)</B><BR>
 - <B>Change file-io to SDL , issue of Win32.(NEW!)</B><BR>
 - <B>I18Ned menu using GNU Gettext.(NEW!)</B><BR>
-- <B>Bundle <A HREF="http://www.retropc.net/fm-7/museum/exhibition/f-font/index.html">F-Font
-by モ〜リン</A> for Original debuggeer.</B><BR>
 - <B>Fix "10 20" undefined opcode (as LBRA) was not recognaized（No other bugs on MPU? ^^;）</B><BR>
 - <B>Re-implement LEDS,FDDS,.. as Agar-Wieget.</B><BR>
 - <B>More faster video and sound, using 
@@ -81,9 +86,6 @@ produce bugs on vector extensions; Fixed on resentry gites(NEW!)</B><BR>
 - <B>Multi-threaded drawing with Open MP(NEW!)</B><BR>
 - <B>Implement no-GL drawing, set -d sdlfb with commandline.(NEW!)</B><BR>
 - But, on W=320, segfault (Fixed on recently git).(NEW!)<BR>
-- <B>More, more, Bug Fixed(NEW!)</B><BR>
-<BR>
-<H2>Older Changes:</H2>
 - <B>All C/C++ (not assembler).</B><BR>
 - <B>Re-implement wav captureing , from scratch.</B><BR>
 - <B>Using Agar ToolKit ( <A HREF="http://www.libagar.org/"
@@ -150,7 +152,17 @@ libagar.<BR>
 <A NAME="older"></A>
 <H2>Older (in Japanese):</H2>
 <BR>
+* 0.3.2pre1 05 Oct,2012<BR>
+<A HREF="xm7-for-sdl_0.3.2pre1.amd64_win32.7z">
+Source codes + GNU/Linux amd64 binaries + Win32 binaries (OpenGL or SDLFB 0.3.2)<BR>
+I hope rc release with debugging and a few features / But in win32,
+with terrible buggy ;_;</A><BR>
 * Version 0.3.1.1 Jun 29,2012<BR>
+<BR>
+<BR>
+<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/agar-svn-head.r9134.src.7z">
+Sourcecode of libagar svn r9134</A><BR>
+<BR>
 <A
 HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-0.3.1-linux-amd64.bin-src.7z">
 Sourcecodes + GNU/Linux amd64 Binary(OpenGL or SDLFB 0.3.1　Debugging more...)</A><BR>

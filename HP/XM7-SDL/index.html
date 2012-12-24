@@ -33,21 +33,16 @@ https://sites.google.com/site/artanejp/<BR>
 &nbsp; <A HREF="http://sky.geocities.jp/artanejp/">最初に戻る</A><BR>
 <BR>
 <B>現在のリリースは、<BR>
-*  Version 0.3.2pre1 (OpenGL or SDLFB + Agar仕様  / γレベル) Oct 05,2012<BR>
+*  Version 0.3.2pre2 (OpenGL or OpenCL or SDLFB + Agar仕様  / γレベル) Dec 24,2012<BR>
 *  Version 0.1r129 (αレベル) Oct 26,2010<BR>
 です。</B><BR>
 解凍に<A HREF="http://sevenzip.sourceforge.jp/">7zipが必要です</A>。<BR>
 <BR>
 <BR>
 <H2>ダウンロード：</H2>
-<A HREF="xm7-for-sdl_0.3.2pre1.amd64_win32.7z">
-本体ソースコード + GNU/Linux amd64バイナリ + Win32バイナリ(OpenGL or
-SDLFB 0.3.2)<BR>
-　バグを取って少しの機能追加でRCかγになるはずだ /
-但し、Win32は未だバグが沢山 ;_;)</A><BR>
+<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-for-sdl_0.3.2pre2.amd64.linux.7z">ソースコード+GNU/Linux
+amd64バイナリ(OpenCLで更に高速に、人柱待ってますがとにかくメリークリスマスヽ(｀▽´)/)</A>
 <BR>
-<A HREF="http://sky.geocities.jp/artanejp/XM7-SDL/agar-svn-head.r9134.src.7z">
-libagar svn r9134のソースコード</A><BR>
 <BR>
 <A HREF="http://sky.geocities.jp/artanejp/xm7-sdl-linux-amd64.0.1r128.7z">
 ソースコード+GNU/Linux amd64バイナリ(r128 Unstableだがたぶんうごくはずだ)</A><BR>
@@ -65,17 +60,23 @@ cd linux-sdl <BR>
 <BR>
 <A NAME="changelogs"></A>
 <H2>変更点:</H2>
+- <B>V3.4L52ベース</B>
+- <B>OpenCLを使って、描画処理をGPU側でやれるようにした。（実験的な機能／AMDのFGLRXドライバに添付のOpenCLのみで確認）<BR>
+　高速なCPUだけだとあんまし旨みはないですが、Intel AtomやAMD EシリーズAPUのような比較的低速なCPU＋ほどほどのGPUと言う構成の物では有利さがでると思います。<BR>
+　OpenCLの関係で、GL/SDLFB専用のヴァージョンを同梱してあります。<BR></B>
+- <B>マウス(インテリジェントマウス)のエミュレーションがやっと実装されました。（まだまだ）</B><BR>
+- <B>Linux等用のインストールスクリプトの添付（事実上５分で作ったので…）</B><BR>
+- <B><A HREF="http://www.retropc.net/fm-7/museum/exhibition/f-font/index.html">F-Font by モ〜リン氏のバンドル(デバッガに必要です)</A></B><BR>
+- <B>その他、雑多なBugFix(NEW!)</B><BR>
+<BR>
+<BR>
+<H2>過去の変更点:</H2>
 - <B>MinGW 32とlibagar 1.4.1 binaryを使って、Windowsでビルドできるようにした(まだまだバグ含み)</B><BR>
 - <B>LEDなどの表示をAG_PixmapからXM7_SDLViewに。（Win32対策)(NEW!)</B><BR>
 - <B>ファイルI/OをSDLベースに変更(Win32対策)</B><BR>
 - <B>GNU Gettextを使った日本語メニュー表示(NEW!)</B><BR>
 - <B>デバッガの実装（一から起こした）(New!)</B><BR>
 - <B>コンパイル環境をgcc-4.7系列に戻した(NEW!)</B><BR>
-- <B><A HREF="http://www.retropc.net/fm-7/museum/exhibition/f-font/index.html">F-Font
-by モ〜リン氏のバンドル(デバッガに必要です)</A></B><BR>
-- <B>その他、雑多なBugFix(NEW!)</B><BR>
-<BR>
-<H2>過去の変更点:</H2>
 - <B>"10 20"未定義命令をLBRAと解釈してない問題の解決（他にバグ無いよね？）(NEW!)</B><BR>
 - <B>LEDランプやステータスをWidgetで実装しなおした(GL版は表示がバグってるけどagar側の問題っぽい)(NEW!)</B><BR>
 - <B><A HREF="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html">GCCのVector拡張</A>を使って描画や音声に関する転送や演算の高速化(NEW!)。
@@ -147,6 +148,11 @@ HREF="http://www.libagar.org/"target="_blank">AGAR</A>1.4.1以降とOpenGL,SDL,S
 <HR>
 <A NAME="older"></A>
 <H2>旧版:</H2>
+* Version 0.3.2pre1 Oct 05,2012<BR>
+<A HREF="xm7-for-sdl_0.3.2pre1.amd64_win32.7z">
+本体ソースコード + GNU/Linux amd64バイナリ + Win32バイナリ(OpenGL or SDLFB 0.3.2)<BR>　バグを取って少しの機能追加でRCかγになるはずだ / 但し、Win32は未だバグが沢山 ;_;)</A><BR>
+<BR>
+
 * Version 0.3.1.1 Jun 29,2012<BR>
 <A
 HREF="http://sky.geocities.jp/artanejp/XM7-SDL/xm7-0.3.1-linux-amd64.bin-src.7z">
