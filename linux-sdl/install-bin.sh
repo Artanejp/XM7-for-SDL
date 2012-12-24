@@ -24,18 +24,12 @@ install -m 0644 *.txt ${TARGET}/share/xm7/F-Font
 popd
 
 #I18n files.
+for l in ja C; do
 pushd .
-cd locales/C
-mkdir -p ${TARGET}/share/xm7/C
-mkdir -p ${TARGET}/share/xm7/C/LC_MESSAGES
-install -m 0644 *.po ${TARGET}/share/xm7/C/LC_MESSAGES
-install -m 0644 *.mo ${TARGET}/share/xm7/C/LC_MESSAGES
+cd locales/${l}
+mkdir -p ${TARGET}/share/xm7/${l}
+mkdir -p ${TARGET}/share/xm7/${l}/LC_MESSAGES
+install -m 0644 *.po ${TARGET}/share/xm7/${l}/LC_MESSAGES
+install -m 0644 *.mo ${TARGET}/share/xm7/${l}/LC_MESSAGES
 popd
-
-pushd .
-cd locales/ja_JP
-mkdir -p ${TARGET}/share/xm7/ja
-mkdir -p ${TARGET}/share/xm7/ja/LC_MESSAGES
-install -m 0644 *.po ${TARGET}/share/xm7/ja/LC_MESSAGES
-install -m 0644 *.mo ${TARGET}/share/xm7/ja/LC_MESSAGES
-popd
+done
