@@ -27,13 +27,15 @@ popd
 pushd .
 cd locales/C
 mkdir -p ${TARGET}/share/xm7/C
-install -m 0644 *.po ${TARGET}/share/xm7/C
-install -m 0644 *.mo ${TARGET}/share/xm7/C
+mkdir -p ${TARGET}/share/xm7/C/LC_MESSAGES
+install -m 0644 *.po ${TARGET}/share/xm7/C/LC_MESSAGES
+install -m 0644 *.mo ${TARGET}/share/xm7/C/LC_MESSAGES
 popd
 
 pushd .
 cd locales/ja_JP
 mkdir -p ${TARGET}/share/xm7/ja
-install -m 0644 *.po ${TARGET}/share/xm7/ja
-install -m 0644 *.mo ${TARGET}/share/xm7/ja
+mkdir -p ${TARGET}/share/xm7/ja/LC_MESSAGES
+install -m 0644 *.po ${TARGET}/share/xm7/ja/LC_MESSAGES
+install -m 0644 *.mo ${TARGET}/share/xm7/ja/LC_MESSAGES
 popd
