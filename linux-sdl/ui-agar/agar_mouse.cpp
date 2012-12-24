@@ -37,7 +37,9 @@
 
 
 extern "C" {
-extern AG_GLView *GLDrawArea;
+#ifdef USE_OPENGL
+extern AG_GLView *LDrawArea;
+#endif
 extern XM7_SDLView *DrawArea;
 }
 
@@ -106,15 +108,21 @@ void SetMouseCapture(BOOL en)
 	 */
 	if (bMouseCursor == en) {
 		if (en) {
+#ifdef USE_OPENGL
 		   if(GLDrawArea != NULL) {
 		      AG_HideCursor(AGDRIVER(GLDrawArea));
-		   } else if (DrawArea != NULL) {
+		   } else
+#endif
+		     if (DrawArea != NULL) {
 		      AG_HideCursor(AGDRIVER(DrawArea));
 		   }
 		} else {
+#ifdef USE_OPENGL
 		   if(GLDrawArea != NULL) {
 		      AG_ShowCursor(AGDRIVER(GLDrawArea));
-		   } else if (DrawArea != NULL) {
+		   } else 
+#endif
+		     if (DrawArea != NULL) {
 		      AG_ShowCursor(AGDRIVER(DrawArea));
 		   }
 		}
@@ -148,11 +156,14 @@ void SetMouseCapture(BOOL en)
 		/*
 		 * カーソルをウィンドウ中央に固定
 		 */
+#ifdef USE_OPENGL
 	        if(GLDrawArea != NULL) {
 		    x = GLDrawArea->wid.w / 2;
 		    y = GLDrawArea->wid.h / 2;
 		   AG_ExecMouseAction (GLDrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
-		} else if(DrawArea != NULL) {
+		} else
+#endif
+	        if(DrawArea != NULL) {
 		    x = DrawArea->Surface->w / 2;
 		    y = DrawArea->Surface->h / 2;
 		   AG_ExecMouseAction (DrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
@@ -172,11 +183,14 @@ void SetMouseCapture(BOOL en)
 		/*
 		 * カーソル位置を復元
 		 */
-	        if(GLDrawArea != NULL) {
+#ifdef USE_OPENGL
+	       if(GLDrawArea != NULL) {
 		    x = nMouseSX;
 		    y = nMouseSY;
 		   AG_ExecMouseAction (GLDrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
-		} else if(DrawArea != NULL) {
+		} else 
+#endif
+	        if(DrawArea != NULL) {
 		    x = nMouseSX;
 		    y = nMouseSY;
 		   AG_ExecMouseAction (DrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);

@@ -37,19 +37,19 @@
 #define	VERSION		"V1.1"
 #endif
 #if XM7_VER == 1
-#define	LEVEL		"L41"
+#define	LEVEL		"L42"
 // #define BETAVER
 #else
-#define	LEVEL		"L51"
+#define	LEVEL		"L52"
 // #define BETAVER
 #endif
 
 #ifdef USE_OPENGL
-#define          LOCALVER         "SDL/Agar/OpenGL 0.3.2pre1"
+#define          LOCALVER         "SDL/Agar/OpenGL/OpenCL 0.3.2pre2"
 #else
-#define          LOCALVER         "SDL/Agar 0.3.2pre1"
+#define          LOCALVER         "SDL/Agar 0.3.2pre2"
 #endif
-#define	DATE		"2012/10/05"
+#define	DATE		"2012/12/24"
 
 /* 未使用変数の処理 */
 #ifndef UNUSED

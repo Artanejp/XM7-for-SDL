@@ -75,13 +75,13 @@ LIBS += -lgomp
 endif
 
 ## Uncomment below if you *not* wish static-link agar.
-#LIBS += `agar-config --libs`
+LIBS += `agar-config --libs`
 
 ## Uncomment below if you wish static-link agar.
-LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a \
-        /usr/local/lib/libag_dev.a \
-	-lXinerama -ljpeg -lpng -lfreetype \
-	-lfontconfig
+#LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a \
+#        /usr/local/lib/libag_dev.a \
+#	-lXinerama -ljpeg -lpng -lfreetype \
+#	-lfontconfig
 
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a

@@ -16,7 +16,7 @@ USE_OPENMP      = Yes
 USE_OPENCL      = Yes
 
 # Uncomment if using debugger.
-WITH_DEBUGGER   = Yes
+#WITH_DEBUGGER   = Yes
 
 # Uncomment if BIG-ENDIAN
 #BIG_ENDIAN      = Yes
@@ -35,6 +35,7 @@ OPTION		= -DMOUSE -DMR2 -DFDDSND
 #OPTION		= -DMOUSE -DMR2
 OPTION		+= -DUSE_AGAR
 OPTION          += -D_XWIN -DNDEBUG
+#OPTION         += -DFDC_DEBUG
 #OPTION		+= -D_WINDOWS
 
 ifndef BIG_ENDIAN

@@ -145,12 +145,14 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
     if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
 
     LockVram();
+#ifdef _USE_OPENCL
    if((cldraw != NULL) && (GLDrawArea != NULL)){ // Snip builing-viryual-vram if GLCL mode.
-	bVramUpdateFlag = TRUE;
+        bVramUpdateFlag = TRUE;
         SDLDrawFlag.Drawn = TRUE;
         UnlockVram();
         return;
    }
+#endif   
    if(pVirtualVram == NULL) return;
    pp = &(pVirtualVram->pVram[0][0]);
 
