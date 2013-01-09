@@ -425,6 +425,7 @@ static void (*const m6809_main[0x100])(cpu6809_t *) = {
 
 /* 0xCX */  subb_im,cmpb_im,sbcb_im,addd_im,andb_im,bitb_im,ldb_im, flag8_im,
 	    eorb_im,adcb_im,orb_im, addb_im,ldd_im, trap, ldu_im, flag16_im,
+//	    eorb_im,adcb_im,orb_im, addb_im,ldd_im, std_im, ldu_im, flag16_im,
 
 /* 0xDX */  subb_di,cmpb_di,sbcb_di,addd_di,andb_di,bitb_di,ldb_di, stb_di,
 	    eorb_di,adcb_di,orb_di, addb_di,ldd_di, std_di, ldu_di, stu_di,

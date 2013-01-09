@@ -16,7 +16,7 @@ USE_OPENMP      = Yes
 USE_OPENCL      = Yes
 
 # Uncomment if using debugger.
-#WITH_DEBUGGER   = Yes
+WITH_DEBUGGER   = Yes
 
 # Uncomment if BIG-ENDIAN
 #BIG_ENDIAN      = Yes

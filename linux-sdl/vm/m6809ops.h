@@ -20,8 +20,8 @@ extern "C" {
 OP_HANDLER( illegal )
 {
 	//logerror("M6809: illegal opcode at %04x\n",PC);
-        printf("M6809: illegal opcode at %04x %02x %02x %02x %02x \n",PC-1,RM(PC-1),RM(PC),RM(PC+1),RM(PC+2));
-        //PC+=1;
+        printf("M6809: illegal opcode at %04x %02x %02x %02x %02x %02x \n",PC-2,RM(PC-2),RM(PC-1),RM(PC),RM(PC+1),RM(PC+2));
+//        PC-=1;
 }
 
 static void IIError(cpu6809_t *m68_state)
@@ -3145,6 +3145,8 @@ OP_HANDLER( sts_ex )
 	WM16(m68_state, EAD, S);
 }
 
+static void cpu_execline(cpu6809_t *m68_state);
+
 /* $10xx opcodes */
 OP_HANDLER( pref10 )
 {
@@ -3175,7 +3177,7 @@ OP_HANDLER( pref10 )
 		case 0x8c: cmpy_im(m68_state);	m68_state->cycle=5;	break;
 		case 0x8d: lbsr(m68_state); m68_state->cycle=9; break;
 		case 0x8e: ldy_im(m68_state);	m68_state->cycle=4;	break;
-		//case 0x8f: sty_im(m68_state);	m68_state->cycle=4;	break;
+		case 0x8f: flag16_im(m68_state);m68_state->cycle=4;	break;
 
 		case 0x93: cmpd_di(m68_state);	m68_state->cycle=7;	break;
 		case 0x9c: cmpy_di(m68_state);	m68_state->cycle=7;	break;
@@ -3193,7 +3195,7 @@ OP_HANDLER( pref10 )
 		case 0xbf: sty_ex(m68_state);	m68_state->cycle=7;	break;
 
 		case 0xce: lds_im(m68_state);	m68_state->cycle=4;	break;
-		//case 0xcf: sts_im(m68_state);	m68_state->cycle=4;	break;
+		case 0xcf: flag16_im(m68_state);m68_state->cycle=4;	break;
 
 		case 0xde: lds_di(m68_state);	m68_state->cycle=6;	break;
 		case 0xdf: sts_di(m68_state);	m68_state->cycle=6;	break;
@@ -3205,6 +3207,7 @@ OP_HANDLER( pref10 )
 		case 0xff: sts_ex(m68_state);	m68_state->cycle=7;	break;
 
 		default:   IIError(m68_state);						break;
+//		default:   PC--; cpu_execline(m68_state); m68_state->cycle += 2;	break; /* 121228 Change Handring Exception by K.Ohta */
 	}
 }
 
@@ -3230,6 +3233,7 @@ OP_HANDLER( pref11 )
 		case 0xbc: cmps_ex(m68_state);	m68_state->cycle=8;	break;
 
 		default:   IIError(m68_state);						break;
+//		default:   PC--; cpu_execline(m68_state); m68_state->cycle += 2 ; break; /* 121228 Change Handring Exception by K.Ohta */
 	}
 }
 

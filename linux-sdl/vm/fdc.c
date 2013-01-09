@@ -809,8 +809,14 @@ static void fdc_makeaddr(int index)
     /*
      * CRC
      */
-    calc_crc(p, 4);
-
+    if(p[8] != 0xa0) {
+       calc_crc(p, 4);
+    } else { // IF ID-CRC-ERROR, Calc dummy CRC. 20121228
+       p[4] = calc_rand();
+       p[5] = calc_rand();
+    }
+       
+       
     /*
      * データポインタ、カウンタ設定
      */
