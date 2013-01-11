@@ -119,6 +119,7 @@ CXXFLAGS_DEBUG = -pg -g -O0
 CXXFLAGS_DEBUG += $(CXXFLAGS)
 
 CXXFLAGS_RELEASE =  $(CXXFLAGS)
+#CXXFLAGS_RELEASE += -O3
 CXXFLAGS_RELEASE +=  -O3 -ftree-vectorize
 CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 CXXFLAGS_RELEASE += -pthread
@@ -127,7 +128,7 @@ CXXFLAGS_RELEASE += -pthread
 # Architecture Depend Flag
 
 CFLAGS_RELEASE += $(ARCH_FLAGS)
-CFLAGS_RELEASE += -minline-all-stringops
+#CFLAGS_RELEASE += -minline-all-stringops
 
 CXXFLAGS_RELEASE += $(ARCH_FLAGS)
 CXXFLAGS_RELEASE += -minline-all-stringops 

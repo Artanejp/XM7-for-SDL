@@ -415,7 +415,7 @@ e1:
 
 static void drawUpdateTexture(Uint32 *p, int w, int h)
 {
-    LockVram();
+//    LockVram();
 
     if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
        Uint32 *pu;
@@ -438,8 +438,9 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  LockVram();
 	  cldraw->GetVram(bMode);
 	  UnlockVram();
-	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
+
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
 	  // Copy pbo to texture 
 	  glTexSubImage2D(GL_TEXTURE_2D, 
 			  0,
@@ -456,7 +457,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 
        } else {
 #endif
-	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	  LockVram();
 	  for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
 	     for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
@@ -467,17 +468,21 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
                 }
             }
 
-            if(pFrameBuffer != NULL) UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
-//            glPopAttrib();
+            if(pFrameBuffer != NULL) {
+	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	       UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
+	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+	    }
+	  UnlockVram();
 #ifdef _USE_OPENCL
        }
 #endif       
        
-//    glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+
 
     }
     SDLDrawFlag.Drawn = FALSE;
-    UnlockVram();
+
    
 
 }
@@ -488,22 +493,22 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 
 void AGEventDrawGL2(AG_Event *event)
 {
-	AG_GLView *glv = (AG_GLView *)AG_SELF();
-	AG_Surface *pixvram ;
-	int w;
-	int h;
-	int i;
-	float width;
-	float ybegin;
-	float yend;
-	Uint32 *p;
-	Uint32 *pp;
-	int x;
-	int y;
-        GLfloat TexCoords[4][2];
-        GLfloat Vertexs[4][3];
-        GLfloat TexCoords2[4][2];
-
+   AG_GLView *glv = (AG_GLView *)AG_SELF();
+   AG_Surface *pixvram ;
+   int w;
+   int h;
+   int i;
+   float width;
+   float ybegin;
+   float yend;
+   Uint32 *p;
+   Uint32 *pp;
+   int x;
+   int y;
+   GLfloat TexCoords[4][2];
+   GLfloat Vertexs[4][3];
+   GLfloat TexCoords2[4][2];
+   
    if(pVirtualVram == NULL) return;
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
@@ -592,11 +597,14 @@ void AGEventDrawGL2(AG_Event *event)
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
-    drawUpdateTexture(p, w, h);   
+   
+
     glPushAttrib(GL_TEXTURE_BIT);
     glPushAttrib(GL_TRANSFORM_BIT);
     glPushAttrib(GL_ENABLE_BIT);
 
+    drawUpdateTexture(p, w, h);
+   
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glEnable(GL_TEXTURE_2D);

@@ -881,7 +881,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    
       glGenBuffers(1, &pbo);
       glBindBuffer(GL_ARRAY_BUFFER, pbo);
-      glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STREAM_DRAW);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
 		                 pbo, &r);

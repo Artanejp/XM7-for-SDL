@@ -29,6 +29,7 @@ GLuint CreateNullTexture(int w, int h)
     memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
     glGenTextures(1, &ttid);
     glBindTexture(GL_TEXTURE_2D, ttid);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1); // Limit mipmap level , reduce resources.
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
