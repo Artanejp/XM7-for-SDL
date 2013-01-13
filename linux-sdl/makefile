@@ -65,7 +65,7 @@ install: all
 	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
 	$(INSTALL) -m 0644 ./resource/*.png $(SHAREDIR)
 	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
-	$(INSTALL) -m 0644 ./locales/ja/*.mo ./locales/ja_JP/*.po $(SHAREDIR)ja/LC_MESSAGES/
+	$(INSTALL) -m 0644 ./locales/ja/*.mo ./locales/ja/*.po $(SHAREDIR)ja/LC_MESSAGES/
 	$(INSTALL) -m 0644 ./locales/C/*.mo ./locales/C/*.po $(SHAREDIR)C/LC_MESSAGES/
 #	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)
 
