@@ -59,6 +59,9 @@ extern void XM7_SDLViewLinkSurface(void *p, AG_Surface *src);
 extern AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h);
 extern void XM7_SDLViewSurfaceDetach(void *p);
 extern AG_Surface *XM7_SDLViewGetSrcSurface(void *p);
+extern AG_Surface *XM7_SDLViewGetSurface(void *p, int index);
+extern AG_Surface *XM7_SDLViewSetSurface(void *p, int index);
+
 extern void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...);
 
 extern void XM7_SDLViewUpdateSrc(AG_Event *event);
