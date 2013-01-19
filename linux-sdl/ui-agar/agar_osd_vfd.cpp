@@ -92,10 +92,10 @@ static void DrawVFDFn(AG_Event *event)
     AG_MutexUnlock(&(disp->mutex));
     return;
    }
-//   if(UpdateVFD(my, dst, disp)) {
+   if(UpdateVFD(my, dst, disp)) {
 //      AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
 //      AG_WidgetReplaceSurface(AGWIDGET(my), my->mySurface);
-//   }
+   }
    
    disp->init = FALSE;
    disp->OldStat = disp->stat;
@@ -452,7 +452,7 @@ void DrawDrive(int drive, BOOL override)
 	    pVFDStat[drive]->Changed = TRUE;
 	    // CheckDebug 20130119
 	    //AG_WidgetUpdateSurface(AGWIDGET(pwVFD[drive]), pwVFD[drive]->mySurface);
-	    UpdateVFD(pwVFD[drive], pwVFD[drive]->Surface, pVFDStat[drive]);
+//	    UpdateVFD(pwVFD[drive], pwVFD[drive]->Surface, pVFDStat[drive]);
 	 }
 	 AG_MutexUnlock(&(pVFDStat[drive]->mutex));
          
