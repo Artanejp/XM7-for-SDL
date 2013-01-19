@@ -128,7 +128,7 @@ static SndDrvIF *DrvCMT;
 static const char     *WavName[] = {
 		/* WAVファイル名 */
 		"RELAY_ON.WAV",
-		"RELAY_OFF.WAV",
+		"RELAYOFF.WAV",
 		"FDDSEEK.WAV",
 #if 0
 		"HEADUP.WAV",
@@ -287,8 +287,8 @@ static void CloseSnd(void)
 		if(bWavCapture) {
 			CloseCaptureSnd();
 		}
-        bWavCapture = FALSE;
-	    bSndExit = FALSE;
+	   bWavCapture = FALSE;
+	   bSndExit = FALSE;
 		DetachBuffer(pBeepBuf);
 		DetachBuffer(pCMTBuf);
 		DetachBuffer(pOpnBuf);
@@ -433,6 +433,17 @@ BOOL SelectSnd(void)
 		DrvCMT->SetRate(uRate);
 		DrvCMT->Enable(TRUE);
 	    DrvCMT->SetRenderVolume(nCMTVolume);
+	}
+	if(DrvWav) {
+	   char WavPath[MAXPATHLEN+1];
+	   int i;
+	   for(i = 0; i < 3; i++) {
+		strcpy(WavPath, RSSDIR);
+	        strcat(WavPath, WavName[i]);
+		DrvWav[i].Setup(WavPath);
+		DrvWav[i].Enable(1);
+	   }
+	   
 	}
 	return TRUE;
 }
@@ -694,6 +705,23 @@ void whg_notify(BYTE reg, BYTE dat)
 
 void wav_notify(BYTE no)
 {
+
+   if(DrvWav == NULL) return;
+   switch(no) 
+     {
+      case SOUND_CMTMOTORON:
+	DrvWav[0].Play(CH_WAV_RELAY_ON, 0);
+	break;
+      case SOUND_CMTMOTOROFF:
+	DrvWav[1].Play(CH_WAV_RELAY_OFF, 0);
+	break;
+      case SOUND_FDDSEEK:
+	DrvWav[2].Play(CH_WAV_FDDSEEK, 0);
+	break;
+      default:
+	break;
+     }
+   
 
 }
 
