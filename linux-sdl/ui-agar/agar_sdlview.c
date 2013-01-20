@@ -47,7 +47,6 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
    if(src != NULL) {
       my->Surface = src;
       my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
-//        my->mySurface = AG_WidgetMapSurface(my, src);
    }
    return (my);
 }
@@ -55,12 +54,9 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
 void XM7_SDLViewLinkSurface(void *p, AG_Surface *src)
 {
    XM7_SDLView *my = p;
-   
-	
+
    my->Surface = src;
    my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
-//   my->mySurface = AG_WidgetMapSurface(my, src);
-
 }
 
 AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
@@ -92,11 +88,10 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
    fmt.Aloss = 0;
    fmt.palette = NULL;
 
-    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, 0);
-    my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
-    my->Surface = src;
-    my->forceredraw = 1;
-
+   src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, 0);
+   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+   my->Surface = src;
+   my->forceredraw = 1;
    return src;
 }
 
@@ -217,13 +212,13 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
        AG_Rect r;
        AG_Color c;
        if(my->Surface != NULL) {
-	  AG_SurfaceLock(my->Surface);
+//	  AG_SurfaceLock(my->Surface);
 	  if(AG_SurfaceResize(my->Surface, a->w, a->h) < 0) {
-	     AG_SurfaceUnlock(my->Surface);
+//	     AG_SurfaceUnlock(my->Surface);
 	     AG_ObjectUnlock(my);
 	     return (-1);
 	  }
-	  AG_SurfaceUnlock(my->Surface);
+//	  AG_SurfaceUnlock(my->Surface);
 	  printf("XM7_SDLView::SizeAllocate() : Resized %dx%d pixels\n", a->w, a->h);
        } else {
 //	  my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
@@ -240,13 +235,9 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
        c.r = 0;
        c.g = 0;
        c.b = 0;
-//       AG_SurfaceLock(my->Surface);
        AG_FillRect(my->Surface, &r, c);
-//       AG_SurfaceUnlock(my->Surface);
     }
-   //    AG_SurfaceUnlock(my->Surface);
    AG_ObjectUnlock(my);
-   //    Draw(my); // Dirty?
    return (0);
 }
 

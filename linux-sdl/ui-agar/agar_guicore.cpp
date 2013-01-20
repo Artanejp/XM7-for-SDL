@@ -48,34 +48,34 @@ extern void Create_AGMainBar(AG_Widget *Parent);
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
-	int w;
-	int h;
-	BOOL bi;
-
-	bi = FALSE;
-        if(MainWindow != NULL) {
-        if(AG_WindowIsFocused(MainWindow)) {
-            bi = TRUE;
-        }
+   int w;
+   int h;
+   BOOL bi;
+   
+   bi = FALSE;
+   if(MainWindow != NULL) {
+      if(AG_WindowIsFocused(MainWindow)) {
+	 bi = TRUE;
+      }
     } else {
-	return FALSE;
+       return FALSE;
     }
    if(drv == NULL) return FALSE;
    if(ev == NULL) return FALSE;
-	/* Retrieve the next queued event. */
-	switch (ev->type) {
-	case AG_DRIVER_VIDEORESIZE:
-		w = ev->data.videoresize.w;
-		h = ev->data.videoresize.h;
-		ResizeWindow_Agar2(w, h);
-		break;
-	default:
-		break;
-	}
-	if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
-		//	if(drv == NULL) return;
-		/* Forward the event to Agar. */
-		return TRUE;
+   /* Retrieve the next queued event. */
+   switch (ev->type) {
+    case AG_DRIVER_VIDEORESIZE:
+      w = ev->data.videoresize.w;
+      h = ev->data.videoresize.h;
+   //   ResizeWindow_Agar2(w, h);
+      break;
+    default:
+      break;
+   }
+   if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
+   //	if(drv == NULL) return;
+   /* Forward the event to Agar. */
+   return TRUE;
 }
 
 BOOL EventGUI(AG_Driver *drv)
@@ -288,16 +288,17 @@ void InitInstance(void)
       MainWindow = AG_WindowNew(AG_WINDOW_DIALOG | AG_WINDOW_MODKEYEVENTS );
 //        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    }
-	AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
-	AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-        AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
-        MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
-	Create_AGMainBar(AGWIDGET(NULL));
-   	AG_WidgetSetPosition(MenuBar, 0, 0);
-	AG_WidgetShow(AGWIDGET(MenuBar));
-
-	AG_WindowShow(MainWindow);
-	AG_WindowFocus(MainWindow);
+//   AGWIDGET(MainWindow)->flags |= AG_WIDGET_NOSPACING;
+   AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
+   AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+   AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
+   MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
+   Create_AGMainBar(AGWIDGET(NULL));
+   AG_WidgetSetPosition(MenuBar, 0, 0);
+   AG_WidgetShow(AGWIDGET(MenuBar));
+   
+   AG_WindowShow(MainWindow);
+   AG_WindowFocus(MainWindow);
 #if USE_OPENGL
     if(AG_UsingGL(NULL) != 0) {
         hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
@@ -318,6 +319,7 @@ void InitInstance(void)
         AG_GLViewButtonupFn(GLDrawArea, OnMouseButtonUpGL, NULL);
 	bUseOpenGL = TRUE;
 	DrawArea = NULL;
+	//AGWIDGET(GLDrawArea)->flags |= AG_WIDGET_NOSPACING;
         AG_WidgetShow(GLDrawArea);
         AG_WidgetFocus(AGWIDGET(GLDrawArea));
     } else
@@ -340,16 +342,18 @@ void InitInstance(void)
 #ifdef USE_OPENGL
         GLDrawArea = NULL;
 #endif /* USE_OPENGL */
+//	AGWIDGET(DrawArea)->flags |= AG_WIDGET_NOSPACING;
         AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
-        ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
+        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
     }
     {
       // hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
        pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
        AG_WidgetSetSize(pStatusBar, 640, 40);
-        CreateStatus(AGWIDGET(pStatusBar));
-        AG_WidgetShow(pStatusBar);
+       CreateStatus(AGWIDGET(pStatusBar));
+//       AGWIDGET(pStatusBar)->flags |= (AG_WIDGET_HFILL | AG_WIDGET_NOSPACING);
+       AG_WidgetShow(pStatusBar);
     }
 #if 0 // GUI-DEBUG
      {
