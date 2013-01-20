@@ -275,7 +275,7 @@ static void Draw(void *p)
 
    /* Blit the mapped surface at [0,0]. */
    if(my->mySurface != -1) {
-      AG_WidgetUpdateSurface(my, my->mySurface);
+//      AG_WidgetUpdateSurface(my, my->mySurface);
       AG_WidgetBlit(my, my->Surface, 0, 0);
    }
    AG_ObjectUnlock(my);
@@ -383,7 +383,7 @@ static void Detach(void *obj)
         my->Surface = NULL;
         
 //        AG_SurfaceLock(my->Surface);
-        AG_SurfaceFree(my->Surface);
+//        AG_SurfaceFree(my->Surface);
         my->Surface = NULL;
         my->mySurface = -1;
         UnlockVram();
