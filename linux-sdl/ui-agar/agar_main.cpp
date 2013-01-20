@@ -355,7 +355,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	/*
 	 * Agar のメインループに入る
 	 */
-    SDL_Init(SDL_INIT_VIDEO);
 
     if(drivers == NULL)  {
 #ifdef USE_OPENGL
@@ -375,8 +374,9 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 return;
         }
     }
+   if(!AG_UsingSDL(NULL)) SDL_Init(SDL_INIT_VIDEO);
 //   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
-   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
+   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
     
     OnCreate((AG_Widget *)NULL);
    InitInstance();
