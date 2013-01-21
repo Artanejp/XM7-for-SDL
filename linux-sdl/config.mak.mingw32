@@ -50,7 +50,7 @@ endif
 
 INSTALL          = install -c 
 PREFIX           = /mingw
-SHAREDIR         = /MinGW/msys/1.0/home/K.Ohta/xm7/
+SHAREDIR         = ./xm7/
 
 ## SVNの時はコメントアウト外す
 #SVNVER = `svnversion`
