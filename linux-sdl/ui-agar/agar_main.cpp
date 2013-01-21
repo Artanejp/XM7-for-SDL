@@ -12,9 +12,9 @@
 
 #include <locale.h>
 #include <libintl.h>
-
+#if 0
 #include <mcheck.h>
-
+#endif
 
 #include <agar/core/types.h>
 #include <agar/core.h>
@@ -221,7 +221,7 @@ void OnDestroy(AG_Event *event)
    system_cleanup();
    AG_MutexDestroy(&VMMutex);
    //	AG_Destroy();
-#if 1
+#if 0 
    muntrace();
 #endif
    AG_Quit();
@@ -416,7 +416,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	ErrorPopup(gettext("Unknown error on setup.\nPlease email to author."));
 	break;
      }
-#if 1
+#if 0
    mtrace();
 #endif
 	AGDrawTaskEvent(TRUE);

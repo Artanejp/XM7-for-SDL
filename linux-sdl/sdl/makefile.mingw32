@@ -55,9 +55,9 @@ OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 LIBS += -L$(PREFIX)/lib
 
 #LIBS += `/mingw/bin/agar-config --libs`
-LIBS += `/bin/sdl-config --libs`
+LIBS += `/c/mingw/bin/sdl-config --libs`
 LIBS +=   -lSDL_mixer
-#LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
+#LIBS +=  -lmingw32 -lSDLmain -lSDL  
 
 ifdef USE_OPENGL
 LIBS += -lopengl32 
@@ -76,7 +76,7 @@ endif
 
 
 ## Uncomment below if you *not* wish static-link agar.
-LIBS += `agar-config --libs` -lwinmm
+LIBS += `/mingw/bin/agar-config --libs` -lwinmm
 
 ## Uncomment below if you wish static-link agar.
 #LIBS += $(PREFIX)/lib/libag_gui.a $(PREFIX)/lib/libag_core.a $(PREFIX)/lib/libag_dev.a 

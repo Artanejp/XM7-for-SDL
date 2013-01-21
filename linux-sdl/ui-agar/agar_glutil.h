@@ -42,9 +42,11 @@ extern BOOL bGL_PIXEL_UNPACK_BUFFER_BINDING; // Pixel buffer
 extern PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
 extern PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
 extern PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
+#ifndef _WINDOWS
 extern PFNGLBINDBUFFERPROC glBindBuffer;
 extern PFNGLBUFFERDATAPROC glBufferData;
 extern PFNGLGENBUFFERSPROC glGenBuffers;
+#endif
    
 extern void InitFBO(void);
    

@@ -16,7 +16,7 @@
  */
 
 #ifdef _WINDOWS
-#define _OFF_T_
+//#define _OFF_T_
 #endif
 
 #include "agar_sdlview.h"
