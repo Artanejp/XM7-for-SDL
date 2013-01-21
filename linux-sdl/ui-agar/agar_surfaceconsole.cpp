@@ -79,30 +79,14 @@ void DumpObject::InitFont(void)
     AG_Surface *dummy;
     AG_PushTextState();
     if(pDbgDialogTextFont != NULL){
-        c[0] = 'A';
+        c[0] = '0';
         c[1] = '\0';
         AG_TextFont(pDbgDialogTextFont);
-        dummy = AG_TextRender(c);
-        if(dummy != NULL) {
-            CHRW = dummy->w;
-            CHRH = dummy->h;
-            AG_SurfaceFree(dummy);
-        } else {
-	    CHRW = DBG_TEXT_PT;
-	    CHRH = DBG_TEXT_PT;
-	}
+        AG_TextSize(c ,&CHRW, &CHRH);
     } else { // Lost fonts
-        c[0] = 'A';
+        c[0] = '0';
         c[1] = '\0';
-        dummy = AG_TextRender(c);
-        if(dummy != NULL) {
-            CHRW = dummy->w;
-            CHRH = dummy->h;
-            AG_SurfaceFree(dummy);
-        } else {
-	    CHRW = DBG_TEXT_PT;
-	    CHRH = DBG_TEXT_PT;
-	}
+        AG_TextSize(c ,&CHRW, &CHRH);
     }
    
     AG_PopTextState();
@@ -138,7 +122,7 @@ BOOL DumpObject::InitConsole(int w, int h)
         }
     }
     SetPixelFormat(&fmt);
-    Screen = AG_SurfaceNew(AG_SURFACE_PACKED, W * CHRW, H * CHRH, &fmt, AG_SRCALPHA);
+    Screen = AG_SurfaceNew(AG_SURFACE_PACKED, W * CHRW, H * CHRH, &fmt, 0);
     {
         AG_Color col;
         AG_Rect rec;
@@ -251,7 +235,7 @@ void DumpObject::PutCharScreen(BYTE c)
     Uint32 ucs[2];
     AG_Surface *r = NULL;
 
-    if(Sym2UCS4(c, ucs)) {
+    if(Sym2UCS4(c, ucs) && (c != 0x20)) {
         if(pDbgDialogSymFont != NULL){
             AG_PushTextState();
             AG_TextFont(pDbgDialogSymFont);
@@ -261,7 +245,7 @@ void DumpObject::PutCharScreen(BYTE c)
             r = AG_TextRenderUCS4((const Uint32 *)ucs);
             AG_PopTextState();
         }
-    } else if(Txt2UCS4(c, ucs)) {
+    } else if(Txt2UCS4(c, ucs) && (c != 0x20)) {
         if(pDbgDialogTextFont != NULL){
             AG_PushTextState();
             AG_TextFont(pDbgDialogTextFont);
@@ -272,12 +256,21 @@ void DumpObject::PutCharScreen(BYTE c)
             AG_PopTextState();
         }
     }
+    { // Clear Cursor position 20130122 (-_-;
+	AG_Rect rect;
+        rect.x = X * CHRW;
+        rect.y = Y * CHRH;
+        rect.w = CHRW;
+        rect.h = CHRH;
+       AG_FillRect(Screen, &rect, bgColor);
+    }
    if(r != NULL){
         if(Screen != NULL){
             AG_SurfaceBlit(r, NULL, Screen, X * CHRW, Y * CHRH);
         }
         AG_SurfaceFree(r);
     }
+   
 }
 
 void DumpObject::PutChar(BYTE c)
@@ -304,6 +297,7 @@ void DumpObject::Draw(BOOL redraw)
     Xb = X;
     Yb = Y;
     AG_SurfaceLock(Screen);
+    //redraw = TRUE;
     if(redraw){
         for(yy = 0; yy < H; yy++){
             pos = yy * W;
@@ -354,7 +348,6 @@ int DumpObject::PutString(char *str)
     len = strlen(str);
     if(len <= 0) return -1;
     do {
-
         PutChar(str[cp]);
         cp++;
         X++;
@@ -366,6 +359,23 @@ int DumpObject::PutString(char *str)
             }
         }
     } while(cp < len);
+//   if(X != 0) { // Line
+      {
+       int xx;
+       for(xx = X; xx < W; xx++) {
+	  PutChar(' ');
+	  X++;
+       }
+      
+       X = 0;
+       Y++;
+       if((Y >= H) || (Y < 0)){
+	  Y = 0;
+       }
+      }
+   
+   
+	
     return len;
 }
 

@@ -345,7 +345,7 @@ void XM7_DbgMemDisasm(void *p)
         obj->cons->MoveDrawPos(0, 2 + i);
         next = disline(obj->cputype, addr, strbuf);
         if(i == 0) obj->nextaddr = next;
-        strcat(strbuf, "    ");
+        strcat(strbuf, "       ");
         obj->cons->PutString(strbuf);
         addr = next;
     }

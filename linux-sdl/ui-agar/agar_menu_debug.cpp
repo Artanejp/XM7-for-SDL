@@ -53,7 +53,7 @@ AG_Font *pDbgDialogSymFont;
 static void DbgInitFont(void)
 {
     AG_Surface *dummy;
-    char c[3];
+
     AG_PushTextState();
     pDbgDialogTextFont = AG_TextFontLookup(DBG_TEXT_FONT, DBG_TEXT_PT, 0);
     if(pDbgDialogTextFont == NULL) { // Fallback
