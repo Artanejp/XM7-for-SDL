@@ -513,7 +513,7 @@ void AGEventDrawGL2(AG_Event *event)
    p = &(pVirtualVram->pVram[0][0]);
    if(p == NULL) return;
 
-
+//   printf("DrawGL2: %d\n", AG_GetTicks());
 
     ybegin = 1.0f;
 //    ybegin = 400.0f/460.0f;

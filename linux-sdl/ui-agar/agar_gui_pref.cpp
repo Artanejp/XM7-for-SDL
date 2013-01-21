@@ -569,8 +569,6 @@ static void InputMenuMouse(AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("Connect Inteligent Mouse"), &localconfig.bMouseCapture);
 		port = AG_NumericalNewUintR(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Connected port"), &localconfig.nMousePort,
 					   1, 2);
-//		AG_BindUint16(fps, "value", &localconfig.nDrawFPS);
-
 	}
 
 }

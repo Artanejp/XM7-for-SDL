@@ -380,6 +380,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
     
     OnCreate((AG_Widget *)NULL);
    InitInstance();
+
 //   OnCreate((AG_Widget *)NULL);
        
    stopreq_flag = FALSE;
@@ -395,7 +396,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
       RootVideoHeight = 400;
    }
 
-//	ResizeWindow_Agar(640, 400);
+//   ResizeWindow_Agar(640, 400);
    newResize = FALSE;
    nDrawTick1D = AG_GetTicks();
    nDrawTick1E = nDrawTick1D;

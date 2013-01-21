@@ -67,7 +67,7 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
     case AG_DRIVER_VIDEORESIZE:
       w = ev->data.videoresize.w;
       h = ev->data.videoresize.h;
-   //   ResizeWindow_Agar2(w, h);
+      ResizeWindow_Agar2(w, h);
       break;
     default:
       break;
@@ -101,20 +101,8 @@ void AGDrawTaskEvent(BOOL flag)
    Uint32 fps;
    Uint32 oldfps = nDrawFPS;
    bResizeGUIFlag = FALSE;
+   nDrawTick2D = AG_GetTicks();
 
-    if(nDrawFPS > 2) {
-#ifdef USE_OPENGL
-       if(DrawArea != NULL) {
-            AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
-        } else if(GLDrawArea != NULL){
-            AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
-        }
-#else
-        if(DrawArea != NULL) {
-            AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
-        }
-#endif
-    }
    for(;;) {
       if(nDrawFPS > 2) {
 	 fps = 1000 / nDrawFPS;
@@ -125,21 +113,28 @@ void AGDrawTaskEvent(BOOL flag)
 	 oldfps = nDrawFPS;
 #ifdef USE_OPENGL
 	   if(DrawArea != NULL) {
-                    AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+                  AG_RedrawOnTick(DrawArea, fps);
                 } else if(GLDrawArea != NULL){
-                    AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
+                    AG_RedrawOnTick(GLDrawArea, fps);
                 }
 #else
 	   if(DrawArea != NULL) {
-	      AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+	      AG_RedrawOnTick(DrawArea, fps);
 	   }
 #endif
       }
       nDrawTick2D = AG_GetTicks();
-      if(bResizeGUIFlag) continue;
+//      if(bResizeGUIFlag) continue;
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
       if((nDrawTick2D - nDrawTick1D) > fps) {
+	 // Force-Redraw mainwindow, workaround of glx driver.
+	 if(GLDrawArea != NULL) {
+	    AG_Redraw(GLDrawArea);
+	 } else if(DrawArea != NULL) {
+	    AG_Redraw(DrawArea);
+	 }
+	 
 	 // ここにGUIの処理入れる
 	 AG_LockVFS(&agDrivers);
 	 if (agDriverSw) {
@@ -154,6 +149,7 @@ void AGDrawTaskEvent(BOOL flag)
 	    nDrawTick1D = nDrawTick2D;
 	    AG_EndRendering(agDriverSw);
 	 } else  {
+//	    printf("Draw %d \n", AG_GetTicks());
 //	    AG_Window *miniwin;
 	    /* With multiple-window drivers (e.g., glx). */
 	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver) {
@@ -170,7 +166,9 @@ void AGDrawTaskEvent(BOOL flag)
 	       AG_ObjectUnlock(win);
 	       AG_EndRendering(drv);
 	    }
-	 }
+	    nDrawTick1D = nDrawTick2D;
+   	 }
+	 
 	 
 	 AG_UnlockVFS(&agDrivers);
       }

@@ -70,7 +70,7 @@ void InitNonGL(int w, int h)
 
    flags = SDL_RESIZABLE;
 //   DrawSurface = SDL_SetVideoMode(w, h, 24, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
-//   AG_InitVideoSDL (->s, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_RESIZABLE);
+//   AG_InitVideoSDL (screen, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_RESIZABLE);
    InitVramSemaphore();
    pVirtualVram = NULL;
    InitVirtualVram();
@@ -120,10 +120,12 @@ void ResizeWindow_Agar(int w, int h)
 	  a.h = h;
 	  a.x = 0;
 	  a.y = 0;
+	  AG_ObjectLock(AGOBJECT(GLDrawArea));
 	  AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
 	  AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
 	  AG_GLViewSizeHint(GLDrawArea, w, h);
 	  hh += h;
+	  AG_ObjectUnlock(AGOBJECT(GLDrawArea));
        } else 
 #endif
        if(DrawArea) {
@@ -155,18 +157,9 @@ void ResizeWindow_Agar(int w, int h)
 //    AG_WidgetFocus(AGWIDGET(MenuBar));
 	}
 
-//    if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+    if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
 
     printf("Resize to %d x %d\n", ww, hh );
-     if(agDriverSw && (AG_UsingGL(NULL) != 0)) {
-	AG_ResizeDisplay(w + 10, hh + 10);
-     } else {
-#if 0
-	if((DrawArea != NULL)  && agDriverSw) {
-	   AG_ResizeDisplay(w + 10, hh + 10);
-	}
-#endif
-     }
 
    AG_ObjectUnlock(AGOBJECT(drv));
 }
@@ -179,11 +172,9 @@ void ResizeWindow_Agar2(int w, int h)
    int hh;
    int ww;
    AG_Driver *drv;
-//   if(agDriverSw) {
-//	if((AGWIDGET(MainWindow)->w < w) || (AGWIDGET(MainWindow)->h < h)) {
-//	   AG_ResizeDisplay(AGWIDGET(MainWindow)->w + 10, AGWIDGET(MainWindow)->h + 30);
-//	}
-  // }
+   if(agDriverSw) {
+	   AG_ResizeDisplay(w, h);
+   }
    
    if(MenuBar != NULL) {
       AG_Redraw(AGWIDGET(MenuBar));
@@ -192,7 +183,7 @@ void ResizeWindow_Agar2(int w, int h)
       AG_Redraw(AGWIDGET(pStatusBar));
    }
    
-   //     printf("Resize2 to %d x %d\n", w, h);
+        printf("Resize2 to %d x %d\n", w, h);
 }
 
 

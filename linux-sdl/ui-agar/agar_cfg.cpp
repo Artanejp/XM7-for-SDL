@@ -29,7 +29,7 @@
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
 #include "agar_osd.h"
-
+extern AG_Window *MainWindow;
 
 configdat_t configdat;	/* コンフィグ用データ */
 /*
