@@ -830,7 +830,6 @@ static int SetChunk(struct SndBufType *p, int ch)
         SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
         Mix_PlayChannel(ch , p->mChunk[i], 0);
         p->nReadPTR += samples;
-        samples = 0;
        i++;
        if(i >= p->nChunks) i = 0;
        p->nChunkNo = i;
@@ -849,10 +848,11 @@ static int SetChunk(struct SndBufType *p, int ch)
        if(p->nReadPTR >= p->nSize) {
 	  p->nReadPTR = 0;
        }
-       SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
+//       SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
+       SetChunkSub(p->mChunk[i], p->pBuf, samples, iTotalVolume);
+
        Mix_PlayChannel(ch , p->mChunk[i], 0);
        p->nReadPTR += samples;
-       samples = 0;
        i++;
        if(i >= p->nChunks) i = 0;
        p->nChunkNo = i;
