@@ -34,34 +34,7 @@ Release/libxm7_debug.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
 	ranlib $@
 
-Release/%.o: %.c
-	mkdir -p Release
-	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
-
-Release/%.o: %.cpp
-	mkdir -p Release
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-
-Debug/%.o: %.c
-	mkdir -p Debug
-	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
-
-Debug/%.o: %.cpp
-	mkdir -p Debug
-	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-	
-
-.asm.o:
-	nasm ${ASFLAGS} $<
-
-install: all
-	$(INSTALL)  -d $(SHAREDIR)
-	$(INSTALL) ./xm7 $(PREFIX)/bin
-	$(INSTALL) -m 0644 *.ui $(SHAREDIR)
-	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
-	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
-#	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)
+-include ../rules.mak
 
 .PHONY: clean
 clean:
@@ -70,3 +43,8 @@ clean:
 	rm -f Release/*.so Debug/*.so
 	rm -f Debug/*.lo Release/*.lo
 	rm -f Release/*.a Debug/*.a
+	rm -f Release/*.d Debug/*.d
+
+.DEPEND:
+-include $(OBJS_RELEASE:.o=.d)
+-include $(OBJS_DEBUG:.o=.d)
