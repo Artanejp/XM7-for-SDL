@@ -86,7 +86,7 @@ install: all
 
 
 clean:
-	rm -f xm7.debug xm7 *.o *~ Debug/*.o Debug/*.d Release/*.o Release/*.d *.d
+	rm -f $(TARGET_DEBUG) $(TARGET_RELEASE) *.o *~ Debug/*.o Debug/*.d Release/*.o Release/*.d
 
 .DEPEND:
 -include $(OBJS_RELEASE:.o=.d)

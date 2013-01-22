@@ -13,24 +13,19 @@ include common.mak
 .PHONY: clean Release Debug libfmgen008-debug ui-agar-debug vm-debug libfmgen008-release ui-release vm-release debugger-debug debugger-release
 all: Release Debug
 
-#Release: ui-agar-release libemugrph-release vm-release debugger-release
-#	make -C sdl xm7
-#
-#Debug: ui-agar-debug libemugrph-debug vm-debug debugger-debug libfmgen009-debug
-#	make -C sdl xm7.debug
 
 ifdef WITH_DEBUGGER
 Release: ui-agar-release vm-release debugger-release libfmgen008-release
-	make -C sdl xm7
+	make -C sdl $(TARGET_RELEASE)
 
 Debug: ui-agar-debug vm-debug debugger-debug libfmgen008-debug
-	make -C sdl xm7.debug
+	make -C sdl $(TARGET_DEBUG)
 else
 Release: ui-agar-release vm-release libfmgen008-release
-	make -C sdl xm7
+	make -C sdl $(TARGET_RELEASE)
 
 Debug: ui-agar-debug vm-debug libfmgen008-debug
-	make -C sdl xm7.debug
+	make -C sdl $(TARGET_DEBUG)
 endif
 
 libfmgen008-release:
