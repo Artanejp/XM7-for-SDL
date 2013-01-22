@@ -4,9 +4,12 @@
 
 #Deps
 $(OBJS_RELEASE): ../config.mak \
-
+	../common.mak \
+	../rules.mak 
 
 $(OBJS_DEBUG): ../config.mak \
+	../common.mak \
+	../rules.mak 
 
 
 # Rules
