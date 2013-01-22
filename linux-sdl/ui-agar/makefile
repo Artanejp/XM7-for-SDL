@@ -6,6 +6,7 @@
 ###	[ Makefile for SDL / vm]
 XM7_VER		= 3
 include ../config.mak
+include ../common.mak
 
 COMMONSRC = \
 	agar_cfg.cpp \

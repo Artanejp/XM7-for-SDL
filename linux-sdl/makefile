@@ -8,6 +8,7 @@ XM7_VER		= 3
 
 
 include config.mak
+include common.mak
 
 .PHONY: clean Release Debug libfmgen008-debug ui-agar-debug vm-debug libfmgen008-release ui-release vm-release debugger-debug debugger-release
 all: Release Debug
