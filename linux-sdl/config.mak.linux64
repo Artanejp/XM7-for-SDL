@@ -56,15 +56,15 @@ SHAREDIR         = $(PREFIX)/share/xm7/
 
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること
 UI_FONT            = ipagp.ttf
-UI_PT              = 13
+UI_PT              = 15
 
 STAT_FONT          = ipagp.ttf
-STAT_PT            = 13
+STAT_PT            = 9
 
-VFD_FONT           = ipagui.ttf
-CMT_FONT           = ipagui.ttf
-FONTPATH           = /usr/local/share/xm7/fonts:/usr/local/share/fonts/F-Font/:/usr/local/share/xm7/fonts:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont
-#FONTPATH          = /usr/local/share/xm7/fonts:/usr/share/fonts
+VFD_FONT           = ipagp.ttf
+CMT_FONT           = ipagp.ttf
+#FONTPATH           = /usr/local/share/xm7/fonts/:/usr/local/share/xm7/F-Font/:/usr/share/fonts/X11/misc/:/usr/share/fonts/X11/75dpi/:/usr/share/fonts/X11/Type1/:/usr/share/fonts/truetype/ipafont:~/.xm7/:.
+FONTPATH          = /usr/local/share/xm7/F-Font:/usr/share/fonts:/usr/share/fonts/truetype/ipafont:~/.xm7:.:
 
 LDFLAGS = 
 

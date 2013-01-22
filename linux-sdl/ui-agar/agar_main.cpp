@@ -338,13 +338,13 @@ void MainLoop(int argc, char *argv[])
         AG_SetString(agConfig, "font.face", UI_FONT);
     }
 
-//    AG_GetString(agConfig, "font-path", strbuf, 2047);
-//    if(strlen(strbuf) <= 0)
+    AG_GetString(agConfig, "font-path", strbuf, 2047);
+    if(strlen(strbuf) <= 0)
     {
      AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
 		  getenv("HOME"), getenv("HOME"), getenv("HOME"), FONTPATH);
     }
-
+    printf("DBG: font-path = %s\n", strbuf);
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
