@@ -6,6 +6,7 @@
  *      このクラスではキーボード廻りのテンプレートを設計する
  */
 
+
 #ifndef KBDINTERFACE_H_
 #define KBDINTERFACE_H_
 

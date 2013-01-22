@@ -4,7 +4,7 @@
  * Takegami Copyright (C) 2004 GIMONS  [ XWIN スケジューラ ] 
  */  
     
-    
+
 #ifndef _xw_sch_h_
 #define _xw_sch_h_
     

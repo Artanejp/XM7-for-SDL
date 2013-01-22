@@ -5,6 +5,7 @@
  *      Author: Kyuma Ohta <whatisthis.sowhat@gmail.com>
  */
 
+
 #ifndef API_WAVWRITER_H_
 #define API_WAVWRITER_H_
 

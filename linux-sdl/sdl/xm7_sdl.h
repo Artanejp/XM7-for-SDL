@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _sdl_h_
-#define _sdl_h_
+#ifndef _xm7_sdl_h_
+#define _xm7_sdl_h_
 
 #ifndef __STDLIB_H
 #include <stdlib.h>
@@ -76,4 +76,4 @@ typedef unsigned int UINT;
 }
 #endif	/*  */
 
-#endif	/* _sdl_h_ */
+#endif	/* _xm7_sdl_h_ */
