@@ -6,6 +6,7 @@
 ###	[ Makefile GTK For SDL]
 XM7_VER		= 3
 include ../config.mak
+include ../common.mak
 
 	
 VIDEODRVSRC = \
@@ -58,132 +59,30 @@ DEPS_RELEASE = $(addprefix Release/, $(DEPS))
 DEPS_DEBUG =	$(addprefix Debug/,  $(DEPS))
 
 
-LIBS += -L/usr/local/lib
 
-#LIBS += `pkg-config --libs sdl`
-LIBS += `sdl-config --libs`
-LIBS +=  -lSDL_mixer -lSDL_ttf
-#LIBS +=  -lSDL_mixer-1.3 -lSDL_ttf-1.3 
+all:	$(TARGET_DEBUG) $(TARGET_RELEASE)
 
-ifdef USE_OPENGL
-LIBS += -lGL -lpthread
-#LIBS += -lGLU -lpthread libGL.so.1
-endif
+$(TARGET_RELEASE): ${OBJS_RELEASE} ${LIBS_RELEASE}
+	$(CXX) ${LDFLAGS} -o $(TARGET_RELEASE) $^ ${LIBS} ${LIBS_RELEASE}
+	strip $(TARGET_RELEASE)
 
-ifdef USE_OPENCL
-LIBS += -lOpenCL
-endif
-
-#LIBS += -ljpeg -lpng -lfreetype -lfontconfig
-
-ifdef USE_OPENMP
-LIBS += -lgomp
-endif
-
-## Uncomment below if you *not* wish static-link agar.
-#LIBS += `agar-config --libs`
-
-## Uncomment below if you wish static-link agar.
-LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a \
-        /usr/local/lib/libag_dev.a \
-	-lXinerama -ljpeg -lpng -lfreetype \
-	-lfontconfig
-
-LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
-LIBS_RELEASE += ../vm/Release/libxm7_vm.a
-ifdef WITH_DEBUGGER
-LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a
-endif
-LIBS_RELEASE += ../fmgen/Release/libfmgen007a.a
+$(TARGET_DEBUG): ${OBJS_DEBUG} ${LIBS_DEBUG}
+	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG) $^ ${LIBS} ${LIBS_DEBUG}
 
 
-#LIBS_DEBUG = ../libemugrph/Debug/libemugrph.a
-LIBS_DEBUG += ../ui-agar/Debug/libui-agar.a
-LIBS_DEBUG += ../vm/Debug/libxm7_vm.a
-ifdef WITH_DEBUGGER
-LIBS_DEBUG += ../xm7-debugger/Debug/libxm7_debug.a
-endif
-LIBS_DEBUG += ../fmgen/Debug/libfmgen007a.a
-
-all:	xm7 xm7.debug
-
-xm7: ${OBJS_RELEASE} ${LIBS_RELEASE}
-	$(CXX) ${LDFLAGS} -o xm7 $^ ${LIBS} ${LIBS_RELEASE}
-	strip xm7
-
-xm7.debug: ${OBJS_DEBUG} ${LIBS_DEBUG}
-	$(CXX) -pg -g ${LDFLAGS} -o xm7.debug $^ ${LIBS} ${LIBS_DEBUG}
-
-
-#Deps
-$(OBJS_RELEASE): ../config.mak \
-
-
-$(OBJS_DEBUG): ../config.mak \
-
-
-# Rules
-Release/%.o: %.c 
-	@mkdir -p Release
-	$(CC) ${CFLAGS_RELEASE} -o $@ -c $(filter %.c, $<)
-
-Release/%.o: %.cpp
-	@mkdir -p Release
-	$(CXX) ${CXXFLAGS_RELEASE} -o $@ -c $(filter %.cpp, $<)
-
-Debug/%.o: %.c
-	@mkdir -p Debug
-	$(CC) ${CFLAGS_DEBUG} -o $@ -c $(filter %.c, $<)
-
-
-
-Debug/%.o: %.cpp
-	@mkdir -p Debug
-	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(filter %.cpp, $<)
-
-
-
-.asm.o:
-	nasm ${ASFLAGS} $<
+-include ../rules.mak
 
 
 install: all
 	$(INSTALL)  -d $(SHAREDIR)
-	$(INSTALL) ./xm7 $(PREFIX)/bin
+	$(INSTALL) ./$(TARGET_RELEASE) $(PREFIX)/bin
+	$(INSTALL) ./$(TARGET_DEBUG) $(PREFIX)/bin
 	$(INSTALL) -m 0644 ./resource/*.ico $(SHAREDIR)
 	$(INSTALL) -m 0644 ./resource/*.xml $(SHAREDIR)
+	$(INSTALL) -m 0644 ./resource/*.png $(SHAREDIR)
 #	$(INSTALL) -m 0644 ./ipagui.ttf $(SHAREDIR)
 
 .PHONY: clean
-
-
-Debug/%.d: %.c
-	@mkdir -p Debug/
-	@set -e; rm -f $@; \
-	$(CC) -M $(CFLAGS_DEBUG) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,Debug\/\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
-Debug/%.d: %.cpp
-	@mkdir -p Debug/
-	@set -e; rm -f $@; \
-	$(CXX) -M $(CXXFLAGS_DEBUG) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,Debug\/\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
-Release/%.d: %.c
-	@mkdir -p Release/
-	@set -e; rm -f $@; \
-	$(CC) -M $(CFLAGS_RELEASE) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,Release\/\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
-Release/%.d: %.cpp
-	@mkdir -p Release/
-	@set -e; rm -f $@; \
-	$(CXX) -M $(CXXFLAGS_RELEASE) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,Release\/\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
 
 
 clean:
