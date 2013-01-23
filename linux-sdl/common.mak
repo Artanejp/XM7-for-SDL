@@ -35,6 +35,7 @@ endif
 ifeq ($(OS),Windows)
 # Windows
 SHAREDIR         = ./xm7/
+CONFPATH         = $(SHAREDIR)
 FONTPATH           = :.:./.xm7/:./xm7/:
 #OPTION          += -mwindows -m32
 OPTION		+= -D_WINDOWS
