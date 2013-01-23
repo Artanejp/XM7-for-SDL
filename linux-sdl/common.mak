@@ -36,7 +36,7 @@ ifeq ($(OS),Windows)
 # Windows
 SHAREDIR         = ./xm7/
 FONTPATH           = :.:./.xm7/:./xm7/:
-OPTION          += -mwindows -m32
+#OPTION          += -mwindows -m32
 OPTION		+= -D_WINDOWS
 TARGET_DEBUG    = xm7.debug.exe
 TARGET_RELEASE  = xm7.exe
