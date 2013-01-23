@@ -457,7 +457,7 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     float ww = (float)w;
     int nFontSize;
 
-    nLedHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
+    nLedHeight = (int)(ww / 640.0f * (float)STAT_HEIGHT);
     nLedWidth = (int)(ww / 640.0f * (float)LED_WIDTH);
     if(nLedWidth <= 0) return;
     if((pOsdLEDIns == NULL) || (pOsdLEDCAPS == NULL) || (pOsdLEDKana == NULL)) return; 

@@ -63,15 +63,15 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
    if(drv == NULL) return FALSE;
    if(ev == NULL) return FALSE;
    /* Retrieve the next queued event. */
-   switch (ev->type) {
-    case AG_DRIVER_VIDEORESIZE:
-      w = ev->data.videoresize.w;
-      h = ev->data.videoresize.h;
-      ResizeWindow_Agar2(w, h);
-      break;
-    default:
-      break;
-   }
+//   switch (ev->type) {
+//    case AG_DRIVER_VIDEORESIZE:
+//      w = ev->data.videoresize.w;
+//      h = ev->data.videoresize.h;
+//     ResizeWindow_Agar2(w, h);
+//      break;
+//    default:
+//      break;
+//   }
    if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
    //	if(drv == NULL) return;
    /* Forward the event to Agar. */
@@ -343,11 +343,11 @@ void InitInstance(void)
 //	AGWIDGET(DrawArea)->flags |= AG_WIDGET_NOSPACING;
         AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
-        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+        ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }
     {
       // hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
-       pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
+       pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_VFILL | AG_WIDGET_NOSPACING);
        AG_WidgetSetSize(pStatusBar, 640, 40);
        CreateStatus(AGWIDGET(pStatusBar));
 //       AGWIDGET(pStatusBar)->flags |= (AG_WIDGET_HFILL | AG_WIDGET_NOSPACING);

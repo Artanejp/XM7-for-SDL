@@ -401,7 +401,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    nDrawTick1D = AG_GetTicks();
    nDrawTick1E = nDrawTick1D;
 
-   ResizeWindow_Agar(nDrawWidth, nDrawHeight);
+   ResizeWindow_Agar(nDrawWidth, nDrawHeight + 50);
     switch(nErrorCode) 
      {
       case 0:

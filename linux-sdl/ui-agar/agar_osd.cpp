@@ -190,11 +190,23 @@ void CreateStatus(AG_Widget *parent)
 
    nFontSize = STAT_PT;
     if(parent) {
-       InitStatOSD(parent);
-       InitVFD(parent);
-       InitTapeOSD(parent);
-       InitLeds(parent);
+       AG_VBox *vb;
+       AG_HBox *hb;
+//       vb = AG_VBoxNew(parent, 0);
+       {
+//	  hb = AG_HBoxNew(vb, 0);
+	  hb = (AG_HBox *)parent;
+	  InitStatOSD(AGWIDGET(hb));
+	  InitVFD(AGWIDGET(hb));
+	  InitTapeOSD(AGWIDGET(hb));
+	  InitLeds(AGWIDGET(hb));
+       }
+//       {
+//	  hb = AG_HBoxNew(vb, AG_HBOX_VFILL);
+//       }
+       
     }
+    
 }
 
 void DestroyStatus(void)
@@ -241,15 +253,14 @@ void DrawStatusForce(void)
 	DrawTape(TRUE);
 }
 
-void ResizeStatus(AG_Widget *parent, int w, int h, int y)
+void ResizeStatus(AG_Widget *parent, int w, int h, int h2)
 {
     int i;
     int pos = 0;
     float ww = (float)w;
     int hh;
-    AG_Box *pad;
 
-    if(parent == NULL) return;
+   if(parent == NULL) return;
 
    hh = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
    nFontSize = (int)((float)STAT_PT * ww / 640.0f);
@@ -257,10 +268,10 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int y)
 
 
    AG_WidgetSetSize(parent, w - 5, hh);
-   ResizeStatOSD(parent, w, y);
-   ResizeVFD(parent, w, y);
-   ResizeTapeOSD(parent, w, y);
-   ResizeLeds(parent, w, y);
+   ResizeStatOSD(parent, w, hh);
+   ResizeVFD(parent, w, hh);
+   ResizeTapeOSD(parent, w, hh);
+   ResizeLeds(parent, w, hh);
    DrawStatusForce();
    AG_WidgetUpdate(parent);
 }

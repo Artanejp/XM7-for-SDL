@@ -219,29 +219,6 @@ void ResizeGL(int w, int h)
  *  初期化
  */
 
-void ChangeResolution(void)
-{
-        if((nOldDrawHeight == nDrawHeight) && (nOldDrawWidth == nDrawWidth) && (bOldFullScan == bFullScan)){
-                return;
-        }
-
-#if XM7_VER >= 3
-        nOldVideoMode = screen_mode;
-#else
-        nOldVideoMode = mode320;
-#endif
-        /*
-         * KILL Thread
-  い       */
-        SDL_SemWait(DrawInitSem);
-        ResizeWindow_Agar(nDrawWidth, nDrawHeight);
-
-        SDL_SemPost(DrawInitSem);
-        nOldDrawHeight = nDrawHeight;
-        nOldDrawWidth = nDrawWidth;
-        bOldFullScan = bFullScan;
-}
-
 
 
 void	InitDraw(void)

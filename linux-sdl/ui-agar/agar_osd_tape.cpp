@@ -251,7 +251,7 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
 
        if((pwCMT == NULL) || (pCMTStat == NULL)) return;
        nCMTWidth = (int)(ww / 640.0f * (float)CMT_WIDTH);
-       nCMTHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
+       nCMTHeight = (int)(ww / 640.0f * (float)STAT_HEIGHT);
        AG_MutexLock(&(pCMTStat->mutex));
        surface = XM7_SDLViewGetSrcSurface(pwCMT);
        AG_ObjectLock(pwCMT);

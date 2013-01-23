@@ -26,7 +26,10 @@ extern BYTE bMode;
 
 Uint32 nDrawTick1E;
 static BYTE oldBMode;
+static BOOL bManualScaled;
+
 extern BOOL   bResizeGUIFlag;
+extern SDL_semaphore *DrawInitSem;
 
 extern void ResizeStatus(AG_Widget *parent, int w, int h, int y);
 
@@ -41,7 +44,7 @@ SDL_Surface *DrawSurface = NULL;
 void InitGL(int w, int h)
 {
     AG_Driver *drv;
-
+    bManualScaled = FALSE;
     SDL_SemWait(DrawInitSem);
 #ifdef USE_OPENGL
    if(AG_UsingGL(NULL)) {
@@ -53,12 +56,13 @@ void InitGL(int w, int h)
 #else
    InitNonGL(w, h);
 #endif
-    SDL_SemPost(DrawInitSem);
+   AG_SetVideoResizeCallback(ResizeWindow_Agar);
+
+   SDL_SemPost(DrawInitSem);
 }
 
 void InitNonGL(int w, int h)
 {
-   Uint32 flags;
    char *ext;
 
    if(InitVideo) return;
@@ -68,7 +72,6 @@ void InitNonGL(int w, int h)
    vram_pg = NULL;
    vram_pr = NULL;
 
-   flags = SDL_RESIZABLE;
 //   DrawSurface = SDL_SetVideoMode(w, h, 24, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
 //   AG_InitVideoSDL (screen, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_RESIZABLE);
    InitVramSemaphore();
@@ -93,73 +96,86 @@ SDL_Surface *GetDrawSurface(void)
     return NULL;
 }
 
+
 void ResizeWindow_Agar(int w, int h)
 {
-	int hh;
-	int ww;
-//	int ofset;
+   int hh;
+   int ww;
+   float hhh;
+   
+   AG_Driver *drv;
+   if((w < 100) || (h < 100)) return;
+   if((bManualScaled == TRUE)){
+	bManualScaled = FALSE;
+	return;
+   }
+   bManualScaled = FALSE;
 
-	AG_Driver *drv;
-        if((w < 100) || (h < 100)) return;
-	if(agDriverSw) {
-	    drv = &agDriverSw->_inherit;
-	} else {
-	    if(MainWindow == NULL) return;
-	    drv = AGDRIVER(MainWindow);
-	}
-//	ofset = 40;
-        nDrawWidth = w;
-        nDrawHeight = h;
-        AG_ObjectLock(AGOBJECT(drv));
-        ww = w;
-        hh = 0;
+   if(agDriverSw) {
+      drv = &agDriverSw->_inherit;
+   } else {
+      if(MainWindow == NULL) return;
+      drv = AGDRIVER(MainWindow);
+   }
+
+   nDrawWidth = w;
+   nDrawHeight = h;
+   AG_ObjectLock(AGOBJECT(drv));
+   ww = w;
+   hh = h;
+   LockVram();
+   if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
+   
+   if(MenuBar != NULL) {
+      AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
+      AG_WidgetEnable(AGWIDGET(MenuBar));
+      AG_WidgetSetSize(AGWIDGET(MenuBar), w, AGWIDGET(MenuBar)->h);
+      hh = hh - AGWIDGET(MenuBar)->h;
+   }
+   if(pStatusBar != NULL){
+      if((w < 640) || (hh < 400)) {
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 4.0;
+      } else {
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 2.0;
+      }
+      
+      
+      AG_WidgetSetSize(pStatusBar, w, (int)hhh);
+      hh = hh - AGWIDGET(pStatusBar)->h;
+      ResizeStatus(AGWIDGET(pStatusBar), w, hh, hh);
+   }
+
+   
 #ifdef USE_OPENGL
-      if(GLDrawArea) {
-	  AG_SizeAlloc a;
-	  a.w = w;
-	  a.h = h;
-	  a.x = 0;
-	  a.y = 0;
-	  AG_ObjectLock(AGOBJECT(GLDrawArea));
-	  AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
-	  AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
-	  AG_GLViewSizeHint(GLDrawArea, w, h);
-	  hh += h;
-	  AG_ObjectUnlock(AGOBJECT(GLDrawArea));
-       } else 
+   if(GLDrawArea != NULL) {
+      AG_SizeAlloc a;
+      a.w = w;
+      a.h = hh;
+      a.x = 0;
+      a.y = 0;
+      AG_ObjectLock(AGOBJECT(GLDrawArea));
+      AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
+      AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, hh);
+      AG_GLViewSizeHint(GLDrawArea, w, hh);
+      AG_ObjectUnlock(AGOBJECT(GLDrawArea));
+   } else 
 #endif
-       if(DrawArea) {
-	  AG_SizeAlloc a;
-	  a.w = w;
-	  a.h = h;
-	  a.x = 0;
-	  a.y = 0;
-	  AG_ObjectLock(AGOBJECT(DrawArea));
-	  AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-	  AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
-	  AG_ObjectUnlock(AGOBJECT(DrawArea));
-	  hh += AGWIDGET(DrawArea)->h;
+     if(DrawArea != NULL) {
+	AG_SizeAlloc a;
+	a.w = w;
+	a.h = hh;
+	a.x = 0;
+	a.y = 0;
+	
+	AG_ObjectLock(AGOBJECT(DrawArea));
+	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
+	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
+	AG_ObjectUnlock(AGOBJECT(DrawArea));
        }
+   
 
-       if(pStatusBar){
-	  float hhh;
-	  hhh = ((float)h / 800.0) * (float)STAT_HEIGHT + 2.0; 
-	  AG_WidgetSetSize(pStatusBar, w, (int)hhh);
-          ResizeStatus(AGWIDGET(pStatusBar), w, (int)hhh, h);
-//	  hh = hh + AGWIDGET(pStatusBar)->h;
-	  hh = hh + hhh + 25;
-       }
-      if(MenuBar) {
-	AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
-        AG_WidgetEnable(AGWIDGET(MenuBar));
-        AG_WidgetSetSize(AGWIDGET(MenuBar), w, MenuBar->wid.h);
-        hh = hh + MenuBar->wid.h;
-//    AG_WidgetFocus(AGWIDGET(MenuBar));
-	}
-
-    if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-
-    printf("Resize to %d x %d\n", ww, hh );
+   printf("Resize to %d x %d ( %d x %d)\n", w, h, ww, hh );
+   UnlockVram();
 
    AG_ObjectUnlock(AGOBJECT(drv));
 }
@@ -169,21 +185,69 @@ void ResizeWindow_Agar(int w, int h)
 */
 void ResizeWindow_Agar2(int w, int h)
 {
-   int hh;
-   int ww;
+   int hh = h;
+   int ww = w;
+   float hhh;
    AG_Driver *drv;
-   if(agDriverSw) {
-	   AG_ResizeDisplay(w, h);
-   }
    
+   bManualScaled = TRUE;
    if(MenuBar != NULL) {
-      AG_Redraw(AGWIDGET(MenuBar));
+      AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
+      AG_WidgetEnable(AGWIDGET(MenuBar));
+      AG_WidgetSetSize(AGWIDGET(MenuBar), w, AGWIDGET(MenuBar)->h);
+      hh = hh + AGWIDGET(MenuBar)->h;
    }
-   if(pStatusBar != NULL) {
-      AG_Redraw(AGWIDGET(pStatusBar));
+   if(pStatusBar != NULL){
+      if((w < 640) || (h < 400)) {
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 4.0;
+      } else {
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 2.0;
+      }
+      AG_WidgetSetSize(pStatusBar, w, (int)hhh);
+      ResizeStatus(AGWIDGET(pStatusBar), w, h, hh);
+      hh = hh + AGWIDGET(pStatusBar)->h;
    }
+#ifdef USE_OPENGL
+   if(GLDrawArea != NULL) {
+      AG_SizeAlloc a;
+      a.w = w;
+      a.h = h;
+      a.x = 0;
+      a.y = 0;
+      AG_ObjectLock(AGOBJECT(GLDrawArea));
+      AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
+      AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
+      AG_GLViewSizeHint(GLDrawArea, w, h);
+      AG_ObjectUnlock(AGOBJECT(GLDrawArea));
+      } else 
+#endif
+   if(DrawArea != NULL) {
+	AG_SizeAlloc a;
+	a.w = w;
+	a.h = h;
+	a.x = 0;
+	a.y = 0;
+	
+	AG_ObjectLock(AGOBJECT(DrawArea));
+	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
+	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
+	AG_ObjectUnlock(AGOBJECT(DrawArea));
+      }
+   hh = hh + 15; // Add Pad.
+   if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+   if((agDriverSw) && (hh != h)){
+      if(DrawArea != NULL) {
+	 LockVram();
+	 AG_ResizeDisplay(ww, hh);
+	 UnlockVram();
+      } else {
+	 AG_ResizeDisplay(ww, hh);
+      }
+      
+   }
+
    
-        printf("Resize2 to %d x %d\n", w, h);
+   printf("Resize2 to %d x %d\n", ww, hh);
 }
 
 
@@ -204,7 +268,8 @@ void AGDrawTaskMain(void)
 	if(((nDrawTick2E - nDrawTick1E)<fps) && (bMode == oldBMode)) return;
 	nDrawTick1E = nDrawTick2E;
 	oldBMode = bMode;
-	SelectDraw2();
+
+        SelectDraw2();
 #if XM7_VER >= 3
 	switch (bMode) {
 	case SCR_400LINE:

@@ -280,7 +280,7 @@ void ResizeVFD(AG_Widget *parent, int w, int h)
        int i;
 
        nVFDWidth = (int)(ww / 640.0f * (float)VFD_WIDTH);
-       nVFDHeight = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
+       nVFDHeight = (int)(ww / 640.0f * (float)STAT_HEIGHT);
        for(i = 0; i < 2; i++) {
 	  if((pVFDStat[i] == NULL) || (pwVFD[i] == NULL)) return;
        }

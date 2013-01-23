@@ -865,8 +865,7 @@ void ApplyCfg(void)
 #endif   
     bSmoosing = configdat.bSmoosing;
     display_notify();
-	ResizeWindow_Agar(nDrawWidth, nDrawHeight);
-//	ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
+   ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
 
 
 /*

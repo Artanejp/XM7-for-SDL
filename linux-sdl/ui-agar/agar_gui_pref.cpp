@@ -322,7 +322,8 @@ static void OnChangeScreenReso(AG_Event *event)
 	ScreenResoSelected = number;
 	localconfig.uWidth = ScreenSizeWidth[number];
 	localconfig.uHeight = ScreenSizeHeight[number];
-	ResizeWindow_Agar(ScreenSizeWidth[number], ScreenSizeHeight[number]);
+        
+	ResizeWindow_Agar2(ScreenSizeWidth[number], ScreenSizeHeight[number]);
 	if(localconfig.nDrawFPS <= 1) {
 		localconfig.nDrawFPS = 2;
 	}
@@ -354,7 +355,7 @@ static void OnChangeScreenAspect(AG_Event *event)
 		}
 		break;
 	}
-	ResizeWindow_Agar(localconfig.uWidth, localconfig.uHeight);
+	ResizeWindow_Agar2(localconfig.uWidth, localconfig.uHeight);
 }
 
 
