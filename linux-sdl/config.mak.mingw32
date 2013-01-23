@@ -10,7 +10,7 @@
 USE_OPENGL      = Yes
 
 # Uncomment if using OpenMP
-#USE_OPENMP      = Yes
+USE_OPENMP      = Yes
 
 # Uncomment if using OpenCL for rendering
 #USE_OPENCL      = Yes
