@@ -38,7 +38,7 @@ SHAREDIR         = ./xm7/
 CONFPATH         = $(SHAREDIR)
 FONTPATH           = :.:./.xm7/:./xm7/:
 #OPTION          += -mwindows -m32
-OPTION		+= -D_WINDOWS
+OPTION		+= -D_WINDOWS -DCONFPATH=$(CONFPATH)
 TARGET_DEBUG    = xm7.debug.exe
 TARGET_RELEASE  = xm7.exe
 else
