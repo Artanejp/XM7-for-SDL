@@ -101,7 +101,7 @@ CFLAGS_RELEASE = $(CFLAGS)
 
 CFLAGS_RELEASE +=  -O3 -ftree-vectorize
 #CFLAGS_RELEASE +=  -O3
-CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CFLAGS_RELEASE +=  -fprefetch-loop-arrays -fbranch-probabilities
 #CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
 
 CXXFLAGS = -fpermissive 
@@ -113,7 +113,7 @@ CXXFLAGS_DEBUG += $(CXXFLAGS)
 CXXFLAGS_RELEASE =  $(CXXFLAGS)
 #CXXFLAGS_RELEASE += -O3
 CXXFLAGS_RELEASE +=  -O3 -ftree-vectorize
-CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
 ifneq ($(OS),Windows)
 CFLAGS_RELEASE += -pthread
