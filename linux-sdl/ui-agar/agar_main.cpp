@@ -258,6 +258,7 @@ void MainLoop(int argc, char *argv[])
 	char *drivers = NULL;
 	char *optArg;
         char strbuf[2048];
+        char homedir[2048];
 	const SDL_VideoInfo *inf;
 	SDL_Surface *s;
 
@@ -337,15 +338,20 @@ void MainLoop(int argc, char *argv[])
     {
         AG_SetString(agConfig, "font.face", UI_FONT);
     }
+    if(SDL_getenv("HOME") != NULL) {
+	strcpy(homedir, SDL_getenv("HOME"));
+    } else {
+        strcpy(homedir, ".");
+    }
 #ifdef _WINDOWS
 	AG_PrtString(agConfig, "font-path", "%s:%s/xm7:%s:.",
-		getenv("HOME"), getenv("HOME"), FONTPATH);
+		homedir, homedir, FONTPATH);
 #else
     AG_GetString(agConfig, "font-path", strbuf, 2047);
     if(strlen(strbuf) <= 0)
     {
      AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
-		  getenv("HOME"), getenv("HOME"), getenv("HOME"), FONTPATH);
+		  homedir, homedir, homedir, FONTPATH);
     }
 #endif /* _WINDOWS */
     printf("DBG: font-path = %s\n", strbuf);

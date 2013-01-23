@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  FM-7 EMULATOR "XM7"  Copyright (C) 1999-2003
  * ＰＩ．(ytanaka@ipc-tokai.or.jp) Copyright (C) 2001-2003 Ryu
  * Takegami Copyright (C) 2004 GIMONS  [ XWIN ファイルI/O ]
@@ -32,7 +32,23 @@ BOOL file_load(char *fname, BYTE * buf, int size)
 #ifdef CONFPATH
     strcpy(path, CONFPATH);
 #else
-    strcpy(path, ModuleDir);
+    if(ModuleDir != NULL) {
+       if(strlen(ModuleDir) > 0) {
+          strcpy(path, ModuleDir);
+        } else {
+#ifdef  _WINDOWS
+          strcpy(path, "./xm7/");
+#else
+          strcpy(path, "./xm7/");
+#endif
+        }
+       } else {
+#ifdef  _WINDOWS
+          strcpy(path, "./xm7/");
+#else
+          strcpy(path, "./xm7/");
+#endif
+     }
 #endif
     strcat(path, fname);
     handle = SDL_RWFromFile(path, "r");
@@ -68,7 +84,23 @@ BOOL file_save(char *fname, BYTE * buf, int size)
 #ifdef CONFPATH
      strcpy(path, CONFPATH);
 #else
-     strcpy(path, ModuleDir);
+    if(ModuleDir != NULL) {
+       if(strlen(ModuleDir) > 0) {
+          strcpy(path, ModuleDir);
+        } else {
+#ifdef  _WINDOWS
+          strcpy(path, "./xm7/");
+#else
+          strcpy(path, "./xm7/");
+#endif
+        }
+       } else {
+#ifdef  _WINDOWS
+          strcpy(path, "./xm7/");
+#else
+          strcpy(path, "./xm7/");
+#endif
+     }
 #endif
     strcat(path, fname);
     handle = SDL_RWFromFile(path, "W+");

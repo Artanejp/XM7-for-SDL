@@ -35,10 +35,10 @@ endif
 ifeq ($(OS),Windows)
 # Windows
 SHAREDIR         = ./xm7/
-CONFPATH         = $(SHAREDIR)
 FONTPATH           = :.:./.xm7/:./xm7/:
+CONFPATH	= \"./xm7/\"
 #OPTION          += -mwindows -m32
-OPTION		+= -D_WINDOWS -DCONFPATH=$(CONFPATH)
+OPTION		+= -D_WINDOWS
 TARGET_DEBUG    = xm7.debug.exe
 TARGET_RELEASE  = xm7.exe
 else
@@ -113,12 +113,25 @@ CXXFLAGS_DEBUG += $(CXXFLAGS)
 
 CXXFLAGS_RELEASE =  $(CXXFLAGS)
 #CXXFLAGS_RELEASE += -O3
+
+ifeq ($(OS),Windows)
+CFLAGS_RELEASE += -pthread
+CFLAGS_RELEASE +=  -O3
+#CFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
+
+CXXFLAGS_RELEASE += -pthread
+CXXFLAGS_RELEASE +=  -O3
+#CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
+
+else
+CFLAGS_RELEASE += -pthread
+CFLAGS_RELEASE +=  -O3 -ftree-vectorize
+CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+
+CXXFLAGS_RELEASE += -pthread
 CXXFLAGS_RELEASE +=  -O3 -ftree-vectorize
 CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
-ifneq ($(OS),Windows)
-CFLAGS_RELEASE += -pthread
-CXXFLAGS_RELEASE += -pthread
 endif
 
 # Architecture Depend Flag
@@ -138,12 +151,12 @@ ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
 ##################### Linker Flags #####################
 ifeq ($(OS),Windows)
-LDFLAGS = -static-libgcc -static-libstdc++
+LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
 LIBS += -L$(PREFIX)/lib
 
 #LIBS += `$(PREFIX)/bin/agar-config --libs`
 LIBS += `$(PREFIX)/bin/sdl-config --libs`
-LIBS +=   -lSDL_mixer
+LIBS +=   -lSDL_mixer -lmingw32
 #LIBS +=  -lmingw32 -lSDLmain -lSDL  
 
 ifdef USE_OPENGL

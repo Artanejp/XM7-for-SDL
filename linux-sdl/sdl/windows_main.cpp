@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	* Check CPUID
 	*/
        pCpuID = initCpuID();
-       p = getenv("HOME");
+       p = SDL_getenv("HOME");
         if(p == NULL) {
 #ifdef _WINDOWS
                 perror("Warning : Can't get HOME directory...Making .\\xm7\\ .");
@@ -79,6 +79,8 @@ int main(int argc, char *argv[])
                 strcat(ModuleDir, "/.xm7/");
 #endif
         }
+
+       printf("Moduledir = %s home = %s\n", ModuleDir, p); // Debug
         if(opendir(ModuleDir) == NULL) {
 #ifdef _WINDOWS
 		mkdir(ModuleDir);
@@ -102,6 +104,4 @@ int main(int argc, char *argv[])
         MainLoop(argc, argv);
         return nErrorCode;
 }
-
-
 }
