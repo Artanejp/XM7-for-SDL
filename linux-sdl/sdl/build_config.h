@@ -70,7 +70,7 @@
 #define CMT_WIDTH 40
 #define CMT_HEIGHT 20
 
-#define STAT_WIDTH 255
+#define STAT_WIDTH 240
 #define STAT_HEIGHT 20
 
 #ifndef SHAREDIR

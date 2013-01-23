@@ -105,26 +105,33 @@ void ResizeWindow_Agar(int w, int h)
    
    AG_Driver *drv;
    if((w < 100) || (h < 100)) return;
-   if((bManualScaled == TRUE)){
-	bManualScaled = FALSE;
-	return;
-   }
-   bManualScaled = FALSE;
 
    if(agDriverSw) {
+      if(MainWindow == NULL) return;
       drv = &agDriverSw->_inherit;
    } else {
       if(MainWindow == NULL) return;
       drv = AGDRIVER(MainWindow);
    }
+   if((bManualScaled == TRUE) && (agDriverSw)){
+	bManualScaled = FALSE;
+	return;
+   }
+   bManualScaled = FALSE;
 
-   nDrawWidth = w;
-   nDrawHeight = h;
    AG_ObjectLock(AGOBJECT(drv));
    ww = w;
-   hh = h;
+
    LockVram();
-   if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
+   if(MainWindow) {
+      AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
+      hh = AGWIDGET(MainWindow)->h - 20;
+      ww = AGWIDGET(MainWindow)->w;
+   } else {
+      hh = h;
+      ww = w;
+   }
+   
    
    if(MenuBar != NULL) {
       AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
@@ -134,12 +141,11 @@ void ResizeWindow_Agar(int w, int h)
    }
    if(pStatusBar != NULL){
       if((w < 640) || (hh < 400)) {
-	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 4.0;
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 1.0;
       } else {
-	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 2.0;
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 1.0;
       }
-      
-      
+     
       AG_WidgetSetSize(pStatusBar, w, (int)hhh);
       hh = hh - AGWIDGET(pStatusBar)->h;
       ResizeStatus(AGWIDGET(pStatusBar), w, hh, hh);
@@ -173,6 +179,8 @@ void ResizeWindow_Agar(int w, int h)
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
        }
    
+   nDrawWidth = w;
+   nDrawHeight = hh;
 
    printf("Resize to %d x %d ( %d x %d)\n", w, h, ww, hh );
    UnlockVram();
@@ -190,7 +198,11 @@ void ResizeWindow_Agar2(int w, int h)
    float hhh;
    AG_Driver *drv;
    
+   
+	
    bManualScaled = TRUE;
+   nDrawWidth = w;
+   nDrawHeight = h;
    if(MenuBar != NULL) {
       AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
       AG_WidgetEnable(AGWIDGET(MenuBar));
@@ -199,9 +211,9 @@ void ResizeWindow_Agar2(int w, int h)
    }
    if(pStatusBar != NULL){
       if((w < 640) || (h < 400)) {
-	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 4.0;
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 1.0;
       } else {
-	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 2.0;
+	 hhh = ((float)w / 640.0) * (float)STAT_HEIGHT * 1.0;
       }
       AG_WidgetSetSize(pStatusBar, w, (int)hhh);
       ResizeStatus(AGWIDGET(pStatusBar), w, h, hh);
@@ -233,21 +245,18 @@ void ResizeWindow_Agar2(int w, int h)
 	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
       }
-   hh = hh + 15; // Add Pad.
+   hh = hh + 20; // Add Pad.
    if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-   if((agDriverSw) && (hh != h)){
-      if(DrawArea != NULL) {
-	 LockVram();
-	 AG_ResizeDisplay(ww, hh);
-	 UnlockVram();
-      } else {
-	 AG_ResizeDisplay(ww, hh);
-      }
-      
-   }
 
-   
-   printf("Resize2 to %d x %d\n", ww, hh);
+   if(DrawArea != NULL) {
+	 LockVram();
+//	 AG_ResizeDisplay(ww, hh);
+	 UnlockVram();
+   } else {
+      AG_ResizeDisplay(ww, hh);
+   }
+  
+   printf("Resize2 to %d x %d\n", w, h);
 }
 
 

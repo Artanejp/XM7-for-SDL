@@ -225,8 +225,8 @@ void InitVFD(AG_Widget *parent)
 {
    int i;
     if(parent == NULL) return;
-    nVFDHeight = VFD_HEIGHT * 2;
-    nVFDWidth = VFD_WIDTH * 2;
+    nVFDHeight = VFD_HEIGHT;
+    nVFDWidth = VFD_WIDTH;
     for(i = 1; i >= 0 ;i--) {
        old_writep[i] = FALSE;
        szOldDrive[i][0] = '\0';
@@ -295,6 +295,7 @@ void ResizeVFD(AG_Widget *parent, int w, int h)
 	  pVFDStat[i]->init = TRUE;
 	  AG_WidgetSetSize(pwVFD[i], nVFDWidth, nVFDHeight);
 	  //AG_WidgetSetPosition(pwVFD[i], (int)(((float)(STAT_WIDTH + VFD_WIDTH * (i - 1)) / (float)total) *  ww), 0);
+	  
           AG_MutexUnlock(&(pVFDStat[i]->mutex));
        }
    

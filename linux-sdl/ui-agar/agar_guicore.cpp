@@ -241,7 +241,6 @@ void ProcessKeyUp(AG_Event *event)
 
 extern void AG_initsub(void);
 extern void AG_detachsub(void);
-extern void ResizeWindow(int w, int h);
 extern Uint32 nDrawTick1;
 
 
@@ -305,8 +304,8 @@ void InitInstance(void)
          */
         GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
         GLDrawArea->wid.flags |= AG_WIDGET_CATCH_TAB;
-        AG_WidgetSetSize(GLDrawArea, 640,400);
-        AG_GLViewSizeHint(GLDrawArea, 640, 400);
+        AG_WidgetSetSize(GLDrawArea, nDrawWidth, nDrawHeight);
+        AG_GLViewSizeHint(GLDrawArea, nDrawWidth, nDrawHeight);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
         AG_GLViewKeydownFn (GLDrawArea, AGEventKeyDownGL, NULL);
         AG_GLViewKeyupFn (GLDrawArea, AGEventKeyUpGL, NULL);
@@ -320,6 +319,7 @@ void InitInstance(void)
 	//AGWIDGET(GLDrawArea)->flags |= AG_WIDGET_NOSPACING;
         AG_WidgetShow(GLDrawArea);
         AG_WidgetFocus(AGWIDGET(GLDrawArea));
+        ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     } else
 #endif /* USE_OPENGL */
      {
