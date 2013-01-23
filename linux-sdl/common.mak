@@ -138,6 +138,7 @@ ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
 ##################### Linker Flags #####################
 ifeq ($(OS),Windows)
+LDFLAGS = -static-libgcc -static-libstdc++
 LIBS += -L$(PREFIX)/lib
 
 #LIBS += `$(PREFIX)/bin/agar-config --libs`
@@ -169,6 +170,7 @@ LIBS += `$(PREFIX)/bin/agar-config --libs` -lwinmm
 
 else
 # Linux
+LDFLAGS = 
 LIBS += -L/usr/local/lib
 
 LIBS += `sdl-config --libs`
