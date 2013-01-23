@@ -115,11 +115,11 @@ CXXFLAGS_RELEASE =  $(CXXFLAGS)
 #CXXFLAGS_RELEASE += -O3
 
 ifeq ($(OS),Windows)
-CFLAGS_RELEASE += -pthread
+#CFLAGS_RELEASE += -pthread
 CFLAGS_RELEASE +=  -O3
 #CFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
-CXXFLAGS_RELEASE += -pthread
+#CXXFLAGS_RELEASE += -pthread
 CXXFLAGS_RELEASE +=  -O3
 #CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
@@ -151,7 +151,7 @@ ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
 ##################### Linker Flags #####################
 ifeq ($(OS),Windows)
-LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
+#LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
 LIBS += -L$(PREFIX)/lib
 
 #LIBS += `$(PREFIX)/bin/agar-config --libs`
