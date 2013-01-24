@@ -176,17 +176,21 @@ static void OnOpenDisk(AG_Event *event)
 {
    AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
    AG_Window *dlgWin;
-   AG_FileDlg *dlg;
+   AG_FileDlg *dlg = NULL;
    int Drive = AG_INT(1);
-   dlgWin = AG_WindowNew(0);
+   dlgWin = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
    char s[MAXPATHLEN + 1];
    
    
    if(dlgWin == NULL) return;
    AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
+   dlg = AG_FileDlgNew(dlgWin,  FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
 //    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE);
-   if(dlg == NULL) return;
+   if(dlg == NULL) {
+      AG_WindowShow(dlgWin);
+      return;
+   }
+   
    if(InitialDir[0] != NULL) {
       strcpy(s, InitialDir[0]);
    } else {
@@ -220,12 +224,12 @@ static void OnOpenDiskBoth(AG_Event *event)
 	AG_Window *dlgWin;
 	AG_FileDlg *dlg;
         char s[MAXPATHLEN + 1];
-	dlgWin = AG_WindowNew(0);
+	dlgWin = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
    
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s ", gettext("Open Disk Image Both"));
 //	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC );
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
 	if(dlg == NULL) return;
    if(InitialDir[0] != NULL) {
       strcpy(s, InitialDir[0]);

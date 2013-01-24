@@ -153,7 +153,7 @@ void OnLoadStatus(AG_Event *event)
     dlgWin = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     if(dlgWin == NULL) return;
     AG_WindowSetCaption(dlgWin, "%s", gettext("Load status as"));
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnLoadStatusSubEv, NULL);
@@ -235,7 +235,7 @@ void OnSaveAs(AG_Event *event)
 //    dlgWin = MainWindow;
     if(dlgWin == NULL) return;
     AG_WindowSetCaption(dlgWin, "%s", gettext("Save status as"));
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_CLOSEWIN | AG_FILEDLG_SAVE | AG_FILEDLG_MASK_EXT);
     if(dlg == NULL) return;
     AG_FileDlgSetDirectory(dlg, InitialDir[2]);
     AG_FileDlgAddType(dlg, "XM7 Status", "*.xm7,*.XM7", OnSaveStatusSubEv, NULL);

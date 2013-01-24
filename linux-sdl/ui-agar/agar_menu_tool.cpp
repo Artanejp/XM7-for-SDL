@@ -151,7 +151,7 @@ static void OnNewDisk(AG_Event *event)
 
 	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
 	AG_WidgetSetSize(box, 280, 200);
-    dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(w, FILEDLG_DEFAULT | AG_FILEDLG_SAVE);
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
 	AG_FileDlgAddType(dlg, "D77 Image File", "*.d77,*.D77", OnNewDiskCreate, "%p", pVDisk);
     AG_FileDlgCancelAction (dlg, OnPushCancelDisk, "%p", pVDisk);
@@ -208,7 +208,7 @@ static void OnNewTape(AG_Event *event)
 	AG_WidgetSetSize(box, 280, 16);
 	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
 	AG_WidgetSetSize(box, 280, 200);
-    dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(w, FILEDLG_DEFAULT | AG_FILEDLG_SAVE);
 	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[1]);
 	AG_FileDlgAddType(dlg, "T77 Image File", "*.t77,*.T77", OnNewTapeCreate, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
@@ -259,7 +259,7 @@ static void OnGrpCapture(AG_Event *event)
 
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
-	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+	dlg = AG_FileDlgNew(w, FILEDLG_DEFAULT | AG_FILEDLG_SAVE);
 	if(dlg == NULL) return;
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[3]);
 	AG_FileDlgAddType(dlg, "BMP file","*.bmp,*.BMP", ScreenCaptureSub, NULL);
@@ -311,7 +311,7 @@ static void OnGrpCapture2(AG_Event *event)
 
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
-	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+	dlg = AG_FileDlgNew(w, FILEDLG_DEFAULT | AG_FILEDLG_SAVE);
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[3]);
 	AG_FileDlgAddType(dlg, "BMP file","*.bmp,*.BMP", ScreenCaptureSub2, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
@@ -377,7 +377,7 @@ static void OnWavCapture(AG_Event *event)
 	}
 	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
 	AG_WindowSetMinSize(w, 280, 120);
-	dlg = AG_FileDlgNew(w, AG_FILEDLG_SAVE | AG_FILEDLG_CLOSEWIN);
+	dlg = AG_FileDlgNew(w, FILEDLG_DEFAULT | AG_FILEDLG_SAVE);
 	AG_FileDlgSetDirectory(dlg, "%s",InitialDir[4]);
 	AG_FileDlgAddType(dlg, "Wav Sound","*.wav,*.WAV", OnWavCaptureSub, NULL);
     AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);

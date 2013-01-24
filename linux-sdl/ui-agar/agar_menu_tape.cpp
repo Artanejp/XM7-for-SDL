@@ -67,10 +67,10 @@ static void OnTapeOpen(AG_Event *event)
 	AG_FileDlg *dlg;
         char s[MAXPATHLEN + 1];
 
-	dlgWin = AG_WindowNew(0);
+	dlgWin = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s", gettext("Open Tape Image"));
-    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
+    dlg = AG_FileDlgNew(dlgWin, FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
 	if(dlg == NULL) return;
    if(InitialDir[1] != NULL) {
       strcpy(s, InitialDir[1]);
