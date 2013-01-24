@@ -158,7 +158,8 @@ BOOL SelectDraw2(void)
        */
       //AG_DriverClose(drv);
       bClearFlag = TRUE;
-      SDLDrawFlag.ForcaReDraw = TRUE;
+//      SDLDrawFlag.ForcaReDraw = TRUE;
+      SetDrawFlag(TRUE);
 #ifdef USE_OPENGL
    }
 #endif /* USE_OPENGL */

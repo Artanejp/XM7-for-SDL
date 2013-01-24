@@ -41,7 +41,6 @@ DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 struct DrawPieces SDLDrawFlag;
 
-BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
 BOOL            bFullScan;		/* フルスキャン(Window) */
 BOOL            bDirectDraw;		/* 直接書き込みフラグ */
 SDL_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
@@ -464,9 +463,7 @@ BOOL Select256k()
  */
 BOOL SelectDraw(void)
 {
-	BOOL ret;
-
-//	AG_Driver *drv;
+   BOOL ret;
    AG_Color nullcolor;
    AG_Rect rect;
    AG_Widget *w;
@@ -477,7 +474,6 @@ BOOL SelectDraw(void)
    rect.x = 0;
    rect.y = 0;
    DrawSHUTDOWN = FALSE;
-//	if(drv == NULL) return TRUE;
    /*
     * すべてクリア
     */
@@ -497,11 +493,6 @@ BOOL SelectDraw(void)
     * すべてクリア
     */
 	 bOldFullScan = bFullScan;
-//	 AG_MutexInit(&DrawMutex);
-//	 AG_CondInit(&DrawCond);
-//	 if(!DrawThread) {
-//		 AG_ThreadCreate(&DrawThread, DrawThreadMain,NULL);
-//	 }
 	 /*
 	  * セレクト
 	  */
@@ -794,7 +785,7 @@ void 	display_notify(void)
 //	nDrawRight = 640;
 	bPaletFlag = TRUE;
 	bClearFlag = TRUE;
-	SetDrawFlag(TRUE);
+//	SetDrawFlag(TRUE);
 }
 
 /*
@@ -1243,7 +1234,6 @@ void Draw400l(void)
    }
    
    bPaletFlag = FALSE;
-   //SetDrawFlag(FALSE);
    
 }
 
@@ -1325,7 +1315,6 @@ void Draw320(void)
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = FALSE;
-   //    SetDrawFlag(FALSE);
 }
 
 void Draw256k(void)
