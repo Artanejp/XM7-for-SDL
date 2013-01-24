@@ -107,7 +107,7 @@ void OnMediaChange(AG_Event *event)
 
 static void OnOpenDiskSub(int Drive, char *sFilename)
 {
-	char *p;
+   char *p;
     /*
      * セット
      */
@@ -174,26 +174,44 @@ static void OnOpenDiskBothSubEv(AG_Event *event)
 
 static void OnOpenDisk(AG_Event *event)
 {
-	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
-	AG_Window *dlgWin;
-	AG_FileDlg *dlg;
-	int Drive = AG_INT(1);
-	dlgWin = AG_WindowNew(0);
-	if(dlgWin == NULL) return;
-	AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
+   AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
+   AG_Window *dlgWin;
+   AG_FileDlg *dlg;
+   int Drive = AG_INT(1);
+   dlgWin = AG_WindowNew(0);
+   char s[MAXPATHLEN + 1];
+   
+   
+   if(dlgWin == NULL) return;
+   AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 //    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE);
-	if(dlg == NULL) return;
-	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[0]);
-	AG_WidgetFocus(dlg);
-	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskSubEv, "%i", Drive);
-	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
-	AG_FileDlgAddType(dlg, "2D Disk Image File", "*.2d,*.2D", OnOpenDiskSubEv, "%i", Drive);
-	AG_FileDlgAddType(dlg, "VFD Disk Image File", "*.vfd,*.VFD", OnOpenDiskSubEv, "%i", Drive);
-    AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
-    AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
-    AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
-    AG_WindowShow(dlgWin);
+   if(dlg == NULL) return;
+   if(InitialDir[0] != NULL) {
+      strcpy(s, InitialDir[0]);
+   } else {
+      strcpy(s, ".");
+   }
+#ifdef _WINDOWS
+     { // Subst '\\' to '/', needed AG_FileDlgSetDirectory().
+	int i;
+	i = 0; 
+	while((s[i] != '\0') && (i <= MAXPATHLEN)) {
+	   if(s[i] == '\\') s[i] = '/';
+	   i++;
+	}
+     }
+#endif   /* _WINDOWS */
+   AG_FileDlgSetDirectory (dlg, "%s", s);
+   AG_WidgetFocus(dlg);
+   AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskSubEv, "%i", Drive);
+   AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskSubEv, "%i", Drive);
+   AG_FileDlgAddType(dlg, "2D Disk Image File", "*.2d,*.2D", OnOpenDiskSubEv, "%i", Drive);
+   AG_FileDlgAddType(dlg, "VFD Disk Image File", "*.vfd,*.VFD", OnOpenDiskSubEv, "%i", Drive);
+   AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
+   AG_ActionFn(AGWIDGET(dlg), "window-close", OnPushCancel, NULL);
+   AG_FileDlgCancelAction (dlg, OnPushCancel,NULL);
+   AG_WindowShow(dlgWin);
 }
 
 static void OnOpenDiskBoth(AG_Event *event)
@@ -201,13 +219,30 @@ static void OnOpenDiskBoth(AG_Event *event)
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	AG_Window *dlgWin;
 	AG_FileDlg *dlg;
+        char s[MAXPATHLEN + 1];
 	dlgWin = AG_WindowNew(0);
+   
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s ", gettext("Open Disk Image Both"));
 //	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC );
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
-	AG_FileDlgSetDirectoryS(dlg,  InitialDir[0]);
+   if(InitialDir[0] != NULL) {
+      strcpy(s, InitialDir[0]);
+   } else {
+      strcpy(s, ".");
+   }
+#ifdef _WINDOWS
+     { // Subst '\\' to '/', needed AG_FileDlgSetDirectory().
+	int i;
+	i = 0; 
+	while((s[i] != '\0') && (i <= MAXPATHLEN)) {
+	   if(s[i] == '\\') s[i] = '/';
+	   i++;
+	}
+     }
+#endif   /* _WINDOWS */
+ 	AG_FileDlgSetDirectoryS(dlg,  InitialDir[0]);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "D77 Disk Image File", "*.d77,*.D77", OnOpenDiskBothSubEv, NULL);
 	AG_FileDlgAddType(dlg, "D88 Disk Image File", "*.d88,*.D88", OnOpenDiskBothSubEv, NULL);
