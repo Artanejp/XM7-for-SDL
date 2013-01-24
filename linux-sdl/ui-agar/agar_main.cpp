@@ -443,6 +443,8 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 return;
         }
     }
+    OnCreate((AG_Widget *)NULL);
+
    if(!AG_UsingSDL(NULL)) {
       SDL_Init(SDL_INIT_VIDEO);
    } else { // WM function is managed by SDL, load and set icon for WM. 
@@ -471,7 +473,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    
 //   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     
-    OnCreate((AG_Widget *)NULL);
    // 
    InitInstance();
 //   OnCreate((AG_Widget *)NULL);
