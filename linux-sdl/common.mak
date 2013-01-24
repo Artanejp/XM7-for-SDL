@@ -57,7 +57,8 @@ ifdef USE_OPENGL
 OPTION          += -DUSE_OPENGL
 endif
 
-CFLAGS = -DXM7_VER=$(XM7_VER) $(OPTION)  -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
+CFLAGS = -pthread -D_REENTRANT
+CFLAGS += -DXM7_VER=$(XM7_VER) $(OPTION)  -DUIDIR=\"$(SHAREDIR)\" -DRSSDIR=\"$(SHAREDIR)\"
 CFLAGS += -DUI_FONT=\"$(UI_FONT)\" -DFUNC_FONT=\"$(FUNC_FONT)\" -DSTAT_FONT=\"$(STAT_FONT)\" -DVFD_FONT=\"$(VFD_FONT)\" -DCMT_FONT=\"$(CMT_FONT)\"
 CFLAGS += -DFONTPATH=\"$(FONTPATH)\"
 CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
@@ -100,11 +101,6 @@ CFLAGS_DEBUG += $(CFLAGS)
 CFLAGS_RELEASE = $(CFLAGS)
 
 
-CFLAGS_RELEASE +=  -O3 -ftree-vectorize
-#CFLAGS_RELEASE +=  -O3
-CFLAGS_RELEASE +=  -fprefetch-loop-arrays -fbranch-probabilities
-#CFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays
-
 CXXFLAGS = -fpermissive 
 CXXFLAGS += $(CFLAGS) 
 
@@ -115,11 +111,9 @@ CXXFLAGS_RELEASE =  $(CXXFLAGS)
 #CXXFLAGS_RELEASE += -O3
 
 ifeq ($(OS),Windows)
-#CFLAGS_RELEASE += -pthread
 CFLAGS_RELEASE +=  -O3
 #CFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
-#CXXFLAGS_RELEASE += -pthread
 CXXFLAGS_RELEASE +=  -O3
 #CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
@@ -140,7 +134,7 @@ CFLAGS_RELEASE += $(ARCH_FLAGS)
 #CFLAGS_RELEASE += -minline-all-stringops
 
 CXXFLAGS_RELEASE += $(ARCH_FLAGS)
-CXXFLAGS_RELEASE += -minline-all-stringops 
+#CXXFLAGS_RELEASE += -minline-all-stringops 
 
 # Faster below
 CFLAGS_DEBUG += $(ARCH_FLAGS)
@@ -152,11 +146,12 @@ ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 ##################### Linker Flags #####################
 ifeq ($(OS),Windows)
 #LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
+LDFLAGS = -pthread -mwindows
 LIBS += -L$(PREFIX)/lib
 
 #LIBS += `$(PREFIX)/bin/agar-config --libs`
 LIBS += `$(PREFIX)/bin/sdl-config --libs`
-LIBS +=   -lSDL_mixer -lmingw32
+LIBS +=   -lSDL_mixer 
 #LIBS +=  -lmingw32 -lSDLmain -lSDL  
 
 ifdef USE_OPENGL
@@ -169,7 +164,7 @@ LIBS += -lOpenCL
 endif
 
 
-LIBS += -lpthread -lintl $(PREFIX)/lib/libiconv.a
+LIBS += -lintl -liconv -lcharset
 LIBS += -lpng -lfreetype
 
 ifdef USE_OPENMP
