@@ -26,35 +26,27 @@ BOOL file_load(char *fname, BYTE * buf, int size)
 	/*
 	 * assert
 	 */
-	ASSERT(fname);
+   ASSERT(fname);
     ASSERT(buf);
     ASSERT(size > 0);
 #ifdef CONFPATH
-    strcpy(path, CONFPATH);
+   strcpy(path, CONFPATH);
 #else
-    if(ModuleDir != NULL) {
-       if(strlen(ModuleDir) > 0) {
-          strcpy(path, ModuleDir);
-        } else {
-#ifdef  _WINDOWS
-          strcpy(path, "./xm7/");
-#else
-          strcpy(path, "./xm7/");
+   if(ModuleDir != NULL) {
+      if(strlen(ModuleDir) > 0) {
+	 strcpy(path, ModuleDir);
+      } else {
+	 strcpy(path, "./xm7/");
+      }
+   } else {
+      strcpy(path, "./xm7/");
+   }
 #endif
-        }
-       } else {
-#ifdef  _WINDOWS
-          strcpy(path, "./xm7/");
-#else
-          strcpy(path, "./xm7/");
-#endif
-     }
-#endif
-    strcat(path, fname);
-    handle = SDL_RWFromFile(path, "r");
-    if (handle == NULL) {
-        return FALSE;
-    }
+   strcat(path, fname);
+   handle = SDL_RWFromFile(path, "r");
+   if (handle == NULL) {
+      return FALSE;
+   }
 
     if (SDL_RWread(handle, buf, 1, size) != size) {
         SDL_RWclose(handle);
@@ -78,28 +70,20 @@ BOOL file_save(char *fname, BYTE * buf, int size)
 	/*
 	 * assert
 	 */
-     ASSERT(fname);
-    ASSERT(buf);
-    ASSERT(size > 0);
+   ASSERT(fname);
+   ASSERT(buf);
+   ASSERT(size > 0);
 #ifdef CONFPATH
-     strcpy(path, CONFPATH);
+   strcpy(path, CONFPATH);
 #else
-    if(ModuleDir != NULL) {
-       if(strlen(ModuleDir) > 0) {
-          strcpy(path, ModuleDir);
-        } else {
-#ifdef  _WINDOWS
-          strcpy(path, "./xm7/");
-#else
-          strcpy(path, "./xm7/");
-#endif
-        }
-       } else {
-#ifdef  _WINDOWS
-          strcpy(path, "./xm7/");
-#else
-          strcpy(path, "./xm7/");
-#endif
+   if(ModuleDir != NULL) {
+      if(strlen(ModuleDir) > 0) {
+	 strcpy(path, ModuleDir);
+      } else {
+	 strcpy(path, "./xm7/");
+      }
+   } else {
+      strcpy(path, "./xm7/");
      }
 #endif
     strcat(path, fname);
