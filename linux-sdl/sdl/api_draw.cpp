@@ -363,7 +363,6 @@ BOOL Select640(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 640;
-   if(bMode == SCR_200LINE) return TRUE;
    bPaletFlag = TRUE;
    SetDrawFlag(TRUE);
 #if XM7_VER >= 3
@@ -541,14 +540,6 @@ void AllClear(void)
 	AG_Rect rect;
 	AG_Driver *drv;
 	AG_Widget *w;
-//    for(y = 0; y < 50; y++) {
-//        for (x = 0; x < 80; x++) {
-//            SDLDrawFlag.read[x][y] = TRUE;
-//            SDLDrawFlag.write[x][y] = TRUE;
-//        }
-//        SDLDrawFlag.ForcaReDraw = TRUE;
-//        SDLDrawFlag.Drawn = TRUE;
-//    }
      SetDrawFlag(TRUE);
 #ifdef USE_OPENGL
    if(DrawArea != NULL) {
@@ -771,6 +762,7 @@ void	ttlpalet_notify(void)
 	 */
 	bPaletFlag = TRUE;
 	SDLDrawFlag.DPaletteChanged = TRUE;
+//        SetDrawFlag(TRUE);
 }
 
 /*
@@ -800,9 +792,9 @@ void 	display_notify(void)
 //	nDrawBottom = 400;
 //	nDrawLeft = 0;
 //	nDrawRight = 640;
-//	bPaletFlag = TRUE;
-//	bClearFlag = TRUE;
-//	SetDrawFlag(TRUE);
+	bPaletFlag = TRUE;
+	bClearFlag = TRUE;
+	SetDrawFlag(TRUE);
 }
 
 /*
