@@ -753,7 +753,7 @@ void	ttlpalet_notify(void)
 	 */
 	bPaletFlag = TRUE;
 	SDLDrawFlag.DPaletteChanged = TRUE;
-//        SetDrawFlag(TRUE);
+        SetDrawFlag(TRUE);
 }
 
 /*
@@ -767,7 +767,7 @@ void 	apalet_notify(void)
 //	nDrawBottom = 200;
 //	nDrawLeft = 0;
 //	nDrawRight = 320;
-//	SetDrawFlag(TRUE);
+	SetDrawFlag(TRUE);
 }
 
 /*
