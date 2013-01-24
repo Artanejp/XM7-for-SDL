@@ -250,6 +250,64 @@ static void ErrorPopup(char *message)
    
 }
 
+static BOOL LoadGlobalIconPng(char *path, char *filename)
+{
+	
+   char fullpath[MAXPATHLEN + 1];
+   int len;
+      
+   if(filename == NULL) return FALSE;
+   if(strlen(filename) >= MAXPATHLEN) return FALSE;
+   fullpath[0] = '\0';
+   if(path == NULL) {
+#ifdef RSSDIR
+      strcpy(fullpath, RSSDIR);
+#else
+      strcpy(fullpath, "./.xm7/");
+#endif
+   } else {
+      if(strlen(path) >= MAXPATHLEN) return FALSE;
+      strcpy(fullpath, path); 
+   }
+   
+   len = strlen(fullpath) + strlen(filename);
+   if(len >= MAXPATHLEN) return FALSE;
+   strcat(fullpath, filename);
+   
+   if(!AG_FileExists(fullpath)) { // Fallback
+      return FALSE;
+   } else {
+      AG_Surface *mark;
+      AG_Surface *scaled;
+      scaled = NULL;
+      
+      mark = AG_SurfaceFromPNG(fullpath);
+      if(mark != NULL) {
+	 SDL_Surface *icon;
+	 
+	 if(AG_ScaleSurface(mark, 32, 32, &scaled) < 0) { // Scale because Windows-Icon must be 32x32.
+	    AG_SurfaceFree(mark);
+	    return FALSE;
+	 }
+	 
+	 icon = (SDL_Surface *)AG_SurfaceExportSDL(scaled);
+	 if(icon == NULL) {
+	    AG_SurfaceFree(scaled);
+	    AG_SurfaceFree(mark);
+	    return FALSE;
+	 }
+	 
+	 SDL_WM_SetIcon(icon, NULL);
+	 SDL_FreeSurface(icon);
+	 AG_SurfaceFree(scaled);
+	 AG_SurfaceFree(mark);
+	 return TRUE;
+      } else {
+	 return FALSE; // Illegal PNG.
+      }
+   }
+
+}
 
 
 void MainLoop(int argc, char *argv[])
@@ -366,6 +424,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	 * Agar のメインループに入る
 	 */
 
+
     if(drivers == NULL)  {
 #ifdef USE_OPENGL
        if(AG_InitGraphics(NULL) == -1){
@@ -384,13 +443,37 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
                 return;
         }
     }
-   if(!AG_UsingSDL(NULL)) SDL_Init(SDL_INIT_VIDEO);
-//   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
+   if(!AG_UsingSDL(NULL)) {
+      SDL_Init(SDL_INIT_VIDEO);
+   } else { // WM function is managed by SDL, load and set icon for WM. 
+      switch(fm7_ver) {
+       case 1: // FM7/77
+	 if(!(LoadGlobalIconPng(NULL, "tamori.png"))) {
+	    LoadGlobalIconPng(NULL, "xm7.png");
+	 }
+	 break;
+       case 2: // FM77AV
+	 if(!(LoadGlobalIconPng(NULL, "fujitsu.png"))) {
+	    LoadGlobalIconPng(NULL, "xm7.png");
+	 }
+	 break;
+       case 3: // FM77AV20/40/EX/SX
+	 if(!(LoadGlobalIconPng(NULL, "fujitsu2.png"))) {
+	    LoadGlobalIconPng(NULL, "xm7.png");
+	 }
+	 break;
+       default:
+	 LoadGlobalIconPng(NULL, "xm7.png");
+	 break;
+      }
+   }
    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+   
+//   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     
     OnCreate((AG_Widget *)NULL);
+   // 
    InitInstance();
-
 //   OnCreate((AG_Widget *)NULL);
        
    stopreq_flag = FALSE;

@@ -261,7 +261,51 @@ static void InitFont(void)
 {
 }
 
+BOOL LoadWindowIconPng(AG_Window *win, char *path, char *filename)
+     {
+	
+   char fullpath[MAXPATHLEN + 1];
+   int len;
+   
+   if(win == NULL) return FALSE;   
+   if(filename == NULL) return FALSE;
+   if(strlen(filename) >= MAXPATHLEN) return FALSE;
+   fullpath[0] = '\0';
+   if(path == NULL) {
+#ifdef RSSDIR
+      strcpy(fullpath, RSSDIR);
+#else
+      strcpy(fullpath, "./.xm7/");
+#endif
+   } else {
+      if(strlen(path) >= MAXPATHLEN) return FALSE;
+      strcpy(fullpath, path); 
+   }
+   
+   len = strlen(fullpath) + strlen(filename);
+   if(len >= MAXPATHLEN) return FALSE;
+   strcat(fullpath, filename);
+   
+   if(!AG_FileExists(fullpath)) { // Fallback
+      return FALSE;
+   } else {
+      AG_Surface *mark;
+      mark = AG_SurfaceFromPNG(fullpath);
+      if(mark != NULL) {
+	 AG_WindowSetIcon(win, mark);
+	 AG_SurfaceFree(mark);
+	 return TRUE;
+      } else {
+	 return FALSE; // Illegal PNG.
+      }
+   }
 
+}
+
+
+   
+   
+   
 void InitInstance(void)
 {
 	AG_HBox *hb;
@@ -282,13 +326,15 @@ void InitInstance(void)
    if(agDriverSw) {
       MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    } else {
-      MainWindow = AG_WindowNew(AG_WINDOW_DIALOG | AG_WINDOW_MODKEYEVENTS );
+      MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS );
 //        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    }
 //   AGWIDGET(MainWindow)->flags |= AG_WIDGET_NOSPACING;
    AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
    AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
+   
+   
    MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);
    Create_AGMainBar(AGWIDGET(NULL));
    AG_WidgetSetPosition(MenuBar, 0, 0);
