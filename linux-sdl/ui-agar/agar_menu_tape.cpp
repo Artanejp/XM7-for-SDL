@@ -39,7 +39,11 @@ static void OnOpenTapeSub(char *sFilename)
     tape_setfile(sFilename);
     ResetSch();
     UnlockVM();
+#ifdef _WINDOWS
+    p = _mbsrchr(sFilename, '\\');
+#else
     p = strrchr(sFilename, '/');
+#endif   
     if (p != NULL) {
 	p[1] = '\0';
 	strcpy(InitialDir[1], sFilename);
@@ -61,13 +65,29 @@ static void OnTapeOpen(AG_Event *event)
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	AG_Window *dlgWin;
 	AG_FileDlg *dlg;
+        char s[MAXPATHLEN + 1];
 
 	dlgWin = AG_WindowNew(0);
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s", gettext("Open Tape Image"));
     dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC | AG_FILEDLG_CLOSEWIN);
 	if(dlg == NULL) return;
-	AG_FileDlgSetDirectory (dlg, "%s", InitialDir[1]);
+   if(InitialDir[1] != NULL) {
+      strcpy(s, InitialDir[1]);
+   } else {
+      strcpy(s, ".");
+   }
+#ifdef _WINDOWS
+     { // Subst '\\' to '/', needed AG_FileDlgSetDirectory().
+	int i;
+	i = 0; 
+	while((s[i] != '\0') && (i <= MAXPATHLEN)) {
+	   if(s[i] == '\\') s[i] = '/';
+	   i++;
+	}
+     }
+#endif   /* _WINDOWS */
+	AG_FileDlgSetDirectory (dlg, "%s", s);
 	AG_WidgetFocus(dlg);
 	AG_FileDlgAddType(dlg, "T77 CMT Image File", "*.t77,*.T77", OnOpenTapeSubEv, NULL);
     AG_ActionFn(AGWIDGET(dlgWin), "window-close", OnPushCancel, NULL);
