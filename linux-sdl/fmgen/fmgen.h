@@ -248,7 +248,7 @@ namespace FM
 		uint	GetPML() { return pml_; }
 		int		GetPMV() { return pmv_; }
 
-		uint	ratio_;
+		volatile uint	ratio_;
 
 	private:
 		void	MakeTable();

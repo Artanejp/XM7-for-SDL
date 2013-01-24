@@ -222,9 +222,11 @@ Chip::Chip()
 //	クロック・サンプリングレート比に依存するテーブルを作成
 void Chip::SetRatio(uint ratio)
 {
-	if (ratio_ != ratio)
+	volatile uint r;
+	r = (volatile uint)ratio;
+	if (ratio_ != r)
 	{
-		ratio_ = ratio;
+		ratio_ = r;
 		MakeTable();
 	}
 }
@@ -243,7 +245,7 @@ void Chip::MakeTable()
 		for (l=0; l<16; l++)
 		{
 			int mul = l ? l * 2 : 1;
-			multable_[h][l] = uint(mul * rr);
+			multable_[h][l] = (uint32)(mul * rr); // Get rid of Optimize.
 		}
 	}
 
