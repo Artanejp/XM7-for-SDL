@@ -41,7 +41,6 @@ DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 struct DrawPieces SDLDrawFlag;
 
-// guchar pBitsGDI[400*640*3]; /* ビットデータ */
 BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
 BOOL            bFullScan;		/* フルスキャン(Window) */
 BOOL            bDirectDraw;		/* 直接書き込みフラグ */
@@ -334,25 +333,15 @@ void SetDrawFlag(BOOL flag)
 {
     int x;
     int y;
-    v4hi *pr, *pw;
-    v4hi v;
+    int ip;
    
-    v.b[0] =  v.b[1]  = v.b[2]  = v.b[3] = 
-    v.b[4] =  v.b[5]  = v.b[6]  = v.b[7] = 
-    v.b[8] =  v.b[9]  = v.b[10] = v.b[11] = 
-    v.b[12] = v.b[13] = v.b[14] = v.b[15] = (uint8_t)flag;
-    pr = (v4hi *)(&SDLDrawFlag.read[0][0]);
-    pw = (v4hi *)(&SDLDrawFlag.write[0][0]);
-   
-//		memset(GDIDrawFlag, (BYTE) flag, sizeof(GDIDrawFlag));
 #ifdef _OPENMP
-//       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
-       #pragma omp parallel for shared(v, pr, pw) private(x)
+       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
 #endif
    for(y = 0; y < 50 ; y++) {
-        for(x = 0; x < 5; x++){
-	   pr[x + y * 5] = v;
-	   pw[x + y * 5] = v;
+        for(x = 0; x < 80; x++){
+           SDLDrawFlag.read[x][y] =
+           SDLDrawFlag.write[x][y] = (uint8_t) flag;
         }
     }
     SDLDrawFlag.Drawn = flag;
@@ -374,6 +363,7 @@ BOOL Select640(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 640;
+   if(bMode == SCR_200LINE) return TRUE;
    bPaletFlag = TRUE;
    SetDrawFlag(TRUE);
 #if XM7_VER >= 3
@@ -810,9 +800,9 @@ void 	display_notify(void)
 //	nDrawBottom = 400;
 //	nDrawLeft = 0;
 //	nDrawRight = 640;
-	bPaletFlag = TRUE;
-	bClearFlag = TRUE;
-	SetDrawFlag(TRUE);
+//	bPaletFlag = TRUE;
+//	bClearFlag = TRUE;
+//	SetDrawFlag(TRUE);
 }
 
 /*

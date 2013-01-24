@@ -51,7 +51,7 @@ struct DrawPieces {
     BOOL8 DPaletteChanged;
     BOOL8 APaletteChanged;
     BOOL8 ForcaReDraw;
-};
+} ;
 /* アスペクト */
 enum {
 	nAspect43 = 0, /* 4:3 */
