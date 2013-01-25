@@ -1,4 +1,4 @@
-/*
+﻿/*
  * api_vramvec.cpp
  * Convert VRAM -> VirtualVram(Vector Version)
  * (C) 2012 K.Ohta <whatisthis.sowhat@gmail.com>
@@ -15,7 +15,7 @@
 */
 // Reduce Tables 20120131
 
-static v4hi *aPlanes;
+static v8hi *aPlanes;
 enum {
    B0 = 0,
    B1 = 256,
@@ -31,11 +31,11 @@ enum {
    G3 = 2816
 };
 
-static inline void initvramtblsub_vec(int x, v4hi *p)
+static inline void initvramtblsub_vec(int x, v8hi *p)
 {
-    v4si mask; 
-    mask = (v4si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-    p->v = (v4si){x,x,x,x,x,x,x,x};
+    v8si mask; 
+    mask = (v8si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+    p->v = (v8si){x,x,x,x,x,x,x,x};
 
     p->v = p->v & mask;
     p->s[0] >>= 7;
@@ -53,13 +53,13 @@ void initvramtbl_8_vec(void)
 {
 }
 
-static v4hi *initvramtblsub(int size)
+static v8hi *initvramtblsub(int size)
 {
-   v4hi *p;
+   v8hi *p;
 #ifndef _WINDOWS
-   if(posix_memalign((void **)&p, 32, sizeof(v4hi) * size) != 0) return NULL;
+   if(posix_memalign((void **)&p, 32, sizeof(v8hi) * size) != 0) return NULL;
 #else
-   p = (v4hi *)__mingw_aligned_malloc(sizeof(v4hi) * size, 32, 0);
+   p = (v8hi *)__mingw_aligned_malloc(sizeof(v8hi) * size, 32, 0);
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -69,8 +69,8 @@ static v4hi *initvramtblsub(int size)
 void initvramtbl_4096_vec(void)
 {
     int i;
-    v4si shift = (v4si){2,2,2,2,2,2,2,2};
-    aPlanes = (v4hi *)initvramtblsub(12 * 256);
+    v8si shift = (v8si){2,2,2,2,2,2,2,2};
+    aPlanes = initvramtblsub(12 * 256);
     if(aPlanes == NULL) return;
     // Init Mask Table
     // 20120131 Shift op is unstable, change to multiply.
@@ -110,9 +110,9 @@ void detachvramtbl_4096_vec(void)
 }
 
 
-v4hi getvram_4096_vec(Uint32 addr)
+v8hi getvram_4096_vec(Uint32 addr)
 {
-    volatile v4hi cbuf __attribute__((aligned(32)));
+    volatile v8hi cbuf __attribute__((aligned(32)));
     uint8_t dat[12];
         /*
          * R,G,Bについて8bit単位で描画する。
@@ -120,8 +120,8 @@ v4hi getvram_4096_vec(Uint32 addr)
          * ループの廃止を同時に行う
          */
     if(aPlanes == NULL) {
-       cbuf.v = (v4si){0,0,0,0,0,0,0,0};
-       return (v4hi)cbuf;
+       cbuf.v = (v8si){0,0,0,0,0,0,0,0};
+       return cbuf;
     }
     dat[PLAING3] = vram_pg[addr + 0x00000];
     dat[PLAING2] = vram_pg[addr + 0x02000];
@@ -153,13 +153,13 @@ v4hi getvram_4096_vec(Uint32 addr)
    return cbuf;
 }
 
-v4hi getvram_8_vec(Uint32 addr)
+v8hi getvram_8_vec(Uint32 addr)
 {
     uint8_t dat[4];
-    volatile v4hi cbuf __attribute__((aligned(32)));
+    volatile v8hi cbuf __attribute__((aligned(32)));
     if(aPlanes == NULL) {
-       cbuf.v = (v4si){0,0,0,0,0,0,0,0};
-       return (v4hi)cbuf;
+       cbuf.v = (v8si){0,0,0,0,0,0,0,0};
+       return cbuf;
      }
         /*
          * R,G,Bについて8bit単位で描画する。
@@ -170,17 +170,17 @@ v4hi getvram_8_vec(Uint32 addr)
     dat[PLAING] = vram_pg[addr];
     dat[PLAINR] = vram_pr[addr];
     dat[PLAINB] = vram_pb[addr];
-//    dat[PLAINW] = 0;
 
     cbuf.v = aPlanes[B0 + dat[PLAINB]].v |
              aPlanes[B1 + dat[PLAINR]].v |
              aPlanes[B2 + dat[PLAING]].v;
-   return (v4hi)cbuf;
+   return cbuf;
 }
 
 Uint32 lshift_5bit1v(v4hi *v)
 {
    Uint32 ret;
+
    ret =(v->b[0] & 0x80)>>5 | (v->b[1] & 0x80)>>4 | (v->b[2] & 0x80)>>3 
       | (v->b[3] & 0x80)>>2 | (v->b[4] & 0x80)>>1 | (v->b[5] & 0x80);
    if((ret & 0x000000f8)!=0) ret |= 0x000003;
@@ -191,7 +191,7 @@ Uint32 lshift_5bit1v(v4hi *v)
 v8hi lshift_6bit8v(v4hi *v)
 {
    v8hi r;
-   v4hi cbuf __attribute__((aligned(32)));
+   v8hi cbuf __attribute__((aligned(32)));
    v8hi mask;
    mask.v = (v8si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
    cbuf.v =
@@ -201,24 +201,11 @@ v8hi lshift_6bit8v(v4hi *v)
         aPlanes[R1 + v->b[3]].v |
         aPlanes[R2 + v->b[4]].v |
         aPlanes[R3 + v->b[5]].v;
-   r.i[0] = (uint32_t)cbuf.s[7];
-   r.i[1] = (uint32_t)cbuf.s[6];
-   r.i[2] = (uint32_t)cbuf.s[5];
-   r.i[3] = (uint32_t)cbuf.s[4];
-   r.i[4] = (uint32_t)cbuf.s[3];
-   r.i[5] = (uint32_t)cbuf.s[2];
-   r.i[6] = (uint32_t)cbuf.s[1];
-   r.i[7] = (uint32_t)cbuf.s[0];
    
-   mask.v = mask.v & r.v;
-   if(mask.i[0] != 0) r.i[0] |= 0x03;
-   if(mask.i[1] != 0) r.i[1] |= 0x03;
-   if(mask.i[2] != 0) r.i[2] |= 0x03;
-   if(mask.i[3] != 0) r.i[3] |= 0x03;
-   if(mask.i[4] != 0) r.i[4] |= 0x03;
-   if(mask.i[5] != 0) r.i[5] |= 0x03;
-   if(mask.i[6] != 0) r.i[6] |= 0x03;
-   if(mask.i[7] != 0) r.i[7] |= 0x03;
+   mask.v = mask.v & cbuf.v;
+   r.v = cbuf.v != (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+   r.v = r.v * (v8si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+   r.v = r.v | cbuf.v;
   return r;
 }
 

@@ -11,10 +11,8 @@
 #include <agar/core/types.h>
 #include <agar/core.h>
 #include <agar/gui.h>
-//#include <agar/gui/glview.h>
-//#include "EmuAgarGL.h"
 #include "api_draw.h"
-//#include "api_scaler.h"
+#include "api_vram.h"
 
 #include "agar_vramutil.h"
 #include "agar_draw.h"
@@ -49,8 +47,4 @@ extern void AGEventKeyDownGL(AG_Event *event);
 
 extern  GLuint uVramTextureID;
 #endif /* USE_OPENGL */
-extern void SetVram_200l(Uint8 *p);
-extern void CalcPalette_8colors(Uint32 index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
-extern void CalcPalette_4096Colors(Uint32 index, Uint8 R, Uint8 G, Uint8 B, Uint8 A);
-
 #endif /* AGAR_GLDRAW_H_ */

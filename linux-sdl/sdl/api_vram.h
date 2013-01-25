@@ -21,75 +21,36 @@
 #include "agar_xm7.h"
 #include "xm7_types.h"
 
-/*
- * api_vram8.cpp
-*/
-#ifdef __cplusplus
-extern void SetVram_200l(Uint8 *p);
-extern void getvram_400l(Uint32 addr,Uint32 *p, Uint32 mpage);
-extern void getvram_200l(Uint32 addr,Uint32 *p, Uint32 mpage);
-
-extern void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-extern void CreateVirtualVram8(Uint32 *p, int x, int y, int w, int h, int mode);
-extern void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
-extern void CreateVirtualVram8_1Pcs_Nopal(Uint32 *p, int x, int y, int pitch, int mpage);
-
-/*
- * api_vram4096.cpp
- */
-extern void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-extern void CreateVirtualVram4096(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
-extern void CreateVirtualVram4096_1Pcs_Nopal(Uint32 *p, int x, int y, int pitch, int mode);
-
-/*
- * api_vram256k.cpp
- */
-extern void CreateVirtualVram256k(Uint32 *p, int x, int y, int w, int h, int mode, Uint32 mpage);
-extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
-#endif // C++ ONLY
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+/*
+ * api_vram8.c
+*/
+extern void SetVram_200l(Uint8 *p);
+extern void SetVram_400l(Uint8 *p);
+extern void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
+/*
+ * api_vram4096.c
+ */
+extern void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+extern void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
 
-extern v4hi getvram_4096_vec(Uint32 addr);
-static inline void putword2_vec(Uint32 *disp, volatile v4hi cbuf)
-{
-   disp[0] = rgbAnalogGDI[cbuf.s[0]];
-   disp[1] = rgbAnalogGDI[cbuf.s[1]];
-   disp[2] = rgbAnalogGDI[cbuf.s[2]];
-   disp[3] = rgbAnalogGDI[cbuf.s[3]];
-   disp[4] = rgbAnalogGDI[cbuf.s[4]];
-   disp[5] = rgbAnalogGDI[cbuf.s[5]];
-   disp[6] = rgbAnalogGDI[cbuf.s[6]];
-   disp[7] = rgbAnalogGDI[cbuf.s[7]];
-}
+/*
+ * api_vram256k.c
+ */
+extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
 
+extern v8hi getvram_4096_vec(Uint32 addr);
 extern void initvramtbl_8_vec(void);
 extern void initvramtbl_4096_vec(void);
 extern void detachvramtbl_8_vec(void);
 extern void detachvramtbl_4096_vec(void);
 
-extern v4hi getvram_8_vec(Uint32 addr);
+extern v8hi getvram_8_vec(Uint32 addr);
 
    
-   
-static inline void  putword8_vec(Uint32 *disp, volatile v4hi p)
-{
-   v8hi *pal =(v8hi *)rgbTTLGDI;
-   v8hi *dst = (v8hi *)disp;
-    dst->i[0] = pal->i[p.s[0]];
-    dst->i[1] = pal->i[p.s[1]];
-    dst->i[2] = pal->i[p.s[2]];
-    dst->i[3] = pal->i[p.s[3]];
-    dst->i[4] = pal->i[p.s[4]];
-    dst->i[5] = pal->i[p.s[5]];
-    dst->i[6] = pal->i[p.s[6]];
-    dst->i[7] = pal->i[p.s[7]];
-}
-
-
 enum {
    PLAINB0 = 0,
    PLAINB1,
