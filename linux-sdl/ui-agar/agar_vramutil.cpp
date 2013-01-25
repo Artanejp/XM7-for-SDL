@@ -13,7 +13,6 @@ Uint32 *pVram2;
 BOOL InitVideo;
 struct VirtualVram *pVirtualVram;
 BYTE bModeOld;
-BOOL bVramUpdateFlag;
 
 extern "C" {
 
@@ -74,7 +73,6 @@ void InitVirtualVram()
         pVirtualVram = NULL;
     }
 #endif   
-    bVramUpdateFlag= FALSE;
    // Phase 1
     memset(pVirtualVram, 0x00, sizeof(struct VirtualVram) );
     memset(pVram2, 0x00, sizeof(640*400*sizeof(Uint32)));

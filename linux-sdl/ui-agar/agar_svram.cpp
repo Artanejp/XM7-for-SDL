@@ -32,7 +32,6 @@ extern AG_GLView *GLDrawArea;
 extern class GLCLDraw *cldraw;
 #endif // _USE_OPENCL
 #endif // USE_OPENGL
-// void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage)
 
 static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 {
@@ -49,7 +48,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 //    LockVram();
 //    p = pp;
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, x) private(p, xx)
 #endif
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
@@ -57,13 +56,12 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
                 p = &pp[64 * (xx + 80 * yy)];
                 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
-                SDLDrawFlag.read[xx][yy] = FALSE;
+                SDLDrawFlag.read[xx][yy]  = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
 //	   p += 64;
         }
     }
-    bVramUpdateFlag = TRUE;
 //    UnlockVram();
 }
 
@@ -82,12 +80,12 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
 //   LockVram();
 //    p = pp;
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, x) private(p, xx)
 #endif
     for(yy = (y >> 3); yy < hh ; yy++) {
         for(xx = (x >> 3); xx < ww ; xx++) {
+            p = &pp[64 * ((x >> 3) + 40 * yy)];
             if(SDLDrawFlag.read[xx][yy]) {
-                p = &pp[64 * (xx + 40 * yy)];
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
@@ -96,7 +94,6 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
 //	   p += 64;
         }
     }
-    bVramUpdateFlag = TRUE;
 //    UnlockVram();
 }
 
@@ -127,7 +124,6 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
             }
         }
     }
-    bVramUpdateFlag = TRUE;
 //    UnlockVram();
 }
 

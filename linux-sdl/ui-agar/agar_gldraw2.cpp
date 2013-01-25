@@ -1,4 +1,4 @@
-/*
+﻿/*
  * agar_gldraw2.cpp
  * Using Indexed palette @8Colors.
  * (c) 2011 K.Ohta <whatisthis.sowhat@gmail.com>
@@ -237,63 +237,6 @@ Uint32 *GetVirtualVram(void)
     return &(pVirtualVram->pVram[0][0]);
 }
 
-// Create GL Handler(Main)
-void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
-{
-	int xx, yy;
-	int hh, ww;
-	int addr;
-	int ofset;
-	int size;
-	Uint32 c[8];
-	Uint32 *pp;
-	AG_Driver *drv;
-        GLuint tid;
-
-	if(GLDrawArea == NULL) return;
-	// Test
-	if(agDriverOps == NULL) return;
-	if(agDriverSw) {
-		drv = &agDriverSw->_inherit;
-	} else {
-		drv = AGWIDGET(GLDrawArea)->drv;
-	}
-	if(drv == NULL) return;
-//	if(AG_UsingGL(drv) == 0) return; // Non-GL
-   
-    if(pVirtualVram == NULL) return;
-    pp = &(pVirtualVram->pVram[0][0]);
-
-   
-   if(pp == NULL) return;
-   if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
-
-   if(bClearFlag) {
-      LockVram();
-      memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
-      bClearFlag = FALSE;
-      UnlockVram();
-   }
-#ifdef _USE_OPENCL
-    if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING)  return; // Skip when OpenCL.
-#endif
-   switch (bMode) {
-    case SCR_400LINE:
-      CreateVirtualVram8(pp, x, y, w, h, bMode);
-      break;
-    case SCR_262144:
-      CreateVirtualVram256k(pp, x, y, w, h, bMode, mpage);
-      break;
-    case SCR_4096:
-      CreateVirtualVram4096(pp, x, y, w, h, bMode, mpage);
-      break;
-    case SCR_200LINE:
-      CreateVirtualVram8(pp, x, y, w, h, bMode);
-      break;
-   }
-   
-}
-
 
 /*
  * Event Functins
@@ -317,8 +260,8 @@ void AGEventScaleGL(AG_Event *event)
 
 static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
 {
-   v8hi *addr;
-   v8hi *src;
+   v4hi *addr1;// 256bit->128bit for older CPUs.
+   v4hi *src;
    int ofset;
    int yy;
 
@@ -327,40 +270,39 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
    if(pFrameBuffer == NULL) return;
    ofset = x + y * 640;
 
-   src = (v8hi *)p;
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   src = (v4hi *)p;
+   addr1 = (v4hi *)(&pFrameBuffer[ofset]);
+   addr1[0] = src[0];
+   addr1[1] = src[1];
+   addr1 += 160;
 
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   addr1[0] = src[2];
+   addr1[1] = src[3];
+   addr1 += 160;
 
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   addr1[0] = src[4];
+   addr1[1] = src[5];
+   addr1 += 160;
 
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   addr1[0] = src[6];
+   addr1[1] = src[7];
+   addr1 += 160;
 
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   addr1[0] = src[8];
+   addr1[1] = src[9];
+   addr1 += 160;
 
-    addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   addr1[0] = src[10];
+   addr1[1] = src[11];
+   addr1 += 160;
 
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
+   addr1[0] = src[12];
+   addr1[1] = src[13];
+   addr1 += 160;
 
-   addr = (v8hi *)(&pFrameBuffer[ofset]);
-   *addr = *src++;
-   ofset += 640;
-
-
+   addr1[0] = src[14];
+   addr1[1] = src[15];
+//   addr1 += 160;
 }
 
 static void drawGrids(void *pg,int w, int h)
@@ -461,7 +403,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
 	     for(xx = 0; xx < ww; xx++) {
                     if(SDLDrawFlag.write[xx][yy]) {
-                    pu = &p[(xx + yy * ww) * 64];
+                    pu = &p[(xx + yy * ww) << 6];
                     UpdateFramebufferPiece(pu, xx << 3, yy << 3);
                     SDLDrawFlag.write[xx][yy] = FALSE;
                     }

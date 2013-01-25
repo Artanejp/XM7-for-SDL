@@ -43,7 +43,6 @@ extern void InitGL_AG2(int w, int h);
 extern void DetachGL_AG2(void);
 extern void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h);
 
-extern void PutVram_AG_GL2(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage);
 extern void AGEventDrawGL2(AG_Event *event);
 extern void AGEventKeyUpGL(AG_Event *event);
 extern void AGEventKeyDownGL(AG_Event *event);
