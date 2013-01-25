@@ -16,24 +16,30 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     Uint32 ds;
 //     if((index > 4095) || (index < 0)) return;
 #ifdef SDL_LIL_ENDIAN
-	ds =r + (g << 8)+ (b << 16) + (a<<24);
+	ds =r | (g << 8) | (b << 16) | (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
     rgbAnalogGDI[index] = ds;
 }
 
-static inline void putword2_vec(Uint32 *disp, volatile v8hi cbuf)
+static inline void putword2_vec(Uint32 *disp, volatile v8hi_t cbuf)
 {
-   v8hi *dst = (v8hi *)disp;
-   dst->i[0] = rgbAnalogGDI[cbuf.i[0]];
-   dst->i[1] = rgbAnalogGDI[cbuf.i[1]];
-   dst->i[2] = rgbAnalogGDI[cbuf.i[2]];
-   dst->i[3] = rgbAnalogGDI[cbuf.i[3]];
-   dst->i[4] = rgbAnalogGDI[cbuf.i[4]];
-   dst->i[5] = rgbAnalogGDI[cbuf.i[5]];
-   dst->i[6] = rgbAnalogGDI[cbuf.i[6]];
-   dst->i[7] = rgbAnalogGDI[cbuf.i[7]];
+   v4hi *dst = (v4hi *)disp;
+   v4hi r1;
+   
+   r1.i[0] = rgbAnalogGDI[cbuf.s[0]];
+   r1.i[1] = rgbAnalogGDI[cbuf.s[1]];
+   r1.i[2] = rgbAnalogGDI[cbuf.s[2]];
+   r1.i[3] = rgbAnalogGDI[cbuf.s[3]];
+   dst->v = r1.v;
+   dst++;
+   
+   r1.i[0] = rgbAnalogGDI[cbuf.s[4]];
+   r1.i[1] = rgbAnalogGDI[cbuf.s[5]];
+   r1.i[2] = rgbAnalogGDI[cbuf.s[6]];
+   r1.i[3] = rgbAnalogGDI[cbuf.s[7]];
+   dst->v = r1.v;
 }
 
 
@@ -43,10 +49,11 @@ static inline void putword2_vec(Uint32 *disp, volatile v8hi cbuf)
 void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
 //    Uint32 c[8];
-    v8hi c;
+    v8hi_t c;
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
 
+    pitch = sizeof(Uint32) * 8;
     addr = y * 40 + x;
     // Loop廃止(高速化)
 

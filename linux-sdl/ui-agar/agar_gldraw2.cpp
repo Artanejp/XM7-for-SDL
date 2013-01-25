@@ -395,7 +395,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 			  NULL);
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-	  bVramUpdateFlag = TRUE;
+//	  bVramUpdateFlag = TRUE;
 
        } else {
 #endif

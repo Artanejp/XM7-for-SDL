@@ -48,18 +48,18 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 //    LockVram();
 //    p = pp;
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, x) private(p, xx)
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
 #endif
     for(yy = (y >> 3); yy < hh ; yy++) {
+       p = &pp[64 * ((x >> 3) + 80 * yy)];
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
-                p = &pp[64 * (xx + 80 * yy)];
                 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy]  = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
-//	   p += 64;
+	   p += 64;
         }
     }
 //    UnlockVram();
@@ -80,18 +80,18 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
 //   LockVram();
 //    p = pp;
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, x) private(p, xx)
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
 #endif
     for(yy = (y >> 3); yy < hh ; yy++) {
+       p = &pp[64 * ((x >> 3) + 40 * yy)];
         for(xx = (x >> 3); xx < ww ; xx++) {
-            p = &pp[64 * ((x >> 3) + 40 * yy)];
             if(SDLDrawFlag.read[xx][yy]) {
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.Drawn = TRUE;
             }
-//	   p += 64;
+	   p += 64;
         }
     }
 //    UnlockVram();
@@ -143,7 +143,7 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
     LockVram();
 #ifdef _USE_OPENCL
    if((cldraw != NULL) && (GLDrawArea != NULL)){ // Snip builing-viryual-vram if GLCL mode.
-        bVramUpdateFlag = TRUE;
+//        bVramUpdateFlag = TRUE;
         SDLDrawFlag.Drawn = TRUE;
         UnlockVram();
         return;

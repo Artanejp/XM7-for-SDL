@@ -42,13 +42,13 @@ extern void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int m
  */
 extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
 
-extern v8hi getvram_4096_vec(Uint32 addr);
+extern v8hi_t getvram_4096_vec(Uint32 addr);
 extern void initvramtbl_8_vec(void);
 extern void initvramtbl_4096_vec(void);
 extern void detachvramtbl_8_vec(void);
 extern void detachvramtbl_4096_vec(void);
 
-extern v8hi getvram_8_vec(Uint32 addr);
+extern v8hi_t getvram_8_vec(Uint32 addr);
 
    
 enum {

@@ -35,8 +35,8 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     Sint16       *t = (Sint16 *) to;
     Sint32       tmp1;
     v4hi *l;
-    v8hi *h;
-    v8hi tmp2;
+    v8hi_t *h;
+    v8hi_t tmp2;
     v4hi tmp3;
     
 
@@ -46,7 +46,7 @@ void SndDrvOpn::CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     if (t == NULL) {
         return;
     }
-    h = (v8hi *)p;
+    h = (v8hi_t *)p;
     l = (v4hi *)t;
     i = (size >> 3) << 3;
     for (j = 0; j < i; j += 8) {

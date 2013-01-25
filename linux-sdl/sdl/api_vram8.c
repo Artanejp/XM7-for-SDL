@@ -36,7 +36,8 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 //     if((index > 10) || (index < 0)) return;
 //     LockVram();
 #ifdef AG_LITTLE_ENDIAN
-	ds =r + (g << 8)+ (b << 16) + 255<<24;
+	ds = r | (g << 8) | (b << 16) | 0xff000000;
+//	ds = 0xffffffff;
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
@@ -44,20 +45,25 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 //    UnlockVram();
 }
 
-static void  putword8_vec(volatile Uint32 *disp, volatile v8hi c)
+static inline void  putword8_vec(Uint32 *disp, volatile v8hi_t c, volatile v8hi_t pal)
 {
-   v8hi *pal =(v8hi *)rgbTTLGDI;
-   v8hi *dst = (v8hi *)disp;
-
-//   dst->v =  __builtin_shuffle (pal->v, c.v);
-    dst->i[0] = rgbTTLGDI[c.i[0]];
-    dst->i[1] = rgbTTLGDI[c.i[1]];
-    dst->i[2] = rgbTTLGDI[c.i[2]];
-    dst->i[3] = rgbTTLGDI[c.i[3]];
-    dst->i[4] = rgbTTLGDI[c.i[4]];
-    dst->i[5] = rgbTTLGDI[c.i[5]];
-    dst->i[6] = rgbTTLGDI[c.i[6]];
-    dst->i[7] = rgbTTLGDI[c.i[7]];
+   v4hi *dst = (v4hi *)disp;
+   v4hi r1, r2, r3;
+   
+   if(disp == NULL) return;
+   c.v &= (v8si){7, 7, 7, 7, 7, 7, 7, 7,};
+   r1.i[0] = pal.i[c.s[0]]; // ?!
+   r1.i[1] = pal.i[c.s[1]];
+   r1.i[2] = pal.i[c.s[2]];
+   r1.i[3] = pal.i[c.s[3]];
+   dst->v = r1.v;
+   dst++;
+   
+   r1.i[0] = pal.i[c.s[4]];
+   r1.i[1] = pal.i[c.s[5]];
+   r1.i[2] = pal.i[c.s[6]];
+   r1.i[3] = pal.i[c.s[7]];
+   dst->v = r1.v;
 }
 
 
@@ -67,50 +73,54 @@ static void  putword8_vec(volatile Uint32 *disp, volatile v8hi c)
  */
 void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
-    v8hi c;
+    volatile v8hi_t c;
+    v8hi_t *p1 = (v8hi_t *)rgbTTLGDI;
+    v8hi_t pal;
     Uint8 *disp =(Uint8 *) p;
     Uint32 addr;
 
+    pal.v = p1->v; // Reduce reading palette.
+    pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp, c);
+    putword8_vec((Uint32 *)disp, c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
     addr += 80;
     disp += pitch;
 
     c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c);
+    putword8_vec((Uint32 *)disp,  c, pal);
 //    addr += 80;
 //    disp += pitch;
 

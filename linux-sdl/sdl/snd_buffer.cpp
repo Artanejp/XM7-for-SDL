@@ -153,14 +153,14 @@ static void CopyChunkSub(Sint16 *buf, Sint16 *src, int count)
     Sint16 *s = src;
     Sint16 *b = buf;
     Sint32 dw;
-    v8hi *hs;
-    v8hi *hb;
-    v8hi t;
+    v8hi_t *hs;
+    v8hi_t *hb;
+    v8hi_t t;
 
     if(s == NULL) return;
     if(b == NULL) return;
-   hb = (v8hi *)buf;
-   hs = (v8hi *)src;
+   hb = (v8hi_t *)buf;
+   hs = (v8hi_t *)src;
 
    ic = (count / 8) << 3;
    for(i = 0; i < ic ; i+=8){
