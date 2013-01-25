@@ -23,17 +23,17 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     rgbAnalogGDI[index] = ds;
 }
 
-static inline void putword2_vec(Uint32 *disp, v8hi cbuf)
+static inline void putword2_vec(Uint32 *disp, volatile v8hi cbuf)
 {
    v8hi *dst = (v8hi *)disp;
-   dst->i[0] = rgbAnalogGDI[cbuf.s[0]];
-   dst->i[1] = rgbAnalogGDI[cbuf.s[1]];
-   dst->i[2] = rgbAnalogGDI[cbuf.s[2]];
-   dst->i[3] = rgbAnalogGDI[cbuf.s[3]];
-   dst->i[4] = rgbAnalogGDI[cbuf.s[4]];
-   dst->i[5] = rgbAnalogGDI[cbuf.s[5]];
-   dst->i[6] = rgbAnalogGDI[cbuf.s[6]];
-   dst->i[7] = rgbAnalogGDI[cbuf.s[7]];
+   dst->i[0] = rgbAnalogGDI[cbuf.i[0]];
+   dst->i[1] = rgbAnalogGDI[cbuf.i[1]];
+   dst->i[2] = rgbAnalogGDI[cbuf.i[2]];
+   dst->i[3] = rgbAnalogGDI[cbuf.i[3]];
+   dst->i[4] = rgbAnalogGDI[cbuf.i[4]];
+   dst->i[5] = rgbAnalogGDI[cbuf.i[5]];
+   dst->i[6] = rgbAnalogGDI[cbuf.i[6]];
+   dst->i[7] = rgbAnalogGDI[cbuf.i[7]];
 }
 
 

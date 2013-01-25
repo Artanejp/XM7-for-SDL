@@ -36,7 +36,7 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 //     if((index > 10) || (index < 0)) return;
 //     LockVram();
 #ifdef AG_LITTLE_ENDIAN
-	ds =r + (g << 8)+ (b << 16) + (a<<24);
+	ds =r + (g << 8)+ (b << 16) + 255<<24;
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
@@ -44,22 +44,20 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 //    UnlockVram();
 }
 
-static inline void  putword8_vec(Uint32 *disp, v8hi c)
+static void  putword8_vec(volatile Uint32 *disp, volatile v8hi c)
 {
    v8hi *pal =(v8hi *)rgbTTLGDI;
    v8hi *dst = (v8hi *)disp;
 
-   dst->v =  __builtin_shuffle (pal->v, c.v);
-//    dst->i[0] = pal->i[c.s[0]];
-//    dst->i[1] = pal->i[c.s[1]];
-//    dst->i[2] = pal->i[c.s[2]];
-//    dst->i[3] = pal->i[c.s[3]];
-//    dst++;
-
-//    dst->i[0] = pal->i[c.s[4]];
-//    dst->i[1] = pal->i[c.s[5]];
-//    dst->i[2] = pal->i[c.s[6]];
-//    dst->i[3] = pal->i[c.s[7]];
+//   dst->v =  __builtin_shuffle (pal->v, c.v);
+    dst->i[0] = rgbTTLGDI[c.i[0]];
+    dst->i[1] = rgbTTLGDI[c.i[1]];
+    dst->i[2] = rgbTTLGDI[c.i[2]];
+    dst->i[3] = rgbTTLGDI[c.i[3]];
+    dst->i[4] = rgbTTLGDI[c.i[4]];
+    dst->i[5] = rgbTTLGDI[c.i[5]];
+    dst->i[6] = rgbTTLGDI[c.i[6]];
+    dst->i[7] = rgbTTLGDI[c.i[7]];
 }
 
 
@@ -70,7 +68,7 @@ static inline void  putword8_vec(Uint32 *disp, v8hi c)
 void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
     v8hi c;
-    Uint8 *disp = (Uint8 *)p;
+    Uint8 *disp =(Uint8 *) p;
     Uint32 addr;
 
     addr = y * 80 + x;

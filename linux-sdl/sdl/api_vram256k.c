@@ -11,17 +11,20 @@
 #include "api_vram.h"
 
 
-static inline void putword(Uint32 *disp, v8hi cbuf)
+static inline void putword(Uint32 *disp,volatile v8hi cbuf)
 {
+    v8hi *dst = (v8hi *)disp;
+    v8si mask = (v8si){7, 6, 5, 4, 3, 2, 1, 0};
+    dst->v = __builtin_shuffle(cbuf.v, mask);
    
-		disp[0] = cbuf.i[7];
-		disp[1] = cbuf.i[6];
-		disp[2] = cbuf.i[5];
-		disp[3] = cbuf.i[4];
-		disp[4] = cbuf.i[3];
-		disp[5] = cbuf.i[2];
-		disp[6] = cbuf.i[1];
-		disp[7] = cbuf.i[0];
+//		disp[0] = cbuf.i[7];
+//		disp[1] = cbuf.i[6];
+//		disp[2] = cbuf.i[5];
+//		disp[3] = cbuf.i[4];
+//		disp[4] = cbuf.i[3];
+//		disp[5] = cbuf.i[2];
+//		disp[6] = cbuf.i[1];
+//		disp[7] = cbuf.i[0];
 }
 
 

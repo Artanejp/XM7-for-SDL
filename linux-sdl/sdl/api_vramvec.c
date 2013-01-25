@@ -31,20 +31,21 @@ enum {
    G3 = 2816
 };
 
-static inline void initvramtblsub_vec(int x, v8hi *p)
+static void initvramtblsub_vec(volatile unsigned int x, volatile v8hi *p)
 {
     v8si mask; 
     mask = (v8si){0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
     p->v = (v8si){x,x,x,x,x,x,x,x};
 
     p->v = p->v & mask;
-    p->s[0] >>= 7;
-    p->s[1] >>= 6;
-    p->s[2] >>= 5;
-    p->s[3] >>= 4;
-    p->s[4] >>= 3;
-    p->s[5] >>= 2;
-    p->s[6] >>= 1;
+    
+    p->i[0] = p->i[0] >> 7;
+    p->i[1] = p->i[1] >> 6;
+    p->i[2] = p->i[2] >> 5;
+    p->i[3] = p->i[3] >> 4;
+    p->i[4] = p->i[4] >> 3;
+    p->i[5] = p->i[5] >> 2;
+    p->i[6] = p->i[6] >> 1;
 
     // 8 Colors
 }
@@ -57,9 +58,9 @@ static v8hi *initvramtblsub(int size)
 {
    v8hi *p;
 #ifndef _WINDOWS
-   if(posix_memalign((void **)&p, 32, sizeof(v8hi) * size) != 0) return NULL;
+   if(posix_memalign((void **)&p, 32, sizeof(v8si) * size) != 0) return NULL;
 #else
-   p = (v8hi *)__mingw_aligned_malloc(sizeof(v8hi) * size, 32, 0);
+   p = (v8hi *)__mingw_aligned_malloc(sizeof(v8si) * size, 32, 0);
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -68,10 +69,12 @@ static v8hi *initvramtblsub(int size)
 
 void initvramtbl_4096_vec(void)
 {
-    int i;
+    unsigned int i;
     v8si shift = (v8si){2,2,2,2,2,2,2,2};
+//    v8si shift = (v8si){1,1,1,1,1,1,1,1};
     aPlanes = initvramtblsub(12 * 256);
     if(aPlanes == NULL) return;
+    printf("DBG: Table OK\n");
     // Init Mask Table
     // 20120131 Shift op is unstable, change to multiply.
    for(i = 0; i < 256; i++){
