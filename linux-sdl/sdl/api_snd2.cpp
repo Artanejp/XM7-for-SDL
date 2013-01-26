@@ -106,7 +106,6 @@ static DWORD dwSndCount;
 static DWORD uTick;   // バッファサイズ(時間)
 static DWORD uRate;   // サンプリングレート
 static DWORD uBufSize; // バッファサイズ(バイト数)
-static DWORD dwOldSound;
 static BOOL bWavCaptureOld;
 
 static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
@@ -341,7 +340,6 @@ BOOL SelectSnd(void)
  * バッファの初期化
  */
 	dwSndCount = 0;
-    dwOldSound = dwSoundTotal;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
 #ifndef _WINDOWS
         if(posix_memalign((void **)&pCaptureBuf, 16, uBufSize * 2) < 0) return -1;
@@ -625,7 +623,7 @@ static DWORD Render1(DWORD ttime, BOOL bZero)
 
 static void OpnNotifySub(BYTE reg, BYTE dat, SndDrvIF *sdrv, int opnch)
 {
-	DWORD ttime = dwSoundTotal;
+   DWORD ttime = dwSoundTotal;
    int samples;
     BYTE r;
 
@@ -789,7 +787,7 @@ int SndCalcSamples(struct SndBufType *p, DWORD ttime)
 	samples = (int)((diff * uRate) / 1000000);
         if(samples > p->nSize) samples = p->nSize;
 	//if(samples <= 0) samples = 0;
-        p->nLastTime = ttime;
+        //p->nLastTime = ttime;
 	return samples;
 }
 
@@ -965,6 +963,7 @@ void ProcessSnd(BOOL bZero)
 		// フラッシュする
         if(applySem) {
             SDL_SemWait(applySem);
+	    Render1(ttime, bZero);
 	    SndFlush(ttime, dwSndCount, bZero);
 		/*
 		 * 演奏本体
@@ -990,7 +989,6 @@ void ProcessSnd(BOOL bZero)
         }
 //		SDL_UnlockAudio();
 	dwSndCount = 0;
-	dwOldSound = ttime;
 //        nSndBank = (nSndBank +1) & 1;
 
 	}
