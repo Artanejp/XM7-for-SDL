@@ -388,16 +388,16 @@ void LoadCfg(void)
     if(configdat.uWidth < 320) {
     	configdat.uWidth = 320;
     }
-    if(configdat.uWidth > 1280) {
-    	configdat.uWidth = 1280;
+    if(configdat.uWidth > 1920) {
+    	configdat.uWidth = 1920;
     }
 
     configdat.uHeight = LoadCfgInt("DrawHeight", 400);
     if(configdat.uHeight < 200){
     	configdat.uHeight = 200;
     }
-    if(configdat.uHeight > 960){
-    	configdat.uHeight = 960;
+    if(configdat.uHeight > 1080){
+    	configdat.uHeight = 1080;
     }
     /*
      * FPS追加 20101018
@@ -486,6 +486,30 @@ void LoadCfg(void)
     		configdat.nAspect = nAspect11;
     	}
     	if(configdat.uHeight == 960) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 1440:
+    	if(configdat.uHeight == 900) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 1080) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+    case 1600:
+    	if(configdat.uHeight == 1000) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 1200) {
+    		configdat.nAspect = nAspect43;
+    	}
+       break;
+    case 1920:
+    	if(configdat.uHeight == 1200) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 1440) {
     		configdat.nAspect = nAspect43;
     	}
     	break;
@@ -729,6 +753,31 @@ void SaveCfg(void)
     		configdat.nAspect = nAspect43;
     	}
     	break;
+           case 1440:
+    	if(configdat.uHeight == 900) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 1080) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+     case 1600:
+    	if(configdat.uHeight == 1000) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 1200) {
+    		configdat.nAspect = nAspect43;
+    	}
+       break;
+    case 1920:
+    	if(configdat.uHeight == 1200) {
+    		configdat.nAspect = nAspect11;
+    	}
+    	if(configdat.uHeight == 1440) {
+    		configdat.nAspect = nAspect43;
+    	}
+    	break;
+
     }
     SaveCfgInt("Aspect", configdat.nAspect);
     SaveCfgBool("SMOOSING", configdat.bSmoosing);

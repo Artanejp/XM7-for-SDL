@@ -269,6 +269,10 @@ static const char *ScreenSizeName[] =
 		"1024x768",
 		"1280x800",
 		"1280x960",
+                "1440x900",
+                "1440x1080",
+		"1600x1000",
+                "1600x1200",
 		NULL
 };
 
@@ -282,7 +286,11 @@ enum ScreenSizeVal
 		SC_800x600,
 		SC_1024x768,
 		SC_1280x800,
-		SC_1280x960
+		SC_1280x960,
+                SC_1440x900,
+                SC_1440x1080,
+                SC_1600x1000,
+                SC_1600x1200,
 };
 
 static const WORD ScreenSizeWidth[] = {
@@ -294,7 +302,11 @@ static const WORD ScreenSizeWidth[] = {
 		800,
 		1024,
 		1280,
-		1280
+		1280,
+                1440,
+                1440,
+                1600,
+                1600
 };
 
 static const WORD ScreenSizeHeight[] = {
@@ -306,7 +318,12 @@ static const WORD ScreenSizeHeight[] = {
 		600,
 		768,
 		800,
-		960
+		960,
+                900,
+                1080,
+                1000,
+                1200,
+                1200
 };
 static const char *ScreenAspectName[] =
 {
