@@ -334,19 +334,19 @@ DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, B
 
 		k = p->nSize - p->nWritePTR;
 		if(k > 0) {
-			drv->Render(p->pBuf32, p->pBuf, p->nWritePTR , k,  FALSE, bZero);
+			k = drv->Render(p->pBuf32, p->pBuf, p->nWritePTR , k,  FALSE, bZero);
 			j = j - k;
 //		   printf("SND:DBG:RENDER:%08x Size=%d\n", p->pBuf, k);
 		}
 		p->nWritePTR = 0;
 		if(j > 0) {
-			drv->Render(p->pBuf32, p->pBuf, 0, j, FALSE, bZero);
-			p->nWritePTR = j;
+			j = drv->Render(p->pBuf32, p->pBuf, 0, j, FALSE, bZero);
+			p->nWritePTR += j;
 //		   printf("SND:DBG:RENDER:%08x Size=%d\n", p->pBuf, j);
 		}
 	} else {
 		if(j > 0) {
-			drv->Render(p->pBuf32, p->pBuf, p->nWritePTR, j,  FALSE, bZero);
+			j = drv->Render(p->pBuf32, p->pBuf, p->nWritePTR, j,  FALSE, bZero);
 			p->nWritePTR += j;
 			if(p->nWritePTR >= p->nSize) p->nWritePTR -= p->nSize;
 //			if(p->nWritePTR >= p->nSize) p->nWritePTR = 0;

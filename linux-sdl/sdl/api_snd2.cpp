@@ -608,7 +608,7 @@ static DWORD Render1(DWORD ttime, BOOL bZero)
    DWORD n;
    int samples;
 
-   samples  = SndCalcSamples(pOpnBuf, ttime) * 2;
+   samples  = SndCalcSamples(pOpnBuf, ttime);
 
    max = RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
    n = RenderSub(pBeepBuf, DrvBeep, ttime, samples, bZero);
@@ -787,8 +787,9 @@ int SndCalcSamples(struct SndBufType *p, DWORD ttime)
 		diff = time2 - last;
 	}
 	samples = (int)((diff * uRate) / 1000000);
-	if(samples > p->nSize) samples = p->nSize;
-	if(samples <= 0) samples = 0;
+        if(samples > p->nSize) samples = p->nSize;
+	//if(samples <= 0) samples = 0;
+        p->nLastTime = ttime;
 	return samples;
 }
 
@@ -848,19 +849,21 @@ static int SetChunk(struct SndBufType *p, int ch)
        if(p->nReadPTR >= p->nSize) {
 	  p->nReadPTR = 0;
        }
-//       SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
-       SetChunkSub(p->mChunk[i], p->pBuf, samples, iTotalVolume);
+       if(samples > 0) {
+	  SetChunkSub(p->mChunk[i], &p->pBuf[p->nReadPTR * channels], samples, iTotalVolume);
+//       SetChunkSub(p->mChunk[i], p->pBuf, samples, iTotalVolume);
 
-       Mix_PlayChannel(ch , p->mChunk[i], 0);
-       p->nReadPTR += samples;
-       i++;
-       if(i >= p->nChunks) i = 0;
-       p->nChunkNo = i;
-       if(p->nReadPTR >= p->nSize) {
-	  p->nReadPTR = 0;
+	  Mix_PlayChannel(ch , p->mChunk[i], 0);
+	  p->nReadPTR += samples;
+	  i++;
+	  if(i >= p->nChunks) i = 0;
+	  p->nChunkNo = i;
+	  if(p->nReadPTR >= p->nSize) {
+	     p->nReadPTR = 0;
+	  }
+
        }
-
-
+       
     }
     return i;
 }
