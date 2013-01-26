@@ -48,8 +48,9 @@
  *  メイン関数
  */
 extern int MainLoop(int argc, char *argv[]);
-extern struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
+
 extern "C" {
+extern struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
 int main(int argc, char *argv[])
 {
    int rgb_size[3];

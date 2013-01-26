@@ -21,6 +21,7 @@ COMMONSRC = \
 	agar_sch.cpp \
 	agar_sdl.cpp \
 	agar_sdlscaler.cpp \
+	scaler_x2.c \
 	agar_sdlview.c \
 	agar_svram.cpp \
 	agar_vramutil.cpp \

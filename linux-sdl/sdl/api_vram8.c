@@ -8,6 +8,8 @@
 #include <SDL.h>
 #include "api_draw.h"
 #include "api_vram.h"
+#include "sdl_cpuid.h"
+
 
 Uint8 *vram_pb;
 Uint8 *vram_pr;
@@ -66,7 +68,6 @@ static inline void  putword8_vec(Uint32 *disp, volatile v4hi c, volatile v8hi_t 
 }
 
 
-
 /*
  * 8x8のピースをVRAMから作成する：VramLockしない事に注意
  */
@@ -83,45 +84,48 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp, c, pal);
-    addr += 80;
-    disp += pitch;
+     {
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp, c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
-    addr += 80;
-    disp += pitch;
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
-    addr += 80;
-    disp += pitch;
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
-    addr += 80;
-    disp += pitch;
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
-    addr += 80;
-    disp += pitch;
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
-    addr += 80;
-    disp += pitch;
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
-    addr += 80;
-    disp += pitch;
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
+       addr += 80;
+       disp += pitch;
 
-    c = getvram_8_vec(addr);
-    putword8_vec((Uint32 *)disp,  c, pal);
+       c = getvram_8_vec(addr);
+       putword8_vec((Uint32 *)disp,  c, pal);
 //    addr += 80;
 //    disp += pitch;
+    }
+
 
 }
 
