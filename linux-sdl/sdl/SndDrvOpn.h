@@ -27,6 +27,10 @@
 #include "SndDrvIF.h"
 
 #define OPN_SLOT 8
+extern "C" 
+{
+extern void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
+}
 
 class SndDrvOpn: public SndDrvIF {
 public:
@@ -74,7 +78,6 @@ protected:
 	SDL_sem *RenderSem;
 
 private:
-	void CopySoundBufferGeneric(DWORD * from, WORD * to, int size);
 	void InitOpn(void);
 	void DeleteOpn(void);
         void SetRate(int ch, unsigned int clk, int rate, BOOL hq);
