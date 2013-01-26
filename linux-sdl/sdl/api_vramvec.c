@@ -15,7 +15,7 @@
 */
 // Reduce Tables 20120131
 
-static v8si *aPlanes;
+static v4si *aPlanes;
 enum {
    B0 = 0,
    B1 = 256,
@@ -31,17 +31,17 @@ enum {
    G3 = 2816
 };
 
-static void initvramtblsub_vec(volatile unsigned char x, volatile v8hi_t *p)
+static void initvramtblsub_vec(volatile unsigned char x, volatile v4hi *p)
 {
-    p->v = (v8si){x & 0x80, x & 0x40, x & 0x20, x & 0x10, x & 0x08, x & 0x04, x & 0x02, x & 0x01};
+    p->v = (v4si){x & 0x80, x & 0x40, x & 0x20, x & 0x10, x & 0x08, x & 0x04, x & 0x02, x & 0x01};
     
-    p->v[0] >>= 7;
-    p->v[1] >>= 6;
-    p->v[2] >>= 5;
-    p->v[3] >>= 4;
-    p->v[4] >>= 3;
-    p->v[5] >>= 2;
-    p->v[6] >>= 1;
+    p->s[0] >>= 7;
+    p->s[1] >>= 6;
+    p->s[2] >>= 5;
+    p->s[3] >>= 4;
+    p->s[4] >>= 3;
+    p->s[5] >>= 2;
+    p->s[6] >>= 1;
     
     // 8 Colors
 }
@@ -50,13 +50,13 @@ void initvramtbl_8_vec(void)
 {
 }
 
-static v8si *initvramtblsub(int size)
+static v4si *initvramtblsub(int size)
 {
-   v8si *p;
+   v4si *p;
 #ifndef _WINDOWS
-   if(posix_memalign((void **)&p, 32, sizeof(v8si) * size) != 0) return NULL;
+   if(posix_memalign((void **)&p, 32, sizeof(v4si) * size) != 0) return NULL;
 #else
-   p = (v8si *)__mingw_aligned_malloc(sizeof(v8si) * size, 32, 0);
+   p = (v4si *)__mingw_aligned_malloc(sizeof(v4si) * size, 32, 0);
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -66,8 +66,8 @@ static v8si *initvramtblsub(int size)
 void initvramtbl_4096_vec(void)
 {
     int i;
-    v8si shift = (v8si){2,2,2,2,2,2,2,2};
-    volatile v8hi_t r;
+//    v8si shift = (v8si){2,2,2,2,2,2,2,2};
+    volatile v4hi r;
 //    v8si shift = (v8si){1,1,1,1,1,1,1,1};
     aPlanes = initvramtblsub(12 * 256);
     if(aPlanes == NULL) return;
@@ -103,8 +103,7 @@ void initvramtbl_4096_vec(void)
         aPlanes[G2 + i] = r.v;
         r.v <<= 1;
         aPlanes[G3 + i] = r.v;
-        r.v <<= 1;
-
+//        r.v <<= 1;
     }
 }
 
@@ -126,9 +125,9 @@ void detachvramtbl_4096_vec(void)
 }
 
 
-v8hi_t getvram_4096_vec(Uint32 addr)
+v4hi getvram_4096_vec(Uint32 addr)
 {
-    volatile v8hi_t cbuf __attribute__((aligned(32)));
+    volatile v4hi cbuf __attribute__((aligned(32)));
     uint8_t dat[12];
         /*
          * R,G,Bについて8bit単位で描画する。
@@ -136,7 +135,7 @@ v8hi_t getvram_4096_vec(Uint32 addr)
          * ループの廃止を同時に行う
          */
     if(aPlanes == NULL) {
-       cbuf.v = (v8si){0,0,0,0,0,0,0,0};
+       cbuf.v = (v4si){0,0,0,0,0,0,0,0};
        return cbuf;
     }
     dat[PLAING3] = vram_pg[addr + 0x00000];
@@ -169,12 +168,12 @@ v8hi_t getvram_4096_vec(Uint32 addr)
    return cbuf;
 }
 
-v8hi_t getvram_8_vec(Uint32 addr)
+v4hi getvram_8_vec(Uint32 addr)
 {
     uint8_t dat[4];
-    volatile v8hi_t cbuf __attribute__((aligned(32)));
+    volatile v4hi cbuf __attribute__((aligned(32)));
     if(aPlanes == NULL) {
-       cbuf.v = (v8si){0,0,0,0,0,0,0,0};
+       cbuf.v = (v4si){0,0,0,0,0,0,0,0};
        return cbuf;
      }
         /*
@@ -191,8 +190,6 @@ v8hi_t getvram_8_vec(Uint32 addr)
              aPlanes[B1 + dat[PLAINR]] |
              aPlanes[B2 + dat[PLAING]];
 //   cbuf.v = (v8si){0,1,2,3,4,5,6,7};
-	
-	
    return cbuf;
 }
 
@@ -207,12 +204,12 @@ Uint32 lshift_5bit1v(v4hi *v)
    return ret;
 }
 
-v8hi_t lshift_6bit8v(v4hi *v)
+v4hi lshift_6bit8v(v4hi *v)
 {
-   v8hi_t r;
-   v8hi_t cbuf __attribute__((aligned(32)));
-   v8hi_t mask;
-   mask.v = (v8si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
+   v4hi r;
+   v4hi cbuf __attribute__((aligned(32)));
+   v4hi mask;
+   mask.v = (v4si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
    cbuf.v =
         aPlanes[B2 + v->b[0]] |
         aPlanes[B3 + v->b[1]] |
@@ -222,17 +219,17 @@ v8hi_t lshift_6bit8v(v4hi *v)
         aPlanes[R3 + v->b[5]];
    
    mask.v = mask.v & cbuf.v;
-   if(mask.v[0] != 0) cbuf.s[0] |= 0x03;
-   if(mask.v[1] != 0) cbuf.s[1] |= 0x03;
-   if(mask.v[2] != 0) cbuf.s[2] |= 0x03;
-   if(mask.v[3] != 0) cbuf.s[3] |= 0x03;
-   if(mask.v[4] != 0) cbuf.s[4] |= 0x03;
-   if(mask.v[5] != 0) cbuf.s[5] |= 0x03;
-   if(mask.v[6] != 0) cbuf.s[6] |= 0x03;
-   if(mask.v[7] != 0) cbuf.s[7] |= 0x03;
-//   r.v = mask.v != (v8si){0, 0, 0, 0, 0, 0, 0, 0};
-//   r.v &= (v8si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
-//   cbuf.v = cbuf.v |  r.v;
+//  if(mask.s[0] != 0) cbuf.s[0] |= 0x03;
+//   if(mask.s[1] != 0) cbuf.s[1] |= 0x03;
+//   if(mask.s[2] != 0) cbuf.s[2] |= 0x03;
+//   if(mask.s[3] != 0) cbuf.s[3] |= 0x03;
+//   if(mask.s[4] != 0) cbuf.s[4] |= 0x03;
+//   if(mask.s[5] != 0) cbuf.s[5] |= 0x03;
+//   if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
+//   if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
+   r.v = mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0};
+   r.v &= (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+   cbuf.v = cbuf.v |  r.v;
 	
   return cbuf;
 }

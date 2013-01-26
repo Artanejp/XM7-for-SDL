@@ -45,24 +45,23 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 //    UnlockVram();
 }
 
-static inline void  putword8_vec(Uint32 *disp, volatile v8hi_t c, volatile v8hi_t pal)
+static inline void  putword8_vec(Uint32 *disp, volatile v4hi c, volatile v8hi_t pal)
 {
-   v4hi *dst = (v4hi *)disp;
-   v4hi r1, r2, r3;
+   v8hi_t *dst = (v8hi_t *)disp;
+   v8hi_t r1, r2, r3;
    
    if(disp == NULL) return;
-   c.v &= (v8si){7, 7, 7, 7, 7, 7, 7, 7,};
+   
+   c.v &= (v4si){7, 7, 7, 7, 7, 7, 7, 7,};
+
    r1.i[0] = pal.i[c.s[0]]; // ?!
    r1.i[1] = pal.i[c.s[1]];
    r1.i[2] = pal.i[c.s[2]];
    r1.i[3] = pal.i[c.s[3]];
-   dst->v = r1.v;
-   dst++;
-   
-   r1.i[0] = pal.i[c.s[4]];
-   r1.i[1] = pal.i[c.s[5]];
-   r1.i[2] = pal.i[c.s[6]];
-   r1.i[3] = pal.i[c.s[7]];
+   r1.i[4] = pal.i[c.s[4]];
+   r1.i[5] = pal.i[c.s[5]];
+   r1.i[6] = pal.i[c.s[6]];
+   r1.i[7] = pal.i[c.s[7]];
    dst->v = r1.v;
 }
 
@@ -73,7 +72,7 @@ static inline void  putword8_vec(Uint32 *disp, volatile v8hi_t c, volatile v8hi_
  */
 void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
-    volatile v8hi_t c;
+    volatile v4hi c;
     v8hi_t *p1 = (v8hi_t *)rgbTTLGDI;
     v8hi_t pal;
     Uint8 *disp =(Uint8 *) p;

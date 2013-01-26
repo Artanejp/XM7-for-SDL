@@ -23,22 +23,19 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     rgbAnalogGDI[index] = ds;
 }
 
-static inline void putword2_vec(Uint32 *disp, volatile v8hi_t cbuf)
+static inline void putword2_vec(Uint32 *disp, volatile v4hi cbuf)
 {
-   v4hi *dst = (v4hi *)disp;
-   v4hi r1;
+   v8hi_t *dst = (v8hi_t *)disp;
+   v8hi_t r1;
    
    r1.i[0] = rgbAnalogGDI[cbuf.s[0]];
    r1.i[1] = rgbAnalogGDI[cbuf.s[1]];
    r1.i[2] = rgbAnalogGDI[cbuf.s[2]];
    r1.i[3] = rgbAnalogGDI[cbuf.s[3]];
-   dst->v = r1.v;
-   dst++;
-   
-   r1.i[0] = rgbAnalogGDI[cbuf.s[4]];
-   r1.i[1] = rgbAnalogGDI[cbuf.s[5]];
-   r1.i[2] = rgbAnalogGDI[cbuf.s[6]];
-   r1.i[3] = rgbAnalogGDI[cbuf.s[7]];
+   r1.i[4] = rgbAnalogGDI[cbuf.s[4]];
+   r1.i[5] = rgbAnalogGDI[cbuf.s[5]];
+   r1.i[6] = rgbAnalogGDI[cbuf.s[6]];
+   r1.i[7] = rgbAnalogGDI[cbuf.s[7]];
    dst->v = r1.v;
 }
 
@@ -49,7 +46,7 @@ static inline void putword2_vec(Uint32 *disp, volatile v8hi_t cbuf)
 void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
 //    Uint32 c[8];
-    v8hi_t c;
+    v4hi c;
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
 
