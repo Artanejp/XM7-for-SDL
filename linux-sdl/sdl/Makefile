@@ -20,7 +20,8 @@ VIDEODRVSRC = \
 SNDDRVSRC = \
 	api_snd2.cpp api_wavwriter.cpp  \
 	snd_buffer.cpp \
-	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
+	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp \
+	copysoundbuffer.c
 
 INPUTSRC = \
 	api_kbd.cpp api_js.cpp api_mouse.cpp \
