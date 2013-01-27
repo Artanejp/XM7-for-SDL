@@ -69,50 +69,65 @@ CFLAGS += -DUI_PT=$(UI_PT) -DSTAT_PT=$(STAT_PT)
 
 ifeq ($(OS),Windows)
 # OpenCL is disabled in windows...
+
 else
-ifdef USE_OPENCL
-CFLAGS += -D_USE_OPENCL
-endif
+
+ ifdef USE_OPENCL
+  CFLAGS += -D_USE_OPENCL
+ endif
 endif
 
 ifdef WITH_DEBUGGER
+
 CFLAGS += -D_WITH_DEBUGGER
+
 endif
 
 CFLAGS += -I. 
 CFLAGS += -I../ui-agar/ -I../sdl/ -I../vm/ -I../xm7-debugger/ -I../fmgen/ -I../
 
 ifdef CROSS_BUILD
+
 CFLAGS += -I/usr/$(CROSS_TARGET)/include -I$(CROSS_PREFIX)/include -I/usr/$(CROSS_TARGET)/include
+ 
  ifeq ($(OS),Windows)
 # Windows
 CFLAGS += -D_REENTRANT
 CFLAGS += `$(CROSS_PREFIX)/bin/sdl-config --cflags`
 CFLAGS += `$(CROSS_PREFIX)/bin/agar-config --cflags`
+ 
  else
+
 # Linux etc...
 CFLAGS += -pthread -D_REENTRANT
 CFLAGS += `$(CROSS_PREFIX)/bin/sdl-config --cflags`
 CFLAGS += `$(CROSS_PREFIX)/bin/agar-config --cflags`
+ 
  endif
+
 else # NOT CROSS
+
  ifeq ($(OS),Windows)
 # Windows
 CFLAGS += -D_REENTRANT
 CFLAGS += `sdl-config --cflags`
 CFLAGS += `agar-config --cflags`
+
  else
 # Linux etc...
 CFLAGS += -pthread -D_REENTRANT
 CFLAGS += `sdl-config --cflags`
 CFLAGS += `agar-config --cflags`
  endif
+
 endif
 
 
 # OpenMP
 ifdef USE_OPENMP
+
 CFLAGS += -fopenmp
+
 endif
 
 CFLAGS_DEBUG = -pg -g -O0 
@@ -138,6 +153,7 @@ CXXFLAGS_RELEASE +=  -O3
 #CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
 else
+
 CFLAGS_RELEASE += -pthread
 CFLAGS_RELEASE +=  -O3 -ftree-vectorize
 CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
@@ -169,40 +185,51 @@ ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 #LIBS = 
 #LIBS += `$(PREFIX)/bin/agar-config --libs` -lwinmm
 ## Uncomment below if you wish static-link agar.
+
 ifdef CROSS_BUILD
+
 LIBS += $(CROSS_PREFIX)/lib/libag_gui.a \
 	$(CROSS_PREFIX)/lib/libag_core.a \
 	$(CROSS_PREFIX)/lib/libag_dev.a \
 	-lpng -lfreetype \
 #	-lpthread -ldl \
 #	-lfontconfig
+
 LIBS += `$(CROSS_PREFIX)/bin/sdl-config --libs`
+
 else
+
 LIBS += `agar-config --libs`
 LIBS += `sdl-config --libs`
+
 endif
 
 
 
 ifeq ($(OS),Windows)
+
 #LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
  ifdef CROSS_BUILD
+
 LDFLAGS += -mwindows 
 LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/lib
+
  else
+
 LDFLAGS += -pthread -mwindows
+
  endif
 
 LIBS +=   -lSDL_mixer 
-#LIBS +=  -lmingw32 -lSDLmain -lSDL  
 
  ifdef USE_OPENGL
-LIBS += -lopengl32 
-#LIBS += -lGLU -lpthread libGL.so.1
+
+   LIBS += -lopengl32 
+   
  endif
 
  ifdef USE_OPENCL
-LIBS += -lOpenCL
+   LIBS += -lOpenCL
  endif
 
 
@@ -210,7 +237,9 @@ LIBS += -lintl -liconv -lcharset
 LIBS += -lpng -lfreetype
 
  ifdef USE_OPENMP
-LIBS += -lgomp
+ 
+  LIBS += -lgomp
+ 
  endif
 
 LIBS += -lpthread -lz \
@@ -221,7 +250,7 @@ else
 #LDFLAGS = 
 
  ifdef CROSS_BUILD
-LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(PREFIX)/lib
+   LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(PREFIX)/lib
  endif
 
 
@@ -232,16 +261,16 @@ LIBS += `agar-config --libs`
 LIBS +=  -lSDL_mixer
 
  ifdef USE_OPENGL
-LIBS += -lGL -lpthread
-#LIBS += -lGLU -lpthread libGL.so.1
+  LIBS += -lGL -lpthread
+  #LIBS += -lGLU -lpthread libGL.so.1
  endif
 
  ifdef USE_OPENCL
-LIBS += -lOpenCL
+   LIBS += -lOpenCL
  endif
 
  ifdef USE_OPENMP
-LIBS += -lgomp
+   LIBS += -lgomp
  endif
 
 #LIBS += -ljpeg -lpng -lfreetype -lfontconfig
