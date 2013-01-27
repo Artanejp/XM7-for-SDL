@@ -98,15 +98,13 @@ CFLAGS += `$(CROSS_PREFIX)/bin/agar-config --cflags`
 else # NOT CROSS
  ifeq ($(OS),Windows)
 # Windows
-CFLAGS = -D_REENTRANT
+CFLAGS += -D_REENTRANT
 CFLAGS += `sdl-config --cflags`
-#CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`
  else
 # Linux etc...
-CFLAGS = -pthread -D_REENTRANT
+CFLAGS += -pthread -D_REENTRANT
 CFLAGS += `sdl-config --cflags`
-#CFLAGS += -I/usr/local/include/SDL
 CFLAGS += `agar-config --cflags`
  endif
 endif
@@ -165,90 +163,90 @@ CXXFLAGS_DEBUG += $(ARCH_FLAGS)
 
 ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
+
 ##################### Linker Flags #####################
 ## Uncomment below if you *not* wish static-link agar.
+#LIBS = 
 #LIBS += `$(PREFIX)/bin/agar-config --libs` -lwinmm
 ## Uncomment below if you wish static-link agar.
 ifdef CROSS_BUILD
 LIBS += $(CROSS_PREFIX)/lib/libag_gui.a \
 	$(CROSS_PREFIX)/lib/libag_core.a \
 	$(CROSS_PREFIX)/lib/libag_dev.a \
-	-lwinmm \
 	-lpng -lfreetype \
+#	-lpthread -ldl \
 #	-lfontconfig
 LIBS += `$(CROSS_PREFIX)/bin/sdl-config --libs`
 else
-LIBS += $(PREFIX)/lib/libag_gui.a \
-	$(PREFIX)/lib/libag_core.a \
-	$(PREFIX)/lib/libag_dev.a \
-	-lwinmm \
-	-lpng -lfreetype \
-#	-lfontconfig
-LIBS += `$(PREFIX)/bin/sdl-config --libs`
+LIBS += `agar-config --libs`
+LIBS += `sdl-config --libs`
 endif
 
 
 
 ifeq ($(OS),Windows)
 #LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
-ifdef CROSS_BUILD
-LDFLAGS = -mwindows 
+ ifdef CROSS_BUILD
+LDFLAGS += -mwindows 
 LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/lib
-else
-LDFLAGS = -pthread -mwindows
-endif
+ else
+LDFLAGS += -pthread -mwindows
+ endif
 
 LIBS +=   -lSDL_mixer 
 #LIBS +=  -lmingw32 -lSDLmain -lSDL  
 
-ifdef USE_OPENGL
+ ifdef USE_OPENGL
 LIBS += -lopengl32 
 #LIBS += -lGLU -lpthread libGL.so.1
-endif
+ endif
 
-ifdef USE_OPENCL
+ ifdef USE_OPENCL
 LIBS += -lOpenCL
-endif
+ endif
 
 
 LIBS += -lintl -liconv -lcharset
 LIBS += -lpng -lfreetype
 
-ifdef USE_OPENMP
+ ifdef USE_OPENMP
 LIBS += -lgomp
-endif
+ endif
 
-LIBS += -lpthread -lz
+LIBS += -lpthread -lz \
+	-lwinmm 
+	
 else
 # Linux
-LDFLAGS = 
-ifdef CROSS_BUILD
+#LDFLAGS = 
+
+ ifdef CROSS_BUILD
 LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(PREFIX)/lib
-endif
+ endif
+
+
 LIBS += -L/usr/local/lib
-ifdef CROSS_BUILD
-#LIBS += `$(CROSS_PREFIX)/bin/agar-config --libs`
-LIBS += `$(CROSS_PREFIX)/bin/sdl-config --libs`
-else
 LIBS += `sdl-config --libs`
 LIBS += `agar-config --libs`
-#LIBS +=  -lSDL_mixer -lSDL_ttf
-endif
 
-ifdef USE_OPENGL
+LIBS +=  -lSDL_mixer
+
+ ifdef USE_OPENGL
 LIBS += -lGL -lpthread
 #LIBS += -lGLU -lpthread libGL.so.1
-endif
+ endif
 
+ ifdef USE_OPENCL
+LIBS += -lOpenCL
+ endif
+
+ ifdef USE_OPENMP
+LIBS += -lgomp
+ endif
 
 #LIBS += -ljpeg -lpng -lfreetype -lfontconfig
 
-ifdef USE_OPENMP
-LIBS += -lgomp
-endif
-
 ## Uncomment below if you *not* wish static-link agar.
-#LIBS += `agar-config --libs`
 
 ## Uncomment below if you wish static-link agar.
 #LIBS += /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a \
@@ -256,13 +254,11 @@ endif
 #	-lXinerama -ljpeg -lpng -lfreetype \
 #	-lfontconfig
 
-ifdef USE_OPENCL
-LIBS += -lOpenCL
-endif
 
 endif
 
-LIBS_RELEASE = ../ui-agar/Release/libui-agar.a
+LIBS_RELEASE =
+LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a
 LIBS_RELEASE += ../fmgen/Release/libfmgen007a.a
 

@@ -67,7 +67,7 @@ $(TARGET_RELEASE): ${OBJS_RELEASE} ${LIBS_RELEASE}
 	#strip $(TARGET_RELEASE)
 
 $(TARGET_DEBUG): ${OBJS_DEBUG} ${LIBS_DEBUG}
-	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG)  $^ ${LIBS_DEBUG}  ${LIBS}
+	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG)  $^ ${LIBS_DEBUG} ${LIBS}
 
 
 -include ../rules.mak
