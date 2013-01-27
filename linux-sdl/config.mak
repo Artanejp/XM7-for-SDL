@@ -10,10 +10,10 @@
 USE_OPENGL      = Yes
 
 # Uncomment if using OpenMP, Debian's MinGW-GCC is *not* supported,yet.
-#USE_OPENMP      = Yes
+USE_OPENMP      = Yes
 
 # Uncomment if using OpenCL for rendering
-#USE_OPENCL      = Yes
+USE_OPENCL      = Yes
 
 # Uncomment if using debugger.
 WITH_DEBUGGER   = Yes
