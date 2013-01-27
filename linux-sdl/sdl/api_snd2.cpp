@@ -607,7 +607,7 @@ static DWORD Render1(DWORD ttime, BOOL bZero)
    int samples;
 
    samples  = SndCalcSamples(pOpnBuf, ttime);
-
+   if(samples > ((uRate * uTick ) / 2000)) samples = (uRate * uTick ) / 2000;
    max = RenderSub(pOpnBuf, DrvOPN, ttime, samples, bZero);
    n = RenderSub(pBeepBuf, DrvBeep, ttime, samples, bZero);
    if(n > max) max = n;
@@ -907,7 +907,7 @@ static BOOL SndFlush(DWORD ttime, DWORD ms, BOOL bZero)
    int chunksize;
    BOOL r;
 
-   chunksize = (ms * uRate * 2) / 1000;
+   chunksize = (ms * uRate) / 1000;
    //if(DrvOPN) chunksize -= DrvOPN->GetRenderCounter();
    if(chunksize <= 0) return TRUE;
    r = SndFlushSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);

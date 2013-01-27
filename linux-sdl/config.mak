@@ -10,10 +10,10 @@
 USE_OPENGL      = Yes
 
 # Uncomment if using OpenMP, Debian's MinGW-GCC is *not* supported,yet.
-USE_OPENMP      = Yes
+#USE_OPENMP      = Yes
 
 # Uncomment if using OpenCL for rendering
-USE_OPENCL      = Yes
+#USE_OPENCL      = Yes
 
 # Uncomment if using debugger.
 WITH_DEBUGGER   = Yes
@@ -26,19 +26,19 @@ WITH_DEBUGGER   = Yes
 PREFIX           = $(HOME)/src/mingw-crossbuild
 
 # Uncomment if cross-build
-#CROSS_BUILD    = Yes
-#CROSS_TARGET   = i686-w64-mingw32
-#CROSS_PREFIX    = $(HOME)/src/mingw-crossbuild
+CROSS_BUILD    = Yes
+CROSS_TARGET   = i686-w64-mingw32
+CROSS_PREFIX    = $(HOME)/src/mingw-crossbuild
 
 
 
 # SET Arch specified
-#ARCH_FLAGS       = -mmmx -msse -msse2 -mfpmath=sse -m32
-ARCH_FLAGS       = -mmmx -msse -msse2 -mfpmath=sse
+ARCH_FLAGS       =  -mmmx -msse -msse2 -mfpmath=sse
+#ARCH_FLAGS       = -mmmx -msse -msse2 -mfpmath=sse
 #ARCH_FLAGS      = -march=amdfam10
 
-#OS               = Windows
-OS               = Linux
+OS               = Windows
+#OS               = Linux
 
 #################### UI  ############################
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること

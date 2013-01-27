@@ -41,7 +41,7 @@ ifeq ($(OS),Windows)
 SHAREDIR         = ./xm7/
 FONTPATH           = :.:./.xm7/:./xm7/:
 CONFPATH	= \"./xm7/\"
-OPTION          += -m32
+OPTION          += -m32 -mwindows
 OPTION		+= -D_WINDOWS
 TARGET_DEBUG    = xm7.debug.exe
 TARGET_RELEASE  = xm7.exe
@@ -188,13 +188,14 @@ ASFLAGS =	-DXM7_VER=$(XM7_VER) -f elf -d _XWIN
 
 ifdef CROSS_BUILD
 
-LIBS += $(CROSS_PREFIX)/lib/libag_gui.a \
-	$(CROSS_PREFIX)/lib/libag_core.a \
-	$(CROSS_PREFIX)/lib/libag_dev.a \
-	-lpng -lfreetype \
-#	-lpthread -ldl \
+#LIBS += $(CROSS_PREFIX)/lib/libag_gui.a \
+#	$(CROSS_PREFIX)/lib/libag_core.a \
+#	$(CROSS_PREFIX)/lib/libag_dev.a \
+#	-lpng -lfreetype \
+#	-lpthread \
 #	-lfontconfig
 
+LIBS += `$(CROSS_PREFIX)/bin/agar-config --libs`
 LIBS += `$(CROSS_PREFIX)/bin/sdl-config --libs`
 
 else
@@ -208,7 +209,7 @@ endif
 
 ifeq ($(OS),Windows)
 
-LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
+#LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
  ifdef CROSS_BUILD
 
 LDFLAGS += -mwindows 
@@ -242,7 +243,7 @@ LIBS += -lpng -lfreetype
  
  endif
 
-LIBS += -lwinpthread -lz \
+LIBS += -lpthread -lz \
 	-lwinmm 
 	
 else
