@@ -235,7 +235,7 @@ LIBS +=   -lSDL_mixer
 
 
 LIBS += -lintl -liconv -lcharset
-LIBS += -lpng -lfreetype
+LIBS += -lpng -lfreetype -lwinmm
 
  ifdef USE_OPENMP
  
@@ -244,7 +244,7 @@ LIBS += -lpng -lfreetype
  endif
 
 LIBS += -lpthread -lz \
-	-lwinmm 
+#	-lwinmm 
 	
 else
 # Linux
