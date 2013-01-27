@@ -7,11 +7,9 @@
 #ifndef PSG_H
 #define PSG_H
 
-#include "misc.h"
+#include "cisc.h"
 
 #define PSG_SAMPLETYPE		int32		// int32 or int16
-//#define PSG_SAMPLETYPE		int16		// int32 or int16
-
 #define PSG_IPSCALE			16384
 #define PSG_INTERPOLATE(y, x)	\
 	(((((((-y[0]+3*y[1]-3*y[2]+y[3]) * x + PSG_IPSCALE/2) / PSG_IPSCALE \

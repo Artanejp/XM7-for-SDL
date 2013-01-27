@@ -21,7 +21,7 @@
 //		ほか掲示板等で様々なご助言，ご支援をお寄せいただいた皆様に
 // ---------------------------------------------------------------------------
 
-#include "misc.h"
+#include "cisc.h"
 #include "fmgen.h"
 #include "fmgeninl.h"
 
@@ -38,16 +38,16 @@ namespace FM
 {
 	const uint8 Operator::notetable[128] =
 	{
-		 0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  3,  3,  3,  3,  3,  3,
-		 4,  4,  4,  4,  4,  4,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7,
-		 8,  8,  8,  8,  8,  8,  8,  9, 10, 11, 11, 11, 11, 11, 11, 11,
-		12, 12, 12, 12, 12, 12, 12, 13, 14, 15, 15, 15, 15, 15, 15, 15,
-		16, 16, 16, 16, 16, 16, 16, 17, 18, 19, 19, 19, 19, 19, 19, 19,
-		20, 20, 20, 20, 20, 20, 20, 21, 22, 23, 23, 23, 23, 23, 23, 23,
-		24, 24, 24, 24, 24, 24, 24, 25, 26, 27, 27, 27, 27, 27, 27, 27,
-		28, 28, 28, 28, 28, 28, 28, 29, 30, 31, 31, 31, 31, 31, 31, 31,
+		 0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  3,  3,  3,  3,  3,  3, 
+		 4,  4,  4,  4,  4,  4,  4,  5,  6,  7,  7,  7,  7,  7,  7,  7, 
+		 8,  8,  8,  8,  8,  8,  8,  9, 10, 11, 11, 11, 11, 11, 11, 11, 
+		12, 12, 12, 12, 12, 12, 12, 13, 14, 15, 15, 15, 15, 15, 15, 15, 
+		16, 16, 16, 16, 16, 16, 16, 17, 18, 19, 19, 19, 19, 19, 19, 19, 
+		20, 20, 20, 20, 20, 20, 20, 21, 22, 23, 23, 23, 23, 23, 23, 23, 
+		24, 24, 24, 24, 24, 24, 24, 25, 26, 27, 27, 27, 27, 27, 27, 27, 
+		28, 28, 28, 28, 28, 28, 28, 29, 30, 31, 31, 31, 31, 31, 31, 31, 
 	};
-
+	
 	const int8 Operator::dttable[256] =
 	{
 		  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -68,7 +68,7 @@ namespace FM
 		-16,-16,-18,-20,-22,-24,-26,-28,-32,-34,-38,-40,-44,-44,-44,-44,
 	};
 
-	const int8 Operator::decaytable1[64][8] =
+	const int8 Operator::decaytable1[64][8] = 
 	{
 		{0, 0, 0, 0, 0, 0, 0, 0},		{0, 0, 0, 0, 0, 0, 0, 0},
 		{1, 1, 1, 1, 1, 1, 1, 1},		{1, 1, 1, 1, 1, 1, 1, 1},
@@ -104,12 +104,12 @@ namespace FM
 		{16,16,16,16,16,16,16,16},		{16,16,16,16,16,16,16,16},
 	};
 
-	const int Operator::decaytable2[16] =
+	const int Operator::decaytable2[16] = 
 	{
 		1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2047, 2047, 2047, 2047, 2047
 	};
 
-	const int8 Operator::attacktable[64][8] =
+	const int8 Operator::attacktable[64][8] = 
 	{
 		{-1,-1,-1,-1,-1,-1,-1,-1},	{-1,-1,-1,-1,-1,-1,-1,-1},
 		{ 4, 4, 4, 4, 4, 4, 4, 4},	{ 4, 4, 4, 4, 4, 4, 4, 4},
@@ -164,24 +164,24 @@ void MakeLFOTable()
 		return;
 
 	tablemade = true;
-
+	
 	int i;
 
-	static const double pms[2][8] =
-	{
+	static const double pms[2][8] = 
+	{ 
 		{ 0, 1/360., 2/360., 3/360.,  4/360.,  6/360., 12/360.,  24/360., },	// OPNA
-                { 0, 1/480., 2/480., 4/480., 10/480., 20/480., 80/480., 140/480., },    // OPM
+		{ 0, 1/480., 2/480., 4/480., 10/480., 20/480., 80/480., 140/480., },	// OPM
 	};
 	//		 3		 6,      12      30       60       240      420		/ 720
 	//	1.000963
 	//	lfofref[level * max * wave];
 	//	pre = lfofref[level][pms * wave >> 8];
-	static const uint8 amt[2][4] =
+	static const uint8 amt[2][4] = 
 	{
 		{ 31, 6, 4, 3 }, // OPNA
 		{ 31, 2, 1, 0 }, //	OPM
 	};
-
+	
 	for (int type = 0; type < 2; type++)
 	{
 		for (i=0; i<8; i++)
@@ -222,11 +222,9 @@ Chip::Chip()
 //	クロック・サンプリングレート比に依存するテーブルを作成
 void Chip::SetRatio(uint ratio)
 {
-	volatile uint r;
-	r = (volatile uint)ratio;
-	if (ratio_ != r)
+	if (ratio_ != ratio)
 	{
-		ratio_ = r;
+		ratio_ = ratio;
 		MakeTable();
 	}
 }
@@ -234,7 +232,7 @@ void Chip::SetRatio(uint ratio)
 void Chip::MakeTable()
 {
 	int h, l;
-
+	
 	// PG Part
 	static const float dt2lv[4] = { 1.f, 1.414f, 1.581f, 1.732f };
 	for (h=0; h<4; h++)
@@ -245,7 +243,7 @@ void Chip::MakeTable()
 		for (l=0; l<16; l++)
 		{
 			int mul = l ? l * 2 : 1;
-			multable_[h][l] = (uint32)(mul * rr); // Get rid of Optimize.
+			multable_[h][l] = uint(mul * rr);
 		}
 	}
 
@@ -254,7 +252,7 @@ void Chip::MakeTable()
 	for (h=1; h<16; h++)
 	{
 		assert(FM_EGBITS - FM_RATIOBITS >= 0);
-		ratetable_[h] =
+		ratetable_[h] = 
 			((ratio_ << (FM_EGBITS - FM_RATIOBITS)) << Min(h, 11));
 //		printf("%.2d %d: %8x\n", h, l, rate_table[h]);
 	}
@@ -279,7 +277,8 @@ FM::Operator::Operator()
 	mute_ = false;
 	keyon_ = false;
 	tl_out_ = false;
-        ssg_type_ = 0;
+	ssg_type_ = 0;
+
 	// PG Part
 	multiple_ = 0;
 	detune_ = 0;
@@ -287,7 +286,7 @@ FM::Operator::Operator()
 
 	// LFO
 	ms_ = 0;
-
+	
 	Reset();
 }
 
@@ -353,7 +352,7 @@ void Operator::MakeTable()
 
 inline void FM::Operator::SetDPBN(uint dp, uint bn)
 {
-	dp_ = dp, bn_ = bn; param_changed_ = true;
+	dp_ = dp, bn_ = bn; param_changed_ = true; 
 	PARAMCHANGE(1);
 }
 
@@ -390,8 +389,6 @@ void FASTCALL Operator::Prepare()
 		case release:
 			SetEGRate(Min(63, rr_ + key_scale_rate_));
 			break;
-        default:
-            break;
 		}
 
 		// LFO
@@ -524,7 +521,7 @@ inline FM::ISample Operator::LogToLin(uint a)
 
 inline void Operator::EGUpdate()
 {
-//	int tmp;
+	int tmp;
 
 	if (!ssg_type_)
 	{
@@ -644,10 +641,10 @@ inline FM::ISample FM::Operator::CalcL(ISample in)
 inline FM::ISample FM::Operator::CalcN(uint noise)
 {
 	EGStep();
-
+	
 	int lv = Max(0, 0x3ff - (tl_out_ + eg_level_)) << 1;
-
-	// noise & 1 ? lv : -lv と等価
+	
+	// noise & 1 ? lv : -lv と等価 
 	noise = (noise & 1) - 1;
 	out_ = (lv + noise) ^ noise;
 
@@ -678,7 +675,7 @@ inline FM::ISample FM::Operator::CalcFB(uint fb)
 inline FM::ISample FM::Operator::CalcFBL(uint fb)
 {
 	EGStep();
-
+	
 	ISample in = out_ + out2_;
 	out2_ = out_;
 
@@ -739,7 +736,7 @@ int FASTCALL Channel4::Prepare()
 	op[1].Prepare();
 	op[2].Prepare();
 	op[3].Prepare();
-
+	
 	pms = pmtable[op[0].type_][op[0].ms_ & 7];
 	int key = (op[0].IsOn() | op[1].IsOn() | op[2].IsOn() | op[3].IsOn()) ? 1 : 0;
 	int lfo = op[0].ms_ & (op[0].amon_ | op[1].amon_ | op[2].amon_ | op[3].amon_ ? 0x37 : 7) ? 2 : 0;
@@ -758,10 +755,10 @@ void FASTCALL Channel4::SetFNum(uint f)
 void FASTCALL Channel4::SetKCKF(uint kc, uint kf)
 {
 	// 理論値
-	const static uint kctable[16] =
-	{
-		5197, 5506, 5833, 6180, 6180, 6547, 6937, 7349,
-		7349, 7786, 8249, 8740, 8740, 9259, 9810, 10394,
+	const static uint kctable[16] = 
+	{ 
+		5197, 5506, 5833, 6180, 6180, 6547, 6937, 7349, 
+		7349, 7786, 8249, 8740, 8740, 9259, 9810, 10394, 
 	};
 
 	int oct = 19 - ((kc >> 4) & 7);
@@ -791,7 +788,7 @@ void FASTCALL Channel4::KeyControl(uint key)
 //	アルゴリズムを設定
 void FASTCALL Channel4::SetAlgorithm(uint algo)
 {
-	static const uint8 table1[8][6] =
+	static const uint8 table1[8][6] = 
 	{
 		{ 0, 1, 1, 2, 2, 3 },	{ 1, 0, 0, 1, 1, 2 },
 		{ 1, 1, 1, 0, 0, 2 },	{ 0, 1, 2, 1, 1, 2 },
@@ -813,7 +810,7 @@ void FASTCALL Channel4::SetAlgorithm(uint algo)
 //  合成
 ISample FASTCALL Channel4::Calc()
 {
-	int r = 0;
+	int r;
 	switch (algo_)
 	{
 	case 0:
@@ -873,7 +870,7 @@ ISample FASTCALL Channel4::CalcL()
 {
 	chip_->SetPMV(pms[chip_->GetPML()]);
 
-	int r = 0;
+	int r;
 	switch (algo_)
 	{
 	case 0:
@@ -947,7 +944,7 @@ ISample FASTCALL Channel4::CalcLN(uint noise)
 	chip_->SetPMV(pms[chip_->GetPML()]);
 	buf[1] = buf[2] = buf[3] = 0;
 
-	buf[0] = op[0].out_; op[0].CalcFBL(fb);
+	buf[0] = op[0].out_; op[0].CalcFBL(fb); 
 	*out[0] += op[1].CalcL(*in[0]);
 	*out[1] += op[2].CalcL(*in[1]);
 	int o = op[3].out_;

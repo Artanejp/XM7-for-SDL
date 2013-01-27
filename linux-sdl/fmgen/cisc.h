@@ -1,10 +1,10 @@
 /*
- *      FM-7 EMULATOR "XM7"
+ *	FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *	Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2012 Ryu Takegami
  *
- *      [ FM音源ユニット接続 ]
+ *	[ FM音源ユニット接続 ]
  */
 
 #ifndef _cisc_h_
@@ -35,7 +35,7 @@ typedef unsigned long ulong;
 
 typedef unsigned char uint8;
 typedef unsigned short uint16;
-typedef unsigned int uint32;
+typedef unsigned int  uint32;
 
 typedef signed char sint8;
 typedef signed short sint16;
@@ -45,31 +45,14 @@ typedef signed char int8;
 typedef signed short int16;
 typedef signed int int32;
 
-inline int
-Max(int x, int y)
-{
-    return (x > y) ? x : y;
-}
+inline int Max(int x, int y) { return (x > y) ? x : y; }
+inline int Min(int x, int y) { return (x < y) ? x : y; }
+inline int Abs(int x) { return x >= 0 ? x : -x; }
 
-inline int
-Min(int x, int y)
-{
-    return (x < y) ? x : y;
+inline int Limit(int v, int max, int min) 
+{ 
+	return v > max ? max : (v < min ? min : v); 
 }
-
-inline int
-Abs(int x)
-{
-    return x >= 0 ? x : -x;
-}
-
-inline int
-Limit(int v, int max, int min)
-{
-    return v > max ? max : (v < min ? min : v);
-}
-
-#define FASTCALL
 
 #if !defined(FASTCALL)
 #if defined(_WIN32) && (defined(__BORLANDC__) || (defined(_MSC_VER) && defined(_M_IX86)))
@@ -79,4 +62,4 @@ Limit(int v, int max, int min)
 #endif
 #endif
 
-#endif				/* _cisc_h_ */
+#endif	/* _cisc_h_ */

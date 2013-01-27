@@ -5,6 +5,7 @@
 //	$Id: psg.cpp,v 1.9 2000/09/08 13:45:57 cisc Exp $
 
 #include <string.h>
+#include "cisc.h"
 #include "psg.h"
 
 // ---------------------------------------------------------------------------
@@ -261,11 +262,11 @@ void PSG::Mix(Sample* dest, int nsamples)
 		nenable[1]  = (uint8)((r7 >> 4) & 1);
 		nenable[2]  = (uint8)((r7 >> 5) & 1);
 
-		int32 noise, sample;
-		uint32 env;
-		uint32* p1 = ((mask & 1) && (reg[ 8] & 0x10)) ? &env : &olevel[0];
-		uint32* p2 = ((mask & 2) && (reg[ 9] & 0x10)) ? &env : &olevel[1];
-		uint32* p3 = ((mask & 4) && (reg[10] & 0x10)) ? &env : &olevel[2];
+		int noise, sample;
+		uint env;
+		uint* p1 = ((mask & 1) && (reg[ 8] & 0x10)) ? &env : &olevel[0];
+		uint* p2 = ((mask & 2) && (reg[ 9] & 0x10)) ? &env : &olevel[1];
+		uint* p3 = ((mask & 4) && (reg[10] & 0x10)) ? &env : &olevel[2];
 		int32 delta = mixdelta;
 
 		#define SCOUNT(ch)	(scount[ch] >> (toneshift+oversampling))
@@ -468,11 +469,11 @@ void PSG::Mix2(Sample* dest, int nsamples, int vol_l, int vol_r)
 		nenable[1]  = (uint8)((r7 >> 4) & 1);
 		nenable[2]  = (uint8)((r7 >> 5) & 1);
 
-		int32 noise, sample;
-		uint32 env;
-		uint32* p1 = ((mask & 1) && (reg[ 8] & 0x10)) ? &env : &olevel[0];
-		uint32* p2 = ((mask & 2) && (reg[ 9] & 0x10)) ? &env : &olevel[1];
-		uint32* p3 = ((mask & 4) && (reg[10] & 0x10)) ? &env : &olevel[2];
+		int noise, sample;
+		uint env;
+		uint* p1 = ((mask & 1) && (reg[ 8] & 0x10)) ? &env : &olevel[0];
+		uint* p2 = ((mask & 2) && (reg[ 9] & 0x10)) ? &env : &olevel[1];
+		uint* p3 = ((mask & 4) && (reg[10] & 0x10)) ? &env : &olevel[2];
 		int32 delta = mixdelta;
 
 		#define SCOUNT(ch)	(scount[ch] >> (toneshift+oversampling))
@@ -525,6 +526,7 @@ void PSG::Mix2(Sample* dest, int nsamples, int vol_l, int vol_r)
 
 					*dest++ += ((sample * vol_l) >> 4);
 					*dest++ += ((sample * vol_r) >> 4);
+
 				}
 			}
 			else
@@ -581,7 +583,6 @@ void PSG::Mix2(Sample* dest, int nsamples, int vol_l, int vol_r)
 
 					*dest++ += ((sample * vol_l) >> 4);
 					*dest++ += ((sample * vol_r) >> 4);
-
 				}
 			}
 
