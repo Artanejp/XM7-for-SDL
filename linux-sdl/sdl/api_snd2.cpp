@@ -907,7 +907,7 @@ static BOOL SndFlush(DWORD ttime, DWORD ms, BOOL bZero)
    int chunksize;
    BOOL r;
 
-   chunksize = (ms * uRate) / 1000;
+   chunksize = (ms * uRate * 2) / 1000;
    //if(DrvOPN) chunksize -= DrvOPN->GetRenderCounter();
    if(chunksize <= 0) return TRUE;
    r = SndFlushSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);

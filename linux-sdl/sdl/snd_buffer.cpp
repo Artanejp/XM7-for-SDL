@@ -364,8 +364,8 @@ BOOL SndFlushSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, 
    if(p == NULL) return FALSE;
    if(drv == NULL) return FALSE;
    if(maxchunk <= 0) return FALSE;
-//   chunksize = maxchunk  - (p->nWritePTR % maxchunk);
-   chunksize = maxchunk;
+   chunksize = maxchunk  - (p->nWritePTR % maxchunk);
+//   chunksize = maxchunk;
    if(chunksize <= 0) return TRUE;
 	/*
 	 * オーバーフロー対策込
