@@ -41,7 +41,7 @@ ifeq ($(OS),Windows)
 SHAREDIR         = ./xm7/
 FONTPATH           = :.:./.xm7/:./xm7/:
 CONFPATH	= \"./xm7/\"
-#OPTION          += -mwindows -m32
+OPTION          += -m32
 OPTION		+= -D_WINDOWS
 TARGET_DEBUG    = xm7.debug.exe
 TARGET_RELEASE  = xm7.exe
@@ -146,10 +146,10 @@ CXXFLAGS_RELEASE =  $(CXXFLAGS)
 #CXXFLAGS_RELEASE += -O3
 
 ifeq ($(OS),Windows)
-CFLAGS_RELEASE +=  -O3
+CFLAGS_RELEASE +=  -O1
 #CFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
-CXXFLAGS_RELEASE +=  -O3
+CXXFLAGS_RELEASE +=  -O1
 #CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
 else
@@ -208,7 +208,7 @@ endif
 
 ifeq ($(OS),Windows)
 
-#LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
+LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
  ifdef CROSS_BUILD
 
 LDFLAGS += -mwindows 
@@ -242,7 +242,7 @@ LIBS += -lpng -lfreetype
  
  endif
 
-LIBS += -lpthread -lz \
+LIBS += -lwinpthread -lz \
 	-lwinmm 
 	
 else

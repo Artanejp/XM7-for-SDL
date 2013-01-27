@@ -380,11 +380,6 @@ void SndDrvOpn::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
    p = &(p[ofset * channels]);
    q = (WORD *)dst;
    q = &(q[ofset * channels]);
-//	if(ofset <= 0){
-   //		memset(dst, 0x00, (ms * srate * channels * sizeof(Sint16)) / 1000);
-//	}
-
-//   memset(q, 0x00 , samples * channels * sizeof(Sint16));
    CopySoundBufferGeneric(p, q, (int)(samples * channels));
    SDL_SemPost(RenderSem);
 }

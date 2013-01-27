@@ -193,16 +193,6 @@ v4hi getvram_8_vec(Uint32 addr)
    return cbuf;
 }
 
-Uint32 lshift_5bit1v(v4hi *v)
-{
-   Uint32 ret;
-
-   ret =(v->b[0] & 0x80)>>5 | (v->b[1] & 0x80)>>4 | (v->b[2] & 0x80)>>3 
-      | (v->b[3] & 0x80)>>2 | (v->b[4] & 0x80)>>1 | (v->b[5] & 0x80);
-   if((ret & 0x000000f8)!=0) ret |= 0x000003;
-   v->v = v->v << 1;
-   return ret;
-}
 
 v4hi lshift_6bit8v(v4hi *v)
 {
