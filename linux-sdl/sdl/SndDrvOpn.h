@@ -11,7 +11,7 @@
 //#include <SDL/SDL.h>
 //#include <SDL/SDL_mixer.h>
 #include "xm7.h"
-#include "../fmgen/misc.h"
+#include "../fmgen/cisc.h"
 #include "opna.h"
 
 #include "fmgen.h"

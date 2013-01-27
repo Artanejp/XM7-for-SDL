@@ -7,7 +7,7 @@
 #ifndef FM_GEN_H
 #define FM_GEN_H
 
-#include "misc.h"
+#include "cisc.h"
 
 // ---------------------------------------------------------------------------
 //	出力サンプルの型
@@ -38,7 +38,6 @@ namespace FM
 	//	Types ----------------------------------------------------------------
 	typedef FM_SAMPLETYPE	Sample;
 	typedef int32 			ISample;
-//	typedef int16 			ISample;
 
 	enum OpType { typeN=0, typeM=1 };
 	
@@ -182,7 +181,7 @@ namespace FM
 
 	//	friends --------------------------------------------------------------
 		friend class Channel4;
-		friend void FM_NextPhase(Operator* op);
+		//friend void __stdcall FM_NextPhase(Operator* op);
 
 	public:
 		int		dbgopout_;
@@ -248,7 +247,7 @@ namespace FM
 		uint	GetPML() { return pml_; }
 		int		GetPMV() { return pmv_; }
 
-		volatile uint	ratio_;
+		uint	ratio_;
 
 	private:
 		void	MakeTable();
