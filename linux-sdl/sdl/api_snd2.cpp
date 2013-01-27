@@ -810,16 +810,16 @@ static void SetChunkSub(Mix_Chunk *p, Sint16 *buf, Uint32 len, int volume)
 
 static int SetChunk(struct SndBufType *p, int ch)
 {
-	int i = p->nChunkNo;
-	int j;
-	int channels = 2;
+    int i = p->nChunkNo;
+    int j;
+    int channels = 2;
     int samples;
 
-//    if(p->nWritePTR > p->nReadPTR) {
-//        samples = p->nReadPTR - p->nWritePTR;
-//    } else{
+    if(p->nWritePTR > p->nReadPTR) {
         samples = p->nReadPTR - p->nWritePTR;
-//    }
+    } else{
+        samples = p->nReadPTR - p->nWritePTR;
+    }
    if(samples == 0) return 0;
    if(samples < 0) samples += p->nSize;
    j = p->nSize - p->nReadPTR;
@@ -908,6 +908,8 @@ static BOOL SndFlush(DWORD ttime, DWORD ms, BOOL bZero)
    BOOL r;
 
    chunksize = (ms * uRate * 2) / 1000;
+   //if(DrvOPN) chunksize -= DrvOPN->GetRenderCounter();
+   if(chunksize <= 0) return TRUE;
    r = SndFlushSub(pOpnBuf, DrvOPN, ttime, bZero, chunksize);
    r &= SndFlushSub(pBeepBuf, DrvBeep, ttime, bZero, chunksize);
    r &= SndFlushSub(pCMTBuf, DrvCMT, ttime, bZero, chunksize);
@@ -963,7 +965,7 @@ void ProcessSnd(BOOL bZero)
 		// フラッシュする
         if(applySem) {
             SDL_SemWait(applySem);
-	    Render1(ttime, bZero);
+//	    Render1(ttime, bZero);
 	    SndFlush(ttime, dwSndCount, bZero);
 		/*
 		 * 演奏本体

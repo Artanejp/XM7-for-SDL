@@ -348,8 +348,8 @@ DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, B
 		if(j > 0) {
 			j = drv->Render(p->pBuf32, p->pBuf, p->nWritePTR, j,  FALSE, bZero);
 			p->nWritePTR += j;
-			if(p->nWritePTR >= p->nSize) p->nWritePTR -= p->nSize;
-//			if(p->nWritePTR >= p->nSize) p->nWritePTR = 0;
+//			if(p->nWritePTR >= p->nSize) p->nWritePTR -= p->nSize;
+			if(p->nWritePTR >= p->nSize) p->nWritePTR = 0;
 //		       printf("SND:DBG:RENDER:%08x Size=%d\n", p->pBuf, j);
 		}
 	}
