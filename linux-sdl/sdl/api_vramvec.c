@@ -56,7 +56,7 @@ static v4si *initvramtblsub(int size)
 #ifndef _WINDOWS
    if(posix_memalign((void **)&p, 32, sizeof(v4si) * size) != 0) return NULL;
 #else
-   p = (v4si *)__mingw_aligned_malloc(sizeof(v4si) * size, 32, 0);
+   p = (v4si *)__mingw_aligned_malloc(sizeof(v4si) * size, 32);
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -219,17 +219,17 @@ v4hi lshift_6bit8v(v4hi *v)
         aPlanes[R3 + v->b[5]];
    
    mask.v = mask.v & cbuf.v;
-//  if(mask.s[0] != 0) cbuf.s[0] |= 0x03;
-//   if(mask.s[1] != 0) cbuf.s[1] |= 0x03;
-//   if(mask.s[2] != 0) cbuf.s[2] |= 0x03;
-//   if(mask.s[3] != 0) cbuf.s[3] |= 0x03;
-//   if(mask.s[4] != 0) cbuf.s[4] |= 0x03;
-//   if(mask.s[5] != 0) cbuf.s[5] |= 0x03;
-//   if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
-//   if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
-   r.v = mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0};
-   r.v &= (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
-   cbuf.v = cbuf.v |  r.v;
+   if(mask.s[0] != 0) cbuf.s[0] |= 0x03;
+   if(mask.s[1] != 0) cbuf.s[1] |= 0x03;
+   if(mask.s[2] != 0) cbuf.s[2] |= 0x03;
+   if(mask.s[3] != 0) cbuf.s[3] |= 0x03;
+   if(mask.s[4] != 0) cbuf.s[4] |= 0x03;
+   if(mask.s[5] != 0) cbuf.s[5] |= 0x03;
+   if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
+   if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
+//   r.v = (mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0});
+//   r.v &= (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+//   cbuf.v = cbuf.v |  r.v;
 	
   return cbuf;
 }

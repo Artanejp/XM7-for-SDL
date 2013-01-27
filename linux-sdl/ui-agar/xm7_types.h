@@ -25,8 +25,22 @@ typedef uint32_t DWORD;
 typedef int     BOOL;
 
 // Vector
+typedef short int v2si __attribute__ ((__vector_size__(8), aligned(8)));
 typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
 typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(32)));
+
+typedef union 
+{
+        v2si v;
+
+        uint32_t i[2];
+        uint16_t s[4];
+        uint8_t  b[8];
+        int32_t si[2];
+        int16_t ss[4];
+        int8_t  sb[8];
+} v2hi;
+
 typedef union 
 {
         v4si v;

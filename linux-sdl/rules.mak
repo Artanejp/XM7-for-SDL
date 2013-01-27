@@ -39,28 +39,28 @@ Debug/%.o: %.cpp
 
 Debug/%.d: %.c
 	@mkdir -p Debug/
-	@set -e; rm -f $@; \
+	set -e; rm -f $@; \
 	$(CC) -M $(CFLAGS_DEBUG) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,Debug\/\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
 Debug/%.d: %.cpp
 	@mkdir -p Debug/
-	@set -e; rm -f $@; \
+	set -e; rm -f $@; \
 	$(CXX) -M $(CXXFLAGS_DEBUG) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,Debug\/\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
 Release/%.d: %.c
 	@mkdir -p Release/
-	@set -e; rm -f $@; \
+	set -e; rm -f $@; \
 	$(CC) -M $(CFLAGS_RELEASE) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,Release\/\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
 Release/%.d: %.cpp
 	@mkdir -p Release/
-	@set -e; rm -f $@; \
+	set -e; rm -f $@; \
 	$(CXX) -M $(CXXFLAGS_RELEASE) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,Release\/\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$

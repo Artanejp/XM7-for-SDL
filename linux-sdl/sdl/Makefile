@@ -63,11 +63,11 @@ DEPS_DEBUG =	$(addprefix Debug/,  $(DEPS))
 all:	$(TARGET_DEBUG) $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): ${OBJS_RELEASE} ${LIBS_RELEASE}
-	$(CXX) ${LDFLAGS} -o $(TARGET_RELEASE) $^ ${LIBS} ${LIBS_RELEASE}
+	$(CXX) ${LDFLAGS} -o $(TARGET_RELEASE)  $^ ${LIBS_RELEASE} ${LIBS}
 	#strip $(TARGET_RELEASE)
 
 $(TARGET_DEBUG): ${OBJS_DEBUG} ${LIBS_DEBUG}
-	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG) $^ ${LIBS} ${LIBS_DEBUG}
+	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG)  $^ ${LIBS_DEBUG}  ${LIBS}
 
 
 -include ../rules.mak
