@@ -192,7 +192,7 @@ endif
 ifeq ($(OS),Windows)
 #LDFLAGS = -static-libgcc -static-libstdc++ -mwindows
 ifdef CROSS_BUILD
-LDFLAGS = -mwindows
+LDFLAGS = -mwindows 
 LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(CROSS_PREFIX)/lib
 else
 LDFLAGS = -pthread -mwindows
