@@ -816,7 +816,7 @@ static int SetChunk(struct SndBufType *p, int ch)
     int samples;
 
     if(p->nWritePTR > p->nReadPTR) {
-        samples = p->nReadPTR - p->nWritePTR;
+        samples =  p->nReadPTR + p->nSize - p->nWritePTR;
     } else{
         samples = p->nReadPTR - p->nWritePTR;
     }

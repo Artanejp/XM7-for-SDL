@@ -275,14 +275,13 @@ void SndDrvOpn::Setup(int tick, int opno)
 int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL bZero)
 {
 
-   int ss2;
+   int ss2 = sSamples;
    Uint32 *q;
-   
+#if 1
    if(pBuf32 == NULL) return 0;
    
    q = (Uint32 *)pBuf32;
    q = &q[start * channels];
-   ss2 = sSamples;
    if(ss2 <= 0) return 0;
    if(RenderSem == NULL) {
       return 0;
@@ -329,6 +328,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
    
    SDL_SemPost(RenderSem);
    RenderCounter += ss2;
+#endif
    return ss2;
 }
 
@@ -352,6 +352,7 @@ int SndDrvOpn::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZe
    
    free(pBuf32);
    return r;
+
 }
 
 int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZero)
