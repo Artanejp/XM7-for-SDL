@@ -192,6 +192,7 @@ void *DrawThreadMain(void *p)
 {
    //nDrawTick1D = AG_GetTicks();
    AG_DrawInitsub();
+//   if(AG_UsingSDL(NULL)) InitGL(640,480);
    InitGL(640,480);
    nDrawCount = DrawCountSet(nDrawFPS);
    while(1) {

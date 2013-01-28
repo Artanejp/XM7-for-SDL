@@ -127,11 +127,11 @@ BOOL bGL_PIXEL_UNPACK_BUFFER_BINDING; // ピクセルバッファがあるか？
 PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
 PFNGLDRAWARRAYSEXTPROC glDrawArraysEXT;
 PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
-#ifndef _WINDOWS
+//#ifndef _WINDOWS
 PFNGLBINDBUFFERPROC glBindBuffer;
 PFNGLBUFFERDATAPROC glBufferData;
 PFNGLGENBUFFERSPROC glGenBuffers;
-#endif
+//#endif
 
 BOOL QueryGLExtensions(const char *str)
 {
@@ -142,7 +142,7 @@ BOOL QueryGLExtensions(const char *str)
     int k;
     int l;
     int ll;
-#ifndef _WINDOWS
+//#ifndef _WINDOWS
 
     if(str == NULL) return FALSE;
     ll = strlen(str);
@@ -161,7 +161,7 @@ BOOL QueryGLExtensions(const char *str)
         p += (j + 1);
         i += (j + 1);
     }
-#endif
+//#endif
     return FALSE;
 }
 
@@ -181,28 +181,62 @@ void InitGLExtensionVars(void)
 
 }
 
+   
+#ifdef _WINDOWS
+#include <windef.h>
+extern PROC WINAPI wglGetProcAddress(LPCSTR lpszProc);
+#else 
+extern void *glXGetProcAddress(const GLubyte *);
+#endif
+   
 void InitFBO(void)
 {
-#ifndef _WINDOWS // glx is for X11.
-    glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
-    if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
-    glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)glXGetProcAddress((const GLubyte *)"glDrawArraysEXT");
-    if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
-    glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glTexCoordPointerEXT");
-    if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
-    glBindBuffer = (PFNGLBINDBUFFERPROC)glXGetProcAddress((const GLubyte *)"glBindBuffer");
-    if(glBindBuffer == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
-    glBufferData = (PFNGLBUFFERDATAPROC)glXGetProcAddress((const GLubyte *)"glBufferData");
-    if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
-    glGenBuffers = (PFNGLGENBUFFERSPROC)glXGetProcAddress((const GLubyte *)"glGenBuffers");
-    if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
-
+//#ifndef _WINDOWS // glx is for X11.
+// Use SDL for wrapper. 20130128
+    if(AG_UsingSDL(NULL)) {
+       glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)SDL_GL_GetProcAddress("glVertexPointerEXT");
+       if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)SDL_GL_GetProcAddress("glDrawArraysEXT");
+       if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)SDL_GL_GetProcAddress("glTexCoordPointerEXT");
+       if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glBindBuffer = (PFNGLBINDBUFFERPROC)SDL_GL_GetProcAddress("glBindBuffer");
+       if(glBindBuffer == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glBufferData = (PFNGLBUFFERDATAPROC)SDL_GL_GetProcAddress("glBufferData");
+       if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glGenBuffers = (PFNGLGENBUFFERSPROC)SDL_GL_GetProcAddress("glGenBuffers");
+       if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+    } else { // glx, wgl
+#ifndef _WINDOWS
+       glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
+       if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)glXGetProcAddress((const GLubyte *)"glDrawArraysEXT");
+       if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glTexCoordPointerEXT");
+       if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glBindBuffer = (PFNGLBINDBUFFERPROC)glXGetProcAddress((const GLubyte *)"glBindBuffer");
+       if(glBindBuffer == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glBufferData = (PFNGLBUFFERDATAPROC)glXGetProcAddress((const GLubyte *)"glBufferData");
+       if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glGenBuffers = (PFNGLGENBUFFERSPROC)glXGetProcAddress((const GLubyte *)"glGenBuffers");
+       if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
 #else
-    bGL_EXT_VERTEX_ARRAY = FALSE;
-    glVertexPointerEXT = NULL;
-    glDrawArraysEXT = NULL;
-    glTexCoordPointerEXT = NULL;
+       glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)wglGetProcAddress("glVertexPointerEXT");
+       if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glDrawArraysEXT = (PFNGLDRAWARRAYSEXTPROC)wglGetProcAddress("glDrawArraysEXT");
+       if(glDrawArraysEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glTexCoordPointerEXT = (PFNGLTEXCOORDPOINTEREXTPROC)wglGetProcAddress("glTexCoordPointerEXT");
+       if(glTexCoordPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
+       glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
+       if(glBindBuffer == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
+       if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
+       if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+
 #endif // _WINDOWS    
+    }
+   
 }
 
 }

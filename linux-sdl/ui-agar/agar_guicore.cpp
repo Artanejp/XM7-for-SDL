@@ -44,6 +44,7 @@ BOOL   bResizeGUIFlag;
 extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
+extern void InitGridVertexs(void);
 
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
@@ -344,12 +345,21 @@ void InitInstance(void)
    AG_WindowFocus(MainWindow);
 #if USE_OPENGL
     if(AG_UsingGL(NULL) != 0) {
-        hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
+
+       hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
           /*
          * OpenGL Capability
          */
+       
         GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
         GLDrawArea->wid.flags |= AG_WIDGET_CATCH_TAB;
+        //if(!AG_UsingSDL(AGDRIVER(GLDrawArea))) {
+	//   InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
+	   // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
+	//   InitGLExtensionVars();
+	//   InitGridVertexs(); // Grid初期化
+	//}
+       
         AG_WidgetSetSize(GLDrawArea, nDrawWidth, nDrawHeight);
         AG_GLViewSizeHint(GLDrawArea, nDrawWidth, nDrawHeight);
         AG_GLViewDrawFn (GLDrawArea, AGEventDrawGL2, NULL);
@@ -366,6 +376,7 @@ void InitInstance(void)
         AG_WidgetShow(GLDrawArea);
         AG_WidgetFocus(AGWIDGET(GLDrawArea));
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
+
     } else
 #endif /* USE_OPENGL */
      {

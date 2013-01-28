@@ -44,11 +44,12 @@ SDL_Surface *DrawSurface = NULL;
 void InitGL(int w, int h)
 {
     AG_Driver *drv;
+    if(MainWindow) drv = AGDRIVER(MainWindow);
     bManualScaled = FALSE;
     SDL_SemWait(DrawInitSem);
 #ifdef USE_OPENGL
    if(AG_UsingGL(NULL)) {
-        InitGL_AG2(w, h);
+      InitGL_AG2(w, h);
     } else {
         InitNonGL(w, h);
 //        bUseOpenCL = FALSE;

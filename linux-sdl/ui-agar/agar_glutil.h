@@ -9,11 +9,13 @@
 
 #include <SDL/SDL.h>
 #ifdef _WINDOWS
-#include <GL/gl.h>
-#include <GL/glext.h>
+//#include <GL/gl.h>
+//#include <GL/glext.h>
+#include <SDL/SDL_opengl.h>
 #else
-#include <GL/glx.h>
-#include <GL/glxext.h>
+//#include <GL/glx.h>
+//#include <GL/glxext.h>
+#include <SDL/SDL_opengl.h>
 #endif
 
 #include "api_draw.h"

@@ -139,7 +139,7 @@ static void InitGridVertexsSub(int h, GLfloat *vertex)
   }
 }
 
-static void InitGridVertexs(void)
+void InitGridVertexs(void)
 {
     GridVertexs200l = (GLfloat *)malloc(202 * 6 * sizeof(GLfloat));
     if(GridVertexs200l != NULL) {
@@ -211,11 +211,13 @@ void InitGL_AG2(int w, int h)
 	pVirtualVram = NULL;
         bInitCL = FALSE;
 	InitVirtualVram();
-        InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
-               // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
-        InitGLExtensionVars();
-//    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // Double buffer
-    InitGridVertexs(); // Grid初期化
+        //if(AG_UsingSDL(NULL)) {
+	   InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
+	   // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
+	   InitGLExtensionVars();
+	   InitGridVertexs(); // Grid初期化
+	//}
+   
     fBrightR = 1.0; // 輝度の初期化
     fBrightG = 1.0;
     fBrightB = 1.0;
@@ -419,14 +421,45 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 #ifdef _USE_OPENCL
        }
 #endif       
-       
-
-
     }
     SDLDrawFlag.Drawn = FALSE;
+}
 
-   
 
+static void InitContextCL(void)
+{
+      if(GLDrawArea == NULL) return; // Context not created yet.
+#ifdef _USE_OPENCL
+     if(bUseOpenCL && (cldraw == NULL) && 
+	bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
+	    cl_int r;
+	    cldraw = new GLCLDraw;
+	    if(cldraw != NULL) {
+	       r = cldraw->InitContext();
+	       printf("CTX: STS = %d \n", r);
+	       if(r == CL_SUCCESS){  
+		 r = cldraw->BuildFromSource(cl_render);
+		  printf("Build: STS = %d \n", r);
+	         if(r == CL_SUCCESS) {
+		    r = cldraw->SetupBuffer(uVramTextureID);
+		    r |= cldraw->SetupTable();
+		    if(r != CL_SUCCESS){
+		       delete cldraw;
+		       cldraw = NULL;
+		    }
+		 } else {
+		    delete cldraw;
+		    cldraw = NULL;
+		 }
+	       } else {
+		  delete cldraw;
+		  cldraw = NULL;
+	       }
+	    }
+    }
+   bInitCL = TRUE;     
+
+#endif // _USE_OPENCL   
 }
 
 /*
@@ -505,37 +538,6 @@ void AGEventDrawGL2(AG_Event *event)
 //        uVramTextureID = CreateNullTexture(642, 402); //  ドットゴーストを防ぐ
         uVramTextureID = CreateNullTexture(640, 400); //  ドットゴーストを防ぐ
     }
-#ifdef _USE_OPENCL
-     if(bUseOpenCL && (cldraw == NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
-	    cl_int r;
-	    cldraw = new GLCLDraw;
-	    if(cldraw != NULL) {
-	       r = cldraw->InitContext();
-	       printf("CTX: STS = %d \n", r);
-	       if(r == CL_SUCCESS){  
-		 r = cldraw->BuildFromSource(cl_render);
-		  printf("Build: STS = %d \n", r);
-	         if(r == CL_SUCCESS) {
-		    r = cldraw->SetupBuffer(uVramTextureID);
-		    r |= cldraw->SetupTable();
-		    if(r != CL_SUCCESS){
-		       delete cldraw;
-		       cldraw = NULL;
-		    }
-		 } else {
-		    delete cldraw;
-		    cldraw = NULL;
-		 }
-	       } else {
-		  delete cldraw;
-		  cldraw = NULL;
-	       }
-	       
-	
-	    }
-	bInitCL = TRUE;
-    }
-#endif // _USE_OPENCL   
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
