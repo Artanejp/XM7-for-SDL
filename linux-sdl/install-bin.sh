@@ -4,10 +4,10 @@ TARGET=/usr/local
 install ./xm7 ${TARGET}/bin
 install ./xm7.debug ${TARGET}/bin
 
-pushd .
-cd ../libs-linux-amd64/
-./install-libs.sh
-popd
+#pushd .
+#cd ../libs-linux-amd64/
+#./install-libs.sh
+#popd
 cd ../../src
 mkdir -p ${TARGET}/share
 mkdir -p ${TARGET}/share/xm7
