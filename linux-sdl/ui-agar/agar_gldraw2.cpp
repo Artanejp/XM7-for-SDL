@@ -541,7 +541,7 @@ void AGEventDrawGL2(AG_Event *event)
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
-   
+    InitContextCL();   
 
     glPushAttrib(GL_TEXTURE_BIT);
     glPushAttrib(GL_TRANSFORM_BIT);
