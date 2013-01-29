@@ -24,6 +24,7 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 //	AG_SDL_GetNextEvent(void *obj, AG_DriverEvent *dev)
 	AG_Driver *drv = obj;
 	SDL_Event ev = *event;
+        if(drv == NULL) return;
 
 //	if(agDriverSw) {
 //		drv = &agDriverSw->_inherit;
