@@ -52,7 +52,7 @@ void InitGL(int w, int h)
       InitGL_AG2(w, h);
     } else {
         InitNonGL(w, h);
-//        bUseOpenCL = FALSE;
+        bUseOpenCL = FALSE;
     }
 #else
    InitNonGL(w, h);
@@ -73,8 +73,6 @@ void InitNonGL(int w, int h)
    vram_pg = NULL;
    vram_pr = NULL;
 
-//   DrawSurface = SDL_SetVideoMode(w, h, 24, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
-//   AG_InitVideoSDL (screen, AG_VIDEO_HWSURFACE | AG_VIDEO_DOUBLEBUF | AG_VIDEO_RESIZABLE);
    InitVramSemaphore();
    pVirtualVram = NULL;
    InitVirtualVram();

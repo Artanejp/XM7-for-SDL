@@ -47,9 +47,9 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
   
 //    LockVram();
 //    p = pp;
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
-#endif
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+//#endif
     for(yy = (y >> 3); yy < hh ; yy++) {
        p = &pp[64 * ((x >> 3) + 80 * yy)];
         for(xx = (x >> 3); xx < ww ; xx++) {
