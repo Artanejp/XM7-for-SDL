@@ -47,21 +47,40 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
   
 //    LockVram();
 //    p = pp;
-//#ifdef _OPENMP
-//       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
-//#endif
-    for(yy = (y >> 3); yy < hh ; yy++) {
-       p = &pp[64 * ((x >> 3) + 80 * yy)];
-        for(xx = (x >> 3); xx < ww ; xx++) {
-            if(SDLDrawFlag.read[xx][yy]) {
-                CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
-                SDLDrawFlag.write[xx][yy] = TRUE;
-                SDLDrawFlag.read[xx][yy]  = FALSE;
-                SDLDrawFlag.Drawn = TRUE;
-            }
-	   p += 64;
-        }
-    }
+//    
+    if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+#endif
+	for(yy = (y >> 3); yy < hh ; yy++) {
+	   p = &pp[64 * ((x >> 3) + 80 * yy)];
+	   for(xx = (x >> 3); xx < ww ; xx++) {
+	      CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      SDLDrawFlag.write[xx][yy] = TRUE;
+	      SDLDrawFlag.read[xx][yy]  = FALSE;
+	      p += 64;
+	   }
+	}
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+     } else { // Palette not changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+#endif
+	for(yy = (y >> 3); yy < hh ; yy++) {
+	   p = &pp[64 * ((x >> 3) + 80 * yy)];
+	   for(xx = (x >> 3); xx < ww ; xx++) {
+	      if(SDLDrawFlag.read[xx][yy]) {
+		 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+		 SDLDrawFlag.write[xx][yy] = TRUE;
+		 SDLDrawFlag.read[xx][yy]  = FALSE;
+		 SDLDrawFlag.Drawn = TRUE;
+	      }
+	      p += 64;
+	   }
+	}
+     }
+   
 //    UnlockVram();
 }
 
@@ -77,24 +96,43 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
 
-//   LockVram();
+   LockVram();
 //    p = pp;
+    if(SDLDrawFlag.APaletteChanged) { // Palette changed
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
 #endif
-    for(yy = (y >> 3); yy < hh ; yy++) {
-       p = &pp[64 * ((x >> 3) + 40 * yy)];
-        for(xx = (x >> 3); xx < ww ; xx++) {
-            if(SDLDrawFlag.read[xx][yy]) {
+       for(yy = (y >> 3); yy < hh ; yy++) {
+	  p = &pp[64 * ((x >> 3) + 40 * yy)];
+	  for(xx = (x >> 3); xx < ww ; xx++) {
+	     CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
+	     SDLDrawFlag.write[xx][yy] = TRUE;
+	     SDLDrawFlag.read[xx][yy] = FALSE;
+	     p += 64;
+	  }
+       }
+       SDLDrawFlag.Drawn = TRUE;
+       SDLDrawFlag.APaletteChanged = FALSE;
+    } else {
+	// Palette not changed   
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+#endif
+       for(yy = (y >> 3); yy < hh ; yy++) {
+	  p = &pp[64 * ((x >> 3) + 40 * yy)];
+	  for(xx = (x >> 3); xx < ww ; xx++) {
+	     if(SDLDrawFlag.read[xx][yy]) {
                 CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.read[xx][yy] = FALSE;
-                SDLDrawFlag.Drawn = TRUE;
-            }
-	   p += 64;
-        }
+		SDLDrawFlag.Drawn = TRUE;
+	     }
+	     p += 64;
+	  }
+       }
     }
-//    UnlockVram();
+   
+    UnlockVram();
 }
 
 static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mpage)

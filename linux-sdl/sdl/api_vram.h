@@ -42,15 +42,31 @@ extern void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int m
  */
 extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
 
-extern v4hi getvram_4096_vec(Uint32 addr);
 extern void initvramtbl_8_vec(void);
 extern void initvramtbl_4096_vec(void);
 extern void detachvramtbl_8_vec(void);
 extern void detachvramtbl_4096_vec(void);
 
-extern v4hi getvram_8_vec(Uint32 addr);
 extern v4hi lshift_6bit8v(v4hi *v);
-   extern Uint32 lshift_5bit1v(v4hi *v);
+extern Uint8 *vram_pb;
+extern Uint8 *vram_pr;
+extern Uint8 *vram_pg;
+extern v4si *aPlanes;
+
+enum {
+   B0 = 0,
+   B1 = 256,
+   B2 = 512,
+   B3 = 768,
+   R0 = 1024,
+   R1 = 1280,
+   R2 = 1536,
+   R3 = 1792,
+   G0 = 2048,
+   G1 = 2304,
+   G2 = 2560,
+   G3 = 2816
+};
 
    
 enum {
