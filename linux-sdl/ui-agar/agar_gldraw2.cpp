@@ -18,7 +18,7 @@
 #include <GL/glxext.h>
 #endif
 #ifdef _USE_OPENCL
-# include <agar_glcl.h>
+# include "agar_glcl.h"
 #endif
 
 #ifdef USE_OPENMP
@@ -40,191 +40,29 @@
 
 GLuint uVramTextureID;
 #ifdef _USE_OPENCL
-class GLCLDraw *cldraw = NULL;
-extern "C" 
-{
-extern BOOL bUseOpenCL;
-}
-
+extern class GLCLDraw *cldraw;
 #endif
 
+extern BOOL bInitCL;
+extern void InitContextCL(void);
+extern void InitGL_AG2(int w, int h);
+extern void DetachGL_AG2(void);
+
+Uint32 *pFrameBuffer;
+// Grids
+extern GLfloat *GridVertexs200l;
+extern GLfloat *GridVertexs400l;
+
+// Brights
+float fBrightR;
+float fBrightG;
+float fBrightB;
 static int bModeOld;
-static Uint32 *pFrameBuffer;
-static BOOL bInitCL;
-extern const char *cl_render;
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
 //    pGetVram = p;
 }
-
-
-
-static void DetachTexture(void)
-{
-    if(uVramTextureID == 0) return;
-   	glDeleteTextures(1, &uVramTextureID);
-   	uVramTextureID = 0;
-   	return;
-}
-
-static void DetachVirtualVram(void)
-{
-    if(pVirtualVram == NULL) {
-        if(pVram2 != NULL) free(pVram2);
-        pVram2 = NULL;
-        return;
-    }
-    free((void *)pVirtualVram);
-    pVirtualVram = NULL;
-    if(pVram2 == NULL) return;
-    free(pVram2);
-    pVram2 = NULL;
-}
-
-static void DetachGridVertexs(void);
-void DetachGL_AG2(void)
-{
-    DetachTexture();
-    DetachVirtualVram();
-    DetachGridVertexs();
-    DetachVramSemaphore();
-    if(pFrameBuffer != NULL) {
-       free(pFrameBuffer);
-       pFrameBuffer = NULL;
-    }
-#ifdef _USE_OPENCL
-   if(cldraw != NULL) delete cldraw;
-#endif
-//    pGetVram = NULL;
-}
-
-// Grids
-static GLfloat *GridVertexs200l;
-static GLfloat *GridVertexs400l;
-static GLfloat MainTexcoods[4];
-// Brights
-static float fBrightR;
-static float fBrightG;
-static float fBrightB;
-
-
-
-static void InitGridVertexsSub(int h, GLfloat *vertex)
-{
-  int i;
-  int j;
-  GLfloat ybegin;
-  GLfloat yofset;
-  GLfloat yinc;
-  GLfloat y;
-  int base;
-    j = h + 1;
-    yinc = -4.0f / 400.0f;
-    ybegin = 1.0f;
-    yofset = -5.0f / 400.0f;
-  if(vertex == NULL) return;
-//  y = ybegin + yofset;
-  y = ybegin + yofset / 4.0f;
-  for(i = 0; j > 0 ; j--, i++, y += yinc){
-      base = i * 6;
-      vertex[base] = -1.0f; // x
-      vertex[base + 1] = y; // y
-      vertex[base + 2] = -0.99f; // z
-
-      vertex[base + 3] = 1.0f; // x
-      vertex[base + 4] = y; // y
-      vertex[base + 5] = -0.99f; // z
-
-  }
-}
-
-void InitGridVertexs(void)
-{
-    GridVertexs200l = (GLfloat *)malloc(202 * 6 * sizeof(GLfloat));
-    if(GridVertexs200l != NULL) {
-        InitGridVertexsSub(200, GridVertexs200l);
-    }
-    GridVertexs400l = (GLfloat *)malloc(402 * 6 * sizeof(GLfloat));
-    if(GridVertexs400l != NULL) {
-        InitGridVertexsSub(400, GridVertexs400l);
-    }
-
-}
-
-static void DetachGridVertexs(void)
-{
-    if(GridVertexs200l != NULL) {
-        free(GridVertexs200l);
-        GridVertexs200l = NULL;
-    }
-    if(GridVertexs400l != NULL) {
-        free(GridVertexs400l);
-        GridVertexs400l = NULL;
-    }
-}
-
-
-void InitGL_AG2(int w, int h)
-{
-	Uint32 flags;
-	int bpp = 32;
-	int rgb_size[3];
-	char *ext;
-
-	if(InitVideo) return;
-    InitVideo = TRUE;
-
-    vram_pb = NULL;
-    vram_pg = NULL;
-    vram_pr = NULL;
-#ifdef _USE_OPENCL
-   cldraw = NULL;
-#endif
-	flags = SDL_OPENGL | SDL_RESIZABLE;
-    switch (bpp) {
-         case 8:
-             rgb_size[0] = 3;
-             rgb_size[1] = 3;
-             rgb_size[2] = 2;
-             break;
-         case 15:
-         case 16:
-             rgb_size[0] = 5;
-             rgb_size[1] = 5;
-             rgb_size[2] = 5;
-             break;
-         default:
-             rgb_size[0] = 8;
-             rgb_size[1] = 8;
-             rgb_size[2] = 8;
-             break;
-     }
-    /*
-     * GL 拡張の取得 20110907-
-     */
-	pFrameBuffer = (Uint32 *)malloc(sizeof(Uint32) * 640 * 400);
-        if(pFrameBuffer == NULL) return;
-        memset(pFrameBuffer, 0x00, sizeof(Uint32) * 640 * 400);
-	InitVramSemaphore();
-	uVramTextureID = 0;
-	pVirtualVram = NULL;
-        bInitCL = FALSE;
-	InitVirtualVram();
-        //if(AG_UsingSDL(NULL)) {
-	   InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
-	   // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
-	   InitGLExtensionVars();
-	   InitGridVertexs(); // Grid初期化
-	//}
-   
-    fBrightR = 1.0; // 輝度の初期化
-    fBrightG = 1.0;
-    fBrightB = 1.0;
-
-    return;
-}
-
 
 void SetBrightRGB_AG_GL2(float r, float g, float b)
 {
@@ -269,42 +107,34 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
 
    if((x < 0) || (x >= 640)) return;
    if((y < 0) || (y >= 400)) return;
-   if(pFrameBuffer == NULL) return;
+//   if(pFrameBuffer == NULL) return;
    ofset = x + y * 640;
 
    src = (v4hi *)p;
    addr1 = (v4hi *)(&pFrameBuffer[ofset]);
    addr1[0] = src[0];
    addr1[1] = src[1];
-   addr1 += 160;
 
-   addr1[0] = src[2];
-   addr1[1] = src[3];
-   addr1 += 160;
+   addr1[160] = src[2];
+   addr1[161] = src[3];
 
-   addr1[0] = src[4];
-   addr1[1] = src[5];
-   addr1 += 160;
+   addr1[320] = src[4];
+   addr1[321] = src[5];
 
-   addr1[0] = src[6];
-   addr1[1] = src[7];
-   addr1 += 160;
+   addr1[480] = src[6];
+   addr1[481] = src[7];
 
-   addr1[0] = src[8];
-   addr1[1] = src[9];
-   addr1 += 160;
+   addr1[640] = src[8];
+   addr1[641] = src[9];
 
-   addr1[0] = src[10];
-   addr1[1] = src[11];
-   addr1 += 160;
+   addr1[800] = src[10];
+   addr1[801] = src[11];
 
-   addr1[0] = src[12];
-   addr1[1] = src[13];
-   addr1 += 160;
+   addr1[960] = src[12];
+   addr1[961] = src[13];
 
-   addr1[0] = src[14];
-   addr1[1] = src[15];
-//   addr1 += 160;
+   addr1[1120] = src[14];
+   addr1[1121] = src[15];
 }
 
 static void drawGrids(void *pg,int w, int h)
@@ -374,9 +204,6 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        ww = w >> 3;
        hh = h >> 3;
 
-//#ifdef _OPENMP
-//       #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
-//#endif
 #ifdef _USE_OPENCL
        if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	  LockVram();
@@ -402,17 +229,22 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        } else {
 #endif
 	  LockVram();
-	  for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
-	     for(xx = 0; xx < ww; xx++) {
-                    if(SDLDrawFlag.write[xx][yy]) {
-                    pu = &p[(xx + yy * ww) << 6];
-                    UpdateFramebufferPiece(pu, xx << 3, yy << 3);
-                    SDLDrawFlag.write[xx][yy] = FALSE;
-                    }
-                }
-            }
-
-            if(pFrameBuffer != NULL) {
+	  if((pFrameBuffer != NULL) && (p != NULL)) {
+	       
+#ifdef _OPENMP
+//            # pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
+            #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
+#endif
+	       for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
+		  for(xx = 0; xx < ww; xx++) {
+		     if(SDLDrawFlag.write[xx][yy]) {
+			pu = &p[(xx + yy * ww) << 6];
+			UpdateFramebufferPiece(pu, xx << 3, yy << 3);
+			SDLDrawFlag.write[xx][yy] = FALSE;
+		     }
+		  }
+	       }
+  	       
 	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	       UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
@@ -426,41 +258,6 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 }
 
 
-static void InitContextCL(void)
-{
-      if(GLDrawArea == NULL) return; // Context not created yet.
-#ifdef _USE_OPENCL
-     if(bUseOpenCL && (cldraw == NULL) && 
-	bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
-	    cl_int r;
-	    cldraw = new GLCLDraw;
-	    if(cldraw != NULL) {
-	       r = cldraw->InitContext();
-	       printf("CTX: STS = %d \n", r);
-	       if(r == CL_SUCCESS){  
-		 r = cldraw->BuildFromSource(cl_render);
-		  printf("Build: STS = %d \n", r);
-	         if(r == CL_SUCCESS) {
-		    r = cldraw->SetupBuffer(uVramTextureID);
-		    r |= cldraw->SetupTable();
-		    if(r != CL_SUCCESS){
-		       delete cldraw;
-		       cldraw = NULL;
-		    }
-		 } else {
-		    delete cldraw;
-		    cldraw = NULL;
-		 }
-	       } else {
-		  delete cldraw;
-		  cldraw = NULL;
-	       }
-	    }
-    }
-   bInitCL = TRUE;     
-
-#endif // _USE_OPENCL   
-}
 
 /*
  * "Draw"イベントハンドラ

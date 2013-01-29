@@ -3,11 +3,37 @@
  * (C) 2011 K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
+
 #include "agar_glutil.h"
+#ifdef _USE_OPENCL
+#include "agar_glcl.h"
+#endif
+
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif //_OPENMP
 
 extern "C" {
     AG_GLView *GLDrawArea;
+    extern BOOL bUseOpenCL;
 }
+
+BOOL bInitCL;
+GLfloat *GridVertexs200l;
+GLfloat *GridVertexs400l;
+
+extern Uint32 *pFrameBuffer;
+// Brights
+extern float fBrightR;
+extern float fBrightG;
+extern float fBrightB;
+extern const char *cl_render;
+extern GLuint uVramTextureID;
+
+#ifdef _USE_OPENCL
+class GLCLDraw *cldraw = NULL;
+#endif
+
 
 GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h)
 {
@@ -109,6 +135,152 @@ void DiscardTexture(GLuint tid)
 	DiscardTextures(1, &tid);
 }
 
+
+void InitContextCL(void)
+{
+      if(GLDrawArea == NULL) return; // Context not created yet.
+#ifdef _USE_OPENCL
+     if(bUseOpenCL && (cldraw == NULL) && 
+	bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
+	    cl_int r;
+	    cldraw = new GLCLDraw;
+	    if(cldraw != NULL) {
+	       r = cldraw->InitContext();
+	       printf("CTX: STS = %d \n", r);
+	       if(r == CL_SUCCESS){  
+		 r = cldraw->BuildFromSource(cl_render);
+		  printf("Build: STS = %d \n", r);
+	         if(r == CL_SUCCESS) {
+		    r = cldraw->SetupBuffer(uVramTextureID);
+		    r |= cldraw->SetupTable();
+		    if(r != CL_SUCCESS){
+		       delete cldraw;
+		       cldraw = NULL;
+		    }
+		 } else {
+		    delete cldraw;
+		    cldraw = NULL;
+		 }
+	       } else {
+		  delete cldraw;
+		  cldraw = NULL;
+	       }
+	    }
+    }
+   bInitCL = TRUE;     
+
+#endif // _USE_OPENCL   
+}
+
+
+static void InitGridVertexsSub(int h, GLfloat *vertex)
+{
+  int i;
+  int j;
+  GLfloat ybegin;
+  GLfloat yofset;
+  GLfloat yinc;
+  GLfloat y;
+  int base;
+    j = h + 1;
+    yinc = -4.0f / 400.0f;
+    ybegin = 1.0f;
+    yofset = -5.0f / 400.0f;
+  if(vertex == NULL) return;
+//  y = ybegin + yofset;
+  y = ybegin + yofset / 4.0f;
+  for(i = 0; j > 0 ; j--, i++, y += yinc){
+      base = i * 6;
+      vertex[base] = -1.0f; // x
+      vertex[base + 1] = y; // y
+      vertex[base + 2] = -0.99f; // z
+
+      vertex[base + 3] = 1.0f; // x
+      vertex[base + 4] = y; // y
+      vertex[base + 5] = -0.99f; // z
+
+  }
+}
+
+void InitGridVertexs(void)
+{
+    GridVertexs200l = (GLfloat *)malloc(202 * 6 * sizeof(GLfloat));
+    if(GridVertexs200l != NULL) {
+        InitGridVertexsSub(200, GridVertexs200l);
+    }
+    GridVertexs400l = (GLfloat *)malloc(402 * 6 * sizeof(GLfloat));
+    if(GridVertexs400l != NULL) {
+        InitGridVertexsSub(400, GridVertexs400l);
+    }
+
+}
+
+
+
+
+void InitGL_AG2(int w, int h)
+{
+	Uint32 flags;
+	int bpp = 32;
+	int rgb_size[3];
+	char *ext;
+
+	if(InitVideo) return;
+    InitVideo = TRUE;
+
+    vram_pb = NULL;
+    vram_pg = NULL;
+    vram_pr = NULL;
+#ifdef _USE_OPENCL
+   cldraw = NULL;
+#endif
+	flags = SDL_OPENGL | SDL_RESIZABLE;
+    switch (bpp) {
+         case 8:
+             rgb_size[0] = 3;
+             rgb_size[1] = 3;
+             rgb_size[2] = 2;
+             break;
+         case 15:
+         case 16:
+             rgb_size[0] = 5;
+             rgb_size[1] = 5;
+             rgb_size[2] = 5;
+             break;
+         default:
+             rgb_size[0] = 8;
+             rgb_size[1] = 8;
+             rgb_size[2] = 8;
+             break;
+     }
+    /*
+     * GL 拡張の取得 20110907-
+     */
+	pFrameBuffer = (Uint32 *)malloc(sizeof(Uint32) * 640 * 400);
+        if(pFrameBuffer == NULL) return;
+        memset(pFrameBuffer, 0x00, sizeof(Uint32) * 640 * 400);
+	InitVramSemaphore();
+	uVramTextureID = 0;
+	pVirtualVram = NULL;
+#ifdef _OPENCL
+        bInitCL = FALSE;
+#endif
+	InitVirtualVram();
+        //if(AG_UsingSDL(NULL)) {
+	   InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
+	   // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
+	   InitGLExtensionVars();
+	   InitGridVertexs(); // Grid初期化
+	//}
+   
+    fBrightR = 1.0; // 輝度の初期化
+    fBrightG = 1.0;
+    fBrightB = 1.0;
+
+    return;
+}
+
+
 extern "C" {
 // OpenGL状態変数
 BOOL bGL_ARB_IMAGING; // イメージ操作可能か？
@@ -185,8 +357,8 @@ void InitGLExtensionVars(void)
 #ifdef _WINDOWS
 #include <windef.h>
 extern PROC WINAPI wglGetProcAddress(LPCSTR lpszProc);
-#else 
-extern void *glXGetProcAddress(const GLubyte *);
+//#else 
+//extern void *glXGetProcAddress(const GLubyte *);
 #endif
    
 void InitFBO(void)
