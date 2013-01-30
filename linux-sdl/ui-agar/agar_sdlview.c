@@ -87,6 +87,7 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
    fmt.Bloss = 0;
    fmt.Aloss = 0;
    fmt.palette = NULL;
+   fmt.alpha = 255;
 
    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, 0);
    my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);

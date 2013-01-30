@@ -45,7 +45,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
   
-//    LockVram();
+    LockVram();
 //    p = pp;
 //    
     if(SDLDrawFlag.DPaletteChanged) { // Palette changed
@@ -68,7 +68,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
 #endif
 	for(yy = (y >> 3); yy < hh ; yy++) {
-	   p = &pp[64 * ((x >> 3) + 80 * yy)];
+   	   p = &pp[64 * ((x >> 3) + 80 * yy)];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
 	      if(SDLDrawFlag.read[xx][yy]) {
 		 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
@@ -81,7 +81,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 	}
      }
    
-//    UnlockVram();
+    UnlockVram();
 }
 
 static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mode)

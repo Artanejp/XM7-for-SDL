@@ -122,6 +122,7 @@ void SetPixelFormat(AG_PixelFormat *fmt)
 	fmt->Bloss = 0;
 	fmt->Aloss = 0;
 	fmt->palette = NULL;
+        fmt->alpha = 255;
 
 }
 
