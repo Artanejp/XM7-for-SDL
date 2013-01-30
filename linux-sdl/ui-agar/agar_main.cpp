@@ -50,6 +50,8 @@ extern void Detach_DebugMenu(void);
 
 extern "C" {
 extern void InitInstance(void);
+extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
+extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 void OnDestroy(AG_Event *event);
 
    
@@ -492,7 +494,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 
 //   ResizeWindow_Agar(640, 400);
    newResize = FALSE;
-   nDrawTick1D = AG_GetTicks();
+   nDrawTick1D = XM7_timeGetTime();
    nDrawTick1E = nDrawTick1D;
 
    ResizeWindow_Agar(nDrawWidth, nDrawHeight + 50);

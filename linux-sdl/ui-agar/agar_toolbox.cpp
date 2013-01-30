@@ -47,6 +47,12 @@
 #include "agar_toolbox.h"
 
 //extern AG_Mutex nRunMutex;
+extern "C" {
+   extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
+   extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+}
+
+
 
 static Disk   disk[2][FDC_MEDIAS];
 static char   StatePath[MAXPATHLEN];
@@ -199,7 +205,7 @@ static void OnSaveStatusSub(char *filename)
     LockVM();
 //    AG_MutexLock(&nRunMutex);
     StopSnd();
-    AG_Delay(10);
+    XM7_Sleep(10);
     if (!system_save(filename)) {
     } else {
     	strcpy(StatePath, filename);

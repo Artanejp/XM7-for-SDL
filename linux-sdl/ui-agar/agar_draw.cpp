@@ -21,8 +21,13 @@
 #ifdef _USE_OPENCL
 extern class GLCLDraw *cldraw;
 #endif // _USE_OPENCL
-
 extern BYTE bMode;
+
+extern "C"{
+   extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
+   extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+}
+
 
 Uint32 nDrawTick1E;
 static BYTE oldBMode;
@@ -269,7 +274,7 @@ void AGDrawTaskMain(void)
 	} else {
 		fps = 500;
 	}
-	nDrawTick2E = AG_GetTicks();
+	nDrawTick2E = XM7_timeGetTime();
 	if(nDrawTick1E > nDrawTick2E) {
 		nDrawTick1E = 0;
 	}

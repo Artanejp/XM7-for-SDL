@@ -36,7 +36,8 @@ extern struct XM7_CPUID *pCpuID;
 extern "C" {
 void InitInstance(void);
 extern void OnDestroy(AG_Event *event);
-
+extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
+extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 }
 
 Uint32 nDrawTick1D;
@@ -102,7 +103,7 @@ void AGDrawTaskEvent(BOOL flag)
    Uint32 fps;
    Uint32 oldfps = nDrawFPS;
    bResizeGUIFlag = FALSE;
-   nDrawTick2D = AG_GetTicks();
+   nDrawTick2D = XM7_timeGetTime();
 
    for(;;) {
       if(nDrawFPS > 2) {
@@ -124,7 +125,7 @@ void AGDrawTaskEvent(BOOL flag)
 	   }
 #endif
       }
-      nDrawTick2D = AG_GetTicks();
+      nDrawTick2D = XM7_timeGetTime();
 //      if(bResizeGUIFlag) continue;
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
@@ -150,7 +151,7 @@ void AGDrawTaskEvent(BOOL flag)
 	    nDrawTick1D = nDrawTick2D;
 	    AG_EndRendering(agDriverSw);
 	 } else  {
-//	    printf("Draw %d \n", AG_GetTicks());
+//	    printf("Draw %d \n", XM7_TimeGetTime());
 //	    AG_Window *miniwin;
 	    /* With multiple-window drivers (e.g., glx). */
 	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver) {
@@ -203,11 +204,11 @@ void AGDrawTaskEvent(BOOL flag)
       // 20120109 - Timer Event
 	 if (AG_TIMEOUTS_QUEUED()){
 	    Uint32 tim = 0;
-	    tim = AG_GetTicks();
+	    tim = XM7_timeGetTime();
 	    AG_ProcessTimeouts(tim);
-	    AG_Delay(1);
+	    XM7_Sleep(1);
 	 } else {
-	    AG_Delay(1);
+	    XM7_Sleep(1);
 	 }
 
       

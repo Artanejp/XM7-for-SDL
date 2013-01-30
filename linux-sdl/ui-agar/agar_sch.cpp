@@ -64,10 +64,10 @@ BOOL bFullScreen = FALSE;
 /*
  *  プロトタイプ宣言
  */
-static void *ThreadSch(void *);	/* スレッド関数 */
-static DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数
- */
-static void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+void *ThreadSch(void *);	/* スレッド関数 */
+DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
+void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+
 static AG_Thread SchThread;
 static AG_TimeOps SchTimeOps;
 
@@ -450,7 +450,6 @@ static void *ThreadSch(void *param)
 		 * スキップカウンタが規定値以下なら、続けて実行
 		 */
 		if (bAutoSpeedAdjust) {
-//		{
 			tmp = (10000 - speed_ratio) / 10;
 
 			/*
@@ -518,23 +517,23 @@ static void *ThreadSch(void *param)
 	/*
 	 *  timeGetTime互換関数
 	 */
-static DWORD XM7_timeGetTime(void)
+DWORD XM7_timeGetTime(void)
 {
 	// struct timeval t;
 	// gettimeofday(&t, 0);
 	// return (t.tv_sec*1000000 + t.tv_usec)/1000;
-   return AG_GetTicks();
-//   return SDL_GetTicks();
+//   return AG_GetTicks();
+   return SDL_GetTicks();
 }
 
 
 /*
  *  Sleep互換関数
  */
-static void XM7_Sleep(DWORD t)
+void XM7_Sleep(DWORD t)
 {
-   AG_Delay(t);
-//   SDL_Delay(t);
+//   AG_Delay(t);
+   SDL_Delay(t);
 }
    
 #ifdef __cplusplus

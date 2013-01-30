@@ -18,6 +18,11 @@ extern "C" {
 #include "fdc.h"
 #include "AgarKbdInterface.h"
 
+extern "C" {
+   extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
+   extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+}
+
 
 struct KeyCode_Vkey {
 	const char *KeyName;
@@ -152,7 +157,7 @@ static void OnPressVkey(AG_Event *event) {
 	Uint code = AG_INT(1);
 	Uint state = AG_INT(2);
 	PushKeyData(code, 0x80); /* Make */
-	AG_Delay(50);
+	XM7_Sleep(50);
 	PushKeyData(code, 0x00); /* Break */
 }
 
