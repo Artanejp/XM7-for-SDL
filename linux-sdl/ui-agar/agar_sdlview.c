@@ -220,10 +220,10 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 	     return (-1);
 	  }
 //	  AG_SurfaceUnlock(my->Surface);
-	  printf("XM7_SDLView::SizeAllocate() : Resized %dx%d pixels\n", a->w, a->h);
+//	  printf("XM7_SDLView::SizeAllocate() : Resized %dx%d pixels\n", a->w, a->h);
        } else {
 //	  my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
-	  printf("XM7_SDLView::SizeAllocate() : Allocated %dx%d pixels\n", a->w, a->h);
+//	  printf("XM7_SDLView::SizeAllocate() : Allocated %dx%d pixels\n", a->w, a->h);
 	  if(my->Surface == NULL) return -1;
        }
        my->forceredraw = 1;
