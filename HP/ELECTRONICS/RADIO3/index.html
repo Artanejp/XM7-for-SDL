@@ -1,0 +1,125 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>MW/SW/FM DSP  RADIO.</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>DSPラジオ(2013-02-06)</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#WHAT">これは何か</A><BR>
+<A HREF="#HOW">どのようなものか</A><BR>
+<A HREF="#MAKING">製作</A><BR>
+<A HREF="#ASSEMBLE">ケースに組み込む</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<A NAME="WHAT"></A>
+<H3>これは何か</H3>
+&nbsp;　最近のラジオは同調から検波・増幅までデジタル処理でやるものがあります。そのようなものは高級品に限られてきましたが、<A
+HREF="http://www.aitendo.com/product/4596" target=_blank>秋葉原のアイテンドーで二種類のモジュールが480円で売られるようになりました</A>。<BR>
+&nbsp; なので、大したことはないだろうと思って買って見ることにしました。が…<BR>
+&nbsp;
+<BR>
+<A NAME="HOW"></A>
+<H3>どのようなものか</H3>
+&nbsp; 今回使ったのは、DSP-443です。<BR>
+&nbsp; 付属のバリコンで選局してラジオを受信し、IC内部で増幅・デジタル復調した後に、スピーカーを鳴らします。<BR>
+&nbsp; 使用可能周波数帯は中波〜短波〜FM放送です。<BR>
+&nbsp; <IMG SRC="P2016199.JPG" ALT="モジュール本体"><BR>
+&nbsp; 写真で見るとわかるように、ICの部分が樹脂で覆われてブラックボックスになっていますが、有志の調査で、DSP6919と言う中国製のチップ（<A HREF="http://htanaka.blogzine.jp/namahage/files/DSP6919-DATA.pdf">データシートのスキャン(PDF)、簡体中国語</A>)が使われているようです。<BR>
+&nbsp; まずは機能チェックを兼ねて、なるべくメーカの回路図に沿ったものを作りました。<BR>
+&nbsp; 変更点は、アンテナ端子とアンテナ用のGND端子にコンデンサをかませたのと、後は中波でも外部アンテナが使えるように、1ピンと3ピンをコンデンサで結合させた程度です。<BR>
+<BR>
+<A HREF="DSP-Radio-v1.00.zip"><IMG SRC="DSP-RADIOv1.png" ALT="回路図+シンボル"><BR>
+&nbsp;&nbsp; 回路図とgSCH用のDSP443のシンボルセット</A><BR>
+<BR>
+<BR>
+&nbsp; 実装基板は、アイテンドーから出てる<A HREF="http://www.aitendo.com/product/4914" target="_blank">
+「DSPブレークアウト基板 DSP443-BKO」</A>を使いました。モジュール型番ごとに適応するブレークアウト基板が違うので、買うときは注意して下さい。<BR>
+&nbsp; <BR>
+&nbsp; その他に、400μH前後のバーアンテナやジュンフロン線のような細くて絶縁されてる線材が必要です。アイテンドー等から入手できます。通常のAM用のバーアンテナで大丈夫だと思います（感度の問題を除き）。<BR>
+<A NAME="MAKING"></A>
+<H3>製作</H3>
+<BR>
+&nbsp; <IMG SRC="P2016203.JPG" ALT="DSP443-BKO"><BR>
+&nbsp; <B>この基板、両面スルーホールなので、配線するときやハンダ付けの時は注意して下さい。</B><BR>
+<BR>
+<IMG SRC="P2016204.JPG" ALT="モジュールをネジ止め"><BR>
+&nbsp; モジュールを実装するために、ネジ止めしましょう。このネジは別売りです<BR><BR>
+<IMG SRC="P2016207.JPG" ALT="モジュール実装開始"><BR>
+&nbsp; ブレークアウト基板の側からメッキ線で足を張っていきます。モジュールのほうが熱に弱いので。<BR><BR>
+<IMG SRC="P2016209.JPG" ALT="モジュール実装終了"><BR>
+&nbsp; 足張りが終わりました<BR><BR>
+<IMG SRC="P2026213.JPG" ALT="DIP SWの配線"><BR>
+&nbsp; DIPSWなどをジュンフロン線とめっき線を上手く使い分けて配線していきます。両面スルーホール基板なので、部品の実装は両面を使って、バリコンの軸が出てる面にUI関連を集中させて行きましょう。<BR><BR>
+<IMG SRC="P2026215.JPG" ALT="受信テスト"><BR>
+&nbsp; とりあえず基板が組み上がったのでテスト。適当な電線をアンテナ代わりにして、適当な電源をつなぎます。FMはガンガン鳴るけどAM/SWは上手く鳴りません(--；<BR>
+&nbsp; 鉄筋コンクリートのビルなので、アンテナが不十分なようです。<BR>
+<IMG SRC="P2026216.JPG" ALT="ホットメルト"><IMG SRC="P2026220.JPG" ALT="ホットメルト"><BR>
+&nbsp; 調整が終わったので、ホットメルト（と言うかマジック半田）の樹脂で、配線の要所を固めて固定してしまいましょう。グルーガンがある人はマジック半田よりもベターでしょう（多分）<BR>
+<BR>
+&nbsp; さて、手元にあった50m巻のエナメル線をアンテナ代わりにして、窓から外に垂らして見ました。<BR>
+&nbsp; AMやSWで受信できる局が相当増えましたヽ(´▽)ノ<BR>
+&nbsp; これから作る<A HREF="http://www.kit.hi-ho.ne.jp/akage/DLOOP9D.html" target="_blank">ΔLoop9アンテナ</A>との組み合わせが期待できそう。<BR><BR>
+<BR>
+<A NAME="ASSEMBLE"></A>
+<H3>ケースに組み込む</H3>
+<BR>
+&nbsp; 今後の性能が期待できそうなので、若干の調整<B>(の途中で間違ってショートさせて、ブレークアウト基板のパターンを焼いたのは秘密ですが)</B>
+をした上でケースに組み込むことにしました。<BR>
+<IMG SRC="P2036222.JPG" ALT="ケース1"><BR>
+&nbsp; ケースを百均で買って来ました。よくある取っ手付きの小物入れです。<BR><BR>
+<IMG SRC="P2036225.JPG" ALT="ケース2"><BR>
+&nbsp; ケースにマジックでけがいていきます。スイッチの位置は現物あわせです（＾＿＾；。元々ケースの中に入れるつもりがなかったと言う。<BR><BR>
+<IMG SRC="P2036227.JPG" ALT="ケース3"><BR>
+&nbsp; ケースが柔らかいので、ポンチで穴位置を打つよりも、小型の電動ドリルで2mm程度の穴を開けたほうが何かと便利です<BR><BR>
+<IMG SRC="P2036229.JPG" ALT="ケース4"><BR>
+&nbsp; スピーカーの穴を開けていきます。<BR><BR>
+<IMG SRC="P2036230.JPG" ALT="アンテナ端子"><BR>
+&nbsp; アンテナ端子に線材とコンデンサを付けます。<BR><BR>
+<IMG SRC="P2036233.JPG" ALT="出来あがり"><BR>
+&nbsp; 出来あがり。下手下手ですね(；´Д｀)時期を見て、修正しちゃったほうがベターですね(；´Д｀)<BR>
+&nbsp; それはともかく、単3エネループ二本で二十時間前後動くのは凄いですね<BR>
+&nbsp; 
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">DSP443-Mod</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 06 Feb.2013 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
