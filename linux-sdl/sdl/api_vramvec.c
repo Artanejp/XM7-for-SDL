@@ -51,14 +51,11 @@ static v4si *initvramtblsub(int size)
 void initvramtbl_4096_vec(void)
 {
     int i;
-//    v8si shift = (v8si){2,2,2,2,2,2,2,2};
     volatile v4hi r;
-//    v8si shift = (v8si){1,1,1,1,1,1,1,1};
     aPlanes = initvramtblsub(12 * 256);
     if(aPlanes == NULL) return;
     printf("DBG: Table OK\n");
     // Init Mask Table
-    // 20120131 Shift op is unstable, change to multiply.
    for(i = 0; i <= 255; i++){
         initvramtblsub_vec((i & 255), &r);
 
@@ -114,7 +111,7 @@ void detachvramtbl_4096_vec(void)
 v4hi lshift_6bit8v(v4hi *v)
 {
    v4hi r;
-   v4hi cbuf __attribute__((aligned(32)));
+   v4hi cbuf;
    v4hi mask;
    mask.v = (v4si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
    cbuf.v =
@@ -126,6 +123,7 @@ v4hi lshift_6bit8v(v4hi *v)
         aPlanes[R3 + v->b[5]];
    
    mask.v = mask.v & cbuf.v;
+#if 0
    if(mask.s[0] != 0) cbuf.s[0] |= 0x03;
    if(mask.s[1] != 0) cbuf.s[1] |= 0x03;
    if(mask.s[2] != 0) cbuf.s[2] |= 0x03;
@@ -134,10 +132,11 @@ v4hi lshift_6bit8v(v4hi *v)
    if(mask.s[5] != 0) cbuf.s[5] |= 0x03;
    if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
    if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
-//   r.v = (mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0});
-//   r.v &= (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
-//   cbuf.v = cbuf.v |  r.v;
-	
+#else
+   r.v = mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0};
+   r.v = r.v & (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+   cbuf.v = cbuf.v |  r.v;
+#endif	
   return cbuf;
 }
 

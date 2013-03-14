@@ -358,6 +358,7 @@ BOOL Select640(void)
    /*
     * 全領域無効
     */
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 200;
    nDrawLeft = 0;
@@ -375,6 +376,7 @@ BOOL Select640(void)
     */
    bAnalog = FALSE;
 #endif				/*  */
+   UnlockVram();
    return TRUE;
 }
 
@@ -388,6 +390,7 @@ BOOL Select400l(void)
    /*
     * 全領域無効
     */
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 400;
    nDrawLeft = 0;
@@ -398,6 +401,7 @@ BOOL Select400l(void)
     * デジタル/400ラインモード
     */
    bMode = SCR_400LINE;
+   UnlockVram();
    return TRUE;
 }
 
@@ -412,6 +416,7 @@ BOOL Select320(void)
 /*
  * 全領域無効
  */
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 200;
    nDrawLeft = 0;
@@ -430,6 +435,7 @@ BOOL Select320(void)
     */
    bAnalog = TRUE;
 #endif				/*  */
+   UnlockVram();
    return TRUE;
 }
 
@@ -443,6 +449,7 @@ BOOL Select256k()
    /*
     * 全領域無効
     */
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 200;
    nDrawLeft = 0;
@@ -454,6 +461,7 @@ BOOL Select256k()
     * アナログ(26万色)/200ラインモード
     */
    bMode = SCR_262144;
+   UnlockVram();
    return TRUE;
 }
 #endif
@@ -525,13 +533,16 @@ if (mode320) {
  */
 void AllClear(void)
 {
-	int x;
-	int y;
-	AG_Color nullcolor;
-	AG_Rect rect;
-	AG_Driver *drv;
-	AG_Widget *w;
-     SetDrawFlag(TRUE);
+   int x;
+   int y;
+   AG_Color nullcolor;
+   AG_Rect rect;
+   AG_Driver *drv;
+   AG_Widget *w;
+   
+   LockVram();
+   SetDrawFlag(TRUE);
+   UnlockVram();
 #ifdef USE_OPENGL
    if(DrawArea != NULL) {
         drv = AGWIDGET(DrawArea)->drv;
@@ -575,12 +586,14 @@ void AllClear(void)
    /*
     * 全領域をレンダリング対象とする
     */
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
    SetDrawFlag(TRUE);
    bClearFlag = FALSE;
+   UnlockVram();
 }
 
 
@@ -752,8 +765,8 @@ void	ttlpalet_notify(void)
     * 不要なレンダリングを抑制するため、領域設定は描画時に行う
     */
    LockVram();
+   if(bPaletFlag != TRUE)SetDrawFlag(TRUE);
    bPaletFlag = TRUE;
-   SetDrawFlag(TRUE);
    UnlockVram();
 }
 
@@ -763,8 +776,8 @@ void	ttlpalet_notify(void)
 void 	apalet_notify(void)
 {
    LockVram();
+   if(bPaletFlag != TRUE) SetDrawFlag(TRUE);
    bPaletFlag = TRUE;
-   SetDrawFlag(TRUE);
    UnlockVram();
 }
 
@@ -777,6 +790,7 @@ void 	display_notify(void)
 	/*
 	 * 再描画
 	 */
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 400;
    nDrawLeft = 0;
@@ -784,6 +798,8 @@ void 	display_notify(void)
    bPaletFlag = TRUE;
 //   bClearFlag = TRUE;
    SetDrawFlag(TRUE);
+   UnlockVram();
+
 }
 
 /*
@@ -1088,13 +1104,15 @@ void Draw640All(void)
     *描画モードを変えたら強制的にPalet640すること。
     */
    if(bPaletFlag) { // 描画モードでVRAM変更
+      LockVram();
       Palet640();
       bPaletFlag = FALSE;
       nDrawTop = 0;
       nDrawBottom = 400;
       nDrawLeft = 0;
       nDrawRight = 640;
-//      SetDrawFlag(TRUE);
+      SetDrawFlag(TRUE);
+      UnlockVram();
    }
    /*
     * クリア処理
@@ -1144,10 +1162,6 @@ void Draw640All(void)
 	 PutVramFunc(p, 0, 0, 640, 200, multi_page);
       }
    }
-   nDrawTop = 0;
-   nDrawBottom = 400;
-   nDrawLeft = 0;
-   nDrawRight = 640;
 }
 
 
@@ -1163,12 +1177,15 @@ void Draw400l(void)
     * パレット設定
     */
    if (bPaletFlag) {
+      LockVram();
       Palet640();
       nDrawTop = 0;
       nDrawBottom = 400;
       nDrawLeft = 0;
       nDrawRight = 640;
       SetDrawFlag(TRUE);
+      bPaletFlag = FALSE;
+      UnlockVram();
    }
 
    if (bClearFlag) {
@@ -1222,16 +1239,6 @@ void Draw400l(void)
 	 PutVramFunc(p, 0, 0, 640, 400, multi_page);
       }
    }
-//   if (bPaletFlag) {
-//      nDrawTop = 0;
-//      nDrawBottom = 400;
-//      nDrawLeft = 0;
-//      nDrawRight = 640;
-//      SetDrawFlag(TRUE);
-//   }
-   
-   bPaletFlag = FALSE;
-   
 }
 
 
@@ -1248,6 +1255,7 @@ void Draw320(void)
     */
     PutVramFunc = &PutVram_AG_SP;
    if(bPaletFlag) {
+      LockVram();
       Palet320();
       SDLDrawFlag.APaletteChanged = TRUE;
       nDrawTop = 0;
@@ -1256,6 +1264,7 @@ void Draw320(void)
       nDrawRight = 320;
       SetDrawFlag(TRUE);
       bPaletFlag = FALSE;
+      UnlockVram();
    }
    /*
     * クリア処理
@@ -1300,12 +1309,6 @@ void Draw320(void)
 	 PutVramFunc(p, 0, 0, 320, 200, multi_page);
       }
    }
-   
-   nDrawTop = 0;
-   nDrawBottom = 200;
-   nDrawLeft = 0;
-   nDrawRight = 320;
-   bPaletFlag = FALSE;
 }
 
 void Draw256k(void)
@@ -1316,10 +1319,13 @@ void Draw256k(void)
    p = GetDrawSurface();
 
    PutVramFunc = &PutVram_AG_SP;
+   LockVram();
    nDrawTop = 0;
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 320;
+   bPaletFlag = FALSE;
+   UnlockVram();
    //    SetDrawFlag(TRUE);
    // 
    /*
@@ -1337,12 +1343,7 @@ void Draw256k(void)
     * 26万色モードの時は、ハードウェアウィンドウを考慮しない。
     */
    PutVramFunc(p, 0, 0, 320, 200, multi_page);
-   
-   nDrawTop = 0;
-   nDrawBottom = 200;
-   nDrawLeft = 0;
-   nDrawRight = 320;
-   bPaletFlag = FALSE;
+
 }
 
 }
