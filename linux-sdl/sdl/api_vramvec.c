@@ -123,7 +123,11 @@ v4hi lshift_6bit8v(v4hi *v)
         aPlanes[R3 + v->b[5]];
    
    mask.v = mask.v & cbuf.v;
-#if 0
+#if ((__GNUC__ == 4) && (__GCC_MINOR__ >= 7)) || (__GNUC__ > 4) //GCC 4.7 or later.
+   r.v = mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0};
+   r.v = r.v & (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+   cbuf.v = cbuf.v |  r.v;
+#else
    if(mask.s[0] != 0) cbuf.s[0] |= 0x03;
    if(mask.s[1] != 0) cbuf.s[1] |= 0x03;
    if(mask.s[2] != 0) cbuf.s[2] |= 0x03;
@@ -132,10 +136,6 @@ v4hi lshift_6bit8v(v4hi *v)
    if(mask.s[5] != 0) cbuf.s[5] |= 0x03;
    if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
    if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
-#else
-   r.v = mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0};
-   r.v = r.v & (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
-   cbuf.v = cbuf.v |  r.v;
 #endif	
   return cbuf;
 }

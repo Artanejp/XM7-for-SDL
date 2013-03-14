@@ -38,7 +38,7 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     if (t == NULL) {
         return;
     }
-#ifdef __MMX__
+#if defined(__MMX__)
     h = (v2hi *)p;
     l = (v2hi *)t;
     i = (size >> 3) << 3;
@@ -49,7 +49,7 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
        s = *h++;
        s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
        s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
-#if (__GCC_MINOR__ >= 7) || (__GCC__ > 4)
+#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
        s = __builtin_shuffle(r.v, s.v, (v2si){0,2,4,6});
        *l++ = s;		    
 #else  // GCC4.x and GCC<4.7
@@ -66,7 +66,7 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
        s = *h++;
        s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
        s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
-#if (__GCC_MINOR__ >= 7) || (__GCC__ > 4)
+#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
        s = __builtin_shuffle(r.v, s.v, (v2si){0,2,4,6});
        *l++ = s;		    
 #else  // GCC4.x and GCC<4.7
@@ -79,7 +79,7 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 
     }
    
-#else       
+#else       // Not MMX
     h = (v8hi_t *)p;
     l = (v4hi *)t;
     i = (size >> 3) << 3;
