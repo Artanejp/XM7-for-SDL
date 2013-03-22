@@ -1,0 +1,153 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>MW/SW/FM DSP  RADIO,USING DSP6919.</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>DSPラジオ その2(2013-03-22)</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#WHAT">これは何か</A><BR>
+<A HREF="#HOW">どのようなものか</A><BR>
+<A HREF="#MAKING">製作</A><BR>
+&nbsp;<A HREF="#MAKING_1">ICの実装</A><BR>
+&nbsp;<A HREF="#MAKING_2">ユニットテスト</A><BR>
+&nbsp;<A HREF="#MAKING_3">バーアンテナを巻いてみよう</A><BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<A NAME="WHAT"></A>
+<H3>これは何か</H3>
+&nbsp;　<A HREF="../RADIO3/">DSPラジオモジュール</A>の中身はどうなってるのだろうか？<BR>
+&nbsp; と言う事で、この中に使われてる<B>らしい</B>、中国製ラジオICの<A HREF="http://wenku.baidu.com/view/5169800f844769eae009edbb.html" target=_blank>DSP6919(リンク先はデータシートですが、簡体中国語です。気合で読んで下さい（笑）)</A>をアイテンドーから買って試して見ました。<BR>
+&nbsp; が、それは終わることのない泥沼の始まりだった…この絡みで<A HREF="https://sites.google.com/site/artanejp/s" target=_blank>XM7/SDL</A>が全く進まない状況に(；´Д｀)<BR>
+<BR>
+<A NAME="HOW"></A>
+<H3>どのようなものか</H3>
+&nbsp; 今回使ったのは、DSP6919です。結論から言うと、DSP443の中の石とはアナログ特性が少し違うようです。<BR>
+&nbsp; これを前回と同じようなプリアンプを乗っけて高感度にしていこう。というものです。<BR>
+&nbsp; <B>これを書いてる3/22現在も開発やら調整やらが続いています！↓に示す回路図は一部暫定的なものです</B><BR>
+&nbsp; 使用可能周波数帯は中波〜短波〜FM放送です。<BR>
+&nbsp; IC自体は非常に小さいです。TSSOP 28pinで、ピン間隔は0.65mmです。<B>後、普通のTSSOPよりも少しだけ幅が狭いので秋月通商で売ってる変換基板だと確実に失敗するのが、なんともチャイナクォリティ。</B>(いや、変換基板が秋月クォリティなのか？(；´Д｀)）<BR>
+&nbsp; <IMG SRC="P2176305.JPG" ALT="失敗＿|￣|●"><BR>秋月の変換基板を使って強引につけようとして失敗しました＿|￣|●<BR>
+<BR>
+<A HREF="DSP6919_Radio_V1.00.zip"><IMG SRC="Radio6919_v1_p1.png" ALT="回路図(メイン)"><BR>
+<IMG SRC="Radio6919_v1_p2.png" ALT="回路図(プリアンプ)"><BR>
+&nbsp;&nbsp; 回路図とgSCH用のDSP6919のシンボルセット+おまけ</A><BR>
+<BR>
+<BR>
+<A NAME="MAKING"></A>
+<H3>製作</H3>
+<A NAME="MAKING_1"></A>
+<H4>ICの実装</H4>
+&nbsp; DSP6919は非常に小さいTSSOPなICなので、変換基板が必要です。<A HREF="http://www.sunhayato.co.jp/products/details.php?u=203&id=07012" target=_blank>サンハヤトのSSP-61</A>を使います。<BR>
+&nbsp; <IMG SRC="P3016320.JPG" ALT="SSP-61"><BR>
+&nbsp; 変換基板にICを付けます。<BR>
+&nbsp; <IMG SRC="P3016324.JPG" ALT="使用前"><BR>
+&nbsp; まず、半田でピン間を溢れさせ、<BR>
+&nbsp; <IMG SRC="P3016325.JPG" ALT="使用後"><BR>
+&nbsp; ハンダ吸い取り線で綺麗に吸い取って行きます。終わったら、テスターでピン間ショートをチェック。この時、3-4ピンがショートを示しますが、ここは同じGNDなのでスルーして構いません。<BR>
+&nbsp; それでも微細なひげやボールが残ってるかも知れないので、ルーペで見て不安な所は綺麗に掃除してあるこて先を使って拭っていきます。<BR>
+&nbsp; <BR>
+&nbsp; 次に、変換基板上に実装した方がいい部品…U2,L1,C2…を実装して行きましょう。<BR>
+&nbsp; <IMG SRC="P3016330.JPG" ALT="水晶を実装"><BR>
+&nbsp; <IMG SRC="P3016332.JPG" ALT="コンデンサとコイルを実装"><BR>
+<BR>
+<A NAME="MAKING_2"></A>
+<H4>ユニットテスト</H4>
+&nbsp; では、変換基板にヘッダピンで足を付けて、予め作っておいた周辺回路(回路図P1からバーアンテナを取り除いてダミーのL2を載せてる回路)の基板と組み合わせてみましょう
+…<B>アレ？上手く鳴らない(；´Д｀)</B><BR>
+&nbsp; <IMG SRC="P3016339.JPG" ALT="テストベッド"><BR>
+&nbsp; 理由を考えてみます。<BR>
+&nbsp;&nbsp; ・感度が低い(プリアンプでフォローしてきましょう)<BR>
+&nbsp;&nbsp; ・<del>敗戦</del>配線間違いとか(これは大丈夫だった)<BR>
+&nbsp;&nbsp; ・データシートの回路図が腐ってる！(多少そういう可能性は無きにしも非ずなのがチャイナクォリティだが、この段階ではそういうことは考えてはいけません(；´Д｀))<BR>
+&nbsp;&nbsp; ・L1のチップコイルが入手の関係で47nHだった→<B>これはあるかもしれない(ﾟДﾟ)</B><BR>
+&nbsp; <BR>
+&nbsp; L1を丁度手元にあったT-37#12に適当な単線を五六回ほど巻いてやってきましょう？アレ？なんか聞こえるような気がしてきた、聞こえない？(；´Д｀)<BR>
+&nbsp;
+危ないけどアンテナをMW_INにつないでみよう…音が割れてるが何か聞こえてる…音が割れていたのはAFNだった(；´Д｀)
+そして、何故か<A HREF="http://www.tbs.co.jp/radio/" target="_blank">TBS(954KHz)</A>が聞こえず、<A HREF="http://www.akita-abs.co.jp/radio/index.htm"
+target="_blank">秋田放送(936KHz)</A>が綺麗に聞こえる。<BR>
+&nbsp; よくわからないがすげー(；´Д｀)ふつーだと、秋田放送なんてTBSに被って聞こえないのに。<BR>
+&nbsp; 前に作ったDSPモジュール用に試作していたプリアンプをつなぐと、
+秋田放送の代りに何故か<A HREF="http://www.ybc.co.jp/radio/" target=_blank>山形放送(918KHz)</A>が聞こえてくる。しかも、NHK第一・第二やラジオ日本などが聞こえない。<BR>
+&nbsp; 選局範囲が狭すぎる上にわけわかんねーよ(TдT)<BR>
+&nbsp; とりあえず調整すれば何とかできそうなので、気を取り直して次に進むことにします。<BR>
+&nbsp; <IMG SRC="P2266318.JPG" ALT="試作プリアンプ"><BR>プリアンプ（試作中)<BR>
+<BR>
+&nbsp; ここまでで、既に数日以上の作業時間を費やした＿|￣|●<BR>
+<BR>
+<A NAME="MAKING_3"></A>
+<H4>バーアンテナを巻いてみよう</H4>
+&nbsp; 前のDSP-443が意外と感度が低くて、しかも中波の入力が壊れやすいので直にアンテナつなぐわけにもいかなさそうだったので、とりあえず回路図p1のL2のようにバーアンテナを巻いて見ることにしました。<BR>
+&nbsp; 秋葉原ラジオデパート3Fにある、<A HREF="http://www.tokyoradiodepart.co.jp/tenpo/view/50/%E3%82%B7%E3%82%AA%E3%83%A4%E7%84%A1%E7%B7%9A%E9%9B%BB%E6%A9%9F%E5%95%86%E4%BC%9A"
+target=_blank>シオヤ無線</A>などでバーアンテナのコアが買えます。通販で入手しやすいのは<A
+HREF="http://www.maroon.dti.ne.jp/satodenki/l.html" target=_blank>サトー電気</A>かな。<BR>
+&nbsp; 長さ10cm,直径10mmの物を使っています。送信所が近い所で使う人や一戸建て木造住宅の人は小さなバーアンテナをかってもいいでしょう。<BR>
+&nbsp; 只、コアの透磁率とかが大概不明な上にMW入力は非同調なので
+<B>（と思ったが、よくよく考えてみたら選局に使ってる約285KHz前後のパルスの回りこみをC9とL2でキャンセルしてる)</B>大体で大丈夫です（嗚呼いい加減…)<BR>
+&nbsp; <IMG SRC="P2176289.JPG" ALT="適当な厚紙をコアに巻きつける"><BR>
+&nbsp; <IMG SRC="P2176290.JPG" ALT="完成形"><BR>
+&nbsp; 厚紙をコアに巻きつけ、セメダインCなどで接着して絶縁層を作ります。乾くまで接着面を押さえつけましょう。<BR>
+&nbsp; 後、接着剤には巻きつけるUEW線の絶縁塗装を侵食する溶剤が含まれることがあるので、接着剤はよく乾かして下さい。<BR>
+&nbsp; <BR>さて、線を巻いて行きましょう。0.2mm〜0.17mmのポリウレタン線を使います。<BR>
+&nbsp; <IMG SRC="P2176291.JPG" ALT="線材"><BR>
+&nbsp; 巻き始めはホットメルトで留めます。<BR>
+&nbsp; <IMG SRC="P2176292.JPG" ALT="巻き始め"><BR>
+&nbsp; 線は密巻きにします。つまり、巻きつつ左（巻き始め側）に線材を寄せ、切りのいいところでホットメルトで固定していきます。これを120巻分繰り返します<BR>
+&nbsp; <IMG SRC="P2176296.JPG" ALT="一次側"><BR>
+&nbsp; 一次側が出来ましたヽ(゜∀゜)ノ<BR>
+&nbsp; <IMG SRC="P2176297.JPG" ALT="二次側"><BR>
+&nbsp; 二次側も出来ましたヽ(゜∀゜)ノ<BR>
+&nbsp; 只、上記の理由により、真面目に巻き数を管理したほうがいいかもです。インダクタンスの確認は、LCRメータで。私は未だ持ってないけど(；´Д｀)<BR>
+&nbsp; <BR>
+&nbsp; 出来あがりを試すために、本回路(p1のみ)と一緒に本番の基板に組み込んでいきます。そして、プリアンプを接続します。<B>秋田放送の代りに山形放送ばかり聞こえるのは相変わらず。°(/□＼*)°。でも、（夜の）聞こえ方は相当よくなりました。問題は、昼間だ…</B><BR>
+<BR>
+<H2>…つづく。（ぉ</H2><H5>写真選びに疲れたよ(；´Д｀)いいえ、世間に負けたの(；´Д｀)</H5>
+<BR>
+<BR>
+<BR>
+<H5>次回予告：プリアンプの泥沼やらL1調整の泥沼やら。何とか昼間にTBSかニッポン放送のどちらかが聞こえて、夜中はそこら辺〜AFN、NHK第二(秋田送信所？)が聞こえるようにはなってます。しかし、SWとFMのプリアンプは未だ決定稿が出来てないです(；´Д｀)</A>
+<BR>
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">Radio using DSP6919</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 22 Mar.2013 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
