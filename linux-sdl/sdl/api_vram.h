@@ -42,15 +42,12 @@ extern void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int m
  */
 extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
 
+#if (__GNUC__ >= 4)
 extern void initvramtbl_8_vec(void);
 extern void initvramtbl_4096_vec(void);
 extern void detachvramtbl_8_vec(void);
 extern void detachvramtbl_4096_vec(void);
-
 extern v4hi lshift_6bit8v(v4hi *v);
-extern Uint8 *vram_pb;
-extern Uint8 *vram_pr;
-extern Uint8 *vram_pg;
 extern v4si *aPlanes;
 
 enum {
@@ -90,6 +87,12 @@ enum {
    PLAING,
    PLAINW
 };
+
+#endif    // __GNUC__ >= 4
+extern Uint8 *vram_pb;
+extern Uint8 *vram_pr;
+extern Uint8 *vram_pg;
+
 
 
 #ifdef __cplusplus

@@ -15,6 +15,28 @@ COMMONSRC = \
 
 .SUFFIXES: .c .cpp .asm .o
 
+# GCC' 4.8s workaround
+
+ifdef CROSS_BUILD
+ ifndef FMGEN_CC
+  FMGEN_CC = $(CC)
+ endif
+ ifndef FMGEN_CXX
+  FMGEN_CXX = $(CXX)
+ endif
+else
+ ifndef FMGEN_CC
+  FMGEN_CC = /usr/bin/gcc-4.7
+ endif
+ ifndef FMGEN_CXX
+  FMGEN_CXX = /usr/bin/g++-4.7
+ endif
+endif
+
+CC = $(FMGEN_CXX)
+CXX = $(FMGEN_CXX)
+#
+
 SRCS =	${COMMONSRC}
 CSRCS =	$(filter %.c, $(SRCS))
 CXXSRCS = $(filter %.cpp, $(SRCS))

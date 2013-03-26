@@ -12,7 +12,7 @@ static inline Sint16 _clamp(Sint32 b)
 }
 
 
-void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
+volatile void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 {
     int         i, j;
     Sint32       *p = (Sint32 *) from;
@@ -38,7 +38,9 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     if (t == NULL) {
         return;
     }
+
 #if defined(__MMX__)
+// Optimize for gcc-4.8
     h = (v2hi *)p;
     l = (v2hi *)t;
     i = (size >> 3) << 3;
@@ -104,8 +106,8 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
       *t++ = _clamp(tmp1);
    }
 #else // GCC <= 3.x
-   p = (Sint32 *)h;
-   t = (Sint16 *)l;
+//   p = (Sint32 *)h;
+//   t = (Sint16 *)l;
    i = 0;
    if(i >= size) return;
    for (j = 0; j < (size - i); j++) {
