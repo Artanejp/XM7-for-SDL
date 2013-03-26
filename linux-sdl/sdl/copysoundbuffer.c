@@ -21,8 +21,6 @@ static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
     v2hi *l;
     v2hi ss, rr, tt;
     v2hi r, s;
-    v4hi tmp3;
-    v4hi tmp4;
     Sint32 tmp1;
     Sint32 *p;
     Sint16 *t;
@@ -38,16 +36,16 @@ static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
        s = *h++;
        s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
        s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
-#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
-       s = __builtin_shuffle(r.v, s.v, (v2si){0,2,4,6});
-       *l++ = s;		    
-#else  // GCC4.x and GCC<4.7
+//#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
+//       tt.v = __builtin_shuffle(r.v, s.v, (v2si){0, 2, 4, 6});
+//       *l++ = s;		    
+//#else  // GCC4.x and GCC<4.7
        tt.s[0] = r.s[0];
        tt.s[1] = r.s[2];
        tt.s[2] = s.s[0];
        tt.s[3] = s.s[2];
        *l++ = tt;
-#endif
+//#endif
    }
    p = (Sint32 *)h;
    t = (Sint16 *)l;
