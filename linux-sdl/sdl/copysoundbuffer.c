@@ -30,7 +30,7 @@ static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
    
     h = (v2hi *)from;
     l = (v2hi *)to;
-    i = (size >> 3) << 3;
+    i = (size >> 2) << 2;
     for (j = 0; j < i; j += 4) {
        r = *h++;
        r.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, r.v);
