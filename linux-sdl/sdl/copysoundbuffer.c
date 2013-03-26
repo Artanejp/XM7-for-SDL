@@ -4,84 +4,94 @@
 
 #include "xm7_types.h"
 #include "xm7.h"
+#include "sdl_cpuid.h"
+
 static inline Sint16 _clamp(Sint32 b)
 {
     if(b < -0x7fff) return -0x7fff;
     if(b > 0x7fff) return 0x7fff;
     return (Sint16) b;
 }
-
-
-volatile void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
+#if defined(__x86_64__) || defined(__i386__)
+ #if defined(__MMX__)
+static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
 {
-    int         i, j;
-    Sint32       *p = (Sint32 *) from;
-    Sint16       *t = (Sint16 *) to;
-    Sint32       tmp1;
-#if (__GNUC__ >= 4)
-    v8hi_t tmp2;
-#ifdef __MMX__
+// Optimize for gcc-4.8
     v2hi *h;
     v2hi *l;
     v2hi ss, rr, tt;
     v2hi r, s;
     v4hi tmp3;
     v4hi tmp4;
-#else
+    Sint32 tmp1;
+    Sint32 *p;
+    Sint16 *t;
+    int i, j;
+   
+    h = (v2hi *)from;
+    l = (v2hi *)to;
+    i = (size >> 3) << 3;
+    for (j = 0; j < i; j += 4) {
+       r = *h++;
+       r.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, r.v);
+       r.v = __builtin_ia32_psubsw(r.v, (v2si){0, 0, 0, 0});
+       s = *h++;
+       s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
+       s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
+#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
+       s = __builtin_shuffle(r.v, s.v, (v2si){0,2,4,6});
+       *l++ = s;		    
+#else  // GCC4.x and GCC<4.7
+       tt.s[0] = r.s[0];
+       tt.s[1] = r.s[2];
+       tt.s[2] = s.s[0];
+       tt.s[3] = s.s[2];
+       *l++ = tt;
+#endif
+   }
+   p = (Sint32 *)h;
+   t = (Sint16 *)l;
+   if(i >= size) return;
+   for (j = 0; j < (size - i); j++) {
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+   }
+   
+}
+ #else // NOT MMX
+static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
+{
+ // NOOP :)
+}
+ #endif // __MMX__
+#endif // X86_64 or i386
+void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
+{
+    int         i, j;
+    Sint32       *p = (Sint32 *) from;
+    Sint16       *t = (Sint16 *) to;
+    Sint32       tmp1;
+    struct XM7_CPUID cpuid;
+
+#if (__GNUC__ >= 4)
+    v8hi_t tmp2;
     v4hi tmp3;
     v4hi *l;
     v8hi_t *h;
-#endif
     if (p == NULL) {
         return;
     }
     if (t == NULL) {
         return;
     }
-
-#if defined(__MMX__)
-// Optimize for gcc-4.8
-    h = (v2hi *)p;
-    l = (v2hi *)t;
-    i = (size >> 3) << 3;
-    for (j = 0; j < i; j += 8) {
-       r = *h++;
-       r.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, r.v);
-       r.v = __builtin_ia32_psubsw(r.v, (v2si){0, 0, 0, 0});
-       s = *h++;
-       s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
-       s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
-#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
-       s = __builtin_shuffle(r.v, s.v, (v2si){0,2,4,6});
-       *l++ = s;		    
-#else  // GCC4.x and GCC<4.7
-       tt.s[0] = r.s[0];
-       tt.s[1] = r.s[2];
-       tt.s[2] = s.s[0];
-       tt.s[3] = s.s[2];
-       *l++ = tt;
-#endif
-        
-       r = *h++;
-       r.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, r.v);
-       r.v = __builtin_ia32_psubsw(r.v, (v2si){0, 0, 0, 0});
-       s = *h++;
-       s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
-       s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
-#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
-       s = __builtin_shuffle(r.v, s.v, (v2si){0,2,4,6});
-       *l++ = s;		    
-#else  // GCC4.x and GCC<4.7
-       tt.s[0] = r.s[0];
-       tt.s[1] = r.s[2];
-       tt.s[2] = s.s[0];
-       tt.s[3] = s.s[2];
-       *l++ = tt;
-#endif
-
+    getCpuID(&cpuid);
+ #if defined(__MMX__)
+    if(cpuid.use_mmx) {
+	CopySoundBuffer_MMX(from, to, size);
+        return;
     }
-   
-#else       // Not MMX
+ #endif
+ // Not using MMX or SSE3
     h = (v8hi_t *)p;
     l = (v4hi *)t;
     i = (size >> 3) << 3;
@@ -97,7 +107,6 @@ volatile void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         tmp3.ss[7] =_clamp(tmp2.si[7]);
         *l++ = tmp3;
    }
-#endif
    p = (Sint32 *)h;
    t = (Sint16 *)l;
    if(i >= size) return;
@@ -108,7 +117,26 @@ volatile void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 #else // GCC <= 3.x
 //   p = (Sint32 *)h;
 //   t = (Sint16 *)l;
-   i = 0;
+   i = size >> 3;
+   for (j = 0; j < i; j++) {
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+   }
+   i = j << 3;
    if(i >= size) return;
    for (j = 0; j < (size - i); j++) {
       tmp1 = *p++;
