@@ -28,11 +28,14 @@ typedef int     BOOL;
 typedef short int v2si __attribute__ ((__vector_size__(8), aligned(8)));
 typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
 typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(32)));
+typedef int32_t v2ii __attribute__ ((__vector_size__(8), aligned(8)));
+typedef int32_t v4ii __attribute__ ((__vector_size__(16), aligned(16)));
+typedef int32_t v8ii __attribute__ ((__vector_size__(32), aligned(32)));
 
 typedef union 
 {
         v2si v;
-
+        v2ii vv;
         uint32_t i[2];
         uint16_t s[4];
         uint8_t  b[8];
@@ -44,6 +47,7 @@ typedef union
 typedef union 
 {
         v4si v;
+        v4ii vv;
 
         uint32_t i[4];
         uint16_t s[8];
@@ -56,8 +60,10 @@ typedef union
 typedef union 
 {
         v8si v;
+        v8ii vv;
         v4si v4[2];
-        
+        v4ii vv4[2];
+       
         uint32_t i[8];
         uint16_t s[16];
         uint8_t  b[32];
