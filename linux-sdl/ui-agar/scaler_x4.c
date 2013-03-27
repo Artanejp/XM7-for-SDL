@@ -244,6 +244,7 @@ void pVram2RGB_x4_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, i
    } else { // inside align
       v4hi b2, b3, b4, b5;
       v4hi b6, b7, b8, b9;
+      v4hi bx0, bx1;
       v4hi *b2p;
       int j;
       v4hi bb;
@@ -256,42 +257,49 @@ void pVram2RGB_x4_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, i
 	case 2:
 	  for(yy = 0; yy < hh; yy++){
 	     b2p = (v4hi *)d1;
-	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x55);
-	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0x00);
-	     b4.vv = __builtin_ia32_pshufd(b[0].v, 0xaa);
-	     b5.vv = __builtin_ia32_pshufd(b[0].v, 0xff);
-	     b6.vv = __builtin_ia32_pshufd(b[1].v, 0x55);
-	     b7.vv = __builtin_ia32_pshufd(b[1].v, 0x00);
-	     b8.vv = __builtin_ia32_pshufd(b[1].v, 0xaa);
-	     b9.vv = __builtin_ia32_pshufd(b[1].v, 0xff);
+	     bx0 = *b++;
+	     bx1 = *b++;
+	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
+	     b3.vv = __builtin_ia32_pshufd(bx0.v, 0x55);
+	     b4.vv = __builtin_ia32_pshufd(bx0.v, 0xaa);
+	     b5.vv = __builtin_ia32_pshufd(bx0.v, 0xff);
 	     b2p[0] = b2;
 	     b2p[1] = b3;
 	     b2p[2] = b4;
 	     b2p[3] = b5;
+
+	     b6.vv = __builtin_ia32_pshufd(bx1.v, 0x00);
+	     b7.vv = __builtin_ia32_pshufd(bx1.v, 0x55);
+	     b8.vv = __builtin_ia32_pshufd(bx1.v, 0xaa);
+	     b9.vv = __builtin_ia32_pshufd(bx1.v, 0xff);
 	     b2p[4] = b6;
 	     b2p[5] = b7;
 	     b2p[6] = b8;
 	     b2p[7] = b9;	
 	     d1 += pitch;
-	     b++;
 	  }
 	  break;
 	default:
 	  for(yy = 0; yy < hh; yy++){
-	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x55);
-	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0x00);
-	     b4.vv = __builtin_ia32_pshufd(b[0].v, 0xff);
-	     b5.vv = __builtin_ia32_pshufd(b[0].v, 0xaa);
-	     b6.vv = __builtin_ia32_pshufd(b[1].v, 0x55);
-	     b7.vv = __builtin_ia32_pshufd(b[1].v, 0x00);
-	     b8.vv = __builtin_ia32_pshufd(b[1].v, 0xaa);
-	     b9.vv = __builtin_ia32_pshufd(b[1].v, 0xff);
+	     bx0 = *b++;
+	     bx1 = *b++;
+	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
+	     b3.vv = __builtin_ia32_pshufd(bx0.v, 0x55);
+	     b4.vv = __builtin_ia32_pshufd(bx0.v, 0xaa);
+	     b5.vv = __builtin_ia32_pshufd(bx0.v, 0xff);
+	     
+	     b6.vv = __builtin_ia32_pshufd(bx1.v, 0x00);
+	     b7.vv = __builtin_ia32_pshufd(bx1.v, 0x55);
+	     b8.vv = __builtin_ia32_pshufd(bx1.v, 0xaa);
+	     b9.vv = __builtin_ia32_pshufd(bx1.v, 0xff);
+	     
 	     if(yrep & 1) {
 		b2p = (v4hi *)d1;
 		b2p[0] = b2;
 		b2p[1] = b3;
 		b2p[2] = b4;
 		b2p[3] = b5;
+		
 		b2p[4] = b6;
 		b2p[5] = b7;
 		b2p[6] = b8;
@@ -309,6 +317,7 @@ void pVram2RGB_x4_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, i
 		   b2p[1] = b3;
 		   b2p[2] = b4;
 		   b2p[3] = b5;
+		   
 		   b2p[4] = b6;
 		   b2p[5] = b7;
 		   b2p[6] = b8;
@@ -316,13 +325,12 @@ void pVram2RGB_x4_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, i
 		}
 		d1 += pitch;
 	     }
-	     b++;
 	  }
 	break;
        }
    }
 }
-#else
+#else // NON-SSE2
 void pVram2RGB_x4_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    pVram2RGB_x4(my, src, dst, x, y, yrep);
