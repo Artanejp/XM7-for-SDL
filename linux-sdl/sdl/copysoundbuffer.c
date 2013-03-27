@@ -6,6 +6,8 @@
 #include "xm7.h"
 #include "sdl_cpuid.h"
 
+extern struct XM7_CPUID *pCpuID;
+
 static inline Sint16 _clamp(Sint32 b)
 {
     if(b < -0x7fff) return -0x7fff;
@@ -106,19 +108,21 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     if (t == NULL) {
         return;
     }
-    getCpuID(&cpuid);
- #if defined(__SSE2__)
-//    if(cpuid.use_sse2) {
+ if(pCpuID != NULL) {
+  #if defined(__SSE2__)
+//    if(pCpuID->use_sse2) {
 //	CopySoundBuffer_SSE2(from, to, size);
 //        return;
 //    }
  #endif
  #if defined(__MMX__)
-    if(cpuid.use_mmx) {
+    if(pCpuID->use_mmx) {
 	CopySoundBuffer_MMX(from, to, size);
         return;
     }
  #endif
+ }
+   
  // Not using MMX or SSE2
     h = (v8hi_t *)p;
     l = (v4hi *)t;
