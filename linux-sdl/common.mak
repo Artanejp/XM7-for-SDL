@@ -131,11 +131,10 @@ endif
 
 # OpenMP
 ifdef USE_OPENMP
-
 CFLAGS += -fopenmp
-
 endif
 
+CFLAGS += -flax-vector-conversions
 CFLAGS_DEBUG = -pg -g -O0 
 CFLAGS_DEBUG += $(CFLAGS)
 
@@ -162,7 +161,7 @@ else
 
 CFLAGS_RELEASE += -pthread
 #CFLAGS_RELEASE +=  -O3 -ftree-vectorize
-CFLAGS_RELEASE +=  -O3
+CFLAGS_RELEASE +=  -O3 
 #CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 
 CXXFLAGS_RELEASE += -pthread

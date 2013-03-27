@@ -16,36 +16,23 @@ static inline Sint16 _clamp(Sint32 b)
  #if defined(__MMX__)
 static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
 {
-// Optimize for gcc-4.8
-    v2hi *h;
+    v2ii *h ;
+    v2ii r, s;
     v2hi *l;
-    v2hi ss, rr, tt;
-    v2hi r, s;
+    v2hi tt;
     Sint32 tmp1;
     Sint32 *p;
     Sint16 *t;
     int i, j;
    
-    h = (v2hi *)from;
+    h = (v2ii *)from;
     l = (v2hi *)to;
     i = (size >> 2) << 2;
     for (j = 0; j < i; j += 4) {
-       r = *h++;
-       r.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, r.v);
-       r.v = __builtin_ia32_psubsw(r.v, (v2si){0, 0, 0, 0});
-       s = *h++;
-       s.v = __builtin_ia32_paddsw((v2si){0, 0, 0, 0}, s.v);
-       s.v = __builtin_ia32_psubsw(s.v, (v2si){0, 0, 0, 0});
-//#if (__GCC_MINOR__ >= 7) || (__GNUC__ > 4)
-//       tt.v = __builtin_shuffle(r.v, s.v, (v2si){0, 2, 4, 6});
-//       *l++ = s;		    
-//#else  // GCC4.x and GCC<4.7
-       tt.s[0] = r.s[0];
-       tt.s[1] = r.s[2];
-       tt.s[2] = s.s[0];
-       tt.s[3] = s.s[2];
-       *l++ = tt;
-//#endif
+      r = *h++;
+      s = *h++;
+      tt.v = __builtin_ia32_packssdw(r, s);
+      *l++ = tt;
    }
    p = (Sint32 *)h;
    t = (Sint16 *)l;
@@ -62,6 +49,43 @@ static void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
  // NOOP :)
 }
  #endif // __MMX__
+ #if defined(__SSE2__)
+// By optimization, this occures assertion in gcc-4.8.0(why...)
+static void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
+{
+    v4hi *h ;
+    v4hi r, s;
+    v4hi *l;
+    v4hi tt;
+    Sint32 tmp1;
+    Sint32 *p;
+    Sint16 *t;
+    int i, j;
+   
+    h = (v4hi *)from;
+    l = (v4hi *)to;
+    i = (size >> 3) << 3;
+    for (j = 0; j < i; j += 8) {
+      r = *h++;
+      s = *h++;
+      tt.vv = __builtin_ia32_packssdw128(r.vv, s.vv);
+      *l++ = tt;
+   }
+   p = (Sint32 *)h;
+   t = (Sint16 *)l;
+   if(i >= size) return;
+   for (j = 0; j < (size - i); j++) {
+      tmp1 = *p++;
+      *t++ = _clamp(tmp1);
+   }
+   
+}
+ #else // NOT MMX
+static void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
+{
+ // NOOP :)
+}
+ #endif // __SSE2__
 #endif // X86_64 or i386
 void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
 {
@@ -83,13 +107,19 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
         return;
     }
     getCpuID(&cpuid);
+ #if defined(__SSE2__)
+//    if(cpuid.use_sse2) {
+//	CopySoundBuffer_SSE2(from, to, size);
+//        return;
+//    }
+ #endif
  #if defined(__MMX__)
     if(cpuid.use_mmx) {
 	CopySoundBuffer_MMX(from, to, size);
         return;
     }
  #endif
- // Not using MMX or SSE3
+ // Not using MMX or SSE2
     h = (v8hi_t *)p;
     l = (v4hi *)t;
     i = (size >> 3) << 3;

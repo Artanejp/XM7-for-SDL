@@ -342,14 +342,14 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * nSoundBuffer * 2 * sizeof(Sint16)) / 1000;
 #ifndef _WINDOWS
-        if(posix_memalign((void **)&pCaptureBuf, 16, uBufSize * 2) < 0) return -1;
-        if(posix_memalign((void **)&pSoundBuf, 16, uBufSize * 2) < 0) {
+        if(posix_memalign((void **)&pCaptureBuf, 32, uBufSize * 2) < 0) return -1;
+        if(posix_memalign((void **)&pSoundBuf, 32, uBufSize * 2) < 0) {
 	   free(pCaptureBuf);
 	   return -1;
 	}
 #else
 	{
-	  int size = (((uBufSize * 2) +15) / 16) * 16;
+	  int size = (((uBufSize * 2) + 31) / 32) * 32;
 	   pCaptureBuf = malloc(size);
 	   if(pCaptureBuf == NULL) return -1;
 	   pSoundBuf = malloc(size);
