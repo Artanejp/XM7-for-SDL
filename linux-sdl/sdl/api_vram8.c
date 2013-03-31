@@ -64,15 +64,14 @@ static void getvram_8_vec(Uint32 addr, v4hi *cbuf)
    return;
 }
 
-static void  putword8_vec(Uint32 *disp, volatile v4hi c, v8hi_t pal)
+static inline void  putword8_vec(Uint32 *disp, volatile v4hi c, v8hi_t pal)
 {
+
    v8hi_t *dst = (v8hi_t *)disp;
-   v8hi_t r1, r2, r3;
+   register v8hi_t r1;
    
 //   if(disp == NULL) return;
-   
    c.v &= (v4si){7, 7, 7, 7, 7, 7, 7, 7,};
-
    r1.i[0] = pal.i[c.s[0]]; // ?!
    r1.i[1] = pal.i[c.s[1]];
    r1.i[2] = pal.i[c.s[2]];
@@ -125,7 +124,7 @@ static void getvram_8(Uint32 addr, Uint32 *cbuf)
    return;
 }
 
-static void  putword8(Uint32 *disp, Uint32 *c, Uint32 *pal)
+static inline void  putword8(Uint32 *disp, Uint32 *c, Uint32 *pal)
 {
 
    Uint32 *r1 = disp;

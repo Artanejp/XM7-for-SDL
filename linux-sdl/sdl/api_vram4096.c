@@ -26,10 +26,10 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     rgbAnalogGDI[index] = ds;
 }
 
-static void putword2_vec(Uint32 *disp, volatile v4hi cbuf)
+static inline void putword2_vec(Uint32 *disp, volatile v4hi cbuf)
 {
    v8hi_t *dst = (v8hi_t *)disp;
-   volatile v8hi_t r1;
+   register v8hi_t r1;
    
    r1.i[0] = rgbAnalogGDI[cbuf.s[0]];
    r1.i[1] = rgbAnalogGDI[cbuf.s[1]];
