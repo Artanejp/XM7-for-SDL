@@ -21,7 +21,6 @@ COMMONSRC = \
 	agar_sch.cpp \
 	agar_sdl.cpp \
 	agar_sdlscaler.cpp \
-	scaler_x2.c \
 	scaler_x4.c \
 	agar_sdlview.c \
 	agar_svram.cpp \
@@ -62,6 +61,16 @@ GLSRC = \
 CLSRC = cl_render.cl \
 	agar_glcl.cpp
 
+
+SCALER_LIBS_DEBUG   = scaler/generic/Debug/libscaler-generic.a
+SCALER_LIBS_RELEASE = scaler/generic/Release/libscaler-generic.a
+
+ifdef BUILD_SSE2
+CFLAGS += -DUSE_SSE2
+SCALER_LIBS_DEBUG += scaler/sse2/Debug/libscaler-sse2.a 
+SCALER_LIBS_RELEASE += scaler/sse2/Release/libscaler-sse2.a
+endif
+
 .SUFFIXES: .cl .c .cpp .asm .o
 
 SRCS =	$(COMMONSRC) $(GUISRC) 
@@ -84,9 +93,23 @@ OBJS = $(patsubst %.c,%.o,$(CSRCS))
 OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
 OBJS += $(patsubst %.cl,%.o,$(CLSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
-OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
+OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS)) 
 
-all:	Release/libui-agar.a Debug/libui-agar.a 
+all:	Release/libui-agar.a Debug/libui-agar.a $(SCALER_LIBS_DEBUG) $(SCALER_LIBS_RELEASE)
+
+scaler/generic/Debug/libscaler-generic.a:
+	make -C scaler/generic Debug
+
+scaler/generic/Release/libscaler-generic.a:
+	make -C scaler/generic Release
+
+ifdef BUILD_SSE2
+scaler/sse2/Debug/libscaler-sse2.a:
+	make -C scaler/sse2 Debug
+
+scaler/sse2/Release/libscaler-sse2.a:
+	make -C scaler/sse2 Release
+endif
 
 Debug/libui-agar.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
@@ -118,6 +141,8 @@ clean:
 	rm -f Release/*.a Debug/*.a
 	rm -f Release/*.d Debug/*.d
 	rm -f *~
+	make -C scaler/generic clean
+	make -C scaler/sse2 clean
 
 .DEPEND:
 -include $(OBJS_RELEASE:.o=.d)

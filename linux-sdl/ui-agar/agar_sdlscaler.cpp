@@ -885,7 +885,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 	      }
             } else { // xfactor != 0
 	      if(pCpuID != NULL) {
-#if defined(__SSE2__)
+#if defined(USE_SSE2)
 	      if(pCpuID->use_sse2) {
 		 DrawFn = pVram2RGB_x2_SSE;
 	      } else {
@@ -908,7 +908,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 		 DrawFn = pVram2RGB_x25;
 	      } else {
 	      if(pCpuID != NULL) {
-#if defined(__SSE2__)
+#if defined(USE_SSE2)
 	      if(pCpuID->use_sse2) {
 		 DrawFn = pVram2RGB_x2_SSE;
 	      } else {
@@ -929,7 +929,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
               DrawFn = pVram2RGB_x3;
             } else { // xfactor != 0
 	      if(pCpuID != NULL) {
-#if defined(__SSE2__)
+#if defined(USE_SSE2)
 	      if(pCpuID->use_sse2) {
 		 DrawFn = pVram2RGB_x4_SSE;
 	      } else {
@@ -950,7 +950,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
             case 7:
             case 8:
 	      if(pCpuID != NULL) {
-#if defined(__SSE2__)
+#if defined(USE_SSE2)
 	      if(pCpuID->use_sse2) {
 		 DrawFn = pVram2RGB_x4_SSE;
 	      } else {

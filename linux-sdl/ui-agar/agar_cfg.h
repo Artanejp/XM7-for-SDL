@@ -84,6 +84,7 @@ typedef struct {
 	WORD nAspect; /* アスペクト比 */
         WORD nBrightness; /* 明度(0-255) */
 	BOOL bUseOpenCL; /* OpenCLレンダラ(GLのみ?) */
+	BOOL bUseSIMD;   /* 描画等にSIMDを使う */
 	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */
 	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;	/* WHG有効フラグ */

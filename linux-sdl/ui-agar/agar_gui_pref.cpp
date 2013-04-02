@@ -419,6 +419,8 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("SMOOSING"), &localconfig.bSmoosing);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use OpenCL(Need REBOOT)"), &localconfig.bUseOpenCL);
+		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use SIMD instructions(Need REBOOT)"), &localconfig.bUseSIMD);
 	}
 }
 

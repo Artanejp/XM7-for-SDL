@@ -42,6 +42,7 @@ extern "C" {
 XM7_SDLView *DrawArea;
 //#ifdef _USE_OPENCL
 BOOL bUseOpenCL;
+BOOL bUseSIMD;
 //#endif   
 SDL_Surface *DrawSurface = NULL;
 }
@@ -63,7 +64,7 @@ void InitGL(int w, int h)
    InitNonGL(w, h);
 #endif
    AG_SetVideoResizeCallback(ResizeWindow_Agar);
-
+   bUseSIMD = FALSE;
    SDL_SemPost(DrawInitSem);
 }
 

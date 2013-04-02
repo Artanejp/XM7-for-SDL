@@ -55,6 +55,7 @@ extern void SetBrightRGB_AG_GL2(float r, float g, float b);
  */
 extern float fBright0;
 extern BOOL bUseOpenCL;
+extern BOOL bUseSIMD;
 /*
  *  パス保存用キー名
  */
@@ -433,7 +434,8 @@ void LoadCfg(void)
     /*
      * OpenCL 20121107
      */
-    configdat.bUseOpenCL = LoadCfgBool("UseOpenCL", 1);
+    configdat.bUseOpenCL = LoadCfgBool("UseOpenCL", 0);
+    configdat.bUseSIMD   = LoadCfgBool("UseSIMD", 0);
 
     /*
     * ASPECT比追加
@@ -704,6 +706,7 @@ void SaveCfg(void)
     
     SaveCfgInt("EmuFPS", configdat.nEmuFPS);
     SaveCfgBool("UseOpenCL", configdat.bUseOpenCL);
+    SaveCfgBool("UseSIMD"  , configdat.bUseSIMD);
     SaveCfgInt("Brightness", configdat.nBrightness);
     SaveCfgInt("EmuFPS", configdat.nEmuFPS);
     /*
@@ -908,6 +911,7 @@ void ApplyCfg(void)
     nEmuFPS = configdat.nEmuFPS;
     nAspect = configdat.nAspect;
     bUseOpenCL = configdat.bUseOpenCL;
+    bUseSIMD = configdat.bUseSIMD;
     fBright0 = (float)configdat.nBrightness / 255.0f;
 #ifdef USE_OPENGL   
     SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
