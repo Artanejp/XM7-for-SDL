@@ -21,10 +21,20 @@
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
+#include "sdl_cpuid.h"
 #include "xm7.h"
 #include "display.h"
 #include "subctrl.h"
 #include "device.h"
+
+extern "C" {
+extern XM7_SDLView *DrawArea;
+extern BOOL bUseOpenCL;
+extern BOOL bUseSIMD;
+extern SDL_Surface *DrawSurface;
+extern struct  XM7_CPUID *pCpuID;
+}
+
 
 #ifdef USE_OPENGL
 extern AG_GLView *GLDrawArea;
@@ -47,7 +57,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
   
     LockVram();
 //    p = pp;
-//    
+    if(pCpuID == NULL) return;
     if(SDLDrawFlag.DPaletteChanged) { // Palette changed
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
@@ -55,7 +65,15 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 	for(yy = (y >> 3); yy < hh ; yy++) {
 	   p = &pp[64 * ((x >> 3) + 80 * yy)];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2) {
+		 CreateVirtualVram8_1Pcs_SSE2(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      } else {
+		 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      }
+#else
 	      CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+#endif
 	      SDLDrawFlag.write[xx][yy] = TRUE;
 	      SDLDrawFlag.read[xx][yy]  = FALSE;
 	      p += 64;
@@ -71,7 +89,15 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
    	   p = &pp[64 * ((x >> 3) + 80 * yy)];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
 	      if(SDLDrawFlag.read[xx][yy]) {
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2) {
+		 CreateVirtualVram8_1Pcs_SSE2(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      } else {
 		 CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      }
+#else
+	      CreateVirtualVram8_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+#endif
 		 SDLDrawFlag.write[xx][yy] = TRUE;
 		 SDLDrawFlag.read[xx][yy]  = FALSE;
 		 SDLDrawFlag.Drawn = TRUE;
@@ -105,7 +131,15 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
        for(yy = (y >> 3); yy < hh ; yy++) {
 	  p = &pp[64 * ((x >> 3) + 40 * yy)];
 	  for(xx = (x >> 3); xx < ww ; xx++) {
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2) {
+		 CreateVirtualVram4096_1Pcs_SSE2(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      } else {
+		 CreateVirtualVram4096_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      }
+#else
 	     CreateVirtualVram4096_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mode);
+#endif
 	     SDLDrawFlag.write[xx][yy] = TRUE;
 	     SDLDrawFlag.read[xx][yy] = FALSE;
 	     p += 64;
@@ -155,7 +189,15 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
         for(xx = (x >> 3); xx < ww ; xx++) {
             if(SDLDrawFlag.read[xx][yy]) {
                 p = &pp[64 * (xx + 40 * yy)];
-                CreateVirtualVram256k_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mpage);
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2) {
+		 CreateVirtualVram256k_1Pcs_SSE2(p, xx , yy << 3, sizeof(Uint32) * 8, mpage);
+	      } else {
+		 CreateVirtualVram256k_1Pcs(p, xx , yy << 3, sizeof(Uint32) * 8, mpage);
+	      }
+#else
+	     CreateVirtualVram256k_1Pcs(p, xx, yy << 3, 8 * sizeof(Uint32), mpage);
+#endif
                 SDLDrawFlag.read[xx][yy] = FALSE;
                 SDLDrawFlag.write[xx][yy] = TRUE;
                 SDLDrawFlag.Drawn = TRUE;
