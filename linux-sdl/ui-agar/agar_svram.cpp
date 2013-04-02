@@ -56,7 +56,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
   
-//    LockVram();
+    LockVram();
     if(SDLDrawFlag.DPaletteChanged) { // Palette changed
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
@@ -90,7 +90,7 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
 	}
      }
    
-//    UnlockVram();
+    UnlockVram();
 }
 
 
@@ -110,7 +110,7 @@ static void BuildVirtualVram8_SSE2(Uint32 *pp, int x, int y, int  w, int h, int 
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
   
-//    LockVram();
+    LockVram();
 //    p = pp;
 
    if(SDLDrawFlag.DPaletteChanged) { // Palette changed
@@ -146,7 +146,7 @@ static void BuildVirtualVram8_SSE2(Uint32 *pp, int x, int y, int  w, int h, int 
 	}
      }
    
-//    UnlockVram();
+    UnlockVram();
 }
 
 static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mode)
@@ -161,7 +161,7 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
 
-//   LockVram();
+   LockVram();
 //    p = pp;
     if(SDLDrawFlag.APaletteChanged) { // Palette changed
 #ifdef _OPENMP
@@ -197,7 +197,7 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
        }
     }
    
-//    UnlockVram();
+    UnlockVram();
 }
 
 static void BuildVirtualVram4096_SSE2(Uint32 *pp, int x, int y ,int  w, int h, int mode)
@@ -216,7 +216,7 @@ static void BuildVirtualVram4096_SSE2(Uint32 *pp, int x, int y ,int  w, int h, i
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
 
-//   LockVram();
+   LockVram();
 //    p = pp;
     if(SDLDrawFlag.APaletteChanged) { // Palette changed
 #ifdef _OPENMP
@@ -252,7 +252,7 @@ static void BuildVirtualVram4096_SSE2(Uint32 *pp, int x, int y ,int  w, int h, i
        }
     }
    
-//    UnlockVram();
+    UnlockVram();
 }
 
 static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mpage)
@@ -266,7 +266,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
    if(pp == NULL) return;
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
-//   LockVram();
+   LockVram();
 //    p = pp;
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww) private(p, xx)
@@ -282,7 +282,7 @@ static void BuildVirtualVram256k(Uint32 *pp, int x, int y, int  w, int h, int mp
             }
         }
     }
-//    UnlockVram();
+    UnlockVram();
 }
 
 static void BuildVirtualVram256k_SSE2(Uint32 *pp, int x, int y, int  w, int h, int mpage)
@@ -300,7 +300,7 @@ static void BuildVirtualVram256k_SSE2(Uint32 *pp, int x, int y, int  w, int h, i
    if(pp == NULL) return;
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
-//   LockVram();
+   LockVram();
 //    p = pp;
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww) private(p, xx)
@@ -316,7 +316,7 @@ static void BuildVirtualVram256k_SSE2(Uint32 *pp, int x, int y, int  w, int h, i
             }
         }
     }
-//    UnlockVram();
+    UnlockVram();
 }
 
 void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
