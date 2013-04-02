@@ -5,8 +5,9 @@
 ###	Copyright (C) 2010 K.Ohta
 ###	[ Makefile for SDL / vm]
 XM7_VER		= 3
-include ../config.mak
-include ../common.mak
+include ../../../config.mak
+include ../../../common.mak
+DPATH = $(realpath ../../..)
 
 COMMONSRC = \
 	api_vram8.c \
@@ -29,13 +30,21 @@ OBJS += $(patsubst %.cl,%.o,$(CLSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
+CFLAGS += -I../.. -I../../../vm -I../../../ui-agar -I../../../fmgen 
+
+
 all:	Release/libvram-generic.a Debug/libvram-generic.a 
 
-Debug/libui-generic.a: ${OBJS_DEBUG}
+Debug: Debug/libvram-generic.a
+
+Release: Release/libvram-generic.a
+
+
+Debug/libvram-generic.a: ${OBJS_DEBUG}
 	$(AR) crv $@ ${OBJS_DEBUG}
 	ranlib $@
 
-Release/libui-generic.a: ${OBJS_RELEASE}
+Release/libvram-generic.a: ${OBJS_RELEASE}
 	$(AR) crv $@ ${OBJS_RELEASE}
 	ranlib $@
 

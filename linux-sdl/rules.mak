@@ -3,13 +3,17 @@
 #
 
 #Deps
-$(OBJS_RELEASE): ../config.mak \
-	../common.mak \
-	../rules.mak 
+ifndef DPATH
+DPATH = $(realpath ..)
+endif
 
-$(OBJS_DEBUG): ../config.mak \
-	../common.mak \
-	../rules.mak 
+$(OBJS_RELEASE): $(DPATH)/config.mak \
+	$(DPATH)/common.mak \
+	$(DPATH)/rules.mak 
+
+$(OBJS_DEBUG): $(DPATH)/config.mak \
+	$(DPATH)/common.mak \
+	$(DPATH)/rules.mak 
 
 
 # Rules
