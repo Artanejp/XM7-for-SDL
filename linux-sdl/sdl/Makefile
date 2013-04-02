@@ -22,7 +22,8 @@ SNDDRVSRC = \
 	api_snd2.cpp api_wavwriter.cpp  \
 	snd_buffer.cpp \
 	SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp \
-	copysoundbuffer.c
+
+#	copysoundbuffer.c
 
 INPUTSRC = \
 	api_kbd.cpp api_js.cpp api_mouse.cpp \
@@ -43,8 +44,9 @@ LOCALSRC = \
 
 
 
-LIBS_VRAM   = libvram-generic.a
 LIBS_VRAM_PATH = vram/generic
+LIBS_SOUNDBUFFER_PATH = soundbuffer/generic 
+
 
 .SUFFIXES: .c .cpp .asm .o .d
 
@@ -57,32 +59,67 @@ OBJS = $(patsubst %.c,%.o,$(CSRCS))
 OBJS += $(patsubst %.cpp,%.o,$(CXXSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
-LIBS_VRAM_RELEASE = $(addprefix $(LIBS_VRAM_PATH)/Release/, $(LIBS_VRAM)) 
-LIBS_VRAM_DEBUG   = $(addprefix $(LIBS_VRAM_PATH)/Debug/, $(LIBS_VRAM)) 
 
+LIBS_VRAM_RELEASE = vram/generic/Release/libvram-generic.a
+LIBS_VRAM_DEBUG   = vram/generic/Debug/libvram-generic.a
+ifdef BUILD_SSE2
+LIBS_VRAM_SSE2 = libvram-sse2.a 
+LIBS_VRAM_PATH_SSE2 = vram/sse2
+LIBS_VRAM_RELEASE += vram/sse2/Release/libvram-sse2.a
+LIBS_VRAM_DEBUG   += vram/sse2/Debug/libvram-sse2.a
+LIBS_VRAM_PATH += ${LIBS_VRAM_PATH_SSE2}
+endif
+
+LIBS_SOUNDBUFFER_RELEASE = soundbuffer/generic/Release/libsndbuffer-generic.a
+LIBS_SOUNDBUFFER_DEBUG   = soundbuffer/generic/Release/libsndbuffer-generic.a
+ifdef BUILD_SSE2
+LIBS_SOUNDBUFFER_SSE2 = libsndbuffer-sse2.a 
+LIBS_SOUNDBUFFER_PATH_SSE2 = soundbuffer/sse2
+LIBS_SOUNDBUFFER_RELEASE += soundbuffer/sse2/Release/libsndbuffer-sse2.a
+LIBS_SOUNDBUFFER_DEBUG   += soundbuffer/sse2/Debug/libsndbuffer-sse2.a
+LIBS_SOUNDBUFFER_PATH += ${LIBS_SOUNDBUFFER_PATH_SSE2}
+endif
 
 DEPS = $(patsubst %.c,%.d,$(CSRCS))
 DEPS += $(patsubst %.cpp,%.d,$(CXXSRCS))
 DEPS_RELEASE = $(addprefix Release/, $(DEPS))
 DEPS_DEBUG =	$(addprefix Debug/,  $(DEPS))
 
+ifdef BUILD_SSE2
+CFLAGS += -DUSE_SSE2
+endif
 
 all:	$(TARGET_DEBUG) $(TARGET_RELEASE)
 
-$(TARGET_RELEASE): ${OBJS_RELEASE} ${LIBS_RELEASE} ${LIBS_VRAM_RELEASE}
-	$(CXX) ${LDFLAGS} -o $(TARGET_RELEASE)  $^ ${LIBS_RELEASE} ${LIBS_VRAM_RELEASE} ${LIBS}
+$(TARGET_RELEASE): ${OBJS_RELEASE} ${LIBS_RELEASE} ${LIBS_VRAM_RELEASE} ${LIBS_SOUNDBUFFER_RELEASE}
+	$(CXX) ${LDFLAGS} -o $(TARGET_RELEASE)  $^ ${LIBS_RELEASE} ${LIBS_VRAM_RELEASE} ${LIBS_SOUNDBUFFER_RELEASE} ${LIBS}
 	strip $(TARGET_RELEASE)
 
-$(TARGET_DEBUG): ${OBJS_DEBUG} ${LIBS_DEBUG} ${LIBS_VRAM_DEBUG}
-	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG)  $^ ${LIBS_DEBUG} ${LIBS_VRAM_DEBUG} ${LIBS}
+
+$(TARGET_DEBUG): ${OBJS_DEBUG} ${LIBS_DEBUG} ${LIBS_VRAM_DEBUG} ${LIBS_SOUNDBUFFER_DEBUG}
+	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG)  $^ ${LIBS_DEBUG} ${LIBS_VRAM_DEBUG} ${LIBS_SOUNDBUFFER_DEBUG} ${LIBS}
+
+$(LIBS_VRAM_DEBUG):
+	for dir_i in $(LIBS_VRAM_PATH) ; do \
+	make -C $$dir_i Debug; \
+	done
+
+$(LIBS_SOUNDBUFFER_DEBUG):
+	for dir_i in $(LIBS_SOUNDBUFFER_PATH) ; do \
+	make -C $$dir_i Debug; \
+	done
 
 $(LIBS_VRAM_RELEASE):
-	make -C $(LIBS_VRAM_PATH) Release
-	
-$(LIBS_VRAM_DEBUG):
-	make -C $(LIBS_VRAM_PATH) Debug
-	
-	
+	for dir_i in $(LIBS_VRAM_PATH) ; do \
+	make -C $$dir_i Release; \
+	done
+
+$(LIBS_SOUNDBUFFER_RELEASE):
+	for dir_i in $(LIBS_SOUNDBUFFER_PATH) ; do \
+	make -C $$dir_i Release; \
+	done
+
+
 
 -include ../rules.mak
 
@@ -101,7 +138,12 @@ install: all
 
 clean:
 	rm -f $(TARGET_DEBUG) $(TARGET_RELEASE) *.o *~ Debug/*.o Debug/*.d Release/*.o Release/*.d
-	make -C $(LIBS_VRAM_PATH) clean
+	for dir_i in $(LIBS_SOUNDBUFFER_PATH) ; do \
+	make -C $$dir_i clean; \
+	done
+	for dir_i in $(LIBS_VRAM_PATH) ; do \
+	make -C $$dir_i clean; \
+	done
 
 .DEPEND:
 -include $(OBJS_RELEASE:.o=.d)

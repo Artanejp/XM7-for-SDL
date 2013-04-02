@@ -39,9 +39,11 @@ CXX = /usr/local/bin/g++
 
 
 # SET Arch specified
-ARCH_FLAGS       =  -mmmx -msse -msse2 -mfpmath=sse
+ARCH_FLAGS       =  -mmmx
 #ARCH_FLAGS       = -mmmx -msse -msse2 -mfpmath=sse
 #ARCH_FLAGS      = -march=amdfam10
+# SET Arch depended flags
+BUILD_SSE2       = Yes
 
 #OS               = Windows
 OS               = Linux

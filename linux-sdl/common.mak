@@ -294,14 +294,24 @@ LIBS +=  -lSDL_mixer
 
 endif
 
-LIBS_RELEASE =
+LIBS_RELEASE = ../ui-agar/scaler/generic/Release/libscaler-generic.a
+# SIMD Dependented
+ifdef BUILD_SSE2
+LIBS_RELEASE += ../ui-agar/scaler/sse2/Release/libscaler-sse2.a
+endif
 LIBS_RELEASE += ../ui-agar/Release/libui-agar.a
 LIBS_RELEASE += ../vm/Release/libxm7_vm.a
 LIBS_RELEASE += ../fmgen/Release/libfmgen007a.a
 
-LIBS_DEBUG = ../ui-agar/Debug/libui-agar.a
+
+LIBS_DEBUG = ../ui-agar/scaler/generic/Debug/libscaler-generic.a
+LIBS_DEBUG += ../ui-agar/Debug/libui-agar.a
 LIBS_DEBUG += ../vm/Debug/libxm7_vm.a
 LIBS_DEBUG += ../fmgen/Debug/libfmgen007a.a
+ifdef BUILD_SSE2
+LIBS_DEBUG += ../ui-agar/scaler/sse2/Debug/libscaler-sse2.a
+endif
+
 
 ifdef WITH_DEBUGGER
 LIBS_RELEASE += ../xm7-debugger/Release/libxm7_debug.a

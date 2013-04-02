@@ -95,7 +95,11 @@ OBJS += $(patsubst %.cl,%.o,$(CLSRCS))
 OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS)) 
 
-all:	Release/libui-agar.a Debug/libui-agar.a $(SCALER_LIBS_DEBUG) $(SCALER_LIBS_RELEASE)
+all: Debug Release
+
+Release: Release/libui-agar.a $(SCALER_LIBS_RELEASE)  
+
+Debug: Debug/libui-agar.a $(SCALER_LIBS_DEBUG)  
 
 scaler/generic/Debug/libscaler-generic.a:
 	make -C scaler/generic Debug
@@ -109,6 +113,7 @@ scaler/sse2/Debug/libscaler-sse2.a:
 
 scaler/sse2/Release/libscaler-sse2.a:
 	make -C scaler/sse2 Release
+
 endif
 
 Debug/libui-agar.a: ${OBJS_DEBUG}
@@ -142,7 +147,9 @@ clean:
 	rm -f Release/*.d Debug/*.d
 	rm -f *~
 	make -C scaler/generic clean
+ifdef BUILD_SSE2
 	make -C scaler/sse2 clean
+endif
 
 .DEPEND:
 -include $(OBJS_RELEASE:.o=.d)

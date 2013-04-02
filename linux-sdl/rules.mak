@@ -7,6 +7,22 @@ ifndef DPATH
 DPATH = $(realpath ..)
 endif
 
+#Arch-depended flags
+ifdef BUILD_SSE2
+CFLAGS_DEBUG     += -DUSE_SSE2
+CFLAGS_RELEASE   += -DUSE_SSE2
+CXXFLAGS_DEBUG   += -DUSE_SSE2
+CXXFLAGS_RELEASE += -DUSE_SSE2
+endif
+
+ifdef BUILD_MMX
+CFLAGS_DEBUG     += -DUSE_MMX
+CFLAGS_RELEASE   += -DUSE_MMX
+CXXFLAGS_DEBUG   += -DUSE_MMX
+CXXFLAGS_RELEASE += -DUSE_MMX
+endif
+
+
 $(OBJS_RELEASE): $(DPATH)/config.mak \
 	$(DPATH)/common.mak \
 	$(DPATH)/rules.mak 
