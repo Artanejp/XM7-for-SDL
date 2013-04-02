@@ -35,10 +35,10 @@ libfmgen008-debug:
 	make -C fmgen Debug/libfmgen007a.a
 
 ui-agar-release:
-	make -C ui-agar Release/libui-agar.a
+	make -C ui-agar Release
 
 ui-agar-debug:
-	make -C ui-agar Debug/libui-agar.a
+	make -C ui-agar Debug
 
 vm-release:
 	make -C vm Release/libxm7_vm.a

@@ -171,6 +171,31 @@ CXXFLAGS_RELEASE +=  -O3
 
 endif
 
+ifeq ($(ARCH),x86_64)
+ARCH_FLAGS += -D_X86_64
+endif
+
+ifeq ($(ARCH),i386)
+ARCH_FLAGS += -D_ia32
+endif
+
+ifeq ($(ARCH),i486)
+ARCH_FLAGS += -D_ia32
+endif
+
+ifeq ($(ARCH),i586)
+ARCH_FLAGS += -D_ia32
+endif
+
+ifeq ($(ARCH),i686)
+ARCH_FLAGS += -D_ia32
+endif
+
+ifeq ($(ARCH),ia32)
+ARCH_FLAGS += -D_ia32
+endif
+
+
 # Architecture Depend Flag
 
 CFLAGS_RELEASE += $(ARCH_FLAGS)

@@ -18,11 +18,12 @@
 extern v4si *aPlanes;
 
 
-v4hi lshift_6bit8v_SSE2(v4hi *v)
+v8hi_t lshift_6bit8v_SSE2(v4hi *v)
 {
    v4hi r;
    v4hi cbuf;
    v4hi mask;
+   v8hi_t ret;
    mask.v = (v4si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
    cbuf.v =
         aPlanes[B2 + v->b[0]] |
@@ -47,7 +48,15 @@ v4hi lshift_6bit8v_SSE2(v4hi *v)
    if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
    if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
 #endif	
-  return cbuf;
+   ret.i[0] = cbuf.s[0];
+   ret.i[1] = cbuf.s[1];
+   ret.i[2] = cbuf.s[2];
+   ret.i[3] = cbuf.s[3];
+   ret.i[4] = cbuf.s[4];
+   ret.i[5] = cbuf.s[5];
+   ret.i[6] = cbuf.s[6];
+   ret.i[7] = cbuf.s[7];
+   return ret;
 }
 
 

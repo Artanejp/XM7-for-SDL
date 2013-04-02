@@ -12,37 +12,6 @@
 
 
 
-void SetVram_200l(Uint8 *p)
-{
-    vram_pb = p + 0;
-    vram_pg = p + 0x10000;
-    vram_pr = p + 0x8000;
-}
-
-void SetVram_400l(Uint8 *p)
-{
-    vram_pb = p + 0;
-    vram_pg = p + 0x10000;
-    vram_pr = p + 0x8000;
-}
-
-
-void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-{
-     Uint32 ds;
-
-//     if((index > 10) || (index < 0)) return;
-//     LockVram();
-#ifdef AG_LITTLE_ENDIAN
-	ds = r | (g << 8) | (b << 16) | 0xff000000;
-//	ds = 0xffffffff;
-#else
-	ds = r<<24 + g<<16 + b<<8 + 255<<0;
-#endif
-    rgbTTLGDI[index] = ds;
-//    UnlockVram();
-}
-
 #if (__GNUC__ >= 4)
 static void getvram_8_vec(Uint32 addr, v4hi *cbuf)
 {
