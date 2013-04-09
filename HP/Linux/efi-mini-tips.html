@@ -1,0 +1,142 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>How to convert bios to efi.</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>EFIなマザーボードにHDDを移植する</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#atfirst">はじめに</A><BR>
+<A HREF="#howto">どうすればいいものか</A><BR>
+&nbsp; ・まず、BIOS互換モードで動くようにする<BR>
+&nbsp; ・<A HREF="#failed">EFIに移ってみる(失敗例)</A><BR>
+&nbsp; ・<A HREF="#emergency-repair">ちょんぼした場合の修復</A><BR>
+&nbsp; ・<A HREF="#collect-pattern">確実な方法</A><BR>
+&nbsp; ・<A HREF="#mb">マザーボードの設定</A><BR>
+<A HREF="./index.html">Linuxもくじへ</A><BR>
+<A HREF="../">全体目次へ</A><BR>
+<BR>
+<A NAME="atfirst"></A>
+<H3>はじめに</H3>
+&nbsp; 最近のマザーボードは、PC AT互換機で長い事使われてきたBIOSからEFIと言う規格に起動プロセスやハードウェアの管理が移行しつつあります。<BR>
+&nbsp; （※注：BIOSと言うのは、Basic IO control Systemの略で、入出力全般を仕切ってる共通APIの総称だったのですが、何故か、いつの間にか起動用のプログラムとかハードウェアの初期化と言う話になっていた）<BR>
+&nbsp; で、諸般の都合でこのタイミングじゃないとマザーボードの買換えができそうになく、いい加減今のマザーボードが不安定になり始めていたと言う<del>口実</del>で、四年ほど使ってきたマザーを買い換えよう（序でにCPUも新しく乗っけてしまおう）。と云うことにしました、無理を承知で。<BR>
+&nbsp; そして、買ったマザーボード自体はBIOS互換モードを持っていたけど、ハードウェアがなんか挙動的に微妙な所があったので、暇を見てズルズルとEFIへの移行をすすめることにしたのでした<BR>
+<BR>
+<H4>注意</H4>
+&nbsp; この記事は、<A HREF="http://www.asrock.com/mb/overview.jp.asp?Model=990FX%20Extreme4" target=_blank>ASRock社の990FX Extreme4</A>に<A HREF="http://www.debian.org/" target="_blank">Debian GNU/Linux</A>のamd64版を載せた場合を基準に
+書いています。なので、他のマザーボードに全部適用できないかも知れません。<BR>
+<BR>
+<A NAME="howto"></A>
+<H3>どうすればいいものか</H3>
+<BR>
+<H4>まず、BIOS互換モードで動くようにする</H4>
+<BR>
+&nbsp; 要は、キチンと動くようにマザーボードなどを組み立てた上で、ハードディスクの移植をします。<BR>
+&nbsp; マザーボードをあき筐体に組み付け、CPUと放熱器を基板に組み付け、チェックした上でメモリ→グラフィックボードと組み付けます。<BR>
+&nbsp; 今回は、グラフィックボードと筐体、電源は同じ物を使いました。<BR>
+&nbsp; この段階で（慎重を期するために）一度起動してみます…今までになくキチンと動いてくれました。<BR>
+&nbsp; <B>次に、HDDをマザーボードや電源と接続しましょう</B>。ここも、<B>FAST BOOTをイネーブルにしなければ</B>問題なく移行できました。最近のマザーボードとDebianはエラく楽になったな…と言うのが正直なところですねー<BR>
+<BR>
+<A NAME="failed"></A>
+<H4>EFIに移ってみる(失敗例)</H4>
+<BR>
+&nbsp; 既に先人がHDDをほぼそのままにEFIに移行できてるので、<A HREF="http://tanguy.ortolo.eu/blog/article51/debian-efi" target="_blank">こことか</A>参考にして、移行してみましょう。<BR>
+&nbsp;&nbsp; 1.<A HREF="http://www.clonezilla.org" target=_blank">CloneZilla</A>のライブCDかUSBとpartedやgdiskを使って、システムの入ったディスクをMBR形式からGPT形式に変換する<BR>
+&nbsp;&nbsp; 2.このディスクに数MB程度の大きさの、小さなefiブート区画を追加します。GUIDは0xEF00にして下さい。<BR>
+&nbsp;&nbsp; 3.この区画をmkfs.vfatで初期化します…今回は単純なfatにされました（これが拙かった？)<BR>
+&nbsp;&nbsp; 4.これを/boot/efiにマウントします。最初に/boot/efiが無いと思うので、mkdirしましょう。<BR>
+&nbsp;&nbsp; 5.grubを入れ替えます<BR>
+&nbsp;&nbsp;&nbsp; $ sudo dpkg -r <B>--force-depends</B> grub-pc<BR>
+&nbsp;&nbsp;&nbsp; $ sudo apt-get install grub-efi grub-efi-amd64<BR>
+&nbsp; 素直にEFI版のgrubに移行できるかと思ったら、そうは問屋が卸すまい。とばかりにエラーが発生します。<BR>
+&nbsp; で、ここで参考にしてる件の記述の「Trick」のように/boot/efi/efiを掘って、grub-mkimageで作ったイメージを/boot/efi/efi/boot/bootx64.efiにコピーします。<BR>
+&nbsp; そして、リブート…特にEFIの画面は変わらない。で、<B>grubが立ち…上がらない。°(/□＼*)°。わ〜ん</B>。<BR>
+<BR>
+<A NAME="emergency-repair"></A>
+<H4>ちょんぼした場合の修復</H4>
+&nbsp;&nbsp; 仕方ないから、先程も使ったCloneZillaのコンソール画面でgrub-pcのブートコードをインストールしなおしましょう<BR>
+&nbsp;&nbsp; $ sudo mount /dev/sdx2 /mnt<BR>
+&nbsp;&nbsp; $ sudo mount /dev/sdx1 /mnt/efi<BR>
+&nbsp;&nbsp; $ sudo grub-install --boot-directory=/mnt /dev/sdx<BR>
+&nbsp; ここで、/dev/sdxがシステムのあるHDD、/dev/sdx1がEFI区画、/dev/sdx2がboot区画です。
+&nbsp; そして、USBを外してリブート…今度は、(BIOS版の)マトモなgrubが出てきましたε-(´∀｀*)ホッ
+&nbsp;<BR>
+<A NAME="collect-pattern"></A>
+<H4>確実な方法</H4>
+&nbsp; こんなかんじで試行錯誤して、何度もgrubを飛ばしては修復を繰り返していくと、大体何が拙かったか見えてきます。<BR>
+&nbsp;<B>EFIは、ブートレコードを書き換えただけではダメで、本体のROMに諸々の情報を登録しないといけない。その登録は、EFIから起動したOSでしかできない。と言うことです</B><BR>
+&nbsp; しょうがないので、grub-efiパッケージが含まれた<A
+HREF="http://live.debian.net/" target="_blank">Debian live!</A>のUSBメモリを
+作りました。多分、grub-efiはwheezy(testing)の最近の版かそれ以降のリリース品にしかなくて、lenny以前にあるのかどうか怪しいので、そこは注意<BR>
+&nbsp;&nbsp; (Debian-live絡みの操作は今は省略、その内記す)<BR>
+&nbsp;&nbsp; $ lb config<BR>
+&nbsp;&nbsp; (中略)<BR>
+&nbsp;&nbsp; $ sudo lb build<BR>
+&nbsp; 大体、4GB程度の空きディスクと、数時間の待ち時間が必要です。そして、lb buildがエラーなく終わると、新しいliveイメージが出来てるでしょう。これを、USBに書き込みます。
+<BR>
+&nbsp; そして、USBメモリから起動…<B>但し、EFIモードでUSBメモリから起動しなければなりません。</B><BR>
+&nbsp; そうすると、Debian liveのデスクトップ画面が出てきます（たぶん）。そこで、ROOT権限のターミナルを開きます。<BR>
+&nbsp; このDebian GNU/LinuxはEFIモードで起動してるはずですが、それを確かめるには<BR>
+&nbsp;&nbsp; # ls /sys/firmware/efi/<BR>
+&nbsp; と打ってみて、エラーでなければEFIモードです。<BR>
+<BR>
+&nbsp; さて、再びEFI仕様のgrubを仮インストールしましょう。この前に、未だシステムディクがMBR区画であるならgdiskか何かでGPT区画に変換すること。後、EFI区画はFAT16でフォーマットして大文字でEFIと言うディレクトリを掘って置きます。<BR>
+&nbsp;&nbsp; # <B>mkfs.vfat -F 16 /dev/sdx1</B><BR>
+&nbsp;&nbsp; # mount /dev/sdx2 /mnt<BR>
+&nbsp;&nbsp; # mount /dev/sdx1 /mnt/efi<BR>
+&nbsp;&nbsp; # <B>mkdir /mnt/efi/EFI</B><BR>
+&nbsp;&nbsp; # grub-install --boot-directory=/mnt /dev/sdx1<BR>
+&nbsp; ここまでうまく行くと、「debian」と言うエントリーネームでgrubが登録されてるはずです。<BR>
+&nbsp; さて、リブートしましょう（ブート前にUSBメモリを取り外して）…grubが正常起動しました…が、EFIモードではなかった＿|￣|●<BR>
+<BR>
+<A NAME="mb"></A>
+<H4>マザーボードの設定</H4>
+<BR>
+&nbsp; とりあえずBIOSのブートエントリーを見直します。HDDやFDなどと一緒に「debian」と言うエントリーができています。<BR>
+&nbsp; そこで、BIOS設定画面の<B>ブート優先順位の一番上に</B>「debian」を持ってきます。で、通常のリブート…今度は上手く行きました。・°・(/Д｀)・°・。<BR>
+&nbsp; 長い長い試行錯誤も、これで終わりです。あー疲れた(；´Д｀)<BR>
+<BR>
+<BR>
+
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">EFI Mini HowTo</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/Linux/"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/Linux/</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="./index.html">Linux系もくじへ</A><BR>
+<A HREF="../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 09 Apr.2013 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
