@@ -1,0 +1,81 @@
+<html><head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf8">
+<title>MW/SW/FM DSP  RADIO Part2.</title></head>
+<!--COLOR-->
+<body>
+<!--HEAD1-->
+<!--HEAD2-->
+<!--LINE1-->
+<br>
+<!--BODY-->
+<!--#geoguide-->
+<BR>
+Sorry, under construction and Japanese only,Yet...<BR>
+<BR>
+<H3>DSPラジオ 続き(2013-04-10)</H3>
+<BR>
+<h3>もくじ</H3>
+<BR>
+<A HREF="#WHAT">これは何か</A><BR>
+<A HREF="#HOW">どのようなものか</A><BR>
+<!-- <A HREF="#MAKING">製作</A><BR>
+<A HREF="#ASSEMBLE">ケースに組み込む</A><BR> -->
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<A NAME="WHAT"></A>
+<H3>これは何か</H3>
+&nbsp;　<A HREF="index.html" target=_blank>前回</A>の成果を踏まえて、<A HREF="../RADIO4/" target=_blank>DSP6919を使ったラジオ</A>を作って来ましたが、その中でプリアンプの改良に手を出して…その内にモジュールの入力周りが壊れたりもしました。どうも、このICやモジュールは入力周りが過電圧やESDに弱いようです。<BR>
+&nbsp; そうこうしてる内に色々と色気も出てきて、コイルを巻いたり外したりの繰り返しに陥りましたが、まぁそこそこDX（遠距離受信）も狙えて実用的？なものになりました。<BR>
+&nbsp; 多分（未だ面倒なので測ってないけど）消費電流は上がってますが…結局、モジュールの入れ替えを兼ねて新しい基板で作ることに。<BR>
+<BR>
+<A NAME="HOW"></A>
+<H3>どのようなものか</H3>
+&nbsp; 今回使ったのは、前回と同じくDSP-443です。<BR>
+&nbsp; 入力周りの保護のために、二つのアンテナ入力の両方に2.5Vのツェナーダイオードを対向で入れています(D4〜D7)。<BR>
+&nbsp; 中波に関しては、入力感度と選択度をを上げるために、プリアンプ→コイル→コイル→コイルと言うイレギュラーな構成になっています。<BR>
+&nbsp; 短波・FMについては、その構成だとコア損が目立つので、コイル負荷・コンデンサカップリングにしました。<BR>
+&nbsp; そして、音声周りですが前回はかなり無理をさせていたのと音の歪が気になったので、思いきって低電圧オーディオアンプである<A HREF="http://akizukidenshi.com/catalog/g/gI-02796/" target=_blank>HOLTEK社のHT82V739</A>を使いました。
+モジュールのヘッドフォン(スピーカー)出力を33Ωのダミー抵抗で受けて、その電圧を増幅させています。<BR>
+&nbsp; で、実際に夜動かしてみると秋田放送とか山形放送が聴けない＠神奈川県相模原市。と言う事がわかり、あーDSPが音量で「足切り」してるんだろうな。と云うこともわかり、我が儘な願望から、感度設定のためにS2周りのようにして元々の音量を調整できるようにしました。DXやMIDにすると、相当音が歪みます（が、感度は良くなる）<BR>
+<BR>
+<A HREF="DSP-Radiov2.00.zip">
+<IMG SRC="DSP-RADIOv2_p1.png" ALT="回路図(MAIN)"><BR>
+<IMG SRC="DSP-RADIOv2_p2.png" ALT="回路図(Pre)"><BR>
+<IMG SRC="DSP-RADIOv2_p3.png" ALT="回路図(AF)"><BR>
+&nbsp;&nbsp; 回路図とgSCH用のDSP443のシンボルセット</A><BR>
+<BR>
+(以下、続く(；´Д｀))<BR>
+<BR>
+本ドキュメント・及びノウハウは<IMG SRC="http://i.creativecommons.org/l/by-sa/3.0/88x31.png"
+ALT="CC-BY-SA V3.0"> CC BY SA v3.0で公開します。<BR>
+実装技術等の特許登録はこれを禁じます。(DO NOT PATENT THIS TECHNIQUES)<BR>
+後日問題が出た場合は変更の可能性あり。<BR>
+<BR>
+<a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/"><img
+alt="Creative Commons License" style="border-width:0"
+src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br
+/><span xmlns:dct="http://purl.org/dc/terms/"
+href="http://purl.org/dc/dcmitype/Dataset" property="dct:title"
+rel="dct:type">DSP443-Mod2</span> by <a
+xmlns:cc="http://creativecommons.org/ns#"
+href="http://sky.geocities.jp/artanejp/ELECTRONICS/RADIO3/radio3_2.html"
+property="cc:attributionName"
+rel="cc:attributionURL">http://sky.geocities.jp/artanejp/ELECTRONICS/RADIO3/radio3_2.html</a>
+is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons
+Attribution-ShareAlike 3.0 Unported License</a>.
+<BR>
+<BR>
+<BR>
+<A HREF="../index.html">電子工作系もくじへ</A><BR>
+<A HREF="../../">全体目次へ</A><BR>
+<BR>
+<BR>
+<BR>
+Last Update: 10 Apr.2013 by Artane. ( whatisthis.sowhat _a_t gmail.com )<BR>
+<BR>
+</body>
+</html>
+
