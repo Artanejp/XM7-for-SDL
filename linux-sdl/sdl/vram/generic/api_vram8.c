@@ -39,7 +39,7 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
-    rgbTTLGDI[index] = ds;
+    rgbTTLGDI[index & 7] = ds;
 //    UnlockVram();
 }
 

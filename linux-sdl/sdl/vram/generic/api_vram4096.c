@@ -23,7 +23,7 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
-    rgbAnalogGDI[index] = ds;
+    rgbAnalogGDI[index & 4095] = ds;
 }
 
 static inline void putword2_vec(Uint32 *disp, volatile v4hi cbuf)

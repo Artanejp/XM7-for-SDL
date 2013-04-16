@@ -200,16 +200,22 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        int hh;
        int ofset;
 
+
 //       glPushAttrib(GL_TEXTURE_BIT);
        ww = w >> 3;
        hh = h >> 3;
 
 #ifdef _USE_OPENCL
        if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+	  cl_int ret;
 	  LockVram();
-	  cldraw->GetVram(bMode);
+	  ret = cldraw->GetVram(bMode);
 	  UnlockVram();
-
+          if(ret != CL_SUCCESS) {
+	     SDLDrawFlag.Drawn = FALSE;
+	     return;
+	  }
+	  
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
 	  // Copy pbo to texture 

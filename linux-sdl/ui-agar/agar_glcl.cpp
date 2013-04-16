@@ -537,7 +537,7 @@ cl_int GLCLDraw::window_copy8(void)
 //      SetDrawFlag(TRUE);
    }
    if (bClearFlag) {
-      AllClear();
+//      AllClear();
    }
    
    if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
@@ -664,9 +664,9 @@ cl_int GLCLDraw::window_copy4096(void)
       nDrawRight = 320;
 //      SetDrawFlag(TRUE);
    }
-   if (bClearFlag) {
-      AllClear();
-   }
+//   if (bClearFlag) {
+//      AllClear();
+//   }
    
    if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
       if(window_open) { // ハードウェアウインドウ開いてる
@@ -746,11 +746,10 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
-
+      ret |= window_copy8_400l();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
-      ret |= window_copy8_400l();
       break;
     case SCR_200LINE:
       w = 640;
@@ -763,16 +762,15 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+      ret |= window_copy8();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
-      ret |= window_copy8();
       break;
     case SCR_262144:// Windowはなし
-      ret = copy256ksub(0, 0, 320, 200, 320, 200, mpage);
       w = 320;
       h = 200;
-      gws[0] = h / 2;
+      gws[0] = h;
       kernel = clCreateKernel(program, "getvram256k", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -781,15 +779,12 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&mpage);
-//      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-//                              8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
-//                              , 0, NULL, &event_uploadvram[3]);
-
+      ret |= copy256ksub(0, 0, 320, 200, 320, 200, mpage);
       break;
     case SCR_4096:
       w = 320;
       h = 200;
-      gws[0] = h / 2;
+      gws[0] = h;
       kernel = clCreateKernel(program, "getvram4096", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -797,11 +792,11 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
-      
-      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
+      ret |= window_copy4096();
+      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_FALSE, 0,
                               4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
-      ret |= window_copy4096();
+     
       break;
    }
    glFinish();
@@ -812,16 +807,17 @@ cl_int GLCLDraw::GetVram(int bmode)
   
 //   ret |= clEnqueueTask (command_queue,
 //			 kernel, 1, &event_copytotexture, &event_exec);
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
 				 goff, gws, lws, 
 				 1, &event_copytotexture,  &event_exec);
-   
+   clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
    clFinish(command_queue);
    clReleaseKernel(kernel);
    kernel = NULL;
+   glFinish();
    return ret;
 				   
 }
@@ -854,20 +850,23 @@ cl_int GLCLDraw::SetupTable(void)
 	  tbl[i * 0x800 + j * 8 + 5] = v[5]; 
 	  tbl[i * 0x800 + j * 8 + 6] = v[6]; 
 	  tbl[i * 0x800 + j * 8 + 7] = v[7];
-	  v[0] = v[0] * 2;
-	  v[1] = v[1] * 2;
-	  v[2] = v[2] * 2;
-	  v[3] = v[3] * 2;
-	  v[4] = v[4] * 2;
-	  v[5] = v[5] * 2;
-	  v[6] = v[6] * 2;
-	  v[7] = v[7] * 2;
+	  v[0] = v[0] << 1;
+	  v[1] = v[1] << 1;
+	  v[2] = v[2] << 1;
+	  v[3] = v[3] << 1;
+	  v[4] = v[4] << 1;
+	  v[5] = v[5] << 1;
+	  v[6] = v[6] << 1;
+	  v[7] = v[7] << 1;
        }
     }
     if(table != NULL) {
+      cl_event tbl_ev;
       r |= clEnqueueWriteBuffer(command_queue, table, CL_TRUE, 0,
                               0x100 * 8 * 20 * sizeof(cl_uint), (void *)tbl
-                              , 0, NULL, NULL);
+                              , 0, NULL, &tbl_ev);
+     clFinish(command_queue);
+
     }
    free(tbl);
    return r;
@@ -897,10 +896,10 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    
 
      
-//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
-// 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
-   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
- 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
+   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
+ 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
+//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
+// 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
    ret |= r;
    
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY,
