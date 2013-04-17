@@ -595,7 +595,7 @@ static void FASTCALL mainmem_iowait(void)
  *	メインCPUメモリ
  *	１バイト取得
  */
-BYTE FASTCALL mainmem_readb(WORD addr)
+volatile BYTE FASTCALL mainmem_readb(WORD addr)
 {
 	BYTE dat;
 
@@ -780,7 +780,7 @@ BYTE FASTCALL mainmem_readb(WORD addr)
  *	メインCPUメモリ
  *	１バイト取得(I/Oなし)
  */
-BYTE FASTCALL mainmem_readbnio(WORD addr)
+volatile BYTE FASTCALL mainmem_readbnio(WORD addr)
 {
 	BYTE dat;
 
@@ -886,7 +886,7 @@ BYTE FASTCALL mainmem_readbnio(WORD addr)
  *	メインCPUメモリ
  *	１バイト書き込み
  */
-void FASTCALL mainmem_writeb(WORD addr, BYTE dat)
+volatile void FASTCALL mainmem_writeb(WORD addr, BYTE dat)
 {
 	/* MMR, TWRチェック */
 	if (mmr_flag || twr_flag) {

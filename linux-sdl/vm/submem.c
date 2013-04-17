@@ -369,7 +369,7 @@ void  FASTCALL submem_reset(void)
  *      サブCPUメモリ
  *      １バイト取得
  */
-BYTE FASTCALL submem_readb(WORD addr)
+volatile BYTE FASTCALL submem_readb(WORD addr)
 {
 	BYTE            dat;
 
@@ -631,7 +631,7 @@ BYTE FASTCALL submem_readb(WORD addr)
  *      １バイト取得(I/Oなし)
  */
 //BYTE            FASTCALL
-BYTE FASTCALL submem_readbnio(WORD addr)
+volatile BYTE FASTCALL submem_readbnio(WORD addr)
 {
 #if XM7_VER == 1 && defined(L4CARD)
 	/*
@@ -867,7 +867,7 @@ BYTE FASTCALL submem_readbnio(WORD addr)
  *      サブCPUメモリ
  *      １バイト書き込み
  */
-void FASTCALL submem_writeb(WORD addr, BYTE dat)
+volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER == 1 && defined(L4CARD)
 	/*

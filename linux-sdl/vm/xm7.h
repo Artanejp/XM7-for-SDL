@@ -400,15 +400,15 @@ extern          "C" {
     /*
      * メインCPUメモリ ブート転送
      */
-    BYTE FASTCALL mainmem_readb(WORD addr);
+    volatile BYTE FASTCALL mainmem_readb(WORD addr);
     /*
      * メインCPUメモリ 読み出し
      */
-    BYTE mainmem_readbnio(WORD addr);
+    volatile BYTE mainmem_readbnio(WORD addr);
     /*
      * メインCPUメモリ 読み出し(I/Oなし)
      */
-    void FASTCALL mainmem_writeb(WORD addr, BYTE dat);
+    volatile void FASTCALL mainmem_writeb(WORD addr, BYTE dat);
     /*
      * メインCPUメモリ 書き込み
      */

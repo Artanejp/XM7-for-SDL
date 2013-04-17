@@ -384,30 +384,8 @@ static void cpu_reset(cpu6809_t *m68_state)
 static void cpu_nmi(cpu6809_t *m68_state)
 {
    //printf("NMI occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfffc),S);
-   m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
-   CC |= CC_E;
-   PUSHWORD(pPC);
-   PUSHWORD(pU);
-   PUSHWORD(pY);
-   PUSHWORD(pX);
-   PUSHBYTE(DP);
-   PUSHBYTE(B);
-   PUSHBYTE(A);
-   PUSHBYTE(CC);
-   CC = CC | CC_II | CC_IF;  // 0x50
-   PC = RM16(m68_state, 0xfffc);
-   m68_state->intr &= ~INTR_NMI; // 0xfffe /* NMIクリア */
-}
-
-
-
-static void cpu_firq(cpu6809_t *m68_state)
-{
-//	printf("Firq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff6),S);
-   if( m68_state->intr & INTR_CWAI_IN) {
-      /* CWAI */
+   if((m68_state->intr & INTR_CWAI_IN) == 0) {
       CC |= CC_E;
-      m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
       PUSHWORD(pPC);
       PUSHWORD(pU);
       PUSHWORD(pY);
@@ -416,8 +394,28 @@ static void cpu_firq(cpu6809_t *m68_state)
       PUSHBYTE(B);
       PUSHBYTE(A);
       PUSHBYTE(CC);
+   } else {
+      m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
+   }
+   
+   
+   CC = CC | CC_II | CC_IF;  // 0x50
+   PC = RM16(m68_state, 0xfffc);
+   m68_state->intr &= ~(INTR_NMI); // 0xfe1e /* NMIクリア */
+}
+
+
+
+static void cpu_firq(cpu6809_t *m68_state)
+{
+//	printf("Firq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff6),S);
+   if((m68_state->intr & INTR_CWAI_IN) != 0) {
+      /* CWAI */
+//      CC &= ~CC_E;
+      m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
       CC = CC | CC_II | CC_IF;
       PC = RM16(m68_state, 0xfff6);
+//      m68state->intr &= ~(INTR_SYNC_IN | INTR_SYNC_OUT);
    } else {
       /* NORMAL */
       CC &= ~CC_E;
@@ -425,26 +423,32 @@ static void cpu_firq(cpu6809_t *m68_state)
       PUSHBYTE(CC);
       CC = CC | CC_II | CC_IF;
       PC = RM16(m68_state, 0xfff6);
-//      m68state->intr &= 0xfffd;
+//      m68state->intr &= ~INTR_FIRQ;
    }
 }
 
 static void cpu_irq(cpu6809_t *m68_state)
 {
  //  printf("Irq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff8),S);
-   m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
-   CC |= CC_E;
-   PUSHWORD(pPC);
-   PUSHWORD(pU);
-   PUSHWORD(pY);
-   PUSHWORD(pX);
-   PUSHBYTE(DP);
-   PUSHBYTE(B);
-   PUSHBYTE(A);
-   PUSHBYTE(CC);
+
+   if((m68_state->intr & INTR_CWAI_IN) == 0) {
+	//m68_state->intr |= INTR_CWAI_OUT; /* CWAI */
+      CC |= CC_E;
+      PUSHWORD(pPC);
+      PUSHWORD(pU);
+      PUSHWORD(pY);
+      PUSHWORD(pX);
+      PUSHBYTE(DP);
+      PUSHBYTE(B);
+      PUSHBYTE(A);
+      PUSHBYTE(CC);
+   } else {
+      m68_state->intr |= INTR_CWAI_OUT;
+   }
+     
    CC |= CC_II;
    PC = RM16(m68_state, 0xfff8);
-//   m68_state->intr &= 0xfffb;
+ // m68_state->intr &= 0xfffb;
 }
 
 
@@ -471,21 +475,29 @@ check_nmi:
 	   if((intr & INTR_NMI) == 0) goto check_firq;
 	   m68_state->intr |= INTR_SYNC_OUT;
 	   if((intr & INTR_SLOAD) != 0) {
-		   cpu_nmi(m68_state);
-		   cpu_execline(m68_state);
-		   cycle = 19;
-		   goto int_cycle;
+	      if((intr & INTR_SYNC_IN) != 0) {
+		 if((intr & INTR_NMI_LC) != 0) goto  check_firq;
+		 PC++;
+	      }
+	      cpu_nmi(m68_state);
+	      cpu_execline(m68_state);
+	      cycle = 19;
+	      goto int_cycle;
 	   } else {
-		   goto check_firq;
+	      goto check_firq;
 	   }
 	} else {
-		goto check_ok;
+	   goto check_ok;
 	}
 
 check_firq:
     if((intr & INTR_FIRQ) != 0) {
         m68_state->intr |= INTR_SYNC_OUT;
         if((cc & CC_IF) != 0) goto check_irq;
+        if((intr & INTR_SYNC_IN) != 0) {
+	    if((intr & INTR_IRQ_LC) != 0) goto check_irq;
+	    PC++;
+	}
         cpu_firq(m68_state);
         cpu_execline(m68_state);
         cycle = 10;
@@ -496,6 +508,11 @@ check_irq:
     if((intr & INTR_IRQ) != 0) {
         m68_state->intr |= INTR_SYNC_OUT;
         if((cc & CC_II) != 0) goto check_ok;
+        if((intr & INTR_SYNC_IN) != 0) {
+	    if((intr & INTR_IRQ_LC) != 0) goto check_ok;
+	    PC++;
+	}
+       
         cpu_irq(m68_state);
         cpu_execline(m68_state);
         cycle = 19;

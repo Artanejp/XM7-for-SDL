@@ -15,7 +15,7 @@ HNZVC
 extern "C" {
 #endif
 //#define OP_HANDLER(_name) INLINE void _name (m68_state_t *m68_state)
-#define OP_HANDLER(_name) INLINE void _name (cpu6809_t *m68_state)
+#define OP_HANDLER(_name) INLINE volatile void _name (cpu6809_t *m68_state)
 
 OP_HANDLER( illegal )
 {
@@ -335,7 +335,7 @@ OP_HANDLER( exg )
 //	}
 //	else
 	{
-		switch(tb>>4) {
+		switch((tb>>4) & 15) {
 			case  0: t1 = D;  break;
 			case  1: t1 = X;  break;
 			case  2: t1 = Y;  break;
@@ -346,7 +346,7 @@ OP_HANDLER( exg )
 			case  9: t1 = B | 0xff00;  break;
 			case 10: t1 = CC | 0xff00; break;
 			case 11: t1 = DP | 0xff00; break;
-			default: t1 = 0xffff;
+			default: t1 = 0xffff; break;
 		}
 		switch(tb&15) {
 			case  0: t2 = D;  break;
@@ -359,10 +359,10 @@ OP_HANDLER( exg )
 			case  9: t2 = B | 0xff00;  break;
 			case 10: t2 = CC | 0xff00; break;
 			case 11: t2 = DP | 0xff00; break;
-			default: t2 = 0xffff;
+			default: t2 = 0xffff; break;
         }
 	}
-	switch(tb>>4) {
+	switch((tb>>4) & 15) {
 		case  0: D = t2;  break;
 		case  1: X = t2;  break;
 		case  2: Y = t2;  break;
@@ -405,7 +405,7 @@ OP_HANDLER( tfr )
 //      }
 //	else
 	{
-		switch(tb>>4) {
+		switch((tb>>4) & 15) {
 			case  0: t = D;  break;
 			case  1: t = X;  break;
 			case  2: t = Y;  break;
@@ -416,8 +416,8 @@ OP_HANDLER( tfr )
 			case  9: t = B | 0xff00;  break;
 			case 10: t = CC | 0xff00; break;
 			case 11: t = DP | 0xff00; break;
-			default: t = 0xffff;
-        }
+			default: t = 0xffff; break;
+		}
 	}
 	switch(tb&15) {
 		case  0: D = t;  break;
@@ -744,7 +744,7 @@ OP_HANDLER( rti )
 //	BYTE t;
 	PULLBYTE(CC);
 //	t = CC & CC_E;		/* HJB 990225: entire state saved? */
-	if(CC & CC_E)
+	if((CC & CC_E) != 0)
 	{
 		m68_state->cycle += 9;
 		PULLBYTE(A);
@@ -761,15 +761,15 @@ OP_HANDLER( rti )
 /* $3C CWAI inherent ----1 */
 OP_HANDLER( cwai )
 {
-	BYTE t;
+   BYTE t;
 
-    if(m68_state->intr & INTR_CWAI_IN){
+    if((m68_state->intr & INTR_CWAI_IN) != 0){ // FIX 20130417
 	/* CWAI実行中 */
-       if(m68_state->intr & INTR_CWAI_OUT) {
+       if((m68_state->intr & INTR_CWAI_OUT) != 0) {
     	   /* 割込がかかって、RTIの後(スタックからPOP->RTI) */
     	   m68_state->intr = m68_state->intr & ~(INTR_CWAI_IN | INTR_CWAI_OUT); //0xfe7f; /* CWAIフラグクリア */
-    	   PC += 1;
-    	   return;
+    	   PC += 1; // Skip PostByte
+   	   return;
        } else {
     	   PC -= 1; // 次回もCWAI命令実行
     	   return;
@@ -777,21 +777,22 @@ OP_HANDLER( cwai )
     }
 	/* 今回初めてCWAI実行 */
 first:
-    IMMBYTE(t);
-    CC = CC & t;
-    CC |= CC_E; 		/* HJB 990225: save entire state */
-	PUSHWORD(pPC);
-	PUSHWORD(pU);
-	PUSHWORD(pY);
-	PUSHWORD(pX);
-	PUSHBYTE(DP);
-	PUSHBYTE(B);
-	PUSHBYTE(A);
-	PUSHBYTE(CC);
-
-    m68_state->intr = (m68_state->intr | INTR_CWAI_IN) & ~INTR_CWAI_OUT; // 0xfeff
-    PC -= 2; // レジスタ退避して再度実行
-    return;
+   IMMBYTE(t);
+   CC = CC & t;
+   CC |= CC_E; 		/* HJB 990225: save entire state */
+   PUSHWORD(pPC);
+   PUSHWORD(pU);
+   PUSHWORD(pY);
+   PUSHWORD(pX);
+   PUSHBYTE(DP);
+   PUSHBYTE(B);
+   PUSHBYTE(A);
+   PUSHBYTE(CC);
+   
+   m68_state->intr = m68_state->intr | INTR_CWAI_IN;
+   m68_state->intr &= ~INTR_CWAI_OUT; // 0xfeff
+   PC -= 2; // レジスタ退避して再度実行
+   return;
  }
 
 /* $3D MUL inherent --*-@ */
@@ -1435,7 +1436,7 @@ OP_HANDLER( dcc_ex )
     s = ~s; // 20111011
     s=s & CC_C;
     CC = s | CC;
-	WM(EA,t);
+	WM(EAD,t);
 }
 
 /* $7C INC extended -***- */
@@ -2585,7 +2586,7 @@ OP_HANDLER( lds_im )
 	IMMWORD(pS);
 	CLR_NZV;
 	SET_NZ16(S);
-	m68_state->intr |= 0x0010;
+	m68_state->intr |= INTR_SLOAD;
 }
 
 /* is this a legal instruction? */
@@ -3177,7 +3178,7 @@ OP_HANDLER( pref10 )
 		case 0x8c: cmpy_im(m68_state);	m68_state->cycle=5;	break;
 		case 0x8d: lbsr(m68_state); m68_state->cycle=9; break;
 		case 0x8e: ldy_im(m68_state);	m68_state->cycle=4;	break;
-		case 0x8f: flag16_im(m68_state);m68_state->cycle=4;	break;
+//		case 0x8f: flag16_im(m68_state);m68_state->cycle=4;	break; // 20130417
 
 		case 0x93: cmpd_di(m68_state);	m68_state->cycle=7;	break;
 		case 0x9c: cmpy_di(m68_state);	m68_state->cycle=7;	break;
@@ -3195,7 +3196,7 @@ OP_HANDLER( pref10 )
 		case 0xbf: sty_ex(m68_state);	m68_state->cycle=7;	break;
 
 		case 0xce: lds_im(m68_state);	m68_state->cycle=4;	break;
-		case 0xcf: flag16_im(m68_state);m68_state->cycle=4;	break;
+//		case 0xcf: flag16_im(m68_state);m68_state->cycle=4;	break;
 
 		case 0xde: lds_di(m68_state);	m68_state->cycle=6;	break;
 		case 0xdf: sts_di(m68_state);	m68_state->cycle=6;	break;
