@@ -898,10 +898,10 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 				/*
 				 * 同じデータを書き込むなら、Notifyしない
 				 */
-				if (vram_c[addr] != dat) {
+				//if (vram_c[addr] != dat) {
 					vram_c[addr] = dat;
 					vram_notify(addr, dat);
-				}
+				//}
 			}
 			return;
 		}
@@ -941,13 +941,13 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 				return;
 			}
 			if (!(multi_page & (1 << subram_vrambank))) {
-				if (vram_aptr[addr] != dat) {
+				//if (vram_aptr[addr] != dat) {
 					/*
 					 * 同じデータを書き込むなら、Notifyしない
 					 */
 					vram_aptr[addr] = dat;
 					vram_notify(addr, dat);
-				}
+				//}
 			}
 		} else {
 			if (alu_command & 0x80) {
@@ -958,12 +958,12 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 				/*
 				 * 同じデータを書き込むなら、Notifyしない
 				 */
-				if (vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] !=
-				        dat) {
+				//if (vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] !=
+				//        dat) {
 					vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] =
 					    dat;
 					vram_notify(addr, dat);
-				}
+				//}
 			}
 		}
 #elif XM7_VER >= 2
@@ -975,20 +975,20 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 			/*
 			 * 同じデータを書き込むなら、Notifyしない
 			 */
-			if (vram_aptr[addr] != dat) {
+			//if (vram_aptr[addr] != dat) {
 				vram_aptr[addr] = dat;
 				vram_notify(addr, dat);
-			}
+			//}
 		}
 #else
 		if (!(multi_page & (1 << (addr >> 14)))) {
 			/*
 			 * 同じデータを書き込むなら、Notifyしない
 			 */
-			if (vram_c[addr] != dat) {
+			//if (vram_c[addr] != dat) {
 				vram_c[addr] = dat;
 				vram_notify(addr, dat);
-			}
+			//}
 		}
 #endif
 		return;

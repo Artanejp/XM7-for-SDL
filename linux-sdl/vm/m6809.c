@@ -401,7 +401,7 @@ static void cpu_nmi(cpu6809_t *m68_state)
    
    CC = CC | CC_II | CC_IF;  // 0x50
    PC = RM16(m68_state, 0xfffc);
-   m68_state->intr &= ~(INTR_NMI); // 0xfe1e /* NMIクリア */
+   m68_state->intr &= ~INTR_NMI; // 0xfe1e /* NMIクリア */
 }
 
 
@@ -416,6 +416,7 @@ static void cpu_firq(cpu6809_t *m68_state)
       CC = CC | CC_II | CC_IF;
       PC = RM16(m68_state, 0xfff6);
 //      m68state->intr &= ~(INTR_SYNC_IN | INTR_SYNC_OUT);
+      m68_state->intr &= ~INTR_FIRQ;
    } else {
       /* NORMAL */
       CC &= ~CC_E;
@@ -423,7 +424,7 @@ static void cpu_firq(cpu6809_t *m68_state)
       PUSHBYTE(CC);
       CC = CC | CC_II | CC_IF;
       PC = RM16(m68_state, 0xfff6);
-//      m68state->intr &= ~INTR_FIRQ;
+      m68_state->intr &= ~INTR_FIRQ;
    }
 }
 
@@ -448,7 +449,7 @@ static void cpu_irq(cpu6809_t *m68_state)
      
    CC |= CC_II;
    PC = RM16(m68_state, 0xfff8);
- // m68_state->intr &= 0xfffb;
+  m68_state->intr &= ~INTR_IRQ;
 }
 
 

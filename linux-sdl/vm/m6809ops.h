@@ -142,18 +142,18 @@ OP_HANDLER( dec_di )
 /* $0B DCC direct */
 OP_HANDLER( dcc_di )
 {
-	BYTE t,s;
+   BYTE t,s;
 
-	DIRBYTE(t);
-	--t;
-	CLR_NZVC;
-	SET_FLAGS8D(t);
-    s = CC;
-    s >>= 2;
-    s = ~s;
-    s = s & CC_C;
-    CC = s | CC;
-	WM(EAD,t);
+   DIRBYTE(t);
+   --t;
+   CLR_NZVC;
+   SET_FLAGS8D(t);
+   s = CC;
+   s >>= 2;
+   s = ~s;
+   s = s & CC_C;
+   CC = s | CC;
+   WM(EAD,t);
 }
 
 
