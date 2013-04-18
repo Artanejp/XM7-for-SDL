@@ -55,15 +55,15 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
    BOOL bi;
    
    bi = FALSE;
-   if(MainWindow != NULL) {
-      if(AG_WindowIsFocused(MainWindow)) {
-	 bi = TRUE;
-      }
-    } else {
-       return FALSE;
-    }
-   if(drv == NULL) return FALSE;
-   if(ev == NULL) return FALSE;
+//   if(MainWindow != NULL) {
+//      if(AG_WindowIsFocused(MainWindow)) {
+//	 bi = TRUE;
+//      }
+//   } else {
+//       return FALSE;
+//   }
+//   if(drv == NULL) return TRUE;
+   if(ev == NULL) return TRUE;
    /* Retrieve the next queued event. */
 //   switch (ev->type) {
 //    case AG_DRIVER_VIDEORESIZE:
@@ -87,8 +87,8 @@ BOOL EventGUI(AG_Driver *drv)
 	if(AG_PendingEvents(drv) <= 0) return FALSE;
 	do {
 		if (AG_GetNextEvent(drv, &dev) == 1) {
-            r = EventGuiSingle(drv, &dev);
-    		if(!r) return FALSE;
+		   r = EventGuiSingle(drv, &dev);
+		   if(!r) return FALSE;
 		}
 	} while (AG_PendingEvents(drv) > 0);
 	return TRUE;
@@ -115,104 +115,50 @@ void AGDrawTaskEvent(BOOL flag)
 	 oldfps = nDrawFPS;
 #ifdef USE_OPENGL
 	   if(DrawArea != NULL) {
-                  AG_RedrawOnTick(DrawArea, fps);
-                } else if(GLDrawArea != NULL){
-                    AG_RedrawOnTick(GLDrawArea, fps);
-                }
+	      AG_RedrawOnTick(DrawArea, fps);
+	   } else if(GLDrawArea != NULL){
+	      AG_RedrawOnTick(GLDrawArea, fps);
+	   }
 #else
 	   if(DrawArea != NULL) {
 	      AG_RedrawOnTick(DrawArea, fps);
 	   }
 #endif
       }
+//      if(EventSDL(NULL) == FALSE) return;
       nDrawTick2D = XM7_timeGetTime();
-//      if(bResizeGUIFlag) continue;
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
       if((nDrawTick2D - nDrawTick1D) > fps) {
 	 // Force-Redraw mainwindow, workaround of glx driver.
-	 if(GLDrawArea != NULL) {
-	    AG_Redraw(GLDrawArea);
-	 } else if(DrawArea != NULL) {
-	    AG_Redraw(DrawArea);
-	 }
-	 
-	 // ここにGUIの処理入れる
-	 AG_LockVFS(&agDrivers);
-	 if (agDriverSw) {
-	    drv = &agDriverSw->_inherit;
-	    /* With single-window drivers (e.g., sdlfb). */
-	    AG_BeginRendering(agDriverSw);
-	    AG_FOREACH_WINDOW(win, agDriverSw) {
-	       AG_ObjectLock(win);
-	       AG_WindowDraw(win);
-	       AG_ObjectUnlock(win);
-	    }
-	    nDrawTick1D = nDrawTick2D;
-	    AG_EndRendering(agDriverSw);
-	 } else  {
-//	    printf("Draw %d \n", XM7_TimeGetTime());
-//	    AG_Window *miniwin;
-	    /* With multiple-window drivers (e.g., glx). */
-	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver) {
-	       if (!AGDRIVER_MULTIPLE(drv)) {
-		  continue;
-	       }
-	       win = AGDRIVER_MW(drv)->win;
-	       if (!win->visible || !win->dirty){
-		  continue;
-	       }
-	       AG_BeginRendering(drv);
-	       AG_ObjectLock(win);
-	       AG_WindowDraw(win);
-	       AG_ObjectUnlock(win);
-	       AG_EndRendering(drv);
-	    }
-	    nDrawTick1D = nDrawTick2D;
-   	 }
-	 
-	 
-	 AG_UnlockVFS(&agDrivers);
-      }
-//      if(AG_PendingEvents(NULL) > 0) {
-	 if(agDriverSw) { // Single Window
-	    drv = &agDriverSw->_inherit;
-	    if (AG_PendingEvents(drv) > 0){
-	       if(EventSDL(drv) == FALSE) return;
-	       //EventGUI(drv);
-	    }
-	 } else { // Multi windows
-	    BOOL b;
-	    b = FALSE;
-	    EventSDL(NULL);
-	    AGOBJECT_FOREACH_CHILD(drv, &agDrivers, ag_driver){
-	       if (AG_PendingEvents(drv) > 0){
-//		  if(EventSDL(drv) == FALSE) {
-//		     b = TRUE;
-//		     continue;
-//		  }
-		  if(EventGUI(drv) == FALSE) {
-		     b = TRUE;
-		     continue;
-		  }
-	       }
-	    }
-	    if(b == TRUE) return;
-	 }
-      
-//      }       
-      // 20120109 - Timer Event
-	 if (AG_TIMEOUTS_QUEUED()){
-	    Uint32 tim = 0;
-	    tim = XM7_timeGetTime();
-	    AG_ProcessTimeouts(tim);
-	    XM7_Sleep(1);
-	 } else {
-	    XM7_Sleep(1);
-	 }
+#ifdef USE_OPENGL
+	   if(DrawArea != NULL) {
+	      AG_Redraw(DrawArea);
+	   } else if(GLDrawArea != NULL){
+	      AG_Redraw(GLDrawArea);
+	   }
+#else
+	   if(DrawArea != NULL) {
+	      AG_Redraw(DrawArea);
+	   }
+#endif
+	 AG_WindowDrawQueued();
+	 nDrawTick1D = nDrawTick2D;
+	// EventSDL(NULL);
+      } else if(AG_PendingEvents(NULL) != 0) {
+	 AG_DriverEvent dev;
+	 if(EventSDL(NULL) == FALSE) return;
+	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+      } else { // Timeout
+	 Uint32 tim = 0;
+	 tim = AG_GetTicks();
+	 //AG_ProcessTimeouts(tim);
+	 XM7_Sleep(1);
+      }	// Process Event per 1Ticks;
 
+      AG_WindowProcessQueued();
       
-   }	// Process Event per 1Ticks;
+   }
    
 
 }

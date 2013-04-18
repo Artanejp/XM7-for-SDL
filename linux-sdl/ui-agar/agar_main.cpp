@@ -516,5 +516,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    mtrace();
 #endif
 	AGDrawTaskEvent(TRUE);
+//	AG_EventLoop();
 //	AG_Quit();
 }

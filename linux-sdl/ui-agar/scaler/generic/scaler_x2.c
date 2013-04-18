@@ -20,8 +20,8 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   int w;
+   int h;
    int yy;
    int xx;
    int hh;
@@ -29,7 +29,11 @@ void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int i;
    int pitch;
    Uint32 black;
+   if(my->Surface == NULL) return;
+   w = my->Surface->w;
+   h = my->Surface->h;
 
+   
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
