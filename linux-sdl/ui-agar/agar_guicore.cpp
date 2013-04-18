@@ -125,7 +125,7 @@ void AGDrawTaskEvent(BOOL flag)
 	   }
 #endif
       }
-//      if(EventSDL(NULL) == FALSE) return;
+      if(EventSDL(NULL) == FALSE) return;
       nDrawTick2D = XM7_timeGetTime();
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
@@ -144,10 +144,10 @@ void AGDrawTaskEvent(BOOL flag)
 #endif
 	 AG_WindowDrawQueued();
 	 nDrawTick1D = nDrawTick2D;
-	// EventSDL(NULL);
+	 //EventSDL(NULL);
       } else if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
-	 if(EventSDL(NULL) == FALSE) return;
+//	 if(EventSDL(NULL) == FALSE) return;
 	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
       } else { // Timeout
 	 Uint32 tim = 0;
