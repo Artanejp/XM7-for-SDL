@@ -152,7 +152,7 @@ void AGDrawTaskEvent(BOOL flag)
       } else { // Timeout
 	 Uint32 tim = 0;
 	 tim = AG_GetTicks();
-	 //AG_ProcessTimeouts(tim);
+//	 AG_ProcessTimeouts(tim);
 	 XM7_Sleep(1);
       }	// Process Event per 1Ticks;
 
