@@ -56,8 +56,8 @@ extern void initvramtbl_8_vec(void);
 extern void initvramtbl_4096_vec(void);
 extern void detachvramtbl_8_vec(void);
 extern void detachvramtbl_4096_vec(void);
-extern v4hi lshift_6bit8v(v4hi *v);
-extern v4si *aPlanes;
+extern v8hi_t lshift_6bit8v(v8hi_t *v);
+extern v8si *aPlanes;
 
 enum {
    B0 = 0,

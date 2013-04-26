@@ -1025,7 +1025,7 @@ void Palet640(void)
 	Palet640Sub(9, 0, 255, 0, a);
 }
 
-static inline void Palet320Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+static void Palet320Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 //	CalcPalette_AG_GL(rgbAnalogGDI, i, r, g, b, a);
     CalcPalette_4096Colors(i, r, g, b, a);
@@ -1036,7 +1036,7 @@ void Palet320(void)
 
 	int     i,
 	j;
-	DWORD   r,
+	Uint8   r,
 	g,
 	b;
 	int     amask;

@@ -80,7 +80,7 @@ void InitNonGL(int w, int h)
    vram_pr = NULL;
 
    InitVramSemaphore();
-   pVirtualVram = NULL;
+   pVram2 = NULL;
    InitVirtualVram();
    return;
 }

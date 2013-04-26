@@ -15,10 +15,10 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 
-struct VirtualVram {
-    Uint32 pVram[640][400];
-};
-extern struct VirtualVram *pVirtualVram;
+//struct VirtualVram {
+//    Uint32 pVram[640][400];
+//};
+//extern struct VirtualVram *pVirtualVram;
 extern Uint32 *pVram2;
 extern BOOL InitVideo;
 extern BOOL bVramUpdateFlag;

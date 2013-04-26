@@ -10,7 +10,7 @@
 //#include "api_scaler.h"
 #include "api_vram.h"
 
-extern v8hi_t lshift_6bit8v_SSE2(v4hi *v);
+extern v8hi_t lshift_6bit8v_SSE2(v8hi_t *v);
 
 static void putword(Uint32 *disp, Uint32 *cx)
 {
@@ -39,7 +39,7 @@ static void putword(Uint32 *disp, Uint32 *cx)
 static v8hi_t gpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v4hi v;
+   v8hi_t v;
    v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
@@ -66,7 +66,7 @@ static v8hi_t gpixel2cbuf(Uint32 addr, Uint32 mpage)
 static v8hi_t rpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v4hi v;
+   v8hi_t v;
    v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
@@ -90,7 +90,7 @@ static v8hi_t rpixel2cbuf(Uint32 addr, Uint32 mpage)
 static v8hi_t bpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v4hi v;
+   v8hi_t v;
    v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
@@ -109,7 +109,7 @@ static v8hi_t bpixel2cbuf(Uint32 addr, Uint32 mpage)
         return v1;
    } else {
        v8hi_t r;
-       r.vv = (v8ii){0, 0, 0, 0, 0, 0, 0, 0};
+       r.vv = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
        return r;
    }
 }
@@ -131,7 +131,7 @@ static void getvram_256k(Uint32 addr, Uint32 mpage, Uint32 *cbuf)
    r = rpixel2cbuf(addr, mpage);
    g = gpixel2cbuf(addr, mpage);
 #ifdef AG_LITTLE_ENDIAN
-   a.vv = (v8ii){0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000};
+   a.vv = (v8si){0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000};
 //   cbuf[0] = (b.s[0] << 16) | (g.s[0] << 8) | r.s[0] | 0xff000000;
 //   cbuf[1] = (b.s[1] << 16) | (g.s[1] << 8) | r.s[1] | 0xff000000;
 //   cbuf[2] = (b.s[2] << 16) | (g.s[2] << 8) | r.s[2] | 0xff000000;

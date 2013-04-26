@@ -1000,7 +1000,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    w = my->Surface->w;
    h = my->Surface->h;
  
-   if(pVirtualVram == NULL) return;
+   if(pVram2 == NULL) return;
    switch(bMode){
     case SCR_200LINE:
         ww = 640;
@@ -1031,7 +1031,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
     pb = (Uint8 *)(my->Surface->pixels);
     pitch = my->Surface->pitch;
     bpp = my->Surface->format->BytesPerPixel;
-    src = &(pVirtualVram->pVram[0][0]);
+    src = pVram2;
 
     LockVram();
     AG_SurfaceLock(my->Surface);

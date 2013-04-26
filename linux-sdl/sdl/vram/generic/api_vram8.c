@@ -44,7 +44,7 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 }
 
 #if (__GNUC__ >= 4)
-static void getvram_8_vec(Uint32 addr, v4hi *cbuf)
+static void getvram_8_vec(Uint32 addr, v8hi_t *cbuf)
 {
     uint8_t r, g, b;
 //    volatile v4hi cbuf __attribute__((aligned(32)));
@@ -64,22 +64,22 @@ static void getvram_8_vec(Uint32 addr, v4hi *cbuf)
    return;
 }
 
-static inline void  putword8_vec(Uint32 *disp, volatile v4hi c, v8hi_t pal)
+static inline void  putword8_vec(Uint32 *disp, volatile v8hi_t c, Uint32 *pal)
 {
 
    v8hi_t *dst = (v8hi_t *)disp;
-   register v8hi_t r1;
+   v8hi_t r1;
    
 //   if(disp == NULL) return;
-   c.v &= (v4si){7, 7, 7, 7, 7, 7, 7, 7,};
-   r1.i[0] = pal.i[c.s[0]]; // ?!
-   r1.i[1] = pal.i[c.s[1]];
-   r1.i[2] = pal.i[c.s[2]];
-   r1.i[3] = pal.i[c.s[3]];
-   r1.i[4] = pal.i[c.s[4]];
-   r1.i[5] = pal.i[c.s[5]];
-   r1.i[6] = pal.i[c.s[6]];
-   r1.i[7] = pal.i[c.s[7]];
+   //c.v = c.v & (v8si){7, 7, 7, 7, 7, 7, 7, 7};
+   r1.i[0] = pal[c.i[0] & 7]; // ?!
+   r1.i[1] = pal[c.i[1] & 7];
+   r1.i[2] = pal[c.i[2] & 7];
+   r1.i[3] = pal[c.i[3] & 7];
+   r1.i[4] = pal[c.i[4] & 7];
+   r1.i[5] = pal[c.i[5] & 7];
+   r1.i[6] = pal[c.i[6] & 7];
+   r1.i[7] = pal[c.i[7] & 7];
    dst->v = r1.v;
 }
 
@@ -149,20 +149,18 @@ static inline void  putword8(Uint32 *disp, Uint32 *c, Uint32 *pal)
 void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
 #if (__GNUC__ >= 4)   
-    v4hi c;
-    v8hi_t *p1 = (v8hi_t *)rgbTTLGDI;
-    v8hi_t pal;
+    v8hi_t c;
+    Uint32 *pal = (Uint32 *)rgbTTLGDI;
     Uint8 *disp =(Uint8 *) p;
     Uint32 addr;
 
-    if((p == NULL) || (p1 == NULL)) return;
-    pal.v = p1->v; // Reduce reading palette.
+    if((p == NULL) || (pal == NULL)) return;
     pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
-       c.v = (v4si){0,0,0,0,0,0,0,0};
+       c.v = (v8si){0,0,0,0,0,0,0,0};
        putword8_vec((Uint32 *)disp,  c, pal);
        disp += pitch;
        putword8_vec((Uint32 *)disp,  c, pal);
@@ -187,12 +185,12 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
        disp += pitch;
 
        getvram_8_vec(addr , &c);
-       putword8_vec((Uint32 *)disp,  c, pal);
+       putword8_vec((Uint32 *)disp, c, pal);
        addr += 80;
        disp += pitch;
 
        getvram_8_vec(addr, &c);
-       putword8_vec((Uint32 *)disp,  c, pal);
+       putword8_vec((Uint32 *)disp, c, pal);
        addr += 80;
        disp += pitch;
 

@@ -261,7 +261,7 @@ void InitGL_AG2(int w, int h)
         memset(pFrameBuffer, 0x00, sizeof(Uint32) * 640 * 400);
 	InitVramSemaphore();
 	uVramTextureID = 0;
-	pVirtualVram = NULL;
+	pVram2 = NULL;
 #ifdef _OPENCL
         bInitCL = FALSE;
 #endif

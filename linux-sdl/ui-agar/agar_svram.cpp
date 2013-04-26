@@ -341,8 +341,8 @@ void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
         return;
    }
 #endif   
-   if(pVirtualVram == NULL) return;
-   pp = &(pVirtualVram->pVram[0][0]);
+   if(pVram2 == NULL) return;
+   pp = pVram2;
 
    if(pp == NULL) {
       UnlockVram();

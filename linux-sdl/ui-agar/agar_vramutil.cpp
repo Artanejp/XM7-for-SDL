@@ -11,7 +11,7 @@
 static SDL_sem *pVideoSem;
 Uint32 *pVram2;
 BOOL InitVideo;
-struct VirtualVram *pVirtualVram;
+//struct VirtualVram *pVirtualVram;
 BYTE bModeOld;
 
 extern "C" {
@@ -54,27 +54,29 @@ void DetachVramSemaphore(void)
 void InitVirtualVram()
 {
    int size;
-    if(pVirtualVram != NULL) return;
+    if(pVram2 != NULL) return;
 #ifndef _WINDOWS
-    if(posix_memalign((void **)&pVirtualVram, 32, sizeof(struct VirtualVram)) < 0) return;
+//    if(posix_memalign((void **)&pVirtualVram, 32, sizeof(struct VirtualVram)) < 0) return;
    if(posix_memalign((void **)&pVram2, 32, sizeof(Uint32) * 640 * 400) < 0) {
-      free(pVirtualVram);
-      pVirtualVram = NULL;
+//      free(pVirtualVram);
+//      pVirtualVram = NULL;
+      return;
    }
    
 #else
-    size = ((sizeof(struct VirtualVram) + 31 ) / 32) * 32;
-    pVirtualVram = (struct VirtualVram *)malloc(size);
-    if(pVirtualVram == NULL) return;
+//    size = ((sizeof(struct VirtualVram) + 31 ) / 32) * 32;
+//    pVirtualVram = (struct VirtualVram *)malloc(size);
+//    if(pVirtualVram == NULL) return;
     size = ((640 * 400 * sizeof(Uint32) + 31 ) / 32) * 32;
     pVram2 = (Uint32 *)malloc(size);
     if(pVram2 == NULL) {
-        free(pVirtualVram);
-        pVirtualVram = NULL;
+//        free(pVirtualVram);
+//        pVirtualVram = NULL;
+        return;
     }
 #endif   
    // Phase 1
-    memset(pVirtualVram, 0x00, sizeof(struct VirtualVram) );
+//    memset(pVirtualVram, 0x00, sizeof(struct VirtualVram) );
     memset(pVram2, 0x00, sizeof(640*400*sizeof(Uint32)));
     // Phase 2
     bModeOld = bMode;

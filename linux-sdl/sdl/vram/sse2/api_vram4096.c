@@ -15,25 +15,25 @@ Uint8 *vram_pg;
 
 
 
-static inline void putword2_vec(Uint32 *disp, volatile v4hi cbuf)
+static inline void putword2_vec(Uint32 *disp, volatile v8hi_t cbuf)
 {
    v8hi_t *dst = (v8hi_t *)disp;
-   register v8hi_t r1;
+   v8hi_t r1;
    
-   r1.i[0] = rgbAnalogGDI[cbuf.s[0]];
-   r1.i[1] = rgbAnalogGDI[cbuf.s[1]];
-   r1.i[2] = rgbAnalogGDI[cbuf.s[2]];
-   r1.i[3] = rgbAnalogGDI[cbuf.s[3]];
-   r1.i[4] = rgbAnalogGDI[cbuf.s[4]];
-   r1.i[5] = rgbAnalogGDI[cbuf.s[5]];
-   r1.i[6] = rgbAnalogGDI[cbuf.s[6]];
-   r1.i[7] = rgbAnalogGDI[cbuf.s[7]];
+   r1.i[0] = rgbAnalogGDI[cbuf.i[0]];
+   r1.i[1] = rgbAnalogGDI[cbuf.i[1]];
+   r1.i[2] = rgbAnalogGDI[cbuf.i[2]];
+   r1.i[3] = rgbAnalogGDI[cbuf.i[3]];
+   r1.i[4] = rgbAnalogGDI[cbuf.i[4]];
+   r1.i[5] = rgbAnalogGDI[cbuf.i[5]];
+   r1.i[6] = rgbAnalogGDI[cbuf.i[6]];
+   r1.i[7] = rgbAnalogGDI[cbuf.i[7]];
    dst->v = r1.v;
 }
 
-static v4hi getvram_4096_vec(Uint32 addr)
+static inline v8hi_t getvram_4096_vec(Uint32 addr)
 {
-    volatile v4hi cbuf;
+    v8hi_t cbuf;
     uint8_t r0, r1, r2, r3;
     uint8_t g0, g1, g2, g3;
     uint8_t b0, b1, b2, b3;
@@ -81,7 +81,7 @@ static v4hi getvram_4096_vec(Uint32 addr)
 void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
 {
 //    Uint32 c[8];
-    v4hi c;
+    v8hi_t c;
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
 
@@ -89,7 +89,7 @@ void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mod
     addr = y * 40 + x;
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
-       c.v = (v4si){0,0,0,0,0,0,0,0};
+       c.v = (v8si){0,0,0,0,0,0,0,0};
        putword2_vec((Uint32 *)disp,  c);
        disp += pitch;
        putword2_vec((Uint32 *)disp,  c);

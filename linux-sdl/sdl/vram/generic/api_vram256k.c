@@ -13,16 +13,6 @@
 
 static void putword(Uint32 *disp, Uint32 *cx)
 {
-//    v4hi *dst = (v4hi *)disp;
-//    v4hi *src = (v4hi *)src;
-//    Uint32 *c;
-//    c = cx;
-
-	
-//    dst->v = src->v;
-//    src++;
-//    dst++;
-//    dst->v = src->v;
     disp[0] = cx[0];
     disp[1] = cx[1];
     disp[2] = cx[2];
@@ -35,11 +25,11 @@ static void putword(Uint32 *disp, Uint32 *cx)
 
 
 
-static v4hi gpixel2cbuf(Uint32 addr, Uint32 mpage)
+static v8hi_t gpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v4hi v;
-   v4hi v1;
+   v8hi_t v;
+   v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
     v.i[0] = v.i[1] = v.i[2] = v.i[3] = 0;
@@ -54,19 +44,19 @@ static v4hi gpixel2cbuf(Uint32 addr, Uint32 mpage)
         return v1;
     
     } else {
-       v4hi r;
-       r.v = (v4si){0, 0, 0, 0, 0, 0, 0, 0};
+       v8hi_t r;
+       r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
        return r;
    }
    
 
 }
 
-static v4hi rpixel2cbuf(Uint32 addr, Uint32 mpage)
+static v8hi_t rpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v4hi v;
-   v4hi v1;
+   v8hi_t v;
+   v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
     v.i[0] = v.i[1] = v.i[2] = v.i[3] = 0;
@@ -80,17 +70,17 @@ static v4hi rpixel2cbuf(Uint32 addr, Uint32 mpage)
         v1 = lshift_6bit8v(&v);
         return v1;
    } else {
-       v4hi r;
-       r.v = (v4si){0, 0, 0, 0, 0, 0, 0, 0};
+       v8hi_t r;
+       r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
        return r;
    }
 }
 
-static v4hi bpixel2cbuf(Uint32 addr, Uint32 mpage)
+static v8hi_t bpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v4hi v;
-   v4hi v1;
+   v8hi_t v;
+   v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
     v.i[0] = v.i[1] = v.i[2] = v.i[3] = 0;
@@ -102,13 +92,12 @@ static v4hi bpixel2cbuf(Uint32 addr, Uint32 mpage)
         v.b[1] = vram_p[addr + 0x18000]; 
         v.b[0] = vram_p[addr + 0x1a000]; 
         
-
         v1 = lshift_6bit8v(&v);
 //        v1.v <<= 16;
         return v1;
    } else {
-       v4hi r;
-       r.v = (v4si){0, 0, 0, 0, 0, 0, 0, 0};
+       v8hi_t r;
+       r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
        return r;
    }
 }
@@ -118,7 +107,7 @@ static v4hi bpixel2cbuf(Uint32 addr, Uint32 mpage)
 
 static void getvram_256k(Uint32 addr, Uint32 mpage, Uint32 *cbuf)
 {
-   v4hi r, g, b;
+   v8hi_t r, g, b;
    /*
      * R,G,Bについて8bit単位で描画する。
      * 高速化…キャッシュヒット率の向上を考慮して、
@@ -129,14 +118,14 @@ static void getvram_256k(Uint32 addr, Uint32 mpage, Uint32 *cbuf)
    r = rpixel2cbuf(addr, mpage);
    g = gpixel2cbuf(addr, mpage);
 #ifdef AG_LITTLE_ENDIAN   
-   cbuf[0] = (b.s[0] << 16) | (g.s[0] << 8) | r.s[0] | 0xff000000;
-   cbuf[1] = (b.s[1] << 16) | (g.s[1] << 8) | r.s[1] | 0xff000000;
-   cbuf[2] = (b.s[2] << 16) | (g.s[2] << 8) | r.s[2] | 0xff000000;
-   cbuf[3] = (b.s[3] << 16) | (g.s[3] << 8) | r.s[3] | 0xff000000;
-   cbuf[4] = (b.s[4] << 16) | (g.s[4] << 8) | r.s[4] | 0xff000000;
-   cbuf[5] = (b.s[5] << 16) | (g.s[5] << 8) | r.s[5] | 0xff000000;
-   cbuf[6] = (b.s[6] << 16) | (g.s[6] << 8) | r.s[6] | 0xff000000;
-   cbuf[7] = (b.s[7] << 16) | (g.s[7] << 8) | r.s[7] | 0xff000000;
+   cbuf[0] = (b.i[0] << 16) | (g.i[0] << 8) | r.i[0] | 0xff000000;
+   cbuf[1] = (b.i[1] << 16) | (g.i[1] << 8) | r.i[1] | 0xff000000;
+   cbuf[2] = (b.i[2] << 16) | (g.i[2] << 8) | r.i[2] | 0xff000000;
+   cbuf[3] = (b.i[3] << 16) | (g.i[3] << 8) | r.i[3] | 0xff000000;
+   cbuf[4] = (b.i[4] << 16) | (g.i[4] << 8) | r.i[4] | 0xff000000;
+   cbuf[5] = (b.i[5] << 16) | (g.i[5] << 8) | r.i[5] | 0xff000000;
+   cbuf[6] = (b.i[6] << 16) | (g.i[6] << 8) | r.i[6] | 0xff000000;
+   cbuf[7] = (b.i[7] << 16) | (g.i[7] << 8) | r.i[7] | 0xff000000;
 #else   
 #endif
    return ;

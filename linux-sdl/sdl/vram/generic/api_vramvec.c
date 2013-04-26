@@ -15,19 +15,19 @@
 */
 // Reduce Tables 20120131
 
-v4si *aPlanes;
-static void initvramtblsub_vec(volatile unsigned char x, volatile v4hi *p)
+v8si *aPlanes;
+static void initvramtblsub_vec(volatile unsigned char x, volatile v8hi_t *p)
 {
-    p->v = (v4si){x & 0x80, x & 0x40, x & 0x20, x & 0x10, x & 0x08, x & 0x04, x & 0x02, x & 0x01};
+//    p->v = (v8si){x & 0x80, x & 0x40, x & 0x20, x & 0x10, x & 0x08, x & 0x04, x & 0x02, x & 0x01};
     
-    p->s[0] >>= 7;
-    p->s[1] >>= 6;
-    p->s[2] >>= 5;
-    p->s[3] >>= 4;
-    p->s[4] >>= 3;
-    p->s[5] >>= 2;
-    p->s[6] >>= 1;
-    
+    p->i[0] = (x & 0x80) >> 7;
+    p->i[1] = (x & 0x40) >> 6;
+    p->i[2] = (x & 0x20) >> 5;
+    p->i[3] = (x & 0x10) >> 4;
+    p->i[4] = (x & 0x08) >> 3;
+    p->i[5] = (x & 0x04) >> 2;
+    p->i[6] = (x & 0x02) >> 1;
+    p->i[7] = x & 0x01;
     // 8 Colors
 }
 
@@ -35,13 +35,13 @@ void initvramtbl_8_vec(void)
 {
 }
 
-static v4si *initvramtblsub(int size)
+static v8si *initvramtblsub(int size)
 {
-   v4si *p;
+   v8si *p;
 #ifndef _WINDOWS
-   if(posix_memalign((void **)&p, 32, sizeof(v4si) * size) != 0) return NULL;
+   if(posix_memalign((void **)&p, 16 * sizeof(Uint32), sizeof(v8si) * size) != 0) return NULL;
 #else
-   p = (v4si *)__mingw_aligned_malloc(sizeof(v4si) * size, 32);
+   p = (v8si *)__mingw_aligned_malloc(sizeof(v8si) * size, 16 * sizeof(Uint32));
    if(p == NULL) return NULL;
 #endif
    return p;
@@ -51,13 +51,13 @@ static v4si *initvramtblsub(int size)
 void initvramtbl_4096_vec(void)
 {
     int i;
-    volatile v4hi r;
+    volatile v8hi_t r;
     aPlanes = initvramtblsub(12 * 256);
     if(aPlanes == NULL) return;
     printf("DBG: Table OK\n");
     // Init Mask Table
    for(i = 0; i <= 255; i++){
-        initvramtblsub_vec((i & 255), &r);
+        initvramtblsub_vec(i & 255, &r);
 
         aPlanes[B0 + i] = r.v;
         r.v <<= 1;
@@ -108,12 +108,12 @@ void detachvramtbl_4096_vec(void)
 
 
 
-v4hi lshift_6bit8v(v4hi *v)
+v8hi_t lshift_6bit8v(v8hi_t *v)
 {
-   v4hi r;
-   v4hi cbuf;
-   v4hi mask;
-   mask.v = (v4si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
+   v8hi_t r;
+   v8hi_t cbuf;
+   v8hi_t mask;
+   mask.v = (v8si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
    cbuf.v =
         aPlanes[B2 + v->b[0]] |
         aPlanes[B3 + v->b[1]] |
@@ -124,18 +124,18 @@ v4hi lshift_6bit8v(v4hi *v)
    
    mask.v = mask.v & cbuf.v;
 #if ((__GNUC__ == 4) && (__GCC_MINOR__ >= 7)) || (__GNUC__ > 4) //GCC 4.7 or later.
-   r.v = mask.v != (v4si){0, 0, 0, 0, 0, 0, 0, 0};
-   r.v = r.v & (v4si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+   r.v = mask.v != (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+   r.v = r.v & (v8si) {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
    cbuf.v = cbuf.v |  r.v;
 #else
-   if(mask.s[0] != 0) cbuf.s[0] |= 0x03;
-   if(mask.s[1] != 0) cbuf.s[1] |= 0x03;
-   if(mask.s[2] != 0) cbuf.s[2] |= 0x03;
-   if(mask.s[3] != 0) cbuf.s[3] |= 0x03;
-   if(mask.s[4] != 0) cbuf.s[4] |= 0x03;
-   if(mask.s[5] != 0) cbuf.s[5] |= 0x03;
-   if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
-   if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
+   if(mask.i[0] != 0) cbuf.s[0] |= 0x03;
+   if(mask.i[1] != 0) cbuf.s[1] |= 0x03;
+   if(mask.i[2] != 0) cbuf.s[2] |= 0x03;
+   if(mask.i[3] != 0) cbuf.s[3] |= 0x03;
+   if(mask.i[4] != 0) cbuf.s[4] |= 0x03;
+   if(mask.i[5] != 0) cbuf.s[5] |= 0x03;
+   if(mask.i[6] != 0) cbuf.s[6] |= 0x03;
+   if(mask.i[7] != 0) cbuf.s[7] |= 0x03;
 #endif	
   return cbuf;
 }

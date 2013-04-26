@@ -73,8 +73,7 @@ void SetBrightRGB_AG_GL2(float r, float g, float b)
 
 Uint32 *GetVirtualVram(void)
 {
-    if(pVirtualVram == NULL) return NULL;
-    return &(pVirtualVram->pVram[0][0]);
+    return pVram2;
 }
 
 
@@ -287,8 +286,8 @@ void AGEventDrawGL2(AG_Event *event)
    GLfloat Vertexs[4][3];
    GLfloat TexCoords2[4][2];
    
-   if(pVirtualVram == NULL) return;
-   p = &(pVirtualVram->pVram[0][0]);
+
+   p = pVram2;
    if(p == NULL) return;
 
 //   printf("DrawGL2: %d\n", AG_GetTicks());
