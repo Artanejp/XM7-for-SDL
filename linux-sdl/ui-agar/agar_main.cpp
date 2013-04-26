@@ -322,7 +322,6 @@ void MainLoop(int argc, char *argv[])
 	const SDL_VideoInfo *inf;
 	SDL_Surface *s;
 
-//	AG_InitCore("xm7", AG_VERBOSE | AG_NO_CFG_AUTOLOAD);
 	AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
 
 	AG_ConfigLoad();

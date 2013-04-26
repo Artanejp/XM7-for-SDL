@@ -38,7 +38,7 @@ typedef struct  XM7_DbgDump {
 
 struct XM7_MemDumpDesc {
     XM7_DbgDump *dump;
-    AG_Timeout to;
+    AG_Timer *to;
     Uint32 to_tick;
 };
 

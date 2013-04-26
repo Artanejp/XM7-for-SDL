@@ -140,16 +140,16 @@ static void DestroyDisasmWindow(AG_Event *event)
 /*
 * Auto Update (Timer)
 */
-static Uint32 UpdateDumpMemRead(void *obj, Uint32 ival, void *arg )
+static Uint32 UpdateDumpMemRead(AG_Timer *timer, AG_Event *event)
 {
 
-    struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)arg;
+    struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)AG_PTR(1);
     char *str;
 
-
-   if(mp == NULL) return ival;
+   if(timer == NULL) return 0;
+   if(mp == NULL) return timer->ival;
     XM7_DbgDumpMem(mp->dump);
-    return mp->to_tick;
+    return timer->ival;
 }
 
 
@@ -184,9 +184,11 @@ static void DestroyDumpWindow(AG_Event *event)
     struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)AG_PTR(1);
     void *self = AG_SELF();
     if(mp == NULL) return;
-    AG_LockTimeouts(self);
-    AG_DelTimeout(self, &mp->to);
-    AG_UnlockTimeouts(self);
+//    AG_LockTimeouts(self);
+//    AG_DelTimeout(self, &mp->to);
+    AG_DelTimer(self, mp->to);
+//    AG_UnlockTimeouts(self);
+    mp->to = NULL;
     if(mp->dump != NULL) XM7_DbgDumpMemDetach(mp->dump);
 
     free(mp);
@@ -291,6 +293,7 @@ static void CreateDump(AG_Event *event)
         mp->dump->edaddr = 0x0000;
     }
 
+    mp->to = AG_AddTimerAuto (AGOBJECT(w), mp->to_tick, UpdateDumpMemRead, "%p", (void *)mp);
 
     box = AG_BoxNewHoriz(vb, 0);
     box = AG_BoxNewHoriz(vb, 0);
@@ -301,8 +304,9 @@ static void CreateDump(AG_Event *event)
     AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
     AG_SetEvent(dump->draw, "key-down", XM7_DbgKeyPressFn, "%p", mp);
 
-    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+//    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+//    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+//    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
     AG_WindowShow(w);
 }
 

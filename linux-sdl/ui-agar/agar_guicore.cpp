@@ -55,25 +55,8 @@ BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
    BOOL bi;
    
    bi = FALSE;
-//   if(MainWindow != NULL) {
-//      if(AG_WindowIsFocused(MainWindow)) {
-//	 bi = TRUE;
-//      }
-//   } else {
-//       return FALSE;
-//   }
-//   if(drv == NULL) return TRUE;
    if(ev == NULL) return TRUE;
    /* Retrieve the next queued event. */
-//   switch (ev->type) {
-//    case AG_DRIVER_VIDEORESIZE:
-//      w = ev->data.videoresize.w;
-//      h = ev->data.videoresize.h;
-//     ResizeWindow_Agar2(w, h);
-//      break;
-//    default:
-//      break;
-//   }
    if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
    //	if(drv == NULL) return;
    /* Forward the event to Agar. */
@@ -102,9 +85,18 @@ void AGDrawTaskEvent(BOOL flag)
    AG_Driver *drv;
    Uint32 fps;
    Uint32 oldfps = nDrawFPS;
+   AG_EventSource *src;
+   AG_EventSink *es;
+   
    bResizeGUIFlag = FALSE;
    nDrawTick2D = XM7_timeGetTime();
 
+   src = AG_GetEventSource();
+   
+   AG_TAILQ_FOREACH(es, &src->prologues, sinks){
+	                es->fn(es, &es->fnArgs);
+   }
+   
    for(;;) {
       if(nDrawFPS > 2) {
 	 fps = 1000 / nDrawFPS;
@@ -115,13 +107,13 @@ void AGDrawTaskEvent(BOOL flag)
 	 oldfps = nDrawFPS;
 #ifdef USE_OPENGL
 	   if(DrawArea != NULL) {
-	      AG_RedrawOnTick(DrawArea, fps);
+//	      AG_RedrawOnTick(DrawArea, fps);
 	   } else if(GLDrawArea != NULL){
-	      AG_RedrawOnTick(GLDrawArea, fps);
+//	      AG_RedrawOnTick(GLDrawArea, fps);
 	   }
 #else
 	   if(DrawArea != NULL) {
-	      AG_RedrawOnTick(DrawArea, fps);
+//	      AG_RedrawOnTick(DrawArea, fps);
 	   }
 #endif
       }
@@ -147,22 +139,32 @@ void AGDrawTaskEvent(BOOL flag)
 	 //EventSDL(NULL);
       } else if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
-//	 if(EventSDL(NULL) == FALSE) return;
+	 if(EventSDL(NULL) == FALSE) return;
 	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
       } else { // Timeout
 	 Uint32 tim = 0;
+	 AG_TAILQ_FOREACH(es, &src->spinners, sinks){
+	    es->fn(es, &es->fnArgs);
+	 }
+	 if (src->sinkFn() == -1) {
+	    return ;
+	 }
+	 AG_TAILQ_FOREACH(es, &src->epilogues, sinks) {
+	    es->fn(es, &es->fnArgs);
+	 }
+	 if (src->breakReq) break;
 	 tim = AG_GetTicks();
 //	 AG_ProcessTimeouts(tim);
+//	 Code got from core/event.c
 	 XM7_Sleep(1);
       }	// Process Event per 1Ticks;
 
       AG_WindowProcessQueued();
       
    }
-   
-
 }
 
+        
 
 
 

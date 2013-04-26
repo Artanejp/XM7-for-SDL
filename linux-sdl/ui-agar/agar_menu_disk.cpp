@@ -185,7 +185,7 @@ static void OnOpenDisk(AG_Event *event)
    if(dlgWin == NULL) return;
    AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
    dlg = AG_FileDlgNew(dlgWin,  FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
-//    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE);
+//    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD);
    if(dlg == NULL) {
       AG_WindowShow(dlgWin);
       return;
