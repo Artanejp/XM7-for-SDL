@@ -14,8 +14,8 @@ HNZVC
 #ifdef __cplusplus
 extern "C" {
 #endif
-//#define OP_HANDLER(_name) INLINE void _name (m68_state_t *m68_state)
-#define OP_HANDLER(_name) INLINE volatile void _name (cpu6809_t *m68_state)
+#define OP_HANDLER(_name) INLINE void _name (cpu6809_t *m68_state)
+//#define OP_HANDLER(_name) INLINE volatile void _name (cpu6809_t *m68_state)
 
 OP_HANDLER( illegal )
 {
@@ -277,10 +277,17 @@ OP_HANDLER( daa )
 	BYTE msn, lsn;
 	WORD t, cf = 0;
 	msn = A & 0xf0; lsn = A & 0x0f;
-	if( lsn>0x09 || CC & CC_H) cf |= 0x06;
-	if( msn>0x80 && lsn>0x09 ) cf |= 0x60;
-	if( msn>0x90 || CC & CC_C) cf |= 0x60;
-	t = cf + A;
+        if((lsn > 0x09) && ((CC & CC_H) != 0)){
+	   cf |= 0x06;
+	}
+        if((msn > 0x80) && (lsn > 0x09)) {   
+           cf |= 0x60;
+	}
+        if((msn > 0x90) && ((CC & CC_C) != 0)) {
+	      cf |= 0x60;
+	}
+	   
+	t = cf + ((WORD)A & 0xff);
 	CLR_NZV; /* keep carry from previous operation */
 	SET_NZ8((BYTE)t); SET_C8(t);
 	A = t;
@@ -643,7 +650,7 @@ OP_HANDLER( leas )
 {
 	fetch_effective_address(m68_state);
 	S = EA;
-    m68_state->intr |= INTR_SLOAD;
+//    m68_state->intr |= INTR_SLOAD; // 20130513 removed.
 }
 
 /* $33 LEAU indexed ----- */
@@ -745,7 +752,7 @@ OP_HANDLER( rti )
 	PULLBYTE(CC);
 //	t = CC & CC_E;		/* HJB 990225: entire state saved? */
 	if((CC & CC_E) != 0)
-	{
+	{ // NMIIRQ
 		m68_state->cycle += 9;
 		PULLBYTE(A);
 		PULLBYTE(B);
@@ -765,15 +772,8 @@ OP_HANDLER( cwai )
 
     if((m68_state->intr & INTR_CWAI_IN) != 0){ // FIX 20130417
 	/* CWAI実行中 */
-       if((m68_state->intr & INTR_CWAI_OUT) != 0) {
-    	   /* 割込がかかって、RTIの後(スタックからPOP->RTI) */
-    	   m68_state->intr = m68_state->intr & ~(INTR_CWAI_IN | INTR_CWAI_OUT); //0xfe7f; /* CWAIフラグクリア */
-    	   PC += 1; // Skip PostByte
-   	   return;
-       } else {
     	   PC -= 1; // 次回もCWAI命令実行
     	   return;
-       }
     }
 	/* 今回初めてCWAI実行 */
 first:
