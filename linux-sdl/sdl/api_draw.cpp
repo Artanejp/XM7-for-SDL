@@ -334,13 +334,13 @@ void SetDrawFlag(BOOL flag)
     int y;
     int ip;
    
-#ifdef _OPENMP
-       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
-#endif
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(SDLDrawFlag, flag) private(x)
+//#endif
    for(y = 0; y < 50 ; y++) {
         for(x = 0; x < 80; x++){
            SDLDrawFlag.read[x][y] =
-           SDLDrawFlag.write[x][y] = (uint8_t) flag;
+           SDLDrawFlag.write[x][y] = flag;
         }
     }
     SDLDrawFlag.Drawn = flag;
@@ -866,6 +866,7 @@ void window_notify(void)
 			tmpRight = nWindowDx2;
 			tmpTop = nWindowDy1;
 			tmpBottom = nWindowDy2;
+		        bWindowOpen = FALSE;
 		}
 	} else {
 		if (window_open) {
@@ -922,12 +923,14 @@ void window_notify(void)
 				  }
 			 }
 		} else {
+		        bWindowOpen = FALSE;
 			/*
 			 * ウィンドウが開いていないので何もしない
 			 */
 			return;
 		}
 	}
+   
 
 	/*
 	 * 処理前の再描画領域と比較して広ければ領域を更新
@@ -950,7 +953,7 @@ void window_notify(void)
 	 if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
 	     for(y = nDrawTop >> 3; y < ((nDrawBottom + 7) >> 3); y++) {
 	         for(x = nDrawLeft >> 3; x < (nDrawRight >>3); x ++){
-                SDLDrawFlag.read[x][y] = TRUE;
+		    SDLDrawFlag.read[x][y] = TRUE;
 	         }
 	     }
 	 }
@@ -1060,14 +1063,14 @@ void Palet320(void)
 		  * 最下位から5bitづつB,G,R
 		  */
 		  if (crt_flag) {
-		      j = i & amask;
-			  r = apalet_r[j] <<4;
-			  g = apalet_g[j] <<4;
-			  b = apalet_b[j] <<4;
+		     j = i & amask;
+		     r = apalet_r[j] <<4;
+		     g = apalet_g[j] <<4;
+		     b = apalet_b[j] <<4;
 		  } else {
-			  r = 0;
-			  g = 0;
-			  b = 0;
+		     r = 0;
+		     g = 0;
+		     b = 0;
 		  }
 		  Palet320Sub(i, r, g, b, 255);
 	 }
@@ -1126,7 +1129,7 @@ void Draw640All(void)
     */
    if(PutVramFunc == NULL) return;
    if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(window_open) { // ハードウェアウインドウ開いてる
+      if(bWindowOpen) { // ハードウェアウインドウ開いてる
 	 if ((nDrawTop >> 1) < window_dy1) {
 	    SetVram_200l(vram_dptr);
 	    PutVramFunc(p, 0, nDrawTop >> 1, 640, window_dy1, multi_page);
@@ -1207,7 +1210,7 @@ void Draw400l(void)
    PutVramFunc = &PutVram_AG_SP;
    if(PutVramFunc == NULL) return;
    if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(window_open) { // ハードウェアウインドウ開いてる
+      if(bWindowOpen) { // ハードウェアウインドウ開いてる
 	 if (nDrawTop < window_dy1) {
 	    SetVram_200l(vram_dptr);
 	    PutVramFunc(p, 0, nDrawTop, 640, window_dy1 - nDrawTop, multi_page);
@@ -1257,11 +1260,11 @@ void Draw320(void)
    if(bPaletFlag) {
       LockVram();
       Palet320();
-      SDLDrawFlag.APaletteChanged = TRUE;
       nDrawTop = 0;
       nDrawBottom = 200;
       nDrawLeft = 0;
       nDrawRight = 320;
+      SDLDrawFlag.APaletteChanged = TRUE;
       SetDrawFlag(TRUE);
       bPaletFlag = FALSE;
       UnlockVram();
@@ -1277,7 +1280,7 @@ void Draw320(void)
     */
    if(PutVramFunc == NULL) return;
    if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(window_open) { // ハードウェアウインドウ開いてる
+      if(bWindowOpen) { // ハードウェアウインドウ開いてる
 	 if (nDrawTop < window_dy1) {
             SetVram_200l(vram_dptr);
 	    PutVramFunc(p, 0, nDrawTop, 320, window_dy1, multi_page);

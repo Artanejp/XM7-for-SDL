@@ -45,12 +45,12 @@ extern "C"
 #endif
 typedef uint8_t BOOL8; //
 struct DrawPieces {
-    BOOL8 read[80][50]; // Bit Compression
-    BOOL8 write[80][50]; // Bit Compression
-    BOOL8 Drawn;
-    BOOL8 DPaletteChanged;
-    BOOL8 APaletteChanged;
-    BOOL8 ForcaReDraw;
+    BOOL read[80][50]; // Bit Compression
+    BOOL write[80][50]; // Bit Compression
+    BOOL Drawn;
+    BOOL DPaletteChanged;
+    BOOL APaletteChanged;
+    BOOL ForcaReDraw;
 } ;
 /* アスペクト */
 enum {
@@ -120,12 +120,12 @@ extern void ChangeResolution(void);
  * XM7 NOTIFY APIs
  */
 
-//extern void vram_notify(WORD addr, BYTE dat);
-//extern void	ttlpalet_notify(void);
-//extern void 	apalet_notify(void);
-//extern void 	display_notify(void);
+extern void vram_notify(WORD addr, BYTE dat);
+extern void	ttlpalet_notify(void);
+extern void 	apalet_notify(void);
+extern void 	display_notify(void);
 #if XM7_VER >= 3
-//extern void window_notify(void);
+extern void window_notify(void);
 #endif
 extern void OnFullScreen(void);
 extern void OnWindowedScreen(void);

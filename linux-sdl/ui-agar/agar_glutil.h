@@ -5,7 +5,7 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-//#include <agar/gui/opengl.h>
+#include <agar/gui/glview.h>
 
 #include <SDL/SDL.h>
 #ifdef _WINDOWS
