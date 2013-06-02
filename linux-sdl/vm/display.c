@@ -144,12 +144,24 @@ static BOOL FASTCALL display_cursor_blink(void);	/* カーソルブリンクイ�
 							 */
 #endif
 
-#if (XM7_VER >= 3) && (defined(_OMF) || defined(_WIN32))
+//#if (XM7_VER >= 3) && (defined(_OMF) || defined(_WIN32))
 extern void     memcpy400l(BYTE *, BYTE *, int);
 										/*
 										 * 400ラインスクロール用メモリ転送
 										 */
-#endif
+/*
+ * Workaround of memcpy() at eglibc2.17;
+ * Moving memory is wrong results, yet.
+ */
+static inline void memcpy_200l(void *to, void *from, int size)
+{
+   int i;
+   uint8_t *p = (uint8_t *)to, *q = (uint8_t *)from;
+   for(i = 0; i < size; i++) *p++ = *q++;
+}
+
+
+//#endif
 
 /*
  *      24/32bit Color用26万色モード輝度テーブル
@@ -680,7 +692,7 @@ display_setpointer(BOOL redraw)
     }
 #endif
 #ifdef USE_AGAR
-    LockVram();
+//    LockVram();
 #endif
 #if XM7_VER >= 2
     /*
@@ -755,7 +767,7 @@ display_setpointer(BOOL redraw)
 	display_notify();
     }
 #ifdef USE_AGAR
-    UnlockVram();
+//    UnlockVram();
 #endif
 
 }
@@ -825,6 +837,8 @@ window_clip(int mode)
 }
 #endif
 
+   
+   
 /*
  *      4096色/262144色モード用 VRAMスクロール
  */
@@ -834,32 +848,26 @@ vram_scroll_analog(WORD offset, DWORD addr)
 {
     int             i;
     BYTE           *vram;
-
 #if XM7_VER >= 3
 #ifdef USE_AGAR
-    LockVram();
+//    LockVram();
 #endif
 
     for (i = 0; i < 3; i++) {
-	vram = (BYTE *) ((vram_c + addr) + 0x8000 * i);
+               vram = (BYTE *)((vram_c + addr) + 0x8000 * i);
 
-	/*
-	 * テンポラリバッファへコピー
-	 */
-	memcpy(vram_buf, vram, offset);
-	memcpy(&vram_buf[0x2000], &vram[0x2000], offset);
+		/* テンポラリバッファへコピー */
+		memcpy_200l(vram_buf, vram, offset);
+		memcpy_200l(&vram_buf[0x2000], &vram[0x2000], offset);
 
-	/*
-	 * 前へ詰める
-	 */
-	memcpy(vram, (vram + offset), 0x4000 - offset);
+		/* 前へ詰める */
+		memcpy_200l(vram, (vram + offset), 0x4000 - offset);
 
-	/*
-	 * テンポラリバッファより復元
-	 */
-	memcpy(vram + (0x2000 - offset), vram_buf, offset);
-	memcpy(vram + (0x4000 - offset), &vram_buf[0x2000], offset);
-    }
+		/* テンポラリバッファより復元 */
+		memcpy_200l(vram + (0x2000 - offset), vram_buf, offset);
+		memcpy_200l(vram + (0x4000 - offset), &vram_buf[0x2000], offset);
+	}
+
 #else
     for (i = 0; i < 6; i++) {
 	vram = (BYTE *) ((vram_c + addr) + 0x2000 * i);
@@ -867,21 +875,21 @@ vram_scroll_analog(WORD offset, DWORD addr)
 	/*
 	 * テンポラリバッファへコピー
 	 */
-	memcpy(vram_buf, vram, offset);
+	memcpy_200l(vram_buf, vram, offset);
 
 	/*
 	 * 前へ詰める
 	 */
-	memcpy(vram, (vram + offset), 0x2000 - offset);
+	memcpy_200l(vram, (vram + offset), 0x2000 - offset);
 
 	/*
 	 * テンポラリバッファより復元
 	 */
-	memcpy(vram + (0x2000 - offset), vram_buf, offset);
+	memcpy_200l(vram + (0x2000 - offset), vram_buf, offset);
     }
 #endif
 #ifdef USE_AGAR
-    UnlockVram();
+//    UnlockVram();
 #endif
 
 }
@@ -890,19 +898,19 @@ vram_scroll_analog(WORD offset, DWORD addr)
 /*
  *      400ラインモードVRAMスクロール用メモリ転送 (C版)
  */
-#if (XM7_VER >= 3) && (!(defined(_OMF) || defined(_WIN32)))
-static void     FASTCALL
-memcpy400l(BYTE * dest, BYTE * src, WORD siz)
-{
-    siz >>= 1;
-    while (siz) {
-	*dest = *src;
-	src += 2;
-	dest += 2;
-	siz--;
-    }
-}
-#endif
+//#if (XM7_VER >= 3) && (!(defined(_OMF) || defined(_WIN32)))
+//static void     FASTCALL
+//memcpy400l(BYTE * dest, BYTE * src, WORD siz)
+//{
+//    siz >>= 1;
+//    while (siz) {
+//	*dest = *src;
+//	src += 2;
+//	dest += 2;
+//	siz--;
+//    }
+//}
+//#endif
 
 /*
  *      VRAMスクロール
@@ -928,7 +936,7 @@ vram_scroll(WORD offset)
 	offset &= 0x3fff;
 	offset <<= 1;
 #ifdef USE_AGAR
-    LockVram();
+//    LockVram();
 #endif
 
 	/*
@@ -953,7 +961,7 @@ vram_scroll(WORD offset)
 	    memcpy400l(vram + (0x8000 - offset), vram_buf, offset);
 	}
 #ifdef USE_AGAR
-    UnlockVram();
+//    UnlockVram();
 #endif
 
 	return;
@@ -1037,25 +1045,25 @@ vram_scroll(WORD offset)
 	vram = (BYTE *) (vram_c + 0x4000 * i);
 #endif
 #ifdef USE_AGAR
-        LockVram();
+//        LockVram();
 #endif
 
 	/*
 	 * テンポラリバッファへコピー
 	 */
-	memcpy(vram_buf, vram, offset);
+	memcpy_200l(vram_buf, vram, offset);
 
 	/*
 	 * 前へ詰める
 	 */
-	memcpy(vram, (vram + offset), 0x4000 - offset);
+	memcpy_200l(vram, (vram + offset), 0x4000 - offset);
 
 	/*
 	 * テンポラリバッファより復元
 	 */
-	memcpy(vram + (0x4000 - offset), vram_buf, offset);
+	memcpy_200l(vram + (0x4000 - offset), vram_buf, offset);
 #ifdef USE_AGAR
-    UnlockVram();
+//    UnlockVram();
 #endif
     }
 }
@@ -1069,7 +1077,7 @@ fix_vram_address(void)
 {
     DWORD           i;
 #ifdef USE_AGAR
-    LockVram();
+//    LockVram();
 #endif
 
     for (i = 0; i < 0x30000; i += 0x18000) {
@@ -1081,7 +1089,7 @@ fix_vram_address(void)
 	memcpy(&vram_c[0x0c000 + i], &vram_buf[0x00000], 0x4000);
     }
 #ifdef USE_AGAR
-    UnlockVram();
+//    UnlockVram();
 #endif
 
     return TRUE;
