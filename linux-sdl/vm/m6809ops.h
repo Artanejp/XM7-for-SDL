@@ -274,24 +274,18 @@ OP_HANDLER( aslcc_in )
 /* $19 DAA inherent (A) -**0* */
 OP_HANDLER( daa )
 {
-	BYTE msn, lsn;
-	WORD t, cf = 0;
-	msn = A & 0xf0; lsn = A & 0x0f;
-        if((lsn > 0x09) && ((CC & CC_H) != 0)){
-	   cf |= 0x06;
-	}
-        if((msn > 0x80) && (lsn > 0x09)) {   
-           cf |= 0x60;
-	}
-        if((msn > 0x90) && ((CC & CC_C) != 0)) {
-	      cf |= 0x60;
-	}
-	   
-	t = cf + ((WORD)A & 0xff);
-	CLR_NZV; /* keep carry from previous operation */
-	SET_NZ8((BYTE)t); SET_C8(t);
-	A = t;
+   BYTE msn, lsn;
+   WORD t, cf = 0;
+   msn = A & 0xf0; lsn = A & 0x0f;
+   if( lsn>0x09 || CC & CC_H) cf |= 0x06;
+   if( msn>0x80 && lsn>0x09 ) cf |= 0x60;
+   if( msn>0x90 || CC & CC_C) cf |= 0x60;
+   t = cf + A;
+   CLR_NZV; /* keep carry from previous operation */
+   SET_NZ8((BYTE)t); SET_C8(t);
+   A = t;
 }
+   
 
 /* $1A ORCC immediate ##### */
 OP_HANDLER( orcc )
