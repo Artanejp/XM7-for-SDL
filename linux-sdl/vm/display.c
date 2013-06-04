@@ -155,9 +155,13 @@ extern void     memcpy400l(BYTE *, BYTE *, int);
  */
 static inline void memcpy_200l(void *to, void *from, int size)
 {
+#if 0 /* Workaround of eglibc's memcpy() bug. */
    int i;
    uint8_t *p = (uint8_t *)to, *q = (uint8_t *)from;
    for(i = 0; i < size; i++) *p++ = *q++;
+#else
+   memmove(to, from, size);
+#endif
 }
 
 
