@@ -807,11 +807,11 @@ cl_int GLCLDraw::GetVram(int bmode)
 				  1, (cl_mem *)&outbuf,
 				  4, event_uploadvram, &event_copytotexture);
   
-   ret |= clEnqueueTask (command_queue,
-			 kernel, 1, &event_copytotexture, &event_exec);
-//   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-//				 goff, gws, lws, 
-//				 1, &event_copytotexture,  &event_exec);
+//   ret |= clEnqueueTask (command_queue,
+//			 kernel, 1, &event_copytotexture, &event_exec);
+   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				 goff, gws, lws, 
+				 1, &event_copytotexture,  &event_exec);
    clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
