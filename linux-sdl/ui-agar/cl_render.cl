@@ -29,7 +29,6 @@ inline uint8 putpixel(uint8 n, uint8 abuf)
 {
   uint8 ret;
   
-
 //  rmask8 = (uint8){rmask, rmask, rmask, rmask, rmask, rmask, rmask, rmask};
 //  gmask8 = (uint8){gmask, gmask, gmask, gmask, gmask, gmask, gmask, gmask};
 //  bmask8 = (uint8){bmask, bmask, bmask, bmask, bmask, bmask, bmask, bmask};
@@ -44,7 +43,7 @@ inline uint8 putpixel(uint8 n, uint8 abuf)
 __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
                        __global uint *pal, __global uint *table)
 {
-  int ofset = 640 * 200 / 8;
+  int ofset = 0x4000;
   int x;
   int y;
   int hh;
@@ -90,7 +89,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   palette.s6 = pal[6];
   palette.s7 = pal[7];
   
-  if(h > 200) ofset = 640 * 400 / 8;
+  if(h > 200) ofset = 0x8000;
 
   tbl8 = (__global uint8 *)table;
   //p = (__global uchar4 *)(&(out[addr2]));
@@ -113,7 +112,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
                           __global uchar4 *out, __global uint *pal,
 			  __global uint *table)
 {
-  int ofset = (4 * 320 * 200)  / 8;
+  int ofset = 0x8000;
   int x;
   int y;
   int hh;
@@ -157,26 +156,25 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
         b = &src[addr];
 	r = &src[addr + ofset];
 	g = &src[addr + ofset + ofset];
-	b3 = (uint)(b[0    ]) + 0x300;
-	b2 = (uint)(b[8000 ]) + 0x200;
-	b1 = (uint)(b[16000]) + 0x100;
-	b0 = (uint)(b[24000]) + 0x000;
+	b3 = (uint)(b[0x0    ]) + 0x300;
+	b2 = (uint)(b[0x2000]) + 0x200;
+	b1 = (uint)(b[0x4000]) + 0x100;
+	b0 = (uint)(b[0x6000]) + 0x000;
 	
 	b8 =  tbl8[b0] | tbl8[b1] | tbl8[b2] | tbl8[b3];
 
-
-	r3 = (uint)(r[0    ]) + 0x700;
-	r2 = (uint)(r[8000 ]) + 0x600;
-	r1 = (uint)(r[16000]) + 0x500;
-	r0 = (uint)(r[24000]) + 0x400;
+	r3 = (uint)(r[0x0    ]) + 0x700;
+	r2 = (uint)(r[0x2000]) + 0x600;
+	r1 = (uint)(r[0x4000]) + 0x500;
+	r0 = (uint)(r[0x6000]) + 0x400;
 	
 	r8 =  tbl8[r0] | tbl8[r1] | tbl8[r2] | tbl8[r3];
 
 	
-	g3 = (uint)(g[0    ]) + 0xb00;
-	g2 = (uint)(g[8000 ]) + 0xa00;
-	g1 = (uint)(g[16000]) + 0x900;
-	g0 = (uint)(g[24000]) + 0x800;
+	g3 = (uint)(g[0x0     ]) + 0xb00;
+	g2 = (uint)(g[0x2000]) + 0xa00;
+	g1 = (uint)(g[0x4000]) + 0x900;
+	g0 = (uint)(g[0x6000]) + 0x800;
 	
 	g8 =  tbl8[g0] | tbl8[g1] | tbl8[g2] | tbl8[g3];
 
@@ -201,7 +199,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
                           __global uchar4 *out, __global uint *pal,
 			  __global uint *table, uint mpage)
 {
-  int ofset = (6 * 320 * 200)  / 8;
+  int ofset = 0xc000;
   int x;
   int y;
   int hh;
@@ -247,12 +245,12 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	g = &src[addr + ofset + ofset];
 	
 	if(!(mpage & 0x10)) {
-	    b5 = (uint)(b[0    ]) + 0x500;
-	    b4 = (uint)(b[8000 ]) + 0x400;
-	    b3 = (uint)(b[16000]) + 0x300;
-	    b2 = (uint)(b[24000]) + 0x200;
-	    b1 = (uint)(b[32000]) + 0x100;
-	    b0 = (uint)(b[40000]) + 0x000;
+	    b5 = (uint)(b[0     ]) + 0x500;
+	    b4 = (uint)(b[0x2000]) + 0x400;
+	    b3 = (uint)(b[0x4000]) + 0x300;
+	    b2 = (uint)(b[0x6000]) + 0x200;
+	    b1 = (uint)(b[0x8000]) + 0x100;
+	    b0 = (uint)(b[0xa000]) + 0x000;
 	    b8 =  tbl8[b0] | tbl8[b1] | tbl8[b2] | tbl8[b3] | tbl8[b4] | tbl8[b5];
 #if __ENDIAN_LITTLE__
             b8 <<= 18; // 6bit -> 8bit
@@ -264,12 +262,12 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	    b8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
 	}
 	if(!(mpage & 0x20)) {
-	    r5 = (uint)(r[0    ]) + 0x500;
-	    r4 = (uint)(r[8000 ]) + 0x400;
-	    r3 = (uint)(r[16000]) + 0x300;
-	    r2 = (uint)(r[24000]) + 0x200;
-	    r1 = (uint)(r[32000]) + 0x100;
-	    r0 = (uint)(r[40000]) + 0x000;
+	    r5 = (uint)(r[0     ]) + 0x500;
+	    r4 = (uint)(r[0x2000]) + 0x400;
+	    r3 = (uint)(r[0x4000]) + 0x300;
+	    r2 = (uint)(r[0x6000]) + 0x200;
+	    r1 = (uint)(r[0x8000]) + 0x100;
+	    r0 = (uint)(r[0xa000]) + 0x000;
 	    r8 =  tbl8[r0] | tbl8[r1] | tbl8[r2] | tbl8[r3] | tbl8[r4] | tbl8[r5];
 #if __ENDIAN_LITTLE__
             r8 <<= 2; // 6bit -> 8bit
@@ -282,12 +280,12 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	}
 
 	if(!(mpage & 0x40)) {
-	    g5 = (uint)(g[0    ]) + 0x500;
-	    g4 = (uint)(g[8000 ]) + 0x400;
-	    g3 = (uint)(g[16000]) + 0x300;
-	    g2 = (uint)(g[24000]) + 0x200;
-	    g1 = (uint)(g[32000]) + 0x100;
-	    g0 = (uint)(g[40000]) + 0x000;
+	    g5 = (uint)(g[0     ]) + 0x500;
+	    g4 = (uint)(g[0x2000]) + 0x400;
+	    g3 = (uint)(g[0x4000]) + 0x300;
+	    g2 = (uint)(g[0x6000]) + 0x200;
+	    g1 = (uint)(g[0x8000]) + 0x100;
+	    g0 = (uint)(g[0xa000]) + 0x000;
 	    g8 =  tbl8[g0] | tbl8[g1] | tbl8[g2] | tbl8[g3] | tbl8[g4] | tbl8[g5];
 #if __ENDIAN_LITTLE__
             g8 <<= 10; // 6bit -> 8bit

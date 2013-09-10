@@ -121,6 +121,9 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
    int ww = w / 8;
    int x;
    int y;
+   int voffset = 0x4000;
+      
+   if(drawheight > 200) voffset = 0x8000;
    
    
    pg = (Uint8 *)vram_pg;
@@ -132,7 +135,6 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
    if(drawwidth ==  w) {
       int offset = (drawwidth / 8) * ybegin;
       int band = (drawwidth  / 8) * h;
-      int voffset = drawheight * drawwidth / 8;
       pb = &pb[offset + xb];
       pr = &pr[offset + xb];
       pg = &pg[offset + xb];
@@ -149,7 +151,7 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
 #endif
    } else {
       int dwb = drawwidth / 8;
-      int offset = dwb * ybegin + xb;
+//      int offset = dwb * ybegin + xb;
       int yy;
       size_t buffer_origin[3];
       size_t host_origin[3];
@@ -170,27 +172,27 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
 #if 1
       ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
 				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
+				dwb, voffset,
+				dwb, voffset,
 				(void *)pb,
 				0, NULL,
 			        &event_uploadvram[0]);
       buffer_origin[2] = 1;
       ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
 				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
+				dwb, voffset,
+				dwb, voffset,
 				(void *)pr,
 				0, NULL,
-			        &event_uploadvram[0]);
+			        &event_uploadvram[1]);
       buffer_origin[2] = 2;
       ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
 				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
+				dwb, voffset,
+				dwb, voffset,
 				(void *)pg,
 				0, NULL,
-			        &event_uploadvram[0]);
+			        &event_uploadvram[2]);
 #endif      
 //      printf("Window: %d x %d -> %d,%d inbuf=%08x STS=%d\n",ww, h, xb, ybegin, inbuf, ret);
    }
@@ -218,7 +220,7 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
    if(drawwidth ==  w) {
       int offset = (drawwidth / 8) * ybegin;
       int band = (drawwidth  / 8) * h;
-      int voffset = drawheight * drawwidth / 8;
+      int voffset = 0x2000;
 
       pb = &pb[offset];
       pr = &pr[offset];
@@ -279,7 +281,7 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
       size_t buffer_origin[3];
       size_t host_origin[3];
       size_t region[3];
-      buffer_origin[0] = xb;
+      buffer_origin[0] = 0;
       buffer_origin[1] = ybegin;
       buffer_origin[2] = 0;
       host_origin[0] = xb;
@@ -436,7 +438,7 @@ cl_int GLCLDraw::copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheig
    {
       int offset = (drawwidth / 8) * ybegin;
       int band = (drawwidth  / 8) * h;
-      int voffset = drawheight * drawwidth / 8;
+      int voffset = 0x2000;
 
       pb = &pb[offset];
       pr = &pr[offset];
@@ -805,11 +807,11 @@ cl_int GLCLDraw::GetVram(int bmode)
 				  1, (cl_mem *)&outbuf,
 				  4, event_uploadvram, &event_copytotexture);
   
-//   ret |= clEnqueueTask (command_queue,
-//			 kernel, 1, &event_copytotexture, &event_exec);
-   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-				 goff, gws, lws, 
-				 1, &event_copytotexture,  &event_exec);
+   ret |= clEnqueueTask (command_queue,
+			 kernel, 1, &event_copytotexture, &event_exec);
+//   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+//				 goff, gws, lws, 
+//				 1, &event_copytotexture,  &event_exec);
    clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
@@ -896,10 +898,10 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    
 
      
-   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
- 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
-//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
-// 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
+//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
+// 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
+   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
+ 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
    ret |= r;
    
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY,
