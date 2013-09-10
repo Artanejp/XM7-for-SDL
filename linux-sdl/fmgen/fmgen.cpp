@@ -316,6 +316,8 @@ void Operator::MakeTable()
 
 	int* p = cltable;
 	int i;
+        int temp;
+   
 	for (i=0; i<256; i++)
 	{
 		int v = int(floor(pow(2., 13. - i / 256.)));
@@ -325,7 +327,9 @@ void Operator::MakeTable()
 	}
 	while (p < cltable + FM_CLENTS)
 	{
-		*p++ = p[-512] / 2;
+	   temp = *(p - 512);
+           *p = temp / 2;
+	   p++;
 	}
 
 //	for (i=0; i<13*256; i++)
@@ -389,6 +393,8 @@ void FASTCALL Operator::Prepare()
 		case release:
 			SetEGRate(Min(63, rr_ + key_scale_rate_));
 			break;
+       	        default:
+		   break;
 		}
 
 		// LFO
@@ -810,7 +816,7 @@ void FASTCALL Channel4::SetAlgorithm(uint algo)
 //  合成
 ISample FASTCALL Channel4::Calc()
 {
-	int r;
+	int r = 0;
 	switch (algo_)
 	{
 	case 0:
@@ -870,7 +876,7 @@ ISample FASTCALL Channel4::CalcL()
 {
 	chip_->SetPMV(pms[chip_->GetPML()]);
 
-	int r;
+	int r = 0;
 	switch (algo_)
 	{
 	case 0:

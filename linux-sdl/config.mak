@@ -26,10 +26,14 @@ WITH_DEBUGGER   = Yes
 PREFIX           = /usr/local
 
 # Define toolchains
-FMGEN_CC = gcc-4.7
-FMGEN_CXX = g++-4.7
-CC = /usr/local/bin/gcc
-CXX = /usr/local/bin/g++
+FMGEN_CC = gcc -Wall
+FMGEN_CXX = g++ -Wall
+#FMGEN_CC = gcc-4.7
+#FMGEN_CXX = g++-4.7
+CC = gcc
+CXX = g++
+#CC = gcc-4.7
+#CXX = g++-4.7
 
 # Uncomment if cross-build
 #CROSS_BUILD    = Yes
