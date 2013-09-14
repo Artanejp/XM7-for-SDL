@@ -116,11 +116,14 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
 {
    cl_int ret = 0;
    Uint8 *pr, *pg, *pb;
+   Uint8 *p;
+   
    int xb = xbegin / 8;
    int yb = ybegin;
    int ww = w / 8;
    int x;
    int y;
+   int offset = (drawwidth / 8) * ybegin;
    int voffset = 0x4000;
       
    if(drawheight > 200) voffset = 0x8000;
@@ -129,71 +132,44 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
    pg = (Uint8 *)vram_pg;
    pr = (Uint8 *)vram_pr;
    pb = (Uint8 *)vram_pb;
+   pb = &pb[offset + xb];
+   pr = &pr[offset + xb];
+   pg = &pg[offset + xb];
    
 //      pal = &rgbTTLGDI[0];
    if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
    if(drawwidth ==  w) {
-      int offset = (drawwidth / 8) * ybegin;
       int band = (drawwidth  / 8) * h;
-      pb = &pb[offset + xb];
-      pr = &pr[offset + xb];
-      pg = &pg[offset + xb];
-#if 1
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, &event_uploadvram[0]);
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset,
-			      band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, &event_uploadvram[1]);
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 2,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, &event_uploadvram[2]);
-#endif
+      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			     offset, voffset * 3,
+			     0, NULL, &event_uploadvram[0], &ret);
+      if(p != NULL) {
+	   memcpy(p, pb, band);  
+	   memcpy(&p[voffset], pr, band);  
+	   memcpy(&p[voffset * 2], pg, band);
+	   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+					  p, 0, NULL, &event_uploadvram[1]);
+      }
+      
    } else {
       int dwb = drawwidth / 8;
-//      int offset = dwb * ybegin + xb;
       int yy;
-      size_t buffer_origin[3];
-      size_t host_origin[3];
-      size_t region[3];
-      buffer_origin[0] = xb;
-      buffer_origin[1] = ybegin;
-      buffer_origin[2] = 0;
-      host_origin[0] = xb;
-      host_origin[1] = ybegin;
-      host_origin[2] = 0;
-      region[0] = ww;
-      region[1] = h;
-      region[2] = 1;
-      //pb = &pb[offset];
-      //pr = &pr[offset];
-      //pg = &pg[offset];
-      buffer_origin[2] = 0;
-#if 1
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, voffset,
-				dwb, voffset,
-				(void *)pb,
-				0, NULL,
-			        &event_uploadvram[0]);
-      buffer_origin[2] = 1;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, voffset,
-				dwb, voffset,
-				(void *)pr,
-				0, NULL,
-			        &event_uploadvram[1]);
-      buffer_origin[2] = 2;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, voffset,
-				dwb, voffset,
-				(void *)pg,
-				0, NULL,
-			        &event_uploadvram[2]);
-#endif      
+      int yoffset = 0;
+
+      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			     offset + xb, voffset * 3,
+			     0, NULL, &event_uploadvram[0], &ret);
+      if(p != NULL) {
+	   for(yy = 0; yy < h; yy++) {
+	      memcpy(&p[yoffset], &pb[yoffset], ww);  
+	      memcpy(&p[voffset + yoffset], &pr[yoffset], ww);  
+	      memcpy(&p[voffset * 2 + yoffset], &pg[yoffset], ww);
+	      yoffset += dwb;
+	   }
+	 
+	   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+					  p, 0, NULL, &event_uploadvram[1]);
+      }
 //      printf("Window: %d x %d -> %d,%d inbuf=%08x STS=%d\n",ww, h, xb, ybegin, inbuf, ret);
    }
   
@@ -204,213 +180,83 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
 {
    cl_int ret = 0;
    Uint8 *pr, *pg, *pb;
+   Uint8 *p;
    int xb = xbegin / 8;
    int yb = ybegin;
    int ww = w / 8;
    int x;
    int y;
+   int offset = (drawwidth / 8) * ybegin + xb;
    int vramoffset = 0x2000;   
    
    pg = (Uint8 *)vram_pg;
    pr = (Uint8 *)vram_pr;
    pb = (Uint8 *)vram_pb;
+   pb = &pb[offset];
+   pr = &pr[offset];
+   pg = &pg[offset];
    
 //      pal = &rgbTTLGDI[0];
    if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
    if(drawwidth ==  w) {
-      int offset = (drawwidth / 8) * ybegin;
       int band = (drawwidth  / 8) * h;
-      int voffset = 0x2000;
-
-      pb = &pb[offset];
-      pr = &pr[offset];
-      pg = &pg[offset];
-
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 2,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 3,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, &event_uploadvram[0]);
-
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 4,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 5,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 6,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 7,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, &event_uploadvram[1]);
-
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 8,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 9,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 10,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 11,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, &event_uploadvram[2]);
+      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			     offset, vramoffset * 12,
+			     0, NULL, &event_uploadvram[0], &ret);
+      if(p != NULL) {
+	 // B
+	   memcpy(&p[0], &pb[0], band);  
+	   memcpy(&p[vramoffset], &pb[vramoffset], band);  
+	   memcpy(&p[vramoffset * 2], &pb[vramoffset * 2], band);  
+	   memcpy(&p[vramoffset * 3], &pb[vramoffset * 3], band);
+	 // R
+	   memcpy(&p[vramoffset * 4], &pr[0], band);  
+	   memcpy(&p[vramoffset * 5], &pr[vramoffset], band);  
+	   memcpy(&p[vramoffset * 6], &pr[vramoffset * 2], band);  
+	   memcpy(&p[vramoffset * 7], &pr[vramoffset * 3], band);  
+	 
+	 // G
+	   memcpy(&p[vramoffset * 8], &pg[0], band);  
+	   memcpy(&p[vramoffset * 9], &pg[vramoffset], band);  
+	   memcpy(&p[vramoffset * 10], &pg[vramoffset * 2], band);  
+	   memcpy(&p[vramoffset * 11], &pg[vramoffset * 3], band);  
+	   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+					  p, 0, NULL, &event_uploadvram[1]);
+      }
 
    } else {
       int dwb = drawwidth / 8;
-      int offset = dwb * ybegin + xb;
       int yy;
-      size_t buffer_origin[3];
-      size_t host_origin[3];
-      size_t region[3];
-      buffer_origin[0] = 0;
-      buffer_origin[1] = ybegin;
-      buffer_origin[2] = 0;
-      host_origin[0] = xb;
-      host_origin[1] = ybegin;
-      host_origin[2] = 0;
-      region[0] = ww;
-      region[1] = h;
-      region[2] = 1;
+      int yoffset = 0;
+      int band = ww;
+      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			     offset, vramoffset * 12,
+			     0, NULL, &event_uploadvram[0], &ret);
+      if(p != NULL) {
+	 // B
+	 for(yy = 0; yy < h; yy++) {
+	   memcpy(&p[yoffset], &pb[yoffset], band);  
+	   memcpy(&p[vramoffset     + yoffset], &pb[vramoffset + yoffset], band);  
+	   memcpy(&p[vramoffset * 2 + yoffset], &pb[vramoffset * 2 + yoffset], band);  
+	   memcpy(&p[vramoffset * 3 + yoffset], &pb[vramoffset * 3 + yoffset], band);
+	 // R
+	   memcpy(&p[vramoffset * 4 + yoffset], &pr[yoffset], band);  
+	   memcpy(&p[vramoffset * 5 + yoffset], &pr[vramoffset + yoffset], band);  
+	   memcpy(&p[vramoffset * 6 + yoffset], &pr[vramoffset * 2 + yoffset], band);  
+	   memcpy(&p[vramoffset * 7 + yoffset], &pr[vramoffset * 3 + yoffset], band);  
+	 
+	 // G
+	   memcpy(&p[vramoffset * 8 + yoffset], &pg[yoffset], band);  
+	   memcpy(&p[vramoffset * 9 + yoffset], &pg[vramoffset + yoffset], band);  
+	   memcpy(&p[vramoffset * 10 + yoffset], &pg[vramoffset * 2 + yoffset], band);  
+	   memcpy(&p[vramoffset * 11 + yoffset], &pg[vramoffset * 3 + yoffset], band);
+	   yoffset += dwb;
+	 }
+	 
+	 ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+					  p, 0, NULL, &event_uploadvram[1]);
+      }
 
-      pb = &pb[offset];
-      pr = &pr[offset];
-      pg = &pg[offset];
-      buffer_origin[2] = 0;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pb,
-				0, NULL,
-			        &event_uploadvram[0]);
-      pb = &pb[vramoffset];
-
-      buffer_origin[2] = 1;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pb,
-				0, NULL,
-			        &event_uploadvram[0]);
-      pb = &pb[vramoffset];
-
-      buffer_origin[2] = 2;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pb,
-				0, NULL,
-			        &event_uploadvram[0]);
-      pb = &pb[vramoffset];
-
-      buffer_origin[2] = 3;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pb,
-				0, NULL,
-			        &event_uploadvram[0]);
-//      pb = &pb[vramoffset];
-
-      buffer_origin[2] = 4;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pr,
-				0, NULL,
-			        &event_uploadvram[1]);
-      pr = &pr[vramoffset];
-
-      buffer_origin[2] = 5;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pr,
-				0, NULL,
-			        &event_uploadvram[1]);
-      pr = &pr[vramoffset];
-
-      buffer_origin[2] = 6;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pr,
-				0, NULL,
-			        &event_uploadvram[1]);
-      pr = &pr[vramoffset];
-
-      buffer_origin[2] = 7;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pr,
-				0, NULL,
-			        &event_uploadvram[1]);
-//      pr = &pr[vramoffset];
-      
-      buffer_origin[2] = 8;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pg,
-				0, NULL,
-			        &event_uploadvram[2]);
-      pg = &pg[vramoffset];
-
-      buffer_origin[2] = 9;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pg,
-				0, NULL,
-			        &event_uploadvram[2]);
-      pg = &pg[vramoffset];
-      buffer_origin[2] = 10;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pg,
-				0, NULL,
-			        &event_uploadvram[2]);
-      pg = &pg[vramoffset];
-      buffer_origin[2] = 11;
-      ret |= clEnqueueWriteBufferRect (command_queue, inbuf, CL_FALSE,
-				buffer_origin, host_origin, region,
-				dwb, dwb * drawheight,
-				dwb, dwb * drawheight,
-				(void *)pg,
-				0, NULL,
-			        &event_uploadvram[2]);
-//      pg = &pg[vramoffset];
 
 //      printf("Window: %d x %d -> %d,%d inbuf=%08x STS=%d\n",ww, h, xb, ybegin, inbuf, ret);
    }
@@ -422,11 +268,14 @@ cl_int GLCLDraw::copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheig
 {
    cl_int ret = 0;
    Uint8 *pr, *pg, *pb;
+   Uint8 *p;
    int xb = xbegin / 8;
    int yb = ybegin;
    int ww = w / 8;
    int x;
    int y;
+   int offset = (drawwidth / 8) * ybegin;
+   int band = (drawwidth  / 8) * h;
    int vramoffset = 0x2000;   
    
    pg = (Uint8 *)vram_pg;
@@ -435,92 +284,41 @@ cl_int GLCLDraw::copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheig
    
 //      pal = &rgbTTLGDI[0];
    if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
-   {
-      int offset = (drawwidth / 8) * ybegin;
-      int band = (drawwidth  / 8) * h;
-      int voffset = 0x2000;
-
-      pb = &pb[offset];
-      pr = &pr[offset];
-      pg = &pg[offset];
+   pb = &pb[offset];
+   pr = &pr[offset];
+   pg = &pg[offset];
       
-      // B
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 2,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 3,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 4,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, NULL);
-      pb = &pb[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 5,
-                              band * sizeof(unsigned char), (void *)pb
-                              , 0, NULL, &event_uploadvram[0]);
-      // R
-
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 6,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 7,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 8,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 9,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, &event_uploadvram[1]);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 10,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-      pr = &pr[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 11,
-                              band * sizeof(unsigned char), (void *)pr
-                              , 0, NULL, NULL);
-
-      // G
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 12,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 13,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 14,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 15,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 16,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, NULL);
-      pg = &pg[vramoffset];
-      ret |= clEnqueueWriteBuffer(command_queue, inbuf, CL_FALSE, offset + voffset * 17,
-                              band * sizeof(unsigned char), (void *)pg
-                              , 0, NULL, &event_uploadvram[2]);
-
-   }
-   return ret;
+   p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			  offset, vramoffset * 18,
+			  0, NULL, &event_uploadvram[0], &ret);
+  if(p != NULL) {
+     // B
+     memcpy(&p[0], &pb[0], band);  
+     memcpy(&p[vramoffset], &pb[vramoffset], band);  
+     memcpy(&p[vramoffset * 2], &pb[vramoffset * 2], band);  
+     memcpy(&p[vramoffset * 3], &pb[vramoffset * 3], band);
+     memcpy(&p[vramoffset * 4], &pb[vramoffset * 4], band);  
+     memcpy(&p[vramoffset * 5], &pb[vramoffset * 5], band);
+     // R
+     memcpy(&p[vramoffset * 6], &pr[0], band);  
+     memcpy(&p[vramoffset * 7], &pr[vramoffset], band);  
+     memcpy(&p[vramoffset * 8], &pr[vramoffset * 2], band);  
+     memcpy(&p[vramoffset * 9], &pr[vramoffset * 3], band);  
+     memcpy(&p[vramoffset * 10], &pr[vramoffset * 4], band);  
+     memcpy(&p[vramoffset * 11], &pr[vramoffset * 5], band);  
+	 
+	 // G
+     memcpy(&p[vramoffset * 12], &pg[0], band);  
+     memcpy(&p[vramoffset * 13], &pg[vramoffset], band);  
+     memcpy(&p[vramoffset * 14], &pg[vramoffset * 2], band);  
+     memcpy(&p[vramoffset * 15], &pg[vramoffset * 3], band);  
+     memcpy(&p[vramoffset * 16], &pg[vramoffset * 4], band);  
+     memcpy(&p[vramoffset * 17], &pg[vramoffset * 5], band);
+	 
+     ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+				    p, 0, NULL, &event_uploadvram[1]);
+  }
+  return ret;
 }
 
 
@@ -767,7 +565,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= window_copy8();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
-                              , 0, NULL, &event_uploadvram[3]);
+                              , 0, NULL, &event_uploadvram[2]);
       break;
     case SCR_262144:// Windowはなし
       w = 320;
@@ -805,7 +603,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    clFinish(command_queue);
    ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
-				  4, event_uploadvram, &event_copytotexture);
+				  3, event_uploadvram, &event_copytotexture);
   
 //   ret |= clEnqueueTask (command_queue,
 //			 kernel, 1, &event_copytotexture, &event_exec);
@@ -898,7 +696,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    
 
      
-//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
+//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, // Reduce HOST-CPU usage.
 // 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
    inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
  		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
