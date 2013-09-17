@@ -27,7 +27,10 @@ extern "C" { // Define Headers
    extern void pVram2RGB_x4_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
 }
 
-
+static int iScaleFactor = 1;
+static void *pDrawFn = NULL;
+static int iOldW = 0;
+static int iOldH = 0;
 
 void pVram2RGB(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
@@ -867,7 +870,12 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
     xfactor = w1 % wx0;
     yfactor = h1 % hy0;
     xth = wx0 >> 1;
-    switch(w1 / w0){
+    if(iScaleFactor == (w1 / w0) && (pDrawFn != NULL)
+      && (w1 == iOldW) && (h1 == iOldH))  return (void *)pDrawFn;
+    iScaleFactor = w1 / w0;
+    iOldW = w1;
+    iOldH = h1;
+    switch(iScaleFactor){
             case 0:
             if(w0 > 480){
 	        if((w1 < 480) || (h1 < 200)){
@@ -970,6 +978,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
                 DrawFn = pVram2RGB_x1;
                 break;
         }
+        pDrawFn = (void *)DrawFn;
         return (void *)DrawFn;
 }
 
