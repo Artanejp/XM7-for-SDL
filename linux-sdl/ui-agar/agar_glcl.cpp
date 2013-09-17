@@ -680,17 +680,22 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    // Texture直接からPBO使用に変更 20121102
    if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
-   
+#if   1
       glGenBuffers(1, &pbo);
       glBindBuffer(GL_ARRAY_BUFFER, pbo);
+//      glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STREAM_DRAW);
       glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STREAM_DRAW);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
 		                 pbo, &r);
-//      if(texid != 0) {
-//	 outbuf = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, 
-//		                 GL_TEXTURE_2D, 0, uVramTextureID, &r);
-//    }
+#else
+      if(texid != 0) {
+//	 outbuf = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, 
+//		                 GL_TEXTURE_2D, 0, texid, &r);
+	 outbuf = clCreateFromGLTexture2D(context, CL_MEM_WRITE_ONLY,
+		    GL_TEXTURE_2D, 0, texid, &r);
+      }
+#endif
       ret |= r;
    }
    

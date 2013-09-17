@@ -139,8 +139,8 @@ void vsync_notify(void)
 
 void ExecSch(void)
 {
-	DWORD dwCount;
-	DWORD dwExec;
+	int dwCount;
+	int dwExec;
 
 	/*
 	 * ポーリング

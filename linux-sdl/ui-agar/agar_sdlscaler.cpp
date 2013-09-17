@@ -8,13 +8,16 @@
 */
 
 #include "agar_sdlview.h"
+#include "agar_cfg.h"
 #include "api_vram.h"
 #include "api_draw.h"
 //#include "api_scaler.h"
 #include "api_kbd.h"
 #include "sdl_cpuid.h"
+
 extern "C" {
 extern struct XM7_CPUID *pCpuID;
+extern BOOL bUseSIMD;
 }
 
 extern "C" { // Define Headers
@@ -884,7 +887,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 		 DrawFn = pVram2RGB_x1;
 	      }
             } else { // xfactor != 0
-	      if(pCpuID != NULL) {
+	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
 #if defined(USE_SSE2)
 	      if(pCpuID->use_sse2) {
 		 DrawFn = pVram2RGB_x2_SSE;
@@ -909,7 +912,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 	      } else {
 	      if(pCpuID != NULL) {
 #if defined(USE_SSE2)
-	      if(pCpuID->use_sse2) {
+	      if((pCpuID->use_sse2)  && (bUseSIMD == TRUE)){
 		 DrawFn = pVram2RGB_x2_SSE;
 	      } else {
 		 DrawFn = pVram2RGB_x2;
@@ -930,7 +933,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
             } else { // xfactor != 0
 	      if(pCpuID != NULL) {
 #if defined(USE_SSE2)
-	      if(pCpuID->use_sse2) {
+	      if((pCpuID->use_sse2)  && (bUseSIMD == TRUE)){
 		 DrawFn = pVram2RGB_x4_SSE;
 	      } else {
 		 DrawFn = pVram2RGB_x4;
@@ -951,7 +954,7 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
             case 8:
 	      if(pCpuID != NULL) {
 #if defined(USE_SSE2)
-	      if(pCpuID->use_sse2) {
+	      if((pCpuID->use_sse2)  && (bUseSIMD == TRUE)){
 		 DrawFn = pVram2RGB_x4_SSE;
 	      } else {
 		 DrawFn = pVram2RGB_x4;
@@ -962,7 +965,6 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 	      } else {
 		 DrawFn = pVram2RGB_x4;
 	      }
-//                DrawFn = pVram2RGB_x4;
             break;
             default:
                 DrawFn = pVram2RGB_x1;

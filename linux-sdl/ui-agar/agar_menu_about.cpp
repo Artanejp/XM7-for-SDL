@@ -14,7 +14,7 @@ extern "C" {
 #include <agar/gui/opengl.h>
 }
 #include "xm7.h"
-
+#include "sdl_cpuid.h"
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
@@ -40,6 +40,8 @@ extern AG_GLView *GLDrawArea;
 extern "C" {
    extern int fm7_ver;
    extern BOOL cycle_steal;
+   extern struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
+   extern BOOL bUseSIMD;
 }
 
 static void Dialog_OnPushOK(AG_Event *event)
@@ -61,8 +63,10 @@ void OnAboutDialog(AG_Event *event)
 	AG_Label *label;
 	AG_Surface *mark = NULL;
 
-	char string[256];
-	char iconpath[1024];
+
+        char string[512];
+        int l;
+	char iconpath[MAXPATHLEN];
 	char file[MAXPATHLEN];
 
 	win = AG_WindowNew(DIALOG_WINDOW_DEFAULT);
@@ -131,7 +135,50 @@ void OnAboutDialog(AG_Event *event)
 	vbox2 = AG_VBoxNew(hbox, AG_VBOX_VFILL);
 	label = AG_LabelNew(vbox2, 0, "FM-7/77AV/SX Emulateor \"XM7\"""\n "VERSTR"%s\n", string);
 	AG_LabelJustify(label, AG_TEXT_RIGHT);
+   
+   
+   strcpy(string, "SIMD Features: \n");
+// 以下、CPU依存なので移植の場合は同等の関数を作ること
+#if defined(__x86_64__) || defined(__i386__)
+   if(pCpuID->use_mmx) strcat(string, "MMX ");
+   if(pCpuID->use_mmxext) strcat(string, "MMXEXT ");
+   strcat(string, "\n");
+   if(pCpuID->use_sse) strcat(string, "SSE ");
+   if(pCpuID->use_sse2) strcat(string, "SSE2 ");
+   if(pCpuID->use_sse3) strcat(string, "SSE3 ");
+   if(pCpuID->use_ssse3) strcat(string, "SSSE3 ");
+   strcat(string, "\n");
+   if(pCpuID->use_sse41) strcat(string, "SSE4.1 ");
+   if(pCpuID->use_sse42) strcat(string, "SSE4.2 ");
+   if(pCpuID->use_sse4a) strcat(string, "SSE4a ");
+   strcat(string, "\n");
+   if(pCpuID->use_3dnow) strcat(string, "3DNOW ");
+   if(pCpuID->use_3dnowp) strcat(string, "3DNOWP ");
+   if(pCpuID->use_abm) strcat(string, "ABM ");
+   if(pCpuID->use_avx) strcat(string, "AVX ");
+   if(pCpuID->use_cmov) strcat(string, "CMOV ");
+#else
+#endif
+	label = AG_LabelNew(vbox2, 0, "%s", string);
+	AG_LabelJustify(label, AG_TEXT_RIGHT);
 
+   strcpy(string, "Using SIMD:");
+// 以下、CPU依存なので移植の場合は同等の関数を作ること
+#if defined(__x86_64__) || defined(__i386__)
+   if(bUseSIMD) {
+      if(pCpuID->use_sse2) {
+	   strcat(string, "SSE2");
+      } else {
+	   strcat(string, "NONE");
+      }
+   } else {
+     strcat(string, "NONE");
+   }
+   
+#else
+#endif
+	label = AG_LabelNew(vbox2, 0, "%s", string);
+	AG_LabelJustify(label, AG_TEXT_RIGHT);
 
 	hbox = AG_HBoxNew(win, AG_HBOX_HFILL);
 	AG_LabelNew(hbox, 0, AUTSTR);

@@ -216,6 +216,8 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  }
 	  
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+
+#if 1
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, cldraw->GetPbo());
 	  // Copy pbo to texture 
 	  glTexSubImage2D(GL_TEXTURE_2D, 
@@ -229,8 +231,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 			  NULL);
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-//	  bVramUpdateFlag = TRUE;
-
+#else
+	  
+	  //	  bVramUpdateFlag = TRUE;
+#endif
        } else {
 #endif
 	  LockVram();
