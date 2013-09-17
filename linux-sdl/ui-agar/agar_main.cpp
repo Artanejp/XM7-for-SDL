@@ -425,7 +425,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	 * Agar のメインループに入る
 	 */
 
-
     if(drivers == NULL)  {
 #ifdef USE_OPENGL
        if(AG_InitGraphics(NULL) == -1){
@@ -446,9 +445,10 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
     }
     OnCreate((AG_Widget *)NULL);
 
-   if(!AG_UsingSDL(NULL)) {
+   if(AG_UsingSDL(NULL) == 0) {
       SDL_Init(SDL_INIT_VIDEO);
    } else { // WM function is managed by SDL, load and set icon for WM. 
+
       switch(fm7_ver) {
        case 1: // FM7/77
 	 if(!(LoadGlobalIconPng(NULL, "tamori.png"))) {
@@ -471,7 +471,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
       }
    }
    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
-   
+
 //   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     
    // 

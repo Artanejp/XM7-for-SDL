@@ -1014,7 +1014,11 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    if(my->Surface == NULL) return;
    w = my->Surface->w;
    h = my->Surface->h;
- 
+   pb = (Uint8 *)(my->Surface->pixels);
+   pitch = my->Surface->pitch;
+   bpp = my->Surface->format->BytesPerPixel;
+   
+
    if(pVram2 == NULL) return;
    switch(bMode){
     case SCR_200LINE:
@@ -1042,12 +1046,8 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
     if(tmp > (hh >> 1)){
 	  yrep++;
     }
-
-    pb = (Uint8 *)(my->Surface->pixels);
-    pitch = my->Surface->pitch;
-    bpp = my->Surface->format->BytesPerPixel;
-    src = pVram2;
-
+   
+   src = pVram2;
     LockVram();
     AG_SurfaceLock(my->Surface);
     if(my->forceredraw != 0){
