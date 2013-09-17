@@ -1073,18 +1073,17 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 ** // xx,yy = 1scale(not 8)
 */
 //            if(xx >= w) continue;
-                if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
-                    disp = (Uint32 *)pb;
-                    of = (xx *8) + yy * ww;
-                    DrawFn(my, &src[of], disp, xx, yy, yrep);
-                    SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
-                }
-			}
-//			if(yy >= h) continue;
+	   if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
+	      disp = (Uint32 *)pb;
+	      of = (xx *8) + yy * ww;
+	      DrawFn(my, &src[of], disp, xx, yy, yrep);
+	      SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
+	   }
 	}
-	AG_SurfaceUnlock(my->Surface);
-    my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
+//			if(yy >= h) continue;
+    }
+   AG_SurfaceUnlock(my->Surface);
+   my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
 //	AG_WidgetUpdateSurface(my, my->mySurface);
-    UnlockVram();
-
+   UnlockVram();
 }

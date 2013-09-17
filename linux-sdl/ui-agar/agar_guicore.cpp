@@ -96,26 +96,20 @@ void AGDrawTaskEvent(BOOL flag)
    AG_TAILQ_FOREACH(es, &src->prologues, sinks){
 	                es->fn(es, &es->fnArgs);
    }
+   if(nDrawFPS > 2) {
+      fps = 1000 / nDrawFPS;
+   } else {
+      fps = 500;
+   }
    
    for(;;) {
-      if(nDrawFPS > 2) {
-	 fps = 1000 / nDrawFPS;
-      } else {
-	 fps = 500;
-      }
       if(oldfps != nDrawFPS){ // FPS Change 20120120
 	 oldfps = nDrawFPS;
-#ifdef USE_OPENGL
-	   if(DrawArea != NULL) {
-//	      AG_RedrawOnTick(DrawArea, fps);
-	   } else if(GLDrawArea != NULL){
-//	      AG_RedrawOnTick(GLDrawArea, fps);
-	   }
-#else
-	   if(DrawArea != NULL) {
-//	      AG_RedrawOnTick(DrawArea, fps);
-	   }
-#endif
+	 if(nDrawFPS > 2) {
+	    fps = 1000 / nDrawFPS;
+	 } else {
+	    fps = 500;
+	 }
       }
       if(EventSDL(NULL) == FALSE) return;
       nDrawTick2D = XM7_timeGetTime();
@@ -123,6 +117,7 @@ void AGDrawTaskEvent(BOOL flag)
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
       if((nDrawTick2D - nDrawTick1D) > fps) {
 	 // Force-Redraw mainwindow, workaround of glx driver.
+
 #ifdef USE_OPENGL
 	   if(DrawArea != NULL) {
 	      AG_Redraw(DrawArea);
@@ -136,6 +131,7 @@ void AGDrawTaskEvent(BOOL flag)
 #endif
 	 AG_WindowDrawQueued();
 	 nDrawTick1D = nDrawTick2D;
+	 XM7_Sleep(1);
 	 //EventSDL(NULL);
       } else if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
