@@ -83,9 +83,9 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 	 p += 8;
     }
    } else { // inside align
-      v4hi b2, b3, b4, b5;
-      v4hi b6, b7, b8, b9;
-      v4hi bx0, bx1;
+      register v4hi b2, b3, b4, b5;
+      register v4hi b6, b7, b8, b9;
+      register v4hi bx0, bx1;
       v4hi *b2p;
       int j;
       v4hi bb;
@@ -99,36 +99,37 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 	  for(yy = 0; yy < hh; yy++){
 	     b2p = (v4hi *)d1;
 	     bx0 = *b++;
-	     bx1 = *b++;
 	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
 	     b3.vv = __builtin_ia32_pshufd(bx0.v, 0x55);
+	     *(b2p++) = b2;
+	     *(b2p++) = b3;
 	     b4.vv = __builtin_ia32_pshufd(bx0.v, 0xaa);
 	     b5.vv = __builtin_ia32_pshufd(bx0.v, 0xff);
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
-	     b2p[3] = b5;
+	     *(b2p++) = b4;
+	     *(b2p++) = b5;
 
+	     bx1 = *b++;
 	     b6.vv = __builtin_ia32_pshufd(bx1.v, 0x00);
 	     b7.vv = __builtin_ia32_pshufd(bx1.v, 0x55);
+	     *(b2p++) = b6;
+	     *(b2p++) = b7;
+	     
 	     b8.vv = __builtin_ia32_pshufd(bx1.v, 0xaa);
 	     b9.vv = __builtin_ia32_pshufd(bx1.v, 0xff);
-	     b2p[4] = b6;
-	     b2p[5] = b7;
-	     b2p[6] = b8;
-	     b2p[7] = b9;	
+	     *(b2p++) = b8;
+	     *b2p = b9;	
 	     d1 += pitch;
 	  }
 	  break;
 	default:
 	  for(yy = 0; yy < hh; yy++){
 	     bx0 = *b++;
-	     bx1 = *b++;
 	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
 	     b3.vv = __builtin_ia32_pshufd(bx0.v, 0x55);
 	     b4.vv = __builtin_ia32_pshufd(bx0.v, 0xaa);
 	     b5.vv = __builtin_ia32_pshufd(bx0.v, 0xff);
 	     
+	     bx1 = *b++;
 	     b6.vv = __builtin_ia32_pshufd(bx1.v, 0x00);
 	     b7.vv = __builtin_ia32_pshufd(bx1.v, 0x55);
 	     b8.vv = __builtin_ia32_pshufd(bx1.v, 0xaa);
@@ -136,33 +137,35 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 	     
 	     if(yrep & 1) {
 		b2p = (v4hi *)d1;
-		b2p[0] = b2;
-		b2p[1] = b3;
-		b2p[2] = b4;
-		b2p[3] = b5;
 		
-		b2p[4] = b6;
-		b2p[5] = b7;
-		b2p[6] = b8;
-		b2p[7] = b9;
+		*b2p++ = b2;
+		*b2p++ = b3;
+		*b2p++ = b4;
+		*b2p++ = b5;
+		
+		*b2p++ = b6;
+		*b2p++ = b7;
+		*b2p++ = b8;
+		*b2p = b9;
 		d1 += pitch;
 		yrep--;
 	     }
 	     for(j = 0; j < (yrep >> 1); j++) {
 		b2p = (v4hi *)d1;
 		if(!bFullScan && (j >= (yrep >> 2))) {
-		   b2p[0] = b2p[1] = b2p[2] = b2p[3] = bb;
+		   b2p[0] = b2p[1] = b2p[2] = b2p[3] =
 		   b2p[4] = b2p[5] = b2p[6] = b2p[7] = bb;
 		} else {
-		   b2p[0] = b2;
-		   b2p[1] = b3;
-		   b2p[2] = b4;
-		   b2p[3] = b5;
 		   
-		   b2p[4] = b6;
-		   b2p[5] = b7;
-		   b2p[6] = b8;
-		   b2p[7] = b9;
+		   *b2p++ = b2;
+		   *b2p++ = b3;
+		   *b2p++ = b4;
+		   *b2p++ = b5;
+		   
+		   *b2p++ = b6;
+		   *b2p++ = b7;
+		   *b2p++ = b8;
+		   *b2p = b9;
 		}
 		d1 += pitch;
 	     }

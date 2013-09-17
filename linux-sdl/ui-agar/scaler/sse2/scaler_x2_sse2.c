@@ -58,7 +58,7 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
    pitch = my->Surface->pitch / sizeof(Uint32);
    if(w < (x * 2 + 15)) {
     int j;
-    Uint32 d0;
+    register Uint32 d0;
 
     p = src;
     ww = w - x * 2;
@@ -74,7 +74,6 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 		  d2[xx] = d0;
 		  d2[xx + 1] = d0;
 	       }
-
                 d2 += pitch;
             }
         }
@@ -84,11 +83,12 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
       }
    } else { // inside align
     int j;
-    v4hi b2;
-    v4hi b3;
-    v4hi b4;
-    v4hi b5;
+    register v4hi b2;
+    register v4hi b3;
+    register v4hi b4;
+    register v4hi b5;
     register v4hi bb;
+    register v4hi btmp;
     v4hi *b2p;
     b = (v4hi *)src;
     bb.vv = (v4ii){black, black, black, black};
@@ -98,15 +98,17 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 	case 2:
 	  for(yy = 0; yy < hh; yy++){
 	     b2p = (v4hi *)d1;
-	     b2.v = __builtin_ia32_pshufd(b[0].v, 0x50);
-	     b3.v = __builtin_ia32_pshufd(b[0].v, 0xfa);
-	     b4.v = __builtin_ia32_pshufd(b[1].v, 0x50);
-	     b5.v = __builtin_ia32_pshufd(b[1].v, 0xfa);
-
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
-	     b2p[3] = b5;
+	     btmp = b[0];
+	     b2.v = __builtin_ia32_pshufd(btmp.v, 0x50);
+	     b3.v = __builtin_ia32_pshufd(btmp.v, 0xfa);
+	     *(b2p++) = b2;
+	     *(b2p++) = b3;
+	     
+	     btmp = b[1];
+	     b4.v = __builtin_ia32_pshufd(btmp.v, 0x50);
+	     b5.v = __builtin_ia32_pshufd(btmp.v, 0xfa);
+	     *(b2p++) = b4;
+	     *b2p = b5;
 	     d1 += pitch;
 	     b += 2;
 	  }
@@ -125,10 +127,10 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 		   b2p[2] = 
 		   b2p[3] = bb;
 		 } else {
-		   b2p[0] = b2;
-		   b2p[1] = b3;
-		   b2p[2] = b4;
-		   b2p[3] = b5;
+		    *(b2p++) = b2;
+		    *(b2p++) = b3;
+		    *(b2p++) = b4;
+		    *b2p = b5;
 		}
 		d1 += pitch;
 	     }
