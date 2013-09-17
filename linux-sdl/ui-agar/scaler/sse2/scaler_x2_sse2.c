@@ -15,7 +15,7 @@ extern struct XM7_CPUID *pCpuID;
 extern void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep);
 
 #if defined(__SSE2__)
-void pVram2RGB_x2_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    register v4hi *b;
 

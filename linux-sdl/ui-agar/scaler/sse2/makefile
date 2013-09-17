@@ -10,7 +10,8 @@ include ../../../common.mak
 DPATH = $(realpath ../../..)
 
 COMMONSRC = \
-	scaler_x2_sse2.c
+	scaler_x2_sse2.c \
+	scaler_x4_sse2.c
 
 .SUFFIXES: .c .cpp .asm .o
 
