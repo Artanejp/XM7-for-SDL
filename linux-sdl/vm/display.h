@@ -13,12 +13,12 @@
 /*
  *      画面モード定義
  */
-#define	SCR_200LINE	0x0000
-#define	SCR_4096	0x0001
-#define	SCR_400LINE	0x0002
-#define	SCR_262144	0x0003
-#define	SCR_ANALOG	0x0001
-#define	SCR_AV40	0x0002
+#define	SCR_200LINE	0x00
+#define	SCR_4096	0x01
+#define	SCR_400LINE	0x02
+#define	SCR_262144	0x03
+#define	SCR_ANALOG	0x01
+#define	SCR_AV40	0x02
 
 #ifdef __cplusplus
 extern          "C" {
@@ -98,9 +98,7 @@ extern          "C" {
      * 画面描画通知タイミング
      */
     extern int      now_raster;
-    /*
-     * 現在描画中のラスタ番号
-     */
+								/* 現在ラスタ位置 */
 
 #if XM7_VER >= 2
     extern BOOL     subnmi_flag;

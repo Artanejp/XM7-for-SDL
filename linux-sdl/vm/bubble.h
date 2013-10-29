@@ -1,9 +1,9 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2012 Ryu Takegami
- *	Copyright (C) 2010-2012 Toma
+ *	Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2013 Ryu Takegami
+ *	Copyright (C) 2010-2013 Toma
  *
  *	[ バブルメモリ コントローラ (32KB専用版) ]
  */
@@ -17,6 +17,7 @@
  *	定数定義
  */
 #define BMC_UNITS_32		2			/* 32KBサポートユニット数 */
+#define BMC_MEDIAS			16			/* B77ファイルに含まれる最大本数 */
 
 #define BMC_ST_BUSY			0x01		/* BUSY */
 #define BMC_ST_ERROR		0x02		/* ERROR ANALYSIS */
@@ -38,6 +39,8 @@
 
 #define BMC_TYPE_NOTREADY	0			/* ファイルなし */
 #define BMC_TYPE_32			1			/* 32KBファイルをマウント */
+#define BMC_TYPE_128		2			/* 128KBファイルをマウント(dash) */
+#define BMC_TYPE_B77		3			/* B77ファイルをマウント */
 
 #define BMC_ACCESS_READY	0			/* アクセスなし */
 #define BMC_ACCESS_READ		1			/* 読み込み系アクセス */
@@ -68,8 +71,12 @@ BOOL FASTCALL bmc_save(int fileh);
 										/* セーブ */
 BOOL FASTCALL bmc_load(int fileh, int ver);
 										/* ロード */
-BOOL FASTCALL bmc_setfile(int unit, char *fname);
-										/* セット */
+int FASTCALL bmc_setfile(int unit, char *fname);
+   /* セット */
+
+BOOL FASTCALL bmc_setmedia(int unit, int index);
+										/* メディア番号を設定 */
+
 BOOL FASTCALL bmc_setwritep(int unit, BOOL writep);
 										/* ライトプロテクト指定 */
 
@@ -104,8 +111,20 @@ extern BOOL bmc_writep[BMC_UNITS_32];
 
 extern char bmc_fname[BMC_UNITS_32][256+1];
 										/* ファイル名 */
+extern char bmc_name[BMC_UNITS_32][BMC_MEDIAS][17];
+										/* メディアごとの名前 */
+
 extern BOOL bmc_fwritep[BMC_UNITS_32];
 										/* 書き込み禁止状態(ファイル単位) */
+
+extern BYTE bmc_header[BMC_UNITS_32][0x20];
+										/* B77ファイルヘッダ */
+extern BYTE bmc_medias[BMC_UNITS_32];
+										/* メディア枚数 */
+extern BYTE bmc_media[BMC_UNITS_32];
+										/* メディアセレクト状態 */
+   
+   
 extern BYTE bmc_access[BMC_UNITS_32];
 										/* アクセスLED */
 extern BOOL bmc_enable;

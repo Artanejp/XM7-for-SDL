@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2012 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ カセットテープ＆プリンタ ]
  */
@@ -945,7 +945,6 @@ BOOL            FASTCALL
 tapelp_save(SDL_RWops *fileh)
 {
     BOOL            tmp;
-
     /*
      * ステートセーブ前に書き込みバッファをフラッシュ
      */
@@ -1030,7 +1029,9 @@ tapelp_load(SDL_RWops *fileh, int ver)
 {
     DWORD           offset;
     char            fname[256 + 1];
-    BYTE            tmp;
+#if XM7_VER >= 2
+    BYTE tmp;
+#endif
     BOOL            flag;
     int pathlen;
 

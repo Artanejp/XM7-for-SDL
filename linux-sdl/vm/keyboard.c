@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2012 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ キーボード ]
  */
@@ -1507,8 +1507,10 @@ key_send_ack(void)
 BOOL            FASTCALL
 keyboard_readb(WORD addr, BYTE * dat)
 {
+#if XM7_VER >= 2
     BYTE            tmp;
-
+#endif
+   
     switch (addr) {
 	/*
 	 * キーコード上位

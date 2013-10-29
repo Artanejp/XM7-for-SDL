@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ 補助ツール ]
  */
@@ -30,7 +30,7 @@ extern          "C" {
      * ブランクテープ作成 
      */
 #if XM7_VER == 1 && defined(BUBBLE)
-    BOOL FASTCALL make_new_bubble(char *fname);	/* ブランクバブルカセット作成 */
+    BOOL FASTCALL make_new_bubble(char *fname, char *name);	/* ブランクバブルカセット作成 */
 #endif
     BOOL FASTCALL   conv_vfd_to_d77(char *src, char *dst, char *name);
     /*
@@ -60,6 +60,11 @@ extern          "C" {
     /*
      * 画像縮小カラー混合 
      */
+#if XM7_VER == 1 && defined(BUBBLE)
+    BOOL FASTCALL conv_bbl_to_b77(char *src, char *dst, char *name);
+										/* BBL→B77変換 */
+#endif
+
 #ifdef __cplusplus
 }
 #endif

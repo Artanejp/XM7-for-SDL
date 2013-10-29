@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ デバイス依存部 ]
  */
@@ -68,12 +68,14 @@ extern          "C" {
     /*
      * VSYNC通知
      */
-#if XM7_VER >= 3
+    void FASTCALL vblankperiod_notify(void);
+										/* VBLANK終了通知 */
+    void FASTCALL hblank_notify(void);
+										/* HBLANK通知 */
     void FASTCALL   window_notify(void);
     /*
      * ハードウェアウィンドウ変更通知
      */
-#endif
 
     /*
      * サウンド

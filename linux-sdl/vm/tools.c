@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2012 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ 補助ツール ]
  */
@@ -459,12 +459,13 @@ make_new_t77(char *fname)
 /*
  *	ブランクバブルカセット作成
  */
-BOOL FASTCALL make_new_bubble(char *fname)
+BOOL FASTCALL make_new_bubble(char *fname, char *name)
 {
-	static const BYTE volumelabel[] = "VOL00000";
+	static const char volumelabel[] = "VOL00000";
 
 	SDL_RWops *fileh;
 	BYTE buffer[0x40];
+	BYTE header[0x20];
 	DWORD i;
 	/* assert */
 	ASSERT(fname);
@@ -474,13 +475,40 @@ BOOL FASTCALL make_new_bubble(char *fname)
 	if (fileh == -1) {
 		return FALSE;
 	}
+   
+	/* ヘッダ作成 */
+	if (name != NULL) {
+		memset(header, 0, sizeof(header));
+		for (i=0; i<16; i++) {
+			if (name[i] == '\0') {
+				break;
+			}
+			header[i] = name[i];
+		}
+
+		/* サイズ(32KB固定) */
+		header[0x1b] = 0x80;
+
+		/* ヘッダ書き込み */
+		if (!file_write(fileh, header, 0x1c)) {
+			file_close(fileh);
+			return FALSE;
+		}
+
+		/* ファイルトータルサイズ */
+		if (!make_d77_sub(fileh, 0x008020)) {
+			file_close(fileh);
+			return FALSE;
+		}
+	}
+
 
 	/* ヌルデータ書き込み */
 	for (i=0; i<=0x03ff; i++) {
 		memset(buffer, 0, sizeof(buffer));
 		if (i == 0) {
 			/* IDセクタ作成 */
-			memcpy(buffer, volumelabel, strlen(volumelabel));
+			memcpy((char *)buffer, volumelabel, strlen(volumelabel));
 			buffer[8] = 0x08;
 			buffer[9] = 0x00;
 		        buffer[10] = 0x00;
@@ -496,7 +524,8 @@ BOOL FASTCALL make_new_bubble(char *fname)
 	file_close(fileh);
 	return TRUE;
 }
-#endif
+#endif	/* XM7_VER == 1 && defined(BUBBLE) */
+
 
 
 /*
@@ -1182,6 +1211,88 @@ conv_vtp_to_t77(char *src, char *dst)
 	while (hdr[2] != 0xFF);
     }
 }
+
+#if XM7_VER == 1 && defined(BUBBLE)
+/*
+ *	BBL→B77変換
+ */
+BOOL FASTCALL conv_bbl_to_b77(char *src, char *dst, char *name)
+{
+	int files;
+	int filed;
+	BYTE buffer[0x40];
+	BYTE b77_h[0x20];
+	int size;
+	int page;
+
+	/* assert */
+	ASSERT(src);
+	ASSERT(dst);
+	ASSERT(name);
+
+	/* BBLファイルオープン、ファイルサイズチェック */
+	files = file_open(src, OPEN_R);
+	if (files == -1) {
+		return FALSE;
+        }
+	size = file_getsize(files);
+	if (size != 32768) {
+		file_close(files);
+		return FALSE;
+	}
+
+	/* B77ファイル作成 */
+	filed = file_open(dst, OPEN_W);
+	if (filed == -1) {
+		file_close(files);
+		return FALSE;
+	}
+
+	/* ヘッダ作成 */
+	memset(b77_h, 0, sizeof(b77_h));
+	if (strlen(name) <= 16) {
+		strcpy((char*)b77_h, name);
+	}
+	else {
+		memcpy(b77_h, name, 16);
+	}
+
+	/* ファイルサイズ */
+	b77_h[0x1b] = 0x80;
+	b77_h[0x1c] = 0x20;
+	b77_h[0x1d] = 0x80;
+	b77_h[0x1e] = 0x00;
+
+	/* ヘッダ書き込み */
+	if (!file_write(filed, b77_h, sizeof(b77_h))) {
+		file_close(files);
+		file_close(filed);
+		return FALSE;
+	}
+
+	/* ページループ */
+	for (page=0; page<0x0400; page++) {
+
+		/* データ読み込み */
+		file_read(files, buffer, 0x0020);
+
+		/* データ書き込み */
+		if (!file_write(filed, buffer, 0x0020)) {
+			free(buffer);
+			file_close(files);
+			file_close(filed);
+			return FALSE;
+		}
+	}
+
+	/* すべて終了 */
+	file_close(files);
+	file_close(filed);
+
+	return TRUE;
+}
+#endif
+
 
 /*
  *      BMPヘッダ書き込み

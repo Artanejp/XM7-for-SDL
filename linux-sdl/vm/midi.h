@@ -1,10 +1,10 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
- *      [ MIDIアダプタ ]
+ *      [ MIDIアダプタ (Oh!FM掲載MIDIカード?)]
  */
 
 #ifndef _midi_h_

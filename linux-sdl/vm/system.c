@@ -1,21 +1,10 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ システム管理 ]
- *
- *	RHG履歴
- *	  2001.08.07		ホットリセット機能を追加
- *	  2001.11.19		旧ステートファイル(イベント16個タイプ)のロードに対応
- *						V2.5L21で作成されたステートファイルの読み込みに対応
- *	  2002.03.06		V3でのステートファイルVer.7のロードに対応
- *						ステートファイルバージョンを全面的に3桁化
- *	  2002.12.04		ホットリセットの方法を変更
- *	  2004.05.04		ステートファイルVer.5がロードできない問題を修正
- *	  2004.12.01		F-BASIC V3.5でのホットリセットに対応
- *	  2006.11.08		日本語サブシステムのステートセーブ・ロードに対応
  */
 
 #include <string.h>
@@ -76,11 +65,11 @@ BYTE            fetch_op;	/* 直前にフェッチした命令 */
  *      ステートファイルヘッダ
  */
 #if XM7_VER >= 3
-const char     *state_header = "XM7 VM STATE 916";
+const char     *state_header = "XM7 VM STATE 918";
 #elif XM7_VER >= 2
-const char     *state_header = "XM7 VM STATE 716";
+const char     *state_header = "XM7 VM STATE 718";
 #else
-const char     *state_header = "XM7 VM STATE 307";
+const char     *state_header = "XM7 VM STATE 308";
 #endif
 
 /*
@@ -585,9 +574,9 @@ system_load(char *filename)
     BOOL            flag;
 #if XM7_VER >= 2   
     BOOL            old_scheduler;
+    int filesize;
 #endif   
     WORD            tmp;
-    int             filesize;
 #if XM7_VER == 1
     BOOL            temp;
 #endif

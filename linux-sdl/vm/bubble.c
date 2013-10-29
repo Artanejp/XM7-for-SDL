@@ -1,9 +1,9 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2012 Ryu Takegami
- *	Copyright (C) 2010-2012 Toma
+ *	Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2013 Ryu Takegami
+ *	Copyright (C) 2010-2013 Toma
  *
  *	[ バブルメモリ コントローラ (32KB専用版) ]
  */
@@ -39,7 +39,11 @@ BOOL bmc_teject[BMC_UNITS_32];			/* 一時イジェクト */
 BOOL bmc_writep[BMC_UNITS_32];			/* 書き込み禁止状態 */
 
 char bmc_fname[BMC_UNITS_32][256+1];	/* ファイル名 */
+char bmc_name[BMC_UNITS_32][BMC_MEDIAS][17];	/* イメージ名 */
 BOOL bmc_fwritep[BMC_UNITS_32];			/* ライトプロテクト状態 */
+BYTE bmc_header[BMC_UNITS_32][0x20];	/* B77ファイルヘッダ */
+BYTE bmc_medias[BMC_UNITS_32];			/* メディア枚数 */
+BYTE bmc_media[BMC_UNITS_32];			/* メディアセレクト状態 */
 BYTE bmc_access[BMC_UNITS_32];			/* アクセスLED */
 
 BOOL bmc_enable;						/* 有効・無効フラグ */
@@ -51,6 +55,8 @@ BOOL bmc_use;   						/* 使用フラグ */
 static BYTE bmc_buffer[BMC_PSIZE_32];	/* 32byteデータバッファ */
 static BYTE *bmc_dataptr;				/* データポインタ */
 static DWORD bmc_offset;				/* オフセット */
+static DWORD bmc_foffset[BMC_UNITS_32][BMC_MEDIAS];
+static DWORD bmc_fsize[BMC_UNITS_32];
 #ifdef FDDSND
 static BOOL bmc_wait;					/* ウェイトモード実行フラグ */
 #endif
@@ -68,8 +74,12 @@ BOOL FASTCALL bmc_init(void)
 	memset(bmc_ready, BMC_TYPE_NOTREADY, sizeof(bmc_ready));
 	memset(bmc_teject, FALSE, sizeof(bmc_teject));
 	memset(bmc_writep, FALSE, sizeof(bmc_writep));
-	memset(bmc_fname, NULL, sizeof(bmc_fname));
+	memset(bmc_fname, 0, sizeof(bmc_fname));
 	memset(bmc_fwritep, FALSE, sizeof(bmc_fwritep));
+	memset(bmc_medias, 0, sizeof(bmc_medias));
+
+	/* ファイルオフセットを全てクリア */
+	memset(bmc_foffset, 0, sizeof(bmc_foffset));
 
 	/* デフォルトは無効 */
 	bmc_enable = FALSE;
@@ -98,8 +108,6 @@ void FASTCALL bmc_cleanup(void)
  */
 void FASTCALL bmc_reset(void)
 {
-	int i;
-
 	/* 物理レジスタをリセット */
 	bmc_datareg = 0;
 	bmc_command = 0xff;
@@ -133,6 +141,12 @@ static BOOL FASTCALL bmc_write_page(void)
 
 	/* オフセット算出 */
 	offset = (DWORD)((bmc_pagereg & BMC_MAXADDR_32) * BMC_PSIZE_32);
+	if (bmc_ready[bmc_unit] == BMC_TYPE_B77) {
+		if (bmc_fsize[bmc_unit] < offset + BMC_PSIZE_32 + 0x0020) {
+			return FALSE;
+		}
+		offset += *(DWORD *)(&bmc_header[bmc_unit][0x0014]);
+	}
 
 	/* 書き込み */
 	handle = file_open(bmc_fname[bmc_unit], OPEN_RW);
@@ -155,7 +169,7 @@ static BOOL FASTCALL bmc_write_page(void)
 /*
  *	ページ読み込み
  */
-static void FASTCALL bmc_readbuf(void)
+static BOOL FASTCALL bmc_readbuf(void)
 {
 	int handle;
 	DWORD offset;
@@ -163,32 +177,106 @@ static void FASTCALL bmc_readbuf(void)
 	/* ページアドレスチェック */
 	if (bmc_unit >= BMC_UNITS_32) {
 		memset(bmc_buffer, 0, BMC_PSIZE_32);
-		return;
+		return FALSE;
 	}
 
 	/* レディチェック */
 	if (bmc_ready[bmc_unit] == BMC_TYPE_NOTREADY) {
-		return;
+		return FALSE;
 	}
 
 	/* オフセット算出 */
 	offset = (DWORD)(bmc_pagereg & BMC_MAXADDR_32);
 	offset *= BMC_PSIZE_32;
+	if (bmc_ready[bmc_unit] == BMC_TYPE_B77) {
+		if (bmc_fsize[bmc_unit] < offset + BMC_PSIZE_32 + 0x0020) {
+			return FALSE;
+		}
+		offset += *(DWORD *)(&bmc_header[bmc_unit][0x0014]);
+	}
 	bmc_offset = offset;
 
 	/* 読み込み */
 	memset(bmc_buffer, 0, BMC_PSIZE_32);
 	handle = file_open(bmc_fname[bmc_unit], OPEN_R);
 	if (handle == -1) {
-		return;
+		return FALSE;
 	}
 	if (!file_seek(handle, offset)) {
 		file_close(handle);
-		return;
+		return FALSE;
 	}
 	file_read(handle, bmc_buffer, BMC_PSIZE_32);
 	file_close(handle);
-	return;
+	return TRUE;
+}
+
+/*
+ *	B77ファイル ヘッダ読み込み
+ */
+static BOOL FASTCALL bmc_readhead(int unit, int index)
+{
+	DWORD offset;
+	DWORD temp;
+	int handle;
+
+	/* assert */
+	ASSERT((unit >= 0) && (unit < BMC_UNITS_32));
+	ASSERT((index >= 0) && (index < BMC_MEDIAS));
+	ASSERT(bmc_ready[unit] == BMC_TYPE_B77);
+
+	/* オフセット決定 */
+	offset = bmc_foffset[unit][index];
+
+	/* シーク、読み込み */
+	handle = file_open(bmc_fname[unit], OPEN_R);
+	if (handle == -1) {
+		return FALSE;
+	}
+	if (!file_seek(handle, offset)) {
+		file_close(handle);
+		return FALSE;
+	}
+	if (!file_read(handle, bmc_header[unit], 0x20)) {
+		file_close(handle);
+		return FALSE;
+	}
+	file_close(handle);
+
+	/* カセットサイズ */
+	temp = 0;
+	temp |= bmc_header[unit][0x001c + 3];
+	temp *= 256;
+	temp |= bmc_header[unit][0x001c + 2];
+	temp *= 256;
+	temp |= bmc_header[unit][0x001c + 1];
+	temp *= 256;
+	temp |= bmc_header[unit][0x001c + 0];
+	bmc_fsize[unit] = temp;
+
+	/* タイプチェック */
+	if (bmc_header[unit][0x001b] != 0x80) {
+		/* 32KBでない */
+		return FALSE;
+	}
+
+	/* ライトプロテクト設定 */
+	if (bmc_fwritep[unit]) {
+		bmc_writep[unit] = TRUE;
+	}
+	else {
+		if (bmc_header[unit][0x001a] & 0x10) {
+			bmc_writep[unit] = TRUE;
+		}
+		else {
+			bmc_writep[unit] = FALSE;
+		}
+	}
+
+	/* オフセット */
+	*(DWORD *)(&bmc_header[unit][0x0014]) = offset + 0x0020;
+
+	return TRUE;
 }
 
 /*
@@ -196,11 +284,12 @@ static void FASTCALL bmc_readbuf(void)
  */
 BOOL FASTCALL bmc_setwritep(int unit, BOOL writep)
 {
+        BYTE header[0x2b0];
 	DWORD offset;
 	int handle;
 
 	/* assert */
-	ASSERT((unit >= 0) && (unit < BMC_UNITS_128));
+	ASSERT((unit >= 0) && (unit < 2));
 	ASSERT((writep == TRUE) || (writep == FALSE));
 
 	/* レディでなければならない */
@@ -212,40 +301,194 @@ BOOL FASTCALL bmc_setwritep(int unit, BOOL writep)
 	if (bmc_fwritep[unit]) {
 		return FALSE;
 	}
+	if (bmc_ready[unit] == BMC_TYPE_B77) {
+		offset = bmc_foffset[unit][bmc_media[unit]];
+		handle = file_open(bmc_fname[unit], OPEN_RW);
+		if (handle == -1) {
+			return FALSE;
+		}
+		if (!file_seek(handle, offset)) {
+			file_close(handle);
+			return FALSE;
+		}
+		if (!file_read(handle, header, 0x20)) {
+			file_close(handle);
+			return FALSE;
+		}
+		if (writep) {
+			header[0x001a] |= 0x10;
+		}
+		else {
+			header[0x001a] &= ~0x10;
+		}
+		if (!file_seek(handle, offset)) {
+			file_close(handle);
+			return FALSE;
+		}
+		if (!file_write(handle, header, 0x20)) {
+			file_close(handle);
+			return FALSE;
+		}
+
+		file_close(handle);
+	}
 
 	/* 成功 */
-	file_close(handle);
 	bmc_writep[unit] = writep;
 
 	return TRUE;
 }
 
 /*
+ *	メディア番号を設定
+ */
+BOOL FASTCALL bmc_setmedia(int unit, int index)
+{
+	/* assert */
+	ASSERT((unit >= 0) && (unit <= 1));
+	ASSERT((index >= 0) && (index < BMC_MEDIAS));
+
+	/* レディ状態か */
+	if (bmc_ready[unit] == BMC_TYPE_NOTREADY) {
+		return FALSE;
+	}
+
+	/* 32KBファイルの場合、index = 0か */
+	if ((bmc_ready[unit] == BMC_TYPE_32) && (index != 0)) {
+		return FALSE;
+	}
+
+	/* index > 0 なら、bmc_foffsetを調べて>0が必要 */
+	if (index > 0) {
+		if (bmc_foffset[unit][index] == 0) {
+			return FALSE;
+		}
+	}
+
+	/* B77ファイルの場合、ヘッダ読み込み */
+	if (bmc_ready[unit] == BMC_TYPE_B77) {
+		/* ライトプロテクトは内部で設定 */
+		if (!bmc_readhead(unit, index)) {
+			return FALSE;
+		}
+	}
+	else {
+		/* 32KBファイルなら、ファイル属性に従う */
+		bmc_writep[unit] = bmc_fwritep[unit];
+	}
+
+	/* メディアが交換された場合、一時イジェクトを強制解除 */
+	if (bmc_media[unit] != (BYTE)index) {
+		bmc_media[unit] = (BYTE)index;
+		bmc_teject[unit] = FALSE;
+	}
+
+	return TRUE;
+}
+
+/*
+ *	B77ファイル解析、メディア数および名称取得
+ */
+static int FASTCALL bmc_chkb77(int unit)
+{
+	int i;
+	int handle;
+	int count;
+	DWORD offset;
+	DWORD len;
+	BYTE buf[0x20];
+
+	/* 初期化 */
+	for (i=0; i<BMC_MEDIAS; i++) {
+		bmc_foffset[unit][i] = 0;
+		bmc_name[unit][i][0] = '\0';
+	}
+	count = 0;
+	offset = 0;
+
+	/* ファイルオープン */
+	handle = file_open(bmc_fname[unit], OPEN_R);
+	if (handle == -1) {
+		return count;
+	}
+
+	/* メディアループ */
+	while (count < BMC_MEDIAS) {
+		/* シーク */
+		if (!file_seek(handle, offset)) {
+			file_close(handle);
+			return count;
+		}
+
+		/* 読み込み */
+		if (!file_read(handle, buf, 0x0020)) {
+			file_close(handle);
+			return count;
+		}
+
+		/* タイプチェック。32KBのみ対応 */
+		if (buf[0x001b] != 0x80) {
+			file_close(handle);
+			return count;
+		}
+
+		/* ok,ファイル名、オフセット格納 */
+		buf[17] = '\0';
+		memcpy(bmc_name[unit][count], buf, 17);
+		bmc_foffset[unit][count] = offset;
+
+		/* next処理 */
+		len = 0;
+		len |= buf[0x1f];
+		len *= 256;
+		len |= buf[0x1e];
+		len *= 256;
+		len |= buf[0x1d];
+		len *= 256;
+		len |= buf[0x1c];
+		offset += len;
+		count++;
+	}
+
+	/* 最大メディア枚数に達した */
+	file_close(handle);
+	return count;
+}
+
+
+/*
  *	ファイルを設定
  */
-BOOL FASTCALL bmc_setfile(int unit, char *fname)
+
+int FASTCALL bmc_setfile(int unit, char *fname)
 {
 	BOOL writep;
 	int handle;
 	DWORD fsize;
 	int count;
 
-	ASSERT((unit >= 0) && (unit < BMC_UNITS_128));
+	ASSERT((unit >= 0) && (unit < 2));
 
 	/* ノットレディにする場合 */
 	if (fname == NULL) {
 		bmc_ready[unit] = BMC_TYPE_NOTREADY;
 		bmc_fname[unit][0] = '\0';
-		return FALSE;
+		return 1;
 	}
 
 	/* ファイルをオープンし、ファイルサイズを調べる */
+	if (strlen(fname) >= sizeof(bmc_fname[unit])) {
+		bmc_ready[unit] = BMC_TYPE_NOTREADY;
+		bmc_fname[unit][0] = '\0';
+	        return 1;
+	}
 	writep = FALSE;
 	handle = file_open(fname, OPEN_RW);
 	if (handle == -1) {
 		handle = file_open(fname, OPEN_R);
 		if (handle == -1) {
-			return FALSE;
+			bmc_ready[unit] = BMC_TYPE_NOTREADY;
+			return 0;
 		}
 		writep = TRUE;
 	}
@@ -259,18 +502,46 @@ BOOL FASTCALL bmc_setfile(int unit, char *fname)
 	if (fsize == 32768) {
 		/* タイプ、書き込み属性設定 */
 		bmc_ready[unit] = BMC_TYPE_32;
-		bmc_writep[unit] = bmc_fwritep[unit] = writep;
+		bmc_fwritep[unit] = writep;
+
+		/* メディア設定 */
+		if (!bmc_setmedia(unit, 0)) {
+			bmc_ready[unit] = BMC_TYPE_NOTREADY;
+			bmc_fname[unit][0] = '\0';
+			return 0;
+		}
 
 		/* 成功。一時イジェクト解除 */
 		bmc_teject[unit] = FALSE;
-
-		return TRUE;
+		bmc_medias[unit] = 1;
+		return 1;
 	}
+
+	/*
+	 * B77ファイル
+	 */
+	bmc_ready[unit] = BMC_TYPE_B77;
+	bmc_fwritep[unit] = writep;
+
+	/* ファイル検査 */
+	count = bmc_chkb77(unit);
+	if (count != 0){
+		/* メディア設定 */
+		if (bmc_setmedia(unit, 0)) {
+			/* 成功。一時イジェクト解除 */
+			bmc_teject[unit] = FALSE;
+			bmc_medias[unit] = (BYTE)count;
+			return count;
+		}
+	}
+   
 
 	bmc_ready[unit] = BMC_TYPE_NOTREADY;
 	bmc_fname[unit][0] = '\0';
-	return FALSE;
+	return 0;
 }
+
+
 
 /*-[ BMCコマンド ]----------------------------------------------------------*/
 
@@ -282,7 +553,7 @@ static void FASTCALL bmc_make_stat(void)
 	/* 有効なユニット */
 	if (bmc_ready[bmc_unit] == BMC_TYPE_NOTREADY) {
 		bmc_status |= (BYTE)BMC_ST_NOTREADY;
-		bmc_status |= (BYTE)BMC_ST_ERROR;
+		bmc_status |= (BYTE)(BMC_ST_ERROR | BMC_ST_CME);
 		bmc_errorreg |= (BYTE)BMC_ES_EJECT;
 	}
 	else {
@@ -335,10 +606,12 @@ static void FASTCALL bmc_initialize(void)
 static BOOL FASTCALL bmc_rw_sub(void)
 {
 	bmc_status = (BYTE)0;
+	bmc_errorreg = (BYTE)0;
 
 	/* ページアドレスチェック */
-	if (bmc_unit >= BMC_UNITS_32) {
-		bmc_status |= (BYTE)BMC_ST_ERROR;
+	if ((bmc_unit >= BMC_UNITS_32) ||
+		(bmc_pagereg >= (BMC_MAXADDR_32 + 1) * 2)) {
+		bmc_status |= (BYTE)(BMC_ST_ERROR | BMC_ST_CME);
 		bmc_errorreg |= (BYTE)BMC_ES_PAGEOVER;
 		return FALSE;
 	}
@@ -383,7 +656,11 @@ static void FASTCALL bmc_read_data(void)
 	bmc_access[bmc_unit] = (BYTE)BMC_ACCESS_READ;
 
 	/* データバッファ読み込み */
-	bmc_readbuf();
+	if (!bmc_readbuf()) {
+		bmc_status |= (BYTE)(BMC_ST_ERROR | BMC_ST_CME);
+		bmc_errorreg |= (BYTE)BMC_ES_NOMAKER;
+	        return;
+	}
 
 	/* 最初のデータを設定 */
 	bmc_datareg = bmc_dataptr[0];
@@ -612,7 +889,7 @@ BOOL FASTCALL bmc_writeb(WORD addr, BYTE dat)
 
 					/* ライトページ処理 */
 					if (!bmc_write_page()) {
-						bmc_status |= (BYTE)BMC_ST_ERROR;
+						bmc_status |= (BYTE)(BMC_ST_ERROR | BMC_ST_CME);
 						bmc_errorreg |= (BYTE)BMC_ES_NOMAKER;
 					}
 
@@ -651,17 +928,17 @@ BOOL FASTCALL bmc_writeb(WORD addr, BYTE dat)
 
 		/* コマンドレジスタ(BCMD) */
 		case 0xfd11:
-			bmc_command = (dat & 0x0f);
+			bmc_command = (BYTE)(dat & 0x0f);
 			bmc_process_cmd();
 			return TRUE;
 
 		/* ページアドレスレジスタH(BPGADH) */
 		case 0xfd14:
 			bmc_pagereg &= 0x00ff;
-			bmc_pagereg |= (dat << 8);
+			bmc_pagereg |= (WORD)(dat << 8);
 
 			/* ページからユニットを算出 */
-			bmc_unit = (bmc_pagereg >> 10);
+			bmc_unit = (BYTE)(bmc_pagereg >> 10);
 			return TRUE;
 
 		/* ページアドレスレジスタL(BPGADL) */
@@ -673,7 +950,7 @@ BOOL FASTCALL bmc_writeb(WORD addr, BYTE dat)
 		/* ページカウントレジスタH(BPGCTH) */
 		case 0xfd16:
 			bmc_countreg &= 0x00ff;
-			bmc_countreg |= (dat << 8);
+			bmc_countreg |= (WORD)(dat << 8);
 			return TRUE;
 
 		/* ページカウントレジスタL(BPGCTL) */
@@ -711,6 +988,11 @@ BOOL FASTCALL bmc_save(int fileh)
 			}
 		}
 
+		for (i=0; i<bmc_units; i++) {
+			if (!file_byte_write(fileh, bmc_media[i])) {
+				return FALSE;
+			}
+		}
 		for (i=0; i<bmc_units; i++) {
 			if (!file_bool_write(fileh, bmc_teject[i])) {
 				return FALSE;
@@ -802,6 +1084,7 @@ BOOL FASTCALL bmc_load(int fileh, int ver)
 	int i, bmc_units;
 	BYTE ready[BMC_UNITS_32];
 	char fname[BMC_UNITS_32][256 + 1];
+	BYTE media[BMC_UNITS_32];
 	WORD offset;
 	DWORD size;
 #ifndef FDDSND
@@ -833,12 +1116,29 @@ BOOL FASTCALL bmc_load(int fileh, int ver)
 			return FALSE;
 		}
 	}
+	if (ver >= 308) {
+		for (i=0; i<bmc_units; i++) {
+			if (!file_byte_read(fileh, &media[i])) {
+				return FALSE;
+			}
+		}
+	}
+	else {
+		for (i=0; i<bmc_units; i++) {
+			media[i] = 0;
+		}
+	}
 
 	/* 再マウントを試みる */
 	for (i=0; i<bmc_units; i++) {
 		bmc_setfile(i, NULL);
 		if (ready[i] != BMC_TYPE_NOTREADY) {
 			bmc_setfile(i, fname[i]);
+			if (bmc_ready[i] != BMC_TYPE_NOTREADY) {
+				if (bmc_medias[i] >= (media[i] + 1)) {
+					bmc_setmedia(i, media[i]);
+				}
+			}
 		}
 	}
 
@@ -902,7 +1202,7 @@ BOOL FASTCALL bmc_load(int fileh, int ver)
 	}
 
 	/* ページからユニットを算出 */
-	bmc_unit = (bmc_pagereg >> 10);
+	bmc_unit = (BYTE)(bmc_pagereg >> 10);
 
 	/* 有効・無効チェック */
 	if (!file_bool_read(fileh, &bmc_enable)) {

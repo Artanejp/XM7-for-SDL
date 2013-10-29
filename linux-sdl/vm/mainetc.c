@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ メインCPU各種I/O ]
  */
@@ -49,7 +49,7 @@ BOOL banksel_en;					/* バンク切り換えイネーブルフラグ */
  *	スタティック ワーク
  */
 #if XM7_VER == 1 && defined(BUBBLE)
-static BYTE boot_mode_reset;		/* リセット時のブートROMバンク */
+static int boot_mode_reset;		/* リセット時のブートROMバンク */
 #endif
 
 

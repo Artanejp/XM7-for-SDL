@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2012 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ ディスプレイ ]
  */
@@ -46,6 +46,7 @@ BOOL            vram_offset_flag;	/* 拡張VRAMオフセットレジスタフラ
 BOOL            vsync_flag;	/* VSYNCフラグ */
 BOOL            draw_aftervsync;	/* 画面描画通知タイミング
 					 */
+int now_raster;							/* 現在ラスタ位置 */
 
 BOOL            blank_flag;	/* ブランキングフラグ */
 #if XM7_VER >= 2
@@ -266,6 +267,7 @@ display_reset(void)
     memset(crtc_offset, 0, sizeof(crtc_offset));
     vram_offset_flag = FALSE;
     memset(vram_offset_count, 0, sizeof(vram_offset_count));
+    now_raster = 0;
 
 #if XM7_VER >= 2
     /*
@@ -489,6 +491,8 @@ display_vsync(void)
 	/*
 	 * これから垂直表示
 	 */
+	now_raster = 0;
+	vblankperiod_notify();
 	vsync_flag = FALSE;
 #if (XM7_VER >= 3) || (XM7_VER == 1 && defined(L4CARD))
 	if (blank_count & 0x1000) {
@@ -585,6 +589,8 @@ display_blank(void)
 	/*
 	 * これから水平同期期間
 	 */
+	hblank_notify();
+	now_raster ++;
 	blank_flag = TRUE;
 #if (XM7_VER >= 3) || (XM7_VER == 1 && defined(L4CARD))
 	if (blank_count & 0x1000) {
@@ -2258,6 +2264,11 @@ display_save(SDL_RWops *fileh)
 	return FALSE;
     }
 #endif
+	/* Ver9.18/Ver7.18/Ver3.08拡張 */
+	if (!file_dword_write(fileh, now_raster)) {
+		return FALSE;
+	}
+
 
     return TRUE;
 }
@@ -2469,6 +2480,22 @@ display_load(SDL_RWops *fileh, int ver)
     /*
      * ポインタを構成
      */
+       /* Ver9.18/Ver7.18/Ver3.08拡張 */
+#if XM7_VER >= 3
+	if ((ver >= 918) || ((ver >= 718) && (ver <= 799))) {
+#elif XM7_VER >= 2
+	if ((ver >= 718) && (ver <= 799)) {
+#else
+	if (ver >= 308) {
+#endif
+		if (!file_dword_read(fileh, (DWORD *)&now_raster)) {
+			return FALSE;
+		}
+	}
+	else {
+		now_raster = 0;
+	}
+
     display_setpointer(TRUE);
     display_setup();
 

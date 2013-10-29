@@ -1,8 +1,8 @@
 /*
  *	FM-7 EMULATOR "XM7"
  *
- *	Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *	Copyright (C) 2001-2012 Ryu Takegami
+ *	Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *	Copyright (C) 2001-2013 Ryu Takegami
  *
  *	[ メインCPUメモリ ]
  */
@@ -74,8 +74,10 @@ BOOL initrom_en;						/* イニシエータROMイネーブルフラグ */
 /*
  *	スタティック ワーク
  */
+#if XM7_VER >= 2
 static BYTE *patch_branewboottfr;		/* 新ブート転送用処理へのBRA命令 */
 static BYTE *patch_jmpnewboot;			/* 新ブートへのJMP命令 */
+#endif
 static BYTE ioaccess_count;				/* I/O領域アクセスカウンタ */
 static BOOL ioaccess_flag;				/* I/Oアクセスウェイト調整フラグ */
 
@@ -302,10 +304,11 @@ BOOL FASTCALL mainmem_init(void)
 	if (!file_load(BOOTDOS8_ROM, boot_dos8, 0x1e0)) {
 		available_fm8roms = FALSE;
 	}
-	if (!file_load(BOOTBBL8_ROM, boot_bbl8, 0x1e0)) {
+#if defined(BUBBLE)
+        if (!file_load(BOOTBBL8_ROM, boot_bbl8, 0x1e0)) {
 		bubble_available = FALSE;
 	}
-
+#endif
 	/* 旧ブート高速起動(FM-7/NEW7(1st lot)/8) */
 	for (i=0; i<6; i++) {
 		switch (i) {

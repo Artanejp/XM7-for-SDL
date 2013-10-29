@@ -21,6 +21,10 @@
 
 #include "agar_sdlview.h"
 #include <SDL/SDL.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif // _OPENMP
+
 /*
  * This is a generic constructor function. It is completely optional, but
  * customary of FooNew() functions to allocate, initialize and attach an
@@ -278,9 +282,9 @@ static void Draw(void *p)
       if(AG_UsingGL(NULL) != 0) {
 	 AG_WidgetBlit(my, my->Surface, 0, 0);
       } else {
+	 AG_BeginRendering(my->_inherit.drv);
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
-//      AG_WidgetReplaceSurface(my, my->mySurface, my->Surface);
-//	 AG_WidgetUpdateSurface(my, my->mySurface);
+ 	 AG_EndRendering(my->_inherit.drv);
       }
    }
    

@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2012 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2012 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ サブCPUメモリ ]
  */
@@ -63,6 +63,7 @@ BOOL            enable_400linecard;	/* 400ラインカードイネーブル
 BOOL            detect_400linecard;	/* 400ラインカード発見フラグ
 					 */
 BOOL detect_400linecard_tmp;           /* 400ラインカード発見フラグ */
+BOOL ankcg_force_internal = FALSE;	/* 内蔵フォント強制使用フラグ */
 #endif
 #endif
 
@@ -227,11 +228,16 @@ BOOL FASTCALL submem_init(void)
 	} else {
 		enable_400linecard = TRUE;
 		detect_400linecard = TRUE;
-                /* ANKCG16.ROM,EXTSUB.ROMのどちらもない場合内蔵フォントを使用 */
 
-		if (!file_load(ANKCG16_ROM, subcg_l4, 0x1000)) {
-			if (!file_load(EXTSUB_ROM, subcg_l4, 0x1000)) {
-				memcpy(subcg_l4, subcg_internal, 4096);
+	        /* ANKCG16.ROM,EXTSUB.ROMのどちらもない場合内蔵フォントを使用 */
+		if (ankcg_force_internal) {
+			memcpy(subcg_l4, subcg_internal, 4096);
+		}
+		else {
+			if (!file_load(ANKCG16_ROM, subcg_l4, 0x1000)) {
+				if (!file_load(EXTSUB_ROM, subcg_l4, 0x1000)) {
+					memcpy(subcg_l4, subcg_internal, 4096);
+				}
 			}
 		}
 	}
@@ -545,17 +551,29 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 			 * サブRAM バンク
 			 */
 			return subramcg[cgram_bank * 0x0800 + (addr - 0xd800)];
-		} else {
+		} else if (fm7_ver >= 2) {
 			/*
 			 * サブROM バンク
 			 */
 			return subromcg[cgrom_bank * 0x0800 + (addr - 0xd800)];
 		}
+		else {
+			/* サブROM Type-C */
+			return subrom_c[addr - 0xd800];
+		}
+	   
 #else
 		/*
 		 * サブROM バンク
 		 */
-		return subromcg[cgrom_bank * 0x0800 + (addr - 0xd800)];
+		if (fm7_ver >= 2) {
+			/* サブROM バンク */
+			return subromcg[cgrom_bank * 0x0800 + (addr - 0xd800)];
+		}
+		else {
+			/* サブROM Type-C */
+			return subrom_c[addr - 0xd800];
+		}
 #endif
 	}
 
@@ -827,17 +845,28 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 			 * サブRAM バンク
 			 */
 			return subramcg[cgram_bank * 0x0800 + (addr - 0xd800)];
-		} else {
+		} else if (fm7_ver >= 2) {
 			/*
 			 * サブROM バンク
 			 */
 			return subromcg[cgrom_bank * 0x0800 + (addr - 0xd800)];
 		}
+		else {
+			/* サブROM Type-C */
+			return subrom_c[addr - 0xd800];
+		}
 #else
 		/*
 		 * サブROM バンク
 		 */
-		return subromcg[cgrom_bank * 0x0800 + (addr - 0xd800)];
+		if (fm7_ver >= 2) {
+			/* サブROM バンク */
+			return subromcg[cgrom_bank * 0x0800 + (addr - 0xd800)];
+		}
+		else {
+			/* サブROM Type-C */
+			return subrom_c[addr - 0xd800];
+		}
 #endif
 	}
 #else
@@ -1043,7 +1072,7 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 		/*
 		 * サブRAMでないか、プロテクトされている
 		 */
-		if ((subrom_bank != 4) || (subram_protect)) {
+		if ((subrom_bank != 4) || subram_protect) {
 			return;
 		}
 
@@ -1242,9 +1271,6 @@ BOOL FASTCALL submem_save(SDL_RWops *fileh)
  */
 BOOL FASTCALL submem_load(SDL_RWops *fileh, int ver)
 {
-#if XM7_VER == 1 && defined(L4CARD)
-	BOOL            tmp;
-#endif
 
 	/*
 	 * バージョンチェック

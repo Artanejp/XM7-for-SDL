@@ -59,13 +59,22 @@ WORD 			nAspect;  /* アスペクト比 20110123 */
 BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
 BOOL 			bSmoosing; /* スムージング処理する(GLのみ?) */
 BOOL            bOldFullScan;	/* クリアフラグ(過去) */
+BOOL bFullScanFS;							/* フルスキャン(FullScreen) */
+BOOL bDoubleSize;							/* 2倍拡大フラグ */
 
 BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 SDL_semaphore *DrawInitSem;
+#if XM7_VER == 1
+BOOL bGreenMonitor;							/* グリーンモニタフラグ */
+#endif
+BOOL bRasterRendering;						/* ラスタレンダリングフラグ */
 
 /*
- *  スタティック ワーク
+ *	スタティック ワーク
  */
+static BOOL bNextFrameRender;				/* 次フレーム描画フラグ */
+static BOOL bDirtyLine[400];				/* 要書き換えフラグ */
+
 #if XM7_VER >= 3
 BYTE    bMode;		/* 画面モード */
 
@@ -257,6 +266,14 @@ void	InitDraw(void)
 #else
 		nOldVideoMode = FALSE;
 #endif
+	        bFullScanFS = FALSE;
+	        bDoubleSize = FALSE;
+#if XM7_VER == 1
+	        bGreenMonitor = FALSE;
+#endif
+                bRasterRendering = FALSE;
+                bNextFrameRender = FALSE;
+                memset(bDirtyLine, 0, sizeof(bDirtyLine));
 		SetDrawFlag(FALSE);
 		nDrawTick1D = 0;
 		nDrawTick1E = 0;
@@ -638,6 +655,19 @@ int OnPaint(void)
 
 
 /*-[ VMとの接続 ]-----------------------------------------------------------*/
+/*
+ *	再描画ラスタ一括設定
+ */
+void FASTCALL SetDirtyFlag(int top, int bottom, BOOL flag)
+{
+	int y;
+
+	if (bRasterRendering) {
+		for (y = top; y < bottom; y++) {
+			bDirtyLine[y] = flag;
+		}
+	}
+}
 
 /*
  *  VRAMセット
@@ -765,6 +795,10 @@ void	ttlpalet_notify(void)
     * 不要なレンダリングを抑制するため、領域設定は描画時に行う
     */
    LockVram();
+   if (bRasterRendering) {
+      bNextFrameRender = TRUE;
+      SetDirtyFlag(now_raster, 400, TRUE);
+   }
    if(bPaletFlag != TRUE)SetDrawFlag(TRUE);
    bPaletFlag = TRUE;
    UnlockVram();
@@ -776,8 +810,13 @@ void	ttlpalet_notify(void)
 void 	apalet_notify(void)
 {
    LockVram();
-   if(bPaletFlag != TRUE) SetDrawFlag(TRUE);
-   bPaletFlag = TRUE;
+   if (bRasterRendering) {
+      bNextFrameRender = TRUE;
+      SetDirtyFlag(now_raster, 400, TRUE);
+   } else {
+      if(bPaletFlag != TRUE) SetDrawFlag(TRUE);
+      bPaletFlag = TRUE;
+   }
    UnlockVram();
 }
 
@@ -787,19 +826,92 @@ void 	apalet_notify(void)
 void 	display_notify(void)
 {
 
-	/*
-	 * 再描画
-	 */
+   int i;
+   int raster;
+   /*
+    * 再描画
+    */
    LockVram();
-   nDrawTop = 0;
-   nDrawBottom = 400;
-   nDrawLeft = 0;
-   nDrawRight = 640;
-   bPaletFlag = TRUE;
+   if (bRasterRendering) {
+	bNextFrameRender = TRUE;
+	SetDirtyFlag(0, 400, TRUE);
+	if (!run_flag) {
+		raster = now_raster;
+		for (i = 0; i < 400; i++) {
+			now_raster = i;
+			hblank_notify();
+		}
+		now_raster = raster;
+	}
+   } else {
+      nDrawTop = 0;
+      nDrawBottom = 400;
+      nDrawLeft = 0;
+      nDrawRight = 640;
+      bPaletFlag = TRUE;
 //   bClearFlag = TRUE;
-   SetDrawFlag(TRUE);
+      SetDrawFlag(TRUE);
+   }
    UnlockVram();
+}
 
+   
+/*
+ *	VBLANK終了要求通知
+ */
+void FASTCALL vblankperiod_notify(void)
+{
+	BOOL flag;
+	int y;
+	int ymax;
+
+	if (bRasterRendering) {
+		/* 次のフレームを強制的に書き換えるか */
+		if (bNextFrameRender) {
+			bNextFrameRender = FALSE;
+			SetDirtyFlag(0, 400, TRUE);
+		}
+		else {
+			/* 書き換えが必要かチェック */
+#if XM7_VER >= 3
+			if (screen_mode == SCR_400LINE) {
+				ymax = 400;
+			}
+			else {
+				ymax = 200;
+			}
+#elif XM7_VER == 1 && defined(L4CARD)
+			if (enable_400line) {
+				ymax = 400;
+			}
+			else {
+				ymax = 200;
+			}
+#else
+			ymax = 200;
+#endif
+			flag = FALSE;
+			for (y = 0; y < ymax; y++) {
+				flag |= bDirtyLine[y];
+			}
+			if (!flag) {
+				return;
+			}
+		}
+		/* 全領域をレンダリング */
+	}
+}
+
+/*
+ *	HBLANK要求通知
+ */
+void FASTCALL hblank_notify(void)
+{
+	if (bRasterRendering) {
+		if (bDirtyLine[now_raster]) {
+			bDirtyLine[now_raster] = FALSE;
+		}
+	}
 }
 
 /*

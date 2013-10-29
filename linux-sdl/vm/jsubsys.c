@@ -1,8 +1,8 @@
 /*
  *      FM-7 EMULATOR "XM7"
  *
- *      Copyright (C) 1999-2010 ＰＩ．(yasushi@tanaka.net)
- *      Copyright (C) 2001-2010 Ryu Takegami
+ *      Copyright (C) 1999-2013 ＰＩ．(yasushi@tanaka.net)
+ *      Copyright (C) 2001-2013 Ryu Takegami
  *
  *      [ 日本語通信カード ]
  */
@@ -81,7 +81,7 @@ jsubsys_init(void)
     if (!file_load(JSUBSYS_ROM, jsubrom, 0x4000)) {
 	jsub_available = FALSE;
     }
-    if (!file_load(JSUBDIC_ROM, jdicrom, 0x40000)) {
+    if (!file_load(DICT_ROM, jdicrom, 0x40000)) {
 	jsub_available = FALSE;
     }
 
@@ -341,7 +341,7 @@ jsub_readb(WORD addr, BYTE * dat)
     case 0xfd28:
 	*dat = 0xff;
 	if (jsub_haltflag) {
-	    *dat &= ~0x80;
+	    *dat &= (BYTE)~0x80;
 	}
 	return TRUE;
 
