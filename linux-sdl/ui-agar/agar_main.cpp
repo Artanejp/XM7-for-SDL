@@ -226,6 +226,8 @@ void OnDestroy(AG_Event *event)
 #if 0 
    muntrace();
 #endif
+   DiscardTextures(1, &uVramTextureID);
+   uVramTextureID = 0;
    AG_Quit();
 
 }

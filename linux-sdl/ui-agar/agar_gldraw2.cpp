@@ -1,4 +1,4 @@
-﻿/*
+/*
  * agar_gldraw2.cpp
  * Using Indexed palette @8Colors.
  * (c) 2011 K.Ohta <whatisthis.sowhat@gmail.com>
@@ -50,8 +50,8 @@ extern void DetachGL_AG2(void);
 
 Uint32 *pFrameBuffer;
 // Grids
-extern GLfloat *GridVertexs200l;
-extern GLfloat *GridVertexs400l;
+extern GLuint GridVertexs200l;
+extern GLuint GridVertexs400l;
 
 // Brights
 float fBrightR;
@@ -139,50 +139,8 @@ static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
 static void drawGrids(void *pg,int w, int h)
 {
     AG_GLView *glv = (AG_GLView *)pg;
-    float width;
+
    
-    if(!bFullScan){
-        int sh = AGWIDGET(glv)->h;
-    	width = (float)sh / 800.0f * 1.5f;
-    	if(width < 0.70f) goto e1;
-        glLineWidth(width);
-        {
-           GLfloat *vertex;
-           int base;
-
-        switch(bMode) {
-        case SCR_400LINE:
-            goto e1;
-            break;
-        default:
-            vertex = GridVertexs200l;
-            break;
-        }
-        if(vertex == NULL) goto e1;
-    	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-
-        if(bGL_EXT_VERTEX_ARRAY) {
-                glVertexPointerEXT(3, GL_FLOAT, 0, h + 1, vertex);
-                glEnable(GL_VERTEX_ARRAY_EXT);
-                glDrawArraysEXT(GL_LINES, 0, h + 1);
-                glDisable(GL_VERTEX_ARRAY_EXT);
-        } else {
-	    int i;
-            GLfloat *v;
-            // VERTEX_ARRAYなしの場合
-            glBegin(GL_LINES);
-            for(i = 0; i < (h + 1); i++) {
-                v = &vertex[i * 6];
-                glVertex3f(v[0], v[1], v[2]);
-                glVertex3f(v[3], v[4], v[5]);
-            }
-            glEnd();
-        }
-    }
-
-    }
-e1:
-   return;
 }
 
 
@@ -269,13 +227,11 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 void AGEventDrawGL2(AG_Event *event)
 {
    AG_GLView *glv = (AG_GLView *)AG_SELF();
-   AG_Surface *pixvram ;
    int w;
    int h;
    int i;
    float width;
-   float ybegin;
-   float yend;
+   float yf;
    Uint32 *p;
    Uint32 *pp;
    int x;
@@ -283,18 +239,11 @@ void AGEventDrawGL2(AG_Event *event)
    GLfloat TexCoords[4][2];
    GLfloat Vertexs[4][3];
    GLfloat TexCoords2[4][2];
-   
+   GLuint gridtid;
 
    p = pVram2;
    if(p == NULL) return;
 
-//   printf("DrawGL2: %d\n", AG_GetTicks());
-
-    ybegin = 1.0f;
-//    ybegin = 400.0f/460.0f;
-    yend = 1.0f;
-            // Z Axis
-   
      switch(bMode) {
         case SCR_400LINE:
             w = 640;
@@ -304,6 +253,7 @@ void AGEventDrawGL2(AG_Event *event)
 
             TexCoords[2][0] = TexCoords[1][0] = 640.0f / 640.0f; // Xend
             TexCoords[2][1] = TexCoords[3][1] = 400.0f / 400.0f; // Yend
+	    gridtid = GridVertexs400l;
             break;
         case SCR_200LINE:
             w = 640;
@@ -313,6 +263,7 @@ void AGEventDrawGL2(AG_Event *event)
 
             TexCoords[2][0] = TexCoords[1][0] = 640.0f / 640.0f; // Xend
             TexCoords[2][1] = TexCoords[3][1] = 199.0f / 400.0f; // Yend
+	    gridtid = GridVertexs200l;
             break;
         case SCR_262144:
         case SCR_4096:
@@ -324,14 +275,15 @@ void AGEventDrawGL2(AG_Event *event)
 
             TexCoords[2][0] = TexCoords[1][0] = 320.0f / 640.0f; // Xend
             TexCoords[2][1] = TexCoords[3][1] = 199.0f / 400.0f; // Yend
+	    gridtid = GridVertexs200l;
             break;
      }
 
     Vertexs[0][2] = Vertexs[1][2] = Vertexs[2][2] = Vertexs[3][2] = -0.98f;
     Vertexs[0][0] = Vertexs[3][0] = -1.0f; // Xbegin
-    Vertexs[0][1] = Vertexs[1][1] = yend;  // Yend
+    Vertexs[0][1] = Vertexs[1][1] = 1.0f;  // Yend
     Vertexs[2][0] = Vertexs[1][0] = 1.0f; // Xend
-    Vertexs[2][1] = Vertexs[3][1] = -ybegin; // Ybegin
+    Vertexs[2][1] = Vertexs[3][1] = -1.0f; // Ybegin
 
 
     if(uVramTextureID == 0) {
@@ -354,7 +306,7 @@ void AGEventDrawGL2(AG_Event *event)
     glEnable(GL_TEXTURE_2D);
 
    
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
    
     /*
@@ -398,10 +350,13 @@ void AGEventDrawGL2(AG_Event *event)
      // 20120502 輝度調整
     glBindTexture(GL_TEXTURE_2D, 0); // 20111023
     glDisable(GL_TEXTURE_2D);
-   
+    glDisable(GL_DEPTH_TEST);
+
     glEnable(GL_BLEND);
+   
     glColor3f(fBrightR , fBrightG, fBrightB);
     glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+//    glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
         if(bGL_EXT_VERTEX_ARRAY) {
             glEnable(GL_VERTEX_ARRAY_EXT);
             glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
@@ -415,13 +370,26 @@ void AGEventDrawGL2(AG_Event *event)
             glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
             glEnd();
         }
-   
-    glBlendFunc(GL_ONE, GL_ZERO);
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
-    drawGrids(glv, w, h);
+    glBlendFunc(GL_ONE, GL_ZERO);
+   
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+    if((glv->wid.rView.h >= (h * 2)) && (bFullScan == 0)) {
+       glLineWidth((float)(glv->wid.rView.h) / (float)(h * 2));
+       glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+       glBegin(GL_LINES);
+       for(y = 0; y < h; y++) {
+	  yf = -1.0f + (float) y * 2.0f / (float)h;
+	  glVertex3f(-1.0f, yf, 0.96f);  
+	  glVertex3f(+1.0f, yf, 0.96f);  
+       }
+       glEnd();
+    }
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
 #ifdef USE_OPENGL
     DrawOSDGL(glv);
 #endif

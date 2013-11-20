@@ -19,8 +19,8 @@ extern "C" {
 }
 
 BOOL bInitCL;
-GLfloat *GridVertexs200l;
-GLfloat *GridVertexs400l;
+GLuint GridVertexs200l;
+GLuint GridVertexs400l;
 
 extern Uint32 *pFrameBuffer;
 // Brights
@@ -49,7 +49,7 @@ GLuint CreateNullTexture(int w, int h)
     GLuint ttid;
     Uint32 *p;
 
-    p =(Uint32 *)malloc((w + 2)* (h + 2)* sizeof(Uint32));
+    p =(Uint32 *)malloc((w + 2)*  (h  + 2) * sizeof(Uint32));
     if(p == NULL) return 0;
 
     memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
@@ -89,7 +89,7 @@ GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
                  GL_UNSIGNED_BYTE,
                  p);
     } else {
-#if 0 // texSubImage2D()で置き換えるとAgar側がちらつく(--;
+#if 1 // texSubImage2D()で置き換えるとAgar側がちらつく(--;
        glBindTexture(GL_TEXTURE_2D, ttid);
        glTexSubImage2D(GL_TEXTURE_2D,
                          0,  // level
@@ -173,49 +173,22 @@ void InitContextCL(void)
 }
 
 
-static void InitGridVertexsSub(int h, GLfloat *vertex)
+static GLuint InitGridVertexsSub(int h)
 {
-  int i;
-  int j;
-  GLfloat ybegin;
-  GLfloat yofset;
-  GLfloat yinc;
-  GLfloat y;
-  int base;
-    j = h + 1;
-    yinc = -4.0f / 400.0f;
-    ybegin = 1.0f;
-    yofset = -5.0f / 400.0f;
-  if(vertex == NULL) return;
-//  y = ybegin + yofset;
-  y = ybegin + yofset / 4.0f;
-  for(i = 0; j > 0 ; j--, i++, y += yinc){
-      base = i * 6;
-      vertex[base] = -1.0f; // x
-      vertex[base + 1] = y; // y
-      vertex[base + 2] = -0.99f; // z
-
-      vertex[base + 3] = 1.0f; // x
-      vertex[base + 4] = y; // y
-      vertex[base + 5] = -0.99f; // z
-
-  }
+   Uint32 *p;
+   int y;
+   int x;
+   GLuint ttid;
+   
+   return 0;
 }
+
 
 void InitGridVertexs(void)
 {
-    GridVertexs200l = (GLfloat *)malloc(202 * 6 * sizeof(GLfloat));
-    if(GridVertexs200l != NULL) {
-        InitGridVertexsSub(200, GridVertexs200l);
-    }
-    GridVertexs400l = (GLfloat *)malloc(402 * 6 * sizeof(GLfloat));
-    if(GridVertexs400l != NULL) {
-        InitGridVertexsSub(400, GridVertexs400l);
-    }
-
+   GridVertexs200l =  InitGridVertexsSub(200);
+   GridVertexs400l =  InitGridVertexsSub(400);
 }
-
-
 
 
 void InitGL_AG2(int w, int h)
