@@ -133,7 +133,8 @@ void AGDrawTaskEvent(BOOL flag)
 	 nDrawTick1D = nDrawTick2D;
 	 XM7_Sleep(1);
 	 //EventSDL(NULL);
-      } else if(AG_PendingEvents(NULL) != 0) {
+      }// else if(AG_PendingEvents(NULL) != 0) {
+      if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
 	 if(EventSDL(NULL) == FALSE) return;
 	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
