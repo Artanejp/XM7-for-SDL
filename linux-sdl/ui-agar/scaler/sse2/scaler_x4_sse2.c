@@ -15,14 +15,15 @@
 extern struct XM7_CPUID *pCpuID;
 
 #if defined(__SSE2__)
-void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v4hi *b;
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   AG_Surface *Surface = GetDrawSurface();
+   int w;
+   int h;
    int yy;
    int xx;
    int hh;
@@ -31,6 +32,10 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
    int pitch;
    Uint32 black;
 
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
+   
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
@@ -38,12 +43,12 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
 #endif
 
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 4 * my->Surface->format->BytesPerPixel
-                        + y * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
+                        + y * Surface->pitch);
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 4 * my->Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
+                        + y * (yrep >> 1) * Surface->pitch);
    }
    if(h <= ((y + 8) * (yrep >> 1))) {
       hh = (h - y * (yrep >> 1)) / (yrep >> 1);
@@ -51,7 +56,7 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
       hh = 8;
    }
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(w <= (x * 4 + 31)) {
        int j;
        Uint32 d0;
@@ -175,9 +180,9 @@ void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
    }
 }
 #else // NON-SSE2
-void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
-   pVram2RGB_x4(my, src, dst, x, y, yrep);
+   pVram2RGB_x4(src, dst, x, y, yrep);
 }
 
 #endif

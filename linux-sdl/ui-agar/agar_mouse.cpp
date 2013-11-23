@@ -36,12 +36,6 @@
 #include "sdl_cpuid.h"
 
 
-extern "C" {
-#ifdef USE_OPENGL
-extern AG_GLView *LDrawArea;
-#endif
-extern XM7_SDLView *DrawArea;
-}
 
 int nMouseX;
 int nMouseY;
@@ -164,8 +158,8 @@ void SetMouseCapture(BOOL en)
 		} else
 #endif
 	        if(DrawArea != NULL) {
-		    x = DrawArea->Surface->w / 2;
-		    y = DrawArea->Surface->h / 2;
+		    x = AGWIDGET(DrawArea)->w / 2;
+		    y = AGWIDGET(DrawArea)->h / 2;
 		   AG_ExecMouseAction (DrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
 		}
 		SDL_WM_GrabInput(SDL_GRAB_ON);

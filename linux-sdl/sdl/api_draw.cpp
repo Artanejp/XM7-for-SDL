@@ -43,7 +43,7 @@ struct DrawPieces SDLDrawFlag;
 
 BOOL            bFullScan;		/* フルスキャン(Window) */
 BOOL            bDirectDraw;		/* 直接書き込みフラグ */
-SDL_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
+AG_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
 WORD            nDrawTop;			/* 描画範囲上 */
 WORD            nDrawBottom;		/* 描画範囲下 */
 WORD            nDrawLeft;		/* 描画範囲左 */
@@ -1206,9 +1206,9 @@ extern "C"
 
 void Draw640All(void)
 {
-   void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
+   void (*PutVramFunc)(AG_Surface *, int, int, int, int, Uint32);
    WORD wdtop, wdbtm;
-   SDL_Surface *p;
+   AG_Surface *p;
 
    if(agDriverOps == NULL) return;
    p = GetDrawSurface();
@@ -1283,9 +1283,9 @@ void Draw640All(void)
 void Draw400l(void)
 {
 
-   void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
+   void (*PutVramFunc)(AG_Surface *, int, int, int, int, Uint32);
    WORD wdtop, wdbtm;
-   SDL_Surface *p;
+   AG_Surface *p;
    if(agDriverOps == NULL) return;
    p = GetDrawSurface();
    /*
@@ -1359,8 +1359,8 @@ void Draw400l(void)
 
 void Draw320(void)
 {
-	void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
-	SDL_Surface *p;
+	void (*PutVramFunc)(AG_Surface *, int, int, int, int, Uint32);
+	AG_Surface *p;
 	WORD wdtop, wdbtm;
 
 	if(agDriverOps == NULL) return;
@@ -1428,8 +1428,8 @@ void Draw320(void)
 
 void Draw256k(void)
 {
-   SDL_Surface *p;
-   void (*PutVramFunc)(SDL_Surface *, int, int, int, int, Uint32);
+   AG_Surface *p;
+   void (*PutVramFunc)(AG_Surface *, int, int, int, int, Uint32);
    if(agDriverOps == NULL) return;
    p = GetDrawSurface();
 

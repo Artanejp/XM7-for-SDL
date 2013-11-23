@@ -20,21 +20,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+//    extern AG_Pixmap *DrawArea;
     extern XM7_SDLView *DrawArea;
     extern AG_Window *MainWindow;
     extern AG_Menu  *MenuBar;
     extern AG_HBox *pStatusBar;
     extern void DrawStatus(void);
+    extern AG_Surface *GetDrawSurface(void);
+    extern int DrawSurfaceId;
+    extern AG_Surface *DrawSurface;
 #ifdef __cplusplus
 }
 #endif
 #ifdef __cplusplus
 extern Uint32 nDrawTick1E;
 
-
 extern void InitGL(int w, int h);
 extern void InitNonGL(int w, int h);
-extern SDL_Surface *GetDrawSurface(void);
 extern void ResizeWindow_Agar(int w, int h);
 extern void AGDrawTaskMain(void);
 #endif

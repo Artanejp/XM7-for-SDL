@@ -40,11 +40,11 @@ extern void ResizeStatus(AG_Widget *parent, int w, int h, int y);
 
 extern "C" {
 XM7_SDLView *DrawArea;
-//#ifdef _USE_OPENCL
+//AG_Pixmap *DrawArea;
 BOOL bUseOpenCL;
 BOOL bUseSIMD;
-//#endif   
-SDL_Surface *DrawSurface = NULL;
+AG_Surface *DrawSurface = NULL;
+int DrawSurfaceId = 0;
 }
 
 void InitGL(int w, int h)
@@ -71,7 +71,7 @@ void InitGL(int w, int h)
 void InitNonGL(int w, int h)
 {
    char *ext;
-
+   AG_PixelFormat *fmt;
    if(InitVideo) return;
    InitVideo = TRUE;
 
@@ -81,6 +81,7 @@ void InitNonGL(int w, int h)
 
    InitVramSemaphore();
    pVram2 = NULL;
+   
    InitVirtualVram();
    return;
 }
@@ -88,19 +89,20 @@ void InitNonGL(int w, int h)
 
 void DetachDrawArea(void)
 {
-    if(DrawArea == NULL) return;
     if(CheckVramSemaphore) DetachVramSemaphore();
-    XM7_SDLViewSurfaceDetach(DrawArea);
-    AG_ObjectDetach(AGOBJECT(DrawArea));
+    if(DrawArea != NULL) AG_ObjectDetach(DrawArea);
+    if(DrawSurface != NULL) AG_SurfaceFree(DrawSurface);
 }
 
 
-
-SDL_Surface *GetDrawSurface(void)
+extern "C" 
 {
-    return NULL;
+   
+   AG_Surface *GetDrawSurface(void)
+     {
+	return DrawSurface;
+     }
 }
-
 
 void ResizeWindow_Agar(int w, int h)
 {
@@ -177,12 +179,18 @@ void ResizeWindow_Agar(int w, int h)
 	a.h = hh;
 	a.x = 0;
 	a.y = 0;
+        LockVram();
+	if(DrawSurface != NULL) {
+	   AG_SurfaceResize(DrawSurface, w, hh);
+	}
 	
 	AG_ObjectLock(AGOBJECT(DrawArea));
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
-       }
+//	AG_PixmapUpdateCurrentSurface(DrawArea);
+        UnlockVram();
+     }
    
    nDrawWidth = w;
    nDrawHeight = hh;
@@ -244,19 +252,28 @@ void ResizeWindow_Agar2(int w, int h)
 	a.h = h;
 	a.x = 0;
 	a.y = 0;
-	
+
+        LockVram();
+	if(DrawSurface != NULL) {
+	   AG_SurfaceResize(DrawSurface, w, h);
+	}
+#if 1
 	AG_ObjectLock(AGOBJECT(DrawArea));
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
+//	AG_PixmapUpdateCurrentSurface(DrawArea);
+#else
+      
+#endif
+        UnlockVram();
       }
    hh = hh + 20; // Add Pad.
    if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
-
    if(DrawArea != NULL) {
-	 LockVram();
+//	 LockVram();
 //	 AG_ResizeDisplay(ww, hh);
-	 UnlockVram();
+//	 UnlockVram();
    } else {
       AG_ResizeDisplay(ww, hh);
    }
@@ -264,12 +281,12 @@ void ResizeWindow_Agar2(int w, int h)
    printf("Resize2 to %d x %d\n", w, h);
 }
 
-
+//extern void XM7_SDLViewUpdateSrc(AG_Pixmap *my, void *Fn);
 void AGDrawTaskMain(void)
 {
 	Uint32 nDrawTick2E;
 	Uint32 fps;
-
+        
 	if(nEmuFPS > 2) {
 		fps = 1000 / nEmuFPS;
 	} else {
@@ -280,6 +297,12 @@ void AGDrawTaskMain(void)
 		nDrawTick1E = 0;
 	}
 	if(((nDrawTick2E - nDrawTick1E)<fps) && (bMode == oldBMode)) return;
+        if(DrawArea != NULL) {
+	   //XM7_SDLViewUpdateSrc(DrawArea, NULL);
+	} else if(GLDrawArea != NULL) {
+	}
+
+   
 	nDrawTick1E = nDrawTick2E;
 	oldBMode = bMode;
 

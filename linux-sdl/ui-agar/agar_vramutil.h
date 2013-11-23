@@ -43,7 +43,7 @@ extern Uint8 *vram_pg;
 // External Memories
 #ifdef __cplusplus
 
-extern void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage);
+extern void PutVram_AG_SP(AG_Surface *p, int x, int y, int w, int h,  Uint32 mpage);
 extern void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h);
 extern Uint32 *GetVirtualVram(void);
 #endif

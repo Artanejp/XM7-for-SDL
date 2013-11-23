@@ -12,13 +12,14 @@
 
 extern struct XM7_CPUID *pCpuID;
 
-extern void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep);
+extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep);
 
 #if defined(__SSE2__)
-void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    register v4hi *b;
-
+   AG_Surface *Surface = GetDrawSurface();
+   
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
@@ -32,21 +33,21 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
    int pitch;
    Uint32 black;
 
-   if(my->Surface == NULL) return;
-   w = my->Surface->w;
-   h = my->Surface->h;
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
    black = 0x000000ff;
 #endif
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 2 * my->Surface->format->BytesPerPixel
-                        + y * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
+                        + y * Surface->pitch);
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 2 * my->Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
+                        + y * (yrep >> 1) * Surface->pitch);
    }
 
    if(h <= ((y + 8) * (yrep >> 1))) {
@@ -55,7 +56,7 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
       hh = 8;
    }
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(w < (x * 2 + 15)) {
     int j;
     register Uint32 d0;
@@ -143,8 +144,8 @@ void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, 
    }
 }
 #else 
-void pVram2RGB_x2_SSE(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x2_SSE(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
-   pVram2RGB_x2(my, src, dst, x, y, yrep);
+   pVram2RGB_x2(src, dst, x, y, yrep);
 }
 #endif // __SSE2__

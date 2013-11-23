@@ -7,6 +7,7 @@
 
 #include "AgarKbdInterface.h"
 #include "agar_sdlview.h"
+#include "agar_draw.h"
 
 AgarKbdInterface::AgarKbdInterface() {
 	// TODO Auto-generated constructor stub
@@ -306,10 +307,6 @@ void AgarKbdInterface::OnPress(int sym, int mod, Uint32 unicode)
 }
 
 extern AG_Menu *MenuBar;
-#ifdef USE_OPENGL
-extern AG_GLView *GLDrawArea;
-#endif /* USE_OPENGL */
-extern XM7_SDLView *DrawArea;
 
 void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
 {

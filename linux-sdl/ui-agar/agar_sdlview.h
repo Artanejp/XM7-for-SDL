@@ -65,6 +65,7 @@ extern AG_Surface *XM7_SDLViewSetSurface(void *p, int index);
 extern void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...);
 
 extern void XM7_SDLViewUpdateSrc(AG_Event *event);
+//extern void XM7_SDLViewUpdateSrc(XM7_SDLView *my, void *fn);
 
 // 20120501 builtin functionsを使わなくても、コンパイラの最適化で十分速くなる
 //#if defined(__x86_64__) || defined(__i386__)

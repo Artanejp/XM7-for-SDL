@@ -28,16 +28,14 @@
 #include "device.h"
 
 extern "C" {
-extern XM7_SDLView *DrawArea;
 extern BOOL bUseOpenCL;
 extern BOOL bUseSIMD;
-extern SDL_Surface *DrawSurface;
+extern AG_Surface *DrawSurface;
 extern struct  XM7_CPUID *pCpuID;
 }
 
 
 #ifdef USE_OPENGL
-extern AG_GLView *GLDrawArea;
 #ifdef _USE_OPENCL
 extern class GLCLDraw *cldraw;
 #endif // _USE_OPENCL
@@ -319,7 +317,7 @@ static void BuildVirtualVram256k_SSE2(Uint32 *pp, int x, int y, int  w, int h, i
     UnlockVram();
 }
 
-void PutVram_AG_SP(SDL_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
+void PutVram_AG_SP(AG_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 {
 	int xx, yy;
 	int hh, ww;

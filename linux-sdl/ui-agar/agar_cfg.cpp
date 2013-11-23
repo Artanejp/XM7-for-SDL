@@ -29,6 +29,7 @@
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
 #include "agar_osd.h"
+#include "agar_draw.h"
 extern AG_Window *MainWindow;
 
 configdat_t configdat;	/* コンフィグ用データ */
@@ -919,7 +920,11 @@ void ApplyCfg(void)
     bSmoosing = configdat.bSmoosing;
     display_notify();
    ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
-
+   if(DrawArea != NULL) {
+	AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+   }
+   
+   
 
 /*
  * Optionセクション

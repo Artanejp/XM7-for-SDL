@@ -22,12 +22,12 @@ extern BOOL bUseSIMD;
 
 extern "C" { // Define Headers
    // scaler/generic
-   extern void pVram2RGB_x2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2.c
-   extern void pVram2RGB_x4(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
+   extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2.c
+   extern void pVram2RGB_x4(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
 
 #if defined(USE_SSE2) // scaler/sse2/
-   extern void pVram2RGB_x2_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2_sse2.c
-   extern void pVram2RGB_x4_SSE2(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4_sse2.c
+   extern void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2_sse2.c
+   extern void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4_sse2.c
 #endif
 }
 
@@ -36,7 +36,7 @@ static void *pDrawFn = NULL;
 static int iOldW = 0;
 static int iOldH = 0;
 
-void pVram2RGB(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
     //Uint32 *dbase;
     //Uint32 *dsrc = src;
@@ -46,9 +46,13 @@ void pVram2RGB(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep
     v8hi_t *dbase;
     v8hi_t *dsrc = (v8hi_t *)src;
     Uint8 *p;
-    p = (Uint8 *)((Uint8 *)dst + x  * my->Surface->format->BytesPerPixel
-                        + y * my->Surface->pitch);
-    pitch = my->Surface->pitch / sizeof(Uint32);
+    AG_Surface *Surface = GetDrawSurface();
+    
+    if(Surface == NULL) return;
+   
+    p = (Uint8 *)((Uint8 *)dst + x  * Surface->format->BytesPerPixel
+                        + y * Surface->pitch);
+    pitch = Surface->pitch / sizeof(Uint32);
 
     for(yy = 0; yy < 8; yy++){
         dbase = (v8hi_t *)p;
@@ -78,14 +82,14 @@ static inline Uint32 pVram_XtoHalf(Uint32 d1, Uint32 d2)
 }
 
 // 0.5
-void pVram2RGB_x05(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x05(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi_t *b;
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   int w;
+   int h;
    int yy;
    int yy2;
    int xx;
@@ -96,7 +100,12 @@ void pVram2RGB_x05(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
    v8hi_t rmask1, gmask1, bmask1, amask1;
    v4hi rmask2, gmask2, bmask2, amask2;
    Uint32 black;
-
+   AG_Surface *Surface = GetDrawSurface();
+    
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
+   
 #if AG_BIG_ENDIAN != 1
    rmask1.i[0] = rmask1.i[1] = rmask1.i[2] = rmask1.i[3] =
    rmask1.i[4] = rmask1.i[5] = rmask1.i[6] = rmask1.i[7] = 0x000000ff;
@@ -135,17 +144,17 @@ void pVram2RGB_x05(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
 #endif
    if(yrep < 4) {
       if(yrep == 0) {
-	 d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x >> 1) * my->Surface->format->BytesPerPixel
-                        + (y >> 1)  * my->Surface->pitch);
+	 d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x >> 1) * Surface->format->BytesPerPixel
+                        + (y >> 1)  * Surface->pitch);
       } else {
-	 d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x >> 1) * my->Surface->format->BytesPerPixel
-                        + y  * my->Surface->pitch);
+	 d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x >> 1) * Surface->format->BytesPerPixel
+                        + y  * Surface->pitch);
       }
 
       if(yrep == 0) yrep = 1;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x >> 1) * my->Surface->format->BytesPerPixel
-                        + y * (yrep >> 2) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x >> 1) * Surface->format->BytesPerPixel
+                        + y * (yrep >> 2) * Surface->pitch);
    }
    if(((x >>1) + 4) >= w) {
 	Uint32 amask, rmask, gmask, bmask;
@@ -224,7 +233,7 @@ void pVram2RGB_x05(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
    }
 
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(yrep < 1) {
       v8hi_t *p2;
       v4hi *pd;
@@ -328,14 +337,14 @@ void pVram2RGB_x05(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
 }
 
 
-void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x1(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi_t *b;
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   int w;
+   int h;
    int yy;
    int xx;
    int hh;
@@ -343,7 +352,12 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int i;
    int pitch;
    Uint32 black;
-
+   AG_Surface *Surface = GetDrawSurface();
+    
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
+   
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
@@ -351,12 +365,12 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 #endif
 
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * my->Surface->format->BytesPerPixel
-                        + y * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * Surface->format->BytesPerPixel
+                        + y * Surface->pitch);
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * my->Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * Surface->format->BytesPerPixel
+                        + y * (yrep >> 1) * Surface->pitch);
    }
 
 
@@ -366,7 +380,7 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
       hh = 8;
    }
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(w < (x  + 7)) {
     int j;
     Uint32 d0;
@@ -437,15 +451,15 @@ void pVram2RGB_x1(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
 
 
 // Zoom 1.25 (640->800)
-void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x125(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi_t *b;
 
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   int w;
+   int h;
    int yy;
    int xx;
    int hh;
@@ -453,6 +467,11 @@ void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int
    int i;
    int pitch;
    Uint32 black;
+   AG_Surface *Surface = GetDrawSurface();
+    
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
 
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
@@ -460,12 +479,12 @@ void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int
    black = 0x000000ff;
 #endif
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5 * my->Surface->format->BytesPerPixel) / 4
-                        + y * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5 * Surface->format->BytesPerPixel) / 4
+                        + y * Surface->pitch);
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5  * my->Surface->format->BytesPerPixel) / 4
-                        + y * (yrep >> 1) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5  * Surface->format->BytesPerPixel) / 4
+                        + y * (yrep >> 1) * Surface->pitch);
    }
 
    if(h <= ((y + 8) * (yrep >> 1))) {
@@ -474,7 +493,7 @@ void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int
       hh = 8;
    }
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(w < ((x * 5)/ 4 + 8)) {
     int j;
     Uint32 d0;
@@ -578,15 +597,15 @@ void pVram2RGB_x125(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int
 // Zoom 2x2
 
 // Zoom 2.5
-void pVram2RGB_x25(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x25(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi_t *b;
 
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   int w;
+   int h;
    int yy;
    int xx;
    int hh;
@@ -594,6 +613,11 @@ void pVram2RGB_x25(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
    int i;
    int pitch;
    Uint32 black;
+   AG_Surface *Surface = GetDrawSurface();
+    
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
 
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
@@ -601,12 +625,12 @@ void pVram2RGB_x25(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
    black = 0x000000ff;
 #endif
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5 * my->Surface->format->BytesPerPixel) / 2
-                        + y * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5 * Surface->format->BytesPerPixel) / 2
+                        + y * Surface->pitch);
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + (x * 5 * my->Surface->format->BytesPerPixel) / 2
-                        + y * (yrep >> 1) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5 * Surface->format->BytesPerPixel) / 2
+                        + y * (yrep >> 1) * Surface->pitch);
    }
 
    if(h <= ((y + 8) * (yrep >> 1))) {
@@ -615,7 +639,7 @@ void pVram2RGB_x25(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
       hh = 8;
    }
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(w < ((x * 5) / 2 + 10)) {
     int j;
     Uint32 d0;
@@ -730,14 +754,14 @@ void pVram2RGB_x25(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int 
 }
 
 
-void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int yrep)
+void pVram2RGB_x3(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 {
    v8hi_t *b;
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
-   int w = my->Surface->w;
-   int h = my->Surface->h;
+   int w;
+   int h;
    int yy;
    int xx;
    int hh;
@@ -745,6 +769,11 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    int i;
    int pitch;
    Uint32 black;
+   AG_Surface *Surface = GetDrawSurface();
+    
+   if(Surface == NULL) return;
+   w = Surface->w;
+   h = Surface->h;
 
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
@@ -752,12 +781,12 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
    black = 0x000000ff;
 #endif
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 3 * my->Surface->format->BytesPerPixel
-                        + y * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 3 * Surface->format->BytesPerPixel
+                        + y * Surface->pitch);
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(my->Surface->pixels) + x * 3 * my->Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * my->Surface->pitch);
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 3 * Surface->format->BytesPerPixel
+                        + y * (yrep >> 1) * Surface->pitch);
    }
 
    if(h <= ((y + 8) * (yrep >> 1))) {
@@ -766,7 +795,7 @@ void pVram2RGB_x3(XM7_SDLView *my, Uint32 *src, Uint32 *dst, int x, int y, int y
       hh = 8;
    }
 
-   pitch = my->Surface->pitch / sizeof(Uint32);
+   pitch = Surface->pitch / sizeof(Uint32);
    if(w <= (x * 3 + 23)) {
        int j;
        Uint32 d0;
@@ -989,12 +1018,14 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 
 
 
+//void XM7_SDLViewUpdateSrc(AG_Pixmap *my, void *Fn)
 void XM7_SDLViewUpdateSrc(AG_Event *event)
 {
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
    void *Fn = AG_PTR(1);
-   void (*DrawFn)(XM7_SDLView *, Uint32 *, Uint32 *, int , int, int);
-
+   void (*DrawFn)(Uint32 *, Uint32 *, int , int, int);
+   AG_Surface *Surface;
+   
    Uint8 *pb;
    Uint32 *disp;
    Uint32 *src;
@@ -1011,12 +1042,15 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    int tmp;
 
    if(my == NULL) return;
-   if(my->Surface == NULL) return;
-   w = my->Surface->w;
-   h = my->Surface->h;
-   pb = (Uint8 *)(my->Surface->pixels);
-   pitch = my->Surface->pitch;
-   bpp = my->Surface->format->BytesPerPixel;
+   Surface = my->Surface;
+   
+   if(Surface == NULL) return;
+   DrawSurface = Surface;
+   w = Surface->w;
+   h = Surface->h;
+   pb = (Uint8 *)(Surface->pixels);
+   pitch = Surface->pitch;
+   bpp = Surface->format->BytesPerPixel;
    
 
    if(pVram2 == NULL) return;
@@ -1040,7 +1074,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
     if(Fn == NULL){
         Fn =(void *) pVram2RGB;
     }
-    DrawFn =(void (*)(XM7_SDLView *, Uint32 *, Uint32 *, int , int, int))Fn;
+    DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
     tmp = h % hh;
     yrep = (h << 1) / hh;
     if(tmp > (hh >> 1)){
@@ -1049,8 +1083,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    
    src = pVram2;
     LockVram();
-    AG_SurfaceLock(my->Surface);
-    if(my->forceredraw != 0){
+    AG_ObjectLock(AGOBJECT(my));
+#if 0
+   if(my->forceredraw != 0){
         for(yy = 0; yy < hh; yy += 8) {
             for(xx = 0; xx < ww; xx +=8 ){
                 SDLDrawFlag.write[xx >> 3][yy >> 3] = TRUE;
@@ -1058,7 +1093,8 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         }
         my->forceredraw = 0;
     }
-
+#endif
+   
 #ifdef _OPENMP
        #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
 #endif
@@ -1076,14 +1112,17 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	   if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
 	      disp = (Uint32 *)pb;
 	      of = (xx *8) + yy * ww;
-	      DrawFn(my, &src[of], disp, xx, yy, yrep);
+	      DrawFn(&src[of], disp, xx, yy, yrep);
 	      SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
 	   }
 	}
 //			if(yy >= h) continue;
     }
-   AG_SurfaceUnlock(my->Surface);
-   my->mySurface = AG_WidgetMapSurfaceNODUP(my, my->Surface);
+   
+   AG_ObjectUnlock(AGOBJECT(my));
+
+//   AG_PixmapUpdateCurrentSurface(my);
+//   my->mySurface = AG_WidgetMapSurfaceNODUP(my, Surface);
 //	AG_WidgetUpdateSurface(my, my->mySurface);
    UnlockVram();
 }

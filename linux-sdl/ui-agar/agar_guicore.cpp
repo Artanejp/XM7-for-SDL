@@ -20,6 +20,7 @@ extern "C" {
 #include "agar_cfg.h"
 #include "agar_toolbox.h"
 #include "agar_gldraw.h"
+#include "agar_draw.h"
 #include "agar_sdlview.h"
 #include "agar_osd.h"
 #else
@@ -119,13 +120,12 @@ void AGDrawTaskEvent(BOOL flag)
 	 // Force-Redraw mainwindow, workaround of glx driver.
 
 #ifdef USE_OPENGL
-	   if(DrawArea != NULL) {
-	      AG_Redraw(DrawArea);
-	   } else if(GLDrawArea != NULL){
+	   if(GLDrawArea != NULL){
 	      AG_Redraw(GLDrawArea);
-	   }
+	   } else 
 #else
 	   if(DrawArea != NULL) {
+	      XM7_SDLViewUpdateSrc(DrawArea, NULL);
 	      AG_Redraw(DrawArea);
 	   }
 #endif
@@ -133,11 +133,12 @@ void AGDrawTaskEvent(BOOL flag)
 	 nDrawTick1D = nDrawTick2D;
 	 XM7_Sleep(1);
 	 //EventSDL(NULL);
-      }// else if(AG_PendingEvents(NULL) != 0) {
-      if(AG_PendingEvents(NULL) != 0) {
+      } else if(AG_PendingEvents(NULL) != 0) {
+      //if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
 	 if(EventSDL(NULL) == FALSE) return;
 	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+	 XM7_Sleep(1);
       } else { // Timeout
 	 Uint32 tim = 0;
 	 AG_TAILQ_FOREACH(es, &src->spinners, sinks){
@@ -328,10 +329,22 @@ void InitInstance(void)
      {
         // Non-GL
         hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
+#if 1
         DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         AGWIDGET(DrawArea)->flags |= AG_WIDGET_CATCH_TAB;
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
+#else
+        DrawArea = AG_PixmapNew(AGWIDGET(hb), 0, 640, 400);
+        AGWIDGET(DrawArea)->flags |= (AG_WIDGET_CATCH_TAB | AG_WIDGET_USE_MOUSEOVER | AG_WIDGET_FOCUSABLE);
+	DrawSurface = AG_SurfaceRGBA(640, 400, 32, AG_SRCALPHA, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	if(DrawSurface != NULL) {
+	   if(DrawArea != NULL) {
+	      DrawSurfaceId = AG_PixmapAddSurface(DrawArea, DrawSurface);
+	      AG_PixmapSetSurface(DrawArea, DrawSurfaceId);
+	   }
+	}
+#endif
         AG_SetEvent(DrawArea, "key-up", ProcessKeyUp, NULL);
         AG_SetEvent(DrawArea, "key-down", ProcessKeyDown, NULL);
         AG_SetEvent(DrawArea, "mouse-motion", OnMouseMotionSDL, NULL);
