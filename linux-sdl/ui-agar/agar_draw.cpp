@@ -179,17 +179,15 @@ void ResizeWindow_Agar(int w, int h)
 	a.h = hh;
 	a.x = 0;
 	a.y = 0;
-        LockVram();
-	if(DrawSurface != NULL) {
-	   AG_SurfaceResize(DrawSurface, w, hh);
-	}
+
+//	if(DrawSurface != NULL) {
+//	   AG_SurfaceResize(DrawSurface, w, hh);
+//	}
 	
 	AG_ObjectLock(AGOBJECT(DrawArea));
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
-//	AG_PixmapUpdateCurrentSurface(DrawArea);
-        UnlockVram();
      }
    
    nDrawWidth = w;

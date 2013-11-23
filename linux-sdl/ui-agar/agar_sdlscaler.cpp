@@ -1084,7 +1084,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    src = pVram2;
     LockVram();
     AG_ObjectLock(AGOBJECT(my));
-#if 0
+#if 1
    if(my->forceredraw != 0){
         for(yy = 0; yy < hh; yy += 8) {
             for(xx = 0; xx < ww; xx +=8 ){
