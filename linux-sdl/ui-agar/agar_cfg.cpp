@@ -922,7 +922,10 @@ void ApplyCfg(void)
    ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
    if(DrawArea != NULL) {
 	AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+   } else if(GLDrawArea != NULL) {
+	AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
    }
+   
    
    
 

@@ -516,7 +516,12 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 #if 0
    mtrace();
 #endif
-   if(DrawArea != NULL) AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+   if(DrawArea != NULL) {
+      AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+   } else if(GLDrawArea != NULL) {
+      AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
+   }
+   
 	AGDrawTaskEvent(TRUE);
 //	AG_EventLoop();
 //	AG_Quit();
