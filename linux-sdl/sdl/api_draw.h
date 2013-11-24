@@ -65,6 +65,7 @@ enum {
 extern int  RootVideoWidth; /* ルートウィンドウ最高幅 */
 extern int  RootVideoHeight; /* ルートウィンドウ最高高さ */
 
+extern BOOL bDirtyLine[400];				/* 要書き換えフラグ */
 extern DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 extern DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */
@@ -143,6 +144,8 @@ extern void Draw640All(void);
 extern void Draw320(void);
 extern void Draw400l(void);
 extern void Draw256k(void);
+
+extern void Draw640_1Line(int line);
 
 extern void Palet640(void);
 extern void Palet320(void);

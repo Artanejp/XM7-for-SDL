@@ -74,7 +74,9 @@ BOOL bRasterRendering;						/* ラスタレンダリングフラグ */
  *	スタティック ワーク
  */
 static BOOL bNextFrameRender;				/* 次フレーム描画フラグ */
-static BOOL bDirtyLine[400];				/* 要書き換えフラグ */
+extern "C" {
+   BOOL bDirtyLine[400];				/* 要書き換えフラグ */
+}
 
 #if XM7_VER >= 3
 BYTE    bMode;		/* 画面モード */
@@ -663,10 +665,10 @@ void FASTCALL SetDirtyFlag(int top, int bottom, BOOL flag)
 {
 	int y;
 
-	if (bRasterRendering) {
+	if (nRenderMethod == RENDERING_RASTER) {
 		for (y = top; y < bottom; y++) {
-			//DirtyLine[y] = flag;
-		   SDLDrawFlag.read[0][y] = flag;
+			bDirtyLine[y] = flag;
+		 //  SDLDrawFlag.read[0][y] = flag;
 		}
 	}
 }
@@ -689,7 +691,6 @@ void vram_notify(WORD addr, BYTE dat)
 	switch (bMode) {
 	case SCR_400LINE:
 		addr &= 0x7fff;
-		x = addr % 80;
 		y = addr / 80;
 		xx = (addr % 80) << 3;
 		yy = addr / 80;
@@ -697,14 +698,12 @@ void vram_notify(WORD addr, BYTE dat)
 	case SCR_262144:
 	case SCR_4096:
 		addr &= 0x1fff;
-		x = addr % 40;
 		y = addr / 40;
 		xx = (addr % 40) << 4;
 		yy = (addr / 40) << 1;
 		break;
 	case SCR_200LINE:
 		addr &= 0x3fff;
-		x = addr % 80;
 		y = addr / 80;
 		xx = (addr % 80) << 3;
 		yy = (addr / 80) << 1;
@@ -767,6 +766,7 @@ void vram_notify(WORD addr, BYTE dat)
 
 #endif				/*  */
    }
+   
 	/*
 	 * オーバーチェック
 	 */
@@ -778,7 +778,12 @@ void vram_notify(WORD addr, BYTE dat)
 	 * 再描画フラグを設定
 	 */
         LockVram();
-        SDLDrawFlag.read[x][y] = TRUE;
+        if(nRenderMethod == RENDERING_RASTER) {
+	   bDirtyLine[y] = TRUE;
+	} else {
+	   SDLDrawFlag.read[x][y] = TRUE;
+	}
+   
         UnlockVram();
 	/*
 	 * 垂直方向更新
@@ -842,12 +847,13 @@ void	ttlpalet_notify(void)
    LockVram();
    if (nRenderMethod == RENDERING_RASTER) {
       bNextFrameRender = TRUE;
-      SetDirtyFlag(now_raster, 400, TRUE);
+      if(bPaletFlag != TRUE) SetDirtyFlag(now_raster, 400, TRUE);
+      SDLDrawFlag.DPaletteChanged = TRUE; // Palette changed
    } else {
       if(bPaletFlag != TRUE)SetDrawFlag(TRUE);
-      bPaletFlag = TRUE;
+      SDLDrawFlag.DPaletteChanged = TRUE; // Palette changed
    }
-   
+   bPaletFlag = TRUE;
    UnlockVram();
 }
 
@@ -857,13 +863,13 @@ void	ttlpalet_notify(void)
 void 	apalet_notify(void)
 {
    LockVram();
-   if (bRasterRendering) {
+   if (nRenderMethod == RENDERING_RASTER) {
       bNextFrameRender = TRUE;
-      SetDirtyFlag(now_raster, 400, TRUE);
+      if(bPaletFlag != TRUE) SetDirtyFlag(now_raster, 400, TRUE);
    } else {
       if(bPaletFlag != TRUE) SetDrawFlag(TRUE);
-      bPaletFlag = TRUE;
    }
+   bPaletFlag = TRUE;
    UnlockVram();
 }
 
@@ -879,6 +885,11 @@ void 	display_notify(void)
     * 再描画
     */
    LockVram();
+   nDrawTop = 0;
+   nDrawBottom = 400;
+   nDrawLeft = 0;
+   nDrawRight = 640;
+   bPaletFlag = TRUE;
    if (nRenderMethod == RENDERING_RASTER) {
 	bNextFrameRender = TRUE;
 	SetDirtyFlag(0, 400, TRUE);
@@ -891,12 +902,6 @@ void 	display_notify(void)
 		now_raster = raster;
 	}
    } else {
-      nDrawTop = 0;
-      nDrawBottom = 400;
-      nDrawLeft = 0;
-      nDrawRight = 640;
-      bPaletFlag = TRUE;
-//   bClearFlag = TRUE;
       SetDrawFlag(TRUE);
    }
    UnlockVram();
@@ -939,14 +944,27 @@ void FASTCALL vblankperiod_notify(void)
 #endif
 			flag = FALSE;
 			for (y = 0; y < ymax; y++) {
-//				flag |= bDirtyLine[y];
-			   flag |= SDLDrawFlag.read[0][y];
+				flag |= bDirtyLine[y];
 			}
 			if (!flag) {
 				return;
 			}
 		}
 		/* 全領域をレンダリング */
+	   switch (bMode) {
+	    case SCR_400LINE:
+	      //Draw400l();
+	      break;
+	    case SCR_262144:
+	      //Draw256k();
+	      break;
+	    case SCR_4096:
+	      //Draw320();
+	      break;
+	    case SCR_200LINE:
+	      Draw640All();
+	      break;
+	   }
 	}
 }
 
@@ -955,18 +973,29 @@ void FASTCALL vblankperiod_notify(void)
  */
 void FASTCALL hblank_notify(void)
 {
-   
 	if (nRenderMethod == RENDERING_RASTER) {
-	   LockVram();
-//		if (bDirtyLine[now_raster]) {
-//			bDirtyLine[now_raster] = FALSE;
-//		}
-		if(SDLDrawFlag.read[0][now_raster]) {
-		   SDLDrawFlag.read[0][now_raster] = FALSE;
+//	   LockVram();
+	   if (bDirtyLine[now_raster]) {
+		   switch (bMode) {
+		    case SCR_400LINE:
+		      //Draw400l();
+		      break;
+		    case SCR_262144:
+		      //Draw256k();
+		      break;
+		    case SCR_4096:
+		      //Draw320();
+		      break;
+		    case SCR_200LINE:
+		      Draw640_1Line(now_raster);
+		      break;
+		   }
+		   bDirtyLine[now_raster] = FALSE;
 		}
-	   UnlockVram();
+//	   UnlockVram();
 	}
 }
+//void BuildVirtualVram8_Raster(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode)
 
 /*
  *  ディジタイズ要求通知
@@ -1118,8 +1147,8 @@ void window_notify(void)
 	 */
          if(nRenderMethod == RENDERING_RASTER) {
 	    if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
-	       for(y = nDrawTop >> 3; y < ((nDrawBottom + 7) >> 3); y++) {
-		    SDLDrawFlag.read[0][y] = TRUE;
+	       for(y = nDrawTop; y < nDrawBottom; y++) {
+		  bDirtyLine[y] = TRUE;
 	       }
 	    }
 	 } else if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
@@ -1304,13 +1333,10 @@ void Draw640All(void)
       Uint32 *pp;
       if(pVram2 == NULL) return;
          pp = pVram2;
-         if(pp == NULL) {
-	    return;
-	 }
 //      LockVram();
-      if((bClearFlag)) {
+      if(bClearFlag) {
 	 memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
-	 SetDrawFlag(TRUE);
+	 SetDirtyFlag(0, 400, TRUE);
 	 bClearFlag = FALSE;
       }
       if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
@@ -1345,16 +1371,21 @@ void Draw640All(void)
 	       BuildVirtualVram8_Raster(pp, 0, 80, wdbtm , nDrawBottom >> 1, multi_page);
 	    }
 	 } else { // ハードウェアウィンドウ開いてない
+	  int xx, yy;
 	 //	vramhdr->SetVram(vram_dptr, 80, 200);
 	 SetVram_200l(vram_dptr);
 	 BuildVirtualVram8_Raster(pp, 0, 80, 0, 200, multi_page);
-	 }
       }
 //      UnlockVram();
       return;
-   } else if(nRenderMethod = RENDERING_BLOCK) {
+      }
+      
+   } else if(nRenderMethod == RENDERING_BLOCK) {
+     PutVramFunc = &PutVram_AG_SP;
+   } else {
      PutVramFunc = &PutVram_AG_SP;
    }
+   
    
    /*
     * レンダリング
@@ -1398,6 +1429,59 @@ void Draw640All(void)
       }
    }
 }
+
+void Draw640_1Line(int line)
+{
+   WORD wdtop, wdbtm;
+   Uint32 *pp;
+   if(pVram2 == NULL) return;
+   if(vram_dptr == NULL) return;
+   if(vram_bdptr == NULL) return;
+   pp = pVram2;
+   //      LockVram();
+   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
+      if(bWindowOpen) { // ハードウェアウインドウ開いてる
+	 if (((nDrawTop >> 1) < window_dy1) && (line <= window_dy1)){
+	    SetVram_200l(vram_dptr);
+	    BuildVirtualVram8_Raster(pp, 0, 80, line , line + 1, multi_page);
+	    return;
+	 }
+	 /* ウィンドウ内の描画 */
+	 if ((nDrawTop >> 1) > window_dy1) {
+	    wdtop = nDrawTop >> 1;
+	 } else {
+	    wdtop = window_dy1;
+	 }
+	 
+	 if ((nDrawBottom >> 1)< window_dy2) {
+	    wdbtm = nDrawBottom >> 1;
+	 }
+	 else {
+	    wdbtm = window_dy2;
+	 }
+	 
+	 if ((wdbtm > wdtop) && (wdtop <= line) && (wdbtm > line)) {
+	    SetVram_200l(vram_bdptr);
+	    BuildVirtualVram8_Raster(pp, window_dx1 >> 3, window_dx2 >> 3, line , line + 1, multi_page);
+	    return;
+	 }
+	 /* ハードウェアウインドウ外下部 */
+	 if ((nDrawBottom >> 1) > window_dy2) {
+	    //	vramhdr->SetVram(vram_dptr, 80, 200);
+	    SetVram_200l(vram_dptr);
+	    BuildVirtualVram8_Raster(pp, 0, 80, line , line + 1, multi_page);
+	    return;
+	 }
+      } else { // ハードウェアウィンドウ開いてない
+	 SetVram_200l(vram_dptr);
+	 BuildVirtualVram8_Raster(pp, 0, 80, line, line + 1, multi_page);
+      }
+      
+      return;
+   }
+   
+}
+   
 
 
 void Draw400l(void)

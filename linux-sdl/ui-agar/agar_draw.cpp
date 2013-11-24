@@ -18,6 +18,7 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
+#include "agar_cfg.h"
 #ifdef _USE_OPENCL
 extern class GLCLDraw *cldraw;
 #endif // _USE_OPENCL
@@ -301,12 +302,12 @@ void AGDrawTaskMain(void)
 	   //XM7_SDLViewUpdateSrc(DrawArea, NULL);
 	} else if(GLDrawArea != NULL) {
 	}
-
    
 	nDrawTick1E = nDrawTick2E;
 	oldBMode = bMode;
 
         SelectDraw2();
+        if(nRenderMethod == RENDERING_RASTER) return;
 #if XM7_VER >= 3
 	switch (bMode) {
 	case SCR_400LINE:

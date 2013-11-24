@@ -23,6 +23,7 @@ extern BOOL bUseSIMD;
 extern "C" { // Define Headers
    // scaler/generic
    extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2.c
+   extern void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
    extern void pVram2RGB_x4(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
 
 #if defined(USE_SSE2) // scaler/sse2/
@@ -1024,6 +1025,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
    void *Fn = AG_PTR(1);
    void (*DrawFn)(Uint32 *, Uint32 *, int , int, int);
+   void (*DrawFn2)(Uint32 *, int , int , int, int);
    AG_Surface *Surface;
    
    Uint8 *pb;
@@ -1068,33 +1070,60 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         hh = 200;
         break;
    }
-   if(Fn == NULL){
+   if(nRenderMethod == RENDERING_RASTER) {
+      DrawFn2 = pVram2RGB_x2_Line;
+   } else {
+      if(Fn == NULL){
         Fn = XM7_SDLViewSelectScaler(ww , hh, w, h);
-    }
-    if(Fn == NULL){
-        Fn =(void *) pVram2RGB;
-    }
-    DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
+      }
+      if(Fn == NULL){
+	 Fn =(void *) pVram2RGB;
+      }
+      DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
+   }
+   
+
     tmp = h % hh;
     yrep = (h << 1) / hh;
     if(tmp > (hh >> 1)){
 	  yrep++;
     }
    
-   src = pVram2;
+    src = pVram2;
     LockVram();
     AG_ObjectLock(AGOBJECT(my));
-#if 1
-   if(my->forceredraw != 0){
+
+   if(nRenderMethod == RENDERING_RASTER) {
+       if(my->forceredraw != 0){
+        for(yy = 0; yy < hh; yy++) {
+                bDirtyLine[yy] = TRUE;
+        }
+        my->forceredraw = 0;
+    }
+
+   
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
+#endif
+    for(yy = 0 ; yy < hh; yy++) {
+/*
+*  Virtual VRAM -> Real Surface:
+*/
+//	   if(bDirtyLine[yy]){
+	      DrawFn2(src, 0, ww, yy, yrep);
+//	      bDirtyLine[yy] = FALSE;
+//	   }
+//			if(yy >= h) continue;
+    }	
+  } else { // Block
+       if(my->forceredraw != 0){
         for(yy = 0; yy < hh; yy += 8) {
             for(xx = 0; xx < ww; xx +=8 ){
                 SDLDrawFlag.write[xx >> 3][yy >> 3] = TRUE;
             }
         }
         my->forceredraw = 0;
-    }
-#endif
-   
+       }
 #ifdef _OPENMP
        #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
 #endif
@@ -1118,6 +1147,8 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	}
 //			if(yy >= h) continue;
     }
+   }
+   
    
    AG_ObjectUnlock(AGOBJECT(my));
 

@@ -316,8 +316,8 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
        return;
      } else {
        for(yy = ybegin; yy < yend; yy++) { 
-           addr = ybegin * 80;
-	   for(xx = 0; xx < (80 / 8); xx ++) { 
+           addr = yy * 80;
+	   for(xx = 0; xx < (80 / 8); xx++) { 
 	      getvram_8_vec(addr, &c);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;

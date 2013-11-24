@@ -100,66 +100,64 @@ void BuildVirtualVram8_Raster(Uint32 *pp, int xbegin, int xend, int ybegin, int 
    if(pp == NULL) return;
   
     LockVram();
-    if((xend != 80) || (xbegin != 0)) { // Windowed mode
-    if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+    if((xbegin != 0) || (xend != 80)){
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, bDirtyLine, ybegin, yend, xbegin, xend, mode) private(p, xx)
 #endif
 	for(yy = ybegin ; yy < yend ; yy++) {
 	      p = &pp[yy * 640 + xbegin * 8];
 	      CreateVirtualVram8_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
-	      SDLDrawFlag.write[0][yy] = TRUE;
-	      SDLDrawFlag.read[0][yy]  = FALSE;
-	   }
+//	      bDirtyLine[yy] = TRUE;
+	}
 	SDLDrawFlag.Drawn = TRUE;
 	SDLDrawFlag.DPaletteChanged = FALSE;
-     } else { // Palette not changed
+       } else { // Palette not changed
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
 #endif
-	for(yy = ybegin ; yy < yend ; yy++) {
-	      p = &pp[yy * 640 + xbegin * 8];
-	      CreateVirtualVram8_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
-	      SDLDrawFlag.write[0][yy] = TRUE;
-	      SDLDrawFlag.read[0][yy]  = FALSE;
+	  for(yy = ybegin ; yy < yend ; yy++) {
+	     if(bDirtyLine[yy]) {
+		p = &pp[yy * 640 + xbegin * 8];
+		CreateVirtualVram8_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
+		bDirtyLine[yy] = FALSE;
 	   }
-	SDLDrawFlag.Drawn = TRUE;
-	SDLDrawFlag.DPaletteChanged = FALSE;
+	  SDLDrawFlag.Drawn = TRUE;
+	  SDLDrawFlag.DPaletteChanged = FALSE;
+	  }
+	  
        }
+       
        UnlockVram();
        return;
     } else { // Not Windowed mode
        if(SDLDrawFlag.DPaletteChanged) { // Palette changed
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
 #endif
 	for(yy = ybegin ; yy < yend ; yy++) {
 	      p = &pp[640 * yy];
 	      CreateVirtualVram8_Line(p, yy, yy + 1, mode);
-	      SDLDrawFlag.write[0][yy] = TRUE;
-	      SDLDrawFlag.read[0][yy]  = FALSE;
-	      p += 640;
+	      bDirtyLine[yy] = TRUE;
 	   }
 	SDLDrawFlag.Drawn = TRUE;
 	SDLDrawFlag.DPaletteChanged = FALSE;
      } else { // Palette not changed
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
 #endif
 	for(yy = ybegin ; yy < yend ; yy++) {
 	      p = &pp[640 * yy];
-	      if(SDLDrawFlag.write[0][yy] == TRUE) {
+	      if(bDirtyLine[yy] == TRUE) {
 		 CreateVirtualVram8_Line(p, yy, yy + 1, mode);
-		 SDLDrawFlag.write[0][yy] = TRUE;
-		 SDLDrawFlag.read[0][yy]  = FALSE;
+//		 bDirtyLine[yy] = FALSE;
 	      }
-	   
-	      p += 640;
 	   }
      }
        UnlockVram();
        return;
     }
+       
 }
 
 
