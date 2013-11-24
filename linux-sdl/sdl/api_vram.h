@@ -31,6 +31,9 @@ extern void SetVram_200l(Uint8 *p);
 extern void SetVram_400l(Uint8 *p);
 extern void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 extern void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
+extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode);
+extern void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode);
+
 #ifdef USE_SSE2
 extern void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage);
 #endif
