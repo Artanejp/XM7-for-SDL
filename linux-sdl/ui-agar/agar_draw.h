@@ -29,6 +29,7 @@ extern "C" {
     extern AG_Surface *GetDrawSurface(void);
     extern int DrawSurfaceId;
     extern AG_Surface *DrawSurface;
+    extern unsigned int nRenderMethod;
 #ifdef __cplusplus
 }
 #endif

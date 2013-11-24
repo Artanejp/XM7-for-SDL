@@ -25,6 +25,14 @@
 #include "api_mouse.h"
 #include "api_draw.h"
 
+enum 
+{
+   RENDERING_FULL = 0,
+   RENDERING_BLOCK,
+   RENDERING_RASTER,
+   RENDERING_END
+};
+
 
 #ifdef __cplusplus
 extern          "C" {
@@ -86,6 +94,7 @@ typedef struct {
 	BOOL bUseOpenCL; /* OpenCLレンダラ(GLのみ?) */
 	BOOL bUseSIMD;   /* 描画等にSIMDを使う */
 	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */
+        int nRenderMethod;
 	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;	/* WHG有効フラグ */
 	BOOL bTHGEnable;	/* THG有効フラグ */

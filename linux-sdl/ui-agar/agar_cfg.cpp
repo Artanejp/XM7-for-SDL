@@ -518,7 +518,10 @@ void LoadCfg(void)
     	break;
     }
     configdat.bSmoosing = LoadCfgBool("SMOOSING", 1);
-
+    configdat.nRenderMethod = LoadCfgInt("RENDER", RENDERING_BLOCK);
+    if(configdat.nRenderMethod < RENDERING_FULL) configdat.nRenderMethod = RENDERING_FULL;
+    if(configdat.nRenderMethod >= RENDERING_END) configdat.nRenderMethod = RENDERING_END - 1;
+       
 /*
  * Optionセクション
  */
@@ -785,6 +788,7 @@ void SaveCfg(void)
     }
     SaveCfgInt("Aspect", configdat.nAspect);
     SaveCfgBool("SMOOSING", configdat.bSmoosing);
+    SaveCfgInt("RENDER", configdat.nRenderMethod);
 
 /*
  * Optionセクション
@@ -918,6 +922,7 @@ void ApplyCfg(void)
     SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
 #endif   
     bSmoosing = configdat.bSmoosing;
+    nRenderMethod = configdat.nRenderMethod;
     display_notify();
    ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
    if(DrawArea != NULL) {

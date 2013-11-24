@@ -375,6 +375,21 @@ static void OnChangeScreenAspect(AG_Event *event)
 	ResizeWindow_Agar2(localconfig.uWidth, localconfig.uHeight);
 }
 
+static void RenderMethodSelected(AG_Event *event)
+{
+   AG_TlistItem *list = (AG_TlistItem *)AG_PTR(1);
+   int method = -1;
+   if(list == NULL) return;
+   
+   if(strcmp(gettext("Full Draw"), list->text) == 0) method = RENDERING_FULL;
+   if(strcmp(gettext("Diff Block"), list->text) == 0) method = RENDERING_BLOCK;
+   if(strcmp(gettext("Diff Raster"), list->text) == 0) method = RENDERING_RASTER;
+   
+   if(method < 0) return;
+   if(method >= RENDERING_END) return;
+   localconfig.nRenderMethod = method;
+   return;
+}
 
 
 void OnConfigMenuScreen(AG_NotebookTab *parent)
@@ -384,8 +399,11 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 	AG_Numerical *fps;
 	AG_Box *box;
 	AG_Box *box2;
+        AG_Combo *combo;
+        AG_TlistItem *TlistItem[RENDERING_END];
 	int i;
 	int limit;
+	
 
 	limit = sizeof(ScreenSizeHeight) / sizeof(WORD);
 	for(i = 0; i <= limit; i++){
@@ -412,7 +430,21 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 		AG_BindUint16(fps, "value", &localconfig.nEmuFPS);
 		AG_NumericalSetRangeInt(fps, 2, 75);
 		AG_NumericalSetIncrement(fps, 1);
-
+	   
+		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
+		combo = AG_ComboNewS(AGWIDGET(box2), AG_COMBO_SCROLLTOSEL, gettext("Rendering Method"));
+	        AG_ComboSizeHint(combo, "XXXXXXXXXXXX", RENDERING_END); 
+	        TlistItem[0] = AG_TlistAddS(combo->list, NULL, gettext("Full Draw"));
+	        TlistItem[1] = AG_TlistAddS(combo->list, NULL, gettext("Diff Block"));
+	        TlistItem[2] = AG_TlistAddS(combo->list, NULL, gettext("Diff Raster"));
+	        for(i = RENDERING_FULL; i < RENDERING_END; i++) {
+		   if(i == localconfig.nRenderMethod) {
+			AG_ComboSelect(combo, TlistItem[i]);
+		   }
+		}
+	   
+	        AG_SetEvent(combo, "combo-selected", RenderMethodSelected, NULL);
+	   
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);

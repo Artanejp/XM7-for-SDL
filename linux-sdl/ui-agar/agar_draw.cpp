@@ -45,6 +45,7 @@ BOOL bUseOpenCL;
 BOOL bUseSIMD;
 AG_Surface *DrawSurface = NULL;
 int DrawSurfaceId = 0;
+unsigned int nRenderMethod;
 }
 
 void InitGL(int w, int h)
@@ -52,6 +53,7 @@ void InitGL(int w, int h)
     AG_Driver *drv;
     if(MainWindow) drv = AGDRIVER(MainWindow);
     bManualScaled = FALSE;
+    nRenderMethod = 0;
     SDL_SemWait(DrawInitSem);
 #ifdef USE_OPENGL
    if(AG_UsingGL(NULL)) {
