@@ -32,6 +32,7 @@
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
+#include "agar_cfg.h"
 #include "xm7.h"
 #include "display.h"
 #include "subctrl.h"
@@ -147,8 +148,9 @@ static void drawGrids(void *pg,int w, int h)
 static void drawUpdateTexture(Uint32 *p, int w, int h)
 {
 //    LockVram();
+   
 
-    if((SDLDrawFlag.Drawn) && (uVramTextureID != 0)){
+    if(uVramTextureID != 0){
        Uint32 *pu;
        Uint32 *pq;
        int xx;
@@ -190,8 +192,13 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        } else {
 #endif
 	  LockVram();
-	  if((pFrameBuffer != NULL) && (p != NULL)) {
-	       
+	  if(nRenderMethod == RENDERING_RASTER) {
+	     if(p != NULL) {
+		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+		UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
+		glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+	     }
+	  } else if((pFrameBuffer != NULL) && (p != NULL) && (SDLDrawFlag.Drawn) ) {
 #ifdef _OPENMP
 //            # pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
             #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
@@ -209,14 +216,17 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	       UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
-	    }
+	  }
 	  UnlockVram();
 #ifdef _USE_OPENCL
        }
 #endif       
-    }
     SDLDrawFlag.Drawn = FALSE;
+    }
 }
+
+   
+
 
 
 

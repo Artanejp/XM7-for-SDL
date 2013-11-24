@@ -13,6 +13,9 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif // _OPENMP
 
 #include "xm7.h"
 #include "multipag.h"
@@ -77,6 +80,11 @@ static BOOL bNextFrameRender;				/* 次フレーム描画フラグ */
 extern "C" {
    BOOL bDirtyLine[400];				/* 要書き換えフラグ */
 }
+#ifdef _USE_OPENCL
+# include "agar_glcl.h"
+# include "agar_glutil.h"
+extern class GLCLDraw *cldraw;
+#endif
 
 #if XM7_VER >= 3
 BYTE    bMode;		/* 画面モード */
@@ -723,6 +731,26 @@ void vram_notify(WORD addr, BYTE dat)
 	}
 
 #endif				/*  */
+      bDirtyLine[y] = TRUE;
+	if (nDrawTop > yy) {
+		nDrawTop = yy;
+	}
+	if (nDrawBottom <= yy) {
+#if XM7_VER >= 3
+		if (bMode == SCR_400LINE) {
+			nDrawBottom = (WORD) (yy + 1);
+		}
+
+		else {
+			nDrawBottom = (WORD) (yy + 2);
+		}
+
+#else				/*  */
+		nDrawBottom = (WORD) (yy + 2);
+
+#endif				/*  */
+	}
+      return;
    } else {
 	
 #if XM7_VER >= 3
@@ -778,12 +806,7 @@ void vram_notify(WORD addr, BYTE dat)
 	 * 再描画フラグを設定
 	 */
         LockVram();
-        if(nRenderMethod == RENDERING_RASTER) {
-	   bDirtyLine[y] = TRUE;
-	} else {
-	   SDLDrawFlag.read[x][y] = TRUE;
-	}
-   
+        SDLDrawFlag.read[x][y] = TRUE;
         UnlockVram();
 	/*
 	 * 垂直方向更新
@@ -895,6 +918,9 @@ void 	display_notify(void)
 	SetDirtyFlag(0, 400, TRUE);
 	if (!run_flag) {
 		raster = now_raster;
+#ifdef _OPENMP
+       #pragma omp parallel for shared(now_raster)
+#endif
 		for (i = 0; i < 400; i++) {
 			now_raster = i;
 			hblank_notify();
@@ -918,6 +944,9 @@ void FASTCALL vblankperiod_notify(void)
 	int ymax;
 
 	if (nRenderMethod == RENDERING_RASTER) {
+#ifdef _USE_OPENCL
+       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) return; // OK?
+#endif	   
 		/* 次のフレームを強制的に書き換えるか */
 		if (bNextFrameRender) {
 			bNextFrameRender = FALSE;
@@ -974,6 +1003,9 @@ void FASTCALL vblankperiod_notify(void)
 void FASTCALL hblank_notify(void)
 {
 	if (nRenderMethod == RENDERING_RASTER) {
+#ifdef _USE_OPENCL
+       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) return;
+#endif	   
 //	   LockVram();
 	   if (bDirtyLine[now_raster]) {
 		   switch (bMode) {
