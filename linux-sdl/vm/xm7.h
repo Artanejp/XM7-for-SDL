@@ -12,13 +12,20 @@
 
 #include <stdio.h>
 #include "build_config.h"
-#ifdef USE_AGAR
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+# ifdef USE_AGAR
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #include "xm7_types.h"
 #endif
-//#ifndef _WINDOWS
+#ifdef __cplusplus   
+}
+#endif
+   //#ifndef _WINDOWS
 #include <SDL/SDL.h>
 //#endif
 

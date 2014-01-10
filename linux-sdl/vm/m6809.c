@@ -74,8 +74,8 @@
 //#include "debugger.h"
 //#include "m6809.h"
 #include "xm7.h"
-//#define INLINE __inline__
-#define INLINE __volatile__ __inline__
+#define INLINE static inline
+//#define INLINE __volatile__ __inline__
 
 //#define BIG_SWITCH 1
 /* Enable big switch statement for the main opcodes */
@@ -383,7 +383,7 @@ static void cpu_reset(cpu6809_t *m68_state)
 #include "m6809ops.h"
 
 // Refine from cpu_x86.asm of V3.52a.
-static __volatile__ void cpu_nmi(cpu6809_t *m68_state)
+static void cpu_nmi(cpu6809_t *m68_state)
 {
    //printf("NMI occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfffc),S);
    if((m68_state->intr & INTR_CWAI_IN) == 0) {
@@ -404,7 +404,7 @@ static __volatile__ void cpu_nmi(cpu6809_t *m68_state)
 
 
 // Refine from cpu_x86.asm of V3.52a.
-static __volatile__ void cpu_firq(cpu6809_t *m68_state)
+static void cpu_firq(cpu6809_t *m68_state)
 {
 //	printf("Firq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff6),S);
    if((m68_state->intr & INTR_CWAI_IN) == 0) {
@@ -420,7 +420,7 @@ static __volatile__ void cpu_firq(cpu6809_t *m68_state)
 }
 
 // Refine from cpu_x86.asm of V3.52a.
-static __volatile__ void cpu_irq(cpu6809_t *m68_state)
+static void cpu_irq(cpu6809_t *m68_state)
 {
  //  printf("Irq occured PC=0x%04x VECTOR=%04x SP=%04x \n",PC,RM16(m68_state, 0xfff8),S);
 
@@ -444,7 +444,7 @@ static __volatile__ void cpu_irq(cpu6809_t *m68_state)
 
 
 
-static __volatile__ void cpu_exec(cpu6809_t *m68_state)
+static void cpu_exec(cpu6809_t *m68_state)
 {
    WORD intr = m68_state->intr;
    WORD cycle = 0;
@@ -524,7 +524,7 @@ int_cycle:
 }
 
 
-static __volatile__ void cpu_execline(cpu6809_t *m68_state)
+static void cpu_execline(cpu6809_t *m68_state)
 {
         BYTE ireg;
 //			debugger_instruction_hook(device, PCD);

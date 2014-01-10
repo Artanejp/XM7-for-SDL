@@ -14,6 +14,7 @@ HNZVC
 #ifdef __cplusplus
 extern "C" {
 #endif
+//#define OP_HANDLER(_name) INLINE void _name (cpu6809_t *m68_state)
 #define OP_HANDLER(_name) INLINE void _name (cpu6809_t *m68_state)
 //#define OP_HANDLER(_name) INLINE volatile void _name (cpu6809_t *m68_state)
 

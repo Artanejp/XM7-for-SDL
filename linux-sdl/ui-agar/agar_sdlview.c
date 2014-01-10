@@ -214,8 +214,8 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 {
    XM7_SDLView *my = p;
 
-    if(my == NULL) return;
-    if(my->Surface == NULL) return;
+    if(my == NULL) return -1;
+    if(my->Surface == NULL) return -1;
    /* If we return -1, Draw() will not be called. */
    if (a->w < 5 || a->h < 5)
      return (-1);
