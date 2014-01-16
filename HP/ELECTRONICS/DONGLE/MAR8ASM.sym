@@ -1,0 +1,66 @@
+v 20130925 2
+V 1100 1100 800 3 0 0 0 -1 -1 0 -1 -1 -1 -1 -1
+P 1100 0 1100 300 1 0 0
+{
+T 1100 -200 5 10 0 0 0 0 1
+pintype=in
+T 1100 355 5 10 1 1 90 0 1
+pinlabel=IN
+T 1050 205 5 10 1 1 90 6 1
+pinnumber=1
+T 1100 -200 5 10 0 0 0 0 1
+pinseq=0
+}
+P 2500 1100 1900 1100 1 0 0
+{
+T 2500 1100 5 10 0 0 0 6 1
+pintype=gnd
+T 1845 995 5 10 1 1 0 6 1
+pinlabel=GND
+T 1995 1145 5 10 1 1 0 0 1
+pinnumber=2
+T 2500 1100 5 10 0 0 0 6 1
+pinseq=0
+}
+P 1100 2200 1100 1900 1 0 0
+{
+T 1100 2600 5 10 0 0 0 0 1
+pintype=output
+T 1100 1845 5 10 1 1 90 6 1
+pinlabel=OUT
+T 1050 1995 5 10 1 1 90 0 1
+pinnumber=3
+T 1100 2600 5 10 0 0 0 0 1
+pinseq=0
+}
+P 0 1100 300 1100 1 0 0
+{
+T -400 1100 5 10 0 0 0 0 1
+pintype=gnd
+T 355 995 5 10 1 1 0 0 1
+pinlabel=GND
+T 205 1145 5 10 1 1 0 6 1
+pinnumber=4
+T -400 1100 5 10 0 0 0 0 1
+pinseq=0
+}
+T 600 1300 9 10 1 0 0 0 1
+MAR-8ASM
+T 600 1900 8 10 1 1 0 6 1
+refdes=U?
+T 300 6600 5 10 0 0 0 0 1
+device=MAR8ASM
+T 300 6800 5 10 0 0 0 0 1
+footprint=WW107
+T 300 7000 5 10 0 0 0 0 1
+author=Kyuma Ohta <whatisthis.sowhat@gmail.com>
+T 300 7200 5 10 0 0 0 0 1
+documentation=http://www.minicircuits.com/MCLStore/ModelInfoDisplay?13898773944720.04737034918543859
+T 300 7400 5 10 0 0 0 0 1
+description=RF Amplifier up to 31.5dB, 12.5dBm input made by Mini Circuits corp.
+T 300 7600 5 10 0 0 0 0 1
+numslots=0
+T 300 7800 5 10 0 0 0 0 1
+dist-license=GPL
+T 300 8000 5 10 0 0 0 0 1
+use-license=public domain

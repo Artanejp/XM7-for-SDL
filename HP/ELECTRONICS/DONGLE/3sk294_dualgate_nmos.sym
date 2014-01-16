@@ -1,0 +1,72 @@
+v 20130925 2
+T 600 500 5 10 0 0 0 0 1
+device=DUAL_NMOS_TRANSISTOR
+T 600 500 5 10 0 0 0 0 1
+numslots=0
+T 600 500 5 10 0 0 0 0 1
+description=generic Dualgate N channel MOS transistor (enhancement type)
+T 600 700 5 10 0 0 0 0 1
+documentation=http://www.semicon.toshiba.co.jp/info/lookup.jsp?pid=3SK294&lang=en
+T 600 900 5 10 0 0 0 0 1
+author=Kyuma Ohta <whatisthis.sowhat@gmail.com>
+T 600 1100 5 10 0 0 0 0 1
+dist-license=GPL
+T 600 1300 5 10 0 0 0 0 1
+use-license=public domain
+L 300 700 500 700 3 0 0 0 -1 -1
+L 300 200 500 200 3 0 0 0 -1 -1
+L 300 500 400 600 3 0 0 0 -1 -1
+L 300 500 400 400 3 0 0 0 -1 -1
+P 0 200 200 200 1 0 0
+{
+T 0 300 5 10 0 1 0 0 1
+pinnumber=4
+T 0 0 9 10 1 1 0 0 1
+pinlabel=G2
+T 0 300 5 10 0 0 0 0 1
+pinseq=4
+T 0 300 5 10 0 0 0 0 1
+pintype=pas
+}
+P 500 700 500 900 1 0 1
+{
+T 300 800 5 10 0 1 0 0 1
+pinnumber=D
+T 300 800 9 10 0 1 0 0 1
+pinlabel=D
+T 300 800 5 10 0 0 0 0 1
+pinseq=1
+T 300 800 5 10 0 0 0 0 1
+pintype=pas
+}
+P 500 200 500 0 1 0 1
+{
+T 300 0 5 10 0 1 0 0 1
+pinnumber=S
+T 300 0 9 10 0 1 0 0 1
+pinlabel=S
+T 300 0 5 10 0 0 0 0 1
+pinseq=2
+T 300 0 5 10 0 0 0 0 1
+pintype=pas
+}
+T 700 600 8 10 1 1 0 0 1
+refdes=Q?
+L 300 800 300 500 3 0 0 0 -1 -1
+L 300 500 300 300 3 0 0 0 -1 -1
+L 300 300 300 100 3 0 0 0 -1 -1
+L 200 400 200 200 3 0 0 0 -1 -1
+L 300 500 500 500 3 0 0 0 -1 -1
+L 500 500 500 200 3 0 0 0 -1 -1
+P 0 700 200 700 1 0 0
+{
+T 0 700 5 10 0 0 0 0 1
+pintype=pas
+T -45 795 5 10 1 1 0 0 1
+pinlabel=G1
+T 105 745 5 10 0 1 0 6 1
+pinnumber=3
+T 0 700 5 10 0 0 0 0 1
+pinseq=3
+}
+L 200 700 200 500 3 0 0 0 -1 -1

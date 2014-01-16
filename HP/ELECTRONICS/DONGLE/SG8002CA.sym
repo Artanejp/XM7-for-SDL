@@ -1,0 +1,65 @@
+v 20130925 2
+B 300 0 1500 900 3 0 0 0 -1 -1 0 -1 -1 -1 -1 -1
+P 0 100 300 100 1 0 0
+{
+T -300 100 5 10 0 0 90 0 1
+pintype=vcc
+T 355 95 5 10 1 1 0 0 1
+pinlabel=VCC
+T 205 145 5 10 1 1 0 6 1
+pinnumber=4
+T -300 100 5 10 0 0 90 0 1
+pinseq=0
+}
+P 0 700 300 700 1 0 0
+{
+T 600 700 5 10 0 0 0 0 1
+pintype=output
+T 355 695 5 10 1 1 0 0 1
+pinlabel=OUT
+T 205 745 5 10 1 1 0 6 1
+pinnumber=3
+T 600 700 5 10 0 0 0 0 1
+pinseq=0
+}
+P 2100 700 1800 700 1 0 0
+{
+T 2400 700 5 10 0 0 90 0 1
+pintype=GND
+T 1745 695 5 10 1 1 0 6 1
+pinlabel=GND
+T 1895 745 5 10 1 1 0 0 1
+pinnumber=2
+T 2400 700 5 10 0 0 90 0 1
+pinseq=0
+}
+P 2100 100 1800 100 1 0 0
+{
+T 2400 100 5 10 0 0 90 0 1
+pintype=IN
+T 1745 95 5 10 1 1 0 6 1
+pinlabel=OE
+T 1895 145 5 10 1 1 0 0 1
+pinnumber=1
+T 2400 100 5 10 0 0 90 0 1
+pinseq=0
+}
+V 1400 100 100 3 0 0 0 -1 -1 0 -1 -1 -1 -1 -1
+T 1600 600 9 10 1 0 180 0 1
+SG-8002CA
+T 600 1900 8 10 1 1 0 6 1
+refdes=U?
+T 300 6600 5 10 0 0 0 0 1
+device=SG-8002CA
+T 300 7000 5 10 0 0 0 0 1
+author=Kyuma Ohta <whatisthis.sowhat@gmail.com>
+T 300 7200 5 10 0 0 0 0 1
+documentation=http://www5.epsondevice.com/ja/quartz/product/osc/programmable/sg8002ca.html
+T 300 7400 5 10 0 0 0 0 1
+description=XTAL OSCilator SG-8002CA(-PT/PH/PC) series.
+T 300 7600 5 10 0 0 0 0 1
+numslots=0
+T 300 7800 5 10 0 0 0 0 1
+dist-license=GPL
+T 300 8000 5 10 0 0 0 0 1
+use-license=public domain
