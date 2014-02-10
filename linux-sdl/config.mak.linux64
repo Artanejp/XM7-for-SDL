@@ -26,12 +26,12 @@ WITH_DEBUGGER   = Yes
 PREFIX           = /usr/local
 
 # Define toolchains
-FMGEN_CC = gcc -Wall
-FMGEN_CXX = g++ -Wall
+FMGEN_CC = gcc -std=c99 -Wall
+FMGEN_CXX = g++ -std=c++11 -Wall
 #FMGEN_CC = gcc-4.7
 #FMGEN_CXX = g++-4.7
-CC = gcc
-CXX = g++
+CC = gcc -std=c11
+CXX = g++ -std=c++11
 #CC = gcc-4.7
 #CXX = g++-4.7
 
@@ -45,7 +45,7 @@ CXX = g++
 # SET Arch specified
 #ARCH_FLAGS       = -m32
 #ARCH_FLAGS       = -mmmx -msse -msse2 -mfpmath=sse
-#ARCH_FLAGS      = -march=amdfam10
+#ARCH_FLAGS      = -march=bdver1
 # SET Arch depended flags
 BUILD_SSE2       = Yes
 
