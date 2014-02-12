@@ -94,7 +94,7 @@ typedef struct {
 	BOOL bUseOpenCL; /* OpenCLレンダラ(GLのみ?) */
 	BOOL bUseSIMD;   /* 描画等にSIMDを使う */
 	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */
-        int nRenderMethod;
+        unsigned int nRenderMethod;
 	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;	/* WHG有効フラグ */
 	BOOL bTHGEnable;	/* THG有効フラグ */

@@ -91,73 +91,35 @@ static void BuildVirtualVram8(Uint32 *pp, int x, int y, int  w, int h, int mode)
     UnlockVram();
 }
 
-void BuildVirtualVram8_Raster(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode)
+void BuildVirtualVram8_Raster(Uint32 *pp, int xbegin, int xend, int y, int mode)
 {
     int xx;
-    int yy;
+    int yy = y;
     Uint32 *p;
 
    if(pp == NULL) return;
   
-    LockVram();
+//    LockVram();
     if((xbegin != 0) || (xend != 80)){
        if(SDLDrawFlag.DPaletteChanged) { // Palette changed
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, bDirtyLine, ybegin, yend, xbegin, xend, mode) private(p, xx)
-#endif
-	for(yy = ybegin ; yy < yend ; yy++) {
 	      p = &pp[yy * 640 + xbegin * 8];
 	      CreateVirtualVram8_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
-//	      bDirtyLine[yy] = TRUE;
-	}
-	SDLDrawFlag.Drawn = TRUE;
-	SDLDrawFlag.DPaletteChanged = FALSE;
        } else { // Palette not changed
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
-#endif
-	  for(yy = ybegin ; yy < yend ; yy++) {
-	     if(bDirtyLine[yy]) {
 		p = &pp[yy * 640 + xbegin * 8];
 		CreateVirtualVram8_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
-		bDirtyLine[yy] = FALSE;
-	   }
-	  SDLDrawFlag.Drawn = TRUE;
-	  SDLDrawFlag.DPaletteChanged = FALSE;
-	  }
-	  
        }
-       
-       UnlockVram();
-       return;
+//       UnlockVram();
     } else { // Not Windowed mode
        if(SDLDrawFlag.DPaletteChanged) { // Palette changed
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
-#endif
-	for(yy = ybegin ; yy < yend ; yy++) {
-	      p = &pp[640 * yy];
-	      CreateVirtualVram8_Line(p, yy, yy + 1, mode);
-	      bDirtyLine[yy] = TRUE;
-	   }
-	SDLDrawFlag.Drawn = TRUE;
-	SDLDrawFlag.DPaletteChanged = FALSE;
-     } else { // Palette not changed
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
-#endif
-	for(yy = ybegin ; yy < yend ; yy++) {
-	      p = &pp[640 * yy];
-	      if(bDirtyLine[yy] == TRUE) {
-		 CreateVirtualVram8_Line(p, yy, yy + 1, mode);
-//		 bDirtyLine[yy] = FALSE;
-	      }
-	   }
+	  p = &pp[640 * yy];
+	  CreateVirtualVram8_Line(p, yy, yy + 1, mode);
+       } else { // Palette not changed
+	  p = &pp[640 * yy];
+	  CreateVirtualVram8_Line(p, yy, yy + 1, mode);
+       }
      }
-       UnlockVram();
-       return;
-    }
-       
+//       UnlockVram();
+ 
 }
 
 
@@ -216,6 +178,76 @@ static void BuildVirtualVram8_SSE2(Uint32 *pp, int x, int y, int  w, int h, int 
     UnlockVram();
 }
 
+void BuildVirtualVram8_Raster_SSE2(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode)
+{
+    int xx;
+    int yy;
+    Uint32 *p;
+
+   if(pp == NULL) return;
+  
+    LockVram();
+    if((xbegin != 0) || (xend != 80)){
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[yy * 640 + xbegin * 8];
+	      CreateVirtualVram8_WindowedLine_SSE2(p, yy, yy + 1, xbegin, xend, mode);
+//	      bDirtyLine[yy] = TRUE;
+	}
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+       } else { // Palette not changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	  for(yy = ybegin ; yy < yend ; yy++) {
+	     if(bDirtyLine[yy]) {
+		p = &pp[yy * 640 + xbegin * 8];
+		CreateVirtualVram8_WindowedLine_SSE2(p, yy, yy + 1, xbegin, xend, mode);
+		bDirtyLine[yy] = FALSE;
+	   }
+	  SDLDrawFlag.Drawn = TRUE;
+	  SDLDrawFlag.DPaletteChanged = FALSE;
+	  }
+	  
+       }
+       
+       UnlockVram();
+       return;
+    } else { // Not Windowed mode
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[640 * yy];
+	      CreateVirtualVram8_Line_SSE2(p, yy, yy + 1, mode);
+	      bDirtyLine[yy] = TRUE;
+	   }
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+     } else { // Palette not changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[640 * yy];
+	      if(bDirtyLine[yy] == TRUE) {
+		 CreateVirtualVram8_Line_SSE2(p, yy, yy + 1, mode);
+//		 bDirtyLine[yy] = FALSE;
+	      }
+	   }
+     }
+       UnlockVram();
+       return;
+    }
+       
+}
+
+
 static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mode)
 {
     int xx;
@@ -265,6 +297,132 @@ static void BuildVirtualVram4096(Uint32 *pp, int x, int y ,int  w, int h, int mo
     }
    
     UnlockVram();
+}
+
+void BuildVirtualVram4096_Raster_SSE2(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode)
+{
+    int xx;
+    int yy;
+    Uint32 *p;
+
+   if(pp == NULL) return;
+  
+    LockVram();
+    if((xbegin != 0) || (xend != 40)){
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[yy * 320 + xbegin * 8];
+	      CreateVirtualVram4096_WindowedLine_SSE2(p, yy, yy + 1, xbegin, xend, mode);
+//	      bDirtyLine[yy] = TRUE;
+	}
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+       } else { // Palette not changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	  for(yy = ybegin ; yy < yend ; yy++) {
+	     if(bDirtyLine[yy]) {
+		p = &pp[yy * 320 + xbegin * 8];
+		CreateVirtualVram4096_WindowedLine_SSE2(p, yy, yy + 1, xbegin, xend, mode);
+		bDirtyLine[yy] = FALSE;
+	   }
+	  SDLDrawFlag.Drawn = TRUE;
+	  SDLDrawFlag.DPaletteChanged = FALSE;
+	  }
+	  
+       }
+       
+       UnlockVram();
+       return;
+    } else { // Not Windowed mode
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[320 * yy];
+	      CreateVirtualVram4096_Line_SSE2(p, yy, yy + 1, mode);
+	      bDirtyLine[yy] = TRUE;
+	   }
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+     } else { // Palette not changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, bDirtyLine, SDLDrawFlag, ybegin, yend, xbegin, xend, mode) private(p, xx)
+#endif
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[320 * yy];
+	      if(bDirtyLine[yy] == TRUE) {
+		 CreateVirtualVram4096_Line_SSE2(p, yy, yy + 1, mode);
+//		 bDirtyLine[yy] = FALSE;
+	      }
+	   }
+     }
+       UnlockVram();
+       return;
+    }
+       
+}
+
+void BuildVirtualVram4096_Raster(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode)
+{
+    int xx;
+    int yy;
+    Uint32 *p;
+
+   if(pp == NULL) return;
+  
+    LockVram();
+    if((xbegin != 0) || (xend != 40)){
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[yy * 320 + xbegin * 8];
+	      CreateVirtualVram4096_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
+//	      bDirtyLine[yy] = TRUE;
+	}
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+       } else { // Palette not changed
+	  for(yy = ybegin ; yy < yend ; yy++) {
+	     if(bDirtyLine[yy]) {
+		p = &pp[yy * 320 + xbegin * 8];
+		CreateVirtualVram4096_WindowedLine(p, yy, yy + 1, xbegin, xend, mode);
+		bDirtyLine[yy] = FALSE;
+	   }
+	  SDLDrawFlag.Drawn = TRUE;
+	  SDLDrawFlag.DPaletteChanged = FALSE;
+	  }
+	  
+       }
+       
+       UnlockVram();
+       return;
+    } else { // Not Windowed mode
+       if(SDLDrawFlag.DPaletteChanged) { // Palette changed
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[320 * yy];
+	      CreateVirtualVram4096_Line(p, yy, yy + 1, mode);
+//	      bDirtyLine[yy] = TRUE;
+	   }
+	SDLDrawFlag.Drawn = TRUE;
+	SDLDrawFlag.DPaletteChanged = FALSE;
+     } else { // Palette not changed
+	for(yy = ybegin ; yy < yend ; yy++) {
+	      p = &pp[320 * yy];
+	      if(bDirtyLine[yy] == TRUE) {
+		 CreateVirtualVram4096_Line(p, yy, yy + 1, mode);
+//		 bDirtyLine[yy] = FALSE;
+	      }
+	   }
+     }
+       UnlockVram();
+       return;
+    }
+       
 }
 
 static void BuildVirtualVram4096_SSE2(Uint32 *pp, int x, int y ,int  w, int h, int mode)

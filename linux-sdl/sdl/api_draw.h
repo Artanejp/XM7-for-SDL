@@ -131,6 +131,7 @@ extern void window_notify(void);
 extern void OnFullScreen(void);
 extern void OnWindowedScreen(void);
 extern void SetDrawFlag(BOOL flag);
+extern void FASTCALL SetDirtyFlag(int top, int bottom, BOOL flag);
 
 /*
  * VRAMAPI
@@ -146,6 +147,8 @@ extern void Draw400l(void);
 extern void Draw256k(void);
 
 extern void Draw640_1Line(int line);
+extern void Draw320_1Line(int line);
+extern void Draw400l_1Line(int line);
 
 extern void Palet640(void);
 extern void Palet320(void);

@@ -48,7 +48,8 @@ extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int
 
 extern void PutVram_AG_SP(AG_Surface *p, int x, int y, int w, int h,  Uint32 mpage);
 extern void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h);
-extern void BuildVirtualVram8_Raster(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode);
+extern void BuildVirtualVram8_Raster(Uint32 *pp, int xbegin, int xend, int y, int mode);
+extern void BuildVirtualVram4096_Raster(Uint32 *pp, int xbegin, int xend, int ybegin, int  yend, int mode);
 
 extern Uint32 *GetVirtualVram(void);
 #endif

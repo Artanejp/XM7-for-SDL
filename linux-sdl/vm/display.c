@@ -557,6 +557,7 @@ display_blank(void)
 	    return TRUE;
 	}
     }
+   
 
     if (blank_flag) {
 	/*
@@ -590,7 +591,7 @@ display_blank(void)
 	 * これから水平同期期間
 	 */
 	hblank_notify();
-	now_raster ++;
+	now_raster++;
 	blank_flag = TRUE;
 #if (XM7_VER >= 3) || (XM7_VER == 1 && defined(L4CARD))
 	if (blank_count & 0x1000) {

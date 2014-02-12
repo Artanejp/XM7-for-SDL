@@ -277,7 +277,6 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
  */
 void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
 {
-#if (__GNUC__ >= 4)   
     v8hi_t c;
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
     Uint8 *disp =(Uint8 *) p;
@@ -293,7 +292,8 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
        for(yy = ybegin; yy < yend; yy++) { 
-           addr = ybegin * 80;
+           addr = yy * 80;
+//	   disp = (Uint8 *)(&p[yy * 640]);
 	   for(xx = 0; xx < (80 / 8); xx ++) { 
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      disp += pitch;
@@ -317,6 +317,7 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
      } else {
        for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80;
+//	   disp = (Uint8 *)(&p[yy * 640]);
 	   for(xx = 0; xx < (80 / 8); xx++) { 
 	      getvram_8_vec(addr, &c);
 	      putword8_vec((Uint32 *)disp, c, pal);
@@ -362,64 +363,6 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
        }
 	return;
      }
- #else 
-    Uint32 c[8];
-    Uint32 *pal = (Uint32 *)rgbTTLGDI;
-    Uint8 *disp =(Uint8 *) p;
-    int xx;
-    int yy;
-
-    if((p == NULL) || (pal == NULL)) return;
-    pitch = sizeof(Uint32) * 8;
-   for(yy = ybegin; yy < yend; yy++) {  
-      addr = y * 80;
-      for(xx = 0; xx < (80 / 8) ; xx++) {
-	   
-	 // Loop廃止(高速化)
-	 getvram_8(addr, c);
-	 putword8((Uint32 *)disp, c, pal);
-	 addr++;
-	 disp += pitch;
-   
-	 getvram_8(addr , c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr++;
-	 disp += pitch;
-	 
-	 getvram_8(addr, c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr += 1;
-	 disp += pitch;
-   
-	 getvram_8(addr , c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr += 1;
-	 disp += pitch;
-   
-	 getvram_8(addr, c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr += 1;
-	 disp += pitch;
-   
-	 getvram_8(addr, c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr += 1;
-	 disp += pitch;
-   
-	 getvram_8(addr, c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr += 1;
-	 disp += pitch;
-   
-	 getvram_8(addr, c);
-	 putword8((Uint32 *)disp,  c, pal);
-	 addr += 1;
-	 disp += pitch;
-      }
-   }
-   
-     
-#endif   
 }
 
 /*

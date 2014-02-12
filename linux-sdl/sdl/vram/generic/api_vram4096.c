@@ -162,4 +162,148 @@ void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     }
    
 }
+
+/*
+ * 1LineのピースをVRAMから作成する：VramLockしない事に注意
+ */
+void CreateVirtualVram4096_Line(Uint32 *p, int ybegin, int yend, int mode)
+{
+//    Uint32 c[8];
+    v8hi_t c;
+    Uint8 *disp;
+    Uint32 addr;
+    int yy;
+    int xx;
+    int pitch;
+
+    pitch = sizeof(Uint32) * 8;
+    // Loop廃止(高速化)
+    if(aPlanes == NULL) {
+       c.v = (v8si){0,0,0,0,0,0,0,0};
+       for(yy = ybegin; yy < yend; yy++) {
+	  addr = yy * 40;
+	  disp = (Uint8 *)p + (pitch * addr);
+	  for(xx = 0; xx < 5; xx++) {
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	  }
+       }
+    } else {
+       for(yy = ybegin; yy < yend; yy++) {
+	  addr = yy * 40;
+	  disp = (Uint8 *)p + (pitch * addr);
+	  for(xx = 0; xx < 5; xx++) {
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     getvram_4096_vec(addr, &c);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	  }
+       }
+    } 
+}
+
+/*
+ * ybegin - yendの行を変換する
+ */
+void CreateVirtualVram4096_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode)
+{
+#if (__GNUC__ >= 4)   
+    v8hi_t c;
+    Uint8 *disp =(Uint8 *) p;
+    Uint32 addr;
+    int pitch;
+    int xx;
+    int yy;
    
+    if(p == NULL) return;
+    pitch = sizeof(Uint32) * 8;
+
+    // Loop廃止(高速化)
+    if(aPlanes == NULL) {
+       c.v = (v8si){0,0,0,0,0,0,0,0};
+       for(yy = ybegin; yy < yend; yy++) { 
+           addr = yy * 40 + xbegin;
+	   disp = (Uint8 *)(&p[yy * 320 + xbegin]);
+	   for(xx = xbegin; xx < xend; xx ++) { 
+	      putword2_vec((Uint32 *)disp, c);
+	      disp += pitch;
+	   }
+       }
+       return;
+     } else {
+       for(yy = ybegin; yy < yend; yy++) { 
+           addr = yy * 40 + xbegin;
+	   disp = (Uint8 *)(&p[yy * 320 + xbegin]);
+	   for(xx = xbegin; xx < xend; xx++) { 
+	      getvram_4096_vec(addr, &c);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	   }
+       }
+	return;
+     }
+ #else 
+    Uint32 c[8];
+    Uint32 *pal = (Uint32 *)rgbTTLGDI;
+    Uint8 *disp =(Uint8 *) p;
+    int xx;
+    int yy;
+
+    if((p == NULL) || (pal == NULL)) return;
+    pitch = sizeof(Uint32) * 8;
+    for(yy = ybegin; yy < yend; yy++) {  
+      addr = y * 40 + xbegin;
+      disp = (Uint8 *)(&p[yy * 320 + xbegin]);
+      for(xx = xbegin; xx < xend; xx++) {
+	 getvram_4096(addr, c);
+	 putword2((Uint32 *)disp, c, pal);
+	 addr++;
+	 disp += pitch;
+      }
+   }
+#endif   
+}
+

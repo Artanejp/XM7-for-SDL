@@ -23,6 +23,7 @@
 #include "device.h"
 
 #include "agar_xm7.h"
+#include "agar_cfg.h"
 #include "agar_draw.h"
 #ifdef USE_OPENGL
 #include "agar_gldraw.h"
@@ -159,7 +160,12 @@ BOOL SelectDraw2(void)
       //AG_DriverClose(drv);
       bClearFlag = TRUE;
 //      SDLDrawFlag.ForcaReDraw = TRUE;
-      SetDrawFlag(TRUE);
+      if(nRenderMethod == RENDERING_RASTER) {
+	 SetDirtyFlag(0, 400, TRUE);
+      } else {
+	 SetDrawFlag(TRUE);
+      }
+      
 #ifdef USE_OPENGL
    }
 #endif /* USE_OPENGL */

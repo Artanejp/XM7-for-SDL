@@ -54,7 +54,7 @@ void InitGL(int w, int h)
     AG_Driver *drv;
     if(MainWindow) drv = AGDRIVER(MainWindow);
     bManualScaled = FALSE;
-    nRenderMethod = 0;
+//    nRenderMethod = 0;
     SDL_SemWait(DrawInitSem);
 #ifdef USE_OPENGL
    if(AG_UsingGL(NULL)) {
@@ -290,6 +290,7 @@ void AGDrawTaskMain(void)
         
 	if(nEmuFPS > 2) {
 		fps = 1000 / nEmuFPS;
+
 	} else {
 		fps = 500;
 	}
