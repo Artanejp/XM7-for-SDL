@@ -27,14 +27,33 @@ WITH_DEBUGGER   = Yes
 
 # Programs
 INSTALL          = install -c 
-#PREFIX           = /usr/local
+#PREFIX           = /
+# Define toolchains
+FMGEN_CC = gcc -std=c99 -Wall
+FMGEN_CXX = g++ -std=c++11 -Wall
+#FMGEN_CC = gcc-4.7
+#FMGEN_CXX = g++-4.7
+CC = gcc -std=c11
+CXX = g++ -std=c++11
+#CC = gcc-4.7
+#CXX = g++-4.7
+
+# Uncomment if cross-build
+#CROSS_BUILD    = Yes
+#CROSS_TARGET   = i686-w64-mingw32
+#CROSS_PREFIX    = $(HOME)/src/mingw-crossbuild
+
 
 
 # SET Arch specified
+#ARCH_FLAGS       = -m32
 ARCH_FLAGS       = -mmmx -msse -msse2 -mfpmath=sse
-#ARCH_FLAGS      = -march=amdfam10
+#ARCH_FLAGS      = -march=bdver1
+# SET Arch depended flags
+BUILD_SSE2       = Yes
 
 OS               = Windows
+ARCH            = ia32
 
 #################### UI  ############################
 ## Embed目的の場合はkanameやkonatuのような小さなフォントにすること
