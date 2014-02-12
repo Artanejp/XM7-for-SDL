@@ -14,7 +14,7 @@
 #include "xm7_sdl.h"
 #endif
 #include "sdl_inifile.h"
-#include "agar_cfg.h"
+//#include "agar_cfg.h"
 
 #include "sdl_prop.h"
 #include "sdl_sch.h"

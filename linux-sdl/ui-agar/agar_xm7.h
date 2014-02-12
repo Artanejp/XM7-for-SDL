@@ -8,7 +8,7 @@
 #ifndef AGAR_XM7_H_
 #define AGAR_XM7_H_
 #include <agar/core.h>
-#include <agar/core/types.h>
+//#include <agar/core/types.h>
 #include <agar/gui.h>
 #include "xm7.h"
 

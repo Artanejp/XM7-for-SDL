@@ -14,6 +14,7 @@
 extern "C" {
 #endif
 
+#include <sys/types.h>
 //#include <agar/core/string_compat.h>
 #include <agar/core.h>
 //#include <agar/core/types.h>
