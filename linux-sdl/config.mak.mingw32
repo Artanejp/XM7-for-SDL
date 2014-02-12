@@ -29,12 +29,12 @@ WITH_DEBUGGER   = Yes
 INSTALL          = install -c 
 #PREFIX           = /
 # Define toolchains
-FMGEN_CC = gcc -std=c99 -Wall
-FMGEN_CXX = g++ -std=c++11 -Wall
+FMGEN_CC = gcc -std=gnu99 -Wall
+FMGEN_CXX = g++ -std=gnu++11 -Wall
 #FMGEN_CC = gcc-4.7
 #FMGEN_CXX = g++-4.7
-CC = gcc -std=c11
-CXX = g++ -std=c++11
+CC = gcc -std=gnu11
+CXX = g++ -std=gnu++11
 #CC = gcc-4.7
 #CXX = g++-4.7
 
