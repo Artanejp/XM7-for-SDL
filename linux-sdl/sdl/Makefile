@@ -8,7 +8,7 @@ XM7_VER		= 3
 include ../config.mak
 include ../common.mak
 
-	
+
 VIDEODRVSRC = \
 	api_draw.cpp \
 	draw_thread.cpp \
@@ -71,7 +71,7 @@ LIBS_VRAM_PATH += ${LIBS_VRAM_PATH_SSE2}
 endif
 
 LIBS_SOUNDBUFFER_RELEASE = soundbuffer/generic/Release/libsndbuffer-generic.a
-LIBS_SOUNDBUFFER_DEBUG   = soundbuffer/generic/Release/libsndbuffer-generic.a
+LIBS_SOUNDBUFFER_DEBUG   = soundbuffer/generic/Debug/libsndbuffer-generic.a
 ifdef BUILD_SSE2
 LIBS_SOUNDBUFFER_SSE2 = libsndbuffer-sse2.a 
 LIBS_SOUNDBUFFER_PATH_SSE2 = soundbuffer/sse2
@@ -100,23 +100,23 @@ $(TARGET_DEBUG): ${OBJS_DEBUG} ${LIBS_DEBUG} ${LIBS_VRAM_DEBUG} ${LIBS_SOUNDBUFF
 	$(CXX) -pg -g ${LDFLAGS} -o $(TARGET_DEBUG)  $^ ${LIBS_DEBUG} ${LIBS_VRAM_DEBUG} ${LIBS_SOUNDBUFFER_DEBUG} ${LIBS}
 
 $(LIBS_VRAM_DEBUG):
-	for dir_i in $(LIBS_VRAM_PATH) ; do \
-	make -C $$dir_i Debug; \
+	for dir_idv in $(LIBS_VRAM_PATH) ; do \
+	make -C $$dir_idv Debug; \
 	done
 
 $(LIBS_SOUNDBUFFER_DEBUG):
-	for dir_i in $(LIBS_SOUNDBUFFER_PATH) ; do \
-	make -C $$dir_i Debug; \
+	for dir_ids in $(LIBS_SOUNDBUFFER_PATH) ; do \
+	make -C $$dir_ids Debug; \
 	done
 
 $(LIBS_VRAM_RELEASE):
-	for dir_i in $(LIBS_VRAM_PATH) ; do \
-	make -C $$dir_i Release; \
+	for dir_irv in $(LIBS_VRAM_PATH) ; do \
+	make -C $$dir_irv Release; \
 	done
 
 $(LIBS_SOUNDBUFFER_RELEASE):
-	for dir_i in $(LIBS_SOUNDBUFFER_PATH) ; do \
-	make -C $$dir_i Release; \
+	for dir_irs in $(LIBS_SOUNDBUFFER_PATH) ; do \
+	make -C $$dir_irs Release; \
 	done
 
 
@@ -137,12 +137,12 @@ install: all
 
 
 clean:
-	rm -f $(TARGET_DEBUG) $(TARGET_RELEASE) *.o *~ Debug/*.o Debug/*.d Release/*.o Release/*.d
-	for dir_i in $(LIBS_SOUNDBUFFER_PATH) ; do \
-	make -C $$dir_i clean; \
+	rm -f $(TARGET_DEBUG) $(TARGET_RELEASE) *.o *~ Debug/*.o Release/*.o
+	for dir_iss in $(LIBS_SOUNDBUFFER_PATH) ; do \
+	make -C $$dir_iss clean; \
 	done
-	for dir_i in $(LIBS_VRAM_PATH) ; do \
-	make -C $$dir_i clean; \
+	for dir_ivv in $(LIBS_VRAM_PATH) ; do \
+	make -C $$dir_ivv clean; \
 	done
 
 .DEPEND:

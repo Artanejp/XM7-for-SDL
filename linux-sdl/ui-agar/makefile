@@ -101,17 +101,17 @@ Release: Release/libui-agar.a $(SCALER_LIBS_RELEASE)
 Debug: Debug/libui-agar.a $(SCALER_LIBS_DEBUG)  
 
 scaler/generic/Debug/libscaler-generic.a:
-	make -C scaler/generic Debug
+	+make -C scaler/generic Debug
 
 scaler/generic/Release/libscaler-generic.a:
-	make -C scaler/generic Release
+	+make -C scaler/generic Release
 
 ifdef BUILD_SSE2
 scaler/sse2/Debug/libscaler-sse2.a:
-	make -C scaler/sse2 Debug
+	+make -C scaler/sse2 Debug
 
 scaler/sse2/Release/libscaler-sse2.a:
-	make -C scaler/sse2 Release
+	+make -C scaler/sse2 Release
 
 endif
 
@@ -134,21 +134,21 @@ Debug/%.o: %.cl
 	gawk -f cl2cpp.awk -v VARNAME=$(patsubst %.cl,%,$<) $(filter %.cl, $<) > $(patsubst %.cl,%.cpp,$<)
 	$(CXX) ${CXXFLAGS_DEBUG} -o $@ -c $(patsubst %.cl,%.cpp,$<)
 	rm $(patsubst %.cl,%.cpp,$<)
-	
+
 -include ../rules.mak
 
 .PHONY: clean
 clean:
-	rm -f Debug/*.o Release/*.o
-	rm -f Release/*.so Debug/*.so
-	rm -f Debug/*.lo Release/*.lo
-	rm -f Release/*.a Debug/*.a
-	rm -f Release/*.d Debug/*.d
-	rm -f *~
-	make -C scaler/generic clean
+	+rm -f Debug/*.o Release/*.o
+	+rm -f Release/*.so Debug/*.so
+	+rm -f Debug/*.lo Release/*.lo
+	+rm -f Release/*.a Debug/*.a
+	+rm -f *~
+	+make -C scaler/generic clean
 ifdef BUILD_SSE2
-	make -C scaler/sse2 clean
+	+make -C scaler/sse2 clean
 endif
+#	+rm -f Release/*.d Debug/*.d
 
 .DEPEND:
 -include $(OBJS_RELEASE:.o=.d)

@@ -56,7 +56,6 @@ clean:
 	rm -f Release/*.so Debug/*.so
 	rm -f Debug/*.lo Release/*.lo
 	rm -f Release/*.a Debug/*.a
-	rm -f Release/*.d Debug/*.d
 	rm -f *~
 
 .DEPEND:

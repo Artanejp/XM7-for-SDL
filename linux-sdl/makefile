@@ -16,41 +16,41 @@ all: Release Debug
 
 ifdef WITH_DEBUGGER
 Release: ui-agar-release vm-release debugger-release libfmgen008-release
-	make -C sdl $(TARGET_RELEASE)
+	+make -C sdl $(TARGET_RELEASE)
 
 Debug: ui-agar-debug vm-debug debugger-debug libfmgen008-debug
-	make -C sdl $(TARGET_DEBUG)
+	+make -C sdl $(TARGET_DEBUG)
 else
 Release: ui-agar-release vm-release libfmgen008-release
-	make -C sdl $(TARGET_RELEASE)
+	+make -C sdl $(TARGET_RELEASE)
 
 Debug: ui-agar-debug vm-debug libfmgen008-debug
-	make -C sdl $(TARGET_DEBUG)
+	+make -C sdl $(TARGET_DEBUG)
 endif
 
 libfmgen008-release:
-	make -C fmgen Release/libfmgen007a.a
+	+make -C fmgen Release/libfmgen007a.a
 
 libfmgen008-debug:
-	make -C fmgen Debug/libfmgen007a.a
+	+make -C fmgen Debug/libfmgen007a.a
 
 ui-agar-release:
-	make -C ui-agar Release
+	+make -C ui-agar Release
 
 ui-agar-debug:
-	make -C ui-agar Debug
+	+make -C ui-agar Debug
 
 vm-release:
-	make -C vm Release/libxm7_vm.a
+	+make -C vm Release/libxm7_vm.a
 
 vm-debug:
-	make -C vm Debug/libxm7_vm.a
+	+make -C vm Debug/libxm7_vm.a
 
 debugger-release:
-	make -C xm7-debugger Release/libxm7_debug.a
+	+make -C xm7-debugger Release/libxm7_debug.a
 
 debugger-debug:
-	make -C xm7-debugger Debug/libxm7_debug.a
+	+make -C xm7-debugger Debug/libxm7_debug.a
 
 
 
@@ -67,9 +67,9 @@ install: all
 
 
 clean:
-	make -C vm clean
-	make -C ui-agar clean
-	make -C fmgen clean
-	make -C xm7-debugger clean
-	make -C sdl clean
-	
+	+make -C vm clean
+	+make -C ui-agar clean
+	+make -C fmgen clean
+	+make -C xm7-debugger clean
+	+make -C sdl clean
+

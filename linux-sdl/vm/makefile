@@ -71,12 +71,11 @@ Release/libxm7_vm.a: ${OBJS_RELEASE}
 
 .PHONY: clean
 clean:
-	rm -f xm7.dbg xm7 *.o *~ 
 	rm -f Debug/*.o Release/*.o
 	rm -f Release/*.so Debug/*.so
 	rm -f Debug/*.lo Release/*.lo
 	rm -f Release/*.a Debug/*.a
-	rm -f Release/*.d Debug/*.d
+#	rm -f Release/*.d Debug/*.d
 
 .DEPEND:
 -include $(OBJS_RELEASE:.o=.d)
