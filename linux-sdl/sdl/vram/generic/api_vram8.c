@@ -429,3 +429,8 @@ void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin
 #endif   
 }
 
+Api_Vram_FuncList api_vram8_generic = {
+   CreateVirtualVram8_1Pcs,
+   CreateVirtualVram8_Line,
+   CreateVirtualVram8_WindowedLine
+};

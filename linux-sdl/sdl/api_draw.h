@@ -31,7 +31,7 @@
 #include "device.h"
 #include "xm7.h"
 #include "agar_xm7.h"
-
+#include "api_vram.h"
 
 
 #ifdef __cplusplus
@@ -69,6 +69,7 @@ extern BOOL bDirtyLine[400];				/* 要書き換えフラグ */
 extern DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 extern DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */
+extern Api_Vram_FuncList *pVirtualVramBuilder; /* 書き換え関数ポインタ */
 
 // guchar pBitsGDI[400*640*3]; /* ビットデータ */
 //extern BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */
@@ -146,9 +147,7 @@ extern void Draw320(void);
 extern void Draw400l(void);
 extern void Draw256k(void);
 
-extern void Draw640_1Line(int line);
-extern void Draw320_1Line(int line);
-extern void Draw400l_1Line(int line);
+extern void Draw_1Line(int line);
 
 extern void Palet640(void);
 extern void Palet320(void);

@@ -307,3 +307,8 @@ void CreateVirtualVram4096_WindowedLine(Uint32 *p, int ybegin, int yend, int xbe
 #endif   
 }
 
+Api_Vram_FuncList api_vram4096_generic = {
+   CreateVirtualVram4096_1Pcs,
+   CreateVirtualVram4096_Line,
+   CreateVirtualVram4096_WindowedLine
+};

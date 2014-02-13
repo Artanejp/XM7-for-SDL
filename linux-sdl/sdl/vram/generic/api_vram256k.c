@@ -186,3 +186,69 @@ void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage)
 
 }
 
+void CreateVirtualVram256k_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mpage)
+{
+    Uint32 c[8];
+    Uint8 *disp;
+    Uint32 addr;
+    int pitch = sizeof(Uint32) * 8;
+    int xx;
+    int yy;
+   
+    for(yy = ybegin ; yy < yend; yy++) {
+       addr = yy * 40 + xbegin;
+       disp = (Uint8 *)(&p[(yy - ybegin) * 320 + xbegin]);
+       for(xx = xbegin; xx < xend; xx++) {
+
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  addr++;
+	  disp += pitch;
+	  
+	  getvram_256k(addr, mpage, (Uint32 *)&c);
+	  putword((Uint32 *)disp, (Uint32 *)&c);
+	  
+       }
+    }
+}
+
+void CreateVirtualVram256k_Line(Uint32 *p, int ybegin, int yend, int mpage)
+{
+   CreateVirtualVram256k_WindowedLine(p, ybegin, yend, 0, 40, mpage);
+}
+
+Api_Vram_FuncList api_vram256k_generic = {
+   CreateVirtualVram256k_1Pcs,
+   CreateVirtualVram256k_Line,
+   CreateVirtualVram256k_WindowedLine
+};

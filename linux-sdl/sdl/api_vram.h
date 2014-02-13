@@ -24,15 +24,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+typedef struct {   
+	void(*vram_block)(Uint32 *, int, int, int, int);
+        void(*vram_line )(Uint32 *, int, int, int);
+        void(*vram_windowline)(Uint32, int, int, int, int, int);
+} Api_Vram_FuncList;
+
 /*
  * api_vram8.c
 */
 extern void SetVram_200l(Uint8 *p);
 extern void SetVram_400l(Uint8 *p);
 extern void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-extern void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
-extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode);
-extern void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode);
+extern Api_Vram_FuncList api_vram8_generic;
+extern Api_Vram_FuncList api_vram4096_generic;
+extern Api_Vram_FuncList api_vram256k_generic;
 
 #ifdef USE_SSE2
 extern void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage);
@@ -43,9 +49,6 @@ extern void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mo
  * api_vram4096.c
  */
 extern void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-extern void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
-extern void CreateVirtualVram4096_Line(Uint32 *p, int ybegin, int yend, int mode);
-extern void CreateVirtualVram4096_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode);
 #ifdef USE_SSE2
 extern void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage);
 extern void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode);
@@ -55,7 +58,6 @@ extern void CreateVirtualVram4096_WindowedLine_SSE2(Uint32 *p, int ybegin, int y
 /*
  * api_vram256k.c
  */
-extern void CreateVirtualVram256k_1Pcs(Uint32 *p, int x, int y, int pitch, int mpage);
 #ifdef USE_SSE2
 extern void CreateVirtualVram256k_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage);
 #endif
@@ -105,6 +107,8 @@ enum {
    PLAING,
    PLAINW
 };
+
+
 
 #endif    // __GNUC__ >= 4
 extern Uint8 *vram_pb;

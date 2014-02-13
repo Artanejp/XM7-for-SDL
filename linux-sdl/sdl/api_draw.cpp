@@ -41,45 +41,46 @@
 /*
  *  グローバル ワーク
  */
-DWORD   rgbTTLGDI[16];	/* デジタルパレット */
-DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
-struct DrawPieces SDLDrawFlag;
+extern "C" {
+   DWORD   rgbTTLGDI[16];	/* デジタルパレット */
+   DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
+   struct DrawPieces SDLDrawFlag;
+   
+   BOOL            bFullScan;		/* フルスキャン(Window) */
+   BOOL            bDirectDraw;		/* 直接書き込みフラグ */
+   AG_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
+   WORD            nDrawTop;			/* 描画範囲上 */
+   WORD            nDrawBottom;		/* 描画範囲下 */
+   WORD            nDrawLeft;		/* 描画範囲左 */
+   WORD            nDrawRight;		/* 描画範囲右 */
+   WORD            nDrawWidth;
+   WORD            nDrawHeight;
+   BOOL            bPaletFlag;		/* パレット変更フラグ */
+   BOOL            bClearFlag;
+   int             nOldVideoMode;
+   WORD			nDrawFPS;   /* FPS値 20100913 */
+   WORD 			nEmuFPS; /* エミュレーションFPS値 20110123 */
+   WORD 			nAspect;  /* アスペクト比 20110123 */
+   BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
+   BOOL 			bSmoosing; /* スムージング処理する(GLのみ?) */
+   BOOL            bOldFullScan;	/* クリアフラグ(過去) */
+   BOOL bFullScanFS;							/* フルスキャン(FullScreen) */
+   BOOL bDoubleSize;							/* 2倍拡大フラグ */
 
-BOOL            bFullScan;		/* フルスキャン(Window) */
-BOOL            bDirectDraw;		/* 直接書き込みフラグ */
-AG_Surface     *realDrawArea;	/* 実際に書き込むSurface(DirectDrawやOpenGLを考慮する) */
-WORD            nDrawTop;			/* 描画範囲上 */
-WORD            nDrawBottom;		/* 描画範囲下 */
-WORD            nDrawLeft;		/* 描画範囲左 */
-WORD            nDrawRight;		/* 描画範囲右 */
-WORD            nDrawWidth;
-WORD            nDrawHeight;
-BOOL            bPaletFlag;		/* パレット変更フラグ */
-BOOL            bClearFlag;
-int             nOldVideoMode;
-WORD			nDrawFPS;   /* FPS値 20100913 */
-WORD 			nEmuFPS; /* エミュレーションFPS値 20110123 */
-WORD 			nAspect;  /* アスペクト比 20110123 */
-BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
-BOOL 			bSmoosing; /* スムージング処理する(GLのみ?) */
-BOOL            bOldFullScan;	/* クリアフラグ(過去) */
-BOOL bFullScanFS;							/* フルスキャン(FullScreen) */
-BOOL bDoubleSize;							/* 2倍拡大フラグ */
-
-BOOL  bUseOpenGL; /* OPENGLを描画に使う */
-SDL_semaphore *DrawInitSem;
+   BOOL  bUseOpenGL; /* OPENGLを描画に使う */
 #if XM7_VER == 1
-BOOL bGreenMonitor;							/* グリーンモニタフラグ */
+   BOOL bGreenMonitor;							/* グリーンモニタフラグ */
 #endif
-BOOL bRasterRendering;						/* ラスタレンダリングフラグ */
+   BOOL bRasterRendering;						/* ラスタレンダリングフラグ */
+   Api_Vram_FuncList *pVirtualVramBuilder;
+   BOOL bDirtyLine[400];				/* 要書き換えフラグ */
+}
+   SDL_semaphore *DrawInitSem;
 
 /*
  *	スタティック ワーク
  */
 static BOOL bNextFrameRender;				/* 次フレーム描画フラグ */
-extern "C" {
-   BOOL bDirtyLine[400];				/* 要書き換えフラグ */
-}
 #ifdef _USE_OPENCL
 # include "agar_glcl.h"
 # include "agar_glutil.h"
@@ -251,10 +252,11 @@ void	InitDraw(void)
 
 #endif				/*  */
 		bNowBPP = 24;
-		memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
+                pVirtualVramBuilder = NULL;
+                memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
 		memset(rgbAnalogGDI, 0, sizeof(rgbAnalogGDI));
 		memset((void *)&SDLDrawFlag, 0, sizeof(SDLDrawFlag));
-
+   
 		nDrawTop = 0;
 		nDrawBottom = 400;
 		nDrawLeft = 0;
@@ -392,6 +394,7 @@ BOOL Select640(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    bPaletFlag = TRUE;
+   pVirtualVramBuilder = &api_vram8_generic;
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
@@ -430,7 +433,13 @@ BOOL Select400l(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    bPaletFlag = TRUE;
-   SetDrawFlag(TRUE);
+   pVirtualVramBuilder = &api_vram8_generic;
+   if(nRenderMethod == RENDERING_RASTER) {
+      SetDirtyFlag(0, 400, TRUE);
+      Palet640();
+   } else {
+      SetDrawFlag(TRUE);
+   }
    /*
     * デジタル/400ラインモード
     */
@@ -456,7 +465,13 @@ BOOL Select320(void)
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = TRUE;
-   SetDrawFlag(TRUE);
+   pVirtualVramBuilder = &api_vram4096_generic;
+   if(nRenderMethod == RENDERING_RASTER) {
+      SetDirtyFlag(0, 400, TRUE);
+      Palet320();
+   } else {
+      SetDrawFlag(TRUE);
+   }
 #if XM7_VER >= 3
    /*
     * アナログ/200ラインモード
@@ -489,7 +504,13 @@ BOOL Select256k()
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = TRUE;
-   SetDrawFlag(TRUE);
+   pVirtualVramBuilder = &api_vram256k_generic;
+   if(nRenderMethod == RENDERING_RASTER) {
+      SetDirtyFlag(0, 400, TRUE);
+      Palet320();
+   } else {
+      SetDrawFlag(TRUE);
+   }
    
    /*
     * アナログ(26万色)/200ラインモード
@@ -992,23 +1013,8 @@ void FASTCALL vblankperiod_notify(void)
 	   for(y = 0; y < ymax; y++) {
 //	   LockVram();
 	      if (bDirtyLine[y]) {
-		 switch (bMode) {
-		  case SCR_400LINE:
-		    //Draw400l();
-		    Draw400l_1Line(y);
-		    break;
-		  case SCR_262144:
-		    //Draw256k();
-		    break;
-		  case SCR_4096:
-		    //Draw320();
-		    Draw320_1Line(y);
-		    break;
-		  case SCR_200LINE:
-		    Draw640_1Line(y);
-		    break;
-		 }
-		   bDirtyLine[y] = FALSE;
+		 Draw_1Line(y);
+		 bDirtyLine[y] = FALSE;
 	      }
 	      //	   UnlockVram();
 	   }
@@ -1028,22 +1034,7 @@ void FASTCALL hblank_notify(void)
 #endif	   
 //	   LockVram();
 	   if (bDirtyLine[now_raster]) {
-		   switch (bMode) {
-		    case SCR_400LINE:
-		      //Draw400l();
-		      Draw400l_1Line(now_raster);
-		      break;
-		    case SCR_262144:
-		      //Draw256k();
-		      break;
-		    case SCR_4096:
-		      //Draw320();
-		      Draw320_1Line(now_raster);
-		      break;
-		    case SCR_200LINE:
-		      Draw640_1Line(now_raster);
-		      break;
-		   }
+	           Draw_1Line(now_raster);
 		   bDirtyLine[now_raster] = FALSE;
 		}
 //	   UnlockVram();
@@ -1434,20 +1425,41 @@ void Draw640All(void)
    }
 }
 
-void Draw640_1Line(int line)
+void Draw_1Line(int line)
 {
    WORD wdtop, wdbtm;
    Uint32 *pp;
+   int ww;
+   int hh;
    pp = pVram2;
    //      LockVram();
    if(pp == NULL) return;
-   if((line < 0) || (line >= 200)) return;
+   switch(bMode) {
+    case SCR_200LINE:
+      ww = 80;
+      hh = 200;
+      break;
+    case SCR_400LINE:
+      ww = 80;
+      hh = 400;
+      break;
+    case SCR_4096:
+    case SCR_262144:
+      ww = 40;
+      hh = 200;
+      break;
+    default:
+      return;
+      break;
+   }
+   
+   if((line < 0) || (line >= hh)) return;
    if(vram_dptr == NULL) return;
    if(vram_bdptr == NULL) return;
    if(bWindowOpen) { // ハードウェアウインドウ開いてる
 	 if (((nDrawTop >> 1) < window_dy1) && (line <= window_dy1)){
 	    SetVram_200l(vram_dptr);
-	    BuildVirtualVram8_Raster(pp, 0, 80, line, multi_page);
+	    BuildVirtualVram_Raster(pp, 0, ww, line, multi_page);
 	    return;
 	 }
 	 /* ウィンドウ内の描画 */
@@ -1466,19 +1478,19 @@ void Draw640_1Line(int line)
 	 
 	 if ((wdbtm > wdtop) && (wdtop <= line) && (wdbtm > line)) {
 	    SetVram_200l(vram_bdptr);
-	    BuildVirtualVram8_Raster(pp, window_dx1 >> 3, window_dx2 >> 3, line, multi_page);
+	    BuildVirtualVram_Raster(pp, window_dx1 >> 3, window_dx2 >> 3, line, multi_page);
 	    return;
 	 }
 	 /* ハードウェアウインドウ外下部 */
 	 if ((nDrawBottom >> 1) > window_dy2) {
 	    //	vramhdr->SetVram(vram_dptr, 80, 200);
 	    SetVram_200l(vram_dptr);
-	    BuildVirtualVram8_Raster(pp, 0, 80, line,  multi_page);
+	    BuildVirtualVram_Raster(pp, 0, ww, line,  multi_page);
 	    return;
 	 }
       } else { // ハードウェアウィンドウ開いてない
 	 SetVram_200l(vram_dptr);
-	 BuildVirtualVram8_Raster(pp, 0, 80, line,  multi_page);
+	 BuildVirtualVram_Raster(pp, 0, ww, line,  multi_page);
       }
    return;
 }
@@ -1524,7 +1536,7 @@ void Draw400l(void)
       PutVramFunc = &PutVram_AG_SP;
       UnlockVram();
    } else if(nRenderMethod == RENDERING_RASTER) {
-     
+      return;
    } else if(nRenderMethod == RENDERING_BLOCK) {
      PutVramFunc = &PutVram_AG_SP;
    } else {
@@ -1576,56 +1588,6 @@ void Draw400l(void)
 
 }
 
-void Draw400l_1Line(int line)
-{
-   WORD wdtop, wdbtm;
-   Uint32 *pp;
-   if(pVram2 == NULL) return;
-   if(vram_dptr == NULL) return;
-   if(vram_bdptr == NULL) return;
-   pp = pVram2;
-   //      LockVram();
-   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(bWindowOpen) { // ハードウェアウインドウ開いてる
-	 if ((nDrawTop < window_dy1) && (line <= window_dy1)){
-	    SetVram_200l(vram_dptr);
-	    BuildVirtualVram8_Raster(pp, 0, 80, line , multi_page);
-	    return;
-	 }
-	 /* ウィンドウ内の描画 */
-	 if (nDrawTop > window_dy1) {
-	    wdtop = nDrawTop;
-	 } else {
-	    wdtop = window_dy1;
-	 }
-	 
-	 if (nDrawBottom < window_dy2) {
-	    wdbtm = nDrawBottom;
-	 }
-	 else {
-	    wdbtm = window_dy2;
-	 }
-	 
-	 if ((wdbtm > wdtop) && (wdtop <= line) && (wdbtm > line)) {
-	    SetVram_200l(vram_bdptr);
-	    BuildVirtualVram8_Raster(pp, window_dx1 >> 3, window_dx2 >> 3, line , multi_page);
-	    return;
-	 }
-	 /* ハードウェアウインドウ外下部 */
-	 if (nDrawBottom > window_dy2) {
-	    //	vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-	    BuildVirtualVram8_Raster(pp, 0, 80, line , multi_page);
-	    return;
-	 }
-      } else { // ハードウェアウィンドウ開いてない
-	 SetVram_200l(vram_dptr);
-	 BuildVirtualVram8_Raster(pp, 0, 80, line, multi_page);
-      }
-      return;
-   }
-}
-   
 
 void Draw320(void)
 {
@@ -1669,57 +1631,7 @@ void Draw320(void)
       PutVramFunc = &PutVram_AG_SP;
       UnlockVram();
    } else if(nRenderMethod == RENDERING_RASTER) {
-      Uint32 *pp;
-      if(pVram2 == NULL) return;
-         pp = pVram2;
-//      LockVram();
-      if(bClearFlag) {
-	 memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
-	 SetDirtyFlag(0, 400, TRUE);
-	 bClearFlag = FALSE;
-      }
-      
-      if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-	 if(bWindowOpen) { // ハードウェアウインドウ開いてる
-	    if (nDrawTop < window_dy1) {
-	       SetVram_200l(vram_dptr);
-	       BuildVirtualVram4096_Raster(pp, 0, 40, 0, window_dy1, multi_page);
-	    }
-	 /* ウィンドウ内の描画 */
-	    if (nDrawTop > window_dy1) {
-	       wdtop = nDrawTop;
-	    } else {
-	       wdtop = window_dy1;
-	    }
-
-	    if (nDrawBottom < window_dy2) {
-	       wdbtm = nDrawBottom;
-	    }
-	    else {
-	       wdbtm = window_dy2;
-	    }
-	 
-	    if (wdbtm > wdtop) {
-	    //		vramhdr->SetVram(vram_bdptr, 80, 200);
-	       SetVram_200l(vram_bdptr);
-	       BuildVirtualVram4096_Raster(pp, window_dx1 >> 3, window_dx2 >> 3, wdtop , wdbtm, multi_page);
-	    }
-	 /* ハードウェアウインドウ外下部 */
-	    if (nDrawBottom > window_dy2) {
-	       //	vramhdr->SetVram(vram_dptr, 80, 200);
-	       SetVram_200l(vram_dptr);
-	       BuildVirtualVram4096_Raster(pp, 0, 40, wdbtm , nDrawBottom >> 1, multi_page);
-	    }
-	 } else { // ハードウェアウィンドウ開いてない
-	  int xx, yy;
-	 //	vramhdr->SetVram(vram_dptr, 80, 200);
-	 SetVram_200l(vram_dptr);
-	 BuildVirtualVram4096_Raster(pp, 0, 40, 0, 200, multi_page);
-      }
-//      UnlockVram();
       return;
-      }
-      
    } else if(nRenderMethod == RENDERING_BLOCK) {
      PutVramFunc = &PutVram_AG_SP;
    } else {
@@ -1762,55 +1674,6 @@ void Draw320(void)
    }
 }
 
-void Draw320_1Line(int line)
-{
-   WORD wdtop, wdbtm;
-   Uint32 *pp;
-   if(pVram2 == NULL) return;
-   if(vram_dptr == NULL) return;
-   if(vram_bdptr == NULL) return;
-   pp = pVram2;
-   //      LockVram();
-   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(bWindowOpen) { // ハードウェアウインドウ開いてる
-	 if ((nDrawTop < window_dy1) && (line <= window_dy1)){
-	    SetVram_200l(vram_dptr);
-	    BuildVirtualVram4096_Raster(pp, 0, 40, line , line + 1, multi_page);
-	    return;
-	 }
-	 /* ウィンドウ内の描画 */
-	 if (nDrawTop > window_dy1) {
-	    wdtop = nDrawTop;
-	 } else {
-	    wdtop = window_dy1;
-	 }
-	 
-	 if (nDrawBottom < window_dy2) {
-	    wdbtm = nDrawBottom;
-	 }
-	 else {
-	    wdbtm = window_dy2;
-	 }
-	 
-	 if ((wdbtm > wdtop) && (wdtop <= line) && (wdbtm > line)) {
-	    SetVram_200l(vram_bdptr);
-	    BuildVirtualVram4096_Raster(pp, window_dx1 >> 3, window_dx2 >> 3, line , line + 1, multi_page);
-	    return;
-	 }
-	 /* ハードウェアウインドウ外下部 */
-	 if (nDrawBottom > window_dy2) {
-	    //	vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-	    BuildVirtualVram4096_Raster(pp, 0, 40, line , line + 1, multi_page);
-	    return;
-	 }
-      } else { // ハードウェアウィンドウ開いてない
-	 SetVram_200l(vram_dptr);
-	 BuildVirtualVram4096_Raster(pp, 0, 40, line, line + 1, multi_page);
-      }
-      return;
-   }
-}
 
 void Draw256k(void)
 {
