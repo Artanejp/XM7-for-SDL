@@ -1096,7 +1096,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    if(nRenderMethod == RENDERING_RASTER) {
        if(my->forceredraw != 0){
         for(yy = 0; yy < hh; yy++) {
-                bDirtyLine[yy] = TRUE;
+//                bDirtyLine[yy] = TRUE;
         }
         my->forceredraw = 0;
     }

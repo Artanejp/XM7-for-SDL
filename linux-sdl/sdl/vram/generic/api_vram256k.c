@@ -197,7 +197,7 @@ void CreateVirtualVram256k_WindowedLine(Uint32 *p, int ybegin, int yend, int xbe
    
     for(yy = ybegin ; yy < yend; yy++) {
        addr = yy * 40 + xbegin;
-       disp = (Uint8 *)(&p[(yy - ybegin) * 320 + xbegin]);
+       disp = (Uint8 *)p + (pitch * addr);
        for(xx = xbegin; xx < xend; xx++) {
 
 	  getvram_256k(addr, mpage, (Uint32 *)&c);

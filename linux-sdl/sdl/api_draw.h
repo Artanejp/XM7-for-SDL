@@ -69,7 +69,7 @@ extern BOOL bDirtyLine[400];				/* 要書き換えフラグ */
 extern DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 extern DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */
-extern Api_Vram_FuncList *pVirtualVramBuilder; /* 書き換え関数ポインタ */
+
 
 // guchar pBitsGDI[400*640*3]; /* ビットデータ */
 //extern BYTE            GDIDrawFlag[80 * 50];	/* 8x8ドットのメッシュを作る *//* 8x8 再描画領域フラグ */

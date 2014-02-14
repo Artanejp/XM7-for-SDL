@@ -155,7 +155,7 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     Uint32 addr;
 
     if((p == NULL) || (pal == NULL)) return;
-    pitch = sizeof(Uint32) * 8;
+//    pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
@@ -283,7 +283,7 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
     Uint32 addr;
     int pitch;
     int xx;
-    int yy;
+    int yy = ybegin;
    
     if((p == NULL) || (pal == NULL)) return;
     pitch = sizeof(Uint32) * 8;
@@ -291,7 +291,7 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
-       for(yy = ybegin; yy < yend; yy++) { 
+//       for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80;
 //	   disp = (Uint8 *)(&p[yy * 640]);
 	   for(xx = 0; xx < (80 / 8); xx ++) { 
@@ -312,10 +312,10 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      disp += pitch;
 	   }
-       }
+//       }
        return;
      } else {
-       for(yy = ybegin; yy < yend; yy++) { 
+//       for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80;
 //	   disp = (Uint8 *)(&p[yy * 640]);
 	   for(xx = 0; xx < (80 / 8); xx++) { 
@@ -360,7 +360,7 @@ void CreateVirtualVram8_Line(Uint32 *p, int ybegin, int yend, int mode)
 	      disp += pitch;
 	   }
 	  
-       }
+//       }
 	return;
      }
 }
@@ -377,34 +377,33 @@ void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin
     Uint32 addr;
     int pitch;
     int xx;
-    int yy;
-   
+    int yy = ybegin;
+    
     if((p == NULL) || (pal == NULL)) return;
     pitch = sizeof(Uint32) * 8;
-
+    xbegin = xbegin % 80;
+    xend = xend % 80;
+    ybegin = ybegin % 400;
+   
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
-       for(yy = ybegin; yy < yend; yy++) { 
-           addr = yy * 80 + xbegin;
-	   disp = (Uint8 *)(&p[yy * 640 + xbegin]);
-	   for(xx = xbegin; xx < xend; xx ++) { 
-	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
-	   }
+       addr = yy * 80 + xbegin;
+       disp = (Uint8 *)(&p[xbegin * 8]);
+       for(xx = xbegin; xx < xend; xx ++) { 
+	  putword8_vec((Uint32 *)disp,  c, pal);
+	  disp += pitch;
        }
        return;
      } else {
-       for(yy = ybegin; yy < yend; yy++) { 
-           addr = yy * 80 + xbegin;
-	   disp = (Uint8 *)(&p[yy * 640 + xbegin]);
-	   for(xx = xbegin; xx < xend; xx++) { 
-	      getvram_8_vec(addr, &c);
-	      putword8_vec((Uint32 *)disp, c, pal);
-	      addr++;
-	      disp += pitch;
-	   }
-       }
+	addr = yy * 80 + xbegin;
+	disp = (Uint8 *)(&p[xbegin * 8]);
+	for(xx = xbegin; xx < xend; xx++) { 
+	   getvram_8_vec(addr, &c);
+	   putword8_vec((Uint32 *)disp, c, pal);
+	   addr++;
+	   disp += pitch;
+	}
 	return;
      }
  #else 

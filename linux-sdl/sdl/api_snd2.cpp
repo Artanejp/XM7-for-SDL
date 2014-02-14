@@ -87,7 +87,7 @@ static int              nWavVol;
 static UINT             uChanSep;
 static UINT             uStereo;     /* 出力モード */
 static BOOL             bBeepFlag;      /* BEEP出力 */
-static BOOL		bMode; /* HQモード */
+static BOOL		bHQMode; /* HQモード */
 
 
 static struct SndBufType *pOpnBuf;
@@ -161,7 +161,7 @@ void InitSnd(void)
     hWavCapture = 0;
     bSndExit = FALSE;
     bbZero   = FALSE;
-	bMode = FALSE;
+	bHQMode = FALSE;
 
 	iTotalVolume = SDL_MIX_MAXVOLUME - 1;
 
@@ -317,7 +317,7 @@ BOOL SelectSnd(void)
 	 */
 	uRate = nSampleRate;
 	uTick = nSoundBuffer;
-	bMode = bFMHQmode;
+	bHQMode = bFMHQmode;
 	nFMVol = nFMVolume;
 	nPSGVol = nPSGVolume;
 	nCMTVol = nCMTVolume;
@@ -455,7 +455,7 @@ void ApplySnd(void)
 	 * パラメータ一致チェック
 	 */
 	if ((uRate == nSampleRate) && (uTick == nSoundBuffer) &&
-			(bMode == bFMHQmode) ) {
+			(bHQMode == bFMHQmode) ) {
 		return;
 	}
 	SDL_SemWait(applySem);

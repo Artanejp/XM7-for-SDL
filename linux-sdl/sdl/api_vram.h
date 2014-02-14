@@ -8,7 +8,7 @@
 #include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
-#include "api_draw.h"
+//#include "api_draw.h"
 //#include "api_scaler.h"
 
 #include "xm7.h"
@@ -16,7 +16,7 @@
 #include "subctrl.h"
 #include "device.h"
 
-#include "agar_draw.h"
+//#include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_xm7.h"
 #include "xm7_types.h"
@@ -29,7 +29,7 @@ typedef struct {
         void(*vram_line )(Uint32 *, int, int, int);
         void(*vram_windowline)(Uint32, int, int, int, int, int);
 } Api_Vram_FuncList;
-
+extern Api_Vram_FuncList *pVirtualVramBuilder; /* 書き換え関数ポインタ */
 /*
  * api_vram8.c
 */

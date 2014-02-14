@@ -58,7 +58,6 @@ extern GLuint GridVertexs400l;
 float fBrightR;
 float fBrightG;
 float fBrightB;
-static int bModeOld;
 
 void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
 {
@@ -258,11 +257,11 @@ void AGEventDrawGL2(AG_Event *event)
         case SCR_400LINE:
             w = 640;
             h = 400;
-            TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
+	    TexCoords[0][0] = TexCoords[3][0] = 0.0f; // Xbegin
             TexCoords[0][1] = TexCoords[1][1] = 0.0f; // Ybegin
 
             TexCoords[2][0] = TexCoords[1][0] = 640.0f / 640.0f; // Xend
-            TexCoords[2][1] = TexCoords[3][1] = 400.0f / 400.0f; // Yend
+            TexCoords[2][1] = TexCoords[3][1] = 399.0f / 400.0f; // Yend
 	    gridtid = GridVertexs400l;
             break;
         case SCR_200LINE:

@@ -299,11 +299,7 @@ void AGDrawTaskMain(void)
 		nDrawTick1E = 0;
 	}
 	if(((nDrawTick2E - nDrawTick1E)<fps) && (bMode == oldBMode)) return;
-        if(DrawArea != NULL) {
-	   //XM7_SDLViewUpdateSrc(DrawArea, NULL);
-	} else if(GLDrawArea != NULL) {
-	}
-   
+  
 	nDrawTick1E = nDrawTick2E;
 	oldBMode = bMode;
 
