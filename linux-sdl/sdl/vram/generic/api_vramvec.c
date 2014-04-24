@@ -86,7 +86,22 @@ void initvramtbl_4096_vec(void)
         r.v <<= 1;
         aPlanes[G3 + i] = r.v;
 //        r.v <<= 1;
+      __builtin_prefetch(&aPlanes[B0 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[B1 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[B2 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[B3 + i], 0, 3);
+
+      __builtin_prefetch(&aPlanes[R0 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[R1 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[R2 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[R3 + i], 0, 3);
+
+      __builtin_prefetch(&aPlanes[G0 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[G1 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[G2 + i], 0, 3);
+      __builtin_prefetch(&aPlanes[G3 + i], 0, 3);
     }
+	
 }
 
 void detachvramtbl_8_vec(void)
