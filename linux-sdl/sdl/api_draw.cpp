@@ -1045,9 +1045,9 @@ void FASTCALL vblankperiod_notify(void)
 			if (!flag) {
 				return;
 			}
-#ifdef _OPENMP
-       #pragma omp parallel for shared(bDirtyLine)
-#endif
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(bDirtyLine)
+//#endif
 	   for(y = 0; y < ymax; y++) {
 //	   LockVram();
 	      if (bDirtyLine[y]) {

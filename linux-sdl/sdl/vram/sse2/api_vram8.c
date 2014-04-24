@@ -33,14 +33,15 @@ static void getvram_8_vec(Uint32 addr, v8hi_t *cbuf)
    return;
 }
 
-static inline void  putword8_vec(Uint32 *disp, volatile v8hi_t c, Uint32 *pal)
+static inline void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 {
 
    v8si *dst = (v8si *)disp;
    volatile v8hi_t r1;
    
 //   if(disp == NULL) return;
-//   c.v &= (v8si){7, 7, 7, 7, 7, 7, 7, 7,};
+
+#if 0
    r1.i[0] = rgbTTLGDI[c.i[0] & 7]; // ?!
    r1.i[1] = rgbTTLGDI[c.i[1] & 7];
    r1.i[2] = rgbTTLGDI[c.i[2] & 7];
@@ -49,6 +50,17 @@ static inline void  putword8_vec(Uint32 *disp, volatile v8hi_t c, Uint32 *pal)
    r1.i[5] = rgbTTLGDI[c.i[5] & 7];
    r1.i[6] = rgbTTLGDI[c.i[6] & 7];
    r1.i[7] = rgbTTLGDI[c.i[7] & 7];
+#else
+   c.v &= (v8si){7, 7, 7, 7, 7, 7, 7, 7,};
+   r1.i[0] = rgbTTLGDI[c.i[0]]; // ?!
+   r1.i[1] = rgbTTLGDI[c.i[1]];
+   r1.i[2] = rgbTTLGDI[c.i[2]];
+   r1.i[3] = rgbTTLGDI[c.i[3]];
+   r1.i[4] = rgbTTLGDI[c.i[4]];
+   r1.i[5] = rgbTTLGDI[c.i[5]];
+   r1.i[6] = rgbTTLGDI[c.i[6]];
+   r1.i[7] = rgbTTLGDI[c.i[7]];
+#endif   
    *dst = r1.v;
 }
 
