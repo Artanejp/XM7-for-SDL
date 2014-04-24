@@ -36,21 +36,11 @@ static void getvram_8_vec(Uint32 addr, v8hi_t *cbuf)
 static inline void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 {
 
-   v8si *dst = (v8si *)disp;
-   volatile v8hi_t r1;
+   v8hi_t r1;
+   v8hi_t *p = (v8hi_t *)disp;
    
 //   if(disp == NULL) return;
 
-#if 0
-   r1.i[0] = rgbTTLGDI[c.i[0] & 7]; // ?!
-   r1.i[1] = rgbTTLGDI[c.i[1] & 7];
-   r1.i[2] = rgbTTLGDI[c.i[2] & 7];
-   r1.i[3] = rgbTTLGDI[c.i[3] & 7];
-   r1.i[4] = rgbTTLGDI[c.i[4] & 7];
-   r1.i[5] = rgbTTLGDI[c.i[5] & 7];
-   r1.i[6] = rgbTTLGDI[c.i[6] & 7];
-   r1.i[7] = rgbTTLGDI[c.i[7] & 7];
-#else
    c.v &= (v8si){7, 7, 7, 7, 7, 7, 7, 7,};
    r1.i[0] = rgbTTLGDI[c.i[0]]; // ?!
    r1.i[1] = rgbTTLGDI[c.i[1]];
@@ -60,8 +50,7 @@ static inline void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
    r1.i[5] = rgbTTLGDI[c.i[5]];
    r1.i[6] = rgbTTLGDI[c.i[6]];
    r1.i[7] = rgbTTLGDI[c.i[7]];
-#endif   
-   *dst = r1.v;
+   *p = r1;
 }
 
 #else
@@ -269,7 +258,6 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
    
     if((p == NULL) || (pal == NULL)) return;
     pitch = sizeof(Uint32) * 8;
-
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
@@ -432,10 +420,57 @@ void CreateVirtualVram8_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int x
        }
        return;
      } else {
+       int xs =  (xend - xbegin) / 8;
+       int xs2 = (xend - xbegin) % 8;
+       int xx2;
        for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80 + xbegin;
 	   disp = (Uint8 *)(&p[yy * 640 + xbegin]);
-	   for(xx = xbegin; xx < xend; xx++) { 
+	   xx = xbegin;
+	   for(xx2 = 0; xx2 < xs; xx2++) {
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      
+	      getvram_8_vec(addr, &c);
+	      putword8_vec((Uint32 *)disp, c, pal);
+	      addr++;
+	      disp += pitch;
+	      xx += 8;
+	   }
+	   if(xs2 <= 0) continue;
+	   for(; xx < xend; xx++) { 
 	      getvram_8_vec(addr, &c);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;

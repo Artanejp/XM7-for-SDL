@@ -15,7 +15,7 @@ Uint8 *vram_pg;
 
 
 
-static inline void putword2_vec(Uint32 *disp, volatile v8hi_t cbuf)
+static inline void putword2_vec(Uint32 *disp, v8hi_t cbuf)
 {
    v8hi_t *dst = (v8hi_t *)disp;
    v8hi_t r1;
@@ -169,20 +169,62 @@ void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
        for(yy = ybegin; yy < yend; yy++) {
 	  addr = yy * 40;
 	  disp = (Uint8 *)p + (pitch * addr);
-	  for(xx = 0; xx < 40; xx++) {
+	  for(xx = 0; xx < (40 / 8); xx++) {
 	     putword2_vec((Uint32 *)disp,  c);
 	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     putword2_vec((Uint32 *)disp,  c);
+//	     disp +=  pitch;
 	  }
        }
     } else {
        for(yy = ybegin; yy < yend; yy++) {
 	  addr = yy * 40;
 	  disp = (Uint8 *)p + (pitch * addr);
-	  for(xx = 0; xx < 40; xx++) {
+	  for(xx = 0; xx < (40 / 8); xx++) {
 	     c = getvram_4096_vec(addr);
 	     putword2_vec((Uint32 *)disp,  c);
 	     disp +=  pitch;
 	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+	     disp +=  pitch;
+	     addr++;
+	     c = getvram_4096_vec(addr);
+	     putword2_vec((Uint32 *)disp,  c);
+//	     disp +=  pitch;
+//	     addr++;
 	  }
        }
     } 
@@ -217,10 +259,52 @@ void CreateVirtualVram4096_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, in
        }
        return;
      } else {
+       int xs =  (xend - xbegin) / 8;
+       int xs2 = (xend - xbegin) % 8;
+       int xx2;
        for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 40 + xbegin;
 	   disp = (Uint8 *)(&p[yy * 320 + xbegin]);
-	   for(xx = xbegin; xx < xend; xx++) { 
+	   xx = xbegin;
+	   for(xx2 = 0; xx2 < xs; xx2++) {
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      c = getvram_4096_vec(addr);
+	      putword2_vec((Uint32 *)disp, c);
+	      addr++;
+	      disp += pitch;
+	      
+	      xx += 8;
+	   }
+	   if(xs2 <= 0) continue;
+	   
+	   for(;xx < xend; xx++) { 
 	      c = getvram_4096_vec(addr);
 	      putword2_vec((Uint32 *)disp, c);
 	      addr++;
