@@ -219,17 +219,11 @@ struct SndBufType {
 #endif				/*  */
 
 /* snd_buffer.cpp */
-extern struct SndBufType *InitBufferDesc(void);
-extern void DetachBufferDesc(struct SndBufType *p);
-extern void SetupBuffer(struct SndBufType *p, int members, BOOL flag16, BOOL flag32);
-extern void DetachBuffer(struct SndBufType *p);
 extern int CopyChunk(struct SndBufType *p, Sint16 *buf, int offset);
 extern int MoveChunk(struct SndBufType *p, Sint16 *buf, int offset);
 extern int MoveChunkChunk(struct SndBufType *dst, struct SndBufType *src, BOOL inc, BOOL bZero);
 
 extern int SndCalcSamples(struct SndBufType *p, DWORD ttime);
-extern DWORD RenderSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime, int samples, BOOL bZero);
-extern BOOL SndFlushSub(struct SndBufType *p, SndDrvIF *drv, DWORD ttime,  BOOL bZero, int maxchunk);
 
 
 #endif	/* _api_snd_h_ */
