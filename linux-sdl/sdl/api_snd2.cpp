@@ -125,6 +125,8 @@ static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
 static BOOL             bSndExit;
 static SDL_sem 			*applySem;
+static SDL_cond *pSndCond = NULL;
+static SDL_mutex *pSndMutex = NULL;
 static int         nSndBank;
 static int         nSndPos;
 static int nLastTime;
@@ -187,7 +189,8 @@ void InitSnd(void)
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = SDL_CreateSemaphore(1);
-
+        pSndCond = NULL;
+        pSndMutex = NULL;
 	uTick = 0;   // バッファサイズ(時間)
 	uRate = 0;   // サンプリングレート
 	uBufSize = 0; // バッファサイズ(バイト数)
@@ -245,13 +248,24 @@ void CleanSnd(void)
 		CloseCaptureSnd();
 	}
     Mix_CloseAudio();
-    if(pPlayThread != NULL) {
-	   SDL_KillThread(pPlayThread);
-	   pPlayThread = NULL;
-    }
     if(applySem) {
         SDL_SemWait(applySem);
     }
+   if(pSndCond) {
+      SDL_CondSignal(pSndCond);
+      SDL_DestroyCond(pSndCond);
+      pSndCond = NULL;
+   }
+   if(pSndMutex) {
+      SDL_UnlockMutex(pSndMutex);
+      SDL_DestroyMutex(pSndMutex);
+      pSndMutex = NULL;
+   }
+   if(pPlayThread != NULL) {
+      SDL_KillThread(pPlayThread);
+      pPlayThread = NULL;
+   }
+  
     bWavCapture = FALSE;
 //    DetachBufferDesc(pOpnBuf);
 //	pOpnBuf = NULL;
@@ -334,6 +348,15 @@ static void CloseSnd(void)
    int i;
 	if(bSndEnable) {
 	   Mix_CloseAudio();
+	   if(pSndCond) {
+	      SDL_DestroyCond(pSndCond);
+	      pSndCond = NULL;
+	   }
+	   if(pSndMutex) {
+	      SDL_UnlockMutex(pSndMutex);
+	      SDL_DestroyMutex(pSndMutex);
+	      pSndMutex = NULL;
+	   }
 	   if(pPlayThread != NULL) {
 	      SDL_KillThread(pPlayThread);
 	      pPlayThread = NULL;
@@ -388,28 +411,36 @@ static void CloseSnd(void)
         for(i = 0; i < 2; i++) bChunkThrow[i] = FALSE;
 }
 
+static void AlarmEndPlay(int channel)
+{
+   if(pSndCond != NULL) SDL_CondSignal(pSndCond);
+}
+
 static int PlayThread(void *args)
 {
-   int playBank = 0;
+   int playBank = 0;   
    do {
-      SDL_Delay(1);
+//      SDL_Delay(1);
       if((pOpnChunkBuf[playBank] == NULL) || (pBeepChunkBuf[playBank] == NULL) || (pCMTChunkBuf[playBank] == NULL)) {
+	 SDL_Delay(5);
 	 continue;
       }
-      
-      if(applySem) {
-//	 if((Mix_Playing(CH_SND_OPN) != 0) || (Mix_Playing(CH_SND_BEEP) != 0) || (Mix_Playing(CH_SND_CMT) != 0)) continue; 
-	 if(bChunkThrow[playBank]) {
+//      SDL_LockMutex(pSndMutex);
+//      SDL_CondWait(pSndCond, pSndMutex);
+      SDL_Delay(1); 
+      if(bChunkThrow[playBank]) {
 //	   if(Mix_GetChunk(CH_SND_OPN) == pOpnChunkBuf[playBank]) continue;
            SDL_SemWait(applySem);
-	   Mix_PlayChannel(CH_SND_OPN  ,pOpnChunkBuf[playBank] , 0);
+
+ 	   Mix_PlayChannel(CH_SND_OPN  ,pOpnChunkBuf[playBank] , 0);
 	   Mix_PlayChannel(CH_SND_BEEP ,pBeepChunkBuf[playBank], 0);
 	   Mix_PlayChannel(CH_SND_CMT  ,pCMTChunkBuf[playBank] , 0);
 	   bChunkThrow[playBank] = FALSE;
 	   SDL_SemPost(applySem);
-	   playBank = (playBank + 1 ) & 1;
-	}
+	 playBank = (playBank + 1 ) & 1;
       }
+//      playBank = (playBank + 1 ) & 1;
+//      SDL_UnlockMutex(pSndMutex);
    } while(1);
    
 }
@@ -475,7 +506,7 @@ BOOL SelectSnd(void)
 
     //Mix_QuerySpec(&freq, &format, &channels);
 //    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, (uTick * nSampleRate) / 1000)< 0) {
-    if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 8)< 0) {
+        if (Mix_OpenAudio(nSampleRate, AUDIO_S16SYS, 2, uBufSize / 4)< 0) {
 	   printf("Warning: Audio can't initialize!\n");
 	   return -1;
 	}
@@ -1143,10 +1174,18 @@ void ProcessSnd(BOOL bZero)
 	   SetChunk(pOpnChunkBuf[nSndBank],  &pOpnSndBuf[rpos]);
 	   SetChunk(pBeepChunkBuf[nSndBank], &pBeepSndBuf[rpos]);
 	   SetChunk(pCMTChunkBuf[nSndBank],  &pCMTSndBuf[rpos]);
-//	   Mix_PlayChannel(CH_SND_OPN  ,pOpnChunkBuf[nSndBank] , 0);
-//	   Mix_PlayChannel(CH_SND_BEEP ,pBeepChunkBuf[nSndBank], 0);
-//	   Mix_PlayChannel(CH_SND_CMT  ,pCMTChunkBuf[nSndBank] , 0);
-	   bChunkThrow[nSndBank] = TRUE;
+	   Mix_PlayChannel(CH_SND_OPN  ,pOpnChunkBuf[nSndBank] , 0);
+	   Mix_PlayChannel(CH_SND_BEEP ,pBeepChunkBuf[nSndBank], 0);
+	   Mix_PlayChannel(CH_SND_CMT  ,pCMTChunkBuf[nSndBank] , 0);
+//	   if(pSndMutex != NULL) {
+//	      SDL_LockMutex(pSndMutex);
+//	   Mix_ChannelFinished(AlarmEndPlay);
+	   //	      SDL_UnlockMutex(pSndMutex);
+//	   }
+//	   bChunkThrow[nSndBank] = TRUE;
+//	   if(Mix_Playing(CH_SND_OPN) == 0) {
+//	      if(pSndCond != NULL) SDL_CondSignal(pSndCond);
+//	   }
 	   dwSndCount = 0;
 	   nSndBank = (nSndBank +1) & 1;
 	   nSndPos = 0;
