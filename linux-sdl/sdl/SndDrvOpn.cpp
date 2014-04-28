@@ -362,7 +362,7 @@ int SndDrvOpn::Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOO
    if(pBuf == NULL) return 0;
    
    r = Render32(pBuf32, start, sSamples, clear, bZero);
-   if(r > 0) Copy32(pBuf32, pBuf, start, r);
+//   if(r > 0) Copy32(pBuf32, pBuf, start, r);
    //	Copy32(pBuf32, pBuf, start, sSamples);
    return r;
 }
