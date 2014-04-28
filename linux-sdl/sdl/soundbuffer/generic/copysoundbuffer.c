@@ -36,14 +36,14 @@ int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc,
    if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
  if(pCpuID != NULL) {
  #if defined(USE_SSE2)
-    if(pCpuID->use_sse2) {
-	return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
-    }
+//    if(pCpuID->use_sse2) {
+//	return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
+//  }
  #endif
  #if defined(USE_MMX)
-    if(pCpuID->use_mmx) {
-       return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
-    }
+ //   if(pCpuID->use_mmx) {
+ //      return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
+ //   }
  #endif
  }
    
