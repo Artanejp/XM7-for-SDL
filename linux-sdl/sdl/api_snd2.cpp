@@ -1114,7 +1114,7 @@ void ProcessSnd(BOOL bZero)
 	   SDL_LockAudio();
 //	   nSamples = uBufSize / (2 * sizeof(Sint16) * channels); // Dummy Test
 //	   nSndDevWritePos = ((uBufSize / 2) * nSndBank + 0) / sizeof(Sint16); // Dummy Test
-#if 1
+#if 0
 	   if((nSndDevWritePos + nSamples * channels) > (uBufSize / sizeof(Sint16))) { // Wrap!
 	      samples = ((nSndDevWritePos + nSamples * channels) * sizeof(Sint16) -  uBufSize) / (channels * sizeof(Sint16)) - 1;
 	      if(samples >= nSamples) samples = nSamples;
