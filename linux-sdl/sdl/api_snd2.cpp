@@ -93,11 +93,6 @@ static UINT             uStereo;     /* 出力モード */
 static BOOL             bBeepFlag;      /* BEEP出力 */
 static BOOL		bHQMode; /* HQモード */
 
-
-
-static struct SndBufType *pOpnBuf;
-static struct SndBufType *pBeepBuf;
-static struct SndBufType *pCMTBuf;
 static Sint16 *pCaptureBuf;
 static Sint16 *pSoundBuf;
 
@@ -125,6 +120,7 @@ static BOOL             bTapeFlag;      /* 現在のテープ出力状態 */
 static BOOL				bWavFlag; /* WAV演奏許可フラグ */
 static BOOL             bSndExit;
 static SDL_sem 			*applySem;
+static SDL_sem 			*sndSem;
 static int         nSndBank;
 static int         nSndPos;
 static int         nSndBeforePos;
@@ -192,6 +188,7 @@ void InitSnd(void)
 	DrvWav = NULL;
 	DrvCMT = NULL;
 	applySem = SDL_CreateSemaphore(1);
+	sndSem = SDL_CreateSemaphore(1);
 	uTick = 0;   // バッファサイズ(時間)
 	uRate = 0;   // サンプリングレート
 	uBufSize = 0; // バッファサイズ(バイト数)
@@ -209,11 +206,8 @@ void InitSnd(void)
 	bBeepFlag = FALSE;      /* BEEP出力 */
 
 	/*
-	 * バッファ(概要)初期化
+	 * バッファ初期化
 	 */
-	pOpnBuf = NULL;
-	pBeepBuf = NULL;
-	pCMTBuf = NULL;
 
         pOpnSndBuf = NULL;
 	pBeepSndBuf = NULL;
@@ -256,6 +250,9 @@ void CleanSnd(void)
    if(applySem) {
         SDL_SemWait(applySem);
     }
+   if(sndSem) {
+        SDL_SemWait(sndSem);
+    }
   
     bWavCapture = FALSE;
 
@@ -274,6 +271,10 @@ void CleanSnd(void)
 	if(applySem) {
 		SDL_DestroySemaphore(applySem);
 		applySem = NULL;
+	}
+	if(sndSem) {
+		SDL_DestroySemaphore(applySem);
+		sndSem = NULL;
 	}
 
        bSndExit = TRUE;
@@ -378,10 +379,11 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
    
    if(len <= 0) return;
    if(nSndDataLen <= 0) return;
-   if(nSndDataLen > uBufSize) nSndDataLen = uBufSize;
 
-   SDL_LockAudio();
+//   SDL_LockAudio();
    if(nSndWritePos >= uBufSize) nSndWritePos = 0;
+   if(sndSem != NULL) SDL_SemWait(sndSem);
+   if(nSndDataLen > uBufSize) nSndDataLen = uBufSize;
 
    if(len > nSndDataLen) len = nSndDataLen;
 
@@ -417,7 +419,8 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
    }
    if(nSndDataLen < 0) nSndDataLen = 0;
    if(nSndWritePos >= uBufSize) nSndWritePos = 0;
-   SDL_UnlockAudio();
+   if(sndSem != NULL) SDL_SemPost(sndSem);
+//   SDL_UnlockAudio();
 }
 
 BOOL SelectSnd(void)
@@ -461,8 +464,8 @@ BOOL SelectSnd(void)
 	desired.freq = nSampleRate;
 	desired.format = AUDIO_S16SYS;
 	desired.channels = 2;
-//	desired.samples = (nSampleRate * uTick) / (2000 * sizeof(Sint16));
-	desired.samples = 2048;
+	desired.samples = 3072;
+//	desired.samples = 2048;
 	desired.callback = AudioCallbackSDL;
 	SDL_OpenAudio(&desired, &sAudioSpec);
         nSndWritePos = 0;
@@ -476,8 +479,8 @@ BOOL SelectSnd(void)
 	dwSndCount = 0;
 	uBufSize = (nSampleRate * uTick) / 1000  * 2 * sizeof(Sint16);
 #ifndef _WINDOWS
-        if(posix_memalign((void **)&pCaptureBuf, 32, uBufSize * 2) < 0) return -1;
-        if(posix_memalign((void **)&pSoundBuf, 32, uBufSize * 2) < 0) {
+        if(posix_memalign((void **)&pCaptureBuf, 32, uBufSize + 16) < 0) return -1;
+        if(posix_memalign((void **)&pSoundBuf, 32, uBufSize + 16) < 0) {
 	   free(pCaptureBuf);
 	   return -1;
 	}
@@ -498,8 +501,6 @@ BOOL SelectSnd(void)
         bSndEnable = TRUE;
 	members = uBufSize;
         if(posix_memalign((void **)&pOpnSndBuf32, 32, members * 2) < 0) pOpnSndBuf32 = NULL;
-//        if(posix_memalign((void **)&pBeepSndBuf32, 32, members * 2) < 0) pBeepSndBuf32 = NULL;
-//        if(posix_memalign((void **)&pCMTSndBuf32, 32, members * 2) < 0) pCMTSndBuf32 = NULL;
         if(posix_memalign((void **)&pOpnSndBuf, 32, members) < 0) pOpnSndBuf = NULL;
         if(posix_memalign((void **)&pBeepSndBuf, 32, members) < 0) pBeepSndBuf = NULL;
         if(posix_memalign((void **)&pCMTSndBuf, 32, members) < 0) pCMTSndBuf = NULL;
@@ -775,14 +776,13 @@ static DWORD Render2(DWORD ttime, BOOL bZero)
 
    samples = uBufSize / (2 * channels * sizeof(Sint16));
    samples -= nSamples;
-   //   samples  = SndCalcSamples(pOpnBuf, ttime);
 //   if(samples < 0) samples =  ((uBufSize / 2 )>> 2) + samples;
    if(samples <= 0) return 0;
    if(applySem) SDL_SemWait(applySem);
    max = RenderCommon(ttime, samples, bZero);
    
    if(DrvOPN  != NULL) DrvOPN->ResetRenderCounter();
-//   if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
+   if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
    if(DrvCMT  != NULL) DrvCMT->ResetRenderCounter();
 //   printf("Render2: Bank = %d , Before = %d,  Pos = %d, samples = %d : Total = %d\n",nSndBank, nSndBeforePos, nSndPos, samples, nSamples);
    if(applySem) SDL_SemPost(applySem);
@@ -1108,17 +1108,18 @@ void ProcessSnd(BOOL bZero)
 	       SDL_SemPost(applySem);
 	       return;
 	    }
-	   SDL_LockAudio();
+
 //	   nSamples = uBufSize / (2 * sizeof(Sint16) * channels); // Dummy Test
 //	   nSndDevWritePos = ((uBufSize / 2) * nSndBank + 0) / sizeof(Sint16); // Dummy Test
 	   if(!bWavCapture && bWavCaptureOld) {
 	   	CloseCaptureSnd();
 	   }
 #if 1
-	   if((nSndDevWritePos + nSamples * channels) > (uBufSize / sizeof(Sint16))) { // Wrap!
+	   if((nSndDevWritePos + nSamples * channels) >= (uBufSize / sizeof(Sint16))) { // Wrap!
+	      SDL_LockAudio();
 	      samples = ((nSndDevWritePos + nSamples * channels) * sizeof(Sint16) -  uBufSize) / (channels * sizeof(Sint16));
 	      if(samples >= nSamples) samples = nSamples;
-	      memset(&pSoundBuf[nSndDevWritePos], 0x00, samples * channels * sizeof(Sint16));
+//	      memset(&pSoundBuf[nSndDevWritePos], 0x00, samples * channels * sizeof(Sint16));
 	      AddSoundBuffer(&pSoundBuf[nSndDevWritePos], &pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], NULL, samples * channels);
 //	      memset(&pSoundBuf[nSndDevWritePos], 0x10, samples * channels * sizeof(Sint16));
 	      rpos = rpos + samples * channels;
@@ -1129,17 +1130,22 @@ void ProcessSnd(BOOL bZero)
 		 SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], bsamples, channels);
 	      }
 	      nSamples -= samples;
+	      if(sndSem != NULL) SDL_SemWait(sndSem);
 	      nSndDataLen = nSndDataLen + samples * channels * sizeof(Sint16);
 	      if(nSndDataLen > uBufSize) {
 		 nSndDataLen = uBufSize;
 	      }
+	      SDL_UnlockAudio();
+	      if(sndSem != NULL) SDL_SemPost(sndSem);
+	      SDL_PauseAudio(0);
 	      if(nSamples < 0) nSamples = 0;
 	      if(rpos >= (uBufSize / (channels * sizeof(Sint16)))) rpos = 0;
 	   }
 #endif
 	   if(nSamples > 0) { // Wrap or not
 	      samples = nSamples;
-	      memset(&pSoundBuf[nSndDevWritePos], 0x00, samples * channels * sizeof(Sint16));
+	      SDL_LockAudio();
+	      //memset(&pSoundBuf[nSndDevWritePos], 0x00, samples * channels * sizeof(Sint16));
 	      AddSoundBuffer(&pSoundBuf[nSndDevWritePos], &pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], NULL, samples * channels);
 //	      memset(&pSoundBuf[nSndDevWritePos], 0x10, samples * channels * sizeof(Sint16));
 	      if(bWavCapture){
@@ -1154,18 +1160,20 @@ void ProcessSnd(BOOL bZero)
 	      }
 	      nSamples -= samples;
 	      if(nSamples < 0) nSamples = 0;
-		  nSndDataLen = nSndDataLen + samples * channels * sizeof(Sint16);
+	      if(sndSem != NULL) SDL_SemWait(sndSem);
+	      nSndDataLen = nSndDataLen + samples * channels * sizeof(Sint16);
 	      if(nSndDataLen > uBufSize) {
 		 nSndDataLen = uBufSize;
 	      }
+	      if(sndSem != NULL) SDL_SemPost(sndSem);
+	      SDL_UnlockAudio();
+	      SDL_PauseAudio(0);
 	   }
 	   SDL_UnlockAudio();
 //	   printf("Will play:Bank = %d,  Before = %d,  RPOS = %d, WPos = %d, samples = %d, Addr = %08x, Pos = %d\n", nSndBank, nSndBeforePos, rpos, nSndDevWritePos, nSamples, (int)&pSoundBuf[rpos], nSndPos);
-//	   SDL_PauseAudio(1);
 	   nSndBeforePos = nSndPos;
 	   nSndBank = (nSndBank + 1) & 1;
-
-	   SDL_PauseAudio(0);
+//	   SDL_PauseAudio(0);
 	   
 	   /*
 	    * 演奏本体
