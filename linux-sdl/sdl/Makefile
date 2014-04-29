@@ -80,6 +80,14 @@ LIBS_SOUNDBUFFER_DEBUG   += soundbuffer/sse2/Debug/libsndbuffer-sse2.a
 LIBS_SOUNDBUFFER_PATH += ${LIBS_SOUNDBUFFER_PATH_SSE2}
 endif
 
+ifdef BUILD_MMX
+LIBS_SOUNDBUFFER_MMX = libsndbuffer-mmx.a 
+LIBS_SOUNDBUFFER_PATH_MMX = soundbuffer/mmx
+LIBS_SOUNDBUFFER_RELEASE += soundbuffer/mmx/Release/libsndbuffer-mmx.a
+LIBS_SOUNDBUFFER_DEBUG   += soundbuffer/mmx/Debug/libsndbuffer-mmx.a
+LIBS_SOUNDBUFFER_PATH += ${LIBS_SOUNDBUFFER_PATH_MMX}
+endif
+
 DEPS = $(patsubst %.c,%.d,$(CSRCS))
 DEPS += $(patsubst %.cpp,%.d,$(CXXSRCS))
 DEPS_RELEASE = $(addprefix Release/, $(DEPS))
@@ -88,6 +96,10 @@ DEPS_DEBUG =	$(addprefix Debug/,  $(DEPS))
 ifdef BUILD_SSE2
 CFLAGS += -DUSE_SSE2
 endif
+ifdef BUILD_MMX
+CFLAGS += -DUSE_MMX
+endif
+
 
 all:	$(TARGET_DEBUG) $(TARGET_RELEASE)
 

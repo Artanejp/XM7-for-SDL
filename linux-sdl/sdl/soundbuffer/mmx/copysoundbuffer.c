@@ -7,7 +7,6 @@
 #include "sdl_cpuid.h"
 
 extern struct XM7_CPUID *pCpuID;
-extern void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size);
 
 static inline Sint16 _clamp(Sint32 b)
 {
@@ -16,9 +15,9 @@ static inline Sint16 _clamp(Sint32 b)
     return (Sint16) b;
 }
 #if defined(__x86_64__) || defined(__i386__)
- #if defined(__SSE2__)
- int AddSoundBuffer_SSE2(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples)
- {
+ #if defined(__MMX__)
+int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples)
+{
    int len1, len2;
    int i;
    if(samples <= 0) return 0;
@@ -26,35 +25,35 @@ static inline Sint16 _clamp(Sint32 b)
 //   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL) || (wavsrc == NULL)) return 0;
    if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
    
-   len1 = samples / 8;
-   len2 = samples % 8;
+   len1 = samples / 4;
+   len2 = samples % 4;
 #if (__GNUC__ >= 4)
-    v4hi t1, t2;
-    v4hi tt;
+    v2ii t1, t2;
+    v2hi tt;
     v4hi *l;
-    v4hi *opn  = (v4hi *)opnsrc;
-    v4hi *beep = (v4hi *)beepsrc;
-    v4hi *cmt  = (v4hi *)cmtsrc;
-    v4hi *wav  = (v4hi *)wavsrc;
-    v4hi *p    = (v4hi *)dst;
+    v2hi *opn  = (v2hi *)opnsrc;
+    v2hi *beep = (v2hi *)beepsrc;
+    v2hi *cmt  = (v2hi *)cmtsrc;
+    v2hi *wav  = (v2hi *)wavsrc;
+    v2hi *p    = (v2hi *)dst;
    for(i = 0; i < len1; i++) {
-        t1 = *opn;
+        t1 = opn->v;
         opn++;
-        t2 = *opn;
+        t2 = opn->v;
         opn++;
-        tt.vv = __builtin_ia32_packssdw128(t1.vv, t2.vv);
+        tt.v = __builtin_ia32_packssdw(t1, t2);
 
-        tt.vv = tt.vv + beep->vv;
+        tt.v = tt.v + beep->v;
         beep++;
-        tt.vv = tt.vv + cmt->vv;
+        tt.v = tt.v + cmt->v;
         cmt++;
-//      tt.vv = tt.vv + wav->vv;
+//      tt.v = tt.v + *wav;
 //      wav++;
-        p->vv = tt.vv;
+        p->v = tt.v;
         p++;
    }
 #endif   
-   if(len2 <= 0) return len1 * 8;
+   if(len2 <= 0) return len1 * 4;
    {
       Sint32 tmp4;
       Sint16 tmp5;
@@ -72,34 +71,31 @@ static inline Sint16 _clamp(Sint32 b)
 	 *dst2++ = tmp5;
       }
    }
-   return len2 + len1 * 8;
- }
-
-
- #endif
+   return len2 + len1 * 4;
+}
+ #endif // __MMX__
 #endif
 
 #if defined(__x86_64__) || defined(__i386__)
- #if defined(__SSE2__)
-// By optimization, this occures assertion in gcc-4.8.0(why...)
-void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
+ #if defined(__MMX__)
+void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
 {
-    v4hi *h ;
-    v4hi r, s;
-    v4hi *l;
-    v4hi tt;
+    v2ii *h ;
+    v2ii r, s;
+    v2hi *l;
+    v2hi tt;
     Sint32 tmp1;
     Sint32 *p;
     Sint16 *t;
     int i, j;
    
-    h = (v4hi *)from;
-    l = (v4hi *)to;
-    i = (size >> 3) << 3;
-    for (j = 0; j < i; j += 8) {
+    h = (v2ii *)from;
+    l = (v2hi *)to;
+    i = (size >> 2) << 2;
+    for (j = 0; j < i; j += 4) {
       r = *h++;
       s = *h++;
-      tt.vv = __builtin_ia32_packssdw128(r.vv, s.vv);
+      tt.v = __builtin_ia32_packssdw(r, s);
       *l++ = tt;
    }
    p = (Sint32 *)h;
@@ -112,10 +108,9 @@ void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
    
 }
  #else // NOT MMX
-volatile void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
+void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size)
 {
-   CopySoundBuffer_MMX(from, to, size);
  // NOOP :)
 }
- #endif // __SSE2__
+ #endif // __MMX__
 #endif // X86_64 or i386

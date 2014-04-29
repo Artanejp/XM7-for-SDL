@@ -9,11 +9,11 @@
 extern struct XM7_CPUID *pCpuID;
 
 #ifdef USE_SSE2
-extern volatile void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size);
-extern int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples);
+extern void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size);
+extern int AddSoundBuffer_SSE2(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples);
 #endif
 #ifdef USE_MMX
-extern void void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size);
+extern void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size);
 extern int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples);
 #endif
 
@@ -37,7 +37,7 @@ int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc,
  if(pCpuID != NULL) {
  #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
-	return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
+	return AddSoundBuffer_SSE2(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
   }
  #endif
  #if defined(USE_MMX)
