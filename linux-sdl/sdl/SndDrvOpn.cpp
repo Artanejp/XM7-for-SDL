@@ -320,7 +320,7 @@ int SndDrvOpn::Render32(Sint32 *pBuf32, int start, int sSamples, BOOL clear,BOOL
 	    pOPN[OPN_THG].psg.Mix2((int32*)q, ss2, 16, 16);
 	 }
       }
-      //      	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
+//            	  CopySoundBufferGeneric((DWORD *)q, (WORD *)p, (int)(ss2 * channels));
       /*
        * ここにレンダリング関数ハンドリング
        */
