@@ -1017,27 +1017,23 @@ int SndCalcSamples(struct SndBufType *p, DWORD ttime)
 /*
  * WAV書き込み
  */
-static BOOL SndWavWrite(struct WavDesc *h, int channels)
+static BOOL SndWavWrite(struct WavDesc *h, Sint16 *src, int len, int channels)
 {
    Sint16 *wavbuf;
-   int x, y, z;
+   int len2 = len * sizeof(Sint16) * channels;
 
    wavbuf = pCaptureBuf;
    if(h == NULL) return FALSE;
+   if(len2 <= 0) return FALSE;
    if(!bWavCapture){
 	CloseCaptureSnd();
         return FALSE;
    }
 
-   if(wavbuf != NULL) { 
-     memset(wavbuf, 0x00, uBufSize *  2);
-      x = CopyChunk(pOpnBuf, wavbuf, 0);
-      y = CopyChunk(pCMTBuf, wavbuf, 0);
-      z = CopyChunk(pBeepBuf, wavbuf, 0);
-      if(x < y) x = y;
-      if(x < z) x = z;
-//      WriteWavDataSint16(h, wavbuf, x * channels);
-      WriteWavDataSint16(h, wavbuf, x);
+   if((wavbuf != NULL) && (src != NULL)){ 
+     memset(wavbuf, 0x00, len2);
+     memcpy(wavbuf, src, len2);
+     WriteWavDataSint16(h, wavbuf, len * channels);
 //      free(wavbuf);
       return TRUE;
    }
@@ -1059,9 +1055,10 @@ void ProcessSnd(BOOL bZero)
 {
 	DWORD ttime = dwSoundTotal;
 	int samples;
-        int bsamples;
+        int bsamples = 0;
 	int channels = 2;
         int rpos;
+        
         int playBank;
 	BOOL bWrite = FALSE;
 
@@ -1114,23 +1111,30 @@ void ProcessSnd(BOOL bZero)
 	   SDL_LockAudio();
 //	   nSamples = uBufSize / (2 * sizeof(Sint16) * channels); // Dummy Test
 //	   nSndDevWritePos = ((uBufSize / 2) * nSndBank + 0) / sizeof(Sint16); // Dummy Test
-#if 0
+	   if(!bWavCapture && bWavCaptureOld) {
+	   	CloseCaptureSnd();
+	   }
+#if 1
 	   if((nSndDevWritePos + nSamples * channels) > (uBufSize / sizeof(Sint16))) { // Wrap!
-	      samples = ((nSndDevWritePos + nSamples * channels) * sizeof(Sint16) -  uBufSize) / (channels * sizeof(Sint16)) - 1;
+	      samples = ((nSndDevWritePos + nSamples * channels) * sizeof(Sint16) -  uBufSize) / (channels * sizeof(Sint16));
 	      if(samples >= nSamples) samples = nSamples;
 	      memset(&pSoundBuf[nSndDevWritePos], 0x00, samples * channels * sizeof(Sint16));
 	      AddSoundBuffer(&pSoundBuf[nSndDevWritePos], &pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], NULL, samples * channels);
 //	      memset(&pSoundBuf[nSndDevWritePos], 0x10, samples * channels * sizeof(Sint16));
-	      rpos += (samples * channels);
+	      rpos = rpos + samples * channels;
 	      nSndDevWritePos = nSndDevWritePos + samples * channels;
-	      if(nSndDevWritePos >= (uBufSize / sizeof(Sint16))) nSndDevWritePos = 0; 
+	      if(nSndDevWritePos >= (uBufSize / sizeof(Sint16))) nSndDevWritePos = 0;
+	      if(bWavCapture){
+		 bsamples += samples;
+		 SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], bsamples, channels);
+	      }
 	      nSamples -= samples;
 	      nSndDataLen = nSndDataLen + samples * channels * sizeof(Sint16);
 	      if(nSndDataLen > uBufSize) {
 		 nSndDataLen = uBufSize;
 	      }
 	      if(nSamples < 0) nSamples = 0;
-	      if(rpos >= (uBufSize / (2 * channels * sizeof(Sint16)))) rpos = 0;
+	      if(rpos >= (uBufSize / (channels * sizeof(Sint16)))) rpos = 0;
 	   }
 #endif
 	   if(nSamples > 0) { // Wrap or not
@@ -1138,9 +1142,17 @@ void ProcessSnd(BOOL bZero)
 	      memset(&pSoundBuf[nSndDevWritePos], 0x00, samples * channels * sizeof(Sint16));
 	      AddSoundBuffer(&pSoundBuf[nSndDevWritePos], &pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], NULL, samples * channels);
 //	      memset(&pSoundBuf[nSndDevWritePos], 0x10, samples * channels * sizeof(Sint16));
+	      if(bWavCapture){
+		 SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], bsamples, channels);
+	      }
+
 	      nSndDevWritePos = nSndDevWritePos + samples * channels;
 	      if(nSndDevWritePos >= (uBufSize / sizeof(Sint16))) nSndDevWritePos = 0; 
-		  nSamples -= samples;
+	      if(bWavCapture){
+		 bsamples += samples;
+		 SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], bsamples, channels);
+	      }
+	      nSamples -= samples;
 	      if(nSamples < 0) nSamples = 0;
 		  nSndDataLen = nSndDataLen + samples * channels * sizeof(Sint16);
 	      if(nSndDataLen > uBufSize) {
@@ -1160,13 +1172,6 @@ void ProcessSnd(BOOL bZero)
 	    * 20110524 マルチスレッドにすると却って音飛びが悪くなるのでこれでいく。
 	    *          こちらの方がWAV取り込みに悪影響がでない（？？）
 	    */
-	   if(bWavCapture){
-	      SndWavWrite(WavDescCapture, channels);
-	   }// else {
-	   //  if(bWavCaptureOld) {
-	   //	CloseCaptureSnd();
-	   //   }
-	   //}
 	   
 	   bWavCaptureOld = bWavCapture;
 	   dwSndCount = 0;
