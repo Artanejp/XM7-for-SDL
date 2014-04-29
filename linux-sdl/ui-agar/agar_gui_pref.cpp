@@ -12,7 +12,7 @@
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+//#include <SDL/SDL_mixer.h>
 
 #include "xm7.h"
 #include "device.h"
