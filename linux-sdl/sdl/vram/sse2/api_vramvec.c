@@ -48,18 +48,7 @@ v8hi_t lshift_6bit8v_SSE2(v8hi_t *v)
    if(mask.s[6] != 0) cbuf.s[6] |= 0x03;
    if(mask.s[7] != 0) cbuf.s[7] |= 0x03;
 #endif	
-#if 0
-   ret.i[0] = cbuf.i[0];
-   ret.i[1] = cbuf.i[1];
-   ret.i[2] = cbuf.i[2];
-   ret.i[3] = cbuf.i[3];
-   ret.i[4] = cbuf.i[4];
-   ret.i[5] = cbuf.i[5];
-   ret.i[6] = cbuf.i[6];
-   ret.i[7] = cbuf.i[7];
-#else
    ret = cbuf;
-#endif
    return ret;
 }
 
