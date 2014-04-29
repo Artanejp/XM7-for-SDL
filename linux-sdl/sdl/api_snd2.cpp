@@ -24,7 +24,7 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+//#include <SDL/SDL_mixer.h>
 #include <math.h>
 
 #include "xm7.h"
@@ -464,7 +464,7 @@ BOOL SelectSnd(void)
 	desired.freq = nSampleRate;
 	desired.format = AUDIO_S16SYS;
 	desired.channels = 2;
-	desired.samples = 3072;
+	desired.samples = 1576;
 //	desired.samples = 2048;
 	desired.callback = AudioCallbackSDL;
 	SDL_OpenAudio(&desired, &sAudioSpec);

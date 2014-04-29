@@ -8,7 +8,7 @@
 #ifndef SNDDRVWAV_H_
 #define SNDDRVWAV_H_
 #include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+//#include <SDL/SDL_mixer.h>
 #include <math.h>
 
 #include "xm7.h"
@@ -35,8 +35,8 @@ public:
 	void Play(int ch, int slot);
 private:
 	void SetRenderVolume(int level, int slot);
-	Mix_Chunk *chunkP;
-	Mix_Chunk chunk;
+//	Mix_Chunk *chunkP;
+//	Mix_Chunk chunk;
 	int bufSize;
 	Uint8 *buf;
 	int samples;

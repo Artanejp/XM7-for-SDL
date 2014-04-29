@@ -6,7 +6,7 @@
  */
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+//#include <SDL/SDL_mixer.h>
 #include "xm7.h"
 #include "SndDrvBeep.h"
 #include "api_snd.h"

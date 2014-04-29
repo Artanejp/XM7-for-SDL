@@ -291,7 +291,7 @@ LIBS += -L/usr/local/lib
 LIBS += `sdl-config --libs`
 LIBS += `agar-config --libs`
 
-LIBS +=  -lSDL_mixer
+#LIBS +=  -lSDL_mixer
 
  ifdef USE_OPENGL
   LIBS += -lGL -lpthread

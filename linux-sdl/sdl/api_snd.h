@@ -208,7 +208,7 @@ struct SndBufType {
 	DWORD nLastTime;
 	int nChunks;
 	int nChunkNo;
-	Mix_Chunk **mChunk; /* Chunkの配列へのポインタ */
+//	Mix_Chunk **mChunk; /* Chunkの配列へのポインタ */
 } ;
 
      

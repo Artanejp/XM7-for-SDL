@@ -9,7 +9,7 @@
 #ifndef API_WAVWRITER_H_
 #define API_WAVWRITER_H_
 
-#define _USE_SDL_MIXER
+//#define _USE_SDL_MIXER
 
 
 #ifdef __cplusplus
@@ -25,7 +25,7 @@ extern "C" {
 #include <SDL/SDL.h>
    
 #ifdef _USE_SDL_MIXER
-#include <SDL/SDL_mixer.h>
+//#include <SDL/SDL_mixer.h>
 #endif
 #include <math.h>
 #include "xm7_types.h"
