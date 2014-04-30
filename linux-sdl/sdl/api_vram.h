@@ -60,8 +60,15 @@ extern void CreateVirtualVram4096_WindowedLine_SSE2(Uint32 *p, int ybegin, int y
  */
 #ifdef USE_SSE2
 extern void CreateVirtualVram256k_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage);
+extern void CreateVirtualVram256k_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode);
 #endif
 
+#ifdef USE_SSE2
+extern Api_Vram_FuncList api_vram8_sse2;
+extern Api_Vram_FuncList api_vram4096_sse2;
+extern Api_Vram_FuncList api_vram256k_sse2;
+#endif   
+   
 #if (__GNUC__ >= 4)
 extern void initvramtbl_8_vec(void);
 extern void initvramtbl_4096_vec(void);

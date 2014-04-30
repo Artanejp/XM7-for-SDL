@@ -10,12 +10,13 @@
 #include "api_vram.h"
 #include "sdl_cpuid.h"
 
+extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode);
 
 
 #if (__GNUC__ >= 4)
 static v8hi_t getvram_8_vec(Uint32 addr)
 {
-    uint8_t r, g, b;
+    register uint8_t r, g, b;
     register v8hi_t ret;
 //    volatile v4hi cbuf __attribute__((aligned(32)));
         /*
@@ -28,7 +29,7 @@ static v8hi_t getvram_8_vec(Uint32 addr)
     r = vram_pr[addr];
     b = vram_pb[addr];
 
-    ret.v   = aPlanes[B0 + b] |
+   ret.v   = aPlanes[B0 + b] |
               aPlanes[B1 + r] |
               aPlanes[B2 + g];
    return ret;
@@ -37,12 +38,12 @@ static v8hi_t getvram_8_vec(Uint32 addr)
 static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 {
 
-   v8hi_t r1;
+   register v8hi_t r1;
    v8hi_t *p = (v8hi_t *)disp;
    
 //   if(disp == NULL) return;
 
-   c.v &= (v8si){7, 7, 7, 7, 7, 7, 7, 7,};
+   c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
    r1.i[0] = rgbTTLGDI[c.i[0]]; // ?!
    r1.i[1] = rgbTTLGDI[c.i[1]];
    r1.i[2] = rgbTTLGDI[c.i[2]];
@@ -52,6 +53,7 @@ static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
    r1.i[6] = rgbTTLGDI[c.i[6]];
    r1.i[7] = rgbTTLGDI[c.i[7]];
    *p = r1;
+
 }
 
 #else
@@ -122,8 +124,8 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
 #if (__GNUC__ >= 4)   
     register v8hi_t c;
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
-    Uint8 *disp =(Uint8 *) p;
-    Uint32 addr;
+    register v8hi_t *disp =(v8hi_t *) p;
+    register Uint32 addr;
 
     if((p == NULL) || (pal == NULL)) return;
     pitch = sizeof(Uint32) * 8;
@@ -133,67 +135,67 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp += pitch;
+       disp++;
        putword8_vec((Uint32 *)disp,  c, pal);
-//       disp += pitch;
+//       disp++;
        return;
      } else {
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp, c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp += pitch;
+       disp++;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
 //    addr += 80;
-//    disp += pitch;
+//    disp++;
      }
 #else 
     Uint32 c[8];
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
-    Uint8 *disp =(Uint8 *) p;
+    v8hi_t *disp =(V8hi_t *) p;
 
     if((p == NULL) || (pal == NULL)) return;
     pitch = sizeof(Uint32) * 8;
@@ -203,42 +205,42 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
    getvram_8(addr, c);
    putword8((Uint32 *)disp, c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr , c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr , c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp += pitch;
+   disp++;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    //    addr += 80;
-   //    disp += pitch;
+   //    disp++;
      
 #endif   
 }
@@ -251,7 +253,7 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 #if (__GNUC__ >= 4)   
     v8hi_t c;
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
-    Uint8 *disp =(Uint8 *) p;
+    v8hi_t *disp =(v8hi_t *) p;
     Uint32 addr;
     int pitch;
     int xx;
@@ -266,21 +268,21 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
            addr = ybegin * 80;
 	   for(xx = 0; xx < (80 / 8); xx ++) { 
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	   }
        }
        return;
@@ -291,42 +293,42 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	   }
 	  
        }
@@ -349,42 +351,42 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp, c, pal);
 	 addr++;
-	 disp += pitch;
+	 disp++;
    
 	 getvram_8(addr , c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr++;
-	 disp += pitch;
+	 disp++;
 	 
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr += 1;
-	 disp += pitch;
+	 disp++;
    
 	 getvram_8(addr , c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr += 1;
-	 disp += pitch;
+	 disp++;
    
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr += 1;
-	 disp += pitch;
+	 disp++;
    
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr += 1;
-	 disp += pitch;
+	 disp++;
    
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr += 1;
-	 disp += pitch;
+	 disp++;
    
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp,  c, pal);
 	 addr += 1;
-	 disp += pitch;
+	 disp++;
       }
    }
    
@@ -410,13 +412,13 @@ void CreateVirtualVram8_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int x
 
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
-       c.v = (v8si){0,0,0,0,0,0,0,0};
+       c.v = (v8ui){0,0,0,0,0,0,0,0};
        for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80 + xbegin;
 	   disp = (Uint8 *)(&p[yy * 640 + xbegin]);
 	   for(xx = xbegin; xx < xend; xx ++) { 
 	      putword8_vec((Uint32 *)disp,  c, pal);
-	      disp += pitch;
+	      disp++;
 	   }
        }
        return;
@@ -432,42 +434,42 @@ void CreateVirtualVram8_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int x
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	      xx += 8;
 	   }
 	   if(xs2 <= 0) continue;
@@ -475,7 +477,7 @@ void CreateVirtualVram8_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int x
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
-	      disp += pitch;
+	      disp++;
 	   }
        }
 	return;
@@ -496,9 +498,14 @@ void CreateVirtualVram8_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int x
 	 getvram_8(addr, c);
 	 putword8((Uint32 *)disp, c, pal);
 	 addr++;
-	 disp += pitch;
+	 disp++;
       }
    }
 #endif   
 }
 
+Api_Vram_FuncList api_vram8_sse2 = {
+   CreateVirtualVram8_1Pcs_SSE2,
+   CreateVirtualVram8_Line_SSE2,
+   CreateVirtualVram8_WindowedLine
+};

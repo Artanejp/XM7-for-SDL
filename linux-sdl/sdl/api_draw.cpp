@@ -33,6 +33,7 @@
 #endif /* USE_OPENGL */
 
 //#include "sdl.h"
+#include "sdl_cpuid.h"
 
 #include "api_vram.h"
 #include "api_draw.h"
@@ -74,6 +75,8 @@ extern "C" {
    BOOL bRasterRendering;						/* ラスタレンダリングフラグ */
    Api_Vram_FuncList *pVirtualVramBuilder;
    BOOL bDirtyLine[400];				/* 要書き換えフラグ */
+
+   extern struct  XM7_CPUID *pCpuID;
 }
    SDL_semaphore *DrawInitSem;
 
@@ -394,7 +397,16 @@ BOOL Select640(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    bPaletFlag = TRUE;
+   
+#if defined(USE_SSE2)
+    if(pCpuID->use_sse2) {
+       pVirtualVramBuilder = &api_vram8_sse2;
+    } else {
+       pVirtualVramBuilder = &api_vram8_generic;
+    }
+#else
    pVirtualVramBuilder = &api_vram8_generic;
+#endif
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
@@ -433,7 +445,16 @@ BOOL Select400l(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    bPaletFlag = TRUE;
+#if defined(USE_SSE2)
+    if(pCpuID->use_sse2) {
+       pVirtualVramBuilder = &api_vram8_sse2;
+    } else {
+       pVirtualVramBuilder = &api_vram8_generic;
+    }
+#else
    pVirtualVramBuilder = &api_vram8_generic;
+#endif
+
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
@@ -465,7 +486,16 @@ BOOL Select320(void)
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = TRUE;
+#if defined(USE_SSE2)
+    if(pCpuID->use_sse2) {
+       pVirtualVramBuilder = &api_vram4096_sse2;
+    } else {
+       pVirtualVramBuilder = &api_vram4096_generic;
+    }
+#else
    pVirtualVramBuilder = &api_vram4096_generic;
+#endif
+
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
       Palet320();
@@ -504,7 +534,16 @@ BOOL Select256k()
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = TRUE;
+#if defined(USE_SSE2)
+    if(pCpuID->use_sse2) {
+       pVirtualVramBuilder = &api_vram256k_sse2;
+    } else {
+       pVirtualVramBuilder = &api_vram256k_generic;
+    }
+#else
    pVirtualVramBuilder = &api_vram256k_generic;
+#endif
+
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
 //      Palet320();

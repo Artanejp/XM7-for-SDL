@@ -81,7 +81,7 @@ static inline v8hi_t getvram_4096_vec(Uint32 addr)
 void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
 {
 //    Uint32 c[8];
-    v8hi_t c;
+    register v8hi_t c;
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
 
@@ -155,7 +155,7 @@ void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mod
 void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 {
 //    Uint32 c[8];
-    v8hi_t c;
+    register v8hi_t c;
     Uint8 *disp;
     Uint32 addr;
     int yy;
@@ -185,7 +185,7 @@ void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 	     putword2_vec((Uint32 *)disp,  c);
 	     disp +=  pitch;
 	     putword2_vec((Uint32 *)disp,  c);
-//	     disp +=  pitch;
+	     disp +=  pitch;
 	  }
        }
     } else {
@@ -223,8 +223,8 @@ void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 	     addr++;
 	     c = getvram_4096_vec(addr);
 	     putword2_vec((Uint32 *)disp,  c);
-//	     disp +=  pitch;
-//	     addr++;
+	     disp +=  pitch;
+	     addr++;
 	  }
        }
     } 
@@ -236,7 +236,7 @@ void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 void CreateVirtualVram4096_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode)
 {
 #if (__GNUC__ >= 4)   
-    v8hi_t c;
+    register v8hi_t c;
     Uint8 *disp =(Uint8 *) p;
     Uint32 addr;
     int pitch;
@@ -335,3 +335,8 @@ void CreateVirtualVram4096_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, in
 #endif   
 }
 
+Api_Vram_FuncList api_vram4096_sse2 = {
+   CreateVirtualVram4096_1Pcs_SSE2,
+   CreateVirtualVram4096_Line_SSE2,
+   CreateVirtualVram4096_WindowedLine_SSE2
+};
