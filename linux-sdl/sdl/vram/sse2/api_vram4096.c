@@ -19,16 +19,10 @@ static inline void putword2_vec(Uint32 *disp, v8hi_t cbuf)
 {
    v8hi_t *dst = (v8hi_t *)disp;
    v8hi_t r1;
+   register int j;
    
-   r1.i[0] = rgbAnalogGDI[cbuf.i[0]];
-   r1.i[1] = rgbAnalogGDI[cbuf.i[1]];
-   r1.i[2] = rgbAnalogGDI[cbuf.i[2]];
-   r1.i[3] = rgbAnalogGDI[cbuf.i[3]];
-   r1.i[4] = rgbAnalogGDI[cbuf.i[4]];
-   r1.i[5] = rgbAnalogGDI[cbuf.i[5]];
-   r1.i[6] = rgbAnalogGDI[cbuf.i[6]];
-   r1.i[7] = rgbAnalogGDI[cbuf.i[7]];
-   dst->v = r1.v;
+   __builtin_prefetch(dst, 0, 0);
+   for(j = 0; j < 8; j++) dst->i[j] = rgbAnalogGDI[cbuf.i[j]];
 }
 
 static inline v8hi_t getvram_4096_vec(Uint32 addr)
@@ -84,7 +78,9 @@ void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mod
     register v8hi_t c;
     Uint8 *disp = (Uint8 *)p;
     Uint32 addr;
+    register int i;
 
+   for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 1, 0);
     pitch = sizeof(Uint32) * 8;
     addr = y * 40 + x;
     // Loop廃止(高速化)
@@ -160,9 +156,10 @@ void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
     Uint32 addr;
     int yy;
     int xx;
-    int pitch;
+    const int pitch = sizeof(Uint32) * 8;
+    int i;
 
-    pitch = sizeof(Uint32) * 8;
+    for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 1, 0);
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};

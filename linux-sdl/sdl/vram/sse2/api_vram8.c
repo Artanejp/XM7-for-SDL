@@ -44,8 +44,12 @@ static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 //   if(disp == NULL) return;
 
    c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
+   __builtin_prefetch(p, 0, 0);
    // recommand -finline-loop
-   for(j = 0; j < 8; j++) p->i[j] = pal[c.i[j]]; // Converting via palette.
+   for(j = 0; j < 8; j++) {
+      p->i[j] = pal[c.i[j]]; // Converting via palette.
+   }
+   
 }
 
 #else
