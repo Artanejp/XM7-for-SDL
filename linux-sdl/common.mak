@@ -280,7 +280,8 @@ LIBS += -lpthread -lz \
 	
 else
 # Linux
-#LDFLAGS = 
+#Test
+LDFLAGS = -lgc
 
  ifdef CROSS_BUILD
    LDFLAGS += -L/usr/$(CROSS_TARGET)/lib -L$(PREFIX)/lib
