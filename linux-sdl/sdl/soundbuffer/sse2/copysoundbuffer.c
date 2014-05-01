@@ -43,12 +43,11 @@ static inline Sint16 _clamp(Sint32 b)
         t2 = *opn;
         opn++;
         tt.vv = __builtin_ia32_packssdw128(t1.vv, t2.vv);
-
-        tt.vv = tt.vv + beep->vv;
+        tt.vv = __builtin_ia32_paddsw128(tt.vv, beep->vv);
+        tt.vv = __builtin_ia32_paddsw128(tt.vv, cmt->vv);
+//        tt.vv = __builtin_ia32_paddsw128(tt.vv, wav->vv);
         beep++;
-        tt.vv = tt.vv + cmt->vv;
         cmt++;
-//      tt.vv = tt.vv + wav->vv;
 //      wav++;
         p->vv = tt.vv;
         p++;
