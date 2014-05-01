@@ -25,15 +25,19 @@ extern "C" { // Define Headers
    extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2.c
    extern void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
    extern void pVram2RGB_x4(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
+   extern void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
 
 #if defined(USE_SSE2) // scaler/sse2/
    extern void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2_sse2.c
+   extern void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
    extern void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4_sse2.c
+   extern void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
 #endif
 }
 
 static int iScaleFactor = 1;
 static void *pDrawFn = NULL;
+static void *pDrawFn2 = NULL;
 static int iOldW = 0;
 static int iOldH = 0;
 
@@ -1018,6 +1022,140 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 
 
 
+// w0, h0 = Console
+// w1, h1 = DrawMode
+static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
+{
+    int wx0 = w0 >> 1; // w1/4
+    int hy0 = h0 >> 1;
+    int xfactor;
+    int yfactor;
+    int xth;
+    void (*DrawFn)(Uint32 *src, int xbegin, int xend, int y, int yrep);
+    DrawFn = NULL;
+
+    xfactor = w1 % wx0;
+    yfactor = h1 % hy0;
+    xth = wx0 >> 1;
+    if(iScaleFactor == (w1 / w0) && (pDrawFn2 != NULL)
+      && (w1 == iOldW) && (h1 == iOldH))  return (void *)pDrawFn2;
+    iScaleFactor = w1 / w0;
+    iOldW = w1;
+    iOldH = h1;
+    switch(iScaleFactor){
+            case 0:
+#if 0
+            if(w0 > 480){
+	        if((w1 < 480) || (h1 < 200)){
+		   DrawFn = pVram2RGB_x05;
+		} else {
+		    DrawFn = pVram2RGB_x1;
+		}
+            } else {
+                DrawFn = pVram2RGB_x1;
+            }
+#endif
+            break;
+
+           case 1:
+            if(xfactor < xth){
+#if 0
+	       if(w1 > 720) {
+		 DrawFn = pVram2RGB_x125;
+	      } else {
+		 DrawFn = pVram2RGB_x1;
+	      }
+#endif
+            } else { // xfactor != 0
+	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2) {
+		 DrawFn = pVram2RGB_x2_Line_SSE2;
+	      } else {
+		 DrawFn = pVram2RGB_x2_Line;
+	      }
+#else
+	      DrawFn = pVram2RGB_x2_Line;
+#endif
+	      } else {
+		 DrawFn = pVram2RGB_x2_Line;
+	      }
+		 
+            }
+            break;
+            case 2:
+//            if(xfactor < xth){
+	      if((w1 > 720) && (w0 <= 480)) {
+		 DrawFn = pVram2RGB_x25;
+	      } else if(w1 > 1520){
+		 DrawFn = pVram2RGB_x25;
+	      } else {
+	      if((pCpuID != NULL)   && (bUseSIMD == TRUE)){
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2){
+		 DrawFn = pVram2RGB_x2_Line_SSE2;
+	      } else {
+		 DrawFn = pVram2RGB_x2_Line;
+	      }
+#else
+	      DrawFn = pVram2RGB_x2_Line;
+#endif
+	      } else {
+		 DrawFn = pVram2RGB_x2_Line;
+	      }
+
+	      }
+
+            break;
+            case 3:
+            if(xfactor < xth){
+              DrawFn = pVram2RGB_x3;
+            } else { // xfactor != 0
+	      if((pCpuID != NULL)   && (bUseSIMD == TRUE)){
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2){
+		 DrawFn = pVram2RGB_x4_Line_SSE2;
+	      } else {
+		 DrawFn = pVram2RGB_x4_Line;
+	      }
+#else
+	      DrawFn = pVram2RGB_x4_Line;
+#endif
+	      } else {
+		 DrawFn = pVram2RGB_x4_Line;
+	      }
+
+            }
+            break;
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+	      if((pCpuID != NULL)   && (bUseSIMD == TRUE)){
+#if defined(USE_SSE2)
+	      if(pCpuID->use_sse2){
+		 DrawFn = pVram2RGB_x4_Line_SSE2;
+	      } else {
+		 DrawFn = pVram2RGB_x4_Line;
+	      }
+#else
+	      DrawFn = pVram2RGB_x4_Line;
+#endif
+	      } else {
+		 DrawFn = pVram2RGB_x4_Line;
+	      }
+            break;
+            default:
+#if 0
+                DrawFn = pVram2RGB_x1;
+#endif
+            break;
+        }
+        pDrawFn2 = (void *)DrawFn;
+        return (void *)DrawFn;
+}
+
 
 //void XM7_SDLViewUpdateSrc(AG_Pixmap *my, void *Fn)
 void XM7_SDLViewUpdateSrc(AG_Event *event)
@@ -1071,8 +1209,12 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         break;
    }
    if(nRenderMethod == RENDERING_RASTER) {
-      DrawFn2 = pVram2RGB_x2_Line;
-   } else {
+      Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
+      if(Fn != NULL) {
+	   DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
+      }
+      
+   } else { // Block
       if(Fn == NULL){
         Fn = XM7_SDLViewSelectScaler(ww , hh, w, h);
       }
@@ -1081,31 +1223,25 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       }
       DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
    }
-   
-
-    tmp = h % hh;
-    yrep = (h << 1) / hh;
-    if(tmp > (hh >> 1)){
-	  yrep++;
-    }
-   
+   tmp = h % hh;
+   yrep = (h << 1) / hh;
+   if(tmp > (hh >> 1)){
+      yrep++;
+   }
+    if(Fn == NULL) return; 
     src = pVram2;
     LockVram();
     AG_ObjectLock(AGOBJECT(my));
 
    if(nRenderMethod == RENDERING_RASTER) {
        if(my->forceredraw != 0){
-        for(yy = 0; yy < hh; yy++) {
-//                bDirtyLine[yy] = TRUE;
-        }
-        my->forceredraw = 0;
-    }
+	  for(yy = 0; yy < hh; yy++) {
+	     //                bDirtyLine[yy] = TRUE;
+	  }
+	  my->forceredraw = 0;
+       }
 
-   
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
-#endif
-    for(yy = 0 ; yy < hh; yy++) {
+      for(yy = 0 ; yy < hh; yy++) {
 /*
 *  Virtual VRAM -> Real Surface:
 */
@@ -1114,18 +1250,23 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 //	      bDirtyLine[yy] = FALSE;
 //	   }
 //			if(yy >= h) continue;
-    }	
-  } else { // Block
-       if(my->forceredraw != 0){
-        for(yy = 0; yy < hh; yy += 8) {
+      }
+      // BREAK.
+      goto _end1;
+   } else { // Block
+      if(my->forceredraw != 0){
+	 for(yy = 0; yy < hh; yy += 8) {
             for(xx = 0; xx < ww; xx +=8 ){
-                SDLDrawFlag.write[xx >> 3][yy >> 3] = TRUE;
+	       SDLDrawFlag.write[xx >> 3][yy >> 3] = TRUE;
             }
-        }
-        my->forceredraw = 0;
-       }
+	 }
+	 my->forceredraw = 0;
+      }
+   }
+   
+   
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
+# pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
 #endif
     for(yy = 0 ; yy < hh; yy+=8) {
         for(xx = 0; xx < ww; xx+=8) {
@@ -1147,9 +1288,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	}
 //			if(yy >= h) continue;
     }
-   }
-   
-   
+
+      
+_end1:   
    AG_ObjectUnlock(AGOBJECT(my));
 
 //   AG_PixmapUpdateCurrentSurface(my);
