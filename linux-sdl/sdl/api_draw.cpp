@@ -396,7 +396,8 @@ BOOL Select640(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 640;
-   bPaletFlag = TRUE;
+   //bPaletFlag = TRUE;
+   Palet640();
    
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
@@ -409,7 +410,6 @@ BOOL Select640(void)
 #endif
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
-      Palet640();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -444,7 +444,8 @@ BOOL Select400l(void)
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
-   bPaletFlag = TRUE;
+   //bPaletFlag = TRUE;
+   Palet640();
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram8_sse2;
@@ -457,7 +458,6 @@ BOOL Select400l(void)
 
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
-      Palet640();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -486,6 +486,7 @@ BOOL Select320(void)
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = TRUE;
+   //Palet320();
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram4096_sse2;
@@ -498,7 +499,7 @@ BOOL Select320(void)
 
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
-      Palet320();
+     // Palet320();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -533,7 +534,7 @@ BOOL Select256k()
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 320;
-   bPaletFlag = TRUE;
+   //bPaletFlag = TRUE;
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram256k_sse2;
@@ -546,7 +547,7 @@ BOOL Select256k()
 
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
-//      Palet320();
+      Palet320();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -638,6 +639,7 @@ void AllClear(void)
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
+      Palet320();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -693,6 +695,7 @@ void AllClear(void)
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
+      Palet320();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -995,9 +998,11 @@ void 	apalet_notify(void)
    if (nRenderMethod == RENDERING_RASTER) {
       bNextFrameRender = TRUE;
       SetDirtyFlag(now_raster, 400, TRUE);
-      Palet320();
+      SDLDrawFlag.APaletteChanged = TRUE; // Palette changed
+    //  Palet320();
    } else {
       SetDrawFlag(TRUE);
+      SDLDrawFlag.APaletteChanged = TRUE; // Palette changed
    }
    bPaletFlag = TRUE;
    UnlockVram();
@@ -1023,8 +1028,12 @@ void 	display_notify(void)
    if (nRenderMethod == RENDERING_RASTER) {
 	bNextFrameRender = TRUE;
 	SetDirtyFlag(0, 400, TRUE);
-        Palet640();
-        Palet320();
+        if(bPaletFlag) {
+	   Palet640();
+	   Palet320();
+	   bPaletFlag = FALSE;
+	}
+      
 	if (!run_flag) {
 		raster = now_raster;
 		for (i = 0; i < 400; i++) {
@@ -1084,16 +1093,11 @@ void FASTCALL vblankperiod_notify(void)
 			if (!flag) {
 				return;
 			}
-//#ifdef _OPENMP
-//       #pragma omp parallel for shared(bDirtyLine)
-//#endif
 	   for(y = 0; y < ymax; y++) {
-//	   LockVram();
 	      if (bDirtyLine[y]) {
 		 Draw_1Line(y);
 		 bDirtyLine[y] = FALSE;
 	      }
-	      //	   UnlockVram();
 	   }
 		}
 	   
@@ -1512,8 +1516,14 @@ void Draw_1Line(int line)
    int top;
    int bottom;
    pp = pVram2;
-   //      LockVram();
+
    if(pp == NULL) return;
+   if(bPaletFlag) {
+	Palet320();
+        Palet640();
+        bPaletFlag = FALSE;
+   }
+   
    switch(bMode) {
     case SCR_200LINE:
       ww = 80;
@@ -1553,6 +1563,7 @@ void Draw_1Line(int line)
 	 else {
 	    wdbtm = window_dy2;
 	 }
+         //LockVram();
 	 if ((wdbtm > wdtop) && (wdtop < line) && (wdbtm > line)) { // Inside window.
 	    SetVram_200l(vram_bdptr);
 	    BuildVirtualVram_RasterWindow(pp, window_dx1 >> 3 , window_dx2 >> 3, line, multi_page);
@@ -1563,12 +1574,13 @@ void Draw_1Line(int line)
 	    SetVram_200l(vram_dptr);
 	    BuildVirtualVram_Raster(pp, line, multi_page);
 	 }
+         //UnlockVram();
       } else { // ハードウェアウィンドウ開いてない
+	 //LockVram();
 	 SetVram_200l(vram_dptr);
 	 BuildVirtualVram_Raster(pp,  line,  multi_page);
+	 //UnlockVram();
     }
-//   }
-   
    return;
 }
    
