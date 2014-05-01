@@ -38,22 +38,14 @@ static v8hi_t getvram_8_vec(Uint32 addr)
 static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 {
 
-   register v8hi_t r1;
    v8hi_t *p = (v8hi_t *)disp;
-   
+   register int j;
+   if(pal == NULL) return;
 //   if(disp == NULL) return;
 
    c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
-   r1.i[0] = rgbTTLGDI[c.i[0]]; // ?!
-   r1.i[1] = rgbTTLGDI[c.i[1]];
-   r1.i[2] = rgbTTLGDI[c.i[2]];
-   r1.i[3] = rgbTTLGDI[c.i[3]];
-   r1.i[4] = rgbTTLGDI[c.i[4]];
-   r1.i[5] = rgbTTLGDI[c.i[5]];
-   r1.i[6] = rgbTTLGDI[c.i[6]];
-   r1.i[7] = rgbTTLGDI[c.i[7]];
-   *p = r1;
-
+   // recommand -finline-loop
+   for(j = 0; j < 8; j++) p->i[j] = pal[c.i[j]]; // Converting via palette.
 }
 
 #else
@@ -126,11 +118,12 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
     register v8hi_t *disp =(v8hi_t *) p;
     register Uint32 addr;
+    register int i;
 
     if((p == NULL) || (pal == NULL)) return;
+    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 1, 0); // パレットテーブルをキャッシュに読み込ませておく
     pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
-
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
@@ -251,16 +244,17 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
 void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 {
 #if (__GNUC__ >= 4)   
-    v8hi_t c;
+    register v8hi_t c;
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
-    v8hi_t *disp =(v8hi_t *) p;
-    Uint32 addr;
-    int pitch;
+    register v8hi_t *disp =(v8hi_t *) p;
+    register Uint32 addr;
+    const int pitch = sizeof(Uint32) * 8;
     int xx;
     int yy;
+    register int i;
    
     if((p == NULL) || (pal == NULL)) return;
-    pitch = sizeof(Uint32) * 8;
+    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 1, 0); // パレットテーブルをキャッシュに読み込ませておく
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
