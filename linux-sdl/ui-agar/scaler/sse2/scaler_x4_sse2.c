@@ -294,7 +294,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     
 	     for(j = 0; j < (yrep >> 1); j++) {
 		b2p = (v4hi *)d1;
-		if(!bFullScan && (j >= (yrep >> 2))) {
+		if(!bFullScan && (j > (yrep >> 2))) {
 		   b2p[0] = 
 		   b2p[1] = 
 		   b2p[2] = 

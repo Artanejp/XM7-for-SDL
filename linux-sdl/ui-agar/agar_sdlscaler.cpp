@@ -22,12 +22,16 @@ extern BOOL bUseSIMD;
 
 extern "C" { // Define Headers
    // scaler/generic
+   extern void pVram2RGB_x1(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x1.c
+   extern void pVram2RGB_x1_Line(Uint32 *src, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
    extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2.c
    extern void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
    extern void pVram2RGB_x4(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
    extern void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
 
 #if defined(USE_SSE2) // scaler/sse2/
+   extern void pVram2RGB_x1_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x1.c
+   extern void pVram2RGB_x1_Line_SSE2(Uint32 *src, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
    extern void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2_sse2.c
    extern void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
    extern void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4_sse2.c
@@ -342,117 +346,6 @@ void pVram2RGB_x05(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 }
 
 
-void pVram2RGB_x1(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
-{
-   v8hi_t *b;
-   Uint32 *d1;
-   Uint32 *d2;
-   Uint32 *p;
-   int w;
-   int h;
-   int yy;
-   int xx;
-   int hh;
-   int ww;
-   int i;
-   int pitch;
-   Uint32 black;
-   AG_Surface *Surface = GetDrawSurface();
-    
-   if(Surface == NULL) return;
-   w = Surface->w;
-   h = Surface->h;
-   
-#if AG_BIG_ENDIAN != 1
-   black = 0xff000000;
-#else
-   black = 0x000000ff;
-#endif
-
-   if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * Surface->format->BytesPerPixel
-                        + y * Surface->pitch);
-      yrep = 2;
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
-   }
-
-
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
-
-   pitch = Surface->pitch / sizeof(Uint32);
-   if(w < (x  + 7)) {
-    int j;
-    Uint32 d0;
-
-    p = src;
-    ww = w - x;
-
-    for(yy = 0; yy < hh ; yy++) {
-        i = 0;
-        for(xx = 0; xx < ww; xx ++, i++){
-            d2 = d1;
-            d0 = p[i];
-            for(j = 0; j < (yrep >> 1); j++){
-	       if((j > (yrep >> 2)) && !bFullScan){
-		  d2[xx] = black;
-	       } else {
-		  d2[xx] = d0;
-	       }
-
-                d2 += pitch;
-            }
-        }
-        d1 += (pitch * (yrep >> 1));
-        if(yrep & 1) d1 += pitch;
-        p += 8;
-      }
-   } else { // inside align
-      v8hi_t *bv;
-      v8hi_t bb;
-      int j;
-      bb.i[0] = bb.i[1] =
-      bb.i[2] = bb.i[3] =
-      bb.i[4] = bb.i[5] =
-      bb.i[6] = bb.i[7] = black;
-        b = (v8hi_t *)src;
-        for(yy = 0; yy < hh; yy++){
-	   switch(yrep) {
-	    case 0:
-	    case 1:
-	    case 2:
-	      bv = (v8hi_t *)d1;
-	      *bv = *b;
-	      d1 += pitch;
-	      break;
-	    default:
-	      if(yrep & 1) {
-		 bv = (v8hi_t *)d1;
-		 *bv = *b;
-		 d1 += pitch;
-		 yrep--;
-	      }
-	      for(j = 0; j < (yrep >> 1); j++) {
-		 bv = (v8hi_t *)d1;
-		 if(!bFullScan && (j >= (yrep >> 2))) {
-		    *bv = bb;
-		 } else {
-		    *bv = *b;
-		 }
-
-		 d1 += pitch;
-	      }
-	      break;
-	   }
-        b++;
-        }
-    }
-}
 
 
 // Zoom 1.25 (640->800)
@@ -930,7 +823,20 @@ static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
 	      if(w1 > 720) {
 		 DrawFn = pVram2RGB_x125;
 	      } else {
+	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
+#if defined(USE_SSE2)
+		 if(pCpuID->use_sse2) {
+		    DrawFn = pVram2RGB_x1_SSE2;
+		 } else {
+		    DrawFn = pVram2RGB_x1;
+		 }
+#else
 		 DrawFn = pVram2RGB_x1;
+#endif
+	      } else {
+		 DrawFn = pVram2RGB_x1;
+	      }
+		 
 	      }
             } else { // xfactor != 0
 	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
@@ -1044,28 +950,43 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
     iOldH = h1;
     switch(iScaleFactor){
             case 0:
-#if 0
             if(w0 > 480){
 	        if((w1 < 480) || (h1 < 200)){
-		   DrawFn = pVram2RGB_x05;
+//		   DrawFn = pVram2RGB_x05;
 		} else {
-		    DrawFn = pVram2RGB_x1;
+#if defined(USE_SSE2)
+		   if(pCpuID->use_sse2) {
+		      DrawFn = pVram2RGB_x1_Line_SSE2;
+		   } else {
+		      DrawFn = pVram2RGB_x1_Line;
+		   }
 		}
             } else {
-                DrawFn = pVram2RGB_x1;
+                DrawFn = pVram2RGB_x1_Line;
             }
 #endif
             break;
 
            case 1:
             if(xfactor < xth){
-#if 0
+
 	       if(w1 > 720) {
-		 DrawFn = pVram2RGB_x125;
-	      } else {
-		 DrawFn = pVram2RGB_x1;
-	      }
+		  if((pCpuID != NULL) && (bUseSIMD == TRUE)){
+#if defined(USE_SSE2)
+		     if(pCpuID->use_sse2) {
+			DrawFn = pVram2RGB_x1_Line_SSE2;
+		     } else {
+			DrawFn = pVram2RGB_x1_Line;
+		     }
+#else
+		     DrawFn = pVram2RGB_x1_Line;
 #endif
+		  } else {
+		     DrawFn = pVram2RGB_x2_Line;
+		  }
+	       } else {
+		  DrawFn = pVram2RGB_x1_Line;
+	       }
             } else { // xfactor != 0
 	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
 #if defined(USE_SSE2)
