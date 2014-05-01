@@ -8,26 +8,38 @@
 #include <SDL.h>
 #include "api_draw.h"
 #include "api_vram.h"
+#include "sdl_cpuid.h"
 
 Uint8 *vram_pb;
 Uint8 *vram_pr;
 Uint8 *vram_pg;
 
+extern struct XM7_CPUID *pCpuID;
 
 void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     Uint32 ds;
+    Uint32 *pal = rgbAnalogGDI;
     r = r & 0xf0;
     g = g & 0xf0;
     b = b & 0xf0;
    
-    if((index > 4095) || (index < 0)) return;
+//    if((index > 4095) || (index < 0)) return;
+    index &= 0x0fff;
 #ifdef SDL_LIL_ENDIAN
 	ds =r | (g << 8) | (b << 16) | (a<<24);
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
-    rgbAnalogGDI[index] = ds;
+   // Prefetch to cache when writing, not temporally.
+#if defined(USE_SSE2) || defined(USE_MMX)
+   if(pCpuID != NULL){ 
+	if(pCpuID->use_sse2 || pCpuID->use_mmx) {
+	   __builtin_prefetch(&pal[index], 0, 0); // Prefetch palette table if u can.
+	}
+   }
+#endif   
+    pal[index] = ds;
 }
 
 static inline void putword2_vec(Uint32 *disp, volatile v8hi_t cbuf)
