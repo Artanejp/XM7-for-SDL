@@ -12,14 +12,12 @@
 
 extern v8hi_t lshift_6bit8v_SSE2(v8hi_t v);
 
-static inline void putword(Uint32 *disp, v8hi_t cx)
+static void putword(Uint32 *disp, v8hi_t cx)
 {
     v8hi_t *dst = (v8hi_t *)disp;
 //    v8hi_t src = cx;
 //    Uint32 *c;
 //    c = cx;
-
-	
     *dst = cx;
 //    src++;
 //    dst++;
@@ -39,7 +37,7 @@ static inline void putword(Uint32 *disp, v8hi_t cx)
 static v8hi_t gpixel2cbuf(Uint32 addr, Uint32 mpage)
 {
    Uint8 ret = 0;
-   v8hi_t v;
+   register v8hi_t v;
    register v8hi_t v1;
    Uint8 *vram_p = vram_pb;
    
@@ -59,8 +57,6 @@ static v8hi_t gpixel2cbuf(Uint32 addr, Uint32 mpage)
        r.v = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
        return r;
    }
-   
-
 }
 
 static v8hi_t rpixel2cbuf(Uint32 addr, Uint32 mpage)
@@ -102,7 +98,6 @@ static v8hi_t bpixel2cbuf(Uint32 addr, Uint32 mpage)
         v.b[2] = vram_p[addr + 0x06000]; 
         v.b[1] = vram_p[addr + 0x18000]; 
         v.b[0] = vram_p[addr + 0x1a000]; 
-        
 
         v1 = lshift_6bit8v_SSE2(v);
 //        v1.v <<= 16;
@@ -147,8 +142,8 @@ static v8hi_t getvram_256k(Uint32 addr, Uint32 mpage)
 void CreateVirtualVram256k_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage)
 {
     register v8hi_t c;
-    Uint8 *disp = (Uint8 *)p;
-    Uint32 addr;
+    register Uint8 *disp = (Uint8 *)p;
+    register Uint32 addr;
     pitch = sizeof(Uint32) * 8;
    
     addr = y * 40 + x;
@@ -196,14 +191,12 @@ void CreateVirtualVram256k_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpa
 
 void CreateVirtualVram256k_Line_SSE2(Uint32 *p, int ybegin, int yend, int mpage)
 {
-    v8hi_t c;
+    register v8hi_t c;
     register v8hi_t *disp;
-    Uint32 addr;
+    register Uint32 addr;
     int yy;
     int xx;
-    int pitch;
-
-    pitch = sizeof(Uint32) * 8;
+    const int pitch = sizeof(Uint32) * 8;
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
