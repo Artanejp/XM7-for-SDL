@@ -135,7 +135,7 @@ CFLAGS += -fopenmp
 endif
 
 CFLAGS += -flax-vector-conversions
-CFLAGS_DEBUG = -pg -g -O0 
+CFLAGS_DEBUG = -pg -g -O0
 CFLAGS_DEBUG += $(CFLAGS)
 
 CFLAGS_RELEASE = $(CFLAGS)
@@ -144,7 +144,7 @@ CFLAGS_RELEASE = $(CFLAGS)
 CXXFLAGS = -fpermissive 
 CXXFLAGS += $(CFLAGS) 
 
-CXXFLAGS_DEBUG = -pg -g -O0 
+CXXFLAGS_DEBUG = -pg -g -O0
 CXXFLAGS_DEBUG += $(CXXFLAGS)
 
 CXXFLAGS_RELEASE =  $(CXXFLAGS)
@@ -159,15 +159,15 @@ CXXFLAGS_RELEASE +=  -O1
 
 else
 
-CFLAGS_RELEASE += -pthread
+#CFLAGS_RELEASE += -pthread
 CFLAGS_RELEASE +=  -O3 -ftree-vectorize
 #CFLAGS_RELEASE +=  -O3
-#CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
+CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 
-CXXFLAGS_RELEASE += -pthread
+#CXXFLAGS_RELEASE += -pthread
 CXXFLAGS_RELEASE +=  -O3 -ftree-vectorize
 #CXXFLAGS_RELEASE +=  -O3
-#CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
+CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
 
 endif
 

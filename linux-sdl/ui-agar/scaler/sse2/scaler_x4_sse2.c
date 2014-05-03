@@ -207,6 +207,11 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    if(ww > (w / 4)) ww = w / 4;
    ww = ww - 7;
    if(ww <= 0) return;
+   if(yrep < 2) {
+      if(y >= h) return;
+   } else {
+      if(y >= (h / (yrep >> 1))) return;
+   }
    
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
@@ -235,14 +240,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    { // Not thinking align ;-(
 	
     int j;
-    v4hi b2;
-    v4hi b3;
-    v4hi b4;
-    v4hi b5;
-    v4hi b6;
-    v4hi b7;
-    v4hi b8;
-    v4hi b9;
+    register v4hi b2, b3, b4, b5, b6, b7, b8, b9;
     register v4hi bb;
     register v4hi bx0, bx1;
     v4hi *b2p;

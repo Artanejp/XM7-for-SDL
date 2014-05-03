@@ -148,6 +148,12 @@ void pVram2RGB_x1_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    
    ww = xend - xbegin;
    if(ww <= 0) return;
+   if(yrep < 2) {
+      if(y >= h) return;
+   } else {
+      if(y >= (h / (yrep >> 1))) return;
+   }
+   
    
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;

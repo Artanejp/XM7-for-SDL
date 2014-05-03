@@ -171,9 +171,16 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 
    ww = xend - xbegin;
    if(ww > (w / 2)) ww = w / 2;
-   ww = ww - 7;
+   ww = (ww / 8) * 8;
    if(ww <= 0) return;
-   
+
+   if(yrep < 2) {
+      if(y >= h) return;
+   } else {
+      if(y >= (h / (yrep >> 1))) return;
+   }
+
+
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
@@ -201,13 +208,13 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    { // Not thinking align ;-(
 	
     int j;
-    v4hi b2;
-    v4hi b3;
-    v4hi b4;
-    v4hi b5;
+    register v4hi b2, b3, b4, b5;
     register v4hi bb;
-    v4hi *b2p;
+    register v4hi *b2p;
     Uint32 *d0;
+    Uint32 dd;
+      
+    int wc;
       
     b = (v4hi *)d2;
     bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] = black;
@@ -217,15 +224,20 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	case 2:
 	  for(xx = 0; xx < ww; xx += 8) {
 	     b2p = (v4hi *)d1;
-	     b2.i[0] = b2.i[1] = b[0].i[0];
-	     b2.i[2] = b2.i[3] = b[0].i[1];
-	     b3.i[0] = b3.i[1] = b[0].i[2];
-	     b3.i[2] = b3.i[3] = b[0].i[3];
+	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
+	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0xfa);
 
-	     b4.i[0] = b4.i[1] = b[1].i[0];
-	     b4.i[2] = b4.i[3] = b[1].i[1];
-	     b5.i[0] = b5.i[1] = b[1].i[2];
-	     b5.i[2] = b5.i[3] = b[1].i[3];
+//	     b2.i[0] = b2.i[1] = b[0].i[0];
+//	     b2.i[2] = b2.i[3] = b[0].i[1];
+//	     b3.i[0] = b3.i[1] = b[0].i[2];
+//	     b3.i[2] = b3.i[3] = b[0].i[3];
+
+	     b4.vv = __builtin_ia32_pshufd(b[1].v, 0x50);
+	     b5.vv = __builtin_ia32_pshufd(b[1].v, 0xfa);
+//	     b4.i[0] = b4.i[1] = b[1].i[0];
+//	     b4.i[2] = b4.i[3] = b[1].i[1];
+//	     b5.i[0] = b5.i[1] = b[1].i[2];
+//	     b5.i[2] = b5.i[3] = b[1].i[3];
 	     b2p[0] = b2;
 	     b2p[1] = b3;
 	     b2p[2] = b4;
@@ -236,17 +248,22 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	  break;
 	default:
 	  d0 = d1;
+	  wc = 0;
 	  for(xx = 0; xx < ww; xx += 8){
+	     b2.v = __builtin_ia32_pshufd(b[0].v, 0x50);
+	     b3.v = __builtin_ia32_pshufd(b[0].v, 0xfa);
+	     b4.v = __builtin_ia32_pshufd(b[1].v, 0x50);
+	     b5.v = __builtin_ia32_pshufd(b[1].v, 0xfa);
 	     d1 = d0;
-	     b2.i[0] = b2.i[1] = b[0].i[0];
-	     b2.i[2] = b2.i[3] = b[0].i[1];
-	     b3.i[0] = b3.i[1] = b[0].i[2];
-	     b3.i[2] = b3.i[3] = b[0].i[3];
-	     
-	     b4.i[0] = b4.i[1] = b[1].i[0];
-	     b4.i[2] = b4.i[3] = b[1].i[1];
-	     b5.i[0] = b5.i[1] = b[1].i[2];
-	     b5.i[2] = b5.i[3] = b[1].i[3];
+//	     b2.i[0] = b2.i[1] = b[0].i[0];
+//	     b2.i[2] = b2.i[3] = b[0].i[1];
+//	     b3.i[0] = b3.i[1] = b[0].i[2];
+//	     b3.i[2] = b3.i[3] = b[0].i[3];
+//	     
+//	     b4.i[0] = b4.i[1] = b[1].i[0];
+//	     b4.i[2] = b4.i[3] = b[1].i[1];
+//	     b5.i[0] = b5.i[1] = b[1].i[2];
+//	     b5.i[2] = b5.i[3] = b[1].i[3];
 
 	     for(j = 0; j < (yrep >> 1); j++) {
 		b2p = (v4hi *)d1;
@@ -265,9 +282,9 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     }
 	     d0 += 16;
 	     b += 2;
+	     wc += 16;
 	  }
-
-	  break;
+       break;
        }
 
    }

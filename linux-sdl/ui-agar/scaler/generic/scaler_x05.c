@@ -163,6 +163,7 @@ void pVram2RGB_x05(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
       }
       return;
    }
+   
 
 
    pitch = Surface->pitch / sizeof(Uint32);
@@ -265,6 +266,7 @@ void pVram2RGB_x05(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 
 void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 {
+   v8hi_t *b;
    Uint32 *d1;
    Uint32 *d2;
    Uint32 *p;
@@ -281,11 +283,6 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    v4hi rmask2, gmask2, bmask2, amask2;
    Uint32 black;
    AG_Surface *Surface = GetDrawSurface();
-   Uint32 amask, rmask, gmask, bmask;
-   Uint32 bd1, bd2;
-   Uint32 r, g, b, a;
-   int yrep2;
-   int j;
     
    if(Surface == NULL) return;
    w = Surface->w;
@@ -335,12 +332,19 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	 d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
                         + y  * Surface->pitch);
       }
-
+      p = &src[xbegin + y * 640];
       if(yrep == 0) yrep = 1;
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
                         + y * (yrep >> 2) * Surface->pitch);
+      p = &src[xbegin + y * 640];
    }
+   if(((xbegin >>1) + 4) >= w) {
+	Uint32 amask, rmask, gmask, bmask;
+        Uint32 bd1, bd2;
+        Uint32 r, g, b, a;
+        int yrep2;
+        int j;
 
 #if AG_BIG_ENDIAN != 1
       amask = 0xff000000;
@@ -354,59 +358,76 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
       amask = 0x000000ff;
 #endif
       yrep2 = yrep >> 1;
-      
-      ww = w;
-      if(ww > ((xend - xbegin) >> 1)) ww = (xend - xbegin) >> 1;
-      if(yrep < 2) {
-	Uint32 r2, g2, b2;
-	
-        p = src;
-	yy2 = y;
-	   p = src;
-	   for(xx = 0; xx < ww; xx++) {
-	      bd1 = p[0];
-	      bd2 = p[1];
-	      r = (((bd1 & rmask) >> 1) + ((bd2 & rmask) >> 1)) & rmask;
-	      g = (((bd1 & gmask) >> 1) + ((bd2 & gmask) >> 1)) & gmask;
-	      b = (((bd1 & bmask) >> 1) + ((bd2 & bmask) >> 1)) & bmask;
-	      r = ((r >> 1) + (r2 >> 1)) & rmask;
-	      g = ((g >> 1) + (g2 >> 1)) & gmask;
-	      b = ((b >> 1) + (b2 >> 1)) & bmask;
-
-	      d2 = &d1[xx];
-	      *d2 = r | g | b | amask;
-	      d2++;
-	      p += 2;
-	   }
-
+      ww = (xend - xbegin) / 2;
+      if(ww > w) ww = w;
             
-      } else {
-//        ww = w - (x >> 1);
-        Uint32 pixel;
-	Uint32 r2, g2, b2;
-        p = src;
-	yy2 = y;
-	black = amask;
-	 for(xx = 0; xx < ww; xx++) {
-	      bd1 = p[0];
-	      bd2 = p[1];
-	      r = (((bd1 & rmask) >> 1) | ((bd2 & rmask) >> 1)) & rmask;
-	      g = (((bd1 & gmask) >> 1) | ((bd2 & gmask) >> 1)) & gmask;
-	      b = (((bd1 & bmask) >> 1) | ((bd2 & bmask) >> 1)) & bmask;
-	      pixel = r | g  | b | amask;
-	      d2 = &d1[xx];
-	      for(j = 0; j < yrep2; j++) {
-		 if(!bFullScan && (j >= (yrep >> 2))) {
-		    *d2 = black;
-		 } else {
-		    *d2 = pixel;
-		 }
-		 d2 += pitch;
-	      }
-	      p += 4;
-	   }
+      for(xx = 0; xx < ww; xx++) {
+	 bd1 = p[0];
+	 bd2 = p[1];
+	 r = (((bd1 & rmask) >> 1) + ((bd2 & rmask) >> 1)) & rmask;
+	 g = (((bd1 & gmask) >> 1) + ((bd2 & gmask) >> 1)) & gmask;
+	 b = (((bd1 & bmask) >> 1) + ((bd2 & bmask) >> 1)) & bmask;
+	 d2 = &d1[xx];
+//	 for(j = 0; j < yrep2; j++) {
+	    *d2 = r | g  | b | amask;
+//	    d2 += pitch;
+//	 }
+	 p += 2;
       }
+      return;
+   }
+   
+
+   pitch = Surface->pitch / sizeof(Uint32);
+     {
+      v4hi *pd;
+      v4hi cr, cg, cb, cd;
+      v8hi_t *b;
+      v8hi_t br,bg, bb;
+      Uint32 *d0;
+      int yrep2 = yrep >> 1;
+	
+      ww = (xend - xbegin) / 2;
+      if(ww > w) ww = w;
+      if(yrep2 <= 1) yrep2 = 1;
+      d0 = d1;
+      for(xx = 0; xx < ww; xx++) {
+	 d1 = d0;
+ 	 b = (v8hi_t *)p;
+	 br.v = b->v & rmask1.v;
+	 bg.v = b->v & gmask1.v;
+	 bb.v = b->v & bmask1.v;
+	 cr.i[0] = (br.i[0] >> 1) + (br.i[1] >> 1);
+	 cr.i[1] = (br.i[2] >> 1) + (br.i[3] >> 1);
+	 cr.i[2] = (br.i[4] >> 1) + (br.i[5] >> 1);
+	 cr.i[3] = (br.i[6] >> 1) + (br.i[7] >> 1);
+
+	 cb.i[0] = (bb.i[0] + bb.i[1]) >> 1;
+	 cb.i[1] = (bb.i[2] + bb.i[3]) >> 1;
+	 cb.i[2] = (bb.i[4] + bb.i[5]) >> 1;
+	 cb.i[3] = (bb.i[6] + bb.i[7]) >> 1;
+
+	 cg.i[0] = (bg.i[0] + bg.i[1]) >> 1;
+	 cg.i[1] = (bg.i[2] + bg.i[3]) >> 1;
+	 cg.i[2] = (bg.i[4] + bg.i[5]) >> 1;
+	 cg.i[3] = (bg.i[6] + bg.i[7]) >> 1;
+	 cr.v = cr.v & rmask2.v;
+	 cg.v = cg.v & gmask2.v;
+	 cb.v = cb.v & bmask2.v;
+	 cd.v = cr.v | cg.v | cb.v | amask2.v;
+//	 for(i = 0; i < yrep2; i++) {
+	    pd = (v4hi *)d1;
+	    *pd = cd;
+//	    d1 += pitch;
+//	 }
+	 d0 += 4;
+	 p += 8;
+      }
+   }
 }
+
+
+
 
 
 

@@ -699,10 +699,10 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
 	        if((w1 < 480) || (h1 < 150)){
 		   DrawFn = pVram2RGB_x05_Line;
 		} else {
-		   DrawFn = pVram2RGB_x1_Line_SSE2;
+		   DrawFn = pVram2RGB_x1_Line;
 		}
             } else {
-                DrawFn = pVram2RGB_x1_Line_SSE2;
+                DrawFn = pVram2RGB_x05_Line;
             }
             break;
 
@@ -902,11 +902,17 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       }
       DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
    }
-   tmp = h % hh;
-   yrep = (h << 1) / hh;
-   if(tmp > (hh >> 1)){
-      yrep++;
+   if(h > hh) {
+      tmp = h % hh;
+      yrep = (h << 1) / hh;
+      if(tmp > (hh >> 1)){
+	 yrep++;
+      }
+   } else {
+      yrep = 1;
    }
+   
+   
     if(Fn == NULL) return; 
     src = pVram2;
     LockVram();
@@ -920,13 +926,15 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	  my->forceredraw = 0;
        }
 
+#ifdef _OPENMP
+// #pragma omp for
+#endif
       for(yy = 0 ; yy < hh; yy++) {
 /*
 *  Virtual VRAM -> Real Surface:
 */
-	 if((yy * yrep + yrep - 1) > (h << 1)) break;  
 //	   if(bDirtyLine[yy]){
-	      DrawFn2(src, 0, ww, yy, yrep);
+	 DrawFn2(src, 0, ww, yy, yrep);
 //	      bDirtyLine[yy] = FALSE;
 //	   }
 //			if(yy >= h) continue;

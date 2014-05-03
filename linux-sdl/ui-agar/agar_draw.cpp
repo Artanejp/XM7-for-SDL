@@ -115,6 +115,7 @@ void ResizeWindow_Agar(int w, int h)
    
    AG_Driver *drv;
    if((w < 100) || (h < 100)) return;
+   if(DrawArea != NULL) return; // Temporally workaround.
 
    if(agDriverSw) {
       if(MainWindow == NULL) return;
@@ -170,8 +171,8 @@ void ResizeWindow_Agar(int w, int h)
       a.x = 0;
       a.y = 0;
       AG_ObjectLock(AGOBJECT(GLDrawArea));
-      AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
       AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, hh);
+      AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
       AG_GLViewSizeHint(GLDrawArea, w, hh);
       AG_ObjectUnlock(AGOBJECT(GLDrawArea));
    } else 
@@ -185,7 +186,7 @@ void ResizeWindow_Agar(int w, int h)
 
 	
 	AG_ObjectLock(AGOBJECT(DrawArea));
-//	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
+	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
 //	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
 //	if(DrawSurface != NULL) {
 	   //AG_SurfaceResize(DrawSurface, w, hh);
@@ -208,7 +209,7 @@ void ResizeWindow_Agar(int w, int h)
 void ResizeWindow_Agar2(int w, int h)
 {
    int hh = h;
-   int ww = w;
+   int ww = (w * 102) / 100;
    float hhh;
    AG_Driver *drv;
    
@@ -243,8 +244,8 @@ void ResizeWindow_Agar2(int w, int h)
       a.x = 0;
       a.y = 0;
       AG_ObjectLock(AGOBJECT(GLDrawArea));
-      AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
       AG_WidgetSetSize(AGWIDGET(GLDrawArea), w, h);
+      AG_WidgetSizeAlloc(AGWIDGET(GLDrawArea), &a);
       AG_GLViewSizeHint(GLDrawArea, w, h);
       AG_ObjectUnlock(AGOBJECT(GLDrawArea));
       } else 
@@ -261,9 +262,9 @@ void ResizeWindow_Agar2(int w, int h)
 //	}
 #if 1
 	AG_ObjectLock(AGOBJECT(DrawArea));
+	AG_WidgetSetSize(AGWIDGET(DrawArea), ww, h);
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-	AG_WidgetSetSize(AGWIDGET(DrawArea), w, h);
-	AG_ObjectUnlock(AGOBJECT(DrawArea));
+        AG_ObjectUnlock(AGOBJECT(DrawArea));
 //	AG_PixmapUpdateCurrentSurface(DrawArea);
 #else
       
@@ -272,12 +273,12 @@ void ResizeWindow_Agar2(int w, int h)
    hh = hh + 20; // Add Pad.
    if(DrawArea != NULL) {
 //	 LockVram();
-	 AG_ResizeDisplay(ww, hh);
-         if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+	 AG_ResizeDisplay((ww * 102)/ 100, (hh * 102) / 100);
+         if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, (ww * 102)/ 100, hh);
 //	 UnlockVram();
    } else {
-      AG_ResizeDisplay(ww, hh);
-      if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+      AG_ResizeDisplay((ww * 102)/ 100, (hh * 102) / 100);
+      if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, ww, hh);
    }
    AG_SetVideoResizeCallback(ResizeWindow_Agar);
    UnlockVram();

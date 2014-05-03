@@ -221,17 +221,17 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
      return (-1);
    
     AG_ObjectLock(my);
-    if((my->Surface->w != a->w) || (my->Surface->h != a->h)) {
+   if((my->Surface->w != a->w) || (my->Surface->h != a->h)) {
        AG_Rect r;
        AG_Color c;
-       if(my->Surface != NULL) {
-	  AG_SurfaceLock(my->Surface);
+      if(my->Surface != NULL) {
+//	  AG_SurfaceLock(my->Surface);
 	  if(AG_SurfaceResize(my->Surface, a->w, a->h) < 0) {
-	     AG_SurfaceUnlock(my->Surface);
+//	     AG_SurfaceUnlock(my->Surface);
 	     AG_ObjectUnlock(my);
 	     return (-1);
 	  }
-	  AG_SurfaceUnlock(my->Surface);
+//	  AG_SurfaceUnlock(my->Surface);
 //	  printf("XM7_SDLView::SizeAllocate() : Resized %dx%d pixels\n", a->w, a->h);
        } else {
 	  my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
