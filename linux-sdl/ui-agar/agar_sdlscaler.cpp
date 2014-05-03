@@ -981,8 +981,18 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
 #else
 		     DrawFn = pVram2RGB_x1_Line;
 #endif
+
 		  } else {
-		     DrawFn = pVram2RGB_x2_Line;
+#if defined(USE_SSE2)
+		     if((pCpuID != NULL) && (bUseSIMD == TRUE)){
+			DrawFn = pVram2RGB_x2_Line_SSE2;
+		     } else {
+#else
+		    {
+#endif
+		       DrawFn = pVram2RGB_x2_Line;
+		    }
+		     
 		  }
 	       } else {
 		  DrawFn = pVram2RGB_x1_Line;

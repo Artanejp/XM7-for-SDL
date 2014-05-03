@@ -127,7 +127,7 @@ void pVram2RGB_x1_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 
 void pVram2RGB_x1_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 {
-   register v4hi *b;
+   register v8hi_t *b;
    AG_Surface *Surface = GetDrawSurface();
    Uint32 *d1;
    Uint32 *d2;
@@ -175,46 +175,43 @@ void pVram2RGB_x1_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    { // Not thinking align ;-(
 	
     int j;
-    v4hi b2;
-    v4hi b3;
-    register v4hi bb;
-    v4hi *b2p;
+    v8hi_t b2;
+    register v8hi_t bb;
+    v8hi_t *b2p;
     Uint32 *d0;
       
-    b = (v4hi *)d2;
-    bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] = black;
-       switch(yrep) {
+    b = (v8hi_t *)d2;
+    
+    bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] =
+    bb.i[4] = bb.i[5] = bb.i[6] = bb.i[7] = black;
+      switch(yrep) {
 	case 0:
 	case 1:
 	case 2:
 	  for(xx = 0; xx < ww; xx += 8) {
-	     b2p = (v4hi *)d1;
-	     b2p[0] = b[0];
-	     b2p[1] = b[1];
+	     b2p = (v8hi_t *)d1;
+	     *b2p = *b;
 	     d1 += 8;
-	     b += 2;
+	     b++;
 	  }
 	  break;
 	default:
 	  d0 = d1;
 	  for(xx = 0; xx < ww; xx += 8){
 	     d1 = d0;
-	     b2 = b[0];
-	     b3 = b[1];
+	     b2 = *b;
 
 	     for(j = 0; j < (yrep >> 1); j++) {
-		b2p = (v4hi *)d1;
+		b2p = (v8hi_t *)d1;
 		if(!bFullScan && (j >= (yrep >> 2))) {
-		   b2p[0] = 
-		   b2p[1] = bb;
+		   *b2p = bb;
 		 } else {
-		   b2p[0] = b2;
-		   b2p[1] = b3;
+		   *b2p = b2;
 		}
 		d1 += pitch;
 	     }
 	     d0 += 8;
-	     b += 2;
+	     b++;
 	  }
 
 	  break;

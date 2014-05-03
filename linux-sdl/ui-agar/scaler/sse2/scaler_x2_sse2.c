@@ -165,7 +165,7 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    w = Surface->w;
    h = Surface->h;
    
-   ww = xend - xbegin;
+   ww = xend - xbegin - 1;
    if(ww <= 0) return;
    
 #if AG_BIG_ENDIAN != 1

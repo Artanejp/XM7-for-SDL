@@ -171,6 +171,7 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int xx;
    int hh;
    int ww;
+   int wodd;
    int i;
    int x = xbegin;
    unsigned  pitch;
@@ -180,22 +181,23 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    h = Surface->h;
    
    ww = xend - xbegin;
+   if((ww * 2) > w) ww = w / 2;
    if(ww <= 0) return;
-   
+   wodd = ww % 8;
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
    black = 0x000000ff;
 #endif
    if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) //+ xbegin * 2 * Surface->format->BytesPerPixel
                         + y * Surface->pitch);
-      d2 = &src[x + y * 640];
+      d2 = &src[xbegin + y * 640];
       yrep = 2;
    } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
+      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) //+ xbegin * 2 * Surface->format->BytesPerPixel
                         + y * (yrep >> 1) * Surface->pitch);
-      d2 = &src[x + y * 640];
+      d2 = &src[xbegin + y * 640];
    }
 
    if(h <= ((y + 8) * (yrep >> 1))) {
@@ -222,7 +224,9 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	case 0:
 	case 1:
 	case 2:
-	  for(xx = 0; xx < ww; xx += 8) {
+	  d0 = d1;
+	  for(xx = 0; xx < (ww - 1); xx += 8) {
+	     d1 = d0;
 	     b2p = (v4hi *)d1;
 	     b2.i[0] = b2.i[1] = b[0].i[0];
 	     b2.i[2] = b2.i[3] = b[0].i[1];
@@ -237,13 +241,22 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     b2p[1] = b3;
 	     b2p[2] = b4;
 	     b2p[3] = b5;
-	     d1 += 16;
+	     d0 += 16;
 	     b += 2;
+	  }
+	  if(wodd != 0) {
+	     Uint32 *bp = (Uint32 *)b;
+	     for(i = 0; i < wodd; i++) {
+		*d0 = *bp;
+		d0[1] = *bp;
+		d0++;
+		bp++;
+	     }
 	  }
 	  break;
 	default:
 	  d0 = d1;
-	  for(xx = 0; xx < ww; xx += 8){
+	  for(xx = 0; xx < (ww - 1); xx += 8){
 	     d1 = d0;
 	     b2.i[0] = b2.i[1] = b[0].i[0];
 	     b2.i[2] = b2.i[3] = b[0].i[1];
@@ -273,7 +286,17 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     d0 += 16;
 	     b += 2;
 	  }
-
+	  if(wodd != 0) {
+	     Uint32 *bp = (Uint32 *)b;
+	     for(i = 0; i < wodd; i++) {
+		*d0 = *bp;
+		d0[1] = *bp;
+		d0[pitch] = *bp;
+		d0[pitch + 1] = *bp;
+		d0++;
+		bp++;
+	     }
+	  }
 	  break;
        }
 
