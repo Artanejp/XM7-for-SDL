@@ -340,10 +340,12 @@ static void OnChangeScreenReso(AG_Event *event)
 	localconfig.uWidth = ScreenSizeWidth[number];
 	localconfig.uHeight = ScreenSizeHeight[number];
         
+        AG_SetVideoResizeCallback(NULL);
 	ResizeWindow_Agar2(ScreenSizeWidth[number], ScreenSizeHeight[number]);
 	if(localconfig.nDrawFPS <= 1) {
 		localconfig.nDrawFPS = 2;
 	}
+        AG_SetVideoResizeCallback(ResizeWindow_Agar);
 }
 
 static void OnChangeScreenAspect(AG_Event *event)
@@ -372,7 +374,9 @@ static void OnChangeScreenAspect(AG_Event *event)
 		}
 		break;
 	}
+        AG_SetVideoResizeCallback(NULL);
 	ResizeWindow_Agar2(localconfig.uWidth, localconfig.uHeight);
+        AG_SetVideoResizeCallback(ResizeWindow_Agar);
 }
 
 static void RenderMethodSelected(AG_Event *event)

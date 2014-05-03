@@ -33,6 +33,7 @@ void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
    Uint32 black;
 
    if(Surface == NULL) return;
+   AG_SurfaceLock(Surface);
    w = Surface->w;
    h = Surface->h;
    
@@ -177,6 +178,7 @@ void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 	break;
        }
    }
+   AG_SurfaceUnlock(Surface);
 }
 
 void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
@@ -197,6 +199,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    unsigned  pitch;
    Uint32 black;
    if(Surface == NULL) return;
+   AG_SurfaceLock(Surface);
    w = Surface->w;
    h = Surface->h;
    
@@ -322,8 +325,8 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	  }
 	  break;
        }
-
    }
+   AG_SurfaceUnlock(Surface);
 }
 
 

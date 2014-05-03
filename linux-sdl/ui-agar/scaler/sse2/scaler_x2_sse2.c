@@ -36,6 +36,7 @@ void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
    if(Surface == NULL) return;
    w = Surface->w;
    h = Surface->h;
+   AG_SurfaceLock(Surface);
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
@@ -142,6 +143,7 @@ void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
        }
 
    }
+   AG_SurfaceUnlock(Surface);
 }
 
 void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
@@ -162,10 +164,14 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    unsigned  pitch;
    Uint32 black;
    if(Surface == NULL) return;
+   AG_SurfaceLock(Surface);
    w = Surface->w;
    h = Surface->h;
-   
-   ww = xend - xbegin - 1;
+
+
+   ww = xend - xbegin;
+   if(ww > (w / 2)) ww = w / 2;
+   ww = ww - 7;
    if(ww <= 0) return;
    
 #if AG_BIG_ENDIAN != 1
@@ -265,6 +271,7 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
        }
 
    }
+   AG_SurfaceUnlock(Surface);
 }
 
 

@@ -133,8 +133,8 @@ void ResizeWindow_Agar(int w, int h)
    ww = w;
 
    LockVram();
-   if(MainWindow) {
-      AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
+   if(MainWindow){
+//      AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
       hh = AGWIDGET(MainWindow)->h - 20;
       ww = AGWIDGET(MainWindow)->w;
    } else {
@@ -183,13 +183,13 @@ void ResizeWindow_Agar(int w, int h)
 	a.x = 0;
 	a.y = 0;
 
-//	if(DrawSurface != NULL) {
-//	   AG_SurfaceResize(DrawSurface, w, hh);
-//	}
 	
 	AG_ObjectLock(AGOBJECT(DrawArea));
-	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
+//	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
+//	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
+//	if(DrawSurface != NULL) {
+	   //AG_SurfaceResize(DrawSurface, w, hh);
+//	}
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
      }
    
@@ -217,6 +217,8 @@ void ResizeWindow_Agar2(int w, int h)
    bManualScaled = TRUE;
    nDrawWidth = w;
    nDrawHeight = h;
+   LockVram();
+   AG_SetVideoResizeCallback(NULL);
    if(MenuBar != NULL) {
       AG_MenuSetPadding(MenuBar, 0 , 0, 0, 0);
       AG_WidgetEnable(AGWIDGET(MenuBar));
@@ -254,7 +256,6 @@ void ResizeWindow_Agar2(int w, int h)
 	a.x = 0;
 	a.y = 0;
 
-        LockVram();
 //	if(DrawSurface != NULL) {
 //	   AG_SurfaceResize(DrawSurface, w, h);
 //	}
@@ -267,18 +268,19 @@ void ResizeWindow_Agar2(int w, int h)
 #else
       
 #endif
-        UnlockVram();
       }
    hh = hh + 20; // Add Pad.
    if(DrawArea != NULL) {
-	 LockVram();
-	 //AG_ResizeDisplay(ww, hh);
-	 UnlockVram();
+//	 LockVram();
+	 AG_ResizeDisplay(ww, hh);
+         if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
+//	 UnlockVram();
    } else {
       AG_ResizeDisplay(ww, hh);
       if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
    }
-  
+   AG_SetVideoResizeCallback(ResizeWindow_Agar);
+   UnlockVram();
    printf("Resize2 to %d x %d\n", w, h);
 }
 
