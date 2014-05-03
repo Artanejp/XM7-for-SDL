@@ -196,7 +196,9 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    w = Surface->w;
    h = Surface->h;
    
-   ww = xend - xbegin - 1;
+   ww = xend - xbegin;
+   if((ww * 4) >= w) ww = w / 4;
+   ww = ww - 7;
    if(ww <= 0) return;
    
 #if AG_BIG_ENDIAN != 1
@@ -236,6 +238,7 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
     register v4hi bb;
     v4hi *b2p;
     Uint32 *d0;
+    Uint32 dd;
       
     b = (v4hi *)d2;
     bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] = black;
@@ -265,6 +268,17 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     b2p[7] = b9;
 	     d1 += 32;
 	     b += 2;
+	  }
+	  if((ww % 8) != 0){
+	     j = 0;
+	     d0 = (Uint32 *)b;
+	     b2p = (v4hi *)d1;
+	     for(j = 0;j < (ww % 8); j++) {
+		b2.i[0] = b2.i[1] = b2.i[3] = b2.i[4] = *d0;
+		*b2p = b2;
+		d0++;
+		b2p++;
+	     }
 	  }
 	  break;
 	default:
@@ -308,7 +322,25 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     d0 += 32;
 	     b += 2;
 	  }
-
+	  if((ww % 8) != 0){
+	     d2 = (Uint32 *)b;
+	     d0 = d1;
+	     for(j = 0;j < (ww % 8); j++) {
+		d1 = d0;
+		b2.i[0] = b2.i[1] = b2.i[3] = b2.i[4] = *d2;
+		for(i = 0; i < (yrep >> 1); i++) {
+		   b2p = (v4hi *)d1;
+		   if(!bFullScan && (j > (yrep >> 2))) {
+		      *b2p = bb;
+		   } else {
+		      *b2p = b2;
+		   }
+		   d1 += pitch;
+		}
+		d0 += 4;
+		d2++;
+	     }
+	  }
 	  break;
        }
 

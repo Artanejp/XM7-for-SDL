@@ -94,7 +94,7 @@ void DetachDrawArea(void)
 {
     if(CheckVramSemaphore) DetachVramSemaphore();
     if(DrawArea != NULL) AG_ObjectDetach(DrawArea);
-    if(DrawSurface != NULL) AG_SurfaceFree(DrawSurface);
+//    if(DrawSurface != NULL) AG_SurfaceFree(DrawSurface);
 }
 
 
@@ -255,9 +255,9 @@ void ResizeWindow_Agar2(int w, int h)
 	a.y = 0;
 
         LockVram();
-	if(DrawSurface != NULL) {
-	   AG_SurfaceResize(DrawSurface, w, h);
-	}
+//	if(DrawSurface != NULL) {
+//	   AG_SurfaceResize(DrawSurface, w, h);
+//	}
 #if 1
 	AG_ObjectLock(AGOBJECT(DrawArea));
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
@@ -270,13 +270,13 @@ void ResizeWindow_Agar2(int w, int h)
         UnlockVram();
       }
    hh = hh + 20; // Add Pad.
-   if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
    if(DrawArea != NULL) {
-//	 LockVram();
-//	 AG_ResizeDisplay(ww, hh);
-//	 UnlockVram();
+	 LockVram();
+	 //AG_ResizeDisplay(ww, hh);
+	 UnlockVram();
    } else {
       AG_ResizeDisplay(ww, hh);
+      if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, w, hh);
    }
   
    printf("Resize2 to %d x %d\n", w, h);

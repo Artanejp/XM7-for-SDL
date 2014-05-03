@@ -124,7 +124,7 @@ void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 	     *(b2p++) = b8;
 	     *b2p = b9;	
 	     d1 += pitch;
-	  }
+	     }
 	  break;
 	default:
 	  for(yy = 0; yy < hh; yy++){
@@ -200,7 +200,9 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    w = Surface->w;
    h = Surface->h;
    
-   ww = xend - xbegin - 1;
+   ww = xend - xbegin;
+   if(ww > (w / 4)) ww = w / 4;
+   ww = ww - 7;
    if(ww <= 0) return;
    
 #if AG_BIG_ENDIAN != 1
@@ -294,7 +296,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     
 	     for(j = 0; j < (yrep >> 1); j++) {
 		b2p = (v4hi *)d1;
-		if(!bFullScan && (j > (yrep >> 2))) {
+		if(!bFullScan && (j >= (yrep >> 2))) {
 		   b2p[0] = 
 		   b2p[1] = 
 		   b2p[2] = 
@@ -318,7 +320,6 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     d0 += 32;
 	     b += 2;
 	  }
-
 	  break;
        }
 

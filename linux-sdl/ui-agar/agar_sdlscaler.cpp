@@ -924,6 +924,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 /*
 *  Virtual VRAM -> Real Surface:
 */
+	 if((yy * yrep + yrep - 1) > (h << 1)) break;  
 //	   if(bDirtyLine[yy]){
 	      DrawFn2(src, 0, ww, yy, yrep);
 //	      bDirtyLine[yy] = FALSE;
