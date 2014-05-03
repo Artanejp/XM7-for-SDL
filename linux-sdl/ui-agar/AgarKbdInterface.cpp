@@ -10,7 +10,7 @@
 #include "agar_draw.h"
 
 AgarKbdInterface::AgarKbdInterface() {
-	// TODO Auto-generated constructor stub
+   // TODO Auto-generated constructor stub
     AG_MutexInit(&mutex);
 	InitLocalVar();
 	InitKeyTable();

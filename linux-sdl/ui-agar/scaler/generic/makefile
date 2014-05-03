@@ -10,6 +10,7 @@ include ../../../common.mak
 DPATH = $(realpath ../../..)
 
 COMMONSRC = \
+	scaler_x05.c \
 	scaler_x1.c \
 	scaler_x2.c \
 	scaler_x4.c
