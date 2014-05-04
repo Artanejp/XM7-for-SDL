@@ -195,7 +195,7 @@ static void SizeRequest(void *p, AG_SizeReq *r)
        * AGWIDGET_SURFACE() macro returns the AG_Surface given a
        * Widget surface handle.
        */
-      r->w = AGWIDGET_SURFACE(my,my->mySurface)->w;
+      r->w = (AGWIDGET_SURFACE(my,my->mySurface)->w / 8) * 8; // Set boundary as 32(bytes) = 8(dwords) : 256bit.
       r->h = AGWIDGET_SURFACE(my,my->mySurface)->h;
       if(my->Surface != NULL) AG_SurfaceResize(my->Surface, r->w, r->h);
    }
