@@ -167,7 +167,7 @@ CFLAGS_RELEASE +=  -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 #CXXFLAGS_RELEASE += -pthread
 CXXFLAGS_RELEASE +=  -O3 -ftree-vectorize
 #CXXFLAGS_RELEASE +=  -O3
-CXXFLAGS_RELEASE += -fprefetch-loop-arrays -fbranch-probabilities
+CXXFLAGS_RELEASE += -floop-block -fprefetch-loop-arrays -fbranch-probabilities
 
 endif
 
