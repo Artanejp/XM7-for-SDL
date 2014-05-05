@@ -30,6 +30,7 @@ typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
 typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(32)));
 typedef int32_t v2ii __attribute__ ((__vector_size__(8), aligned(8)));
 typedef int32_t v4ii __attribute__ ((__vector_size__(16), aligned(16)));
+typedef uint32_t v4ui __attribute__ ((__vector_size__(16), aligned(16)));
 typedef int32_t v8ii __attribute__ ((__vector_size__(32), aligned(32)));
 typedef uint32_t v8ui __attribute__ ((__vector_size__(32), aligned(32)));
 
@@ -49,7 +50,7 @@ typedef union
 {
         v4si v;
         v4ii vv;
-
+        v4ui uv;
         uint32_t i[4];
         uint16_t s[8];
         uint8_t    b[16];
