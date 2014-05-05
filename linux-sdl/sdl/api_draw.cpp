@@ -75,7 +75,7 @@ extern "C" {
    BOOL bRasterRendering;						/* ラスタレンダリングフラグ */
    Api_Vram_FuncList *pVirtualVramBuilder;
    BOOL bDirtyLine[400];				/* 要書き換えフラグ */
-
+   BOOL bDrawLine[400]; /* ラスタ時、書き替え指示するフラグ */
    extern struct  XM7_CPUID *pCpuID;
 }
    SDL_semaphore *DrawInitSem;
@@ -290,6 +290,7 @@ void	InitDraw(void)
                 bRasterRendering = FALSE;
                 bNextFrameRender = FALSE;
                 memset(bDirtyLine, 0, sizeof(bDirtyLine));
+                memset(bDrawLine, 0, sizeof(bDrawLine));
 		SetDrawFlag(FALSE);
 		nDrawTick1D = 0;
 		nDrawTick1E = 0;
@@ -1027,7 +1028,7 @@ void 	display_notify(void)
    bPaletFlag = TRUE;
    if (nRenderMethod == RENDERING_RASTER) {
 	bNextFrameRender = TRUE;
-	SetDirtyFlag(0, 400, TRUE);
+//	SetDirtyFlag(0, 400, TRUE);
         if(bPaletFlag) {
 	   Palet640();
 	   Palet320();
@@ -1096,7 +1097,6 @@ void FASTCALL vblankperiod_notify(void)
 	   for(y = 0; y < ymax; y++) {
 	      if (bDirtyLine[y]) {
 		 Draw_1Line(y);
-		 bDirtyLine[y] = FALSE;
 	      }
 	   }
 		}
@@ -1117,7 +1117,6 @@ void FASTCALL hblank_notify(void)
 	   if(now_raster >= 400) return;
 	   if (bDirtyLine[now_raster]) {
 	           Draw_1Line(now_raster);
-		   bDirtyLine[now_raster] = FALSE;
 		}
 //	   UnlockVram();
 	}
@@ -1517,6 +1516,7 @@ void Draw_1Line(int line)
    int bottom;
    pp = pVram2;
 
+   bDirtyLine[line] = FALSE;
    if(pp == NULL) return;
    if(bPaletFlag) {
 	Palet320();
@@ -1581,6 +1581,8 @@ void Draw_1Line(int line)
 	 BuildVirtualVram_Raster(pp,  line,  multi_page);
 	 //UnlockVram();
     }
+
+   bDrawLine[line] = TRUE;
    return;
 }
    

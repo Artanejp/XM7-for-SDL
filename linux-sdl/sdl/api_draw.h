@@ -66,6 +66,8 @@ extern int  RootVideoWidth; /* ルートウィンドウ最高幅 */
 extern int  RootVideoHeight; /* ルートウィンドウ最高高さ */
 
 extern BOOL bDirtyLine[400];				/* 要書き換えフラグ */
+extern BOOL bDrawLine[400]; /* ラスタ時、書き替え指示するフラグ */
+
 extern DWORD   rgbTTLGDI[16];	/* デジタルパレット */
 extern DWORD   rgbAnalogGDI[4096];	/* アナログパレット */
 extern struct DrawPieces SDLDrawFlag; /* 書き替えフラグ */

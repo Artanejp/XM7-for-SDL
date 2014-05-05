@@ -699,10 +699,10 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
 	        if((w1 < 480) || (h1 < 150)){
 		   DrawFn = pVram2RGB_x05_Line;
 		} else {
-		   DrawFn = pVram2RGB_x1_Line;
+		   DrawFn = pVram2RGB_x1_Line_SSE2;
 		}
             } else {
-                DrawFn = pVram2RGB_x05_Line;
+                DrawFn = pVram2RGB_x1_Line_SSE2;
             }
             break;
 
@@ -892,7 +892,6 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       if(Fn != NULL) {
 	   DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
       }
-      
    } else { // Block
       if(Fn == NULL){
         Fn = XM7_SDLViewSelectScaler(ww , hh, w, h);
@@ -919,25 +918,24 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
     AG_ObjectLock(AGOBJECT(my));
 
    if(nRenderMethod == RENDERING_RASTER) {
-       if(my->forceredraw != 0){
+      if(my->forceredraw != 0){
 	  for(yy = 0; yy < hh; yy++) {
-	     //                bDirtyLine[yy] = TRUE;
+	     bDrawLine[yy] = TRUE;
 	  }
 	  my->forceredraw = 0;
        }
 
 #ifdef _OPENMP
-// #pragma omp for
+ #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src)
 #endif
       for(yy = 0 ; yy < hh; yy++) {
 /*
 *  Virtual VRAM -> Real Surface:
 */
-//	   if(bDirtyLine[yy]){
-	 DrawFn2(src, 0, ww, yy, yrep);
-//	      bDirtyLine[yy] = FALSE;
-//	   }
-//			if(yy >= h) continue;
+	 if(bDrawLine[yy] == TRUE){
+	    DrawFn2(src, 0, ww, yy, yrep);
+	    bDrawLine[yy] = FALSE;
+	 }
       }
       // BREAK.
       goto _end1;
