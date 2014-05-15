@@ -21,7 +21,7 @@ static inline void putword2_vec(Uint32 *disp, v8hi_t cbuf)
    v8hi_t r1;
    register int j;
    
-   __builtin_prefetch(dst, 0, 0);
+   __builtin_prefetch(dst, 0, 2);
    for(j = 0; j < 8; j++) dst->i[j] = rgbAnalogGDI[cbuf.i[j]];
 }
 

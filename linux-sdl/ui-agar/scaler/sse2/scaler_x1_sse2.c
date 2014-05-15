@@ -254,7 +254,7 @@ void pVram2RGB_x1_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    }
 
    pitch = Surface->pitch / sizeof(Uint32);
-   for(i = 0; i < ww; i++) __builtin_prefetch(&d2[i], 1, 0);
+   for(i = 0; i < ww; i++) __builtin_prefetch(&d2[i], 1, 1);
    
    Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep >> 1, yrep, Surface->pitch);
    AG_SurfaceUnlock(Surface);

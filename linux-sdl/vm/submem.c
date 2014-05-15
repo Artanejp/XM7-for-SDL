@@ -107,10 +107,22 @@ BOOL FASTCALL submem_init(void)
 	 */
 #if XM7_VER >= 3
 	vram_c = (BYTE *) malloc(0x30000);
+        {
+	   int i;
+	   for(i = 0; i < 0x30000; i++) __builtin_prefetch(&vram_c[i], 1, 0);
+	}
 #elif XM7_VER >= 2
 	vram_c = (BYTE *) malloc(0x18000);
+        {
+	   int i;
+	   for(i = 0; i < 0x18000; i++) __builtin_prefetch(&vram_c[i], 1, 0);
+	}
 #else
 	vram_c = (BYTE *) malloc(0xc000);
+        {
+	   int i;
+	   for(i = 0; i < 0xc000; i++) __builtin_prefetch(&vram_c[i], 1, 0);
+	}
 #endif
 	if (vram_c == NULL) {
 		return FALSE;
