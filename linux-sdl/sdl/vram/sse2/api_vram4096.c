@@ -9,9 +9,9 @@
 #include "api_draw.h"
 #include "api_vram.h"
 
-Uint8 *vram_pb;
-Uint8 *vram_pr;
-Uint8 *vram_pg;
+//Uint8 *vram_pb;
+//Uint8 *vram_pr;
+//Uint8 *vram_pg;
 
 
 
