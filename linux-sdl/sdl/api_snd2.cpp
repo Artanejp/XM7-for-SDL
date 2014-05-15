@@ -374,6 +374,7 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
    int blen = len;
    int len2 = 0;
    int channels = 2;
+   int i;
    Uint8 *p = (Uint8 *)pSoundBuf;
    Uint8 *s = stream;
    
