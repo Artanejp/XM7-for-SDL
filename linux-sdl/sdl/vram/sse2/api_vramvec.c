@@ -25,6 +25,7 @@ v8hi_t lshift_6bit8v_SSE2(v8hi_t v)
    register v8hi_t mask;
    v8hi_t ret;
    mask.v = (v8si){0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8};
+ 
    cbuf.v =
         aPlanes[B2 + v.b[0]] |
         aPlanes[B3 + v.b[1]] |

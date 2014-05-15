@@ -21,7 +21,7 @@ static inline void putword2_vec(Uint32 *disp, v8hi_t cbuf)
    v8hi_t r1;
    register int j;
    
-   __builtin_prefetch(dst, 0, 2);
+   __builtin_prefetch(dst, 1, 2);
    for(j = 0; j < 8; j++) dst->i[j] = rgbAnalogGDI[cbuf.i[j]];
 }
 
@@ -80,7 +80,7 @@ void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mod
     Uint32 addr;
     register int i;
 
-   for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 1, 0);
+   for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 0, 0);
     pitch = sizeof(Uint32) * 8;
     addr = y * 40 + x;
     // Loop廃止(高速化)
@@ -159,7 +159,7 @@ void CreateVirtualVram4096_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
     const int pitch = sizeof(Uint32) * 8;
     int i;
 
-    for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 1, 0);
+    for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 0, 0);
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};

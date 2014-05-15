@@ -44,7 +44,7 @@ static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 //   if(disp == NULL) return;
 
    c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
-   __builtin_prefetch(p, 0, 2);
+   __builtin_prefetch(p, 1, 2);
    // recommand -finline-loop
    for(j = 0; j < 8; j++) {
       p->i[j] = pal[c.i[j]]; // Converting via palette.
@@ -125,7 +125,7 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
     register int i;
 
     if((p == NULL) || (pal == NULL)) return;
-    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 1, 0); // パレットテーブルをキャッシュに読み込ませておく
+    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
     pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
     // Loop廃止(高速化)
@@ -258,7 +258,7 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
     register int i;
    
     if((p == NULL) || (pal == NULL)) return;
-    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 1, 0); // パレットテーブルをキャッシュに読み込ませておく
+    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};

@@ -18,6 +18,7 @@ static void putword(Uint32 *disp, v8hi_t cx)
 //    v8hi_t src = cx;
 //    Uint32 *c;
 //    c = cx;
+    __builtin_prefetch(dst, 1, 2);
     *dst = cx;
 //    src++;
 //    dst++;
@@ -116,7 +117,7 @@ static v8hi_t getvram_256k(Uint32 addr, Uint32 mpage)
 {
    register v8hi_t r, g, b;
    v8hi_t a;
-   v8hi_t dst;
+   register v8hi_t dst;
    /*
      * R,G,Bについて8bit単位で描画する。
      * 高速化…キャッシュヒット率の向上を考慮して、
