@@ -25,7 +25,7 @@ static inline Sint16 _clamp(Sint32 b)
    if(dst == NULL) return 0;
 //   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL) || (wavsrc == NULL)) return 0;
    if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
-   
+
    len1 = samples / 8;
    len2 = samples % 8;
 #if (__GNUC__ >= 4)

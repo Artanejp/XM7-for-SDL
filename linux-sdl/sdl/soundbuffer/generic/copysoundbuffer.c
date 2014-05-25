@@ -37,57 +37,31 @@ int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc,
  if(pCpuID != NULL) {
  #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
-	return AddSoundBuffer_SSE2(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
-  }
+        if((((uint64_t)opnsrc % 16) == 0) && (((uint64_t)beepsrc % 16) == 0) && (((uint64_t)cmtsrc % 16) == 0) && (((uint64_t)dst % 16) == 0)) {
+	   return AddSoundBuffer_SSE2(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
+	}
+       
+     }
  #endif
  #if defined(USE_MMX)
    if(pCpuID->use_mmx) {
-      return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
+        if((((uint64_t)opnsrc % 8) == 0) && (((uint64_t)beepsrc % 8) == 0) && (((uint64_t)cmtsrc % 8) == 0) && (((uint64_t)dst % 8) == 0)) {
+	   return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
+	}
    }
  #endif
  }
    
-   
-   len1 = samples / 8;
-   len2 = samples % 8;
-#if (__GNUC__ >= 4)
-    v8hi_t tmp2;
-    v4hi tmp3;
-    v4hi *l;
-    v8hi_t *opn  = (v8hi_t *)opnsrc;
-    v4hi *beep = (v4hi *)beepsrc;
-    v4hi *cmt  = (v4hi *)cmtsrc;
-    v4hi *wav  = (v4hi *)wavsrc;
-    v4hi *p    = (v4hi *)dst;
-   for(i = 0; i < len1; i++) {
-        tmp2 = *opn++;
-        tmp3.ss[0] =_clamp(tmp2.si[0]);
-        tmp3.ss[1] =_clamp(tmp2.si[1]);
-        tmp3.ss[2] =_clamp(tmp2.si[2]);
-        tmp3.ss[3] =_clamp(tmp2.si[3]);
-        tmp3.ss[4] =_clamp(tmp2.si[4]);
-        tmp3.ss[5] =_clamp(tmp2.si[5]);
-        tmp3.ss[6] =_clamp(tmp2.si[6]);
-        tmp3.ss[7] =_clamp(tmp2.si[7]);
-        tmp3.v = tmp3.v + beep->v;
-        beep++;
-        tmp3.v = tmp3.v + cmt->v;
-        cmt++;
-//        tmp3.v = tmp3.v + wav->v;
-//        wav++;
-        p->v = tmp3.v;
-        p++;
-   }
-#endif   
-   if(len2 <= 0) return len1 * 8;
+   len1 = 0;
+   len2 = samples;
    {
       Sint32 tmp4;
       Sint16 tmp5;
-      Sint32 *opn2 = (Sint32 *)opn;
-      Sint16 *beep2 = (Sint16 *)beep;
-      Sint16 *cmt2 = (Sint16 *)cmt;
-      Sint16 *wav2 = (Sint16 *)wav;
-      Sint16 *dst2 = (Sint16 *)p;
+      Sint32 *opn2 = (Sint32 *)opnsrc;
+      Sint16 *beep2 = (Sint16 *)beepsrc;
+      Sint16 *cmt2 = (Sint16 *)cmtsrc;
+      Sint16 *wav2 = (Sint16 *)wavsrc;
+      Sint16 *dst2 = (Sint16 *)dst;
       for (i = 0; i < len2; i++) {
 	 tmp4 = *opn2++;
 	 tmp5 = _clamp(tmp4);
@@ -97,7 +71,7 @@ int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc,
 	 *dst2++ = tmp5;
       }
    }
-   return len2 + len1 * 8;
+   return len2;
 }
 
 

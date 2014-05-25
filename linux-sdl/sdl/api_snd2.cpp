@@ -313,10 +313,8 @@ static void CloseSnd(void)
 {
    int i;
 	if(bSndEnable) {
-//	   Mix_CloseAudio();
-//	   if(applySem) {
-//	      SDL_SemWait(applySem);
-//	   }
+	   bSndExit = TRUE;
+	   SDL_PauseAudio(1);
 	   SDL_CloseAudio();
 		/*
 		 * もしもWAV取り込んでいたら、強制終了
@@ -465,6 +463,7 @@ BOOL SelectSnd(void)
         nSndDataLen = 0;
 	nSampleRate = sAudioSpec.freq;
 	uRate = sAudioSpec.freq;
+	nSampleRate = uRate;
 //	uTick = ((sAudioSpec.samples * 1000) / uRate) * 2;
 	uTick = nSoundBuffer;
      }
@@ -563,11 +562,16 @@ BOOL SelectSnd(void)
 	   }
 	   
 	}
-        nSndPos = 0;
-        nSndBeforePos = 0;
-        nSamples = 0;
         dwSoundTotal = 0;
         nLastTime = dwSoundTotal;
+        nSndPos = 0;
+        nSndBeforePos = 0;
+        nSndWritePos = 0;
+        nSndDevWritePos = 0;
+        nSndDataLen = 0;
+        nSamples = 0;
+        dwSndCount = 0;
+        nSndBank = 0;
 	return TRUE;
 }
 
