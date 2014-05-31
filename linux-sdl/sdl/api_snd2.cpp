@@ -409,7 +409,7 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
 	   }
 	} else {
 	   len2 = 0;
-	   SDL_Delay(uTick / 16);
+	   SDL_Delay(uTick / 32);
 //	   break;
 	}
         nSndWritePos += len2;
@@ -459,7 +459,7 @@ BOOL SelectSnd(void)
 	desired.freq = nSampleRate;
 	desired.format = AUDIO_S16SYS;
 	desired.channels = channels;
-	desired.samples = (nSoundBuffer * nSampleRate) / 2000; // Add overrun buffer
+	desired.samples = ((nSoundBuffer + 20) * nSampleRate) / 2000; // Add overrun buffer
 //	desired.samples = 512;
 	desired.callback = AudioCallbackSDL;
 	SDL_OpenAudio(&desired, &sAudioSpec);

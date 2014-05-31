@@ -38,6 +38,7 @@
 #include "api_vram.h"
 #include "api_draw.h"
 //#include "api_scaler.h"
+#include "cache_wrapper.h"
 
 /*
  *  グローバル ワーク
@@ -256,8 +257,11 @@ void	InitDraw(void)
 #endif				/*  */
 		bNowBPP = 24;
                 pVirtualVramBuilder = NULL;
+                _prefetch_data_write_permanent(&rgbTTLGDI, sizeof(rgbTTLGDI));
                 memset(rgbTTLGDI, 0, sizeof(rgbTTLGDI));
+                _prefetch_data_write_permanent(&rgbAnalogGDI, sizeof(rgbAnalogGDI));
 		memset(rgbAnalogGDI, 0, sizeof(rgbAnalogGDI));
+                _prefetch_data_write_permanent(&SDLDrawFlag, sizeof(SDLDrawFlag));
 		memset((void *)&SDLDrawFlag, 0, sizeof(SDLDrawFlag));
    
 		nDrawTop = 0;
@@ -289,7 +293,9 @@ void	InitDraw(void)
 #endif
                 bRasterRendering = FALSE;
                 bNextFrameRender = FALSE;
+                _prefetch_data_write_permanent(bDirtyLine, sizeof(bDirtyLine));
                 memset(bDirtyLine, 0, sizeof(bDirtyLine));
+                _prefetch_data_write_permanent(bDrawLine, sizeof(bDrawLine));
                 memset(bDrawLine, 0, sizeof(bDrawLine));
 		SetDrawFlag(FALSE);
 		nDrawTick1D = 0;
