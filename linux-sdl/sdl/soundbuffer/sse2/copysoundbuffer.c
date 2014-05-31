@@ -5,6 +5,7 @@
 #include "xm7_types.h"
 #include "xm7.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern struct XM7_CPUID *pCpuID;
 extern void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size);
@@ -37,6 +38,10 @@ static inline Sint16 _clamp(Sint32 b)
     v4hi *cmt  = (v4hi *)cmtsrc;
     v4hi *wav  = (v4hi *)wavsrc;
     v4hi *p    = (v4hi *)dst;
+   _prefetch_data_write_l1(p, sizeof(v4hi) * len1 + sizeof(Sint16) * len2);
+   _prefetch_data_read_l2(beep, sizeof(Sint16) * samples);
+   _prefetch_data_read_l2(cmt, sizeof(Sint16) * samples);
+//   _prefetch_data_read_l2(wav, sizeof(Sint16) * samples);
    for(i = 0; i < len1; i++) {
         t1 = *opn;
         opn++;
@@ -50,7 +55,6 @@ static inline Sint16 _clamp(Sint32 b)
         cmt++;
 //      wav++;
         p->vv = tt.vv;
-        __builtin_prefetch(p, 1, 1);
         p++;
    }
 #endif   
@@ -69,7 +73,6 @@ static inline Sint16 _clamp(Sint32 b)
 	 tmp5 = tmp5 + *beep2++;
 	 tmp5 = tmp5 + *cmt2++;
 //	 tmp5 = tmp5 + *wav2++;
-        __builtin_prefetch(dst2, 1, 1);
 	 *dst2++ = tmp5;
       }
    }
@@ -97,11 +100,12 @@ void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
     h = (v4hi *)from;
     l = (v4hi *)to;
     i = (size >> 3) << 3;
+    _prefetch_data_write_l1(l, sizeof(Uint32) * size);
+    _prefetch_data_read_l2(h, sizeof(Uint32) * size * 2);
     for (j = 0; j < i; j += 8) {
       r = *h++;
       s = *h++;
       tt.vv = __builtin_ia32_packssdw128(r.vv, s.vv);
-        __builtin_prefetch(l, 1, 1);
       *l++ = tt;
    }
    p = (Sint32 *)h;
@@ -109,7 +113,6 @@ void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size)
    if(i >= size) return;
    for (j = 0; j < (size - i); j++) {
       tmp1 = *p++;
-        __builtin_prefetch(p, 1, 1);
       *t++ = _clamp(tmp1);
    }
    
