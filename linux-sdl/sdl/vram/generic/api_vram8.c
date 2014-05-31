@@ -9,6 +9,7 @@
 #include "api_draw.h"
 #include "api_vram.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern struct XM7_CPUID *pCpuID;
 
@@ -37,13 +38,7 @@ void CalcPalette_8colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 #else
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
-#if defined(USE_SSE2) || defined(USE_MMX)
-   if(pCpuID != NULL){ 
-	if(pCpuID->use_sse2 || pCpuID->use_mmx) {
-	   __builtin_prefetch(&rgbTTLGDI[index], 0, 0); // Prefetch palette table if u can.
-	}
-   }
-#endif   
+    _prefetch_data_write_permanent(rgbTTLGDI, sizeof(Uint32) * 8);
     rgbTTLGDI[index] = ds;
 }
 

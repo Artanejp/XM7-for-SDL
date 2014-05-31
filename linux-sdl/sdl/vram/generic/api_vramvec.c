@@ -9,6 +9,7 @@
 #include "xm7_types.h"
 #include "api_draw.h"
 #include "api_vram.h"
+#include "cache_wrapper.h"
 
 /*
 * Definition of Convertsion Tables.
@@ -86,22 +87,8 @@ void initvramtbl_4096_vec(void)
         r.v <<= 1;
         aPlanes[G3 + i] = r.v;
 //        r.v <<= 1;
-      __builtin_prefetch(&aPlanes[B0 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[B1 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[B2 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[B3 + i], 0, 1);
-
-      __builtin_prefetch(&aPlanes[R0 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[R1 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[R2 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[R3 + i], 0, 1);
-
-      __builtin_prefetch(&aPlanes[G0 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[G1 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[G2 + i], 0, 1);
-      __builtin_prefetch(&aPlanes[G3 + i], 0, 1);
     }
-	
+    _prefetch_data_read_permanent(aPlanes, sizeof(Uint32) * 256 * 8 * 12); // 98KB (!), priority = 1.
 }
 
 void detachvramtbl_8_vec(void)

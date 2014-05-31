@@ -9,6 +9,7 @@
 #include "api_draw.h"
 #include "api_vram.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 Uint8 *vram_pb;
 Uint8 *vram_pr;
@@ -32,13 +33,7 @@ void CalcPalette_4096Colors(Uint32 index, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	ds = r<<24 + g<<16 + b<<8 + 255<<0;
 #endif
    // Prefetch to cache when writing, not temporally.
-#if defined(USE_SSE2) || defined(USE_MMX)
-   if(pCpuID != NULL){ 
-	if(pCpuID->use_sse2 || pCpuID->use_mmx) {
-	   __builtin_prefetch(&pal[index], 0, 0); // Prefetch palette table if u can.
-	}
-   }
-#endif   
+    _prefetch_data_write_permanent(&pal[index], sizeof(Uint32));
     pal[index] = ds;
 }
 
