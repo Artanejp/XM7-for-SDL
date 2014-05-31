@@ -5,6 +5,7 @@
 #include "xm7_types.h"
 #include "xm7.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern struct XM7_CPUID *pCpuID;
 
@@ -62,6 +63,11 @@ int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc,
       Sint16 *cmt2 = (Sint16 *)cmtsrc;
       Sint16 *wav2 = (Sint16 *)wavsrc;
       Sint16 *dst2 = (Sint16 *)dst;
+      _prefetch_data_write_l1(dst2, sizeof(Sint16) * samples);
+      _prefetch_data_read_l2(opn2, sizeof(Sint32) * samples);
+      _prefetch_data_read_l2(beep2, sizeof(Sint16) * samples);
+      _prefetch_data_read_l2(cmt2, sizeof(Sint16) * samples);
+//   _prefetch_data_read_l2(wav2, sizeof(Sint16) * samples);
       for (i = 0; i < len2; i++) {
 	 tmp4 = *opn2++;
 	 tmp5 = _clamp(tmp4);
@@ -113,6 +119,8 @@ void CopySoundBufferGeneric(DWORD * from, WORD * to, int size)
     h = (v8hi_t *)p;
     l = (v4hi *)t;
     i = (size >> 3) << 3;
+    _prefetch_data_write_l1(l, sizeof(Uint16) * size);
+    _prefetch_data_read_l2(h, sizeof(Uint32) * size);
     for (j = 0; j < i; j += 8) {
         tmp2 = *h++;
         tmp3.ss[0] =_clamp(tmp2.si[0]);
