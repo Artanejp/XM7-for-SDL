@@ -11,6 +11,7 @@
 #include "api_vram.h"
 #include "api_draw.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern struct XM7_CPUID *pCpuID;
 
@@ -234,7 +235,6 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    } else {
       hh = 8;
    }
-   for(i = 0; i < ww; i++) __builtin_prefetch(&d2[i], 1, 1);
    
    pitch = Surface->pitch / sizeof(Uint32);
    { // Not thinking align ;-(
@@ -254,6 +254,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	case 2:
 	  for(xx = 0; xx < ww; xx += 8) {
 	     b2p = (v4hi *)d1;
+	     _prefetch_data_write_l2(d1, sizeof(v4hi) * 8);
 	     bx0 = b[0];
 	     bx1 = b[1];
 	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
@@ -297,6 +298,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     
 	     for(j = 0; j < (yrep >> 1); j++) {
 		b2p = (v4hi *)d1;
+		_prefetch_data_write_l2(d1, sizeof(v4hi) * 8);
 		if(!bFullScan && (j >= (yrep >> 2))) {
 		   b2p[0] = 
 		   b2p[1] = 

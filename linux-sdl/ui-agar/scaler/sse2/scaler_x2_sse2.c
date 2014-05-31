@@ -9,6 +9,7 @@
 #include "api_vram.h"
 #include "api_draw.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern struct XM7_CPUID *pCpuID;
 
@@ -66,6 +67,7 @@ void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
     ww = w - x * 2;
     for(yy = 0; yy < hh ; yy++) {
         i = 0;
+         _prefetch_data_write_l2(d1, sizeof(v4hi) * 2 * ww);
         for(xx = 0; xx < ww; xx += 2, i++){
             d2 = d1;
             d0 = p[i];
@@ -99,6 +101,7 @@ void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 	case 1:
 	case 2:
 	  for(yy = 0; yy < hh; yy++){
+	     _prefetch_data_write_l2(d1, sizeof(v4hi) * 2);
 	     b2p = (v4hi *)d1;
 	     btmp = b[0];
 	     b2.v = __builtin_ia32_pshufd(btmp.v, 0x50);
@@ -123,6 +126,7 @@ void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
 	     b5.v = __builtin_ia32_pshufd(b[1].v, 0xfa);
 	     for(j = 0; j < (yrep >> 1); j++) {
 		b2p = (v4hi *)d1;
+		_prefetch_data_write_l2(d1, sizeof(v4hi) * 2);
 		if(!bFullScan && (j >= (yrep >> 2))) {
 		   b2p[0] = 
 		   b2p[1] = 
@@ -168,6 +172,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
     
    b2p = dst;
    if(repeat < 3) {
+      _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
       for(xx = 0; xx < ww; xx += 8) {
 //	     b2p = (v4hi *)d1;
 	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
@@ -187,6 +192,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
    } else {
       repeat >>= 1;
       if(repeat < 2) {
+	 _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
 	 for(xx = 0; xx < ww; xx += 8) {
 	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
 	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0xfa);
@@ -210,6 +216,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 	 }
 	 yrep3 = repeat - yrep2;
 	 d0 = b2p;
+	 _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
 	 pitch = pitch / (sizeof(v4hi));
 	 for(xx = 0; xx < ww; xx += 8) {
 	     b2p = d0;
@@ -235,6 +242,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 	 d0 = d0 + pitch * yrep2;
 	 for(yy = 0; yy < yrep3; yy++) {
 	    b2p = d0;
+	    _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
 	    for(xx = 0; xx < ww; xx += 8) {
 	       b2p->uv = bb;
 	       b2p++;
@@ -305,7 +313,6 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    }
 
    pitch = Surface->pitch / sizeof(Uint32);
-   for(i = 0; i < ww; i++) __builtin_prefetch(&d2[i], 1, 1);
    Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep, Surface->pitch);
    AG_SurfaceUnlock(Surface);
    return;
