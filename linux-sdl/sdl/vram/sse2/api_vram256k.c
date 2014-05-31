@@ -9,28 +9,15 @@
 #include "api_draw.h"
 //#include "api_scaler.h"
 #include "api_vram.h"
+#include "cache_wrapper.h"
 
 extern v8hi_t lshift_6bit8v_SSE2(v8hi_t v);
 
-static void putword(Uint32 *disp, v8hi_t cx)
+static inline void putword(Uint32 *disp, v8hi_t cx)
 {
     v8hi_t *dst = (v8hi_t *)disp;
-//    v8hi_t src = cx;
-//    Uint32 *c;
-//    c = cx;
-    __builtin_prefetch(dst, 1, 2);
+    _prefetch_data_write_l1(disp, sizeof(Uint32) * 8);
     *dst = cx;
-//    src++;
-//    dst++;
-//    dst->v = src->v;
-//    disp[0] = cx[0];
-//    disp[1] = cx[1];
-//    disp[2] = cx[2];
-//    disp[3] = cx[3];
-//    disp[4] = cx[4];
-//    disp[5] = cx[5];
-//    disp[6] = cx[6];
-//    disp[7] = cx[7];
 }
 
 
@@ -149,7 +136,7 @@ void CreateVirtualVram256k_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpa
    
     addr = y * 40 + x;
     // Loop廃止(高速化)
-
+    
     c = getvram_256k(addr, mpage);
     putword((Uint32 *)disp, c);
     addr += 40;

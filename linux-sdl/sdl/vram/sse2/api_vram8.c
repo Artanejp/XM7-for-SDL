@@ -9,12 +9,13 @@
 #include "api_draw.h"
 #include "api_vram.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int xbegin, int xend, int mode);
 
 
 #if (__GNUC__ >= 4)
-static v8hi_t getvram_8_vec(Uint32 addr)
+static inline v8hi_t getvram_8_vec(Uint32 addr)
 {
     register uint8_t r, g, b;
     register v8hi_t ret;
@@ -35,7 +36,7 @@ static v8hi_t getvram_8_vec(Uint32 addr)
    return ret;
 }
 
-static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
+static inline void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 {
 
    v8hi_t *p = (v8hi_t *)disp;
@@ -44,8 +45,9 @@ static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 //   if(disp == NULL) return;
 
    c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
-   __builtin_prefetch(p, 1, 2);
+
    // recommand -finline-loop
+   _prefetch_data_write_l1(p, sizeof(v8hi_t) * 8); // 4 * 8 * 8 = 256bytes.
    for(j = 0; j < 8; j++) {
       p->i[j] = pal[c.i[j]]; // Converting via palette.
    }
@@ -125,7 +127,7 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
     register int i;
 
     if((p == NULL) || (pal == NULL)) return;
-    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
+//    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
     pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
     // Loop廃止(高速化)
@@ -258,7 +260,8 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
     register int i;
    
     if((p == NULL) || (pal == NULL)) return;
-    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
+
+//    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
