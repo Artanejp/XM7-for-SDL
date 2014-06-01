@@ -142,6 +142,13 @@ void OnCreate(AG_Widget *parent)
  */
         LoadCfg();
         InitDraw();
+#ifdef _USE_OPENCL
+        if(AG_UsingGL(NULL) != 0) {
+	   do {
+	       SDL_Delay(1);
+	   } while(bInitCL);
+	}
+#endif   
         InitSnd();
         InitKbd();
         InitJoy();
