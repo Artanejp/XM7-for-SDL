@@ -14,7 +14,7 @@
 SndDrvBeep::SndDrvBeep() {
 	// TODO Auto-generated constructor stub
 	enable = FALSE;
-	counter = 0;
+	RenderCounter = 0;
 	freq = 1200;
 
 	uStereo = nStereoOut %4;
@@ -34,7 +34,7 @@ SndDrvBeep::~SndDrvBeep() {
 		SDL_DestroySemaphore(RenderSem);
 		RenderSem = NULL;
 	}
-	counter = 0;
+	RenderCounter = 0;
 }
 
 
@@ -77,7 +77,7 @@ void SndDrvBeep::Setup(int tick)
 	ms = tick;
 
 	enable = FALSE;
-	counter = 0;
+	RenderCounter = 0;
 	return;
 }
 
@@ -213,7 +213,7 @@ void SndDrvBeep::Copy32(Sint32 *src, Sint16 *dst, int ofset, int samples)
 void SndDrvBeep::ResetCounter(BOOL flag)
 {
 	if(flag) {
-		counter = 0;
+		RenderCounter = 0;
 	}
 
 }
@@ -243,7 +243,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 
 	wbuf = pBuf;
 	wbuf = &wbuf[start * channels];
-	if(counter >= srate) counter = 0;
+	if(RenderCounter >= srate) RenderCounter = 0;
 
         level = nLevel >>2;
 //    if((start <= 0) && (clear != TRUE)) {
@@ -271,7 +271,9 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 	   if(bZero) {
 	      memset(wbuf, 0, sizeof(Sint16) * ss2 * channels);
 	      SDL_SemPost(RenderSem);
+	      
 	      RenderCounter += ss2;
+	      if(RenderCounter >= srate) RenderCounter = 0;
 	      return ss2;
 	   }
 
@@ -282,7 +284,7 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 	   /*
 	    * サンプル書き込み
 	    */
-	   sf2 =(int)(counter * freq) << 1;
+	   sf2 =(int)(RenderCounter * freq) << 1;
 	   hi = (level & 0x7fff);
 	   lo = -hi;
 	   hi32 = (hi * 65536) | hi;
@@ -313,16 +315,18 @@ int SndDrvBeep::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear,BOOL bZ
 	      /*
 	       * カウンタアップ
 	       */
-	      counter += 1;
+	      RenderCounter += 1;
 	      sf2 += (freq << 1);
-	      if (counter >= srate) {
+	      if (RenderCounter >= srate) {
 		 sf2 = 0;
-		 counter = 0;
+		 //sf2 =(int)(RenderCounter * freq) << 1;
+		 RenderCounter = 0;
 	      }
 	   }
 	}
 	SDL_SemPost(RenderSem);
-	RenderCounter += ss2;
+//	RenderCounter += ss2;
+//        if(RenderCounter >= srate) RenderCounter = 0;
 	return ss2;
 }
 
