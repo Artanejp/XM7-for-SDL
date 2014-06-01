@@ -1100,6 +1100,8 @@ void FASTCALL vblankperiod_notify(void)
 			if (!flag) {
 				return;
 			}
+	   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
+	   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 	   for(y = 0; y < ymax; y++) {
 	      if (bDirtyLine[y]) {
 		 Draw_1Line(y);
@@ -1121,7 +1123,9 @@ void FASTCALL hblank_notify(void)
 #endif	   
 //	   LockVram();
 	   if(now_raster >= 400) return;
+//	   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 	   if (bDirtyLine[now_raster]) {
+//	           _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 	           Draw_1Line(now_raster);
 		}
 //	   UnlockVram();
@@ -1536,14 +1540,22 @@ void Draw_1Line(int line)
       hh = 200;
       top = nDrawTop >> 1;
       bottom = nDrawBottom >> 1;
+      _prefetch_data_read_permanent(rgbTTLGDI, sizeof(Uint32) * 8);
       break;
     case SCR_400LINE:
       ww = 80;
       hh = 400;
       top = nDrawTop;
       bottom = nDrawBottom;
+      _prefetch_data_read_permanent(rgbTTLGDI, sizeof(Uint32) * 8);
       break;
     case SCR_4096:
+      ww = 40;
+      hh = 200;
+      top = nDrawTop;
+      bottom = nDrawBottom;
+      _prefetch_data_read_permanent(rgbAnalogGDI, sizeof(Uint32) * 4096);
+      break;
     case SCR_262144:
       ww = 40;
       hh = 200;

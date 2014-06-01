@@ -27,6 +27,7 @@
 #include "display.h"
 #include "subctrl.h"
 #include "device.h"
+#include "cache_wrapper.h"
 
 extern "C" {
 extern BOOL bUseOpenCL;
@@ -56,12 +57,18 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
    if((bMode == SCR_4096) || (bMode == SCR_262144)) {
+      _prefetch_data_read_l1(rgbAnalogGDI, sizeof(Uint32) * 4096);
       xfactor = 40;
    } else {
       xfactor = 80;
+      _prefetch_data_read_l1(rgbTTLGDI, sizeof(Uint32) * 8);
    }
       
    LockVram();
+   _prefetch_data_read_l1(&SDLDrawFlag, sizeof(SDLDrawFlag));
+   _prefetch_data_write_l1(&SDLDrawFlag, sizeof(SDLDrawFlag));
+   _prefetch_data_read_l1(aPlanes, sizeof(Uint32) * 256 * 8 * 12); // 98KB (!), priority = 1.
+
    if(SDLDrawFlag.DPaletteChanged) { // Palette changed
 #ifdef _OPENMP
        #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
@@ -112,6 +119,7 @@ void BuildVirtualVram_RasterWindow(Uint32 *pp, int xbegin, int xend, int y, int 
 	xwidth = 640;
    }
    p = &pp[xwidth * y];
+
    pVirtualVramBuilder->vram_windowline(p, y, y + 1, xbegin, xend, mode);
 //       UnlockVram();
 }
