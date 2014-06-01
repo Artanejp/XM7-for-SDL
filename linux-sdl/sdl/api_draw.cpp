@@ -30,6 +30,11 @@
 #include "agar_cfg.h"
 #ifdef USE_OPENGL
   #include "agar_gldraw.h"
+  #include "agar_glutil.h"
+  #ifdef _USE_OPENCL
+    #include "agar_glcl.h"
+    extern class GLCLDraw *cldraw;
+  #endif
 #endif /* USE_OPENGL */
 
 //#include "sdl.h"
@@ -85,11 +90,6 @@ extern "C" {
  *	スタティック ワーク
  */
 static BOOL bNextFrameRender;				/* 次フレーム描画フラグ */
-#ifdef _USE_OPENCL
-# include "agar_glcl.h"
-# include "agar_glutil.h"
-extern class GLCLDraw *cldraw;
-#endif
 
 #if XM7_VER >= 3
 BYTE    bMode;		/* 画面モード */
@@ -1100,15 +1100,17 @@ void FASTCALL vblankperiod_notify(void)
 			if (!flag) {
 				return;
 			}
-	   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
-	   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
-	   for(y = 0; y < ymax; y++) {
-	      if (bDirtyLine[y]) {
-		 Draw_1Line(y);
-	      }
-	   }
+#ifdef _USE_OPENCL
+		   if(cldraw != NULL) return;
+#endif
+		   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
+		   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
+		   for(y = 0; y < ymax; y++) {
+		      if (bDirtyLine[y]) {
+			 Draw_1Line(y);
+		      }
+		   }
 		}
-	   
 	}
 }
 
@@ -1123,6 +1125,9 @@ void FASTCALL hblank_notify(void)
 #endif	   
 //	   LockVram();
 	   if(now_raster >= 400) return;
+#ifdef _USE_OPENCL
+		   if(cldraw != NULL) return;
+#endif
 //	   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 	   if (bDirtyLine[now_raster]) {
 //	           _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));

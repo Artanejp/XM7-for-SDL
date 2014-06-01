@@ -16,9 +16,9 @@
 extern "C" {
     AG_GLView *GLDrawArea;
     extern BOOL bUseOpenCL;
+    BOOL bInitCL;
 }
 
-BOOL bInitCL;
 GLuint GridVertexs200l;
 GLuint GridVertexs400l;
 

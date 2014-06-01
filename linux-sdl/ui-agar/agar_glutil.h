@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 extern  AG_GLView *GLDrawArea;
+extern BOOL bInitCL;
 extern BOOL bGL_ARB_IMAGING; // イメージ操作可能か？
 extern BOOL bGL_ARB_COPY_BUFFER;  // バッファ内コピー（高速化！）サポート
 extern BOOL bGL_EXT_INDEX_TEXTURE; // パレットモードに係わる
