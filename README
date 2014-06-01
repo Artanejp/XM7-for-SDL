@@ -1,0 +1,43 @@
+This repositry has below contents:
+- Homepage of Artanejp http://sky.geocities.jp/artanejp/
+  This HP contains XM7/SDL, and some elrctronics development results.
+  See HP/.
+  
+- XM7/SDL ; A Fujitsu FM-7/77AV/77AV40 emulator for SDL/Agar ui toolkit.
+  Aims to *true* multi-plathome.
+  See linux-sdl/.
+  XM7/SDL is still development.
+  
+  Please mirror (or pull) this repository if you have interest of XM7/SDL or other projects.
+
+  Resources:
+    http://sky.geocities.jp/artanejp/ : Primary homepage.
+    https://sites.google.com/site/artanejp/ : Secondary homepage.
+    http://github.com/Artanejp/XM7-for-SDL : Upstream git repository
+    http://retropc.net/ryu/xm7/ : XM7 emulator (for Windows), upstream of XM7/SDL.
+    http://fm-7.com/ : Articles about Fujitsu FM-8 and FM-7 series and FM-77AV series.
+    
+--- Below article are written in Japanese, and encoding is UTF-8. ---
+このリポジトリには以下のコンテンツがあります：
+・Artanejp のホームページ： http://sky.geocities.jp/artanejp/
+  このホームページには、XM7/SDLと、後は幾つかの電子工作開発の成果が入っています。
+  詳しくは、 HP/ を見てください。
+  
+・XM7/SDL ; 富士通FM-7/77/77AV40エミュレータをSDLとAgarツールキットに移植しているものです。
+　*真の*マルチプラットホームを目指しています。
+  未だ開発は継続中です。
+　詳しくは、linux-sdl/ を見てください。
+
+　XM7/SDLや他の電子工作に興味を持たれた方は、是非このリポジトリーをミラーもしくはpullしてください
+m(_ _)m
+
+参考になるページなど：
+    http://sky.geocities.jp/artanejp/ : 一次ホームページ
+    https://sites.google.com/site/artanejp/ : 二次ホームページ
+    http://github.com/Artanejp/XM7-for-SDL : GITリポジトリの原点
+    http://retropc.net/ryu/xm7/ :　XM7/SDLの元になってるXM7エミュレータ(Windows用)のホームページ
+    http://fm-7.com/ : 富士通FM-8とFM-7シリーズに関する多くの資料があるページ
+
+
+-- Jun 01,2014 K.Ohta <whaisthis.sowhat _at_ gmail.com>
+
