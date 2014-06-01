@@ -53,6 +53,7 @@ void SndDrvBeep::SetRate(int rate)
 void SndDrvBeep::Enable(BOOL flag)
 {
 	enable = flag;
+        if(!enable) RenderCounter = 0;
 }
 
 
