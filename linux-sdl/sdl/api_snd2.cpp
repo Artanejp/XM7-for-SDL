@@ -386,7 +386,7 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
    
    if(len <= 0) return;
    spos = 0;
-//   memset(stream, 0x00, len);
+   memset(stream, 0x00, len);
    do {
        if(uBufSize <= nSndWritePos) { // Wrap
 	   nSndWritePos = 0;
@@ -464,9 +464,9 @@ BOOL SelectSnd(void)
 	desired.freq = nSampleRate;
 	desired.format = AUDIO_S16SYS;
 	desired.channels = channels;
-//	desired.samples = (nSoundBuffer * nSampleRate) * 1 / 4000; // Add overrun buffer
+	desired.samples = (nSoundBuffer * nSampleRate) * 1 / 4000; // Add overrun buffer
 //	desired.samples = (nSoundBuffer * nSampleRate) / 2000; // Add overrun buffer
-	desired.samples = 1024;
+//	desired.samples = 1024;
 	desired.callback = AudioCallbackSDL;
 	SDL_OpenAudio(&desired, &sAudioSpec);
 	nSampleRate = sAudioSpec.freq;
