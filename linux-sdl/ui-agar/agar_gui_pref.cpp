@@ -51,9 +51,7 @@
 //#include "api_draw.h"
 //#include "api_scaler.h"
 
-extern "C" {
-static configdat_t localconfig;
-}
+configdat_t localconfig;
 
 extern void OnPushCancel(AG_Event *event);
 
@@ -70,10 +68,12 @@ static int ScreenAspectSelected;
 static void OnConfigApply(AG_Event *event)
 {
 	int ver;
+        int i;
 	AG_Button *self = (AG_Button *)AG_SELF();
 
 
 	LockVM();
+        
 	memcpy(&configdat, &localconfig, sizeof(configdat_t));
 	ver = fm7_ver;
 	ApplyCfg();

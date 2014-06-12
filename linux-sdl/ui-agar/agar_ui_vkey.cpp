@@ -17,12 +17,13 @@ extern "C" {
 #include "xm7.h"
 #include "fdc.h"
 #include "AgarKbdInterface.h"
+#include "agar_cfg.h"
 
 extern "C" {
    extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
    extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 }
-
+extern configdat_t localconfig;
 
 struct KeyCode_Vkey {
 	const char *KeyName;
@@ -404,9 +405,20 @@ static void OnPressSetKey(AG_Event *event)
 	Uint keySym = AG_INT(2);
 	Uint keyMod = AG_INT(3);
 	Uint8 pushCode = AG_INT(1);
+        XM7KeyCode *km;
+        int i;
 
 //	printf("Pressed %02x %02x", keySym, pushCode);
 	SetKeyCodeAG((Uint8) pushCode, keySym, keyMod);
+        km = &(localconfig.KeyMap[0]);
+	for(i = 0; i<256 ; i++)
+	{
+		if(pushCode == km[i].pushCode) {
+			km[i].mod = keyMod;
+			km[i].code = keySym;
+			break;
+		}
+	}
 	OnPushCancel(event);
 }
 
