@@ -38,9 +38,9 @@ int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc,
  if(pCpuID != NULL) {
  #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
-        if((((uint64_t)opnsrc % 16) == 0) && (((uint64_t)beepsrc % 16) == 0) && (((uint64_t)cmtsrc % 16) == 0) && (((uint64_t)dst % 16) == 0)) {
+//        if((((uint64_t)opnsrc % 16) == 0) && (((uint64_t)beepsrc % 16) == 0) && (((uint64_t)cmtsrc % 16) == 0) && (((uint64_t)dst % 16) == 0)) {
 	   return AddSoundBuffer_SSE2(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
-	}
+//	}
        
      }
  #endif
