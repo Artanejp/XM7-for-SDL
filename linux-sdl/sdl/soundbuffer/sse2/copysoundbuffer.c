@@ -91,7 +91,7 @@ static inline void  _put_unaligned_int16(Sint16 *dst, v4hi v)
     Sint16 *wav  = wavsrc;
     Sint16 *p    = dst;
     register v4hi vtmp;
-   _prefetch_data_write_l1(p, sizeof(v4hi) * len1 + sizeof(Sint16) * len2);
+   _prefetch_data_write_l1(p, samples * sizeof(Sint16));
    _prefetch_data_read_l2(opn, sizeof(Sint32) * samples);
    _prefetch_data_read_l2(beep, sizeof(Sint16) * samples);
    _prefetch_data_read_l2(cmt, sizeof(Sint16) * samples);
@@ -106,7 +106,7 @@ static inline void  _put_unaligned_int16(Sint16 *dst, v4hi v)
         vtmp = _get_unaligned_int16(cmt);
         tt.vv = __builtin_ia32_paddsw128(tt.vv, vtmp.vv);
  //      vtmp = _get_unaligned_int16(wav);
- //        tt.vv = __builtin_ia32_paddsw128(tt.vv, wav->vv);
+ //        tt.vv = __builtin_ia32_paddsw128(tt.vv, vtmp.vv);
         _put_unaligned_int16(p, tt);
         beep += 8;
         cmt += 8;
