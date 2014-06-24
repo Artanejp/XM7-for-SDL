@@ -105,7 +105,7 @@ static void DrawVFDFn(AG_Event *event)
 
 }
 
-static AG_Surface *UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color *bg, int status)
+static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color *bg, int status)
 {
    AG_Surface *tmp;
    AG_Surface *dst;
