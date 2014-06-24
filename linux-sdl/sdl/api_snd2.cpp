@@ -414,10 +414,10 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
 	   if(applySem) SDL_SemPost(applySem);
 	   if(spos >= len) return;
 //	   SDL_Delay(1);
-	   while(nSndDataLen <= 0) {
-	      nanosleep(&req, &remain); // Wait 500uS
-	      if(bSndExit) return;
-	   }
+//	   while(nSndDataLen <= 0) {
+	   nanosleep(&req, &remain); // Wait 500uS
+	   if(bSndExit) return;
+//	   }
 	}
         nSndWritePos += len2;
         spos += len2;
