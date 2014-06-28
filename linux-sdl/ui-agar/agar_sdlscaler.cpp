@@ -14,6 +14,7 @@
 //#include "api_scaler.h"
 #include "api_kbd.h"
 #include "sdl_cpuid.h"
+#include "cache_wrapper.h"
 
 extern "C" {
 extern struct XM7_CPUID *pCpuID;
@@ -859,6 +860,8 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    int of;
    int yrep;
    int tmp;
+   int lcount;
+   int xcache;
 
    if(my == NULL) return;
    Surface = my->Surface;
@@ -900,6 +903,10 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	 Fn =(void *) pVram2RGB;
       }
       DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
+      Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
+      if(Fn != NULL) {
+	   DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
+      }
    }
    if(h > hh) {
       tmp = h % hh;
@@ -925,14 +932,15 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	  my->forceredraw = 0;
        }
 
-#ifdef _OPENMP
- #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src)
-#endif
+//#ifdef _OPENMP
+// #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src)
+//#endif
       for(yy = 0 ; yy < hh; yy++) {
 /*
 *  Virtual VRAM -> Real Surface:
 */
 	 if(bDrawLine[yy] == TRUE){
+	    _prefetch_data_read_l1(&src[yy * 80], ww);
 	    DrawFn2(src, 0, ww, yy, yrep);
 	    bDrawLine[yy] = FALSE;
 	 }
@@ -952,10 +960,13 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    
    
 //#ifdef _OPENMP
-//# pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx)
+// # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache)
 //#endif
-    for(yy = 0 ; yy < hh; yy+=8) {
-        for(xx = 0; xx < ww; xx+=8) {
+    for(yy = 0 ; yy < hh; yy += 8) {
+       _prefetch_data_read_l1(&src[yy * 80], ww);
+       lcount = 0;
+       xcache = 0;
+        for(xx = 0; xx < ww; xx += 8) {
 /*
 *  Virtual VRAM -> Real Surface:
 *                disp = (Uint32 *)(pb + xx  * bpp + yy * pitch);
@@ -965,15 +976,44 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 ** // xx,yy = 1scale(not 8)
 */
 //            if(xx >= w) continue;
-	   if(SDLDrawFlag.write[xx >> 3][yy >> 3]){
-	      disp = (Uint32 *)pb;
-	      of = (xx *8) + yy * ww;
-	      DrawFn(&src[of], disp, xx, yy, yrep);
+	   if(SDLDrawFlag.write[xx >> 3][yy >> 3]) {
+	      lcount += 8;
 	      SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
+	   } else {
+	      if(lcount > 0) {
+		 //	      disp = (Uint32 *)pb;
+		 //	      of = (xx *8) + yy * ww;
+		 //	      DrawFn(&src[of], disp, xx, yy, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy    , yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 1, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 2, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 3, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 4, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 5, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 6, yrep);
+		 DrawFn2(src, xcache, xcache + lcount, yy + 7, yrep);
+	      }
+	      xcache = xx + 8;
+	      lcount = 0;
 	   }
 	}
+       
+       if(lcount > 0) {
+	  //	      disp = (Uint32 *)pb;
+	  //	      of = (xx *8) + yy * ww;
+	  //	      DrawFn(&src[of], disp, xx, yy, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy    , yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 1, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 2, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 3, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 4, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 5, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 6, yrep);
+	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 7, yrep);
+       }
 //			if(yy >= h) continue;
     }
+   
 
       
 _end1:   
