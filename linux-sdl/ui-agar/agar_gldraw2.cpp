@@ -89,7 +89,7 @@ void AGEventOverlayGL(AG_Event *event)
 
 void AGEventScaleGL(AG_Event *event)
 {
-	AG_GLView *glv = (AG_GLView *)AG_SELF();
+   AG_GLView *glv = (AG_GLView *)AG_SELF();
 
    glViewport(glv->wid.rView.x1, glv->wid.rView.y1, glv->wid.rView.w, glv->wid.rView.h);
     //glLoadIdentity();
@@ -97,44 +97,6 @@ void AGEventScaleGL(AG_Event *event)
 
 }
 
-static void UpdateFramebufferPiece(Uint32 *p, int x, int y)
-{
-   v4hi *addr1;// 256bit->128bit for older CPUs.
-   v4hi *src;
-   int ofset;
-   int yy;
-
-   if((x < 0) || (x >= 640)) return;
-   if((y < 0) || (y >= 400)) return;
-//   if(pFrameBuffer == NULL) return;
-   ofset = x + y * 640;
-
-   src = (v4hi *)p;
-   addr1 = (v4hi *)(&pFrameBuffer[ofset]);
-   addr1[0] = src[0];
-   addr1[1] = src[1];
-
-   addr1[160] = src[2];
-   addr1[161] = src[3];
-
-   addr1[320] = src[4];
-   addr1[321] = src[5];
-
-   addr1[480] = src[6];
-   addr1[481] = src[7];
-
-   addr1[640] = src[8];
-   addr1[641] = src[9];
-
-   addr1[800] = src[10];
-   addr1[801] = src[11];
-
-   addr1[960] = src[12];
-   addr1[961] = src[13];
-
-   addr1[1120] = src[14];
-   addr1[1121] = src[15];
-}
 
 static void drawGrids(void *pg,int w, int h)
 {
@@ -186,6 +148,8 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 			  GL_RGBA,
 			  GL_UNSIGNED_BYTE,
 			  NULL);
+//	  UpdateTexturePiece((Uint32 *)(cldraw->pixelBuffer),uVramTextureID, 0, 0, 640, h);
+
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
        } else {
@@ -197,32 +161,16 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 		UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
 		glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 	     }
-	  } else if((p != NULL) && (p != NULL) && (SDLDrawFlag.Drawn) ) {
-#if 0
-#ifdef _OPENMP
-//            # pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
-            #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
-#endif
-	       for(yy = 0; yy < hh; yy++) { // 20120411 分割アップデートだとGLドライバによっては遅くなる
-		  for(xx = 0; xx < ww; xx++) {
-		     if(SDLDrawFlag.write[xx][yy]) {
-			pu = &p[(xx + yy * ww) << 6];
-			UpdateFramebufferPiece(pu, xx << 3, yy << 3);
-			SDLDrawFlag.write[xx][yy] = FALSE;
-		     }
-		  }
-	       }
-#endif 	       
+	  } else if((p != NULL) && (SDLDrawFlag.Drawn) ) {
 	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-//	       UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
 	       UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
+	       SDLDrawFlag.Drawn = FALSE;
 	  }
 	  UnlockVram();
 #ifdef _USE_OPENCL
        }
 #endif       
-    SDLDrawFlag.Drawn = FALSE;
     }
 }
 
@@ -254,7 +202,6 @@ void AGEventDrawGL2(AG_Event *event)
 
    p = pVram2;
    if(p == NULL) return;
-
      switch(bMode) {
         case SCR_400LINE:
             w = 640;
@@ -304,11 +251,11 @@ void AGEventDrawGL2(AG_Event *event)
      /*
      * 20110904 OOPS! Updating-Texture must be in Draw-Event-Handler(--;
      */
-    InitContextCL();   
 
     glPushAttrib(GL_TEXTURE_BIT);
     glPushAttrib(GL_TRANSFORM_BIT);
     glPushAttrib(GL_ENABLE_BIT);
+    InitContextCL();   
 
     drawUpdateTexture(p, w, h);
    

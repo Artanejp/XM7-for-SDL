@@ -147,7 +147,8 @@ void InitContextCL(void)
 	    if(cldraw != NULL) {
 	       r = cldraw->InitContext();
 	       printf("CTX: STS = %d \n", r);
-	       if(r == CL_SUCCESS){  
+	       if(r == CL_SUCCESS){
+		 printf("CL: GLCTX=%08x\n", glXGetCurrentContext());
 		 r = cldraw->BuildFromSource(cl_render);
 		  printf("Build: STS = %d \n", r);
 	         if(r == CL_SUCCESS) {

@@ -46,6 +46,7 @@ class GLCLDraw {
    const char *source = NULL;
    cl_program program = NULL;
    cl_kernel kernel = NULL;
+   Uint8 *pixelBuffer;
  private:
    cl_event event_exec;
    cl_event event_uploadvram[4];

@@ -71,9 +71,9 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
    _prefetch_data_read_l1(aPlanes, sizeof(Uint32) * 256 * 8 * 12); // 98KB (!), priority = 1.
 
    if(SDLDrawFlag.DPaletteChanged) { // Palette changed
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
-#endif
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
+//#endif
 	for(yy = (y >> 3); yy < hh ; yy++) {
 	   p = &pp[(xfactor * (yy << 3) + (x >> 3)) << 3];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
@@ -86,9 +86,9 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
 	SDLDrawFlag.Drawn = TRUE;
 	SDLDrawFlag.DPaletteChanged = FALSE;
      } else { // Palette not changed
-#ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
-#endif
+//#ifdef _OPENMP
+//       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
+//#endif
 	for(yy = (y >> 3); yy < hh ; yy++) {
    	   p = &pp[(xfactor * (yy << 3) + (x >> 3)) << 3];
 	   for(xx = (x >> 3); xx < ww ; xx++) {

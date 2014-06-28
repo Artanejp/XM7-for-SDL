@@ -39,7 +39,7 @@ extern PFNGLBINDBUFFERPROC glBindBuffer;
 GLCLDraw::GLCLDraw()
 {
    cl_int ret;
-   
+   pixelBuffer = NULL;
 }
 
 GLCLDraw::~GLCLDraw()
@@ -54,11 +54,24 @@ GLCLDraw::~GLCLDraw()
     if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
     if(palette != NULL) ret |= clReleaseMemObject(palette);
     if(table != NULL) ret |= clReleaseMemObject(table);
+    if(pixelBuffer != NULL) free(pixelBuffer);
 }
+
+static void cl_notify_log(const char *errinfo, const void *private_info, size_t cb, void *user_data)
+{
+   Uint8 dump[128];
+   char dumpStr[1024];
+   int i;
+   
+   dumpStr[0] = '\0';
+   printf("DBG: CL Notify: %s\n", errinfo);
+}
+
 
 cl_int GLCLDraw::InitContext(void)
 {
    cl_int ret;
+   size_t len;
    properties = malloc(16 * sizeof(intptr_t));
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
@@ -66,17 +79,22 @@ cl_int GLCLDraw::InitContext(void)
 //   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
 //                         &ret_num_devices);
    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id,
-                         &ret_num_devices);
+                            &ret_num_devices);
+   
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();
+   printf("DBG: GL Context = %08x\n", glXGetCurrentContext());
+   
    properties[2] = CL_GLX_DISPLAY_KHR;
    properties[3] = (cl_context_properties)glXGetCurrentDisplay();
+   printf("DBG: GL Display = %08x\n", glXGetCurrentDisplay());
    properties[4] = CL_CONTEXT_PLATFORM;
    properties[5] = (cl_context_properties)platform_id;
    properties[6] = 0;
    if(ret != CL_SUCCESS) return ret;
-
-   context = clCreateContext(properties, 1, &device_id, NULL, NULL, &ret);
+   if(device_id == NULL) return -1;
+   
+   context = clCreateContext(properties, 1, &device_id, cl_notify_log, NULL, &ret);
    if(ret != CL_SUCCESS) return ret;
        
    command_queue = clCreateCommandQueue(context, device_id,
@@ -159,7 +177,7 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
       p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
 			     offset + xb, voffset * 3,
 			     0, NULL, &event_uploadvram[0], &ret);
-      if(p != NULL) {
+    if(p != NULL) {
 	   for(yy = 0; yy < h; yy++) {
 	      memcpy(&p[yoffset], &pb[yoffset], ww);  
 	      memcpy(&p[voffset + yoffset], &pr[yoffset], ww);  
@@ -676,25 +694,31 @@ cl_int GLCLDraw::SetupTable(void)
 cl_int GLCLDraw::SetupBuffer(GLuint texid)
 {
    cl_int ret = 0;
-   cl_int r;
+   cl_int r = 0;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    // Texture直接からPBO使用に変更 20121102
    if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
-      glGenBuffers(1, &pbo);
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-      glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
-		                 pbo, &r);
+//      glGenBuffers(1, &pbo);
+//      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+//      glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+//      printf("DBG: CL: PBO=%08x Size=%d\n", pbo, size);
+//      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+//      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
+//		                 pbo, &r);
+      glBindTexture(GL_TEXTURE_2D, texid);
+      outbuf = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY,
+				     GL_TEXTURE_2D, 0,
+				     texid, &r);
+      glBindTexture(GL_TEXTURE_2D, 0);
+//      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
       ret |= r;
    }
    
-
      
-//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, // Reduce HOST-CPU usage.
+//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
 // 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
    inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
- 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
+		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
    ret |= r;
    
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY,
