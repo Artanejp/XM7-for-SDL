@@ -150,7 +150,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   }
   
   addr = pbegin; 
-  addr2 = pbegin << 3;
+  addr2 = pbegin << 4;
   p8 = (__global uint8 *)(&(out[addr2]));
   for(x = 0; x < ww; x++) {
         b = &src[addr];
@@ -237,7 +237,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   }
   
   addr = pbegin; 
-  addr2 = pbegin << 3;
+  addr2 = pbegin << 4;
   p8 = (__global uint8 *)(&(out[addr2]));
   for(x = 0; x < ww; x++) {
         b = &src[addr];
