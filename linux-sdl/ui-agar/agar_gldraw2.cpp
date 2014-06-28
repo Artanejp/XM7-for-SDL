@@ -128,6 +128,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 #ifdef _USE_OPENCL
        if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	  cl_int ret;
+
 	  LockVram();
 	  ret = cldraw->GetVram(bMode);
 	  UnlockVram();
@@ -148,10 +149,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 			  GL_RGBA,
 			  GL_UNSIGNED_BYTE,
 			  NULL);
-//	  UpdateTexturePiece((Uint32 *)(cldraw->pixelBuffer),uVramTextureID, 0, 0, 640, h);
-
-	  glBindTexture(GL_TEXTURE_2D, 0);
+	  UpdateTexturePiece((Uint32 *)(cldraw->pixelBuffer),uVramTextureID, 0, 0, 640, h);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	  glBindTexture(GL_TEXTURE_2D, 0);
+	  SDLDrawFlag.Drawn = FALSE;
        } else {
 #endif
 	  LockVram();

@@ -72,6 +72,7 @@ cl_int GLCLDraw::InitContext(void)
 {
    cl_int ret;
    size_t len;
+   
    properties = malloc(16 * sizeof(intptr_t));
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
@@ -80,7 +81,8 @@ cl_int GLCLDraw::InitContext(void)
 //                         &ret_num_devices);
    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id,
                             &ret_num_devices);
-   
+   if(ret != CL_SUCCESS) return ret;
+
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();
    printf("DBG: GL Context = %08x\n", glXGetCurrentContext());
@@ -91,7 +93,6 @@ cl_int GLCLDraw::InitContext(void)
    properties[4] = CL_CONTEXT_PLATFORM;
    properties[5] = (cl_context_properties)platform_id;
    properties[6] = 0;
-   if(ret != CL_SUCCESS) return ret;
    if(device_id == NULL) return -1;
    
    context = clCreateContext(properties, 1, &device_id, cl_notify_log, NULL, &ret);
@@ -541,7 +542,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    int h;
    Uint8 *pr,*pg,*pb;
    Uint32 *pal;
-   size_t gws[] = {200}; // Parallel jobs.
+   size_t gws[] = {40}; // Parallel jobs.
    size_t lws[] = {1}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
@@ -628,7 +629,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
 				 goff, gws, lws, 
 				 1, &event_copytotexture,  &event_exec);
-   clFinish(command_queue);
+//   clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
@@ -696,38 +697,34 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    cl_int ret = 0;
    cl_int r = 0;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
-   // Texture直接からPBO使用に変更 20121102
-   if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
-//      glGenBuffers(1, &pbo);
-//      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-//      glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-//      printf("DBG: CL: PBO=%08x Size=%d\n", pbo, size);
-//      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-//      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
-//		                 pbo, &r);
-      glBindTexture(GL_TEXTURE_2D, texid);
-      outbuf = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY,
-				     GL_TEXTURE_2D, 0,
-				     texid, &r);
-      glBindTexture(GL_TEXTURE_2D, 0);
-//      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-      ret |= r;
-   }
    
-     
-//   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
-// 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), vram_dptr, &r);
-   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
+   inbuf = clCreateBuffer(context, CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
    ret |= r;
    
-   palette = clCreateBuffer(context, CL_MEM_READ_ONLY,
+   palette = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
    ret |= r;
-   table = clCreateBuffer(context, CL_MEM_READ_ONLY,
+   table = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
  		  (size_t)(0x100 * 8 * 20 * sizeof(cl_uint)), NULL, &r);
    ret |= r;
    
+   // Texture直接からPBO使用に変更 20121102
+   if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+      glGenBuffers(1, &pbo);
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+      glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+      printf("DBG: CL: PBO=%08x Size=%d context=%08x\n", pbo, size, context);
+      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
+				    pbo, &r);
+     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+//     glBindTexture(GL_TEXTURE_2D, texid);
+//     outbuf = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY,
+//				    GL_TEXTURE_2D, 0,
+//				    texid, &r);
+//     glBindTexture(GL_TEXTURE_2D, 0);
+      ret |= r;
+   }
    printf("Alloc STS: %d \n", ret);
    return ret;
 }
