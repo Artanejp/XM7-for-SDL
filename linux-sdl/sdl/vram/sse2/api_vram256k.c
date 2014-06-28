@@ -130,9 +130,8 @@ static v8hi_t getvram_256k(Uint32 addr, Uint32 mpage)
 void CreateVirtualVram256k_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mpage)
 {
     register v8hi_t c;
-    register Uint8 *disp = (Uint8 *)p;
+    register Uint32 *disp = p;
     register Uint32 addr;
-    pitch = sizeof(Uint32) * 8;
    
     addr = y * 40 + x;
     // Loop廃止(高速化)

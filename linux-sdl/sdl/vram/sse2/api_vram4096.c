@@ -76,12 +76,11 @@ void CreateVirtualVram4096_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mod
 {
 //    Uint32 c[8];
     register v8hi_t c;
-    Uint8 *disp = (Uint8 *)p;
+    Uint32 *disp = p;
     Uint32 addr;
     register int i;
 
 //   for(i = 0; i < 4096; i++) __builtin_prefetch(&rgbAnalogGDI[i], 0, 0);
-    pitch = sizeof(Uint32) * 8;
     addr = y * 40 + x;
     // Loop廃止(高速化)
     if(aPlanes == NULL) {

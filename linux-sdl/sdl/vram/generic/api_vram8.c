@@ -150,11 +150,10 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 #if (__GNUC__ >= 4)   
     v8hi_t c;
     Uint32 *pal = (Uint32 *)rgbTTLGDI;
-    Uint8 *disp =(Uint8 *) p;
+    Uint32 *disp = p;
     Uint32 addr;
 
     if((p == NULL) || (pal == NULL)) return;
-//    pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
 
     // Loop廃止(高速化)
@@ -224,7 +223,6 @@ void CreateVirtualVram8_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
     Uint8 *disp =(Uint8 *) p;
 
     if((p == NULL) || (pal == NULL)) return;
-    pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
 
     // Loop廃止(高速化)

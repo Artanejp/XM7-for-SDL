@@ -197,7 +197,8 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 		UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
 		glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 	     }
-	  } else if((pFrameBuffer != NULL) && (p != NULL) && (SDLDrawFlag.Drawn) ) {
+	  } else if((p != NULL) && (p != NULL) && (SDLDrawFlag.Drawn) ) {
+#if 0
 #ifdef _OPENMP
 //            # pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
             #pragma omp parallel for shared(p, SDLDrawFlag, ww, hh) private(pu, xx)
@@ -211,9 +212,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 		     }
 		  }
 	       }
-  	       
+#endif 	       
 	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-	       UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
+//	       UpdateTexturePiece(pFrameBuffer, uVramTextureID, 0, 0, 640, h);
+	       UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 	  }
 	  UnlockVram();

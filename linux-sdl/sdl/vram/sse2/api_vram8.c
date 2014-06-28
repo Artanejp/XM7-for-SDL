@@ -125,28 +125,34 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
     register v8hi_t *disp =(v8hi_t *) p;
     register Uint32 addr;
     register int i;
+    pitch = pitch / (sizeof(v8hi_t) / sizeof(Uint32));
 
     if((p == NULL) || (pal == NULL)) return;
 //    for(i = 0; i < 8; i++) __builtin_prefetch(&pal[i], 0, 0); // パレットテーブルをキャッシュに読み込ませておく
-    pitch = sizeof(Uint32) * 8;
     addr = y * 80 + x;
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
        c.v = (v8si){0,0,0,0,0,0,0,0};
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
+
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
+
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
+
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
+
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
+
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
+
        putword8_vec((Uint32 *)disp,  c, pal);
-       disp++;
+       disp += pitch;
        putword8_vec((Uint32 *)disp,  c, pal);
 //       disp++;
        return;
@@ -154,37 +160,37 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp, c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
        addr += 80;
-       disp++;
+       disp += pitch;
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
@@ -204,37 +210,37 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
    getvram_8(addr, c);
    putword8((Uint32 *)disp, c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr , c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr , c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);
    addr += 80;
-   disp++;
+   disp += pitch;
    
    getvram_8(addr, c);
    putword8((Uint32 *)disp,  c, pal);

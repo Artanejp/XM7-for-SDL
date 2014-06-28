@@ -58,7 +58,8 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
    hh = (h + y) >> 3;
    if((bMode == SCR_4096) || (bMode == SCR_262144)) {
       _prefetch_data_read_l1(rgbAnalogGDI, sizeof(Uint32) * 4096);
-      xfactor = 40;
+//      xfactor = 40;
+      xfactor = 80;
    } else {
       xfactor = 80;
       _prefetch_data_read_l1(rgbTTLGDI, sizeof(Uint32) * 8);
@@ -71,33 +72,33 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
 
    if(SDLDrawFlag.DPaletteChanged) { // Palette changed
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
 #endif
 	for(yy = (y >> 3); yy < hh ; yy++) {
-	   p = &pp[64 * ((x >> 3) + xfactor * yy)];
+	   p = &pp[(xfactor * (yy << 3) + (x >> 3)) << 3];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
-	      pVirtualVramBuilder->vram_block(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+	      pVirtualVramBuilder->vram_block(p, xx , yy << 3, xfactor << 3, mode);
 	      SDLDrawFlag.write[xx][yy] = TRUE;
 	      SDLDrawFlag.read[xx][yy]  = FALSE;
-	      p += 64;
+	      p += 8;
 	   }
 	}
 	SDLDrawFlag.Drawn = TRUE;
 	SDLDrawFlag.DPaletteChanged = FALSE;
      } else { // Palette not changed
 #ifdef _OPENMP
-       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode) private(p, xx)
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
 #endif
 	for(yy = (y >> 3); yy < hh ; yy++) {
-   	   p = &pp[64 * ((x >> 3) + xfactor * yy)];
+   	   p = &pp[(xfactor * (yy << 3) + (x >> 3)) << 3];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
 	      if(SDLDrawFlag.read[xx][yy]) {
-		 pVirtualVramBuilder->vram_block(p, xx , yy << 3, sizeof(Uint32) * 8, mode);
+		 pVirtualVramBuilder->vram_block(p, xx , yy << 3, xfactor << 3, mode);
 		 SDLDrawFlag.write[xx][yy] = TRUE;
 		 SDLDrawFlag.read[xx][yy]  = FALSE;
 		 SDLDrawFlag.Drawn = TRUE;
 	      }
-	      p += 64;
+	      p += 8;
 	   }
 	}
      }

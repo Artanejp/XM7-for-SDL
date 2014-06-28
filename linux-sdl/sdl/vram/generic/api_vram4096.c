@@ -104,10 +104,9 @@ void CreateVirtualVram4096_1Pcs(Uint32 *p, int x, int y, int pitch, int mode)
 {
 //    Uint32 c[8];
     v8hi_t c;
-    Uint8 *disp = (Uint8 *)p;
+    Uint32 *disp = p;
     Uint32 addr;
 
-    pitch = sizeof(Uint32) * 8;
     addr = y * 40 + x;
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
