@@ -35,14 +35,6 @@ class GLCLDraw *cldraw = NULL;
 #endif
 
 
-GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h)
-{
-//    glBindTexture(GL_TEXTURE_2D, texid);
-    glTexSubImage2D(GL_TEXTURE_2D, 0,
-                    x, y + 1, w, h,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,(GLvoid *)p);
-}
 
 GLuint CreateNullTexture(int w, int h)
 {

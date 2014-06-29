@@ -140,16 +140,15 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
 	  // Copy pbo to texture 
-//	  glTexSubImage2D(GL_TEXTURE_2D, 
-//			  0,
-//			  0,
-//			  0,
-//			  w,
-//			  h,
-//			  GL_RGBA,
-//			  GL_UNSIGNED_BYTE,
-//			  NULL);
-	  UpdateTexturePiece((Uint32 *)(cldraw->pixelBuffer),uVramTextureID, 0, 0, 640, h);
+	  glTexSubImage2D(GL_TEXTURE_2D, 
+			  0,
+			  0,
+			  0,
+			  w,
+			  h,
+			  GL_RGBA,
+			  GL_UNSIGNED_BYTE,
+			  NULL);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  SDLDrawFlag.Drawn = FALSE;
@@ -159,12 +158,28 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  if(nRenderMethod == RENDERING_RASTER) {
 	     if(p != NULL) {
 		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-		UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
+		glTexSubImage2D(GL_TEXTURE_2D, 
+			  0,
+			  0,
+			  0,
+			  640,
+			  h,
+			  GL_RGBA,
+			  GL_UNSIGNED_BYTE,
+			  p);
 		glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 	     }
 	  } else if((p != NULL) && (SDLDrawFlag.Drawn) ) {
 	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-	       UpdateTexturePiece(p, uVramTextureID, 0, 0, 640, h);
+	       glTexSubImage2D(GL_TEXTURE_2D, 
+			  0,
+			  0,
+			  0,
+			  640,
+			  h,
+			  GL_RGBA,
+			  GL_UNSIGNED_BYTE,
+			  p);
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
 	       SDLDrawFlag.Drawn = FALSE;
 	  }
@@ -340,7 +355,7 @@ void AGEventDrawGL2(AG_Event *event)
        glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
        glBegin(GL_LINES);
        for(y = 0; y < h; y++) {
-	  yf = -1.0f + (float) y * 2.0f / (float)h;
+	  yf = -1.0f + (float) (y + 1) * 2.0f / (float)h;
 	  glVertex3f(-1.0f, yf, 0.96f);  
 	  glVertex3f(+1.0f, yf, 0.96f);  
        }
