@@ -140,15 +140,15 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
 	  // Copy pbo to texture 
-	  glTexSubImage2D(GL_TEXTURE_2D, 
-			  0,
-			  0,
-			  0,
-			  w,
-			  h,
-			  GL_RGBA,
-			  GL_UNSIGNED_BYTE,
-			  NULL);
+//	  glTexSubImage2D(GL_TEXTURE_2D, 
+//			  0,
+//			  0,
+//			  0,
+//			  w,
+//			  h,
+//			  GL_RGBA,
+//			  GL_UNSIGNED_BYTE,
+//			  NULL);
 	  UpdateTexturePiece((Uint32 *)(cldraw->pixelBuffer),uVramTextureID, 0, 0, 640, h);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	  glBindTexture(GL_TEXTURE_2D, 0);

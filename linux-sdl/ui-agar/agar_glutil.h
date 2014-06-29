@@ -59,9 +59,9 @@ extern BOOL QueryGLExtensions(const char *str);
 }
 #endif
 #ifdef __cplusplus
-extern GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h);
 extern GLuint UpdateTexturePiece(Uint32 *p, GLuint texid, int x, int y, int w, int h);
 extern GLuint CreateNullTexture(int w, int h);
+extern GLuint CreateNullTextureCL(int w, int h);
 
 extern void Flip_AG_GL(void);
 extern void DiscardTextures(int n, GLuint *id);

@@ -30,7 +30,7 @@ class GLCLDraw {
    ~GLCLDraw();
    cl_int GetVram(int bmode);
    cl_int BuildFromSource(const char *p);
-   cl_int SetupBuffer(GLuint texid);
+   cl_int SetupBuffer(GLuint *texid);
    cl_int SetupTable(void);
    cl_int InitContext(void);
    GLuint GLCLDraw::GetPbo(void);

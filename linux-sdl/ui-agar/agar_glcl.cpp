@@ -624,12 +624,12 @@ cl_int GLCLDraw::GetVram(int bmode)
 				  1, (cl_mem *)&outbuf,
 				  3, event_uploadvram, &event_copytotexture);
   
-//   ret |= clEnqueueTask (command_queue,
-//			 kernel, 1, &event_copytotexture, &event_exec);
-   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-				 goff, gws, lws, 
-				 1, &event_copytotexture,  &event_exec);
-//   clFinish(command_queue);
+   ret |= clEnqueueTask (command_queue,
+			 kernel, 1, &event_copytotexture, &event_exec);
+//   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+//				 goff, gws, lws, 
+//				 1, &event_copytotexture,  &event_exec);
+   clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
@@ -692,10 +692,11 @@ cl_int GLCLDraw::SetupTable(void)
 }
 
 
-cl_int GLCLDraw::SetupBuffer(GLuint texid)
+cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 {
    cl_int ret = 0;
    cl_int r = 0;
+   GLuint tid;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    
    inbuf = clCreateBuffer(context, CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
@@ -710,21 +711,33 @@ cl_int GLCLDraw::SetupBuffer(GLuint texid)
    ret |= r;
    
    // Texture直接からPBO使用に変更 20121102
-   if(bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+   if(bGL_PIXEL_UNPACK_BUFFER_BINDING && (texid != NULL)) {
+      tid = *texid;
       glGenBuffers(1, &pbo);
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
       glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-      printf("DBG: CL: PBO=%08x Size=%d context=%08x\n", pbo, size, context);
+//      printf("DBG: CL: PBO=%08x Size=%d context=%08x\n", pbo, size, context);
       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
-				    pbo, &r);
-     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-//     glBindTexture(GL_TEXTURE_2D, texid);
+      				    pbo, &r);
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+      ret |= r;
+//     glDeleteTextures(1, &tid);
+//     tid = CreateNullTextureCL(640, 400);
+//     glBindTexture(GL_TEXTURE_2D, tid);
 //     outbuf = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY,
 //				    GL_TEXTURE_2D, 0,
-//				    texid, &r);
-//     glBindTexture(GL_TEXTURE_2D, 0);
-      ret |= r;
+//				    tid, &r);
+//   glBindTexture(GL_TEXTURE_2D, 0);
+//     ret |= r;
+//     if(ret != CL_SUCCESS) {
+//       glDeleteTextures(1, &tid);
+//       tid = CreateNullTexture(640, 400);
+//     }
+//     *texid = tid;	   
+   } else {
+     ret = CL_DEVICE_NOT_AVAILABLE;
    }
+   
    printf("Alloc STS: %d \n", ret);
    return ret;
 }

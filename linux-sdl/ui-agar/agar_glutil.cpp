@@ -68,53 +68,30 @@ GLuint CreateNullTexture(int w, int h)
     return ttid;
 }
 
-GLuint UpdateTexture(Uint32 *p, GLuint texid, int w, int h)
+GLuint CreateNullTextureCL(int w, int h)
 {
     GLuint ttid;
+    Uint32 *p;
 
-    if((w < 0) || (h < 0)) return 0;
+    p =(Uint32 *)malloc((w + 2)*  (h  + 2) * sizeof(Uint32));
     if(p == NULL) return 0;
 
-    LockVram();
-    ttid = texid;
-    if(texid == 0) {
-        glGenTextures(1, &ttid);
-        glBindTexture(GL_TEXTURE_2D, ttid);
-        glTexImage2D(GL_TEXTURE_2D,
+    memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
+    glGenTextures(1, &ttid);
+    glBindTexture(GL_TEXTURE_2D, ttid);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1); // Limit mipmap level , reduce resources.
+    glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_RGBA,
-                 w, h,
+                 GL_RGBA8UI,
+                 w, h + 2,
                  0,
-                 GL_RGBA,
+                 GL_RGBA_INTEGER,
                  GL_UNSIGNED_BYTE,
                  p);
-    } else {
-#if 1 // texSubImage2D()で置き換えるとAgar側がちらつく(--;
-       glBindTexture(GL_TEXTURE_2D, ttid);
-       glTexSubImage2D(GL_TEXTURE_2D,
-                         0,  // level
-                         0, 0, // offset
-                         w, h,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         p );
-#else
-       glDeleteTextures(1, &texid);
-       glGenTextures(1, &ttid);
-       glBindTexture(GL_TEXTURE_2D, ttid);
-       glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 w, h,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 p);
-#endif
-    }
-    UnlockVram();
+    free(p);
     return ttid;
 }
+
 
 void Flip_AG_GL(void)
 {
@@ -152,7 +129,7 @@ void InitContextCL(void)
 		 r = cldraw->BuildFromSource(cl_render);
 		  printf("Build: STS = %d \n", r);
 	         if(r == CL_SUCCESS) {
-		    r = cldraw->SetupBuffer(uVramTextureID);
+		    r = cldraw->SetupBuffer(&uVramTextureID);
 		    r |= cldraw->SetupTable();
 		    if(r != CL_SUCCESS){
 		       delete cldraw;
