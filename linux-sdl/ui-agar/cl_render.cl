@@ -61,6 +61,9 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   uint8 c8;
   __global uint8 *p8;
   uint pb1, pbegin, col;
+  __global uchar *src_r;
+  __global uchar *src_g;
+  __global uchar *src_b;
 
   t = get_global_size(0);
   gid = get_global_id(0);
@@ -80,30 +83,42 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   addr2 = pbegin << 3;
   p8 = (__global uint8 *)(&(out[addr2]));
 
-  palette.s0 = pal[0];
-  palette.s1 = pal[1];
-  palette.s2 = pal[2];
-  palette.s3 = pal[3];
-  palette.s4 = pal[4];
-  palette.s5 = pal[5];
-  palette.s6 = pal[6];
-  palette.s7 = pal[7];
+  palette = (uint8){pal[0], pal[1], pal[2], pal[3],
+                    pal[4], pal[5], pal[6], pal[7]};  
+//  palette.s0 = pal[0];
+//  palette.s1 = pal[1];
+//  palette.s2 = pal[2];
+//  palette.s3 = pal[3];
+//  palette.s4 = pal[4];
+//  palette.s5 = pal[5];
+//  palette.s6 = pal[6];
+//  palette.s7 = pal[7];
   
   if(h > 200) ofset = 0x8000;
 
   tbl8 = (__global uint8 *)table;
   //p = (__global uchar4 *)(&(out[addr2]));
   p8 = (__global uint8 *)(&(out[addr2]));
+  src_r = &src[addr + ofset];
+  src_g = &src[addr + ofset + ofset];
+  src_b = &src[addr];
+  
+  prefetch(tbl8, 256 * 3);
+  prefetch(src_r, ww);
+  prefetch(src_g, ww);
+  prefetch(src_b, ww);
   for(x = 0; x < ww; x++) {
-        bc = src[addr];
-	rc = src[addr + ofset];
-	gc = src[addr + ofset + ofset];
+        bc = *src_b;
+	rc = *src_r;
+	gc = *src_g;
         c8 = tbl8[bc] | tbl8[rc + 256] | tbl8[gc + 256 * 2];
-	c8 &= (uint8){0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f};
+//	c8 &= (uint8){0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f};
 	av = shuffle(palette, c8);
 	*p8 = putpixel(av, abuf);
 	p8++;
-        addr++;
+        src_r++;
+        src_g++;
+        src_b++;
 	}
 }	
 	
@@ -150,12 +165,27 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   }
   
   addr = pbegin; 
-  addr2 = pbegin << 4;
+  addr2 = pbegin << 3;
   p8 = (__global uint8 *)(&(out[addr2]));
+  src = &src[addr];
+  prefetch(&src[0], ww);
+  prefetch(&src[0x2000], ww);
+  prefetch(&src[0x4000], ww);
+  prefetch(&src[0x6000], ww);
+  prefetch(&src[0      + ofset], ww);
+  prefetch(&src[0x2000 + ofset], ww);
+  prefetch(&src[0x4000 + ofset], ww);
+  prefetch(&src[0x6000 + ofset], ww);
+  prefetch(&src[0      + ofset << 1], ww);
+  prefetch(&src[0x2000 + ofset << 1], ww);
+  prefetch(&src[0x4000 + ofset << 1], ww);
+  prefetch(&src[0x6000 + ofset << 1], ww);
+  prefetch(pal, 4096);
+  prefetch(tbl8, 0xc00);
   for(x = 0; x < ww; x++) {
-        b = &src[addr];
-	r = &src[addr + ofset];
-	g = &src[addr + ofset + ofset];
+        b = &src[0];
+	r = &src[ofset];
+	g = &src[ofset << 1];
 	b3 = (uint)(b[0x0    ]) + 0x300;
 	b2 = (uint)(b[0x2000]) + 0x200;
 	b1 = (uint)(b[0x4000]) + 0x100;
@@ -191,7 +221,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	
 	*p8 = putpixel(av, abuf);
 	p8++;
-        addr++;
+        src++;
 	}
 }	
 	
@@ -237,8 +267,28 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   }
   
   addr = pbegin; 
-  addr2 = pbegin << 4;
+  addr2 = pbegin << 3;
   p8 = (__global uint8 *)(&(out[addr2]));
+  src = &src[addr];
+  prefetch(&src[0], ww);
+  prefetch(&src[0x2000], ww);
+  prefetch(&src[0x4000], ww);
+  prefetch(&src[0x6000], ww);
+  prefetch(&src[0x8000], ww);
+  prefetch(&src[0xa000], ww);
+  prefetch(&src[0      + ofset], ww);
+  prefetch(&src[0x2000 + ofset], ww);
+  prefetch(&src[0x4000 + ofset], ww);
+  prefetch(&src[0x6000 + ofset], ww);
+  prefetch(&src[0x8000 + ofset], ww);
+  prefetch(&src[0xa000 + ofset], ww);
+  prefetch(&src[0      + ofset << 1], ww);
+  prefetch(&src[0x2000 + ofset << 1], ww);
+  prefetch(&src[0x4000 + ofset << 1], ww);
+  prefetch(&src[0x6000 + ofset << 1], ww);
+  prefetch(&src[0x8000 + ofset << 1], ww);
+  prefetch(&src[0xa000 + ofset << 1], ww);
+  prefetch(tbl8, 0x500);
   for(x = 0; x < ww; x++) {
         b = &src[addr];
 	r = &src[addr + ofset];

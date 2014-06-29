@@ -538,12 +538,12 @@ cl_int GLCLDraw::window_copy4096(void)
 cl_int GLCLDraw::GetVram(int bmode)
 {
    cl_int ret = 0;
+   cl_int r;
    int w;
    int h;
    Uint8 *pr,*pg,*pb;
-   Uint32 *pal;
-   size_t gws[] = {1}; // Parallel jobs.
-   size_t *lws = NULL; // local jobs.
+   size_t gws[] = {20}; // Parallel jobs.
+   size_t lws[] = {1}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
 	
@@ -615,28 +615,27 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_FALSE, 0,
                               4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
                               , 0, NULL, &event_uploadvram[3]);
-     
       break;
    }
    glFinish();
-   clFinish(command_queue);
+//   clFinish(command_queue);
    ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  3, event_uploadvram, &event_copytotexture);
   
-   ret |= clEnqueueTask (command_queue,
-			 kernel, 1, &event_copytotexture, &event_exec);
-//   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-//				 goff, gws, lws, 
-//				 1, &event_copytotexture,  &event_exec);
-   clFinish(command_queue);
+//   ret |= clEnqueueTask(command_queue,
+//			 kernel, 1, &event_copytotexture, &event_exec);
+   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				 goff, gws, lws, 
+				 1, &event_copytotexture,  &event_exec);
+//   clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
    clFinish(command_queue);
    clReleaseKernel(kernel);
    kernel = NULL;
-   glFinish();
+//   glFinish();
    return ret;
 				   
 }
@@ -703,10 +702,10 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
    ret |= r;
    
-   palette = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+   palette = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
    ret |= r;
-   table = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+   table = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY  | CL_MEM_ALLOC_HOST_PTR,
  		  (size_t)(0x100 * 8 * 20 * sizeof(cl_uint)), NULL, &r);
    ret |= r;
    
@@ -721,19 +720,6 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
       				    pbo, &r);
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
       ret |= r;
-//     glDeleteTextures(1, &tid);
-//     tid = CreateNullTextureCL(640, 400);
-//     glBindTexture(GL_TEXTURE_2D, tid);
-//     outbuf = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY,
-//				    GL_TEXTURE_2D, 0,
-//				    tid, &r);
-//   glBindTexture(GL_TEXTURE_2D, 0);
-//     ret |= r;
-//     if(ret != CL_SUCCESS) {
-//       glDeleteTextures(1, &tid);
-//       tid = CreateNullTexture(640, 400);
-//     }
-//     *texid = tid;	   
    } else {
      ret = CL_DEVICE_NOT_AVAILABLE;
    }
