@@ -542,8 +542,8 @@ cl_int GLCLDraw::GetVram(int bmode)
    int h;
    Uint8 *pr,*pg,*pb;
    Uint32 *pal;
-   size_t gws[] = {40}; // Parallel jobs.
-   size_t lws[] = {1}; // local jobs.
+   size_t gws[] = {1}; // Parallel jobs.
+   size_t *lws = NULL; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
 	
