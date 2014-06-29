@@ -19,8 +19,8 @@ extern "C" {
     BOOL bInitCL;
 }
 
-GLuint GridVertexs200l;
-GLuint GridVertexs400l;
+GLfloat GridVertexs200l[202 * 6];
+GLfloat GridVertexs400l[402 * 6];
 
 extern Uint32 *pFrameBuffer;
 // Brights
@@ -143,21 +143,30 @@ void InitContextCL(void)
 }
 
 
-static GLuint InitGridVertexsSub(int h)
+static void InitGridVertexsSub(GLfloat *p, int h)
 {
-   Uint32 *p;
    int y;
-   int x;
-   GLuint ttid;
-   
-   return 0;
+   int yp;
+   float yf;
+   yp = 0;
+   for(y = 0; y < (h + 1); y++) {
+      yf = -1.0f + (float) (y + 1) * 2.0f / (float)h;
+      p[yp + 0] = -1.0f;
+      p[yp + 1] = yf;
+      p[yp + 2] = 0.96f;
+      p[yp + 3] = -1.0f;
+      p[yp + 4] = yf;
+      p[yp + 5] = 0.96f;
+      yp += 6;
+   }
+   return;
 }
 
 
 void InitGridVertexs(void)
 {
-   GridVertexs200l =  InitGridVertexsSub(200);
-   GridVertexs400l =  InitGridVertexsSub(400);
+   InitGridVertexsSub(GridVertexs200l, 200);
+   InitGridVertexsSub(GridVertexs400l, 400);
 }
 
 
