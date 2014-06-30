@@ -124,7 +124,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        hh = h >> 3;
 
 #ifdef _USE_OPENCL
-       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+       if((SDLDrawFlag.Drawn == TRUE) &&
+	  (cldraw != NULL) &&
+	  bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+
 	  cl_int ret;
 
 	  LockVram();
@@ -153,21 +156,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        } else {
 #endif
 	  LockVram();
-	  if(nRenderMethod == RENDERING_RASTER) {
-	     if(p != NULL) {
-		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-		glTexSubImage2D(GL_TEXTURE_2D, 
-			  0,
-			  0,
-			  0,
-			  640,
-			  h,
-			  GL_RGBA,
-			  GL_UNSIGNED_BYTE,
-			  p);
-		glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
-	     }
-	  } else if((p != NULL) && (SDLDrawFlag.Drawn) ) {
+	  if((p != NULL) && (SDLDrawFlag.Drawn) ) {
 	       glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	       glTexSubImage2D(GL_TEXTURE_2D, 
 			  0,

@@ -308,9 +308,6 @@ void AGDrawTaskMain(void)
 
         SelectDraw2();
         if(nRenderMethod == RENDERING_RASTER) return;
-#ifdef _USE_OPENCL
-       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) return; // OK?
-#endif	   
 #if XM7_VER >= 3
 	switch (bMode) {
 	case SCR_400LINE:

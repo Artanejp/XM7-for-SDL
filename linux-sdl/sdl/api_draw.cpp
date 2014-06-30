@@ -762,8 +762,12 @@ void FASTCALL SetDirtyFlag(int top, int bottom, BOOL flag)
 	if (nRenderMethod == RENDERING_RASTER) {
 		for (y = top; y < bottom; y++) {
 			bDirtyLine[y] = flag;
-		 //  SDLDrawFlag.read[0][y] = flag;
 		}
+#ifdef _USE_OPENCL
+	   if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+	      SDLDrawFlag.Drawn = TRUE;
+	   }
+#endif
 	}
 }
 
@@ -825,9 +829,6 @@ void vram_notify(WORD addr, BYTE dat)
       }
       if(yy < 400) {
 		bDirtyLine[yy] = TRUE;
-	//      	for(xx = 0; xx < ww; xx++) {
-	//		SDLDrawFlag.write[xx][yy >> 3] = TRUE;
-	//      	}
 	}
 	UnlockVram();
         /* 垂直方向 */
@@ -921,6 +922,9 @@ void vram_notify(WORD addr, BYTE dat)
 	 */
         LockVram();
         SDLDrawFlag.read[x][y] = TRUE;
+#ifdef _USE_OPENCL
+       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) SDLDrawFlag.Drawn = TRUE; // OK?
+#endif	   
         UnlockVram();
 	/*
 	 * 垂直方向更新
@@ -1066,9 +1070,6 @@ void FASTCALL vblankperiod_notify(void)
 	int ymax;
 
 	if (nRenderMethod == RENDERING_RASTER) {
-#ifdef _USE_OPENCL
-       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) return; // OK?
-#endif	   
 		/* 次のフレームを強制的に書き換えるか */
 		if (bNextFrameRender) {
 			bNextFrameRender = FALSE;
@@ -1100,9 +1101,6 @@ void FASTCALL vblankperiod_notify(void)
 			if (!flag) {
 				return;
 			}
-#ifdef _USE_OPENCL
-		   if(cldraw != NULL) return;
-#endif
 		   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 		   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 		   for(y = 0; y < ymax; y++) {
@@ -1120,14 +1118,9 @@ void FASTCALL vblankperiod_notify(void)
 void FASTCALL hblank_notify(void)
 {
 	if (nRenderMethod == RENDERING_RASTER) {
-#ifdef _USE_OPENCL
-       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) return;
-#endif	   
 //	   LockVram();
 	   if(now_raster >= 400) return;
-#ifdef _USE_OPENCL
-		   if(cldraw != NULL) return;
-#endif
+
 //	   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 	   if (bDirtyLine[now_raster]) {
 //	           _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
@@ -1572,8 +1565,14 @@ void Draw_1Line(int line)
    if((line < 0) || (line >= hh)) return;
    if(vram_dptr == NULL) return;
    if(vram_bdptr == NULL) return;
+#ifdef _USE_OPENCL
+   if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+      SDLDrawFlag.Drawn = TRUE;
+      return;
+   }
+#endif
    if((bWindowOpen) && (bMode != SCR_262144)) { // ハードウェアウインドウ開いてる
-   if((nDrawTop >= nDrawBottom) && (nDrawLeft >= nDrawRight)) return;	 /* ウィンドウ内の描画 */
+      if((nDrawTop >= nDrawBottom) && (nDrawLeft >= nDrawRight)) return;	 /* ウィンドウ内の描画 */
 	 if (top  > window_dy1) {
 	    wdtop = top ;
 	 } else {
@@ -1604,7 +1603,7 @@ void Draw_1Line(int line)
 	 BuildVirtualVram_Raster(pp,  line,  multi_page);
 	 //UnlockVram();
     }
-
+   SDLDrawFlag.Drawn = TRUE;
    bDrawLine[line] = TRUE;
    return;
 }
@@ -1832,7 +1831,6 @@ void Draw256k(void)
     * 26万色モードの時は、ハードウェアウィンドウを考慮しない。
     */
    PutVramFunc(p, 0, 0, 320, 200, multi_page);
-
 }
 
 }

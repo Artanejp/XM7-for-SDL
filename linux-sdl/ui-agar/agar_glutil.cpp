@@ -15,8 +15,13 @@
 
 extern "C" {
     AG_GLView *GLDrawArea;
+#ifdef _USE_OPENCL
     extern BOOL bUseOpenCL;
-    static BOOL bInitCL = FALSE;
+    BOOL bInitCL = FALSE;
+    int nCLGlobalWorkThreads = 10;
+    BOOL bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.
+    //BOOL bCLDirectMapping = FALSE;
+#endif
 }
 
 GLfloat GridVertexs200l[202 * 6];
@@ -213,6 +218,9 @@ void InitGL_AG2(int w, int h)
 	pVram2 = NULL;
 #ifdef _USE_OPENCL
         bInitCL = FALSE;
+        nCLGlobalWorkThreads = 10;
+        bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.
+        //bCLDirectMapping = FALSE;
 #endif
 	InitVirtualVram();
         //if(AG_UsingSDL(NULL)) {

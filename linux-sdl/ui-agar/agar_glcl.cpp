@@ -17,6 +17,7 @@
 #include "agar_xm7.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
+#include "agar_glutil.h"
 #include "xm7.h"
 #include "display.h"
 #include "subctrl.h"
@@ -542,7 +543,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    int w;
    int h;
    Uint8 *pr,*pg,*pb;
-   size_t gws[] = {20}; // Parallel jobs.
+   size_t gws[] = {nCLGlobalWorkThreads}; // Parallel jobs.
    size_t lws[] = {1}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
@@ -623,11 +624,16 @@ cl_int GLCLDraw::GetVram(int bmode)
 				  1, (cl_mem *)&outbuf,
 				  3, event_uploadvram, &event_copytotexture);
   
-//   ret |= clEnqueueTask(command_queue,
-//			 kernel, 1, &event_copytotexture, &event_exec);
-   ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-				 goff, gws, lws, 
-				 1, &event_copytotexture,  &event_exec);
+   if(bCLSparse) {
+      ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				    goff, gws, lws, 
+				    1, &event_copytotexture,  &event_exec);
+   } else {
+      ret |= clEnqueueTask(command_queue,
+			 kernel, 1, &event_copytotexture, &event_exec);
+   }
+   
+   
 //   clFinish(command_queue);
    ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
@@ -698,9 +704,13 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    GLuint tid;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    
-   inbuf = clCreateBuffer(context, CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
-		  (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
-   ret |= r;
+//   if(bCLDirectMapping) {
+//   } else {
+      inbuf = clCreateBuffer(context, CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
+			     (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
+      ret |= r;
+//   }
+   
    
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
