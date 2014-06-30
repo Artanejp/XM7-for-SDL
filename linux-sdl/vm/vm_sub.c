@@ -6,6 +6,7 @@
 #include <string.h>
 #include <SDL/SDL.h>
 #include "xm7_types.h"
+#include "cache_wrapper.h"
 /*
  *
  */
@@ -20,6 +21,9 @@ void memcpy400l(void *dest, void *src, int count)
 //    }
      uint8_t *d = (uint8_t *)dest;
      uint8_t *s = (uint8_t *)src;
+   
+     _prefetch_data_read_l2(s, count);
+     _prefetch_data_write_l2(d, count);
      count >>= 1;
      while(count){
 	*d = *s;
