@@ -25,6 +25,7 @@ COMMONSRC = \
 	agar_svram.cpp \
 	agar_vramutil.cpp \
 	agar_main.cpp \
+	agar_logger.cpp \
 	AgarKbdInterface.cpp
 
 GUISRC = \

@@ -18,6 +18,7 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_glutil.h"
+#include "agar_logger.h"
 #include "xm7.h"
 #include "display.h"
 #include "subctrl.h"
@@ -65,7 +66,7 @@ static void cl_notify_log(const char *errinfo, const void *private_info, size_t 
    int i;
    
    dumpStr[0] = '\0';
-   printf("DBG: CL Notify: %s\n", errinfo);
+   XM7_DebugLog(XM7_LOG_WARN, "CL Notify: %s\n", errinfo);
 }
 
 
@@ -86,11 +87,11 @@ cl_int GLCLDraw::InitContext(void)
 
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();
-   printf("DBG: GL Context = %08x\n", glXGetCurrentContext());
+   XM7_DebugLog(XM7_LOG_DEBUG, "GL Context = %08x\n", glXGetCurrentContext());
    
    properties[2] = CL_GLX_DISPLAY_KHR;
    properties[3] = (cl_context_properties)glXGetCurrentDisplay();
-   printf("DBG: GL Display = %08x\n", glXGetCurrentDisplay());
+   XM7_DebugLog(XM7_LOG_DEBUG, "GL Display = %08x\n", glXGetCurrentDisplay());
    properties[4] = CL_CONTEXT_PLATFORM;
    properties[5] = (cl_context_properties)platform_id;
    properties[6] = 0;
@@ -114,11 +115,11 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     codeSize = strlen(p);
     program = clCreateProgramWithSource(context, 1, (const char **)&p,
                                         (const size_t *)&codeSize, &ret);
-    printf("Build Result=%d\n", ret);
+    XM7_DebugLog(XM7_LOG_INFO, "CL: Build Result=%d\n", ret);
 
     // Compile from source
     ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-    printf("Compile Result=%d\n", ret);
+    XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d\n", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
        logBuf = (char *)malloc(LOGSIZE * sizeof(char));
        memset(logBuf, 0x00, LOGSIZE * sizeof(char));
@@ -548,7 +549,6 @@ cl_int GLCLDraw::GetVram(int bmode)
    size_t *goff = NULL;
    int mpage = multi_page;
 	
-//   printf("STS: %d\n", ret);
 
    
    if(inbuf == NULL) return -1;
@@ -725,7 +725,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
       glGenBuffers(1, &pbo);
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
       glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-//      printf("DBG: CL: PBO=%08x Size=%d context=%08x\n", pbo, size, context);
+//    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x\n", pbo, size, context);
       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
       				    pbo, &r);
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -734,7 +734,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
      ret = CL_DEVICE_NOT_AVAILABLE;
    }
    
-   printf("Alloc STS: %d \n", ret);
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: %d\n", ret);
    return ret;
 }
 

@@ -8,6 +8,7 @@
 #ifdef _USE_OPENCL
 #include "agar_glcl.h"
 #endif
+#include "agar_logger.h"
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -120,11 +121,11 @@ void InitContextCL(void)
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
 	       r = cldraw->InitContext();
-	       printf("CTX: STS = %d \n", r);
+	       XM7_DebugLog(XM7_LOG_DEBUG, "CL: Create CTX: STS = %d \n", r);
 	       if(r == CL_SUCCESS){
-		 printf("CL: GLCTX=%08x\n", glXGetCurrentContext());
+		 XM7_DebugLog(XM7_LOG_DEBUG,"CL: GLCTX=%08x\n", glXGetCurrentContext());
 		 r = cldraw->BuildFromSource(cl_render);
-		  printf("Build: STS = %d \n", r);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build STS = %d \n", r);
 	         if(r == CL_SUCCESS) {
 		    r = cldraw->SetupBuffer(&uVramTextureID);
 		    r |= cldraw->SetupTable();

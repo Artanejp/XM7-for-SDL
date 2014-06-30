@@ -20,6 +20,8 @@
 
 #include "agar_xm7.h"
 #include "agar_osd.h"
+#include "agar_logger.h"
+
 #include "sdl_sch.h"
 
 #include "api_snd.h"
@@ -232,7 +234,7 @@ static void *ThreadSch(void *param)
 	 */
 	ResetSch();
 	ResetSpeedAdjuster();
-
+        XM7_DebugLog(XM7_LOG_INFO, "Scheduler Started.");
 	/*
 	 * SDLイベントハンドラ登録
 	 */
@@ -509,7 +511,9 @@ static void *ThreadSch(void *param)
 		 */
 		bCloseReq = FALSE;
 		AG_QuitGUI();
+	        XM7_DebugLog(XM7_LOG_INFO, "Scheduler quits gui.");
 		retval = 0;
+	        XM7_DebugLog(XM7_LOG_INFO, "Scheduler end.");
 		AG_ThreadExit((void *)&retval);
 }
 

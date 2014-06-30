@@ -38,6 +38,7 @@
 #include "agar_cfg.h"
 #include "agar_draw.h"
 #include "agar_gldraw.h"
+#include "agar_logger.h"
 
 #include "sdl_inifile.h"
 #include "sdl_cpuid.h"
@@ -235,6 +236,7 @@ void OnDestroy(AG_Event *event)
 #endif
    DiscardTextures(1, &uVramTextureID);
    uVramTextureID = 0;
+   XM7_DebugLog(XM7_LOG_INFO, "All end.");
    AG_Quit();
 
 }
@@ -248,11 +250,12 @@ static void ErrorPopup(char *message)
    win = AG_WindowNew(0);
    if(win == NULL) {
         if(message == NULL) return;
-	fprintf(stderr,"ERR: %s\n", message);
+        XM7_DebugLog(XM7_LOG_INFO, "Error: %s.", message);
         return;
    } else {
       AG_VBox *vb;
       AG_Textbox *tb;
+        XM7_DebugLog(XM7_LOG_INFO, "Error: %s.", message);
         vb = AG_VBoxNew(AGWIDGET(win), AG_HBOX_HFILL);
         if(message != NULL) tb = AG_TextboxNew(vb, AG_TEXTBOX_MULTILINE, "%s", message);
         AG_ButtonNewFn(AGWIDGET(vb), 0, gettext("Close"), OnPushCancel, NULL);
@@ -332,11 +335,11 @@ void MainLoop(int argc, char *argv[])
    SDL_Surface *s;
 
    AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
-
-    AG_ConfigLoad();
-    AG_SetInt(agConfig, "font.size", UI_PT);
+   AG_ConfigLoad();
+   AG_SetInt(agConfig, "font.size", UI_PT);
+   XM7_OpenLog(1, 1); // Write to syslog, console
    
-    while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
+   while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {
               switch (c) {
               case 'd':
@@ -401,16 +404,17 @@ void MainLoop(int argc, char *argv[])
                   exit(0);
           }
     }
-    AG_GetString(agConfig, "font.face", strbuf, 511);
-    if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0))
-    {
-        AG_SetString(agConfig, "font.face", UI_FONT);
-    }
+    XM7_DebugLog(XM7_LOG_INFO, "Start XM7 %s%s %s %s", VERSION, LEVEL, LOCALVER, DATE);
+    XM7_DebugLog(XM7_LOG_INFO, "(C) Ryu Takegami / SDL Version K.Ohta");
+    XM7_DebugLog(XM7_LOG_INFO, " -? is print help(s).");
+   
     if(SDL_getenv("HOME") != NULL) {
 	strcpy(homedir, SDL_getenv("HOME"));
     } else {
         strcpy(homedir, ".");
     }
+    XM7_DebugLog(XM7_LOG_DEBUG, "HOME = %s", homedir);
+
 #ifdef _WINDOWS
 	AG_PrtString(agConfig, "font-path", "%s:%s/xm7:%s:.",
 		homedir, homedir, FONTPATH);
@@ -421,9 +425,16 @@ void MainLoop(int argc, char *argv[])
      AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
 		  homedir, homedir, homedir, FONTPATH);
     }
+    XM7_DebugLog(XM7_LOG_DEBUG, "font-path = %s", strbuf);
 #endif /* _WINDOWS */
    
-    printf("DBG: font-path = %s\n", strbuf);
+    AG_GetString(agConfig, "font.face", strbuf, 511);
+    if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0))
+    {
+        AG_SetString(agConfig, "font.face", UI_FONT);
+    }
+    XM7_DebugLog(XM7_LOG_DEBUG, "font.face = %s", strbuf);
+   
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
@@ -454,10 +465,13 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
         }
     }
     OnCreate((AG_Widget *)NULL);
-
+    XM7_DebugLog(XM7_LOG_DEBUG, "Widget creation OK.");
+   
    if(AG_UsingSDL(NULL) == 0) {
       SDL_Init(SDL_INIT_VIDEO);
+      XM7_DebugLog(XM7_LOG_INFO, "Start Single WM with SDL.");
    } else { // WM function is managed by SDL, load and set icon for WM. 
+      XM7_DebugLog(XM7_LOG_INFO, "Start multi window mode.");
 
       switch(fm7_ver) {
        case 1: // FM7/77
@@ -480,12 +494,15 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	 break;
       }
    }
+   XM7_DebugLog(XM7_LOG_INFO, "Emulate version:%d", fm7_ver);
    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+   XM7_DebugLog(XM7_LOG_DEBUG, "Audio and JOYSTICK subsystem was initialised.");
 
 //   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
     
    // 
    InitInstance();
+   XM7_DebugLog(XM7_LOG_DEBUG, "InitInstance() OK.");
 //   OnCreate((AG_Widget *)NULL);
        
    stopreq_flag = FALSE;
@@ -507,6 +524,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    nDrawTick1E = nDrawTick1D;
 
    ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
+   XM7_DebugLog(XM7_LOG_DEBUG, "Screen is %d x %d.", nDrawWidth, nDrawHeight);
     switch(nErrorCode) 
      {
       case 0:
@@ -526,11 +544,13 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 #endif
    if(DrawArea != NULL) {
       AG_RedrawOnTick(DrawArea, 1000 / nDrawFPS);
+      XM7_DebugLog(XM7_LOG_INFO, "Direct draw mode.");
    } else if(GLDrawArea != NULL) {
       AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
+      XM7_DebugLog(XM7_LOG_INFO, "OpenGL mode.");
    }
    
-	AGDrawTaskEvent(TRUE);
+   AGDrawTaskEvent(TRUE);
 //	AG_EventLoop();
 //	AG_Quit();
 }

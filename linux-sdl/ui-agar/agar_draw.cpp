@@ -19,6 +19,8 @@
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
 #include "agar_cfg.h"
+#include "agar_logger.h"
+
 #ifdef _USE_OPENCL
 extern class GLCLDraw *cldraw;
 #endif // _USE_OPENCL
@@ -282,7 +284,7 @@ void ResizeWindow_Agar2(int w, int h)
    }
    AG_SetVideoResizeCallback(ResizeWindow_Agar);
    UnlockVram();
-   printf("Resize2 to %d x %d\n", w, h);
+   XM7_DebugLog(XM7_LOG_DEBUG, "Resize2 to %d x %d\n", w, h);
 }
 
 //extern void XM7_SDLViewUpdateSrc(AG_Pixmap *my, void *Fn);
