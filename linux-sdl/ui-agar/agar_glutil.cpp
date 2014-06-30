@@ -16,13 +16,12 @@
 extern "C" {
     AG_GLView *GLDrawArea;
     extern BOOL bUseOpenCL;
-    BOOL bInitCL;
+    static BOOL bInitCL = FALSE;
 }
 
 GLfloat GridVertexs200l[202 * 6];
 GLfloat GridVertexs400l[402 * 6];
 
-extern Uint32 *pFrameBuffer;
 // Brights
 extern float fBrightR;
 extern float fBrightG;
@@ -109,8 +108,9 @@ void InitContextCL(void)
 {
       if(GLDrawArea == NULL) return; // Context not created yet.
 #ifdef _USE_OPENCL
+     if(bInitCL == TRUE) return; // CL already initialized.
      if(bUseOpenCL && (cldraw == NULL) && 
-	bGL_PIXEL_UNPACK_BUFFER_BINDING && (!bInitCL)) {
+	bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	    cl_int r;
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
@@ -208,13 +208,10 @@ void InitGL_AG2(int w, int h)
     /*
      * GL 拡張の取得 20110907-
      */
-	pFrameBuffer = (Uint32 *)malloc(sizeof(Uint32) * 640 * 400);
-        if(pFrameBuffer == NULL) return;
-        memset(pFrameBuffer, 0x00, sizeof(Uint32) * 640 * 400);
 	InitVramSemaphore();
 	uVramTextureID = 0;
 	pVram2 = NULL;
-#ifdef _OPENCL
+#ifdef _USE_OPENCL
         bInitCL = FALSE;
 #endif
 	InitVirtualVram();

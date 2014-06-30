@@ -42,14 +42,12 @@
 GLuint uVramTextureID;
 #ifdef _USE_OPENCL
 extern class GLCLDraw *cldraw;
+extern void InitContextCL(void);
 #endif
 
-extern BOOL bInitCL;
-extern void InitContextCL(void);
 extern void InitGL_AG2(int w, int h);
 extern void DetachGL_AG2(void);
 
-Uint32 *pFrameBuffer;
 // Grids
 extern GLfloat *GridVertexs200l;
 extern GLfloat *GridVertexs400l;
