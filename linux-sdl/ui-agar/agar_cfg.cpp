@@ -30,6 +30,8 @@
 #include "agar_cfg.h"
 #include "agar_osd.h"
 #include "agar_draw.h"
+#include "agar_glutil.h"
+
 extern AG_Window *MainWindow;
 
 configdat_t configdat;	/* コンフィグ用データ */
@@ -55,7 +57,9 @@ extern void SetBrightRGB_AG_GL2(float r, float g, float b);
  * 追加Configエントリ
  */
 extern float fBright0;
+#ifdef _USE_OPENCL
 extern BOOL bUseOpenCL;
+#endif
 extern BOOL bUseSIMD;
 /*
  *  パス保存用キー名
@@ -552,11 +556,18 @@ void LoadCfg(void)
     /*
      * UI
      */
-	SetCfgSection("UI");
-	if (!LoadCfgString("StatusFont", StatusFont, MAXPATHLEN)) {
-	    strcpy(StatusFont, STAT_FONT);
-	}
-
+      SetCfgSection("UI");
+      if (!LoadCfgString("StatusFont", StatusFont, MAXPATHLEN)) {
+ 	    strcpy(StatusFont, STAT_FONT);
+      }
+      /*
+       * OPenCL
+       */
+       SetCfgSection("OPENCL");
+       configdat.bCLSparse = LoadCfgBool("CLSparse", FALSE);
+       configdat.nCLGlobalWorkThreads = LoadCfgInt("GWS", 10);
+       if(configdat.nCLGlobalWorkThreads <= 0) configdat.nCLGlobalWorkThreads = 1; 
+       if(configdat.nCLGlobalWorkThreads >= 256) configdat.nCLGlobalWorkThreads = 255; 
 }
 
 
@@ -820,6 +831,12 @@ void SaveCfg(void)
      */
     SetCfgSection("UI");
     SaveCfgString("StatusFont", StatusFont);
+    /*
+     * OpenCL
+     */
+    SetCfgSection("OPENCL");
+    SaveCfgBool("CLSparse", configdat.bCLSparse);
+    SaveCfgInt("GWS", configdat.nCLGlobalWorkThreads);
 
     SaveCfgFile();
 }
@@ -915,7 +932,9 @@ void ApplyCfg(void)
     nDrawFPS = configdat.nDrawFPS;
     nEmuFPS = configdat.nEmuFPS;
     nAspect = configdat.nAspect;
+#ifdef _USE_OPENCL
     bUseOpenCL = configdat.bUseOpenCL;
+#endif
     bUseSIMD = configdat.bUseSIMD;
     fBright0 = (float)configdat.nBrightness / 255.0f;
 #ifdef USE_OPENGL   
@@ -954,6 +973,13 @@ void ApplyCfg(void)
     nMidBtnMode = configdat.nMidBtnMode;
 
 #endif				/*  */
+   /*
+    * OpenCL
+    */
+#ifdef _USE_OPENCL
+    bCLSparse = configdat.bCLSparse;
+    nCLGlobalWorkThreads = configdat.nCLGlobalWorkThreads;
+#endif
 }
 
 

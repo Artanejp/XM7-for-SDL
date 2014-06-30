@@ -121,6 +121,10 @@ typedef struct {
 	int nCMTVolume; /* CMT音モニタボリューム */
 	int nWaveVolume; /* 各種効果音ボリューム */
 	UINT uChSeparation;
+   
+        /* OpenCL */
+        int nCLGlobalWorkThreads;
+        BOOL bCLSparse; // TRUE=Multi threaded CL,FALSE = Single Thread.
 } configdat_t;
 
 extern configdat_t configdat;	/* コンフィグ用データ */

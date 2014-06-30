@@ -54,6 +54,7 @@
 configdat_t localconfig;
 
 extern void OnPushCancel(AG_Event *event);
+extern void ConfigMenuOpenCL(AG_NotebookTab *parent);
 
 extern "C" {
 extern void ResizeGL(int w, int h);
@@ -521,6 +522,11 @@ void OnConfigEmulationMenu(AG_Event *event)
 #ifdef USE_OPENGL
     	tab = AG_NotebookAddTab(note, gettext("Display"), AG_BOX_HORIZ);
     	ConfigMenuBright(tab);
+#endif /* USE_OPENGL */
+
+#ifdef _USE_OPENCL
+    	tab = AG_NotebookAddTab(note, gettext("OpenCL"), AG_BOX_HORIZ);
+    	ConfigMenuOpenCL(tab);
 #endif /* USE_OPENGL */
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
