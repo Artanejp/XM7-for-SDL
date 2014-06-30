@@ -323,19 +323,19 @@ static BOOL LoadGlobalIconPng(char *path, char *filename)
 
 void MainLoop(int argc, char *argv[])
 {
-	int c;
-	char *drivers = NULL;
-	char *optArg;
-        char strbuf[2048];
-        char homedir[2048];
-	const SDL_VideoInfo *inf;
-	SDL_Surface *s;
+   int c;
+   char *drivers = NULL;
+   char *optArg;
+   char strbuf[2048];
+   char homedir[2048];
+   const SDL_VideoInfo *inf;
+   SDL_Surface *s;
 
-	AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
+   AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
 
-	AG_ConfigLoad();
+    AG_ConfigLoad();
     AG_SetInt(agConfig, "font.size", UI_PT);
-
+   
     while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {
               switch (c) {
@@ -402,7 +402,7 @@ void MainLoop(int argc, char *argv[])
           }
     }
     AG_GetString(agConfig, "font.face", strbuf, 511);
-    if(strlen(strbuf) <= 0)
+    if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0))
     {
         AG_SetString(agConfig, "font.face", UI_FONT);
     }
@@ -416,12 +416,13 @@ void MainLoop(int argc, char *argv[])
 		homedir, homedir, FONTPATH);
 #else
     AG_GetString(agConfig, "font-path", strbuf, 2047);
-    if(strlen(strbuf) <= 0)
+    if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0))
     {
      AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
 		  homedir, homedir, homedir, FONTPATH);
     }
 #endif /* _WINDOWS */
+   
     printf("DBG: font-path = %s\n", strbuf);
     stopreq_flag = FALSE;
     run_flag = TRUE;
