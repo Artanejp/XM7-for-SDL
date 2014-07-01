@@ -84,18 +84,19 @@ static void DrawCMTFn(AG_Event *event)
    if(dst == NULL) return;
    AG_MutexLock(&(disp->mutex));
    if((count == disp->OldCount) && (disp->stat == disp->OldStat)
-       && (disp->init == FALSE)) {
+       && (disp->init == FALSE) && (disp->Changed == FALSE)) {
       disp->init = FALSE;
       disp->OldStat = disp->stat;
       disp->OldCount = count;
       AG_MutexUnlock(&(disp->mutex));
     return;
    }
-   if(UpdateCMT(my, dst, disp) && (pCMTStat->Changed == TRUE)){
-      pCMTStat->Changed = FALSE;
+   if(UpdateCMT(my, dst, disp) || (disp->Changed == TRUE)){
+//      pCMTStat->Changed = FALSE;
       UpdateCMTCount(count, disp);
       AG_SurfaceBlit(disp->pSurface, NULL, dst, 4, 4);
       AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
+      pCMTStat->Changed = FALSE;
    }
 //   AG_SurfaceCopy(dst, pDrawCMT);
    AG_MutexUnlock(&(disp->mutex));
@@ -383,7 +384,6 @@ void DrawTape(int override)
 		   pCMTStat->Changed = TRUE;
 		}
 	   } else {
-	      pCMTStat->Changed = FALSE;
 	   }
         }
         if(bTapeWriteP != tape_writep) pCMTStat->Changed = TRUE;
