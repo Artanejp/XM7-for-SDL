@@ -264,76 +264,39 @@ static void DisplayWriteProtectDisk(AG_Event *event)
 	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
 	AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
 	char Label[128];
-	int Drive = AG_INT(1);
-
-	strcpy(Label,gettext("Write Protect"));
-	strcat(Label, " ");
-	if(fdc_writep[Drive]) {
-		strcat(Label, "ON");
+        BOOL  Drive = AG_INT(1);
+        
+	if(fdc_writep[Drive] && (fdc_ready[Drive] != FDC_TYPE_NOTREADY)) {
+	        strcpy(Label, "■ON");
 	} else {
-		strcat(Label, "Off");
+	        strcpy(Label, "　OFF");
 	}
+//        strcat(Label, gettext("Write Protect"));
 	AG_MenuSetLabel(item, Label);
 }
 
 /*
  * Set write-protect flag on logical-volume.
  */
-static void SetWriteProtectDisk(AG_Event *event)
-{
-	BOOL flag = AG_INT(1);
-	int Drive = AG_INT(2);
-	AG_Button *self = (AG_Button *)AG_SELF();
-
-    LockVM();
-//	fdc_writep[Drive] = flag;
-    fdc_setwritep(Drive, flag);
-    ResetSch();
-    UnlockVM();
-    AG_WindowHide(self->wid.window);
-    AG_ObjectDetach(self->wid.window);
-}
-
 static void OnWriteProtectDisk(AG_Event *event)
 {
-	AG_Menu *self = (AG_Menu *)AG_SELF();
-	AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
-	AG_Window *w;
-	AG_Button   *btn[3];
-	AG_Box *box;
-	AG_Box *box2;
-	char Label[128];
-	int Drive = AG_INT(1);
-	char *caption;
-	AG_Label *lbl;
-	int id;
+   AG_Menu *self = (AG_Menu *)AG_SELF();
+   AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
+   int Drive = AG_INT(1);
+   BOOL flag = AG_INT(2);
+   
+   AG_Label *lbl;
+   int id;
 
-	if(fdc_ready[Drive] == FDC_TYPE_NOTREADY) {
-		return;
-	}
+   if(fdc_ready[Drive] == FDC_TYPE_NOTREADY) {
+      return;
+   }
+   LockVM();
+//	fdc_writep[Drive] = flag;
+   fdc_setwritep(Drive, flag);
+   ResetSch();
+   UnlockVM();
 
-	sprintf(Label, "Drive %d:", Drive);
-	caption = gettext("Switch Write Protect on");
-
-	w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NORESIZE);
-	AG_WindowSetMinSize(w, 230, 80);
-	box = AG_BoxNewHorizNS(w, AG_BOX_HFILL);
-	AG_WidgetSetSize(box, 230, 32);
-	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s %d:", caption, Drive );
-	AG_LabelSizeHint (lbl, 2, caption);
-	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
-	AG_WidgetSetSize(box, 230, 8);
-	box = AG_BoxNewHoriz(w, AG_BOX_HFILL);
-	AG_WidgetSetSize(box, 230, 32);
-	box2 = AG_BoxNewVert(box, 0);
-	btn[0] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("ON"), SetWriteProtectDisk, "%i,%i", TRUE, Drive);
-	box2 = AG_BoxNewVert(box, 0);
-	btn[1] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("OFF"), SetWriteProtectDisk, "%i,%i", FALSE, Drive);
-	box2 = AG_BoxNewVert(box, 0);
-	btn[2] = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
-
-	AG_WindowSetCaption(w, gettext(Label));
-	AG_WindowShow(w);
 }
 
 
@@ -397,6 +360,8 @@ static void OnSelectDiskMedia(AG_Event *event)
 void CreateDiskMenu(AG_MenuItem *self, int Drive)
 {
 	AG_MenuItem *item;
+	AG_MenuItem *subitem;
+        AG_Toolbar  *toolbar;
 	if((Drive >= FDC_DRIVES) || (Drive <0)) return;
 
 	item = AG_MenuAction(self, gettext("Open"), NULL, OnOpenDisk, "%i", Drive);
@@ -412,7 +377,13 @@ void CreateDiskMenu(AG_MenuItem *self, int Drive)
 	 * ライトプロテクト
 	 */
 	AG_MenuSeparator(self);
-	item = AG_MenuAction(self, gettext("Write Protect"), NULL, OnWriteProtectDisk, "%i", Drive);
+//        item = AG_MenuDynamicItem(self, "", NULL, DisplayWriteProtectDisk, "%i", Drive);
+        item = AG_MenuNode(self, gettext("Write Protect"), NULL); 
+        AG_MenuToolbar(self, toolbar);
+	subitem = AG_MenuAction(item, gettext("ON"), NULL, OnWriteProtectDisk, "%i%i", Drive, TRUE);
+	subitem = AG_MenuAction(item, gettext("OFF"), NULL, OnWriteProtectDisk, "%i%i", Drive, FALSE);
+        AG_MenuToolbar(item, NULL);
+
 	/*
 	 * ディスクイメージ選択
 	 */
