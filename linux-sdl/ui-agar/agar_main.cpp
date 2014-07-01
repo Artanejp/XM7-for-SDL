@@ -352,6 +352,9 @@ void MainLoop(int argc, char *argv[])
    if(AG_GetVariable(agConfig, "font.size", NULL) == NULL) { 
 	AG_SetInt(agConfig, "font.size", UI_PT);
    }
+    printf("XM7/SDL %s%s %s %s\n", VERSION, LEVEL, LOCALVER, DATE);
+    printf("(C) Ryu Takegami / SDL Version K.Ohta <whatisthis.sowhat@gmail.com>\n");
+    printf(" -? is print help(s).\n");
 
    XM7_OpenLog(bLogSYSLOG, bLogSTDOUT); // Write to syslog, console
    
@@ -423,6 +426,9 @@ void MainLoop(int argc, char *argv[])
     XM7_DebugLog(XM7_LOG_INFO, "Start XM7 %s%s %s %s", VERSION, LEVEL, LOCALVER, DATE);
     XM7_DebugLog(XM7_LOG_INFO, "(C) Ryu Takegami / SDL Version K.Ohta");
     XM7_DebugLog(XM7_LOG_INFO, " -? is print help(s).");
+    XM7_DebugLog(XM7_LOG_DEBUG, "Start XM7 %s%s %s %s", VERSION, LEVEL, LOCALVER, DATE);
+    XM7_DebugLog(XM7_LOG_DEBUG, "(C) Ryu Takegami / SDL Version K.Ohta");
+    XM7_DebugLog(XM7_LOG_DEBUG, " -? is print help(s).");
    
     if(SDL_getenv("HOME") != NULL) {
 	strcpy(homedir, SDL_getenv("HOME"));
