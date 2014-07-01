@@ -5,7 +5,7 @@
  *      Author: K.Ohta <whatisthis.sowhat@gmail.com>
  */
 
-#ifdef _WITH_DEBUGGER
+
 #include <SDL/SDL.h>
 #include <libintl.h>
 extern "C" {
@@ -37,6 +37,7 @@ extern "C" {
 
 extern void OnPushCancel(AG_Event *event);
 
+#ifdef _WITH_DEBUGGER
 
 extern void DBG_Bin2Hex1(char *str, Uint8 b);
 extern void DBG_Bin2Hex2(char *str, Uint16 w);
@@ -620,6 +621,7 @@ static void CreateMMRDump(AG_Event *event)
     AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
     AG_WindowShow(w);
 }
+#endif // _WITH_DEBUGGER
 extern "C" {
    extern BOOL            bLogSTDOUT;
    extern BOOL            bLogSYSLOG;
@@ -668,6 +670,7 @@ void Create_DebugMenu(AG_MenuItem *parent)
    	AG_MenuItem *item;
    	AG_MenuItem *subitem ;
         AG_Toolbar *toolbar;
+#ifdef _WITH_DEBUGGER
         DbgInitFont(); //
 	item = AG_MenuBool(parent, gettext("Pause"), NULL, &run_flag, 1);
 	AG_MenuSeparator(parent);
@@ -684,13 +687,13 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump MMR"), NULL, CreateMMRDump, NULL);
 	AG_MenuSeparator(parent);
-#if 1
 	item = AG_MenuNode(parent, gettext("Log to STDOUT"), NULL); 
         AG_MenuToolbar(parent,  toolbar);
         subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSTDOUT, "logger.stdout"); 
         subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSTDOUT, "logger.stdout"); 
         AG_MenuToolbar(item, NULL);
         item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSTDOUT);
+	AG_MenuSeparator(parent);
    
 	item = AG_MenuNode(parent, gettext("Log to SYSLOG"), NULL); 
         AG_MenuToolbar(item, toolbar);
@@ -698,13 +701,17 @@ void Create_DebugMenu(AG_MenuItem *parent)
         subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSYSLOG, "logger.syslog"); 
         AG_MenuToolbar(item, NULL);
         item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSYSLOG);
-#endif
+	AG_MenuSeparator(parent);
+#endif // _WITH_DEBUGGER
 }
+
 
 void Detach_DebugMenu(void)
 {  
+#ifdef _WITH_DEBUGGER
   DbgDetachFont();
+#endif
 }
 
-#endif // _WITH_DEBUGGER
+
   
