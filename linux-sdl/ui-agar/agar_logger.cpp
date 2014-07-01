@@ -9,6 +9,7 @@
 static int syslog_flag = 0;
 static int log_cons = 0;
 static int log_onoff = 0;
+static int log_opened = FALSE;
 extern "C" 
 {
    
@@ -29,6 +30,7 @@ void XM7_OpenLog(int syslog, int cons)
 	   syslog_flag = 0;
 	}
 	log_cons = cons;
+	log_opened = TRUE;
      }
    
    
@@ -81,6 +83,29 @@ void XM7_SetLogStatus(int sw)
 	}
      }
    
+void XM7_SetLogStdOut(int sw)
+     {
+	if(sw == 0) {
+	   log_cons = 0;
+	} else {
+	   log_cons = 1;
+	}
+     }
+
+void XM7_SetLogSysLog(int sw)
+     {
+	if(sw == 0) {
+	   syslog_flag = 0;
+	} else {
+	   syslog_flag = 1;
+	}
+     }
+
+BOOL XM7_LogGetStatus(void)
+     {
+	return (BOOL) log_opened;
+     }
+   
 	
 void XM7_CloseLog(void)
     {
@@ -90,6 +115,7 @@ void XM7_CloseLog(void)
 	syslog_flag = 0;
 	log_cons = 0;
         log_onoff = 0;
+        log_opened = 0;
      }
-   
 }
+

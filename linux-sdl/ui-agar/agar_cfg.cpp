@@ -561,13 +561,13 @@ void LoadCfg(void)
  	    strcpy(StatusFont, STAT_FONT);
       }
       /*
-       * OPenCL
+       * OpenCL
        */
        SetCfgSection("OPENCL");
        configdat.bCLSparse = LoadCfgBool("CLSparse", FALSE);
        configdat.nCLGlobalWorkThreads = LoadCfgInt("GWS", 10);
        if(configdat.nCLGlobalWorkThreads <= 0) configdat.nCLGlobalWorkThreads = 1; 
-       if(configdat.nCLGlobalWorkThreads >= 256) configdat.nCLGlobalWorkThreads = 255; 
+       if(configdat.nCLGlobalWorkThreads >= 256) configdat.nCLGlobalWorkThreads = 255;
 }
 
 
@@ -837,7 +837,6 @@ void SaveCfg(void)
     SetCfgSection("OPENCL");
     SaveCfgBool("CLSparse", configdat.bCLSparse);
     SaveCfgInt("GWS", configdat.nCLGlobalWorkThreads);
-
     SaveCfgFile();
 }
 

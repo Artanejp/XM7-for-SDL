@@ -72,7 +72,10 @@ int             nAppIcon;               /* アイコン番号(1,2,3) */
 BOOL            bMMXflag;               /* MMXサポートフラグ(未使用) */
 BOOL            bCMOVflag;              /* CMOVサポートフラグ(現状未使用) */
 struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
-
+BOOL            bLogSTDOUT = FALSE;
+BOOL            bLogSYSLOG = FALSE;
+   
+   
 #if ((XM7_VER <= 2) && defined(FMTV151))
 BOOL            bFMTV151;               /* チャンネルコールフラグ */
 #endif				/*  */
@@ -336,8 +339,21 @@ void MainLoop(int argc, char *argv[])
 
    AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
    AG_ConfigLoad();
-   AG_SetInt(agConfig, "font.size", UI_PT);
-   XM7_OpenLog(1, 1); // Write to syslog, console
+   
+   if(AG_GetVariable(agConfig, "logger.syslog", NULL) == NULL) { 
+	AG_SetInt(agConfig, "logger.syslog", FALSE);
+   }
+   if(AG_GetVariable(agConfig, "logger.stdout", NULL) == NULL) { 
+	AG_SetInt(agConfig, "logger.stdout", TRUE);
+   }
+   bLogSYSLOG = (BOOL)AG_GetInt(agConfig, "logger.syslog");
+   bLogSTDOUT = (BOOL)AG_GetInt(agConfig, "logger.stdout");
+
+   if(AG_GetVariable(agConfig, "font.size", NULL) == NULL) { 
+	AG_SetInt(agConfig, "font.size", UI_PT);
+   }
+
+   XM7_OpenLog(bLogSYSLOG, bLogSTDOUT); // Write to syslog, console
    
    while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {

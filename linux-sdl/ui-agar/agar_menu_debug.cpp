@@ -30,6 +30,7 @@ extern "C" {
 #include "agar_toolbox.h"
 #include "agar_debugger.h"
 #include "agar_surfaceconsole.h"
+#include "agar_logger.h"
 #include <time.h>
 
 #include "../xm7-debugger/memread.h"
@@ -619,10 +620,54 @@ static void CreateMMRDump(AG_Event *event)
     AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
     AG_WindowShow(w);
 }
+extern "C" {
+   extern BOOL            bLogSTDOUT;
+   extern BOOL            bLogSYSLOG;
+}
+
+
+static void OnChangeLogStatus(AG_Event *event)
+{
+   AG_Menu *parent = AG_SELF();
+   AG_MenuItem *my = AG_SENDER();
+   BOOL flag = (BOOL)AG_INT(1);
+   BOOL *tg  = (BOOL *)AG_PTR(2);
+   char *target = (char *)AG_STRING(3);
+   if(flag == FALSE) {
+//	my->state = FALSE;
+        *tg = FALSE;
+        AG_SetInt(agConfig, target, FALSE);
+   } else {
+        *tg = TRUE;
+        AG_SetInt(agConfig, target, TRUE);
+	if(XM7_LogGetStatus() == FALSE) {
+	   XM7_OpenLog(bLogSYSLOG, bLogSTDOUT);
+	}
+   }
+   XM7_SetLogStdOut(bLogSTDOUT);   
+}
+
+
+static void DisplayLogStatus(AG_Event *event)
+{
+   AG_Menu *parent = AG_SELF();
+   AG_MenuItem *my = AG_SENDER();
+   BOOL *flag = (BOOL *)AG_PTR(1);
+   
+   if(*flag == FALSE) {
+      AG_MenuSetLabel(my, "　OFF");
+      
+   } else {
+      AG_MenuSetLabel(my, "■ON");
+   }
+}
+
 
 void Create_DebugMenu(AG_MenuItem *parent)
 {
-   	AG_MenuItem *item ;
+   	AG_MenuItem *item;
+   	AG_MenuItem *subitem ;
+        AG_Toolbar *toolbar;
         DbgInitFont(); //
 	item = AG_MenuBool(parent, gettext("Pause"), NULL, &run_flag, 1);
 	AG_MenuSeparator(parent);
@@ -638,6 +683,22 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent, gettext("Dump FDC Regs"), NULL, CreateFdcDump, NULL);
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump MMR"), NULL, CreateMMRDump, NULL);
+	AG_MenuSeparator(parent);
+#if 1
+	item = AG_MenuNode(parent, gettext("Log to STDOUT"), NULL); 
+        AG_MenuToolbar(parent,  toolbar);
+        subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSTDOUT, "logger.stdout"); 
+        subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSTDOUT, "logger.stdout"); 
+        AG_MenuToolbar(item, NULL);
+        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSTDOUT);
+   
+	item = AG_MenuNode(parent, gettext("Log to SYSLOG"), NULL); 
+        AG_MenuToolbar(item, toolbar);
+        subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSYSLOG, "logger.syslog"); 
+        subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSYSLOG, "logger.syslog"); 
+        AG_MenuToolbar(item, NULL);
+        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSYSLOG);
+#endif
 }
 
 void Detach_DebugMenu(void)
