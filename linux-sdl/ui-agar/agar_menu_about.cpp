@@ -64,7 +64,7 @@ void OnAboutDialog(AG_Event *event)
 	AG_Surface *mark = NULL;
 
 
-        char string[512];
+        char string[768];
         int l;
 	char iconpath[MAXPATHLEN];
 	char file[MAXPATHLEN];
@@ -133,11 +133,25 @@ void OnAboutDialog(AG_Event *event)
 #endif   
 	  
 	vbox2 = AG_VBoxNew(hbox, AG_VBOX_VFILL);
+        strcat(string, "\n\nRendering mode:\n");
+        switch(nRenderMethod) {
+	 case RENDERING_FULL:
+	   strcat(string, "FULL per frame");
+	   break;
+	 case RENDERING_BLOCK:
+	   strcat(string, "BLOCK");
+	   break;
+	 case RENDERING_RASTER:
+	   strcat(string, "RASTER");
+	   break;
+	 default:
+	   strcat(string, "Undefined");
+	   break;
+	}
 	label = AG_LabelNew(vbox2, 0, "FM-7/77AV/SX Emulateor \"XM7\"""\n "VERSTR"%s\n", string);
-	AG_LabelJustify(label, AG_TEXT_RIGHT);
+        AG_LabelJustify(label, AG_TEXT_RIGHT);
    
-   
-   strcpy(string, "SIMD Features: \n");
+        strcpy(string, "SIMD Features: \n");
 // 以下、CPU依存なので移植の場合は同等の関数を作ること
 #if defined(__x86_64__) || defined(__i386__)
    if(pCpuID->use_mmx) strcat(string, "MMX ");
@@ -159,26 +173,25 @@ void OnAboutDialog(AG_Event *event)
    if(pCpuID->use_cmov) strcat(string, "CMOV ");
 #else
 #endif
-	label = AG_LabelNew(vbox2, 0, "%s", string);
-	AG_LabelJustify(label, AG_TEXT_RIGHT);
 
-   strcpy(string, "Using SIMD:");
+   strcat(string, "\n\nUsing SIMD:\n");
 // 以下、CPU依存なので移植の場合は同等の関数を作ること
 #if defined(__x86_64__) || defined(__i386__)
    if(bUseSIMD) {
       if(pCpuID->use_sse2) {
-	   strcat(string, "SSE2");
-      } else {
-	   strcat(string, "NONE");
+	   strcat(string, " SSE2");
       }
+      if(pCpuID->use_mmx) {
+	   strcat(string, " MMX");
+      }
+      
    } else {
-     strcat(string, "NONE");
+     strcat(string, " NONE");
    }
-   
 #else
 #endif
-	label = AG_LabelNew(vbox2, 0, "%s", string);
-	AG_LabelJustify(label, AG_TEXT_RIGHT);
+	label = AG_LabelNew(vbox1, 0, "%s\n", string);
+	AG_LabelJustify(label, AG_TEXT_LEFT);
 
 	hbox = AG_HBoxNew(win, AG_HBOX_HFILL);
 	AG_LabelNew(hbox, 0, AUTSTR);

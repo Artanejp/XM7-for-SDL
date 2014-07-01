@@ -61,7 +61,6 @@ extern "C" {
      *  グローバル ワーク
      */
 char InitialDir[5][MAXPATHLEN];
-
     /*
      *  スタティック ワーク
      */
