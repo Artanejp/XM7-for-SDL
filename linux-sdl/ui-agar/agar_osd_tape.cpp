@@ -61,13 +61,13 @@ static int nCMTWidth;
 static int nCMTHeight;
 static BOOL bTapeRecOld;
 static BOOL bTapeInOld;
+static BOOL bTapeWriteP;
 static struct OsdCMTPack *pCMTStat;
 
 extern int getnFontSize(void);
 extern void SetPixelFormat(AG_PixelFormat *fmt);
 extern AG_Font *pStatusFont;
 
-static void UpdateCMTCount(AG_Surface *dst, int count,struct OsdCMTPack *pStatus);
 static BOOL UpdateCMT(XM7_SDLView *my, AG_Surface *dst, struct OsdCMTPack *pStatus);
 static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus);
 
@@ -112,7 +112,7 @@ static BOOL UpdateCMT(XM7_SDLView *my, AG_Surface *dst, struct OsdCMTPack *pStat
    if((pStatus->stat > OSD_CMT_WRITE) || (pStatus->stat  < 0)){
       pStatus->stat = OSD_CMT_EMPTY;
    }
-   if((pStatus->OldCount == nTape) && (pStatus->stat == pStatus->OldStat)) {
+   if((pStatus->OldCount == nTape) && (pStatus->stat == pStatus->OldStat) && (bTapeWriteP == tape_writep)) {
        pStatus->OldCount = nTape;
        pStatus->OldStat = pStatus->stat;
        return FALSE;
@@ -120,6 +120,7 @@ static BOOL UpdateCMT(XM7_SDLView *my, AG_Surface *dst, struct OsdCMTPack *pStat
 //   AG_SurfaceBlit(pStatus->pSurface[pStatus->stat], NULL, dst, 4, 4);
    pStatus->OldCount = nTape;
    pStatus->OldStat = pStatus->stat;
+   
    return TRUE;
 }
 
@@ -166,6 +167,8 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
         if(count < 0) count = 0; //
         if(tape_rec) {
 	   sprintf(string, "Ｒ%04d", count % 10000);
+	} else if(tape_writep) {
+	   sprintf(string, "■%04d", count % 10000);
 	} else {
 	   sprintf(string, "　%04d", count % 10000);
 	}
@@ -177,7 +180,7 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
         switch(pStatus->stat){
         case OSD_CMT_EMPTY:
             bg = black;
-            fg = black;
+            fg = n;
             break;
         case OSD_CMT_NORM:
             bg = black;
@@ -206,6 +209,12 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
             AG_SurfaceFree(tmp);
         } else {
             AG_FillRect(dst, NULL, bg);
+	   
+            if(tape_writep) {
+	       tmp = AG_TextRender("■");
+	       AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
+	       AG_SurfaceFree(tmp);
+	    }
         }
 
         AG_PopTextState();
@@ -313,16 +322,10 @@ void DrawTape(int override)
 {
 	int 		i;
 	int             num;
-	char     protect[16];
 	BOOL bTapeIn = FALSE;
 	BOOL bTapeRec = FALSE;
 
         if((pwCMT == NULL) || (pCMTStat == NULL)) return;
-	if(tape_writep){
-		strcpy(protect, "■");
-	} else {
-		strcpy(protect, "　");
-	}
 	/*
 	 * ナンバー計算
 	 */
@@ -338,7 +341,7 @@ void DrawTape(int override)
 	/*
 	 * 番号比較
 	 */
-	 if ((bTapeIn == bTapeInOld) && (override != TRUE)
+	 if ((bTapeIn == bTapeInOld) && (override != TRUE) && (bTapeWriteP == tape_writep)
 	     && (bTapeRecOld == bTapeRec) && (num == nTape) && (pCMTStat->OldMotor == tape_motor)){
 		 return;
 	 }
@@ -369,6 +372,8 @@ void DrawTape(int override)
 	   } else if(bTapeInOld) {
 	      pCMTStat->stat = OSD_CMT_EMPTY;
 	      pCMTStat->Changed = TRUE;
+	   } else {		   
+	      pCMTStat->stat = OSD_CMT_EMPTY;
 	   }
 	} else { // All same as.
 	   if(pCMTStat->OldMotor != tape_motor) {
@@ -381,8 +386,10 @@ void DrawTape(int override)
 	      pCMTStat->Changed = FALSE;
 	   }
         }
+        if(bTapeWriteP != tape_writep) pCMTStat->Changed = TRUE;
         nTape = num;
         bTapeRecOld = bTapeRec;
         bTapeInOld = bTapeIn;
+        bTapeWriteP = tape_writep;
         AG_MutexUnlock(&(pCMTStat->mutex));
 }

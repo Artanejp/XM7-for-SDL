@@ -166,6 +166,16 @@ static void OnRec(AG_Event *event)
     	AG_ObjectDetach(self->wid.window);
 }
 
+/*
+ * 書き込み保護
+ */
+static void OnWriteProtectTape(AG_Event *event)
+{
+   AG_Menu *parent = AG_SELF();
+   AG_MenuItem *my = AG_SENDER();
+   BOOL flag = (BOOL)AG_INT(1);
+   tape_writep = flag;
+}
 
 static void OnTapeRec(AG_Event *event)
 {
@@ -202,14 +212,14 @@ static void OnTapeRec(AG_Event *event)
 	if(tape_writep || (tape_fname[0] == '\0')) {
 		btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("OK"), OnPushCancel, NULL);
 	} else {
-    if (!tape_rec) {
-    	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Start Recording"), OnRec, "%i", TRUE);
-    } else {
-    	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Stop Recording"), OnRec, "%i", FALSE);
-    }
-    box2 = AG_BoxNewVert(box, 0);
-	box2 = AG_BoxNewVert(box, 0);
-	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
+	   if (!tape_rec) {
+	      btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Start Recording"), OnRec, "%i", TRUE);
+	   } else {
+	      btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Stop Recording"), OnRec, "%i", FALSE);
+	   }
+	   box2 = AG_BoxNewVert(box, 0);
+	   box2 = AG_BoxNewVert(box, 0);
+	   btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
 	}
 	AG_WindowSetCaption(w, gettext("Recording to Tape"));
 	AG_WindowShow(w);
@@ -218,7 +228,9 @@ static void OnTapeRec(AG_Event *event)
 
 void Create_TapeMenu(AG_MenuItem *self)
 {
-	AG_MenuItem *item ;
+	AG_MenuItem *item;
+	AG_MenuItem *subitem;
+	AG_Toolbar *toolbar;
 
 	item = AG_MenuAction(self, gettext("Open"), NULL, OnTapeOpen,NULL);
 	AG_MenuSeparator(self);
@@ -229,6 +241,11 @@ void Create_TapeMenu(AG_MenuItem *self)
 	 */
 //	AG_MenuSeparator(self);
 //	item = AG_MenuAction(self, gettext("Write Protect"), NULL, OnWriteProtectTape, NULL);
+	item = AG_MenuNode(self, gettext("Write Protect"), NULL); 
+        AG_MenuToolbar(self,  toolbar);
+        subitem = AG_MenuAction(item, "ON",  NULL, OnWriteProtectTape, "%i", TRUE);
+        subitem = AG_MenuAction(item, "OFF", NULL, OnWriteProtectTape, "%i", FALSE);
+        AG_MenuToolbar(item, NULL);
 	/*
 	 * 巻き戻し
 	 */
