@@ -53,6 +53,10 @@ extern "C" {
 extern void InitInstance(void);
 extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
 extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+extern BOOL            bLogSTDOUT;
+extern BOOL            bLogSYSLOG;
+
+
 void OnDestroy(AG_Event *event);
 
    
@@ -72,8 +76,6 @@ int             nAppIcon;               /* アイコン番号(1,2,3) */
 BOOL            bMMXflag;               /* MMXサポートフラグ(未使用) */
 BOOL            bCMOVflag;              /* CMOVサポートフラグ(現状未使用) */
 struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
-BOOL            bLogSTDOUT = FALSE;
-BOOL            bLogSYSLOG = FALSE;
    
    
 #if ((XM7_VER <= 2) && defined(FMTV151))
@@ -337,27 +339,11 @@ void MainLoop(int argc, char *argv[])
    const SDL_VideoInfo *inf;
    SDL_Surface *s;
 
-   AG_InitCore("xm7", AG_VERBOSE | AG_CREATE_DATADIR);
-   AG_ConfigLoad();
    
-   if(AG_GetVariable(agConfig, "logger.syslog", NULL) == NULL) { 
-	AG_SetInt(agConfig, "logger.syslog", FALSE);
-   }
-   if(AG_GetVariable(agConfig, "logger.stdout", NULL) == NULL) { 
-	AG_SetInt(agConfig, "logger.stdout", TRUE);
-   }
-   bLogSYSLOG = (BOOL)AG_GetInt(agConfig, "logger.syslog");
-   bLogSTDOUT = (BOOL)AG_GetInt(agConfig, "logger.stdout");
 
    if(AG_GetVariable(agConfig, "font.size", NULL) == NULL) { 
 	AG_SetInt(agConfig, "font.size", UI_PT);
    }
-    printf("XM7/SDL %s%s %s %s\n", VERSION, LEVEL, LOCALVER, DATE);
-    printf("(C) Ryu Takegami / SDL Version K.Ohta <whatisthis.sowhat@gmail.com>\n");
-    printf(" -? is print help(s).\n");
-
-   XM7_OpenLog(bLogSYSLOG, bLogSTDOUT); // Write to syslog, console
-   
    while ((c = AG_Getopt(argc, argv, "?fWd:w:h:T:t:c:T:F:S:o:O:l:s:i:", &optArg, NULL))
           != -1) {
               switch (c) {
@@ -423,12 +409,6 @@ void MainLoop(int argc, char *argv[])
                   exit(0);
           }
     }
-    XM7_DebugLog(XM7_LOG_INFO, "Start XM7 %s%s %s %s", VERSION, LEVEL, LOCALVER, DATE);
-    XM7_DebugLog(XM7_LOG_INFO, "(C) Ryu Takegami / SDL Version K.Ohta");
-    XM7_DebugLog(XM7_LOG_INFO, " -? is print help(s).");
-    XM7_DebugLog(XM7_LOG_DEBUG, "Start XM7 %s%s %s %s", VERSION, LEVEL, LOCALVER, DATE);
-    XM7_DebugLog(XM7_LOG_DEBUG, "(C) Ryu Takegami / SDL Version K.Ohta");
-    XM7_DebugLog(XM7_LOG_DEBUG, " -? is print help(s).");
    
     if(SDL_getenv("HOME") != NULL) {
 	strcpy(homedir, SDL_getenv("HOME"));

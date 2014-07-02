@@ -24,6 +24,7 @@ extern "C" {
 #include "xm7_sdl.h"
 #include "sdl_cfg.h"
 #endif
+#include "agar_logger.h"
 
 //#include "sdl_bar.h"
 //#include "api_kbd.h"
@@ -33,6 +34,8 @@ extern "C" {
 //#include "api_draw.h"
 //#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
+static char FixedDiskStr[64][128]; // 4 Drives * 16 Images * 128bytes.
+
 
 /*
  * Drive 1/0 Menu
@@ -56,9 +59,10 @@ static void OnDiskEject(AG_Event *event)
 	/*
 	 * イジェクト
 	 */
-	LockVM();
+    LockVM();
     fdc_setdisk(Drive, NULL);
     UnlockVM();
+    XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Eject from drive %d.", Drive);
 }
     /*
      *  ディスク一時取り出し
@@ -73,10 +77,12 @@ static void OnDiskTemp(AG_Event *event)
     LockVM();
     if (fdc_teject[Drive]) {
 	fdc_teject[Drive] = FALSE;
+        XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Temporally eject from drive %d.", Drive);
     }
 
     else {
 	fdc_teject[Drive] = TRUE;
+        XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Temporally set from drive %d.", Drive);
     }
     UnlockVM();
 }
@@ -90,6 +96,7 @@ void OnMediaChange(AG_Event *event)
 {
     int            Drive = AG_INT(1);
     int            Media = AG_INT(2);
+    char           *imgname = AG_STRING(3);
     AG_Button *self = (AG_Button *)AG_SELF();
 
 	/*
@@ -99,9 +106,14 @@ void OnMediaChange(AG_Event *event)
     fdc_setmedia(Drive, Media);
     ResetSch();
     UnlockVM();
-
-	AG_WindowHide(self->wid.window);
-	AG_ObjectDetach(self->wid.window);
+    if(imgname != NULL) {
+       XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Choosed image #%02d on drive %d, \"%s\".", Media, Drive, imgname);
+    } else {
+       XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Choosed image #%02d on drive %d.", Media, Drive);
+    }
+   
+   AG_WindowHide(self->wid.window);
+   AG_ObjectDetach(self->wid.window);
 
 }
 
@@ -115,6 +127,8 @@ static void OnOpenDiskSub(int Drive, char *sFilename)
     fdc_setdisk(Drive, sFilename);
     ResetSch();
     UnlockVM();
+    XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Set %s to drive %d.", sFilename, Drive);
+
 #ifdef _WINDOWS
     p = _mbsrchr(sFilename, '\\');
 #else
@@ -150,6 +164,8 @@ static void OnOpenDiskBothSub(char *sFilename)
     }
     ResetSch();
     UnlockVM();
+    XM7_DebugLog(XM7_LOG_DEBUG, "DISK: Set %s to drive 0 and drive 1.", sFilename);
+   
 #ifdef _WINDOWS
     p = _mbsrchr(sFilename, '\\');
 #else
@@ -324,6 +340,7 @@ static void OnSelectDiskMedia(AG_Event *event)
 	AG_WidgetSetSize(box, 230, 32);
 	lbl = AG_LabelNew(AGWIDGET(box), AG_LABEL_EXPAND, "%s %d:", caption, Drive );
 	AG_LabelSizeHint (lbl, 2, caption);
+	for(i = 0; i < 16; i++)  memset(FixedDiskStr[16 * Drive + 1], 0x00, sizeof(FixedDiskStr[0]));
 	{
 	 char utf8[512];
 	 char          *pIn, *pOut;
@@ -346,9 +363,13 @@ static void OnSelectDiskMedia(AG_Event *event)
                   }
                   iconv_close(hd);
           }
-		 btn = AG_ButtonNewFn (AGWIDGET(box2), 0, utf8 , OnMediaChange, "%i,%i",  Drive, i);
-
-		}
+	  if(i < 16) {
+	    strncpy(FixedDiskStr[16 * Drive + i], utf8, 127); 
+	    btn = AG_ButtonNewFn (AGWIDGET(box2), 0, utf8 , OnMediaChange, "%i,%i,%s",  Drive, i, FixedDiskStr[16 * Drive + i]);
+	  } else {
+	    btn = AG_ButtonNewFn (AGWIDGET(box2), 0, utf8 , OnMediaChange, "%i,%i,%s",  Drive, i, "Disk");
+	  }
+	 }
 	}
 	box2 = AG_BoxNewVert(box, 0);
 	btn = AG_ButtonNewFn (AGWIDGET(box2), 0, gettext("Cancel"), OnPushCancel, NULL);
