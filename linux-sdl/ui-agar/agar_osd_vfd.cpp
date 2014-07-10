@@ -385,7 +385,8 @@ void DrawDrive(int drive, BOOL override)
 	 }
 
    
-         if((fdc_ready[drive] == FDC_TYPE_NOTREADY) && (nDrive[drive] == num)){
+//         if((fdc_ready[drive] == FDC_TYPE_NOTREADY) && (nDrive[drive] == num)){
+         if(fdc_ready[drive] == FDC_TYPE_NOTREADY){
 	    stat = OSD_VFD_EMPTY;
 	 } else if (nDrive[drive] == FDC_ACCESS_READ) {
 	    stat = OSD_VFD_READ;
