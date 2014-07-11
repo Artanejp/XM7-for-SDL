@@ -58,7 +58,7 @@ static void CalcMouseMove(int w, int h, int x, int y)
     nMouseY -= (nPhysicalY - nMouseOldY); 
     nMouseOldX = nPhysicalX;
     nMouseOldY = nPhysicalY;
-    XM7_DebugLog(XM7_LOG_DEBUG, "Mouse: %d %d", nMouseX, nMouseY);
+//    XM7_DebugLog(XM7_LOG_DEBUG, "Mouse: %d %d", nMouseX, nMouseY);
 }
 
 

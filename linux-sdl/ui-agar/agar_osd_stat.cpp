@@ -18,10 +18,10 @@
 #include "apalet.h"
 #include "subctrl.h"
 #include "fdc.h"
+#include "mouse.h"
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
-#include "agar_gldraw.h"
 #else
 #include "xm7_sdl.h"
 #endif
@@ -29,6 +29,8 @@
 #include "agar_osd.h"
 #include "sdl_sch.h"
 #include "api_draw.h"
+#include "api_mouse.h"
+
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
@@ -42,6 +44,7 @@ struct OsdStatPack
         AG_Mutex mutex;
         int width;
         int height;
+        BOOL mouse_capture;
 };
 static struct OsdStatPack *pOsdStat;
 static struct XM7_SDLView *pwSTAT;
@@ -68,6 +71,7 @@ struct OsdStatPack *InitStat(int w,int h)
     AG_MutexInit(&(p->mutex));
     p->width = w;
     p->height = h;
+    p->mouse_capture = FALSE;
     return p;
 }
 
@@ -105,7 +109,7 @@ static void DrawStatFn(AG_Event *event)
     black.a = 255;
 
    AG_MutexLock(&(disp->mutex));
-   if((disp->Changed == FALSE) && (disp->init == FALSE)) {
+   if((disp->Changed == FALSE) && (disp->init == FALSE) && (disp->mouse_capture == bMouseCaptureFlag)) {
        AG_MutexUnlock(&(disp->mutex));
        return;
    }
@@ -136,6 +140,7 @@ static void DrawStatFn(AG_Event *event)
    AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    disp->init = FALSE;
    disp->Changed = FALSE;
+   disp->mouse_capture = bMouseCaptureFlag;
    AG_MutexUnlock(&(disp->mutex));
 }
 }
@@ -221,10 +226,10 @@ void DrawMainCaption(BOOL redraw)
     * RUN MODE
     */
    if (run_flag) {
-       strcpy(string, "XM7[実行]");
-	} else {
-       strcpy(string, "XM7[停止]");
-	}
+       strcpy(string, "[RUN ]");
+   } else {
+       strcpy(string, "[STOP]");
+   }
    /*
     * BOOT MODE
     */
@@ -235,7 +240,12 @@ void DrawMainCaption(BOOL redraw)
     } else {
         strcat(string, "[???]");
     }
-	strcat(string, " ");
+    if(bMouseCaptureFlag == FALSE) {
+       strcat(string, "[ ]");
+    } else {
+       strcat(string, "[M]");
+    }
+    strcat(string, " ");
 
 	/*
 	 * CPU速度比率
