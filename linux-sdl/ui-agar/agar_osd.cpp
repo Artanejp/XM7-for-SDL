@@ -193,19 +193,13 @@ void CreateStatus(AG_Widget *parent)
     if(parent) {
        AG_VBox *vb;
        AG_HBox *hb;
-//       vb = AG_VBoxNew(parent, 0);
        {
-//	  hb = AG_HBoxNew(vb, 0);
 	  hb = (AG_HBox *)parent;
 	  InitStatOSD(AGWIDGET(hb));
 	  InitVFD(AGWIDGET(hb));
 	  InitTapeOSD(AGWIDGET(hb));
 	  InitLeds(AGWIDGET(hb));
        }
-//       {
-//	  hb = AG_HBoxNew(vb, AG_HBOX_VFILL);
-//       }
-       
     }
     
 }
@@ -265,8 +259,6 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int h2)
 
    hh = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
    nFontSize = (int)((float)STAT_PT * ww / 640.0f);
-//   nFontSize = (int)((float)STAT_PT * h / 400.0f);
-
 
    AG_WidgetSetSize(parent, w - 5, hh);
    ResizeStatOSD(parent, w, hh);

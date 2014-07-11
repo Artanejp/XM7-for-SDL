@@ -43,7 +43,6 @@ extern void ResizeStatus(AG_Widget *parent, int w, int h, int y);
 
 extern "C" {
 XM7_SDLView *DrawArea;
-//AG_Pixmap *DrawArea;
 BOOL bUseOpenCL;
 BOOL bUseSIMD;
 AG_Surface *DrawSurface = NULL;
@@ -96,7 +95,6 @@ void DetachDrawArea(void)
 {
     if(CheckVramSemaphore) DetachVramSemaphore();
     if(DrawArea != NULL) AG_ObjectDetach(DrawArea);
-//    if(DrawSurface != NULL) AG_SurfaceFree(DrawSurface);
 }
 
 
@@ -137,7 +135,6 @@ void ResizeWindow_Agar(int w, int h)
 
    LockVram();
    if(MainWindow){
-//      AG_WindowSetGeometry(MainWindow, 0, 0, w, h);
       hh = AGWIDGET(MainWindow)->h - 20;
       ww = AGWIDGET(MainWindow)->w;
    } else {
@@ -189,10 +186,6 @@ void ResizeWindow_Agar(int w, int h)
 	
 	AG_ObjectLock(AGOBJECT(DrawArea));
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
-//	AG_WidgetSetSize(AGWIDGET(DrawArea), w, hh);
-//	if(DrawSurface != NULL) {
-	   //AG_SurfaceResize(DrawSurface, w, hh);
-//	}
 	AG_ObjectUnlock(AGOBJECT(DrawArea));
      }
    
@@ -259,18 +252,10 @@ void ResizeWindow_Agar2(int w, int h)
 	a.x = 0;
 	a.y = 0;
 
-//	if(DrawSurface != NULL) {
-//	   AG_SurfaceResize(DrawSurface, w, h);
-//	}
-#if 1
 	AG_ObjectLock(AGOBJECT(DrawArea));
 	AG_WidgetSetSize(AGWIDGET(DrawArea), ww, h);
 	AG_WidgetSizeAlloc(AGWIDGET(DrawArea), &a);
         AG_ObjectUnlock(AGOBJECT(DrawArea));
-//	AG_PixmapUpdateCurrentSurface(DrawArea);
-#else
-      
-#endif
       }
    hh = hh + 20; // Add Pad.
    if(DrawArea != NULL) {
@@ -287,7 +272,6 @@ void ResizeWindow_Agar2(int w, int h)
    XM7_DebugLog(XM7_LOG_DEBUG, "Resize2 to %d x %d\n", w, h);
 }
 
-//extern void XM7_SDLViewUpdateSrc(AG_Pixmap *my, void *Fn);
 void AGDrawTaskMain(void)
 {
 	Uint32 nDrawTick2E;

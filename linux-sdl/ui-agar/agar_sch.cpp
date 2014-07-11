@@ -467,9 +467,6 @@ static void *ThreadSch(void *param)
 					/*
 					 * 4096色/26万色モードでは最高20fps
 					 */
-//					if (tmp < 33) {
-//						tmp = 33;
-//					}
 					if (tmp < 13) {
 						tmp = 13;
 					}
@@ -480,9 +477,6 @@ static void *ThreadSch(void *param)
 					/*
 					 * 8色モードでは最高75fps
 					 */
-//					if (tmp < 33) {
-//						tmp = 33;
-//					}
 					if (tmp < 13) {
 						tmp = 13;
 					}
@@ -523,11 +517,7 @@ static void *ThreadSch(void *param)
 	 */
 DWORD XM7_timeGetTime(void)
 {
-	// struct timeval t;
-	// gettimeofday(&t, 0);
-	// return (t.tv_sec*1000000 + t.tv_usec)/1000;
-//   return AG_GetTicks();
-   return SDL_GetTicks();
+   return AG_GetTicks();
 }
 
 
@@ -536,8 +526,8 @@ DWORD XM7_timeGetTime(void)
  */
 void XM7_Sleep(DWORD t)
 {
-//   AG_Delay(t);
-   SDL_Delay(t);
+   AG_Delay(t);
+//   SDL_Delay(t);
 }
    
 #ifdef __cplusplus

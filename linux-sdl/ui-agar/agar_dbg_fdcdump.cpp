@@ -49,7 +49,6 @@ void XM7_DbgDumpFdc(XM7_DbgFdcDump *dbg)
 
    cons->MoveDrawPos(0,0);
    cons->PutString("FDC Dump");
-//   cons->MoveDrawPos(20,0);
    cons->MoveDrawPos(0,1);
    cons->PutString("--------------------");
    cons->MoveDrawPos(0,2);

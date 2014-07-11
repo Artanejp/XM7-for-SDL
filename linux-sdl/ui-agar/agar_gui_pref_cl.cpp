@@ -12,15 +12,12 @@
 #include <agar/core/types.h>
 #include <agar/gui.h>
 #include <SDL/SDL.h>
-//#include <SDL/SDL_mixer.h>
 
 #include "xm7.h"
 #include "device.h"
 #include "fdc.h"
 #include "tapelp.h"
 #include "opn.h"
-//#include "whg.h"
-//#include "thg.h"
 #include "keyboard.h"
 #include "mmr.h"
 #include "mouse.h"
@@ -34,7 +31,6 @@
 
 #ifdef USE_AGAR
 #include "agar_xm7.h"
-//#include "numerical.h"
 #else
 #include "xm7_sdl.h"
 #endif
@@ -43,13 +39,7 @@
 
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
-//#include "sdl_prop.h"
-//#include "sdl_sch.h"
-//#include "sdl_snd.h"
-//#include "sdl_bar.h"
 #include "xm7.h"
-//#include "api_draw.h"
-//#include "api_scaler.h"
 
 extern configdat_t localconfig;
 

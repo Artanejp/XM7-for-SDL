@@ -101,7 +101,6 @@ int  RootVideoHeight;
 */
 void LockVM(void)
 {
-//	if(VMMutex == NULL) return;
 	AG_MutexLock(&VMMutex);
 }
 /*
@@ -110,7 +109,6 @@ void LockVM(void)
 void
 UnlockVM(void)
 {
-//	if(VMMutex == NULL) return;
 	AG_MutexUnlock(&VMMutex);
 }
 /*-[ ドローウインドウ ]-----------------------------------------------------*/
@@ -440,9 +438,8 @@ void MainLoop(int argc, char *argv[])
     stopreq_flag = FALSE;
     run_flag = TRUE;
     // Debug
-#ifdef _XM7_FB_DEBUG
+#ifdef _XM7_FB_DEBUG // Force FB.
 drivers = "sdlfb:width=1280:height=880:depth=32";
-//    drivers = "glx";
 #endif
 	/*
 	 * Agar のメインループに入る
@@ -500,12 +497,8 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
    XM7_DebugLog(XM7_LOG_DEBUG, "Audio and JOYSTICK subsystem was initialised.");
 
-//   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_VIDEO);
-    
-   // 
    InitInstance();
    XM7_DebugLog(XM7_LOG_DEBUG, "InitInstance() OK.");
-//   OnCreate((AG_Widget *)NULL);
        
    stopreq_flag = FALSE;
    run_flag = TRUE;
@@ -520,7 +513,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
       RootVideoHeight = 400;
    }
 
-//   ResizeWindow_Agar(640, 400);
    newResize = FALSE;
    nDrawTick1D = XM7_timeGetTime();
    nDrawTick1E = nDrawTick1D;
@@ -553,6 +545,4 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    }
    
    AGDrawTaskEvent(TRUE);
-//	AG_EventLoop();
-//	AG_Quit();
 }

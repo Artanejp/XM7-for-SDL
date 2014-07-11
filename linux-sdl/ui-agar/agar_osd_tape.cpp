@@ -92,13 +92,11 @@ static void DrawCMTFn(AG_Event *event)
     return;
    }
    if(UpdateCMT(my, dst, disp) || (disp->Changed == TRUE)){
-//      pCMTStat->Changed = FALSE;
       UpdateCMTCount(count, disp);
       AG_SurfaceBlit(disp->pSurface, NULL, dst, 4, 4);
       AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
       pCMTStat->Changed = FALSE;
    }
-//   AG_SurfaceCopy(dst, pDrawCMT);
    AG_MutexUnlock(&(disp->mutex));
 }
 
@@ -108,8 +106,6 @@ static BOOL UpdateCMT(XM7_SDLView *my, AG_Surface *dst, struct OsdCMTPack *pStat
 {
    if((dst == NULL) || (pStatusFont == NULL)
     || (pStatus == NULL)) return FALSE;
-//   AG_SurfaceLock(dst);
-//   AG_ObjectLock(AGOBJECT(dst));
    if((pStatus->stat > OSD_CMT_WRITE) || (pStatus->stat  < 0)){
       pStatus->stat = OSD_CMT_EMPTY;
    }
@@ -118,7 +114,6 @@ static BOOL UpdateCMT(XM7_SDLView *my, AG_Surface *dst, struct OsdCMTPack *pStat
        pStatus->OldStat = pStatus->stat;
        return FALSE;
     }
-//   AG_SurfaceBlit(pStatus->pSurface[pStatus->stat], NULL, dst, 4, 4);
    pStatus->OldCount = nTape;
    pStatus->OldStat = pStatus->stat;
    
@@ -161,7 +156,6 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
    n.g = 255;
    n.b = 255;
    n.a = 255;
- //   AG_SurfaceLock(dst);
     {
         AG_Color fg, bg;
         AG_Surface *tmp;
@@ -220,8 +214,6 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
 
         AG_PopTextState();
     }
-//    AG_SurfaceUnlock(dst);
-//    pStatus->OldStat = pStatus->stat;
    return;
 }
 
@@ -304,7 +296,6 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
        AG_ObjectUnlock(pwCMT);
        pCMTStat->init = TRUE;
        AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
-       //AG_WidgetSetPosition(pwCMT, (int)(((float)(STAT_WIDTH + VFD_WIDTH * 2) / (float)total) *  ww), 0);
        AG_MutexUnlock(&(pCMTStat->mutex));
 
 }

@@ -93,7 +93,6 @@ GLuint CreateNullTextureCL(int w, int h)
 void Flip_AG_GL(void)
 {
 	if(!InitVideo) return;
-//	SDL_GL_SwapBuffers();
 }
 
 void DiscardTextures(int n, GLuint *id)
@@ -308,7 +307,6 @@ void InitGLExtensionVars(void)
     bGL_EXT_VERTEX_ARRAY = QueryGLExtensions("GL_EXT_vertex_array");
 //    bGL_PIXEL_UNPACK_BUFFER_BINDING = QueryGLExtensions("GL_pixel_unpack_buffer_binding");
     bGL_PIXEL_UNPACK_BUFFER_BINDING = TRUE;
-
 }
 
    

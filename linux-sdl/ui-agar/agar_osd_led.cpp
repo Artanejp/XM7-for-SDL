@@ -368,7 +368,7 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
    AG_Surface *src;
    AG_Color n, r, black;
    AG_PixelFormat fmt;
-//   int size =  getnFontSize();
+
    int size =  (nLedWidth * STAT_PT) / LED_WIDTH;
    int w = nLedWidth;
    int h = nLedHeight;
@@ -405,13 +405,11 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
 
    p->pON = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
    if(p->pON == NULL) {
-//	free(p);
         return NULL;
    }
 
    p->pOFF = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
    if(p->pOFF == NULL) {
-//	free(p);
         AG_SurfaceFree(p->pON);
         return NULL;
    }
@@ -462,7 +460,7 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
     if(nLedWidth <= 0) return;
     if((pOsdLEDIns == NULL) || (pOsdLEDCAPS == NULL) || (pOsdLEDKana == NULL)) return; 
     if((pWidIns == NULL) || (pWidCaps == NULL) || (pWidKana == NULL)) return; 
-//    nFontSize = (int)(STAT_PT * (float)h * 1.0f) / (STAT_HEIGHT * 2.0f);
+
     AG_MutexLock(&(pOsdLEDIns->mutex));
     AG_MutexLock(&(pOsdLEDCAPS->mutex));
     AG_MutexLock(&(pOsdLEDKana->mutex));

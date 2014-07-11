@@ -79,8 +79,6 @@ cl_int GLCLDraw::InitContext(void)
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
    
-//   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id,
-//                         &ret_num_devices);
    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id,
                             &ret_num_devices);
    if(ret != CL_SUCCESS) return ret;
@@ -157,7 +155,6 @@ cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, 
    pr = &pr[offset + xb];
    pg = &pg[offset + xb];
    
-//      pal = &rgbTTLGDI[0];
    if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
    if(drawwidth ==  w) {
       int band = (drawwidth  / 8) * h;
@@ -217,7 +214,6 @@ cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheig
    pr = &pr[offset];
    pg = &pg[offset];
    
-//      pal = &rgbTTLGDI[0];
    if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
    if(drawwidth ==  w) {
       int band = (drawwidth  / 8) * h;
@@ -303,7 +299,6 @@ cl_int GLCLDraw::copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheig
    pr = (Uint8 *)vram_pr;
    pb = (Uint8 *)vram_pb;
    
-//      pal = &rgbTTLGDI[0];
    if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
    pb = &pb[offset];
    pr = &pr[offset];

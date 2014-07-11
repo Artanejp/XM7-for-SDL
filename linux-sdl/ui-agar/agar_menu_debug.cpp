@@ -82,8 +82,8 @@ static void DbgInitFont(void)
 
 static void DbgDetachFont(void)
 {
-//    if(pDbgDialogTextFont != NULL) AG_DestroyFont(pDbgDialogTextFont);
-//    if(pDbgDialogSymFont != NULL) AG_DestroyFont(pDbgDialogSymFont);
+    if(pDbgDialogTextFont != NULL) AG_UnusedFont(pDbgDialogTextFont);
+    if(pDbgDialogSymFont != NULL) AG_UnusedFont(pDbgDialogSymFont);
     pDbgDialogTextFont = NULL;
     pDbgDialogSymFont = NULL;
 }
@@ -187,7 +187,6 @@ static void DestroyDumpWindow(AG_Event *event)
     void *self = AG_SELF();
     if(mp == NULL) return;
 //    AG_LockTimeouts(self);
-//    AG_DelTimeout(self, &mp->to);
     AG_DelTimer(self, mp->to);
 //    AG_UnlockTimeouts(self);
     mp->to = NULL;
@@ -251,7 +250,6 @@ static void CreateDump(AG_Event *event)
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_MemDumpDesc));
 
-//    if(pAddr == NULL) return;
     mp->to_tick = 200;
     w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
@@ -306,9 +304,6 @@ static void CreateDump(AG_Event *event)
     AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
     AG_SetEvent(dump->draw, "key-down", XM7_DbgKeyPressFn, "%p", mp);
 
-//    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-//    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
-//    AG_SetTimeout(&(mp->to), UpdateDumpMemRead, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
     AG_WindowShow(w);
 }
 
@@ -338,7 +333,6 @@ static void CreateDisasm(AG_Event *event)
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_DbgDisasmDesc));
 
-//    if(pAddr == NULL) return;
     mp->to_tick = 200;
     w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
@@ -413,7 +407,6 @@ static void CreateRegDump(AG_Event *event)
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_DbgRegDumpDesc));
 
-//    if(pAddr == NULL) return;
     mp->to_tick = 200;
     w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
@@ -510,7 +503,6 @@ static void CreateFdcDump(AG_Event *event)
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_DbgFdcDumpDesc));
 
-//    if(pAddr == NULL) return;
     mp->to_tick = 200;
     w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NOCLOSE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
@@ -591,7 +583,6 @@ static void CreateMMRDump(AG_Event *event)
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_DbgMMRDumpDesc));
 
-//    if(pAddr == NULL) return;
     mp->to_tick = 200;
     w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NOCLOSE | FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
@@ -622,6 +613,7 @@ static void CreateMMRDump(AG_Event *event)
     AG_WindowShow(w);
 }
 #endif // _WITH_DEBUGGER
+
 extern "C" {
    extern BOOL            bLogSTDOUT;
    extern BOOL            bLogSYSLOG;
@@ -636,7 +628,6 @@ static void OnChangeLogStatus(AG_Event *event)
    BOOL *tg  = (BOOL *)AG_PTR(2);
    char *target = (char *)AG_STRING(3);
    if(flag == FALSE) {
-//	my->state = FALSE;
         *tg = FALSE;
         AG_SetInt(agConfig, target, FALSE);
    } else {
@@ -670,8 +661,10 @@ void Create_DebugMenu(AG_MenuItem *parent)
    	AG_MenuItem *item;
    	AG_MenuItem *subitem ;
         AG_Toolbar *toolbar;
+
 #ifdef _WITH_DEBUGGER
         DbgInitFont(); //
+
 	item = AG_MenuBool(parent, gettext("Pause"), NULL, &run_flag, 1);
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump Main-Memory"), NULL, CreateDump, "%i,%i", MEM_MAIN, 0);
@@ -687,6 +680,7 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Dump MMR"), NULL, CreateMMRDump, NULL);
 	AG_MenuSeparator(parent);
+#endif // _WITH_DEBUGGER
 	item = AG_MenuNode(parent, gettext("Log to STDOUT"), NULL); 
         AG_MenuToolbar(parent,  toolbar);
         subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSTDOUT, "logger.stdout"); 
@@ -702,7 +696,6 @@ void Create_DebugMenu(AG_MenuItem *parent)
         AG_MenuToolbar(item, NULL);
         item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSYSLOG);
 	AG_MenuSeparator(parent);
-#endif // _WITH_DEBUGGER
 }
 
 

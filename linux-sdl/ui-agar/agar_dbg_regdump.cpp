@@ -43,7 +43,6 @@ void XM7_DbgDumpRegs(XM7_DbgRegDump *dbg)
 
    cons->MoveDrawPos(0,0);
    cons->PutString(dbg->title);
-//   cons->MoveDrawPos(20,0);
    // PC
    word2chr(dbg->buf.pc, strbuf);
    cons->MoveDrawPos(0,1);

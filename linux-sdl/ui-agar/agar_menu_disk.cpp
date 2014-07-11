@@ -26,13 +26,7 @@ extern "C" {
 #endif
 #include "agar_logger.h"
 
-//#include "sdl_bar.h"
-//#include "api_kbd.h"
-//#include "sdl_sch.h"
-//#include "sdl_snd.h"
 #include "sdl_inifile.h"
-//#include "api_draw.h"
-//#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 static char FixedDiskStr[64][128]; // 4 Drives * 16 Images * 128bytes.
 
@@ -201,7 +195,6 @@ static void OnOpenDisk(AG_Event *event)
    if(dlgWin == NULL) return;
    AG_WindowSetCaption(dlgWin, "%s %d:", gettext("Open Disk Image"), Drive);
    dlg = AG_FileDlgNew(dlgWin,  FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
-//    dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD);
    if(dlg == NULL) {
       AG_WindowShow(dlgWin);
       return;
@@ -244,7 +237,6 @@ static void OnOpenDiskBoth(AG_Event *event)
    
 	if(dlgWin == NULL) return;
 	AG_WindowSetCaption(dlgWin, "%s ", gettext("Open Disk Image Both"));
-//	dlg = AG_FileDlgNew(dlgWin, AG_FILEDLG_LOAD | AG_FILEDLG_SAVE | AG_FILEDLG_ASYNC );
     dlg = AG_FileDlgNew(dlgWin, FILEDLG_DEFAULT | AG_FILEDLG_LOAD);
 	if(dlg == NULL) return;
    if(InitialDir[0] != NULL) {
@@ -308,7 +300,7 @@ static void OnWriteProtectDisk(AG_Event *event)
       return;
    }
    LockVM();
-//	fdc_writep[Drive] = flag;
+
    fdc_setwritep(Drive, flag);
    ResetSch();
    UnlockVM();
@@ -398,7 +390,7 @@ void CreateDiskMenu(AG_MenuItem *self, int Drive)
 	 * ライトプロテクト
 	 */
 	AG_MenuSeparator(self);
-//        item = AG_MenuDynamicItem(self, "", NULL, DisplayWriteProtectDisk, "%i", Drive);
+
         item = AG_MenuNode(self, gettext("Write Protect"), NULL); 
         AG_MenuToolbar(self, toolbar);
 	subitem = AG_MenuAction(item, gettext("ON"), NULL, OnWriteProtectDisk, "%i%i", Drive, TRUE);

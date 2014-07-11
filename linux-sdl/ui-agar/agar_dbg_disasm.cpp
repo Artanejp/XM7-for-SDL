@@ -211,11 +211,6 @@ static void XM7_DbgDisasmSetAddress(AG_Event *event)
       p->disasm->editAddr = FALSE;
    }
    
-   //if(((p->disasm->addr + 256) & 0x0000ffff) <= p->disasm->edaddr){
-   //   p->disasm->addr = ((p->disasm->addr & 0xff)  + (p->disasm->edaddr & 0xff00)) & 0x0000ffff;
-   //}else if(p->disasm->addr > p->disasm->edaddr) { 
-   //   p->disasm->addr = ((p->disasm->addr & 0xff)  + (p->disasm->edaddr & 0xff00)) & 0x0000ffff;
-   //}
 }
 
 

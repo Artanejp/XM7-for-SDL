@@ -82,25 +82,17 @@ static void DrawVFDFn(AG_Event *event)
    if(disp->init != TRUE) return;
    dst = XM7_SDLViewGetSrcSurface(my);
    if(dst == NULL) return;
-//   AG_MutexLock(&(disp->mutex));
    if((disp->stat == disp->OldStat)
        && (disp->init == FALSE) && (disp->Changed == FALSE)) {
       disp->init = FALSE;
       disp->OldStat = disp->stat;
       disp->Changed = FALSE;
-//      AG_MutexUnlock(&(disp->mutex));
     return;
    }
    if(UpdateVFD(my, dst, disp)) {
-//      AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
-//      AG_WidgetReplaceSurface(AGWIDGET(my), my->mySurface);
       AG_SurfaceBlit(disp->pSurface[disp->stat], NULL, dst, 4, 4);
       AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    }
-   
-//   disp->OldStat = disp->stat;
-//   disp->Changed = FALSE;
-//   AG_MutexUnlock(&(disp->mutex));
 }
 
 }
@@ -137,7 +129,7 @@ static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color 
       AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
       AG_SurfaceFree(tmp);
    }
-   //	   AG_WidgetUpdateSurface(my, pStatus->SurfaceTable[status]);
+
    AG_PopTextState();
         
 }
@@ -155,8 +147,6 @@ static BOOL UpdateVFD(XM7_SDLView *my, AG_Surface *dst, struct OsdVFDPack *pStat
 
    if((dst == NULL) || (pStatusFont == NULL)
     || (pStatus == NULL)) return FALSE;
-//   AG_SurfaceLock(dst);
-//   AG_ObjectLock(AGOBJECT(dst));
    if((pStatus->stat > OSD_VFD_WRITE) || (pStatus->stat  < 0)){
       pStatus->stat = OSD_VFD_EMPTY;
    }
@@ -165,7 +155,7 @@ static BOOL UpdateVFD(XM7_SDLView *my, AG_Surface *dst, struct OsdVFDPack *pStat
        pStatus->Changed = FALSE;
        return FALSE;
     }
-//   AG_SurfaceBlit(pStatus->pSurface[pStatus->stat], NULL, dst, 4, 4);
+
    pStatus->Changed = FALSE;
    pStatus->OldStat = pStatus->stat;
    return TRUE;
@@ -188,7 +178,6 @@ static void CreateVFD(AG_Widget *parent, int drive)
    AG_WidgetSetSize(pwVFD[drive], nVFDWidth, nVFDHeight);
    for(i = 0; i < 4; i++) {
       pVFDStat[drive]->pSurface[i] = AG_SurfaceStdRGBA(nVFDWidth, nVFDHeight);
-//      pVFDStat[drive]->SurfaceTable[i] = AG_WidgetMapSurface(pwVFD[drive], pVFDStat[drive]->pSurface[i]);
    }
    AG_WidgetShow(pwVFD[drive]);
 }
@@ -213,15 +202,10 @@ void InitVFD(AG_Widget *parent)
        pVFDStat[i]->OldStat = -1;
        pVFDStat[i]->VFDLetter[0] = '\0';
        pVFDStat[i]->drive = i;
-//       for(j = 0; j < 4; j++) {
-//	  pVFDStat[i]->pSurface[j] = AG_SurfaceEmpty();
-//	  pVFDStat[i]->SurfaceTable[j] = -1;
-//     }
        
        AG_MutexInit(&(pVFDStat[i]->mutex));
        CreateVFD(parent, i);
        pVFDStat[i]->init = TRUE;
-//       AG_MutexUnlock(&(pVFDStat[i]->mutex));
     }
    
 }
@@ -232,11 +216,6 @@ void DestroyVFD(void)
    int j;
    for(i = 1; i >= 0; i--) {
     if(pVFDStat[i] != NULL){
-        for(j = 0; j < 4; j++) {
-//	   if((pVFDStat[i]->SurfaceTable[j] >= 0) && (pwVFD[i] != NULL)) AG_WidgetUnmapSurface(pwVFD[i], pVFDStat[i]->SurfaceTable[j]); 
-//	   if(pVFDStat[i]->pSurface[j] != NULL) AG_SurfaceFree(pVFDStat[i]->pSurface[j]);
-	}
-       
         AG_MutexDestroy(&(pVFDStat[i]->mutex));
         free(pVFDStat[i]);
         pVFDStat[i] = NULL;
@@ -270,22 +249,17 @@ void ResizeVFD(AG_Widget *parent, int w, int h)
    
 
        for(i = 0; i < 2; i++) {
-//	  AG_MutexLock(&(pVFDStat[i]->mutex));
 	  surface = XM7_SDLViewGetSrcSurface(pwVFD[i]);
 	  AG_ObjectLock(pwVFD[i]);
 	  if(surface != NULL) AG_SurfaceResize(surface, nVFDWidth, nVFDHeight);
 	  AG_ObjectUnlock(pwVFD[i]);
 	  pVFDStat[i]->init = TRUE;
 	  AG_WidgetSetSize(pwVFD[i], nVFDWidth, nVFDHeight);
-	  //AG_WidgetSetPosition(pwVFD[i], (int)(((float)(STAT_WIDTH + VFD_WIDTH * (i - 1)) / (float)total) *  ww), 0);
 	  for(j = 0; j < 4; j++) {
 	     if(pVFDStat[i]->pSurface[j] != NULL) AG_SurfaceFree(pVFDStat[i]->pSurface[j]);
 	     pVFDStat[i]->pSurface[j] = AG_SurfaceStdRGBA(nVFDWidth, nVFDHeight);
-//	     if(pVFDStat[i]->SurfaceTable[j] < 0) pVFDStat[i]->SurfaceTable[j] = AG_WidgetMapSurface(pwVFD[i], pVFDStat[i]->pSurface[j]);
-//	     if(pwVFD[i] != NULL) AG_WidgetReplaceSurface(pwVFD[i], pVFDStat[i]->SurfaceTable[j], pVFDStat[i]->pSurface[j]); 
 	  }
 	  pVFDStat[i]->Changed = TRUE;
-//          AG_MutexUnlock(&(pVFDStat[i]->mutex));
        }
 
 }
@@ -297,14 +271,11 @@ void ClearVFD(void)
 	szDrive[i][0] = '\0';
 	szOldDrive[i][0] = '\0';
         if(pVFDStat[i] != NULL) {
-	   
-//	   AG_MutexLock(&(pVFDStat[i]->mutex));
 	   pVFDStat[i]->VFDLetter[0] = '\0';
 	   pVFDStat[i]->stat = OSD_VFD_EMPTY;
 	   pVFDStat[i]->OldStat = -1;
 	   pVFDStat[i]->Changed = TRUE;
 	   pVFDStat[i]->drive = i;
-//	   AG_MutexUnlock(&(pVFDStat[i]->mutex));
 	}
       
    }
@@ -384,8 +355,6 @@ void DrawDrive(int drive, BOOL override)
 		 strcpy(string, szDrive[drive]);
 	 }
 
-   
-//         if((fdc_ready[drive] == FDC_TYPE_NOTREADY) && (nDrive[drive] == num)){
          if(fdc_ready[drive] == FDC_TYPE_NOTREADY){
 	    stat = OSD_VFD_EMPTY;
 	 } else if (nDrive[drive] == FDC_ACCESS_READ) {
@@ -397,9 +366,7 @@ void DrawDrive(int drive, BOOL override)
 	 }
    
 	 nDrive[drive] = num;
-//         AG_MutexLock(&(pVFDStat[drive]->mutex));
          pVFDStat[drive]->stat = stat;
-//         if(stat != pVFDStat[drive]->OldStat) AG_Redraw(pwVFD[drive]);         
 
          if((strcmp(szDrive[drive], szOldDrive[drive]) != 0) 
 	    || (old_writep[drive] != fdc_writep[drive]) || (override == TRUE)) {
@@ -467,30 +434,23 @@ void DrawDrive(int drive, BOOL override)
 		 n.b = 255;
 		 n.a = 255;
 
-		 //case OSD_VFD_EMPTY:
 		 bg = black;
 		 fg = n;
 		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_EMPTY);
-		 //	    break;
-		 //        case OSD_VFD_NORM:
+
 		 bg = black;
 		 fg = n;
 		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_NORM);
-		 //            break;
-		 //        case OSD_VFD_READ:
+
 		 bg = r;
 		 fg = black;
 		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_READ);
-		 //            break;
-		 //        case OSD_VFD_WRITE:
+
 		 bg = b;
 		 fg = black;
 		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_WRITE);
 	      } 	    // CheckDebug 20130119
 	    pVFDStat[drive]->Changed = TRUE;
 	    AG_WidgetUpdate(pwVFD[drive]);         
-	    //AG_WidgetUpdateSurface(AGWIDGET(pwVFD[drive]), pwVFD[drive]->mySurface);
-	    //	    UpdateVFD(pwVFD[drive], pwVFD[drive]->Surface, pVFDStat[drive]);
 	 }
-//	 AG_MutexUnlock(&(pVFDStat[drive]->mutex));
 }

@@ -26,13 +26,7 @@ extern "C" {
 #include "sdl_cfg.h"
 #endif
 
-//#include "sdl_bar.h"
-//#include "api_kbd.h"
-//#include "sdl_sch.h"
-//#include "api_snd.h"
-//#include "sdl_inifile.h"
 #include "api_draw.h"
-//#include "sdl_gtkdlg.h"
 #include "agar_toolbox.h"
 
 void Create_FileMenu(AG_MenuItem *self);

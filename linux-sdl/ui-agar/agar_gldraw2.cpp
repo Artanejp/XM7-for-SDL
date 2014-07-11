@@ -7,7 +7,6 @@
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>
-//#include <agar/gui/opengl.h>
 
 #include <SDL/SDL.h>
 #ifdef _WINDOWS
@@ -57,10 +56,6 @@ float fBrightR;
 float fBrightG;
 float fBrightB;
 
-void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h)
-{
-//    pGetVram = p;
-}
 
 void SetBrightRGB_AG_GL2(float r, float g, float b)
 {
@@ -69,10 +64,6 @@ void SetBrightRGB_AG_GL2(float r, float g, float b)
    fBrightB = b;
 }
 
-Uint32 *GetVirtualVram(void)
-{
-    return pVram2;
-}
 
 
 /*

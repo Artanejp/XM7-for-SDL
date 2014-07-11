@@ -15,10 +15,6 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 
-//struct VirtualVram {
-//    Uint32 pVram[640][400];
-//};
-//extern struct VirtualVram *pVirtualVram;
 extern Uint32 *pVram2;
 extern BOOL InitVideo;
 extern BOOL bVramUpdateFlag;
@@ -51,7 +47,6 @@ extern void SetVramReader_GL2(void p(Uint32, Uint32 *, Uint32), int w, int h);
 extern void BuildVirtualVram_Raster(Uint32 *pp, int y, int mode);
 extern void BuildVirtualVram_RasterWindow(Uint32 *pp, int xbegin, int xend, int y, int mode);
 
-extern Uint32 *GetVirtualVram(void);
 #endif
 
 #endif // AGAR_VRAMUTIL_H_INCLUDED

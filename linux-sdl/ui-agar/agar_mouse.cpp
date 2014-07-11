@@ -25,6 +25,7 @@
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
 #include "agar_osd.h"
+#include "agar_logger.h"
 #else
 #include "xm7_sdl.h"
 #include "sdl_cfg.h"
@@ -34,7 +35,6 @@
 #include "sdl_inifile.h"
 #include "api_draw.h"
 #include "sdl_cpuid.h"
-
 
 
 int nMouseX;
@@ -58,7 +58,7 @@ static void CalcMouseMove(int w, int h, int x, int y)
     nMouseY -= (nPhysicalY - nMouseOldY); 
     nMouseOldX = nPhysicalX;
     nMouseOldY = nPhysicalY;
-//    printf("Mouse: %d %d\n", nMouseX, nMouseY);
+    XM7_DebugLog(XM7_LOG_DEBUG, "Mouse: %d %d", nMouseX, nMouseY);
 }
 
 

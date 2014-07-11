@@ -239,8 +239,6 @@ void Create_TapeMenu(AG_MenuItem *self)
 	/*
 	 * ライトプロテクト
 	 */
-//	AG_MenuSeparator(self);
-//	item = AG_MenuAction(self, gettext("Write Protect"), NULL, OnWriteProtectTape, NULL);
 	item = AG_MenuNode(self, gettext("Write Protect"), NULL); 
         AG_MenuToolbar(self,  toolbar);
         subitem = AG_MenuAction(item, "ON",  NULL, OnWriteProtectTape, "%i", TRUE);

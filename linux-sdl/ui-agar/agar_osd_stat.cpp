@@ -75,7 +75,6 @@ void DeleteStat(struct OsdStatPack *p)
 {
    if(p == NULL) return;
    AG_MutexDestroy(&(p->mutex));
-//   if(p->surface != NULL) AG_SurfaceFree(p->surface);
    free(p);
 }
 
@@ -206,7 +205,6 @@ void ResizeStatOSD(AG_Widget *parent, int w, int h)
 void ClearStatOSD(void)
 {
    if(pOsdStat == NULL) return;
-//   MsgString[0] = '\0';
    pOsdStat->message[0] = '\0';
    pOsdStat->Changed = TRUE;
 }

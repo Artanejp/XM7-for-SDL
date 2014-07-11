@@ -275,9 +275,7 @@ void InitInstance(void)
       MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    } else {
       MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS );
-//        MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
    }
-//   AGWIDGET(MainWindow)->flags |= AG_WIDGET_NOSPACING;
    AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
    AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
@@ -300,12 +298,6 @@ void InitInstance(void)
        
         GLDrawArea = AG_GLViewNew(AGWIDGET(hb) , 0);
         GLDrawArea->wid.flags |= AG_WIDGET_CATCH_TAB;
-        //if(!AG_UsingSDL(AGDRIVER(GLDrawArea))) {
-	//   InitFBO(); // 拡張の有無を調べてからFBOを初期化する。
-	   // FBOの有無を受けて、拡張の有無変数を変更する（念のために）
-	//   InitGLExtensionVars();
-	//   InitGridVertexs(); // Grid初期化
-	//}
        
         AG_WidgetSetSize(GLDrawArea, nDrawWidth, nDrawHeight);
         AG_GLViewSizeHint(GLDrawArea, nDrawWidth, nDrawHeight);
@@ -314,12 +306,14 @@ void InitInstance(void)
         AG_GLViewKeyupFn (GLDrawArea, AGEventKeyUpGL, NULL);
         AG_GLViewScaleFn (GLDrawArea, AGEventScaleGL, NULL);
         //AG_GLViewOverlayFn (GLDrawArea, AGEventOverlayGL, NULL);
+
         AG_GLViewMotionFn(GLDrawArea, OnMouseMotionGL, NULL);
         AG_GLViewButtondownFn(GLDrawArea, OnMouseButtonDownGL, NULL);
         AG_GLViewButtonupFn(GLDrawArea, OnMouseButtonUpGL, NULL);
 	bUseOpenGL = TRUE;
 	DrawArea = NULL;
 	//AGWIDGET(GLDrawArea)->flags |= AG_WIDGET_NOSPACING;
+
         AG_WidgetShow(GLDrawArea);
         AG_WidgetFocus(AGWIDGET(GLDrawArea));
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
@@ -329,22 +323,11 @@ void InitInstance(void)
      {
         // Non-GL
         hb = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
-#if 1
+
         DrawArea = XM7_SDLViewNew(AGWIDGET(hb), NULL, NULL);
         AGWIDGET(DrawArea)->flags |= AG_WIDGET_CATCH_TAB;
         XM7_SDLViewDrawFn(DrawArea, XM7_SDLViewUpdateSrc, "%p", NULL);
         XM7_SDLViewSurfaceNew(DrawArea, 640, 400);
-#else
-        DrawArea = AG_PixmapNew(AGWIDGET(hb), 0, 640, 400);
-        AGWIDGET(DrawArea)->flags |= (AG_WIDGET_CATCH_TAB | AG_WIDGET_USE_MOUSEOVER | AG_WIDGET_FOCUSABLE);
-	DrawSurface = AG_SurfaceRGBA(640, 400, 32, AG_SRCALPHA, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-	if(DrawSurface != NULL) {
-	   if(DrawArea != NULL) {
-	      DrawSurfaceId = AG_PixmapAddSurface(DrawArea, DrawSurface);
-	      AG_PixmapSetSurface(DrawArea, DrawSurfaceId);
-	   }
-	}
-#endif
         AG_SetEvent(DrawArea, "key-up", ProcessKeyUp, NULL);
         AG_SetEvent(DrawArea, "key-down", ProcessKeyDown, NULL);
         AG_SetEvent(DrawArea, "mouse-motion", OnMouseMotionSDL, NULL);
@@ -356,17 +339,16 @@ void InitInstance(void)
 #ifdef USE_OPENGL
         GLDrawArea = NULL;
 #endif /* USE_OPENGL */
-//	AGWIDGET(DrawArea)->flags |= AG_WIDGET_NOSPACING;
+
         AG_WidgetShow(DrawArea);
         AG_WidgetFocus(AGWIDGET(DrawArea));
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }
     {
-      // hb = AG_HBoxNew(AGWIDGET(MainWindow), 0);
        pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_VFILL | AG_WIDGET_NOSPACING);
        AG_WidgetSetSize(pStatusBar, 640, 40);
        CreateStatus(AGWIDGET(pStatusBar));
-//       AGWIDGET(pStatusBar)->flags |= (AG_WIDGET_HFILL | AG_WIDGET_NOSPACING);
+
        AG_WidgetShow(pStatusBar);
     }
 #if 0 // GUI-DEBUG
