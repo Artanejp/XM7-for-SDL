@@ -207,7 +207,7 @@ void OnMouseMode(AG_Event *event)
  * マウスキャプチャフラグを反転させてモード切り替え
  */
         mos_capture = (!mos_capture);
-//        SetMouseCapture(bActivate);
+        SetMouseCapture(mos_capture);
 }
 #endif				/*  */
     /*
