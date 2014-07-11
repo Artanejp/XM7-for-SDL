@@ -22,6 +22,7 @@
 #include "agar_xm7.h"
 #include "agar_cfg.h"
 #include "agar_toolbox.h"
+#include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
 #include "agar_osd.h"
@@ -47,6 +48,9 @@ static int nPhysicalY;
 static int nMouseSX;	/* マウス X座標保存 */
 static int nMouseSY;	/* マウス Y座標保存 */
 static BOOL bMouseCursor;	/* マウス カーソル表示状態 */
+static Uint8 pMouseCursor[8]; 
+static Uint8 pMouseMask[8]; 
+static AG_Cursor *pCursor = NULL;
 
 static void CalcMouseMove(int w, int h, int x, int y)
 {
@@ -64,13 +68,32 @@ static void CalcMouseMove(int w, int h, int x, int y)
 
 void InitMouseSub(void)
 {
+   AG_Driver *drv = NULL;
    nMouseOldX = 0;
    nMouseOldY = 0;
    nPhysicalX = 0;
    nPhysicalY = 0;
    bMouseCursor = TRUE;
+   
+   memset(pMouseCursor, 0x00, sizeof(pMouseCursor));
+   memset(pMouseCursor, 0x00, sizeof(pMouseMask));
+#ifdef USE_OPENGL
+   if(GLDrawArea != NULL) {
+      drv = AGDRIVER(GLDrawArea);
+   } else
+#endif
+          if (DrawArea != NULL) {
+      drv = AGDRIVER(DrawArea);
+   }
+   if(drv != NULL) {
+//      pCursor = AG_CursorNew(drv, 8, 8, (Uint8 *)pMouseCursor, (Uint8 *)pMouseMask, 1, 1);
+   }
+   
 }
 
+void DetachMouseSub(void)
+{
+}
 
 void GetMousePos(int *x, int *y)
 {
@@ -101,7 +124,8 @@ void SetMouseCapture(BOOL en)
 	 * カーソル表示/消去
 	 */
 	if (bMouseCursor == en) {
-		if (en) {
+	   if (!en) {
+
 #ifdef USE_OPENGL
 		   if(GLDrawArea != NULL) {
 		      AG_HideCursor(AGDRIVER(GLDrawArea));
@@ -120,7 +144,8 @@ void SetMouseCapture(BOOL en)
 		      AG_ShowCursor(AGDRIVER(DrawArea));
 		   }
 		}
-		bMouseCursor = !en;
+	   
+	   bMouseCursor = !en;
 	}
 
 	/*
@@ -155,14 +180,15 @@ void SetMouseCapture(BOOL en)
 		    x = GLDrawArea->wid.w / 2;
 		    y = GLDrawArea->wid.h / 2;
 		   AG_ExecMouseAction (GLDrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
+		if(AG_UsingSDL(AGDRIVER(GLDrawArea))) SDL_WM_GrabInput(SDL_GRAB_ON);
 		} else
 #endif
 	        if(DrawArea != NULL) {
 		    x = AGWIDGET(DrawArea)->w / 2;
 		    y = AGWIDGET(DrawArea)->h / 2;
 		   AG_ExecMouseAction (DrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
+		   if(AG_UsingSDL(AGDRIVER(DrawArea))) SDL_WM_GrabInput(SDL_GRAB_ON);
 		}
-		SDL_WM_GrabInput(SDL_GRAB_ON);
 	}
 	else {
 
@@ -173,7 +199,6 @@ void SetMouseCapture(BOOL en)
 		//        if(SDL_GetWMInfo(&sdlinfo)) {
 		//        XUngrabPointer(sdlinfo.info.x11.display, CurrentTime);
 		//}
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		/*
 		 * カーソル位置を復元
 		 */
@@ -182,12 +207,14 @@ void SetMouseCapture(BOOL en)
 		    x = nMouseSX;
 		    y = nMouseSY;
 		   AG_ExecMouseAction (GLDrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
+		if(AG_UsingSDL(AGDRIVER(GLDrawArea))) SDL_WM_GrabInput(SDL_GRAB_OFF);
 		} else 
 #endif
 	        if(DrawArea != NULL) {
 		    x = nMouseSX;
 		    y = nMouseSY;
 		   AG_ExecMouseAction (DrawArea, AG_ACTION_ON_BUTTONUP, AG_MOUSE_NONE, x, y);
+		if(AG_UsingSDL(AGDRIVER(DrawArea))) SDL_WM_GrabInput(SDL_GRAB_OFF);
 		}
 
 	}

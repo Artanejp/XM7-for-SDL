@@ -31,6 +31,7 @@
 #include "api_mouse.h"
 
 extern void InitMouseSub(void);
+extern void DetachMouseSub(void);
 void GetMousePos(int *x, int *y);
 
 extern "C" {

@@ -29,6 +29,7 @@ extern "C" {
 #endif
 
 #include "api_kbd.h"
+#include "api_mouse.h"
 #include "sdl_inifile.h"
 #include "api_draw.h"
 #include "sdl_cpuid.h"
@@ -350,6 +351,7 @@ void InitInstance(void)
        CreateStatus(AGWIDGET(pStatusBar));
 
        AG_WidgetShow(pStatusBar);
+       InitMouse();
     }
 #if 0 // GUI-DEBUG
      {

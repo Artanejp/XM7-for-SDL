@@ -15,6 +15,8 @@ extern "C"{
 extern BYTE nMidBtnMode;
 extern BOOL bMouseCaptureFlag;
 
+extern void InitMouse();
+
 void FASTCALL   PollMos(void);
 void FASTCALL   SetMouseCapture(BOOL en);
 void OnButtonPress(AG_Event *event);
