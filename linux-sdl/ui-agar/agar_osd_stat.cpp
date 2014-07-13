@@ -121,14 +121,14 @@ static void DrawStatFn(AG_Event *event)
    size = getnFontSize();
    len = strlen(disp->message);
 
-   if((pStatusFont != NULL) && (size > 2) & (len <= OSD_STRLEN) && (len >= 0)){
+   if((pStatusFont != NULL) && (size > 2) & (len <= OSD_STRLEN) && (len > 0)){
       AG_Surface *tmps;
       AG_Font *font;
 
       AG_PushTextState();
       AG_TextFont(pStatusFont);
       font = AG_TextFontPts(size);
-      AG_TextFont(font);
+      //AG_TextFont(font);
       
       AG_TextColor(n);
       AG_TextBGColor(black);

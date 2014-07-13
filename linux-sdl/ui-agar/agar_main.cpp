@@ -335,6 +335,7 @@ void MainLoop(int argc, char *argv[])
    char strbuf[2048];
    char homedir[2048];
    const SDL_VideoInfo *inf;
+   BOOL flag;
    SDL_Surface *s;
 
    
@@ -419,20 +420,30 @@ void MainLoop(int argc, char *argv[])
 	AG_PrtString(agConfig, "font-path", "%s:%s/xm7:%s:.",
 		homedir, homedir, FONTPATH);
 #else
-    AG_GetString(agConfig, "font-path", strbuf, 2047);
-    if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0))
-    {
-     AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
-		  homedir, homedir, homedir, FONTPATH);
+    flag = FALSE;
+    if(AG_GetString(agConfig, "font-path", strbuf, 2047) != NULL) {
+       if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0)){
+	  flag = TRUE;
+	 }
+    } else {
+       flag = TRUE;
     }
+    if(flag) AG_PrtString(agConfig, "font-path", "%s/.fonts:%s:%s/.xm7:%s:.", 
+		homedir, homedir, homedir, FONTPATH);
+    flag = FALSE;
+   
     XM7_DebugLog(XM7_LOG_DEBUG, "font-path = %s", strbuf);
 #endif /* _WINDOWS */
-   
-    AG_GetString(agConfig, "font.face", strbuf, 511);
-    if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0))
-    {
-        AG_SetString(agConfig, "font.face", UI_FONT);
+    flag = FALSE;
+    if(AG_GetString(agConfig, "font.face", strbuf, 511) != NULL) {
+       if((strlen(strbuf) <= 0) || (strncmp(strbuf, "_agFontVera", 11) == 0)){
+	  flag = TRUE;
+       }
+    } else {
+	flag = TRUE;
     }
+    if(flag) AG_SetString(agConfig, "font.face", UI_FONT);
+    flag = FALSE;
     XM7_DebugLog(XM7_LOG_DEBUG, "font.face = %s", strbuf);
    
     stopreq_flag = FALSE;

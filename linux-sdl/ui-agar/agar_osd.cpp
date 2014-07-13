@@ -186,11 +186,10 @@ void CreateStatus(AG_Widget *parent)
 
 	// Surfaceつくる
     SetPixelFormat(&fmt);
-//    pStatusFont =  AG_FetchFont (STAT_FONT,STAT_PT, 0);
-    pStatusFont =  AG_FetchFont (StatusFont,STAT_PT, 0);
+    pStatusFont =  AG_FetchFont (StatusFont, STAT_PT, 0);
 	// Init Var
 
-   nFontSize = STAT_PT;
+    nFontSize = STAT_PT;
     if(parent) {
        AG_VBox *vb;
        AG_HBox *hb;

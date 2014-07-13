@@ -34,7 +34,7 @@
 #include "agar_draw.h"
 #include "agar_gldraw.h"
 #include "agar_sdlview.h"
-
+#include "agar_logger.h"
 
 enum {
     OSD_VFD_EMPTY = 0,
@@ -101,6 +101,7 @@ static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color 
 {
    AG_Surface *tmp;
    AG_Surface *dst;
+   AG_Font *font = NULL;
    AG_Color bb;
    int size;
         
@@ -119,8 +120,14 @@ static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color 
    AG_PushTextState();
         
    size = getnFontSize();
-   AG_TextFont(pStatusFont);
-   AG_TextFontPts(size);
+   if(pStatusFont != NULL) AG_TextFont(pStatusFont);
+   font = AG_TextFontPts(size);
+//   if(font != NULL) {
+//      XM7_DebugLog(XM7_LOG_DEBUG, "OSD/VFD font is: %s, Size = %d", AGOBJECT(font)->name, (int)(font->spec.size));
+//   } else {
+//      AG_TextFont(pStatusFont);
+//      XM7_DebugLog(XM7_LOG_DEBUG, "OSD/VFD fallback font is: %s, Size = %d", AG_GetStringP(agConfig, "font.face"), AG_GetInt(agConfig, "font.size"));
+//   }
    AG_TextColor(*fg);
    AG_TextBGColor(bb);
    tmp = AG_TextRender(pStatus->VFDLetter);
