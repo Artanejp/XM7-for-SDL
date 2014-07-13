@@ -93,7 +93,7 @@ static void DrawCMTFn(AG_Event *event)
    }
    if(UpdateCMT(my, dst, disp) || (disp->Changed == TRUE)){
       UpdateCMTCount(count, disp);
-      AG_SurfaceBlit(disp->pSurface, NULL, dst, 4, 4);
+      AG_SurfaceBlit(disp->pSurface, NULL, dst, 0, 0);
       AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
       pCMTStat->Changed = FALSE;
    }
@@ -200,14 +200,14 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
             AG_TextBGColor(bg);
             tmp = AG_TextRender(string);
             AG_FillRect(dst, NULL, bg);
-            AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
+            AG_SurfaceBlit(tmp, NULL, dst, 0, 0);
             AG_SurfaceFree(tmp);
         } else {
             AG_FillRect(dst, NULL, bg);
 	   
             if(tape_writep) {
 	       tmp = AG_TextRender("■");
-	       AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
+	       AG_SurfaceBlit(tmp, NULL, dst, 0, 0);
 	       AG_SurfaceFree(tmp);
 	    }
         }

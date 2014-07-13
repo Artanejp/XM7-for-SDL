@@ -90,7 +90,7 @@ static void DrawVFDFn(AG_Event *event)
     return;
    }
    if(UpdateVFD(my, dst, disp)) {
-      AG_SurfaceBlit(disp->pSurface[disp->stat], NULL, dst, 4, 4);
+      AG_SurfaceBlit(disp->pSurface[disp->stat], NULL, dst, 0, 0);
       AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    }
 }
@@ -126,7 +126,7 @@ static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color 
    tmp = AG_TextRender(pStatus->VFDLetter);
    AG_FillRect(dst, NULL, *bg);
    if(tmp != NULL){
-      AG_SurfaceBlit(tmp, NULL, dst, 4, 4);
+      AG_SurfaceBlit(tmp, NULL, dst, 0, 0);
       AG_SurfaceFree(tmp);
    }
 

@@ -231,19 +231,19 @@ static void CreateLEDs(AG_Widget *parent)
    nINS = 0;
    nKANA = 0;
 
-   pOsdLEDIns = InitLED(nLedWidth, nLedHeight, "INS", 4, 4);
+   pOsdLEDIns = InitLED(nLedWidth, nLedHeight, "INS", 4, 0);
    XM7_SDLViewSurfaceNew(pWidIns, w, h);
    stmp = XM7_SDLViewGetSrcSurface(pWidIns);
    AG_FillRect(stmp, NULL, black);
    XM7_SDLViewDrawFn(pWidIns, DrawLEDFn, "%p,%p", &nINS, pOsdLEDIns);
 
-   pOsdLEDCAPS = InitLED(nLedWidth, nLedHeight, "CAP", 0, 4);
+   pOsdLEDCAPS = InitLED(nLedWidth, nLedHeight, "CAP", 0, 0);
    XM7_SDLViewSurfaceNew(pWidCaps, w, h);
    stmp = XM7_SDLViewGetSrcSurface(pWidCaps);
    AG_FillRect(stmp, NULL, black);
    XM7_SDLViewDrawFn(pWidCaps, DrawLEDFn, "%p,%p", &nCAP, pOsdLEDCAPS);
 
-   pOsdLEDKana = InitLED(nLedWidth, nLedHeight, "カナ", 6, 4);
+   pOsdLEDKana = InitLED(nLedWidth, nLedHeight, "カナ", 6, 0);
    XM7_SDLViewSurfaceNew(pWidKana, w, h);
    stmp = XM7_SDLViewGetSrcSurface(pWidKana);
    AG_FillRect(stmp, NULL, black);
@@ -416,26 +416,30 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
      if((pStatusFont != NULL) && (size > 2)){
       AG_Surface *tmps;
       AG_Font *font;
-      int xoff = (3 * nLedWidth) / LED_WIDTH;
-      int yoff = (2 * nLedHeight) / LED_HEIGHT;
       int ratio = (nLedWidth * 100) / LED_WIDTH;
 	
       AG_PushTextState();
       AG_TextFont(pStatusFont);
-      font = AG_TextFontPct(ratio);
+//      font = AG_TextFontPct(ratio);
+      font = AG_FetchFont(StatusFont, 32, 0);
+      if(font != NULL) {
+	 AG_TextFont(font);
+      }
+      
+      AG_TextJustify(AG_TEXT_CENTER);
 
       AG_TextColor(n);
       AG_TextBGColor(black);
       AG_FillRect(p->pOFF, NULL, black);
       tmps = AG_TextRender(str);
-      AG_SurfaceBlit(tmps, NULL, p->pOFF, xoff, yoff);
+      AG_SurfaceBlit(tmps, NULL, p->pOFF, 0, 0);
       AG_SurfaceFree(tmps);
 
       AG_TextColor(black);
       AG_TextBGColor(r);
       AG_FillRect(p->pON, NULL, r);
       tmps = AG_TextRender(str);
-      AG_SurfaceBlit(tmps, NULL, p->pON, xoff, yoff);
+      AG_SurfaceBlit(tmps, NULL, p->pON, 0, 0);
       AG_SurfaceFree(tmps);
 
       AG_PopTextState();
@@ -457,7 +461,7 @@ void ResizeLeds(AG_Widget *parent, int w, int h)
 
     nLedHeight = (int)(ww / 640.0f * (float)STAT_HEIGHT);
     nLedWidth = (int)(ww / 640.0f * (float)LED_WIDTH);
-    if(nLedWidth <= 0) return;
+    if((nLedWidth <= 0) || (nLedHeight <= 0))return;
     if((pOsdLEDIns == NULL) || (pOsdLEDCAPS == NULL) || (pOsdLEDKana == NULL)) return; 
     if((pWidIns == NULL) || (pWidCaps == NULL) || (pWidKana == NULL)) return; 
 

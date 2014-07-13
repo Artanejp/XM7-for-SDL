@@ -133,7 +133,7 @@ static void DrawStatFn(AG_Event *event)
       AG_TextColor(n);
       AG_TextBGColor(black);
       tmps = AG_TextRender(disp->message);
-      AG_SurfaceBlit(tmps, NULL, dst, 4, 4);
+      AG_SurfaceBlit(tmps, NULL, dst, 0, 0);
       AG_SurfaceFree(tmps);
       AG_PopTextState();
    }
