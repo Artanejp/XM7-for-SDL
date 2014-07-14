@@ -79,6 +79,7 @@ void DumpObject::InitFont(void)
     char c[2];
     AG_Surface *dummy;
     AG_PushTextState();
+
     if(pDbgDialogTextFont != NULL){
         c[0] = '0';
         c[1] = '\0';

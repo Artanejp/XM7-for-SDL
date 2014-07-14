@@ -21,9 +21,9 @@ extern "C"
 extern AG_Font *pDbgDialogTextFont;
 extern AG_Font *pDbgDialogSymFont;
 }
-#define DBG_TEXT_FONT "F-Font_400line.ttf"
-#define DBG_SYM_FONT "F-Font_Symbol_Unicode.ttf"
-#define DBG_TEXT_PT 16
+#define DBG_TEXT_FONT "F\\-Font_400"
+#define DBG_SYM_FONT "F\\-Font_Symbol400"
+#define DBG_TEXT_PT 22
 
 class DumpObject {
 public:
