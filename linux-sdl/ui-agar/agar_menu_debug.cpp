@@ -44,48 +44,24 @@ extern void DBG_Bin2Hex2(char *str, Uint16 w);
 extern void DBG_Bin2Hex4(char *str, Uint32 dw);
 extern void DBG_DumpAsc(char *str, Uint8 b);
 
+#ifdef _WITH_DEBUGGER
+   char DebuggerTextFont[MAXPATHLEN + 1];
+   char DebuggerSymFont[MAXPATHLEN + 1];
+#endif // _WITH_DEBUGGER
 
 /*
  * Fix Fonts
  */
-AG_Font *pDbgDialogTextFont;
-AG_Font *pDbgDialogSymFont;
 
 
 static void DbgInitFont(void)
 {
-    AG_Surface *dummy;
-
-    AG_PushTextState();
-    pDbgDialogTextFont = AG_TextFontLookup(DBG_TEXT_FONT, DBG_TEXT_PT, 0);
-    if(pDbgDialogTextFont == NULL) { // Fallback
-       pDbgDialogTextFont = AG_FetchFont(DBG_TEXT_FONT, DBG_TEXT_PT, 0);
-       if(pDbgDialogTextFont == NULL) { // Fallback2
-        pDbgDialogTextFont = AG_TextFontPts(DBG_TEXT_PT); //  16pts
-       }
-    }
    
-    AG_PopTextState();
-
-    AG_PushTextState();
-    pDbgDialogSymFont = AG_TextFontLookup(DBG_SYM_FONT, DBG_TEXT_PT, 0);
-    if(pDbgDialogSymFont == NULL) { // Fallback
-       pDbgDialogSymFont = AG_FetchFont(DBG_SYM_FONT, DBG_TEXT_PT, 0);
-       if(pDbgDialogSymFont == NULL) { // Fallback
-        pDbgDialogSymFont = AG_TextFontPts(DBG_TEXT_PT);//  16pts
-       }
-    }
-   
-   AG_PopTextState();
-
 }
 
 static void DbgDetachFont(void)
 {
-    if(pDbgDialogTextFont != NULL) AG_UnusedFont(pDbgDialogTextFont);
-    if(pDbgDialogSymFont != NULL) AG_UnusedFont(pDbgDialogSymFont);
-    pDbgDialogTextFont = NULL;
-    pDbgDialogSymFont = NULL;
+
 }
 
 

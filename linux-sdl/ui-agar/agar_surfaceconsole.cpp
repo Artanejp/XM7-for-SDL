@@ -6,6 +6,8 @@
 */
 
 #include "agar_surfaceconsole.h"
+#include "agar_debugger.h"
+#include "agar_cfg.h"
 
 static void SetPixelFormat(AG_PixelFormat *fmt)
 {
@@ -80,6 +82,8 @@ void DumpObject::InitFont(void)
     AG_Surface *dummy;
     AG_PushTextState();
 
+   
+    pDbgDialogTextFont = AG_TextFontLookup(&DebuggerTextFont[0], DBG_TEXT_PT, 0);
     if(pDbgDialogTextFont != NULL){
         c[0] = '0';
         c[1] = '\0';
@@ -90,7 +94,7 @@ void DumpObject::InitFont(void)
         c[1] = '\0';
         AG_TextSize(c ,&CHRW, &CHRH);
     }
-   
+    pDbgDialogSymFont = AG_TextFontLookup(DebuggerSymFont, DBG_TEXT_PT, 0);
     AG_PopTextState();
 }
 

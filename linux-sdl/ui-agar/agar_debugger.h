@@ -11,6 +11,12 @@
 #include "agar_sdlview.h"
 
 extern void DumpMem2(DumpObject *obj, int addr);
+extern char DebuggerTextFont[];
+extern char DebuggerSymFont[];
+
+#define DBG_TEXT_FONT "F\\-Font_400"
+#define DBG_SYM_FONT "F\\-Font_Symbol400"
+#define DBG_TEXT_PT 22
 
 enum {
     MEM_MAIN = 0,

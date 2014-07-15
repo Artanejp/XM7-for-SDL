@@ -31,6 +31,7 @@
 #include "agar_osd.h"
 #include "agar_draw.h"
 #include "agar_glutil.h"
+#include "agar_debugger.h"
 
 extern AG_Window *MainWindow;
 
@@ -560,7 +561,15 @@ void LoadCfg(void)
       if (!LoadCfgString("StatusFont", StatusFont, MAXPATHLEN)) {
  	    strcpy(StatusFont, STAT_FONT);
       }
-      /*
+#ifdef _WITH_DEBUGGER
+      if (!LoadCfgString("DebuggerTextFont", DebuggerTextFont, MAXPATHLEN)) {
+ 	    strcpy(DebuggerTextFont, DBG_TEXT_FONT);
+      }
+      if (!LoadCfgString("DebuggerSymbolFont", DebuggerSymFont, MAXPATHLEN)) {
+ 	    strcpy(DebuggerSymFont, DBG_SYM_FONT);
+      }
+#endif
+       /*
        * OpenCL
        */
        SetCfgSection("OPENCL");
@@ -831,6 +840,10 @@ void SaveCfg(void)
      */
     SetCfgSection("UI");
     SaveCfgString("StatusFont", StatusFont);
+#ifdef _WITH_DEBUGGER
+    SaveCfgString("DebuggerTextFont", DebuggerTextFont);
+    SaveCfgString("DebuggerSymbolFont", DebuggerSymFont);
+#endif
     /*
      * OpenCL
      */
