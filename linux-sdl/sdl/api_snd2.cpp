@@ -382,7 +382,7 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
    Uint8 *s;
 
    req.tv_sec = 0;
-   req.tv_nsec = 2000 * 1000; //  0.1ms
+   req.tv_nsec = 4000 * 1000; //  0.1ms
    
    if(len <= 0) return;
    spos = 0;
@@ -413,9 +413,8 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
 	   len2 = 0;
 	   if(applySem) SDL_SemPost(applySem);
 	   if(spos >= len) return;
-	   SDL_Delay(5); // 5ms
 //	   while(nSndDataLen <= 0) {
-//	   nanosleep(&req, &remain); // Wait 500uS
+	   nanosleep(&req, &remain); // Wait 500uS
 	   if(bSndExit) return;
 //	   }
 	}

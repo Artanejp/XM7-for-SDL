@@ -753,7 +753,7 @@ void FASTCALL PollJoy(void)
 	 * データをクリア
 	 */
 	memset(joydat, 0, sizeof(joydat));
-//	memset(joyaxis, 0, sizeof(joyaxis));
+	memset(joyaxis, 0, sizeof(joyaxis));
 
 	/*
 	 * 無効チェック

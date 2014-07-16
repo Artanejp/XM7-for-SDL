@@ -366,14 +366,14 @@ void LoadCfg(void)
 	    }
             }
             flag = TRUE;
-            for (j = 0; j < 7; j++) {
-                    sprintf(string, "Code%d", i * 10 + j);
-                    configdat.nJoyCode[i][j] = LoadCfgInt(string, -1);
-                    if ((configdat.nJoyCode[i][j] < 0)
-                        || (configdat.nJoyCode[i][j] > 0x75)) {
-                            flag = FALSE;
-                    }
-            }
+//            for (j = 0; j < 7; j++) {
+//                    sprintf(string, "Code%d", i * 10 + j);
+//                    configdat.nJoyCode[i][j] = LoadCfgInt(string, -1);
+//                    if ((configdat.nJoyCode[i][j] < 0)
+//                        || (configdat.nJoyCode[i][j] > 0x75)) {
+//                            flag = FALSE;
+//                    }
+//            }
 
 /*
  * レンジエラーなら初期値設定
@@ -707,10 +707,10 @@ void SaveCfg(void)
                     sprintf(string, "Rapid%d", i * 10 + j);
                     SaveCfgInt(string, configdat.nJoyRapid[i][j]);
             }
-            for (j = 0; j < 7; j++) {
-                    sprintf(string, "Code%d", i * 10 + j);
-                    SaveCfgInt(string, configdat.nJoyCode[i][j]);
-            }
+//            for (j = 0; j < 7; j++) {
+//                    sprintf(string, "Code%d", i * 10 + j);
+//                    SaveCfgInt(string, configdat.nJoyCode[i][j]);
+//            }
     }
 
 
@@ -933,7 +933,7 @@ void ApplyCfg(void)
  */
     memcpy(nJoyType, configdat.nJoyType, sizeof(nJoyType));
     memcpy(nJoyRapid, configdat.nJoyRapid, sizeof(nJoyRapid));
-    memcpy(nJoyCode, configdat.nJoyCode, sizeof(nJoyCode));
+//    memcpy(nJoyCode, configdat.nJoyCode, sizeof(nJoyCode));
 
 /*
  * Screenセクション
