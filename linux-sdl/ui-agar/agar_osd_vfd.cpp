@@ -70,6 +70,7 @@ extern void SetPixelFormat(AG_PixelFormat *fmt);
 extern AG_Font *pStatusFont;
 
 static BOOL UpdateVFD(XM7_SDLView *my, AG_Surface *dst, struct OsdVFDPack *pStatus);
+static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color *bg, int status);
 
 extern "C" {
 static void DrawVFDFn(AG_Event *event)
@@ -90,6 +91,47 @@ static void DrawVFDFn(AG_Event *event)
     return;
    }
    if(UpdateVFD(my, dst, disp)) {
+	{
+	   AG_Color fg, bg;
+	   AG_Color r, b, n, black;
+	   AG_Surface *target;
+	   
+	   r.r = 255;
+	   r.g = 0;
+	   r.b = 0;
+	   r.a = 255;
+	   
+	   black.r = 0;
+	   black.g = 0;
+	   black.b = 0;
+	   black.a = 255;
+	   
+	   b.r = 0;
+	   b.g = 0;
+	   b.b = 255;
+	   b.a = 255;
+	   
+	   n.r = 255;
+	   n.g = 255;
+	   n.b = 255;
+	   n.a = 255;
+	   
+	   bg = black;
+	   fg = n;
+	   UpdateVFDChanged(disp, &fg, &bg, OSD_VFD_EMPTY);
+	   
+	   bg = black;
+	   fg = n;
+	   UpdateVFDChanged(disp, &fg, &bg, OSD_VFD_NORM);
+	   
+	   bg = r;
+	   fg = black;
+	   UpdateVFDChanged(disp, &fg, &bg, OSD_VFD_READ);
+	   
+	   bg = b;
+	   fg = black;
+	   UpdateVFDChanged(disp, &fg, &bg, OSD_VFD_WRITE);
+	} 	    // CheckDebug 20130119
       AG_SurfaceBlit(disp->pSurface[disp->stat], NULL, dst, 0, 0);
       AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    }
@@ -122,12 +164,12 @@ static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color 
    size = getnFontSize();
    if(pStatusFont != NULL) AG_TextFont(pStatusFont);
    font = AG_TextFontPts(size);
-//   if(font != NULL) {
-//      XM7_DebugLog(XM7_LOG_DEBUG, "OSD/VFD font is: %s, Size = %d", AGOBJECT(font)->name, (int)(font->spec.size));
-//   } else {
-//      AG_TextFont(pStatusFont);
-//      XM7_DebugLog(XM7_LOG_DEBUG, "OSD/VFD fallback font is: %s, Size = %d", AG_GetStringP(agConfig, "font.face"), AG_GetInt(agConfig, "font.size"));
-//   }
+   if (font == NULL){
+      XM7_DebugLog(XM7_LOG_DEBUG, "Font failed: %s", AG_GetError());//   if(font != NULL) {
+   } else {
+//      XM7_DebugLog(XM7_LOG_DEBUG, "Font ok: font=%x Error=%s", font, AG_GetError());
+   }
+   
    AG_TextColor(*fg);
    AG_TextBGColor(bb);
    tmp = AG_TextRender(pStatus->VFDLetter);
@@ -213,6 +255,7 @@ void InitVFD(AG_Widget *parent)
        AG_MutexInit(&(pVFDStat[i]->mutex));
        CreateVFD(parent, i);
        pVFDStat[i]->init = TRUE;
+       pVFDStat[i]->Changed = TRUE;
     }
    
 }
@@ -416,47 +459,6 @@ void DrawDrive(int drive, BOOL override)
 	    
 	    old_writep[drive] = fdc_writep[drive];
 	    strncpy(pVFDStat[drive]->VFDLetter, outstr, 63);
-	      {
-		 AG_Color fg, bg;
-		 AG_Color r, b, n, black;
-		 AG_Surface *target;
-
-		 r.r = 255;
-		 r.g = 0;
-		 r.b = 0;
-		 r.a = 255;
-		 
-		 black.r = 0;
-		 black.g = 0;
-		 black.b = 0;
-		 black.a = 255;
-		 
-		 b.r = 0;
-		 b.g = 0;
-		 b.b = 255;
-		 b.a = 255;
-
-		 n.r = 255;
-		 n.g = 255;
-		 n.b = 255;
-		 n.a = 255;
-
-		 bg = black;
-		 fg = n;
-		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_EMPTY);
-
-		 bg = black;
-		 fg = n;
-		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_NORM);
-
-		 bg = r;
-		 fg = black;
-		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_READ);
-
-		 bg = b;
-		 fg = black;
-		 UpdateVFDChanged(pVFDStat[drive],&fg, &bg, OSD_VFD_WRITE);
-	      } 	    // CheckDebug 20130119
 	    pVFDStat[drive]->Changed = TRUE;
 	    AG_WidgetUpdate(pwVFD[drive]);         
 	 }

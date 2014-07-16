@@ -420,8 +420,8 @@ static AG_Surface *ResizeOneLed(XM7_SDLView *wid, struct OsdLEDPack *p, char *st
 	
       AG_PushTextState();
       AG_TextFont(pStatusFont);
-//      font = AG_TextFontPct(ratio);
-      font = AG_FetchFont(StatusFont, 32, 0);
+      font = AG_TextFontPct(ratio);
+//      font = AG_FetchFont(StatusFont, 32, 0);
       if(font != NULL) {
 	 AG_TextFont(font);
       }

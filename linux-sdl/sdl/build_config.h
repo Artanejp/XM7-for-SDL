@@ -49,7 +49,7 @@
 #endif
 
 #ifndef UI_PT
-#define UI_PT  18
+#define UI_PT  14
 #endif
 
 /*

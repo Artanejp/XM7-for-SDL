@@ -259,7 +259,7 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int h2)
 
    hh = (int)((float)h / 400.0f * (float)STAT_HEIGHT);
    if(h < 400) hh += 5.0f; // WORKAROUNDS 
-   nFontSize = (int)((float)STAT_PT * ww / 640.0f);
+   nFontSize = (int)((float)STAT_PT * ww / 800.0f);
 
    AG_WidgetSetSize(parent, w - 5, hh);
    ResizeStatOSD(parent, w, hh);

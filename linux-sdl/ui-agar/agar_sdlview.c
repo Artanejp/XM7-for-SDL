@@ -268,6 +268,7 @@ static void Draw(void *p)
     * for more information on styles.
     */
    AG_ObjectLock(my);
+
    if(my->draw_ev != NULL){
       my->draw_ev->handler(my->draw_ev);
    }

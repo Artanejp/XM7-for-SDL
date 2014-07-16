@@ -129,13 +129,13 @@ static void DrawStatFn(AG_Event *event)
       AG_TextFont(pStatusFont);
       font = AG_TextFontPts(size);
       //AG_TextFont(font);
-      
       AG_TextColor(n);
       AG_TextBGColor(black);
       tmps = AG_TextRender(disp->message);
+      AG_PopTextState();
       AG_SurfaceBlit(tmps, NULL, dst, 0, 0);
       AG_SurfaceFree(tmps);
-      AG_PopTextState();
+//      AG_PopTextState();
    }
    AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
    disp->init = FALSE;
