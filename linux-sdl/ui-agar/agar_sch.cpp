@@ -364,12 +364,15 @@ static void *ThreadSch(void *param)
 #if 0
 				        XM7_Sleep(1); // SDL/Agar's 1ms is too long.
 #else
-				        do {
-					   usleep(250); // Okay, per 0.25ms.
-					} while(XM7_timeGetTime() == dwNowTime);
+				   struct timespec req, remain;
+				   req.tv_sec = 0;
+				   req.tv_nsec = 250 * 1000; // 0.25ms
+				   while(XM7_timeGetTime() == dwNowTime) {
+				      nanosleep(&req, &remain); // Okay, per 0.25ms.
+				   }
 #endif
-					UnlockVM();
-					continue;
+				   UnlockVM();
+				   continue;
 				}
 			}
 		   
