@@ -278,7 +278,7 @@ static void *ThreadSch(void *param)
 			ProcessSnd(TRUE);
 			UnlockVM();
 		        
-			XM7_Sleep(1);
+			XM7_Sleep(10);
 			ResetSch();
 			ResetSpeedAdjuster();
 			continue;
@@ -361,17 +361,17 @@ static void *ThreadSch(void *param)
 					continue;
 				}
 				else {
+				   UnlockVM();
 #if 0
 				        XM7_Sleep(1); // SDL/Agar's 1ms is too long.
 #else
 				   struct timespec req, remain;
 				   req.tv_sec = 0;
-				   req.tv_nsec = 100 * 1000; // 0.1ms
+				   req.tv_nsec = 200 * 1000; // 0.2ms
 				   while(XM7_timeGetTime() == dwNowTime) {
-				      nanosleep(&req, &remain); // Okay, per 0.1ms.
+				      nanosleep(&req, &remain); // Okay, per 0.2ms.
 				   }
 #endif
-				   UnlockVM();
 				   continue;
 				}
 			}
