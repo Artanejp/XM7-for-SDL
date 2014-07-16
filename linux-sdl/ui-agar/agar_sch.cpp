@@ -366,9 +366,9 @@ static void *ThreadSch(void *param)
 #else
 				   struct timespec req, remain;
 				   req.tv_sec = 0;
-				   req.tv_nsec = 250 * 1000; // 0.25ms
+				   req.tv_nsec = 100 * 1000; // 0.1ms
 				   while(XM7_timeGetTime() == dwNowTime) {
-				      nanosleep(&req, &remain); // Okay, per 0.25ms.
+				      nanosleep(&req, &remain); // Okay, per 0.1ms.
 				   }
 #endif
 				   UnlockVM();
