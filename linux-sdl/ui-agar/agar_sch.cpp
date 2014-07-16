@@ -10,6 +10,9 @@
 #include <agar/gui.h>
 
 #include <SDL/SDL.h>
+#include <time.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #include "xm7.h"
 #include "tapelp.h"
@@ -274,7 +277,7 @@ static void *ThreadSch(void *param)
 			 */
 			ProcessSnd(TRUE);
 			UnlockVM();
-
+		        
 			XM7_Sleep(1);
 			ResetSch();
 			ResetSpeedAdjuster();
@@ -357,14 +360,19 @@ static void *ThreadSch(void *param)
 					}
 					continue;
 				}
-
 				else {
-					XM7_Sleep(1);
+#if 0
+				        XM7_Sleep(1); // SDL/Agar's 1ms is too long.
+#else
+				        do {
+					   usleep(250); // Okay, per 0.25ms.
+					} while(XM7_timeGetTime() == dwNowTime);
+#endif
 					UnlockVM();
 					continue;
 				}
 			}
-
+		   
 			/*
 			 * テープ高速モード
 			 */
@@ -517,7 +525,7 @@ static void *ThreadSch(void *param)
 	 */
 DWORD XM7_timeGetTime(void)
 {
-   return AG_GetTicks();
+   return (DWORD)AG_GetTicks();
 }
 
 
