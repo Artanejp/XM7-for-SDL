@@ -155,7 +155,7 @@ void ExecSch(void)
 		PollJoy();
 
 #ifdef MOUSE
-	//	PollMos();
+//		PollMos();
 
 #endif				/*  */
 		bPollVsync = FALSE;
