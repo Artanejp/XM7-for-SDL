@@ -283,9 +283,9 @@ static void Draw(void *p)
       if(AG_UsingGL(NULL) != 0) {
 	 AG_WidgetBlit(my, my->Surface, 0, 0);
       } else {
-	 AG_BeginRendering(my->_inherit.drv);
+//	 AG_BeginRendering(my->_inherit.drv);
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
- 	 AG_EndRendering(my->_inherit.drv);
+// 	 AG_EndRendering(my->_inherit.drv);
       }
    }
    
