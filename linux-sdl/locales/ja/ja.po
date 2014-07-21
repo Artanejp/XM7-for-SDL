@@ -51,11 +51,11 @@ msgstr "グローバル・ワーク・アイテム"
 
 #: agar_menu_debug.cpp:660
 msgid "Log to STDOUT"
-msgstr ""
+msgstr "標準出力に記録する"
 
 #: agar_menu_debug.cpp:668
 msgid "Log to SYSLOG"
-msgstr ""
+msgstr "SYSLOGに記録する"
 
 #: agar_gui_menu.cpp:104 agar_gui_menu.cpp:98
 msgid "Select mode (Notice: If select , reboot.)"

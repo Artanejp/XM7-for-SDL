@@ -662,7 +662,7 @@ void Create_DebugMenu(AG_MenuItem *parent)
         subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSTDOUT, "logger.stdout"); 
         subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSTDOUT, "logger.stdout"); 
         AG_MenuToolbar(item, NULL);
-        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSTDOUT);
+//        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSTDOUT);
 	AG_MenuSeparator(parent);
    
 	item = AG_MenuNode(parent, gettext("Log to SYSLOG"), NULL); 
@@ -670,7 +670,7 @@ void Create_DebugMenu(AG_MenuItem *parent)
         subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSYSLOG, "logger.syslog"); 
         subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSYSLOG, "logger.syslog"); 
         AG_MenuToolbar(item, NULL);
-        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSYSLOG);
+//        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSYSLOG);
 	AG_MenuSeparator(parent);
 }
 
