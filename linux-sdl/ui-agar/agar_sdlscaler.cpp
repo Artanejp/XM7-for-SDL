@@ -23,21 +23,14 @@ extern BOOL bUseSIMD;
 
 extern "C" { // Define Headers
    // scaler/generic
-   extern void pVram2RGB_x05(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x05.c
    extern void pVram2RGB_x05_Line(Uint32 *src, int x, int xend, int y, int yrep); // scaler_x05.c , raster render
-   extern void pVram2RGB_x1(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x1.c
    extern void pVram2RGB_x1_Line(Uint32 *src, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
-   extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2.c
    extern void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
-   extern void pVram2RGB_x4(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4.c
    extern void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
 
 #if defined(USE_SSE2) // scaler/sse2/
-   extern void pVram2RGB_x1_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x1.c
    extern void pVram2RGB_x1_Line_SSE2(Uint32 *src, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
-   extern void pVram2RGB_x2_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x2_sse2.c
    extern void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
-   extern void pVram2RGB_x4_SSE2(Uint32 *src, Uint32 *dst, int x, int y, int yrep); // scaler_x4_sse2.c
    extern void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
 #endif
 }
@@ -532,146 +525,6 @@ void pVram2RGB_x3(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
    }
 }
 
-// w0, h0 = Console
-// w1, h1 = DrawMode
-static void *XM7_SDLViewSelectScaler(int w0 ,int h0, int w1, int h1)
-{
-    int wx0 = w0 >> 1; // w1/4
-    int hy0 = h0 >> 1;
-    int xfactor;
-    int yfactor;
-    int xth;
-    void (*DrawFn)(Uint32 *, Uint32 *, int , int, int);
-
-
-    xfactor = w1 % wx0;
-    yfactor = h1 % hy0;
-    xth = wx0 >> 1;
-    if(iScaleFactor == (w1 / w0) && (pDrawFn != NULL)
-      && (w1 == iOldW) && (h1 == iOldH))  return (void *)pDrawFn;
-    iScaleFactor = w1 / w0;
-    iOldW = w1;
-    iOldH = h1;
-    switch(iScaleFactor){
-            case 0:
-            if(w0 > 480){
-	        if((w1 < 480) || (h1 < 200)){
-		   DrawFn = pVram2RGB_x05;
-		} else {
-		    DrawFn = pVram2RGB_x1;
-		}
-            } else {
-                DrawFn = pVram2RGB_x1;
-            }
-            break;
-            case 1:
-            if(xfactor < xth){
-	      if(w1 > 720) {
-		 DrawFn = pVram2RGB_x125;
-	      } else {
-	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
-#if defined(USE_SSE2)
-		 if(pCpuID->use_sse2) {
-		    DrawFn = pVram2RGB_x1_SSE2;
-		 } else {
-		    DrawFn = pVram2RGB_x1;
-		 }
-#else
-		 DrawFn = pVram2RGB_x1;
-#endif
-	      } else {
-		 DrawFn = pVram2RGB_x1;
-	      }
-		 
-	      }
-            } else { // xfactor != 0
-	      if((pCpuID != NULL) && (bUseSIMD == TRUE)){
-#if defined(USE_SSE2)
-	      if(pCpuID->use_sse2) {
-		 DrawFn = pVram2RGB_x2_SSE2;
-	      } else {
-		 DrawFn = pVram2RGB_x2;
-	      }
-#else
-	      DrawFn = pVram2RGB_x2;
-#endif
-	      } else {
-		 DrawFn = pVram2RGB_x2;
-	      }
-		 
-            }
-            break;
-            case 2:
-//            if(xfactor < xth){
-	      if((w1 > 720) && (w0 <= 480)) {
-		 DrawFn = pVram2RGB_x25;
-	      } else if(w1 > 1520){
-		 DrawFn = pVram2RGB_x25;
-	      } else {
-	      if((pCpuID != NULL)   && (bUseSIMD == TRUE)){
-#if defined(USE_SSE2)
-	      if(pCpuID->use_sse2){
-		 DrawFn = pVram2RGB_x2_SSE2;
-	      } else {
-		 DrawFn = pVram2RGB_x2;
-	      }
-#else
-	      DrawFn = pVram2RGB_x2;
-#endif
-	      } else {
-		 DrawFn = pVram2RGB_x2;
-	      }
-
-	      }
-
-            break;
-            case 3:
-            if(xfactor < xth){
-              DrawFn = pVram2RGB_x3;
-            } else { // xfactor != 0
-	      if((pCpuID != NULL)   && (bUseSIMD == TRUE)){
-#if defined(USE_SSE2)
-	      if(pCpuID->use_sse2){
-		 DrawFn = pVram2RGB_x4_SSE2;
-	      } else {
-		 DrawFn = pVram2RGB_x4;
-	      }
-#else
-	      DrawFn = pVram2RGB_x4;
-#endif
-	      } else {
-		 DrawFn = pVram2RGB_x4;
-	      }
-
-            }
-            break;
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-	      if((pCpuID != NULL)   && (bUseSIMD == TRUE)){
-#if defined(USE_SSE2)
-	      if(pCpuID->use_sse2){
-		 DrawFn = pVram2RGB_x4_SSE2;
-	      } else {
-		 DrawFn = pVram2RGB_x4;
-	      }
-#else
-	      DrawFn = pVram2RGB_x4;
-#endif
-	      } else {
-		 DrawFn = pVram2RGB_x4;
-	      }
-            break;
-            default:
-                DrawFn = pVram2RGB_x1;
-                break;
-        }
-        pDrawFn = (void *)DrawFn;
-        return (void *)DrawFn;
-}
-
 
 #if defined(USE_SSE2)
 // w0, h0 = Console
@@ -842,7 +695,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 {
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
    void *Fn = AG_PTR(1);
-   void (*DrawFn)(Uint32 *, Uint32 *, int , int, int);
+   //void (*DrawFn)(Uint32 *, Uint32 *, int , int, int);
    void (*DrawFn2)(Uint32 *, int , int , int, int);
    AG_Surface *Surface;
    
@@ -890,23 +743,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         hh = 200;
         break;
    }
-   if(nRenderMethod == RENDERING_RASTER) {
-      Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
-      if(Fn != NULL) {
-	   DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
-      }
-   } else { // Block
-      if(Fn == NULL){
-        Fn = XM7_SDLViewSelectScaler(ww , hh, w, h);
-      }
-      if(Fn == NULL){
-	 Fn =(void *) pVram2RGB;
-      }
-      DrawFn =(void (*)(Uint32 *, Uint32 *, int , int, int))Fn;
-      Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
-      if(Fn != NULL) {
-	   DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
-      }
+   Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
+   if(Fn != NULL) {
+      DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
    }
    if(h > hh) {
       tmp = h % hh;
@@ -931,7 +770,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	  }
 	  my->forceredraw = 0;
        }
-
+       Surface = GetDrawSurface();
+       if(Surface == NULL)       goto _end1;
+       AG_SurfaceLock(Surface);
 //#ifdef _OPENMP
 // #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src)
 //#endif
@@ -945,6 +786,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	    bDrawLine[yy] = FALSE;
 	 }
       }
+      AG_SurfaceUnlock(Surface);
       // BREAK.
       goto _end1;
    } else { // Block
@@ -958,12 +800,27 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       }
    }
    
-   
-//#ifdef _OPENMP
-// # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache)
-//#endif
+/*
+ * Below is BLOCK or FULL.
+ * Not use from line-rendering.
+ */
+
+   Surface = GetDrawSurface();
+   if(Surface == NULL) goto _end1;
+   AG_SurfaceLock(Surface);
+
+#ifdef _OPENMP
+ # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache)
+#endif
     for(yy = 0 ; yy < hh; yy += 8) {
-       _prefetch_data_read_l1(&src[yy * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 0) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 1) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 2) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 3) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 4) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 5) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 6) * 80], ww);
+       _prefetch_data_read_l1(&src[(yy + 7) * 80], ww);
        lcount = 0;
        xcache = 0;
         for(xx = 0; xx < ww; xx += 8) {
@@ -1002,19 +859,18 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	  //	      disp = (Uint32 *)pb;
 	  //	      of = (xx *8) + yy * ww;
 	  //	      DrawFn(&src[of], disp, xx, yy, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy    , yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 1, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 2, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 3, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 4, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 5, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 6, yrep);
-	  DrawFn2(src, xcache, xcache + lcount - 8, yy + 7, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy    , yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 1, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 2, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 3, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 4, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 5, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 6, yrep);
+	  DrawFn2(src, xcache, xcache + lcount, yy + 7, yrep);
        }
 //			if(yy >= h) continue;
     }
-   
-
+   AG_SurfaceUnlock(Surface);
       
 _end1:   
    AG_ObjectUnlock(AGOBJECT(my));
