@@ -28,7 +28,7 @@ OBJS_RELEASE = $(addprefix Release/, $(OBJS))
 OBJS_DEBUG =	$(addprefix Debug/,  $(OBJS))
 
 CFLAGS += -I../.. -I../../../vm -I../../../ui-agar -I../../../fmgen 
-CFLAGS += -mmmx -msse -msse2
+CFLAGS += -mmmx -msse -msse2 -flax-vector-conversions
 
 all:	Release/libsndbuffer-sse2.a Debug/libsndbuffer-sse2.a 
 

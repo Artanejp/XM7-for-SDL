@@ -92,7 +92,7 @@ static v8hi_t bpixel2cbuf(Uint32 addr, Uint32 mpage)
         return v1;
    } else {
        register v8hi_t r;
-       r.vv = (v8si){0, 0, 0, 0, 0, 0, 0, 0};
+       r.vv = (v8ii){0, 0, 0, 0, 0, 0, 0, 0};
        return r;
    }
 }
@@ -115,7 +115,7 @@ static v8hi_t getvram_256k(Uint32 addr, Uint32 mpage)
    r = rpixel2cbuf(addr, mpage);
    g = gpixel2cbuf(addr, mpage);
 #ifdef AG_LITTLE_ENDIAN
-   a.vv = (v8ui){0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000};
+   a.vv = (v8ii){0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000};
    dst.vv = (b.vv << 16 ) | (g.vv << 8) | r.vv | a.vv;
 #else   
 #endif

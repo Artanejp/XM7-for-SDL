@@ -13,7 +13,7 @@
 #include "sdl_cpuid.h"
 
 
-void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
+void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 {
    register v4hi *b;
    AG_Surface *Surface = GetDrawSurface();
@@ -29,6 +29,7 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int i;
    int x = xbegin;
    unsigned  pitch;
+   int yrep2;
    Uint32 black;
    if(Surface == NULL) return;
    w = Surface->w;
@@ -44,22 +45,18 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 #else
    black = 0x000000ff;
 #endif
-   if(yrep < 2) {
+   yrep2 = (int)(yrep * 16.0f);
+   if(yrep <= 1.0f) {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
                         + y * Surface->pitch);
       d2 = &src[x + y * 640];
       yrep = 2;
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
+                        + ((y * yrep2) >> 4) * Surface->pitch);
       d2 = &src[x + y * 640];
    }
 
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
 
    pitch = Surface->pitch / sizeof(Uint32);
    { // Not thinking align ;-(
@@ -80,10 +77,12 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
       
     b = (v4hi *)d2;
     bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] = black;
-       switch(yrep) {
+    if((((y * yrep2) % 16) == 0) && ((yrep2 % 16) != 0)) yrep2 += 16;
+    yrep2 >>= 4;
+       switch(yrep2) {
 	case 0:
 	case 1:
-	case 2:
+//	case 2:
 	  for(xx = 0; xx < ww; xx += 8) {
 	     b2p = (v4hi *)d1;
 	     b2.i[0] = b2.i[1] = b2.i[2] = b2.i[3] = b[0].i[0];
@@ -134,9 +133,9 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     b9.i[0] = b9.i[1] = b9.i[2] = b9.i[3] = b[1].i[3];
 
 
-	     for(j = 0; j < (yrep >> 1); j++) {
+	     for(j = 0; j < yrep2; j++) {
 		b2p = (v4hi *)d1;
-		if(!bFullScan && (j > (yrep >> 2))) {
+		if(!bFullScan && (j > (yrep2 >> 1))) {
 		   b2p[0] = 
 		   b2p[1] = 
 		   b2p[2] = 
@@ -166,9 +165,9 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     for(j = 0;j < (ww % 8); j++) {
 		d1 = d0;
 		b2.i[0] = b2.i[1] = b2.i[3] = b2.i[4] = *d2;
-		for(i = 0; i < (yrep >> 1); i++) {
+		for(i = 0; i < (yrep2 >> 1); i++) {
 		   b2p = (v4hi *)d1;
-		   if(!bFullScan && (j > (yrep >> 2))) {
+		   if(!bFullScan && (j > (yrep2 >> 2))) {
 		      *b2p = bb;
 		   } else {
 		      *b2p = b2;

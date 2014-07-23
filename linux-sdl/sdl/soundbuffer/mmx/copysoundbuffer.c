@@ -43,15 +43,15 @@ int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmt
    _prefetch_data_read_l2(cmt, sizeof(Sint16) * samples);
 //   _prefetch_data_read_l2(wav, sizeof(Sint16) * samples);
    for(i = 0; i < len1; i++) {
-        t1 = opn->v;
+        t1 = opn->vv;
         opn++;
-        t2 = opn->v;
+        t2 = opn->vv;
         opn++;
         tt.v = __builtin_ia32_packssdw(t1, t2);
 
-        tt.v = tt.v + beep->v;
+        tt.vv = tt.vv + beep->vv;
         beep++;
-        tt.v = tt.v + cmt->v;
+        tt.vv = tt.vv + cmt->vv;
         cmt++;
 //      tt.v = tt.v + *wav;
 //      wav++;

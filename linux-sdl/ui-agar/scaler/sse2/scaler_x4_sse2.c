@@ -31,6 +31,7 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int ww;
    int i;
    int x = xbegin;
+   int yrep2;
    unsigned  pitch;
    Uint32 black;
    if(Surface == NULL) return;
@@ -42,33 +43,28 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    if(ww > (w / 4)) ww = w / 4;
    ww = ww - 7;
    if(ww <= 0) return;
-   if(yrep < 2) {
-      if(y >= h) return;
-   } else {
-      if(y >= (h / (yrep >> 1))) return;
-   }
+//   if(yrep < 2) {
+//      if(y >= h) return;
+//   } else {
+//      if(y >= (h / (yrep >> 1))) return;/
+//   }
    
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
    black = 0x000000ff;
 #endif
-   if(yrep < 2) {
+   yrep2 = yrep;
+   if(yrep <= 1) {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
                         + y * Surface->pitch);
       d2 = &src[x + y * 640];
-      yrep = 2;
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
+                        + (y * yrep2) * Surface->pitch);
       d2 = &src[x + y * 640];
    }
 
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
    
    pitch = Surface->pitch / sizeof(Uint32);
    { // Not thinking align ;-(
@@ -82,24 +78,26 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
       
     b = (v4hi *)d2;
     bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] = black;
-       switch(yrep) {
+    //if((((y * yrep2) % 16) == 0) && ((yrep2 % 16) != 0)) yrep2 += 16;
+    //yrep2 >>= 4;
+       switch(yrep2) {
 	case 0:
 	case 1:
-	case 2:
+//	case 2:
+	  _prefetch_data_write_l2(d1, sizeof(v4hi) * 8 * ww);
 	  for(xx = 0; xx < ww; xx += 8) {
 	     b2p = (v4hi *)d1;
-	     _prefetch_data_write_l2(d1, sizeof(v4hi) * 8);
 	     bx0 = b[0];
 	     bx1 = b[1];
-	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
-	     b3.vv = __builtin_ia32_pshufd(bx0.v, 0x55);
-	     b4.vv = __builtin_ia32_pshufd(bx0.v, 0xaa);
-	     b5.vv = __builtin_ia32_pshufd(bx0.v, 0xff);
+	     b2.vv = __builtin_ia32_pshufd(bx0.vv, 0x00);
+	     b3.vv = __builtin_ia32_pshufd(bx0.vv, 0x55);
+	     b4.vv = __builtin_ia32_pshufd(bx0.vv, 0xaa);
+	     b5.vv = __builtin_ia32_pshufd(bx0.vv, 0xff);
 
-	     b6.vv = __builtin_ia32_pshufd(bx1.v, 0x00);
-	     b7.vv = __builtin_ia32_pshufd(bx1.v, 0x55);
-	     b8.vv = __builtin_ia32_pshufd(bx1.v, 0xaa);
-	     b9.vv = __builtin_ia32_pshufd(bx1.v, 0xff);
+	     b6.vv = __builtin_ia32_pshufd(bx1.vv, 0x00);
+	     b7.vv = __builtin_ia32_pshufd(bx1.vv, 0x55);
+	     b8.vv = __builtin_ia32_pshufd(bx1.vv, 0xaa);
+	     b9.vv = __builtin_ia32_pshufd(bx1.vv, 0xff);
 	     
 	     *b2p++ = b2;
 	     *b2p++ = b3;
@@ -115,25 +113,26 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	  break;
 	default:
 	  d0 = d1;
+	  _prefetch_data_write_l2(d1, sizeof(v4hi) * 8 * ww);
 	  for(xx = 0; xx < ww; xx += 8){
 	     d1 = d0;
 	     b2p = (v4hi *)d1;
 	     bx0 = b[0];
 	     bx1 = b[1];
-	     b2.vv = __builtin_ia32_pshufd(bx0.v, 0x00);
-	     b3.vv = __builtin_ia32_pshufd(bx0.v, 0x55);
-	     b4.vv = __builtin_ia32_pshufd(bx0.v, 0xaa);
-	     b5.vv = __builtin_ia32_pshufd(bx0.v, 0xff);
+	     b2.vv = __builtin_ia32_pshufd(bx0.vv, 0x00);
+	     b3.vv = __builtin_ia32_pshufd(bx0.vv, 0x55);
+	     b4.vv = __builtin_ia32_pshufd(bx0.vv, 0xaa);
+	     b5.vv = __builtin_ia32_pshufd(bx0.vv, 0xff);
 
-	     b6.vv = __builtin_ia32_pshufd(bx1.v, 0x00);
-	     b7.vv = __builtin_ia32_pshufd(bx1.v, 0x55);
-	     b8.vv = __builtin_ia32_pshufd(bx1.v, 0xaa);
-	     b9.vv = __builtin_ia32_pshufd(bx1.v, 0xff);
+	     b6.vv = __builtin_ia32_pshufd(bx1.vv, 0x00);
+	     b7.vv = __builtin_ia32_pshufd(bx1.vv, 0x55);
+	     b8.vv = __builtin_ia32_pshufd(bx1.vv, 0xaa);
+	     b9.vv = __builtin_ia32_pshufd(bx1.vv, 0xff);
 	     
-	     for(j = 0; j < (yrep >> 1); j++) {
+	     for(j = 0; j < yrep2; j++) {
 		b2p = (v4hi *)d1;
 		_prefetch_data_write_l2(d1, sizeof(v4hi) * 8);
-		if(!bFullScan && (j >= (yrep >> 2))) {
+		if(!bFullScan && (j >= (yrep2 - 1))) {
 		   b2p[0] = 
 		   b2p[1] = 
 		   b2p[2] = 
@@ -165,8 +164,8 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 
 
 #else // NON-SSE2
-void pVram2RGB_x4_SSE2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
+void pVram2RGB_x4_SSE2_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 {
-   pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, int yrep);
+   pVram2RGB_x4_Line(Uint32 *src, xbegin, xend, int y, yrep);
 }
 #endif

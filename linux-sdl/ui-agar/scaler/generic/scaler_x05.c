@@ -14,7 +14,7 @@
 extern struct XM7_CPUID *pCpuID;
 
 
-void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
+void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 {
    v8hi_t *b;
    Uint32 *d1;
@@ -29,6 +29,7 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int ww;
    int i;
    int pitch;
+   int yrep3;
    v8hi_t rmask1, gmask1, bmask1, amask1;
    v4hi rmask2, gmask2, bmask2, amask2;
    Uint32 black;
@@ -74,8 +75,9 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    bmask2.i[0] = bmask2.i[1] = bmask2.i[2] = bmask2.i[3] = 0x0000ff00;
    amask2.i[0] = amask2.i[1] = amask2.i[2] = amask2.i[3] = 0x000000ff;
 #endif
-   if(yrep < 4) {
-      if(yrep == 0) {
+   yrep3 = (int)(yrep * 16.0f);
+   if(yrep < 1.0f) {
+      if(yrep <= 0.5f) {
 	 d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
                         + (y >> 1)  * Surface->pitch);
       } else {
@@ -83,10 +85,10 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
                         + y  * Surface->pitch);
       }
       p = &src[xbegin + y * 640];
-      if(yrep == 0) yrep = 1;
+
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
-                        + y * (yrep >> 2) * Surface->pitch);
+                        + ((y * yrep3) >> 4) * Surface->pitch);
       p = &src[xbegin + y * 640];
    }
    if(((xbegin >>1) + 4) >= w) {
@@ -107,7 +109,7 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
       bmask = 0x0000ff00;
       amask = 0x000000ff;
 #endif
-      yrep2 = yrep >> 1;
+//      yrep2 = yrep3 >> 1;
       ww = (xend - xbegin) / 2;
       if(ww > w) ww = w;
             
@@ -135,7 +137,7 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
       v8hi_t *b;
       v8hi_t br,bg, bb;
       Uint32 *d0;
-      int yrep2 = yrep >> 1;
+      int yrep2 = yrep3 >> 4;
 	
       ww = (xend - xbegin) / 2;
       if(ww > w) ww = w;

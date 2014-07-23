@@ -13,7 +13,7 @@
 
 extern struct XM7_CPUID *pCpuID;
 
-void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
+void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 {
    register v4hi *b;
    AG_Surface *Surface = GetDrawSurface();
@@ -29,6 +29,7 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int wodd;
    int i;
    int x = xbegin;
+   int yrep2;
    unsigned  pitch;
    Uint32 black;
    if(Surface == NULL) return;
@@ -44,22 +45,20 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 #else
    black = 0x000000ff;
 #endif
-   if(yrep < 2) {
+   yrep2 = (int)(yrep * 16.0f);
+   if(yrep <= 1.0f) {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) //+ xbegin * 2 * Surface->format->BytesPerPixel
                         + y * Surface->pitch);
       d2 = &src[xbegin + y * 640];
       yrep = 2;
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) //+ xbegin * 2 * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
+                        + ((y * yrep2) >> 4) * Surface->pitch);
       d2 = &src[xbegin + y * 640];
    }
 
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
+   if((((y * yrep2) % 16) == 0) && ((yrep2 % 16) != 0)) yrep2 += 16;
+   yrep2 >>= 4;
 
    pitch = Surface->pitch / sizeof(Uint32);
    { // Not thinking align ;-(
@@ -75,10 +74,10 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
       
     b = (v4hi *)d2;
     bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] = black;
-       switch(yrep) {
+       switch(yrep2) {
 	case 0:
 	case 1:
-	case 2:
+//	case 2:
 	  d0 = d1;
 	  for(xx = 0; xx < (ww - 1); xx += 8) {
 	     d1 = d0;
@@ -123,9 +122,9 @@ void pVram2RGB_x2_Line(Uint32 *src, int xbegin, int xend, int y, int yrep)
 	     b5.i[0] = b5.i[1] = b[1].i[2];
 	     b5.i[2] = b5.i[3] = b[1].i[3];
 
-	     for(j = 0; j < (yrep >> 1); j++) {
+	     for(j = 0; j < yrep2; j++) {
 		b2p = (v4hi *)d1;
-		if(!bFullScan && (j >= (yrep >> 2))) {
+		if(!bFullScan && (j >= (yrep2 >> 1))) {
 		   b2p[0] = 
 		   b2p[1] = 
 		   b2p[2] = 

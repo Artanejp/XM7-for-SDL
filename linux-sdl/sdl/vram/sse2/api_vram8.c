@@ -419,7 +419,7 @@ void CreateVirtualVram8_WindowedLine_SSE2(Uint32 *p, int ybegin, int yend, int x
 
     // Loop廃止(高速化)
     if(aPlanes == NULL) {
-       c.v = (v8ui){0,0,0,0,0,0,0,0};
+       c.vv = (v8ii){0,0,0,0,0,0,0,0};
        for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80 + xbegin;
 	   disp = (Uint8 *)(&p[yy * 640 + xbegin]);

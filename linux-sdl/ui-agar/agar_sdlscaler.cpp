@@ -41,32 +41,6 @@ static void *pDrawFn2 = NULL;
 static int iOldW = 0;
 static int iOldH = 0;
 
-void pVram2RGB(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
-{
-    //Uint32 *dbase;
-    //Uint32 *dsrc = src;
-    int of;
-    int pitch;
-    int yy;
-    v8hi_t *dbase;
-    v8hi_t *dsrc = (v8hi_t *)src;
-    Uint8 *p;
-    AG_Surface *Surface = GetDrawSurface();
-    
-    if(Surface == NULL) return;
-   
-    p = (Uint8 *)((Uint8 *)dst + x  * Surface->format->BytesPerPixel
-                        + y * Surface->pitch);
-    pitch = Surface->pitch / sizeof(Uint32);
-
-    for(yy = 0; yy < 8; yy++){
-        dbase = (v8hi_t *)p;
-        *dbase = *dsrc++;
-        p += pitch;
-    }
-
-}
-
 
 static inline Uint32 pVram_XtoHalf(Uint32 d1, Uint32 d2)
 {
@@ -568,7 +542,7 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
 		  DrawFn = pVram2RGB_x1_Line_SSE2;
 	       }
             } else { // xfactor != 0
-	       DrawFn = pVram2RGB_x2_Line_SSE2;
+	       DrawFn = pVram2RGB_x1_Line_SSE2;
 	    }
             break;
      case 2:
@@ -576,7 +550,7 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
 	      if((w1 > 720) && (w0 <= 480)) {
 		 DrawFn = pVram2RGB_x2_Line_SSE2;  // x2.5
 	      } else if(w1 > 1520){
-		 DrawFn = pVram2RGB_x2_Line_SSE2; // x3
+		 DrawFn = pVram2RGB_x4_Line_SSE2; // x3
 	      } else {
 		 DrawFn = pVram2RGB_x2_Line_SSE2;
 	      }
@@ -695,7 +669,6 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 {
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
    void *Fn = AG_PTR(1);
-   //void (*DrawFn)(Uint32 *, Uint32 *, int , int, int);
    void (*DrawFn2)(Uint32 *, int , int , int, int);
    AG_Surface *Surface;
    
@@ -712,7 +685,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    int bpp;
    int of;
    int yrep;
-   int tmp;
+   int yrep2;
+   int ymod;
+   int yfact;
    int lcount;
    int xcache;
 
@@ -745,18 +720,17 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    }
    Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
    if(Fn != NULL) {
-      DrawFn2 = (void (*)(Uint32 *, int , int , int, int))Fn;
+      DrawFn2 = (void (*)(Uint32 *, int , int , int, float))Fn;
    }
+
+   
    if(h > hh) {
-      tmp = h % hh;
-      yrep = (h << 1) / hh;
-      if(tmp > (hh >> 1)){
-	 yrep++;
-      }
+      ymod = h % hh;
+      yrep = h / hh;
    } else {
+      ymod = h % hh;
       yrep = 1;
    }
-   
    
     if(Fn == NULL) return; 
     src = pVram2;
@@ -776,13 +750,21 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 //#ifdef _OPENMP
 // #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src)
 //#endif
+
+      yfact = ymod;
       for(yy = 0 ; yy < hh; yy++) {
 /*
 *  Virtual VRAM -> Real Surface:
 */
+	 yrep2 = yrep;
+	 yfact += ymod;
 	 if(bDrawLine[yy] == TRUE){
 	    _prefetch_data_read_l1(&src[yy * 80], ww);
-	    DrawFn2(src, 0, ww, yy, yrep);
+	    if(yfact >= hh) {
+	       yrep2++;
+	       yfact -= hh;
+	    }
+	    DrawFn2(src, 0, ww, yy, yrep2);
 	    bDrawLine[yy] = FALSE;
 	 }
       }
@@ -809,9 +791,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    if(Surface == NULL) goto _end1;
    AG_SurfaceLock(Surface);
 
-#ifdef _OPENMP
- # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache)
-#endif
+//#ifdef _OPENMP
+// # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache)
+//#endif
     for(yy = 0 ; yy < hh; yy += 8) {
        _prefetch_data_read_l1(&src[(yy + 0) * 80], ww);
        _prefetch_data_read_l1(&src[(yy + 1) * 80], ww);

@@ -15,18 +15,19 @@
 extern struct XM7_CPUID *pCpuID;
 
 
-static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int rep0, int pitch)
+static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitch)
 {
    int xx;
    int yy;
    int yrep2;
    int yrep3;
-   int blank = rep0 - repeat;
+   int blank;
    register v4hi *b2p;
    register v4hi r1, r2;
    register v4hi *d0;
    register v4hi *b;
    register v4hi bb2;
+   int pitch2;
 #if AG_BIG_ENDIAN != 1
    const v4ui bb = {0xff000000, 0xff000000, 0xff000000, 0xff000000};
 #else
@@ -35,67 +36,41 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int rep0
      
    if(repeat < 0) return;
    b = (v4hi *)src;
-    
+   bb2.uv = bb;
    b2p = dst;
-   if(rep0 < 3) {
+   pitch2 = pitch / sizeof(v4hi);
+   if(bFullScan || (repeat < 2)) {
       for(xx = 0; xx < ww; xx += 8) {
+	    b2p = dst;
 	    r1 = b[0];
 	    r2 = b[1];
-	    b2p[0] = r1;
-	    b2p[1] = r2;
-	    b2p += 2;
-	    b += 2;
-      }
-   } else {
-      if(rep0 < 2) {
-	 _prefetch_data_write_l2(b2p, sizeof(v4hi) * 2 * ww);
-	 for(xx = 0; xx < ww; xx += 8) {
-	    r1 = b[0];
-	    r2 = b[1];
-	    b2p[0] = r1;
-	    b2p[1] = r2;
-	    b2p += 2;
-	    b += 2;
-	 }
-      } else {
-	 if(bFullScan) {
-	    yrep2 = repeat;
-	 } else {
-	    yrep2 = repeat >> 1;
-	    blank = blank >> 1;
-	 }
-	 d0 = b2p;
-	 pitch = pitch / (sizeof(v4hi));
-	 for(xx = 0; xx < ww; xx += 8) {
-	    b2p = d0;
-	    r1 = b[0];
-	    r2 = b[1];
-	    for(yy = 0; yy < yrep2; yy++) {
-	       _prefetch_data_write_l2(b2p, sizeof(v4hi) * 2);
+	    for(yy = 0; yy < repeat; yy++) {
 	       b2p[0] = r1;
 	       b2p[1] = r2;
-	       b2p += pitch;
+	       b2p = b2p + pitch2;
 	    }
-	    d0 += 2;
-	    b += 2;
+	 dst += 2;
+	 b += 2;
+      }
+   } else {
+      for(xx = 0; xx < ww; xx += 8) {
+	 b2p = dst;
+	 r1 = b[0];
+	 r2 = b[1];
+	 for(yy = 0; yy < repeat - 1; yy++) {
+	    b2p[0] = r1;
+	    b2p[1] = r2;
+	    b2p = b2p + pitch2;
 	 }
-	 if(bFullScan) return;
-	 d0 = dst;
-	 d0 = d0 + pitch * yrep2;
-	 bb2.uv = bb;
-	 for(yy = 0; yy < blank; yy++) {
-	    b2p = d0;
-	    for(xx = 0; xx < ww; xx += 8) {
-	       _prefetch_data_write_l2(b2p, sizeof(v4hi) * 2);
-	       b2p[0] = bb2;
-	       b2p[1] = bb2;
-	       b2p += 2;
-	    }
-	    d0 += pitch;
-	 }
+	 b2p[0] = bb2;
+	 b2p[1] = bb2;
+	 dst += 2;
+	 b += 2;
       }
    }
+   
 }
+
 
 
       
@@ -115,6 +90,8 @@ void pVram2RGB_x1_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int i;
    int x = xbegin;
    unsigned  pitch;
+   int yrep2;
+   int yrep3;
    if(Surface == NULL) return;
 
    w = Surface->w;
@@ -122,32 +99,20 @@ void pVram2RGB_x1_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    
    ww = xend - xbegin;
    if(ww <= 0) return;
-   if(yrep < 2) {
-      if(y >= h) return;
-   } else {
-      if(y >= (h / (yrep >> 1))) return;
-   }
-//   AG_SurfaceLock(Surface);   
-   
-   if(yrep < 2) {
+   yrep2 = yrep;
+   if(yrep2 <= 1) {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * Surface->format->BytesPerPixel
                         + y * Surface->pitch);
       d2 = &src[x + y * 640];
-      yrep = 2;
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
+                        + (y * yrep2) * Surface->pitch);
       d2 = &src[x + y * 640];
    }
-
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
-
+   
+   
    pitch = Surface->pitch / sizeof(Uint32);
-   Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep >> 1, yrep, Surface->pitch);
+   Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep2, Surface->pitch);
 //   AG_SurfaceUnlock(Surface);
    return;
 }

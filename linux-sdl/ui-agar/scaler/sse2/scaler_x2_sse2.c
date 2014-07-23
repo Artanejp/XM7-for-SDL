@@ -16,6 +16,12 @@ extern struct XM7_CPUID *pCpuID;
 extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep);
 
 #if defined(__SSE2__)
+//	     b2p = d0;
+//	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
+//	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0xfa);
+
+//	     b4.vv = __builtin_ia32_pshufd(b[1].v, 0x50);
+//	     b5.vv = __builtin_ia32_pshufd(b[1].v, 0xfa);
 
 static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitch)
 {
@@ -23,104 +29,79 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
    int yy;
    int yrep2;
    int yrep3;
-   register v4hi *b2p;
-   register v4hi b2, b3, b4, b5;
-   register v4hi r;
-   register v4hi *d0;
-   register v4hi *b;
+   int blank;
+   v4hi *b2p;
+   volatile v4hi r1, r2;
+   v4hi *d0;
+   v4hi *b;
+   v4hi bb2;
+   int pitch2;
 #if AG_BIG_ENDIAN != 1
    const v4ui bb = {0xff000000, 0xff000000, 0xff000000, 0xff000000};
 #else
    const v4ui bb = {0x000000ff, 0x000000ff, 0x000000ff, 0x000000ff};
 #endif
      
-   if(repeat < 0) return;
+   if(repeat <= 0) return;
    b = (v4hi *)src;
-    
+   bb2.uv = bb;
    b2p = dst;
-   if(repeat < 3) {
-      _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
+   pitch2 = pitch / sizeof(v4hi);
+   if((bFullScan) || (repeat < 2)) {
+      volatile v4hi r3, r4, r5, r6;
       for(xx = 0; xx < ww; xx += 8) {
-//	     b2p = (v4hi *)d1;
-	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
-	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0xfa);
+	 b2p = dst;
+	 r1 = *b++;
+	 r2 = *b++;
+         r3.vv = __builtin_ia32_pshufd(r1.vv, 0x50);
+         r4.vv = __builtin_ia32_pshufd(r1.vv, 0xfa);
 
-	     b4.vv = __builtin_ia32_pshufd(b[1].v, 0x50);
-	     b5.vv = __builtin_ia32_pshufd(b[1].v, 0xfa);
-
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-
-	     b2p[2] = b4;
-	     b2p[3] = b5;
-	     b2p += 4;
-	     b += 2;
+         r5.vv = __builtin_ia32_pshufd(r2.vv, 0x50);
+	 r6.vv = __builtin_ia32_pshufd(r2.vv, 0xfa);
+	 for(yy = 0; yy < repeat; yy++) {
+	       b2p[0] = r3;
+	       b2p[1] = r4;
+	       b2p[2] = r5;
+	       b2p[3] = r6;
+	       
+	       b2p = b2p + pitch2;
+	 }
+	 dst = dst + 4;
+//	 b += 2;
       }
    } else {
-      repeat >>= 1;
-      if(repeat < 2) {
-	 _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
-	 for(xx = 0; xx < ww; xx += 8) {
-	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
-	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0xfa);
+      volatile v4hi r3, r4, r5, r6;
+      for(xx = 0; xx < ww; xx += 8) {
+	 b2p = dst;
+	 r1 = *b++;
+	 r2 = *b++;
+	 r3 = r1;
+	 r4 = r1;
+	 r5 = r2;
+	 r6 = r2;
+         r3.vv = __builtin_ia32_pshufd(r1.vv, 0x50);
+         r4.vv = __builtin_ia32_pshufd(r1.vv, 0xfa);
 
-	     b4.vv = __builtin_ia32_pshufd(b[1].v, 0x50);
-	     b5.vv = __builtin_ia32_pshufd(b[1].v, 0xfa);
-
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-
-	     b2p[2] = b4;
-	     b2p[3] = b5;
-	     b2p += 4;
-	     b += 2;
+         r5.vv = __builtin_ia32_pshufd(r2.vv, 0x50);
+	 r6.vv = __builtin_ia32_pshufd(r2.vv, 0xfa);
+	 for(yy = 0; yy < repeat - 1; yy++) {
+	    *b2p++ = r3;
+	    *b2p++ = r4;
+	    *b2p++ = r5;
+	    *b2p++ = r6;
+	    b2p = b2p + (pitch2 - 4);
 	 }
-      } else {
-	 if(bFullScan) {
-	    yrep2 = repeat;
-	 } else {
-	    yrep2 = repeat >> 1;
-	 }
-	 yrep3 = repeat - yrep2;
-	 d0 = b2p;
-	 _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
-	 pitch = pitch / (sizeof(v4hi));
-	 for(xx = 0; xx < ww; xx += 8) {
-	     b2p = d0;
-	     b2.vv = __builtin_ia32_pshufd(b[0].v, 0x50);
-	     b3.vv = __builtin_ia32_pshufd(b[0].v, 0xfa);
-
-	     b4.vv = __builtin_ia32_pshufd(b[1].v, 0x50);
-	     b5.vv = __builtin_ia32_pshufd(b[1].v, 0xfa);
-
-	     for(yy = 0; yy < yrep2; yy++) {
-	       b2p[0] = b2;
-	       b2p[1] = b3;
-
-	       b2p[2] = b4;
-	       b2p[3] = b5;
-	       b2p += pitch;
-	    }
-	    d0 += 4;
-	    b += 2;
-	 }
-	 if(yrep3 <= 0) return;
-	 d0 = dst;
-	 d0 = d0 + pitch * yrep2;
-	 for(yy = 0; yy < yrep3; yy++) {
-	    b2p = d0;
-	    _prefetch_data_write_l2(b2p, sizeof(v4hi) * 4 * ww);
-	    for(xx = 0; xx < ww; xx += 8) {
-	       b2p->uv = bb;
-	       b2p++;
-	       b2p->uv = bb;
-	       b2p++;
-	    }
-	    d0 += pitch;
-	 }
+	 *b2p++ = bb2;
+	 *b2p++ = bb2;
+	 *b2p++ = bb2;
+	 *b2p++ = bb2;
+	 dst += 4;
+//	 b += 2;
       }
    }
+   
 }
+
 
 
 void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
@@ -138,6 +119,7 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    int ww;
    int i;
    int x = xbegin;
+   int yrep2;
    unsigned  pitch;
    Uint32 black;
    if(Surface == NULL) return;
@@ -150,37 +132,26 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    ww = (ww / 8) * 8;
    if(ww <= 0) return;
 
-   if(yrep < 2) {
-      if(y >= h) return;
-   } else {
-      if(y >= (h / (yrep >> 1))) return;
-   }
-//   AG_SurfaceLock(Surface);
 
 #if AG_BIG_ENDIAN != 1
    black = 0xff000000;
 #else
    black = 0x000000ff;
 #endif
-   if(yrep < 2) {
+//   yrep = yrep * 16.0f;
+
+   yrep2 = yrep;
+
+   if(yrep2 <= 1) {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
                         + y * Surface->pitch);
       d2 = &src[x + y * 640];
-      yrep = 2;
    } else {
       d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
+                        + (y * yrep2) * Surface->pitch);
       d2 = &src[x + y * 640];
    }
-
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
-
-   pitch = Surface->pitch / sizeof(Uint32);
-   Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep, Surface->pitch);
+   Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep2, Surface->pitch);
 //   AG_SurfaceUnlock(Surface);
    return;
 }
