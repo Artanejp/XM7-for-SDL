@@ -708,6 +708,24 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    
 
    if(pVram2 == NULL) return;
+   if(crt_flag == FALSE) {
+      AG_Rect rr;
+      AG_Color cc;
+      
+      cc.r = 0x00;
+      cc.g = 0x00;
+      cc.b = 0x00;
+      cc.a = 0xff;
+      
+      LockVram();
+      AG_ObjectLock(AGOBJECT(my));
+      AG_SurfaceLock(Surface);
+      AG_FillRect(Surface, NULL, cc);
+      AG_ObjectUnlock(AGOBJECT(my));
+      UnlockVram();
+      return;
+   }
+   
    switch(bMode){
     case SCR_200LINE:
         ww = 640;

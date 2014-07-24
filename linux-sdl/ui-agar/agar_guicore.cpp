@@ -125,7 +125,7 @@ void AGDrawTaskEvent(BOOL flag)
 
 	    AG_WindowDrawQueued();
 	    nDrawTick1D = nDrawTick2D;
-	    if((XM7_timeGetTime() - nDrawTick2D) >= fps) skipf = TRUE;
+	    if(((XM7_timeGetTime() - nDrawTick2D) >= fps) && (agDriverSw != NULL)) skipf = TRUE;
 	    //	 XM7_Sleep(1);
 	    //EventSDL(NULL);
 	 } else  { 
@@ -139,12 +139,12 @@ void AGDrawTaskEvent(BOOL flag)
 	 
 	 AG_DriverEvent dev;
 //	 if(EventSDL(NULL) == FALSE) return;
-	 while(AG_GetNextEvent(NULL, &dev) > 0) AG_ProcessEvent(NULL, &dev);
+//	 while(AG_GetNextEvent(NULL, &dev) > 0) AG_ProcessEvent(NULL, &dev);
 	 //if((XM7_timeGetTime() - nDrawTick1D) >= fps) skipf = TRUE;
-//	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
 //	 XM7_Sleep(1);
       } else
-      if(skipf == FALSE) { // Timeout
+      { // Timeout
 	 AG_TAILQ_FOREACH(es, &src->spinners, sinks){
 	    es->fn(es, &es->fnArgs);
 	 }

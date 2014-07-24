@@ -282,6 +282,7 @@ static void Draw(void *p)
    if(my->mySurface != -1) {
       if(AG_UsingGL(NULL) != 0) {
 	 AG_WidgetBlit(my, my->Surface, 0, 0);
+//	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
       } else {
 //	 AG_BeginRendering(my->_inherit.drv);
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);

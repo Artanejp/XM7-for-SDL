@@ -251,12 +251,11 @@ void AGEventDrawGL2(AG_Event *event)
     glPushAttrib(GL_ENABLE_BIT);
     InitContextCL();   
 
-    drawUpdateTexture(p, w, h);
+    if(crt_flag != FALSE) drawUpdateTexture(p, w, h);
    
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glEnable(GL_TEXTURE_2D);
-
+    
    
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
@@ -265,7 +264,15 @@ void AGEventDrawGL2(AG_Event *event)
      * VRAMの表示:テクスチャ貼った四角形
      */
      if(uVramTextureID != 0) {
-        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+        if(crt_flag != FALSE) {
+	   glEnable(GL_TEXTURE_2D);
+	   glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	} else {
+	   glDisable(GL_TEXTURE_2D);
+	   glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+	
+	
         if(!bSmoosing) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -304,52 +311,56 @@ void AGEventDrawGL2(AG_Event *event)
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
 
-    glEnable(GL_BLEND);
+    if(crt_flag != FALSE) {
+       glEnable(GL_BLEND);
    
-    glColor3f(fBrightR , fBrightG, fBrightB);
-    glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-//    glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
-        if(bGL_EXT_VERTEX_ARRAY) {
-            glEnable(GL_VERTEX_ARRAY_EXT);
-            glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
-            glDrawArraysEXT(GL_POLYGON, 0, 4);
-            glDisable(GL_VERTEX_ARRAY_EXT);
-        } else {
-            glBegin(GL_POLYGON);
-            glVertex3f(Vertexs[0][0], Vertexs[0][1], Vertexs[0][2]);
-            glVertex3f(Vertexs[1][0], Vertexs[1][1], Vertexs[1][2]);
-            glVertex3f(Vertexs[2][0], Vertexs[2][1], Vertexs[2][2]);
-            glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
-            glEnd();
-        }
-
-    glBlendFunc(GL_ONE, GL_ZERO);
-   
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_DEPTH_TEST);
-    if((glv->wid.rView.h >= (h * 2)) && (bFullScan == 0)) {
-       glLineWidth((float)(glv->wid.rView.h) / (float)(h * 2));
-       glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-        if(bGL_EXT_VERTEX_ARRAY) {
-            glEnable(GL_VERTEX_ARRAY_EXT);
-            glVertexPointerEXT(3, GL_FLOAT, 0, h + 1, gridtid);
-            glDrawArraysEXT(GL_LINE, 0, h + 1);
-            glDisable(GL_VERTEX_ARRAY_EXT);
-	} else {
-	   glBegin(GL_LINES);
-	   for(y = 0; y < h; y++) {
-	      yf = -1.0f + (float) (y + 1) * 2.0f / (float)h;
-	      glVertex3f(-1.0f, yf, 0.96f);  
-	      glVertex3f(+1.0f, yf, 0.96f);  
-	   }
-	   glEnd();
-	}
+       glColor3f(fBrightR , fBrightG, fBrightB);
+       glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+       //    glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+       if(bGL_EXT_VERTEX_ARRAY) {
+	  glEnable(GL_VERTEX_ARRAY_EXT);
+	  glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
+	  glDrawArraysEXT(GL_POLYGON, 0, 4);
+	  glDisable(GL_VERTEX_ARRAY_EXT);
+       } else {
+	  glBegin(GL_POLYGON);
+	  glVertex3f(Vertexs[0][0], Vertexs[0][1], Vertexs[0][2]);
+	  glVertex3f(Vertexs[1][0], Vertexs[1][1], Vertexs[1][2]);
+	  glVertex3f(Vertexs[2][0], Vertexs[2][1], Vertexs[2][2]);
+	  glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
+	  glEnd();
+       }
        
+       glBlendFunc(GL_ONE, GL_ZERO);
+   
+       glDisable(GL_BLEND);
+   
+       glDisable(GL_TEXTURE_2D);
+       glDisable(GL_DEPTH_TEST);
+       if((glv->wid.rView.h >= (h * 2)) && (bFullScan == 0)) {
+	  glLineWidth((float)(glv->wid.rView.h) / (float)(h * 2));
+	  glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+	  if(bGL_EXT_VERTEX_ARRAY) {
+	     glEnable(GL_VERTEX_ARRAY_EXT);
+	     glVertexPointerEXT(3, GL_FLOAT, 0, h + 1, gridtid);
+	     glDrawArraysEXT(GL_LINE, 0, h + 1);
+	     glDisable(GL_VERTEX_ARRAY_EXT);
+	  } else {
+	     glBegin(GL_LINES);
+	     for(y = 0; y < h; y++) {
+		yf = -1.0f + (float) (y + 1) * 2.0f / (float)h;
+		glVertex3f(-1.0f, yf, 0.96f);  
+		glVertex3f(+1.0f, yf, 0.96f);  
+	     }
+	     glEnd();
+	  }
+       
+       }
     }
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_DEPTH_TEST);
+   
+       glDisable(GL_BLEND);
+       glDisable(GL_TEXTURE_2D);
+       glDisable(GL_DEPTH_TEST);
 #ifdef USE_OPENGL
     DrawOSDGL(glv);
 #endif
