@@ -104,7 +104,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 
 
 
-void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
+void pVram2RGB_x2_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep)
 {
    register v4hi *b;
    AG_Surface *Surface = GetDrawSurface();
@@ -142,15 +142,8 @@ void pVram2RGB_x2_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
 
    yrep2 = yrep;
 
-   if(yrep2 <= 1) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
-                        + y * Surface->pitch);
-      d2 = &src[x + y * 640];
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 2 * Surface->format->BytesPerPixel
-                        + (y * yrep2) * Surface->pitch);
-      d2 = &src[x + y * 640];
-   }
+   d1 = (Uint32 *)((Uint8 *)dst + x * 2 * Surface->format->BytesPerPixel);
+   d2 = &src[x + y * 640];
    Scaler_DrawLine((v4hi *)d1, (Uint32 *)d2, ww, yrep2, Surface->pitch);
 //   AG_SurfaceUnlock(Surface);
    return;

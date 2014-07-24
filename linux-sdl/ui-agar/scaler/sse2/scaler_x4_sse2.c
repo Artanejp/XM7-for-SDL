@@ -16,7 +16,7 @@
 extern struct XM7_CPUID *pCpuID;
 
 #if defined(__SSE2__)
-void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
+void pVram2RGB_x4_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep)
 {
    register v4hi *b;
    AG_Surface *Surface = GetDrawSurface();
@@ -55,16 +55,8 @@ void pVram2RGB_x4_Line_SSE2(Uint32 *src, int xbegin, int xend, int y, int yrep)
    black = 0x000000ff;
 #endif
    yrep2 = yrep;
-   if(yrep <= 1) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
-                        + y * Surface->pitch);
-      d2 = &src[x + y * 640];
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
-                        + (y * yrep2) * Surface->pitch);
-      d2 = &src[x + y * 640];
-   }
-
+   d1 = (Uint32 *)(dst+ x * 4 * Surface->format->BytesPerPixel);
+   d2 = &src[x + y * 640];
    
    pitch = Surface->pitch / sizeof(Uint32);
    { // Not thinking align ;-(
