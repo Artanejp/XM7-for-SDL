@@ -104,6 +104,7 @@ void AGDrawTaskEvent(BOOL flag)
    } else {
       fps = 500;
    }
+   if(fps < 10) fps = 10; // 10ms = 100fps.
    
    for(;;) {
       if(oldfps != nDrawFPS){ // FPS Change 20120120
@@ -113,31 +114,37 @@ void AGDrawTaskEvent(BOOL flag)
 	 } else {
 	    fps = 500;
 	 }
+	 if(fps < 10) fps = 10; // 10ms = 100fps.
       }
-      if(EventSDL(NULL) == FALSE) return;
+//      if(EventSDL(NULL) == FALSE) return;
       nDrawTick2D = XM7_timeGetTime();
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
-      if(((nDrawTick2D - nDrawTick1D) > fps) && (skipf != TRUE)){
-	 // Force-Redraw mainwindow, workaround of glx driver.
+      if((nDrawTick2D - nDrawTick1D) >= fps) {
+	 if(skipf != TRUE){
 
-	 AG_WindowDrawQueued();
-	 nDrawTick1D = nDrawTick2D;
-	 if((XM7_timeGetTime() - nDrawTick2D) >= fps) skipf = TRUE;
-	 XM7_Sleep(1);
-	 //EventSDL(NULL);
-      } else if((nDrawTick2D - nDrawTick1D) > fps) {
-	 skipf = FALSE;
-	 XM7_Sleep(1);
-      } else if(AG_PendingEvents(NULL) != 0) {
-      //if(AG_PendingEvents(NULL) != 0) {
+	    AG_WindowDrawQueued();
+	    nDrawTick1D = nDrawTick2D;
+	    if((XM7_timeGetTime() - nDrawTick2D) >= fps) skipf = TRUE;
+	    //	 XM7_Sleep(1);
+	    //EventSDL(NULL);
+	 } else  { 
+	    skipf = FALSE;
+	    nDrawTick1D = nDrawTick2D;
+	    //XM7_Sleep(1);
+	    //EventSDL(NULL);
+	 }
+      } else
+      if(AG_PendingEvents(NULL) != 0) {
+	 
 	 AG_DriverEvent dev;
-	 if(EventSDL(NULL) == FALSE) return;
-	 while(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
-	 //if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
-	 XM7_Sleep(1);
-      } else { // Timeout
-	 Uint32 tim = 0;
+//	 if(EventSDL(NULL) == FALSE) return;
+	 while(AG_GetNextEvent(NULL, &dev) > 0) AG_ProcessEvent(NULL, &dev);
+	 //if((XM7_timeGetTime() - nDrawTick1D) >= fps) skipf = TRUE;
+//	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+//	 XM7_Sleep(1);
+      } else
+      if(skipf == FALSE) { // Timeout
 	 AG_TAILQ_FOREACH(es, &src->spinners, sinks){
 	    es->fn(es, &es->fnArgs);
 	 }
@@ -148,11 +155,8 @@ void AGDrawTaskEvent(BOOL flag)
 	    es->fn(es, &es->fnArgs);
 	 }
 	 if (src->breakReq) break;
-	 tim = AG_GetTicks();
-//	 AG_ProcessTimeouts(tim);
-//	 Code got from core/event.c
-	 XM7_Sleep(1);
       }	// Process Event per 1Ticks;
+      XM7_Sleep(1);
       AG_WindowProcessQueued();
    }
    

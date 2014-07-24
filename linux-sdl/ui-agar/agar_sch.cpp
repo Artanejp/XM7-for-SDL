@@ -367,14 +367,18 @@ static void *ThreadSch(void *param)
 #else
 				   struct timespec req, remain;
 				   req.tv_sec = 0;
-				   req.tv_nsec = 200 * 1000; // 0.2ms
+				   req.tv_nsec = 100 * 1000; // 0.1ms
 				   while(XM7_timeGetTime() == dwNowTime) {
-				      nanosleep(&req, &remain); // Okay, per 0.2ms.
+				      nanosleep(&req, &remain); // Okay, per 0.1ms.
 				   }
 #endif
 				   continue;
 				}
+			   
 			}
+		   
+		   
+		   
 		   
 			/*
 			 * テープ高速モード
@@ -425,7 +429,6 @@ static void *ThreadSch(void *param)
 					speed_ratio = 500;
 				}
 			}
-
 			else {
 
 				/*
@@ -476,7 +479,7 @@ static void *ThreadSch(void *param)
 
 #endif				/*  */
 					/*
-					 * 4096色/26万色モードでは最高20fps
+					 * 4096色/26万色モードでは最高75fps
 					 */
 					if (tmp < 13) {
 						tmp = 13;

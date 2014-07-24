@@ -668,7 +668,7 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
 void XM7_SDLViewUpdateSrc(AG_Event *event)
 {
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
-   void *Fn = AG_PTR(1);
+   void *Fn = NULL;
    void (*DrawFn2)(Uint32 *, Uint8 *, int , int , int, int);
    AG_Surface *Surface;
    
@@ -694,6 +694,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    int xcache;
    BOOL flag = FALSE;
 
+   Fn = AG_PTR(1);
    if(my == NULL) return;
    Surface = my->Surface;
    
@@ -750,12 +751,10 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
        Surface = GetDrawSurface();
        if(Surface == NULL)       goto _end1;
        AG_SurfaceLock(Surface);
-//#ifdef _OPENMP
-// #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src)
-//#endif
-
-      yfact = ymod;
-      dst = (Uint8 *)(Surface->pixels);
+       dst = (Uint8 *)(Surface->pixels);
+#ifdef _OPENMP
+// #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src, Surface) private(dst, y2, y3)
+#endif
       for(yy = 0 ; yy < hh; yy++) {
 /*
 *  Virtual VRAM -> Real Surface:
@@ -796,10 +795,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    if(Surface == NULL) goto _end1;
    AG_SurfaceLock(Surface);
 
-//#ifdef _OPENMP
-// # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache)
-//#endif
-    
+#ifdef _OPENMP
+// # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache, y2, y3, dst)
+#endif
     for(yy = 0 ; yy < hh; yy += 8) {
        _prefetch_data_read_l1(&src[(yy + 0) * 80], ww);
        _prefetch_data_read_l1(&src[(yy + 1) * 80], ww);

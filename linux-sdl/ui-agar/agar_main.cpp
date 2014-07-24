@@ -554,6 +554,6 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
       AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
       XM7_DebugLog(XM7_LOG_INFO, "OpenGL mode.");
    }
-   
+//  AG_EventLoop(); 
    AGDrawTaskEvent(TRUE);
 }
