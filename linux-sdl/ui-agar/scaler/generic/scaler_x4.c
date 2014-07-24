@@ -13,7 +13,7 @@
 #include "sdl_cpuid.h"
 
 
-void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
+void pVram2RGB_x4_Line(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep)
 {
    register v4hi *b;
    AG_Surface *Surface = GetDrawSurface();
@@ -45,17 +45,9 @@ void pVram2RGB_x4_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 #else
    black = 0x000000ff;
 #endif
-   yrep2 = (int)(yrep * 16.0f);
-   if(yrep <= 1.0f) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
-                        + y * Surface->pitch);
-      d2 = &src[x + y * 640];
-      yrep = 2;
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 4 * Surface->format->BytesPerPixel
-                        + ((y * yrep2) >> 4) * Surface->pitch);
-      d2 = &src[x + y * 640];
-   }
+   yrep2 = yrep;
+   d1 = (Uint32 *)(dst + x * 4 * Surface->format->BytesPerPixel);
+   d2 = &src[x + y * 640];
 
 
    pitch = Surface->pitch / sizeof(Uint32);

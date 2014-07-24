@@ -14,7 +14,7 @@
 extern struct XM7_CPUID *pCpuID;
 
 
-void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
+void pVram2RGB_x05_Line(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep)
 {
    v8hi_t *b;
    Uint32 *d1;
@@ -29,7 +29,7 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
    int ww;
    int i;
    int pitch;
-   int yrep3;
+   int yrep2 = yrep;
    v8hi_t rmask1, gmask1, bmask1, amask1;
    v4hi rmask2, gmask2, bmask2, amask2;
    Uint32 black;
@@ -38,6 +38,8 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
    if(Surface == NULL) return;
    w = Surface->w;
    h = Surface->h;
+   pitch = Surface->pitch / sizeof(Uint32);
+   if(yrep2 <= 0) yrep2 = 1; // Okay?
    
 #if AG_BIG_ENDIAN != 1
    rmask1.i[0] = rmask1.i[1] = rmask1.i[2] = rmask1.i[3] =
@@ -75,27 +77,12 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
    bmask2.i[0] = bmask2.i[1] = bmask2.i[2] = bmask2.i[3] = 0x0000ff00;
    amask2.i[0] = amask2.i[1] = amask2.i[2] = amask2.i[3] = 0x000000ff;
 #endif
-   yrep3 = (int)(yrep * 16.0f);
-   if(yrep < 1.0f) {
-      if(yrep <= 0.5f) {
-	 d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
-                        + (y >> 1)  * Surface->pitch);
-      } else {
-	 d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
-                        + y  * Surface->pitch);
-      }
-      p = &src[xbegin + y * 640];
-
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (xbegin >> 1) * Surface->format->BytesPerPixel
-                        + ((y * yrep3) >> 4) * Surface->pitch);
-      p = &src[xbegin + y * 640];
-   }
+   d1 = (Uint32 *)(dst + (xbegin >> 1) * Surface->format->BytesPerPixel);
+   p = &src[xbegin + y * 640];
    if(((xbegin >>1) + 4) >= w) {
 	Uint32 amask, rmask, gmask, bmask;
         Uint32 bd1, bd2;
         Uint32 r, g, b, a;
-        int yrep2;
         int j;
 
 #if AG_BIG_ENDIAN != 1
@@ -109,7 +96,6 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
       bmask = 0x0000ff00;
       amask = 0x000000ff;
 #endif
-//      yrep2 = yrep3 >> 1;
       ww = (xend - xbegin) / 2;
       if(ww > w) ww = w;
             
@@ -120,28 +106,25 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 	 g = (((bd1 & gmask) >> 1) + ((bd2 & gmask) >> 1)) & gmask;
 	 b = (((bd1 & bmask) >> 1) + ((bd2 & bmask) >> 1)) & bmask;
 	 d2 = &d1[xx];
-//	 for(j = 0; j < yrep2; j++) {
+	 for(j = 0; j < yrep2; j++) {
 	    *d2 = r | g  | b | amask;
-//	    d2 += pitch;
-//	 }
+	    d2 += pitch;
+	 }
 	 p += 2;
       }
       return;
    }
    
 
-   pitch = Surface->pitch / sizeof(Uint32);
      {
       v4hi *pd;
       v4hi cr, cg, cb, cd;
       v8hi_t *b;
       v8hi_t br,bg, bb;
       Uint32 *d0;
-      int yrep2 = yrep3 >> 4;
 	
       ww = (xend - xbegin) / 2;
       if(ww > w) ww = w;
-      if(yrep2 <= 1) yrep2 = 1;
       d0 = d1;
       for(xx = 0; xx < ww; xx++) {
 	 d1 = d0;
@@ -167,11 +150,11 @@ void pVram2RGB_x05_Line(Uint32 *src, int xbegin, int xend, int y, float yrep)
 	 cg.v = cg.v & gmask2.v;
 	 cb.v = cb.v & bmask2.v;
 	 cd.v = cr.v | cg.v | cb.v | amask2.v;
-//	 for(i = 0; i < yrep2; i++) {
+	 for(i = 0; i < yrep2; i++) {
 	    pd = (v4hi *)d1;
 	    *pd = cd;
-//	    d1 += pitch;
-//	 }
+	    d1 += pitch;
+	 }
 	 d0 += 4;
 	 p += 8;
       }
