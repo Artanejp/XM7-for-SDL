@@ -122,12 +122,12 @@ void AGDrawTaskEvent(BOOL flag)
 
 #ifdef USE_OPENGL
 	   if(GLDrawArea != NULL){
-	      AG_Redraw(GLDrawArea);
+//	      AG_Redraw(GLDrawArea);
 	   } else 
 #else
 	   if(DrawArea != NULL) {
-	      XM7_SDLViewUpdateSrc(DrawArea, NULL);
-	      AG_Redraw(DrawArea);
+//	      if(XM7_SDLViewUpdateSrc(DrawArea, NULL) == TRUE) AG_Redraw(DrawArea);
+//	      AG_Redraw(DrawArea);
 	   }
 #endif
 	 AG_WindowDrawQueued();

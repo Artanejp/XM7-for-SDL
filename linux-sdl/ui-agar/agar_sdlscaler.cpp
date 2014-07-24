@@ -665,7 +665,6 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
 
 
 
-//void XM7_SDLViewUpdateSrc(AG_Pixmap *my, void *Fn)
 void XM7_SDLViewUpdateSrc(AG_Event *event)
 {
    XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
@@ -693,6 +692,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    int yfact;
    int lcount;
    int xcache;
+   BOOL flag = FALSE;
 
    if(my == NULL) return;
    Surface = my->Surface;
@@ -769,6 +769,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	    if(yrep2 < 1) yrep2 = 1;
 	    DrawFn2(src, dst, 0, ww, yy, yrep2);
 	    bDrawLine[yy] = FALSE;
+	    flag = TRUE;
 	 }
 	 dst = dst + (yrep2 * Surface->pitch);
       }
@@ -837,6 +838,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 		    yrep2 = y3 - y2;
 		    if(yrep2 < 1) yrep2 = 1;
 		    DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
+		    flag = TRUE;
 		 }
 	      }
 	      xcache = xx + 8;
@@ -856,6 +858,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	     yrep2 = y3 - y2;
 	     if(yrep2 < 1) yrep2 = 1;
 	     DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
+	     flag = TRUE;
 	  }
        }
 //			if(yy >= h) continue;
@@ -869,4 +872,5 @@ _end1:
 //   my->mySurface = AG_WidgetMapSurfaceNODUP(my, Surface);
 //	AG_WidgetUpdateSurface(my, my->mySurface);
    UnlockVram();
+   return;
 }
