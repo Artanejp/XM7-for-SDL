@@ -87,6 +87,7 @@ void AGDrawTaskEvent(BOOL flag)
    AG_Driver *drv;
    Uint32 fps;
    Uint32 oldfps = nDrawFPS;
+   BOOL skipf = FALSE;
    AG_EventSource *src;
    AG_EventSink *es;
    
@@ -117,18 +118,23 @@ void AGDrawTaskEvent(BOOL flag)
       nDrawTick2D = XM7_timeGetTime();
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
-      if((nDrawTick2D - nDrawTick1D) > fps) {
+      if(((nDrawTick2D - nDrawTick1D) > fps) && (skipf != TRUE)){
 	 // Force-Redraw mainwindow, workaround of glx driver.
 
 	 AG_WindowDrawQueued();
 	 nDrawTick1D = nDrawTick2D;
+	 if((XM7_timeGetTime() - nDrawTick2D) >= fps) skipf = TRUE;
 	 XM7_Sleep(1);
 	 //EventSDL(NULL);
+      } else if((nDrawTick2D - nDrawTick1D) > fps) {
+	 skipf = FALSE;
+	 XM7_Sleep(1);
       } else if(AG_PendingEvents(NULL) != 0) {
       //if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
 	 if(EventSDL(NULL) == FALSE) return;
-	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+	 while(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+	 //if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
 	 XM7_Sleep(1);
       } else { // Timeout
 	 Uint32 tim = 0;
@@ -147,10 +153,9 @@ void AGDrawTaskEvent(BOOL flag)
 //	 Code got from core/event.c
 	 XM7_Sleep(1);
       }	// Process Event per 1Ticks;
-
       AG_WindowProcessQueued();
-      
    }
+   
 }
 
         
