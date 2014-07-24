@@ -120,16 +120,6 @@ void AGDrawTaskEvent(BOOL flag)
       if((nDrawTick2D - nDrawTick1D) > fps) {
 	 // Force-Redraw mainwindow, workaround of glx driver.
 
-#ifdef USE_OPENGL
-	   if(GLDrawArea != NULL){
-//	      AG_Redraw(GLDrawArea);
-	   } else 
-#else
-	   if(DrawArea != NULL) {
-//	      if(XM7_SDLViewUpdateSrc(DrawArea, NULL) == TRUE) AG_Redraw(DrawArea);
-//	      AG_Redraw(DrawArea);
-	   }
-#endif
 	 AG_WindowDrawQueued();
 	 nDrawTick1D = nDrawTick2D;
 	 XM7_Sleep(1);
