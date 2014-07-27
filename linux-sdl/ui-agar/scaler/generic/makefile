@@ -15,6 +15,7 @@ COMMONSRC = \
 	scaler_x125.c \
 	scaler_x2.c \
 	scaler_x225.c \
+	scaler_x25.c \
 	scaler_x4.c
 
 
