@@ -26,6 +26,7 @@ extern "C" { // Define Headers
    extern void pVram2RGB_x05_Line(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x05.c , raster render
    extern void pVram2RGB_x1_Line(Uint32 *src,  Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
    extern void pVram2RGB_x2_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
+   extern void pVram2RGB_x225_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
    extern void pVram2RGB_x4_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
 
 #if defined(USE_SSE2) // scaler/sse2/
@@ -550,7 +551,7 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
 //            if(xfactor < xth){
 	      if((w1 > 720) && (w0 <= 480)) {
 		 DrawFn = pVram2RGB_x2_Line_SSE2;  // x2.5
-	      } else if((w1 > 1280) && (w1 <= 1520)){
+	      } else if((w1 > 1360) && (w1 <= 1520)){
 		 DrawFn = pVram2RGB_x225_Line_SSE2; // x2.25
 	      } else if(w1 > 1520){
 		 DrawFn = pVram2RGB_x4_Line_SSE2; // x3
@@ -638,7 +639,9 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
 //            if(xfactor < xth){
 	      if((w1 > 720) && (w0 <= 480)) {
 		 DrawFn = pVram2RGB_x2_Line;  // x2.5
-	      } else if(w1 > 1520){
+	      } else if((w1 > 1360) && (w1 <= 1520)){
+		 DrawFn = pVram2RGB_x225_Line; // x2.25
+	      }else if(w1 > 1520){
 		 DrawFn = pVram2RGB_x2_Line; // x3
 	      } else {
 		 DrawFn = pVram2RGB_x2_Line;
