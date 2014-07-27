@@ -116,7 +116,7 @@ void AGDrawTaskEvent(BOOL flag)
 	 }
 	 if(fps < 10) fps = 10; // 10ms = 100fps.
       }
-//      if(EventSDL(NULL) == FALSE) return;
+      if(EventSDL(NULL) == FALSE) return;
       nDrawTick2D = XM7_timeGetTime();
 
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
