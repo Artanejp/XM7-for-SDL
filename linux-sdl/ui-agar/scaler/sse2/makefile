@@ -15,7 +15,9 @@ COMMONSRC = \
 	scaler_x2_sse2.c \
 	scaler_x225_sse2.c \
 	scaler_x25_sse2.c \
-	scaler_x4_sse2.c
+	scaler_x4_sse2.c \
+	scaler_x45_sse2.c \
+	scaler_x5_sse2.c
 
 .SUFFIXES: .c .cpp .asm .o
 
