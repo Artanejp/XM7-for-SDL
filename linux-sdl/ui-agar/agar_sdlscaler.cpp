@@ -25,15 +25,17 @@ extern "C" { // Define Headers
    // scaler/generic
    extern void pVram2RGB_x05_Line(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x05.c , raster render
    extern void pVram2RGB_x1_Line(Uint32 *src,  Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
+   extern void pVram2RGB_x125_Line(Uint32 *src,  Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x125.c , raster render
    extern void pVram2RGB_x2_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
-   extern void pVram2RGB_x225_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
-   extern void pVram2RGB_x4_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
+   extern void pVram2RGB_x225_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x225.c , raster render.
+   extern void pVram2RGB_x4_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x4.c , raster render.
 
 #if defined(USE_SSE2) // scaler/sse2/
-   extern void pVram2RGB_x1_Line_SSE2(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x1.c , raster render
-   extern void pVram2RGB_x2_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
-   extern void pVram2RGB_x225_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
-   extern void pVram2RGB_x4_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2.c , raster render.
+   extern void pVram2RGB_x1_Line_SSE2(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x1_sse2.c , raster render
+   extern void pVram2RGB_x125_Line_SSE2(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x125_sse2.c , raster render
+   extern void pVram2RGB_x2_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x2_sse2.c , raster render.
+   extern void pVram2RGB_x225_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x225_sse2.c , raster render.
+   extern void pVram2RGB_x4_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x4_sse2.c , raster render.
 #endif
 }
 
@@ -60,445 +62,6 @@ static inline Uint32 pVram_XtoHalf(Uint32 d1, Uint32 d2)
    d0 = 0x000000ff | ((r << 23) & 0xff000000) | ((g << 15) & 0x00ff0000) | ((b << 7) & 0x0000ff00);
 #endif
    return d0;
-}
-
-
-// Zoom 1.25 (640->800)
-void pVram2RGB_x125(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
-{
-   v8hi_t *b;
-
-   Uint32 *d1;
-   Uint32 *d2;
-   Uint32 *p;
-   int w;
-   int h;
-   int yy;
-   int xx;
-   int hh;
-   int ww;
-   int i;
-   int pitch;
-   Uint32 black;
-   AG_Surface *Surface = GetDrawSurface();
-    
-   if(Surface == NULL) return;
-   w = Surface->w;
-   h = Surface->h;
-
-#if AG_BIG_ENDIAN != 1
-   black = 0xff000000;
-#else
-   black = 0x000000ff;
-#endif
-   if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5 * Surface->format->BytesPerPixel) / 4
-                        + y * Surface->pitch);
-      yrep = 2;
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5  * Surface->format->BytesPerPixel) / 4
-                        + y * (yrep >> 1) * Surface->pitch);
-   }
-
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
-
-   pitch = Surface->pitch / sizeof(Uint32);
-   if(w < ((x * 5)/ 4 + 8)) {
-    int j;
-    Uint32 d0;
-
-    p = src;
-    ww = w - (x * 5) / 4;
-    for(yy = 0; yy < hh ; yy++) {
-        i = 0;
-        for(xx = 0; xx < ww; xx ++, i++){
-            d2 = d1;
-            d0 = p[i];
-            for(j = 0; j < (yrep >> 1); j++){
-	       if((j > ((yrep >> 1))) && !bFullScan){
-		  d2[xx] = black;
-		  if((xx & 3) == 0) {
-		     d2[xx + 1] = black;
-		  }
-       	       } else {
-		  d2[xx] = d0;
-		  if((xx & 3) == 0) {
-		     d2[xx + 1] = d0;
-		  }
-	       }
-               d2 += pitch;
-            }
-	   if((xx & 3) == 0) xx++;
-        }
-        d1 += (pitch * (yrep >> 1));
-        if(yrep & 1) d1 += pitch;
-        p += 8;
-      }
-   } else { // inside align
-    int j;
-    v8hi_t b2;
-    v8hi_t bb;
-    Uint32 b28 ,b29;
-    Uint32 b38 ,b39;
-
-    v8hi_t *b2p;
-    b = (v8hi_t *)src;
-    for(yy = 0; yy < hh; yy++){
-       b2.i[0] = b2.i[1] = b->i[0];
-       b2.i[2] = b->i[1];
-       b2.i[3] = b->i[2];
-       b2.i[4] = b->i[3];
-
-       b2.i[5] = b2.i[6] = b->i[4];
-       b2.i[7] = b->i[5];
-       b28 = b->i[6];
-       b29 = b->i[7];
-
-       bb.i[0] = bb.i[1] =
-       bb.i[2] = bb.i[3] =
-       bb.i[4] = bb.i[5] =
-       bb.i[6] = bb.i[7] = black;
-       b38 = b39 = black;
-       switch(yrep) {
-	case 0:
-	case 1:
-	case 2:
-	  b2p = (v8hi_t *)d1;
-	  *b2p = b2;
-	  d1[8] = b28;
-	  d1[9] = b29;
-	  d1 += pitch;
-	  break;
-	default:
-	  for(j = 0; j < (yrep >> 1); j++) {
-	     if(yrep & 1){
-		b2p = (v8hi_t *)d1;
-		*b2p = b2;
-		d1[8] = b28;
-		d1[9] = b29;
-		yrep--;
-		d1 += pitch;
-	     }
-
-	     b2p = (v8hi_t *)d1;
-	     if(!bFullScan && (j >= (yrep >> 2))) {
-		*b2p = bb;
-		d1[8] = b38;
-		d1[9] = b39;
-	     } else {
-		*b2p = b2;
-		d1[8] = b28;
-		d1[9] = b29;
-	     }
-
-	  d1 += pitch;
-	  }
-	  break;
-       }
-
-       b++;
-     }
-   }
-}
-
-
-   
-// Zoom 2x2
-
-// Zoom 2.5
-void pVram2RGB_x25(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
-{
-   v8hi_t *b;
-
-   Uint32 *d1;
-   Uint32 *d2;
-   Uint32 *p;
-   int w;
-   int h;
-   int yy;
-   int xx;
-   int hh;
-   int ww;
-   int i;
-   int pitch;
-   Uint32 black;
-   AG_Surface *Surface = GetDrawSurface();
-    
-   if(Surface == NULL) return;
-   w = Surface->w;
-   h = Surface->h;
-
-#if AG_BIG_ENDIAN != 1
-   black = 0xff000000;
-#else
-   black = 0x000000ff;
-#endif
-   if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5 * Surface->format->BytesPerPixel) / 2
-                        + y * Surface->pitch);
-      yrep = 2;
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + (x * 5 * Surface->format->BytesPerPixel) / 2
-                        + y * (yrep >> 1) * Surface->pitch);
-   }
-
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
-
-   pitch = Surface->pitch / sizeof(Uint32);
-   if(w < ((x * 5) / 2 + 10)) {
-    int j;
-    Uint32 d0;
-
-    p = src;
-    ww = w - (x * 5) / 2;
-    for(yy = 0; yy < hh ; yy++) {
-        i = 0;
-        for(xx = 0; xx < ww; xx += 2, i++){
-            d2 = d1;
-            d0 = p[i];
-	  if(yrep & 1) {
-	     d2[xx + 0] = d2[xx + 1] = d0;
-	     if((xx & 1) == 0) d2[xx + 2] = d0;
-	     yrep--;
-	     d2 += pitch;
-	  }
-            for(j = 0; j < (yrep >> 1); j++){
-	       if((j > (yrep >> 2)) && !bFullScan){
-		  d2[xx] = d2[xx +1] = black;
-		  if((xx & 1) == 0) {
-		     d2[xx + 2] = black;
-		  }
-	       } else {
-		  d2[xx] = d2[xx + 1] = d0;
-		  if((xx & 1) == 0) {
-		     d2[xx + 2] = d0;
-		  }
-	       }
-                d2 += pitch;
-            }
-	   if((xx & 1) == 0) xx++;
-
-        }
-        d1 += (pitch * (yrep >> 1));
-        if(yrep & 1) d1 += pitch;
-        p += 8;
-      }
-   } else { // inside align
-    int j;
-    v8hi_t b2;
-    v8hi_t b3;
-    v4hi b4;
-    v8hi_t bb;
-    v4hi bb4;
-
-    v8hi_t *b2p;
-    v4hi *b4p;
-
-    b = (v8hi_t *)src;
-    for(yy = 0; yy < hh; yy++){
-       b2.i[0] = b2.i[1] = b2.i[2] = b->i[0];
-       b2.i[3] = b2.i[4] = b->i[1];
-       b2.i[5] = b2.i[6] = b2.i[7] = b->i[2];
-       b3.i[0] = b3.i[1] = b->i[3];
-
-       b3.i[2] = b3.i[3] = b3.i[4] = b->i[4];
-       b3.i[5] = b3.i[6] = b->i[5];
-       b3.i[7] = b4.i[0] = b4.i[1] = b->i[6];
-       b4.i[2] = b4.i[3] = b->i[7];
-
-       bb.i[0] = bb.i[1] =
-       bb.i[2] = bb.i[3] =
-       bb.i[4] = bb.i[5] =
-       bb.i[6] = bb.i[7] = black;
-       bb4.i[0] = bb4.i[1] =
-       bb4.i[2] = bb4.i[2] = black;
-
-       switch(yrep) {
-	case 0:
-	case 1:
-	case 2:
-	  b2p = (v8hi_t *)d1;
-	  b2p[0] = b2;
-	  b2p[1] = b3;
-	  b4p = (v4hi *)(&d1[16]);
-	  *b4p = b4;
-	  d1 += pitch;
-	  break;
-	default:
-	  if(yrep & 1) {
-	     b2p = (v8hi_t *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b4p = (v4hi *)(&d1[16]);
-	     *b4p = b4;
-	     yrep--;
-	     d1 += pitch;
-	  }
-
-	  for(j = 0; j < (yrep >> 1); j++) {
-	     b2p = (v8hi_t *)d1;
-	     if(!bFullScan && (j >= (yrep >> 2))) {
-		b2p[0] = b2p[1] = bb;
-		b4p = (v4hi *)(&d1[16]);
-		*b4p = bb4;
-	     } else {
-		b2p[0] = b2;
-		b2p[1] = b3;
-		b4p = (v4hi *)(&d1[16]);
-		*b4p = b4;
-	     }
-
-	  d1 += pitch;
-	  }
-	  break;
-       }
-
-       b++;
-     }
-   }
-}
-
-
-void pVram2RGB_x3(Uint32 *src, Uint32 *dst, int x, int y, int yrep)
-{
-   v8hi_t *b;
-   Uint32 *d1;
-   Uint32 *d2;
-   Uint32 *p;
-   int w;
-   int h;
-   int yy;
-   int xx;
-   int hh;
-   int ww;
-   int i;
-   int pitch;
-   Uint32 black;
-   AG_Surface *Surface = GetDrawSurface();
-    
-   if(Surface == NULL) return;
-   w = Surface->w;
-   h = Surface->h;
-
-#if AG_BIG_ENDIAN != 1
-   black = 0xff000000;
-#else
-   black = 0x000000ff;
-#endif
-   if(yrep < 2) {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 3 * Surface->format->BytesPerPixel
-                        + y * Surface->pitch);
-      yrep = 2;
-   } else {
-      d1 = (Uint32 *)((Uint8 *)(Surface->pixels) + x * 3 * Surface->format->BytesPerPixel
-                        + y * (yrep >> 1) * Surface->pitch);
-   }
-
-   if(h <= ((y + 8) * (yrep >> 1))) {
-      hh = (h - y * (yrep >> 1)) / (yrep >> 1);
-   } else {
-      hh = 8;
-   }
-
-   pitch = Surface->pitch / sizeof(Uint32);
-   if(w <= (x * 3 + 23)) {
-       int j;
-       Uint32 d0;
-      p = src;
-
-      ww = w - x * 3;
-    for(yy = 0; yy < hh ; yy++) {
-        i = 0;
-        for(xx = 0; xx < ww; xx += 3, i++){
-            d2 = d1;
-            d0 = p[i];
-	  if(yrep & 1) {
-	     d2[xx + 0] = d2[xx + 1] = d2[xx + 2]  = d0;
-	     yrep--;
-	     d2 += pitch;
-	  }
-            for(j = 0; j < (yrep >> 1); j++) {
-	       if(!bFullScan && (j > (yrep >> 2))) {
-		d2[xx] =
-		d2[xx + 1] =
-                d2[xx + 2] = black;
-               } else {
-		d2[xx] =
-                d2[xx + 1] =
-                d2[xx + 2] = d0;
-	       }
-               d2 += pitch;
-            }
-        }
-        d1 += (pitch * (yrep >> 1));
-        if(yrep & 1) d1 += pitch;
-	 p += 8;
-    }
-   } else { // inside align
-      int j;
-      v8hi_t b2,b3,b4;
-      v8hi_t *b2p;
-      v8hi_t bb;
-
-      bb.i[0] = bb.i[1] = bb.i[2] = bb.i[3] =
-      bb.i[4] = bb.i[5] = bb.i[6] = bb.i[7] = black;
-
-     b = (v8hi_t *)src;
-     for(yy = 0; yy < hh; yy++){
-	b2.i[0] = b2.i[1] = b2.i[2] = b->i[0];
-	b2.i[3] = b2.i[4] = b2.i[5] = b->i[1];
-	b2.i[6] = b2.i[7] = b3.i[0] = b->i[2];
-	b3.i[1] = b3.i[2] = b3.i[3] = b->i[3];
-	b3.i[4] = b3.i[5] = b3.i[6] = b->i[4];
-	b3.i[7] = b4.i[0] = b4.i[1] = b->i[5];
-	b4.i[2] = b4.i[3] = b4.i[4] = b->i[6];
-	b4.i[5] = b4.i[6] = b4.i[7] = b->i[7];
-
-
-       switch(yrep) {
-	case 0:
-	case 1:
-	case 2:
-	     b2p = (v8hi_t *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
-	     d1 += pitch;
-	     break;
-	default:
-	  if(yrep & 1) {
-	     b2p = (v8hi_t *)d1;
-	     b2p[0] = b2;
-	     b2p[1] = b3;
-	     b2p[2] = b4;
-	     yrep--;
-	     d1 += pitch;
-	  }
-
-	  for(j = 0; j < (yrep >> 1); j++) {
-	     b2p = (v8hi_t *)d1;
-	     if(!bFullScan && (j >= (yrep >> 2))) {
-		b2p[0] = b2p[1] = b2p[2] = bb;
-	     } else {
-		b2p[0] = b2;
-		b2p[1] = b3;
-		b2p[2] = b4;
-	     }
-	     d1 += pitch;
-	  }
-	  break;
-       }
-       b++;
-     }
-   }
 }
 
 
@@ -537,15 +100,13 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
             break;
 
      case 1:
-            if(xfactor < xth){
-	       if(w1 > 720) {
-		  DrawFn = pVram2RGB_x2_Line_SSE2;
+	       if(w1 > 900) {
+		  DrawFn = pVram2RGB_x2_Line_SSE2; // 1.5?
+	       } else if(w1 > 720) {
+		  DrawFn = pVram2RGB_x125_Line_SSE2; // 1.25
 	       } else {
-		  DrawFn = pVram2RGB_x1_Line_SSE2;
+		  DrawFn = pVram2RGB_x1_Line_SSE2; // 1.0
 	       }
-            } else { // xfactor != 0
-	       DrawFn = pVram2RGB_x1_Line_SSE2;
-	    }
             break;
      case 2:
 //            if(xfactor < xth){
@@ -625,16 +186,14 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
             break;
 
      case 1:
-            if(xfactor < xth){
-	       if(w1 > 720) {
-		  DrawFn = pVram2RGB_x2_Line;
-	       } else {
-		  DrawFn = pVram2RGB_x1_Line;
-	       }
-            } else { // xfactor != 0
-	       DrawFn = pVram2RGB_x2_Line;
-	    }
-            break;
+       if(w1 > 900) {
+	  DrawFn = pVram2RGB_x2_Line; // 1.5?
+       } else if(w1 > 720) {
+	  DrawFn = pVram2RGB_x125_Line; // 1.25
+       } else {
+	  DrawFn = pVram2RGB_x1_Line; // 1.0
+       }
+       break;
      case 2:
 //            if(xfactor < xth){
 	      if((w1 > 720) && (w0 <= 480)) {

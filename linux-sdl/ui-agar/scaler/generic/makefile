@@ -12,6 +12,7 @@ DPATH = $(realpath ../../..)
 COMMONSRC = \
 	scaler_x05.c \
 	scaler_x1.c \
+	scaler_x125.c \
 	scaler_x2.c \
 	scaler_x225.c \
 	scaler_x4.c
