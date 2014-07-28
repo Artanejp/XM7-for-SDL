@@ -28,7 +28,8 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
    v4hi *d0;
    register v4hi *b;
    int pitch2;
-   v4hi r3v[5];
+   register int ip;
+   v4hi r3v[5 * 80];
 #if AG_BIG_ENDIAN != 1
    const v4ui bb = {0xff000000, 0xff000000, 0xff000000, 0xff000000};
    const v4ui order3 = (v4ui){3, 3, 4, 4};
@@ -41,54 +42,53 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
    b = (v4hi *)src;
    b2p = dst;
    pitch2 = pitch / sizeof(v4hi);
-   _prefetch_data_read_l2((void *)src, sizeof(Uint32) * ww);
-   _prefetch_data_write_permanent((void *)r3v, sizeof(v4hi) * 5);
+//   _prefetch_data_read_l2((void *)src, sizeof(Uint32) * ww);
+   _prefetch_data_write_l1((void *)r3v, sizeof(r3v));
    if(__builtin_expect(((bFullScan) || (repeat < 2)), 1)) {
+      ip = 0;
       for(xx = 0; xx < ww; xx += 8) {
 	 b2p = dst;
 	 r1 = b[0];
 	 r2 = b[1];
 	 // 76543210 -> 77666554443322211000
-	 r3v[0].uv = __builtin_ia32_pshufd(r1.uv, 0b01000000);
-	 r3v[1].uv = __builtin_ia32_pshufd(r1.uv, 0b10101001);
-	 r3v[2] = (v4hi)__builtin_shuffle(r1.uv, r2.uv, order3);
-	 r3v[3].uv = __builtin_ia32_pshufd(r2.uv, 0b10010100);
-	 r3v[4].uv = __builtin_ia32_pshufd(r2.uv, 0b11111010);
-
-	 for(yy = 0; yy < repeat; yy++) {
-	    _prefetch_data_write_l2((void *)b2p, sizeof(v4hi) * 5);
-	    memcpy((void *)b2p, (void *)r3v, sizeof(v4hi) * 5);
-	    b2p = b2p + pitch2;
-	 }
-	 dst += 5;
+	 r3v[ip + 0].uv = __builtin_ia32_pshufd(r1.uv, 0b01000000);
+	 r3v[ip + 1].uv = __builtin_ia32_pshufd(r1.uv, 0b10101001);
+	 r3v[ip + 2] = (v4hi)__builtin_shuffle(r1.uv, r2.uv, order3);
+	 r3v[ip + 3].uv = __builtin_ia32_pshufd(r2.uv, 0b10010100);
+	 r3v[ip + 4].uv = __builtin_ia32_pshufd(r2.uv, 0b11111010);
+	 ip += 5;
 	 b += 2;
+      }
+      
+      for(yy = 0; yy < repeat; yy++) {
+	 //	    _prefetch_data_write_l2((void *)b2p, sizeof(v4hi) * 5);
+	 memcpy((void *)b2p, (void *)r3v, sizeof(v4hi) * ip);
+	 b2p = b2p + pitch2;
       }
    } else {
+      ip = 0;
       for(xx = 0; xx < ww; xx += 8) {
 	 yy = 0;
-	 b2p = dst;
+//	 b2p = dst;
 	 r1 = b[0];
 	 r2 = b[1];
 	 // 76543210 -> 77666554443322211000
-	 r3v[0].uv = __builtin_ia32_pshufd(r1.uv, 0b01000000);
-	 r3v[1].uv = __builtin_ia32_pshufd(r1.uv, 0b10101001);
-	 r3v[2] = (v4hi)__builtin_shuffle(r1.uv, r2.uv, order3);
-	 r3v[3].uv = __builtin_ia32_pshufd(r2.uv, 0b10010100);
-	 r3v[4].uv = __builtin_ia32_pshufd(r2.uv, 0b11111010);
-	 for(yy = 0; yy < repeat - 1; yy++) {
-	    _prefetch_data_write_l2((void *)b2p, sizeof(v4hi) * 5);
-	    memcpy((void *)b2p, (void *)r3v, sizeof(v4hi) * 5);
-	    b2p = b2p + pitch2;
-	 }
-	 _prefetch_data_write_l2((void *)b2p, sizeof(v4hi) * 5);
-	 b2p[0].uv =
-	 b2p[1].uv =
-	 b2p[2].uv =
-	 b2p[3].uv =
-	 b2p[4].uv = bb;
-	 dst += 5;
+	 r3v[ip + 0].uv = __builtin_ia32_pshufd(r1.uv, 0b01000000);
+	 r3v[ip + 1].uv = __builtin_ia32_pshufd(r1.uv, 0b10101001);
+	 r3v[ip + 2] = (v4hi)__builtin_shuffle(r1.uv, r2.uv, order3);
+	 r3v[ip + 3].uv = __builtin_ia32_pshufd(r2.uv, 0b10010100);
+	 r3v[ip + 4].uv = __builtin_ia32_pshufd(r2.uv, 0b11111010);
+	 ip += 5;
 	 b += 2;
       }
+      b2p = dst;
+      for(yy = 0; yy < repeat - 1; yy++) {
+//	    _prefetch_data_write_l2((void *)b2p, sizeof(v4hi) * 5);
+	    memcpy((void *)b2p, (void *)r3v, ip * sizeof(v4hi));
+	    b2p = b2p + pitch2;
+      }
+//	 _prefetch_data_write_l2((void *)b2p, sizeof(v4hi) * 5);
+      for(xx = 0; xx < ip; xx++) b2p[xx].uv = bb;
    }
    
 }

@@ -24,23 +24,24 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
    int blank;
    register v4hi *b2p;
    register v4hi r1, r2;
-   register v4hi *d0;
+   v4hi *d0;
    register v4hi *b;
    register v4hi bb2;
-   int pitch2;
+   register int pitch2;
 #if AG_BIG_ENDIAN != 1
    const v4ui bb = {0xff000000, 0xff000000, 0xff000000, 0xff000000};
 #else
    const v4ui bb = {0x000000ff, 0x000000ff, 0x000000ff, 0x000000ff};
 #endif
      
-   if(repeat < 0) return;
+   if(__builtin_expect((repeat < 0), 0)) return;
    b = (v4hi *)src;
    bb2.uv = bb;
    b2p = dst;
    pitch2 = pitch / sizeof(v4hi);
    if(bFullScan || (repeat < 2)) {
-      for(xx = 0; xx < ww; xx += 8) {
+      if(__builtin_expect((repeat >= 2), 1)) {
+	 for(xx = 0; xx < ww; xx += 8) {
 	    b2p = dst;
 	    r1 = b[0];
 	    r2 = b[1];
@@ -51,6 +52,15 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 	    }
 	 dst += 2;
 	 b += 2;
+	 }
+      } else { // repeat == 1
+	 for(xx = 0; xx < ww; xx += 8) {
+	    b2p = dst;
+	    b2p[0] = b[0];
+	    b2p[1] = b[1];
+	    dst += 2;
+	    b += 2;
+	 }
       }
    } else {
       for(xx = 0; xx < ww; xx += 8) {
