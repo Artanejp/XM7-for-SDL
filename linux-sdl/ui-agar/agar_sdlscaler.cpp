@@ -296,7 +296,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    
 
    if(pVram2 == NULL) return;
-   if(crt_flag == FALSE) {
+   if(__builtin_expect((crt_flag == FALSE), 0)) {
       AG_Rect rr;
       AG_Color cc;
       
@@ -331,7 +331,10 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
    if(__builtin_expect((Fn != NULL), 1)) {
       DrawFn2 = (void (*)(Uint32 *, Uint8 *, int , int , int, int))Fn;
+   } else {
+     return;
    }
+   
 
    
    if(h > hh) {
@@ -365,8 +368,8 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 /*
 *  Virtual VRAM -> Real Surface:
 */
-	 if(bDrawLine[yy] == TRUE){
-	    _prefetch_data_read_l2(&src[yy * 80], ww * sizeof(Uint32));
+	 if(__builtin_expect((bDrawLine[yy] == TRUE), 0)) {
+//	    _prefetch_data_read_l2(&src[yy * 80], ww * sizeof(Uint32));
 	    y2 = (h * yy ) / hh;
 	    y3 = (h * (yy + 1)) / hh;
 	    dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
@@ -405,14 +408,14 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 // # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache, y2, y3, dst)
 #endif
     for(yy = 0 ; yy < hh; yy += 8) {
-       _prefetch_data_read_l2(&src[(yy + 0) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 1) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 2) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 3) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 4) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 5) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 6) * 80], ww * sizeof(Uint32));
-       _prefetch_data_read_l2(&src[(yy + 7) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 0) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 1) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 2) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 3) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 4) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 5) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 6) * 80], ww * sizeof(Uint32));
+//       _prefetch_data_read_l2(&src[(yy + 7) * 80], ww * sizeof(Uint32));
        lcount = 0;
        xcache = 0;
        dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
