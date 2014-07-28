@@ -24,99 +24,69 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
    int yrep3;
    int blank;
    v4hi *b2p;
-   v4hi r1, r2;
-   v4hi *d0;
-   v4hi *b;
+   register v4hi r1, r2;
+   register v4hi *b;
+   v4hi r3v[10 * 80];
+   int ip;
    int pitch2;
 #if AG_BIG_ENDIAN != 1
-   const v4ui bb = {0xff000000, 0xff000000, 0xff000000, 0xff000000};
+   v4ui bb2 = {0xff000000, 0xff000000, 0xff000000, 0xff000000};
 #else
-   const v4ui bb = {0x000000ff, 0x000000ff, 0x000000ff, 0x000000ff};
+   v4ui bb2 = {0x000000ff, 0x000000ff, 0x000000ff, 0x000000ff};
 #endif
      
    if(repeat <= 0) return;
    b = (v4hi *)src;
    b2p = dst;
    pitch2 = pitch / sizeof(v4hi);
-   if((bFullScan) || (repeat < 2)) {
-      v4hi r3, r4, r5, r6, r7;
-      v4hi r8, r9, r10, r11, r12;
+   _prefetch_data_write_l1(r3v, sizeof(r3v));
+   if(__builtin_expect(((bFullScan) || (repeat < 2)), 0)) {
+      ip = 0;
       for(xx = 0; xx < ww; xx += 8) {
-	 b2p = dst;
-	 r1 = *b++;
-	 r2 = *b++;
-	 r3.uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
-	 r4.uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
-	 r5.uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
-	 r6.uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
-	 r7.uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
+	 r1 = b[0];
+	 r2 = b[1];
+	 r3v[ip + 0].uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
+	 r3v[ip + 1].uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
+	 r3v[ip + 2].uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
+	 r3v[ip + 3].uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
+	 r3v[ip + 4].uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
 
-	 r8.uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
-	 r9.uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
-	 r10.uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
-	 r11.uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
-	 r12.uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};  
-	 for(yy = 0; yy < repeat; yy++) {
-	    b2p[0] = r3;
-	    b2p[1] = r4;
-	    b2p[2] = r5;
-	    b2p[3] = r6;
-	    b2p[4] = r7;
-	    b2p[5] = r8;
-	    b2p[6] = r9;
-	    b2p[7] = r10;
-	    b2p[8] = r11;
-	    b2p[9] = r12;
-	    b2p = b2p + pitch2;
-	 }
-	 dst += 10;
-//	 b += 2;
+	 r3v[ip + 5].uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
+	 r3v[ip + 6].uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
+	 r3v[ip + 7].uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
+	 r3v[ip + 8].uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
+	 r3v[ip + 9].uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};
+	 ip += 10;
+	 b += 2;
+      }
+      for(yy = 0; yy < repeat; yy++) {
+	 memcpy(b2p, r3v, ip * sizeof(v4hi));
+	 b2p = b2p + pitch2;
       }
    } else {
-      v4hi r3, r4, r5, r6, r7;
-      v4hi r8, r9, r10, r11, r12;
+      ip = 0;
       for(xx = 0; xx < ww; xx += 8) {
-	 b2p = dst;
-	 r1 = *b++;
-	 r2 = *b++;
+	 r1 = b[0];
+	 r2 = b[1];
+	 r3v[ip + 0].uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
+	 r3v[ip + 1].uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
+	 r3v[ip + 2].uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
+	 r3v[ip + 3].uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
+	 r3v[ip + 4].uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
 
-	 r3.uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
-	 r4.uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
-	 r5.uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
-	 r6.uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
-	 r7.uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
-
-	 r8.uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
-	 r9.uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
-	 r10.uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
-	 r11.uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
-	 r12.uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};  
-	 for(yy = 0; yy < repeat - 1; yy++) {
-	    b2p[0] = r3;
-	    b2p[1] = r4;
-	    b2p[2] = r5;
-	    b2p[3] = r6;
-	    b2p[4] = r7;
-	    b2p[5] = r8;
-	    b2p[6] = r9;
-	    b2p[7] = r10;
-	    b2p[8] = r11;
-	    b2p[9] = r12;
-	    b2p = b2p + pitch2;
-	 }
-	 b2p[0].uv = 
-	 b2p[1].uv = 
-	 b2p[2].uv = 
-	 b2p[3].uv = 
-	 b2p[4].uv = 
-	 b2p[5].uv = 
-	 b2p[6].uv = 
-	 b2p[7].uv = 
-	 b2p[8].uv = 
-	 b2p[9].uv = bb;
-	 dst += 10;
-//	 b += 2;
+	 r3v[ip + 5].uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
+	 r3v[ip + 6].uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
+	 r3v[ip + 7].uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
+	 r3v[ip + 8].uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
+	 r3v[ip + 9].uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};
+	 ip += 10;
+	 b += 2;
       }
+      for(yy = 0; yy < repeat - 1; yy++) {
+	 memcpy(b2p, r3v, ip * sizeof(v4hi));
+	 b2p = b2p + pitch2;
+      }
+      for(xx = 0; xx < ip; xx++) b2p[xx].uv = bb2; 
    }
    
 }
