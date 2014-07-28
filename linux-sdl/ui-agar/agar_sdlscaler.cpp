@@ -386,9 +386,9 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       goto _end1;
    } else { // Block
       if(my->forceredraw != 0){
-	 for(yy = 0; yy < hh; yy += 8) {
-            for(xx = 0; xx < ww; xx +=8 ){
-	       SDLDrawFlag.write[xx >> 3][yy >> 3] = TRUE;
+	 for(yy = 0; yy < (hh >> 3); yy++) {
+            for(xx = 0; xx < (ww >> 3); xx++ ){
+	       SDLDrawFlag.write[xx][yy] = TRUE;
             }
 	 }
 	 my->forceredraw = 0;
@@ -405,21 +405,13 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    AG_SurfaceLock(Surface);
 
 #ifdef _OPENMP
-// # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache, y2, y3, dst)
+ # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache, y2, y3, dst)
 #endif
     for(yy = 0 ; yy < hh; yy += 8) {
-//       _prefetch_data_read_l2(&src[(yy + 0) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 1) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 2) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 3) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 4) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 5) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 6) * 80], ww * sizeof(Uint32));
-//       _prefetch_data_read_l2(&src[(yy + 7) * 80], ww * sizeof(Uint32));
        lcount = 0;
        xcache = 0;
-       dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
-        for(xx = 0; xx < ww; xx += 8) {
+//       dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
+       for(xx = 0; xx < ww; xx += 8) {
 /*
 *  Virtual VRAM -> Real Surface:
 *                disp = (Uint32 *)(pb + xx  * bpp + yy * pitch);
@@ -429,11 +421,11 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 ** // xx,yy = 1scale(not 8)
 */
 //            if(xx >= w) continue;
-	   if(__builtin_expect((SDLDrawFlag.write[xx >> 3][yy >> 3]), 1)) {
+	   if(__builtin_expect((SDLDrawFlag.write[xx >> 3][yy >> 3] != FALSE), 1)) {
 	      lcount += 8;
 	      SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
 	   } else {
-	      if(__builtin_expect((lcount > 0), 0)) {
+	      if(__builtin_expect((lcount != 0), 1)) {
 		 int yy2;
 		 //	      disp = (Uint32 *)pb;
 		 //	      of = (xx *8) + yy * ww;
@@ -445,15 +437,17 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 		    yrep2 = y3 - y2;
 		    if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 		    DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
-		    flag = TRUE;
+		    //flag = TRUE;
 		 }
 	      }
+	      
 	      xcache = xx + 8;
 	      lcount = 0;
 	   }
-	}
+       }
        
-       if(__builtin_expect((lcount > 0), 1)) {
+       
+       if(__builtin_expect((lcount != 0), 1)) {
 	  int yy2;
 	  //	      disp = (Uint32 *)pb;
 	  //	      of = (xx *8) + yy * ww;
@@ -465,7 +459,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	     yrep2 = y3 - y2;
 	     if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 	     DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
-	     flag = TRUE;
+	     //flag = TRUE;
 	  }
        }
 //			if(yy >= h) continue;
