@@ -255,7 +255,7 @@ static void *ThreadSch(void *param)
 		/*
 		 * 実行指示が変化したかチェック
 		 */
-		if (bRunningBak != run_flag) {
+		if (__builtin_expect((bRunningBak != run_flag), 0)) {
 			bRunningBak = run_flag;
 
 #ifdef ROMEO
@@ -270,7 +270,7 @@ static void *ThreadSch(void *param)
 		/*
 		 * 実行指示がなければ、スリープ
 		 */
-		if (!run_flag) {
+		if (__builtin_expect((!run_flag), 0)) {
 
 			/*
 			 * 無音を作ってスリープ
@@ -331,7 +331,7 @@ static void *ThreadSch(void *param)
 			/*
 			 * 時間に余裕があるので、テープ高速モード判定
 			 */
-			if ((!tape_motor || !bTapeFullSpeed) || !bTapeModeType) {
+			if (__builtin_expect(((!tape_motor || !bTapeFullSpeed) || !bTapeModeType), 0)) {
 				dwSleepCount++;
 				if (bFullSpeed
 						|| (tape_motor && bTapeFullSpeed && !bTapeModeType)) {
@@ -368,17 +368,14 @@ static void *ThreadSch(void *param)
 				   struct timespec req, remain;
 				   req.tv_sec = 0;
 				   req.tv_nsec = 100 * 1000; // 0.1ms
-				   while(XM7_timeGetTime() == dwNowTime) {
+				   do {
+				      if(__builtin_expect((XM7_timeGetTime() != dwNowTime), 0)) break;
 				      nanosleep(&req, &remain); // Okay, per 0.1ms.
-				   }
+				   } while(1);
 #endif
 				   continue;
 				}
-			   
 			}
-		   
-		   
-		   
 		   
 			/*
 			 * テープ高速モード
@@ -400,7 +397,7 @@ static void *ThreadSch(void *param)
 		/*
 		 * 自動速度調整
 		 */
-		if (nSpeedCheck >= 200) {
+		if (__builtin_expect((nSpeedCheck >= 200), 0)) {
 			if (bAutoSpeedAdjust) {
 
 				/*
@@ -454,7 +451,7 @@ static void *ThreadSch(void *param)
 		/*
 		 * Break対策
 		 */
-		if (!run_flag) {
+		if (__builtin_expect((!run_flag), 0)) {
 			DrawSch();
 			bDrawVsync = FALSE;
 			nFrameSkip = 0;
@@ -465,7 +462,7 @@ static void *ThreadSch(void *param)
 		/*
 		 * スキップカウンタが規定値以下なら、続けて実行
 		 */
-		if (bAutoSpeedAdjust) {
+		if (__builtin_expect((bAutoSpeedAdjust), 1)) {
 			tmp = (10000 - speed_ratio) / 10;
 
 			/*

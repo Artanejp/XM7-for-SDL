@@ -123,9 +123,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 
 	  LockVram();
 	  ret = cldraw->GetVram(bMode);
-	  UnlockVram();
+//	  SDLDrawFlag.Drawn = FALSE;
           if(ret != CL_SUCCESS) {
 	     SDLDrawFlag.Drawn = FALSE;
+	     UnlockVram();
 	     return;
 	  }
 	  
@@ -144,6 +145,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  SDLDrawFlag.Drawn = FALSE;
+	  UnlockVram();
        } else {
 #endif
 	  LockVram();

@@ -70,10 +70,10 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
    _prefetch_data_write_l1(&SDLDrawFlag, sizeof(SDLDrawFlag));
    _prefetch_data_read_l1(aPlanes, sizeof(Uint32) * 256 * 8 * 12); // 98KB (!), priority = 1.
 
-   if(SDLDrawFlag.DPaletteChanged) { // Palette changed
-//#ifdef _OPENMP
-//       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
-//#endif
+   if(SDLDrawFlag.DPaletteChanged || SDLDrawFlag.APaletteChanged) { // Palette changed
+#ifdef _OPENMP
+       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
+#endif
 	for(yy = (y >> 3); yy < hh ; yy++) {
 	   p = &pp[(xfactor * (yy << 3) + (x >> 3)) << 3];
 	   for(xx = (x >> 3); xx < ww ; xx++) {
@@ -85,6 +85,7 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
 	}
 	SDLDrawFlag.Drawn = TRUE;
 	SDLDrawFlag.DPaletteChanged = FALSE;
+	SDLDrawFlag.APaletteChanged = FALSE;
      } else { // Palette not changed
 //#ifdef _OPENMP
 //       #pragma omp parallel for shared(pp, SDLDrawFlag, hh, ww, mode, xfactor) private(p, xx)
@@ -162,7 +163,7 @@ void PutVram_AG_SP(AG_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 #ifdef _USE_OPENCL
    if((cldraw != NULL) && (GLDrawArea != NULL)){ // Snip builing-viryual-vram if GLCL mode.
 //        bVramUpdateFlag = TRUE;
-        SDLDrawFlag.Drawn = TRUE;
+//        SDLDrawFlag.Drawn = TRUE;
         UnlockVram();
         return;
    }

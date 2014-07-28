@@ -430,6 +430,7 @@ BOOL Select640(void)
     */
    bAnalog = FALSE;
 #endif				/*  */
+   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -470,6 +471,7 @@ BOOL Select400l(void)
     * デジタル/400ラインモード
     */
    bMode = SCR_400LINE;
+   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -502,9 +504,9 @@ BOOL Select320(void)
    pVirtualVramBuilder = &api_vram4096_generic;
 #endif
 
+   Palet320();
    if(nRenderMethod == RENDERING_RASTER) {
       SetDirtyFlag(0, 400, TRUE);
-     // Palet320();
    } else {
       SetDrawFlag(TRUE);
    }
@@ -520,6 +522,7 @@ BOOL Select320(void)
     */
    bAnalog = TRUE;
 #endif				/*  */
+   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -561,6 +564,7 @@ BOOL Select256k()
     * アナログ(26万色)/200ラインモード
     */
    bMode = SCR_262144;
+   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -761,11 +765,6 @@ void FASTCALL SetDirtyFlag(int top, int bottom, BOOL flag)
 		for (y = top; y < bottom; y++) {
 			bDirtyLine[y] = flag;
 		}
-#ifdef _USE_OPENCL
-	   if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
-	      SDLDrawFlag.Drawn = TRUE;
-	   }
-#endif
 	}
 }
 

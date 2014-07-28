@@ -159,8 +159,8 @@ BOOL SelectDraw2(void)
        */
       //AG_DriverClose(drv);
       bClearFlag = TRUE;
-//      SDLDrawFlag.ForcaReDraw = TRUE;
       if(nRenderMethod == RENDERING_RASTER) {
+//	 SDLDrawFlag.Drawn = TRUE;
 	 SetDirtyFlag(0, 400, TRUE);
       } else {
 	 SetDrawFlag(TRUE);
