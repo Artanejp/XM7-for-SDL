@@ -865,6 +865,10 @@ void vram_notify(WORD addr, BYTE dat)
                 nDrawRight = (WORD)(x + 8);
 #endif
         }
+#ifdef _USE_OPENCL
+//       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) SDLDrawFlag.Drawn = TRUE; // OK?
+#endif	   
+	UnlockVram();
 	return;      
    } else {
 	
@@ -920,9 +924,8 @@ void vram_notify(WORD addr, BYTE dat)
         LockVram();
         SDLDrawFlag.read[x][y] = TRUE;
 #ifdef _USE_OPENCL
-       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) SDLDrawFlag.Drawn = TRUE; // OK?
+//       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) SDLDrawFlag.Drawn = TRUE; // OK?
 #endif	   
-        UnlockVram();
 	/*
 	 * 垂直方向更新
 	 */
@@ -970,7 +973,9 @@ void vram_notify(WORD addr, BYTE dat)
 		}
 
 		}
-	}
+        UnlockVram();
+   }
+      
 }
 
 

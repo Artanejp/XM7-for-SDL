@@ -57,12 +57,12 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
    if((bMode == SCR_4096) || (bMode == SCR_262144)) {
-      _prefetch_data_read_l1(rgbAnalogGDI, sizeof(Uint32) * 4096);
+//      _prefetch_data_read_l1(rgbAnalogGDI, sizeof(Uint32) * 4096);
 //      xfactor = 40;
       xfactor = 80;
    } else {
       xfactor = 80;
-      _prefetch_data_read_l1(rgbTTLGDI, sizeof(Uint32) * 8);
+//      _prefetch_data_read_l1(rgbTTLGDI, sizeof(Uint32) * 8);
    }
       
    LockVram();
@@ -158,30 +158,18 @@ void PutVram_AG_SP(AG_Surface *p, int x, int y, int w, int h,  Uint32 mpage)
 
     if((vram_pb == NULL) || (vram_pg == NULL) || (vram_pr == NULL)) return;
     if(pVirtualVramBuilder == NULL) return;
-   
-    LockVram();
-#ifdef _USE_OPENCL
-   if((cldraw != NULL) && (GLDrawArea != NULL)){ // Snip builing-viryual-vram if GLCL mode.
-//        bVramUpdateFlag = TRUE;
-//        SDLDrawFlag.Drawn = TRUE;
-        UnlockVram();
-        return;
-   }
-#endif   
    if(pVram2 == NULL) return;
+   
+   LockVram();
    pp = pVram2;
 
-   if(pp == NULL) {
-      UnlockVram();
-      return;
-   }
    
    if((bClearFlag)) {
       memset(pp, 0x00, 640 * 400 * sizeof(Uint32)); // モードが変更されてるので仮想VRAMクリア
       if(nRenderMethod == RENDERING_RASTER) {
 	 SetDirtyFlag(0, 400, TRUE);
-//	 Palet320();
-//	 Palet640();
+	 Palet320();
+	 Palet640();
       } else {
 	 SetDrawFlag(TRUE);
       }
