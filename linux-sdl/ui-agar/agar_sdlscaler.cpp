@@ -34,6 +34,7 @@ extern "C" { // Define Headers
    extern void pVram2RGB_x4_Line(Uint32 *src,  Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x4.c , raster render.
    extern void pVram2RGB_x45_Line(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x45.c , raster render.
    extern void pVram2RGB_x5_Line(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x5.c , raster render.
+   extern void pVram2RGB_x6_Line(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x6.c , raster render.
 #if defined(USE_SSE2) // scaler/sse2/
    extern void pVram2RGB_x1_Line_SSE2(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x1_sse2.c , raster render
    extern void pVram2RGB_x125_Line_SSE2(Uint32 *src, Uint8 *dst, int x, int xend, int y, int yrep); // scaler_x125_sse2.c , raster render
@@ -45,6 +46,7 @@ extern "C" { // Define Headers
    extern void pVram2RGB_x4_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x4_sse2.c , raster render.
    extern void pVram2RGB_x45_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x45_sse2.c , raster render.
    extern void pVram2RGB_x5_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x5_sse2.c , raster render.
+   extern void pVram2RGB_x6_Line_SSE2(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep); // scaler_x6_sse2.c , raster render.
 #endif
 }
 
@@ -90,8 +92,8 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
     xfactor = w1 % wx0;
     yfactor = h1 % hy0;
     xth = wx0 >> 1;
-    if(iScaleFactor == (w1 / w0) && (pDrawFn2 != NULL)
-      && (w1 == iOldW) && (h1 == iOldH))  return (void *)pDrawFn2;
+    if(__builtin_expect((iScaleFactor == (w1 / w0) && (pDrawFn2 != NULL)
+      && (w1 == iOldW) && (h1 == iOldH)), 1))  return (void *)pDrawFn2;
     iScaleFactor = w1 / w0;
     iOldW = w1;
     iOldH = h1;
@@ -123,6 +125,8 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
 		 DrawFn = pVram2RGB_x25_Line_SSE2;  // x2.5
 	      } else if((w1 > 1360) && (w1 <= 1520)){
 		 DrawFn = pVram2RGB_x225_Line_SSE2; // x2.25
+	      } else if(w1 > 1700){
+		 DrawFn = pVram2RGB_x3_Line_SSE2; // x3
 	      } else if(w1 > 1520){
 		 DrawFn = pVram2RGB_x25_Line_SSE2; // x2.5@1600
 	      } else {
@@ -145,7 +149,7 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
      case 6:
      case 7:
      case 8:
-            DrawFn = pVram2RGB_x5_Line_SSE2;
+            DrawFn = pVram2RGB_x6_Line_SSE2;
             break;
      default:
 	      DrawFn = pVram2RGB_x1_Line_SSE2;
@@ -180,8 +184,8 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
     xfactor = w1 % wx0;
     yfactor = h1 % hy0;
     xth = wx0 >> 1;
-    if(iScaleFactor == (w1 / w0) && (pDrawFn2 != NULL)
-      && (w1 == iOldW) && (h1 == iOldH))  return (void *)pDrawFn2;
+    if(__builtin_expect((iScaleFactor == (w1 / w0) && (pDrawFn2 != NULL)
+      && (w1 == iOldW) && (h1 == iOldH)), 1))  return (void *)pDrawFn2;
     iScaleFactor = w1 / w0;
     iOldW = w1;
     iOldH = h1;
@@ -213,6 +217,8 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
 		 DrawFn = pVram2RGB_x25_Line;  // x2.5
 	      } else if((w1 > 1360) && (w1 <= 1520)){
 		 DrawFn = pVram2RGB_x225_Line; // x2.25
+	      }else if(w1 > 1700){
+		 DrawFn = pVram2RGB_x3_Line; // x3
 	      }else if(w1 > 1520){
 		 DrawFn = pVram2RGB_x25_Line; // x2.5
 	      } else {
@@ -235,7 +241,7 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
      case 6:
      case 7:
      case 8:
-            DrawFn = pVram2RGB_x5_Line;
+            DrawFn = pVram2RGB_x6_Line;
             break;
      default:
 	      DrawFn = pVram2RGB_x1_Line;
@@ -323,7 +329,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
         break;
    }
    Fn = XM7_SDLViewSelectScaler_Line(ww , hh, w, h);
-   if(Fn != NULL) {
+   if(__builtin_expect((Fn != NULL), 1)) {
       DrawFn2 = (void (*)(Uint32 *, Uint8 *, int , int , int, int))Fn;
    }
 
@@ -360,12 +366,12 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 *  Virtual VRAM -> Real Surface:
 */
 	 if(bDrawLine[yy] == TRUE){
-	    _prefetch_data_read_l1(&src[yy * 80], ww);
+	    _prefetch_data_read_l2(&src[yy * 80], ww * sizeof(Uint32));
 	    y2 = (h * yy ) / hh;
 	    y3 = (h * (yy + 1)) / hh;
 	    dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
 	    yrep2 = y3 - y2;
-	    if(yrep2 < 1) yrep2 = 1;
+	    if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 	    DrawFn2(src, dst, 0, ww, yy, yrep2);
 	    bDrawLine[yy] = FALSE;
 	    flag = TRUE;
@@ -399,14 +405,14 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 // # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache, y2, y3, dst)
 #endif
     for(yy = 0 ; yy < hh; yy += 8) {
-       _prefetch_data_read_l1(&src[(yy + 0) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 1) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 2) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 3) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 4) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 5) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 6) * 80], ww);
-       _prefetch_data_read_l1(&src[(yy + 7) * 80], ww);
+       _prefetch_data_read_l2(&src[(yy + 0) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 1) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 2) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 3) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 4) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 5) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 6) * 80], ww * sizeof(Uint32));
+       _prefetch_data_read_l2(&src[(yy + 7) * 80], ww * sizeof(Uint32));
        lcount = 0;
        xcache = 0;
        dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
@@ -420,11 +426,11 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 ** // xx,yy = 1scale(not 8)
 */
 //            if(xx >= w) continue;
-	   if(SDLDrawFlag.write[xx >> 3][yy >> 3]) {
+	   if(__builtin_expect((SDLDrawFlag.write[xx >> 3][yy >> 3]), 1)) {
 	      lcount += 8;
 	      SDLDrawFlag.write[xx >> 3][yy >> 3] = FALSE;
 	   } else {
-	      if(lcount > 0) {
+	      if(__builtin_expect((lcount > 0), 0)) {
 		 int yy2;
 		 //	      disp = (Uint32 *)pb;
 		 //	      of = (xx *8) + yy * ww;
@@ -434,7 +440,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 		    y3 = (h * (yy + yy2 + 1)) / hh;
 		    dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
 		    yrep2 = y3 - y2;
-		    if(yrep2 < 1) yrep2 = 1;
+		    if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 		    DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
 		    flag = TRUE;
 		 }
@@ -444,7 +450,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	   }
 	}
        
-       if(lcount > 0) {
+       if(__builtin_expect((lcount > 0), 1)) {
 	  int yy2;
 	  //	      disp = (Uint32 *)pb;
 	  //	      of = (xx *8) + yy * ww;
@@ -454,7 +460,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	     y3 = (h * (yy + yy2 + 1)) / hh;
 	     dst = (Uint8 *)(Surface->pixels + Surface->pitch * y2);
 	     yrep2 = y3 - y2;
-	     if(yrep2 < 1) yrep2 = 1;
+	     if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 	     DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
 	     flag = TRUE;
 	  }

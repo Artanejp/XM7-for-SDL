@@ -20,6 +20,7 @@
 #endif
 
 #include "agar_sdlview.h"
+#include "cache_wrapper.h"
 #include <SDL/SDL.h>
 #ifdef _OPENMP
 #include <omp.h>
@@ -48,7 +49,7 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
 
    /* Attach the object to the parent (no-op if parent is NULL) */
    AG_ObjectAttach(parent, my);
-   if(src != NULL) {
+   if(__builtin_expect((src != NULL), 1)) {
       AG_ObjectLock(my);
       my->Surface = src;
       my->mySurface = AG_WidgetMapSurface(my, src);
@@ -279,10 +280,10 @@ static void Draw(void *p)
     */
 
    /* Blit the mapped surface at [0,0]. */
+   _prefetch_data_read_l2(my->Surface->pixels, sizeof(my->Surface->pixels));
    if(my->mySurface != -1) {
       if(AG_UsingGL(NULL) != 0) {
 	 AG_WidgetBlit(my, my->Surface, 0, 0);
-//	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
       } else {
 //	 AG_BeginRendering(my->_inherit.drv);
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
