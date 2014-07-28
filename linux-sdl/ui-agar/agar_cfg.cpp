@@ -443,85 +443,6 @@ void LoadCfg(void)
     configdat.bUseOpenCL = LoadCfgBool("UseOpenCL", 0);
     configdat.bUseSIMD   = LoadCfgBool("UseSIMD", 0);
 
-    /*
-    * ASPECT比追加
-    */
-    configdat.nAspect = LoadCfgInt("Aspect", nAspect43);
-    if(nAspect < 0) {
-    	nAspect = 0;
-    }
-    if(nAspect > nAspectFree) {
-    	nAspect = nAspectFree;
-    }
-    /*
-     * ここで、縦横比率からASPECT比割り出す
-     */
-    switch(configdat.uWidth){
-    case 320:
-    	if(configdat.uHeight == 200) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 240) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 640:
-    	if(configdat.uHeight == 400) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 480) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 800:
-    	if(configdat.uHeight == 500) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 600) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 1024:
-    	if(configdat.uHeight == 640) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 768) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 1280:
-    	if(configdat.uHeight == 800) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 960) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 1440:
-    	if(configdat.uHeight == 900) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 1080) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 1600:
-    	if(configdat.uHeight == 1000) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 1200) {
-    		configdat.nAspect = nAspect43;
-    	}
-       break;
-    case 1920:
-    	if(configdat.uHeight == 1200) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 1440) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    }
     configdat.bSmoosing = LoadCfgBool("SMOOSING", 1);
     configdat.nRenderMethod = LoadCfgInt("RENDER", RENDERING_BLOCK);
     if(configdat.nRenderMethod < RENDERING_FULL) configdat.nRenderMethod = RENDERING_FULL;
@@ -733,80 +654,6 @@ void SaveCfg(void)
     SaveCfgBool("UseSIMD"  , configdat.bUseSIMD);
     SaveCfgInt("Brightness", configdat.nBrightness);
     SaveCfgInt("EmuFPS", configdat.nEmuFPS);
-    /*
-    * ASPECT比追加
-    */
-    /*
-     * ここで、縦横比率からASPECT比割り出す
-     */
-    switch(configdat.uWidth){
-    case 320:
-    	if(configdat.uHeight == 200) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 240) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 640:
-    	if(configdat.uHeight == 400) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 480) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 800:
-    	if(configdat.uHeight == 500) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 600) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 1024:
-    	if(configdat.uHeight == 640) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 768) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-    case 1280:
-    	if(configdat.uHeight == 800) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 960) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-           case 1440:
-    	if(configdat.uHeight == 900) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 1080) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-     case 1600:
-    	if(configdat.uHeight == 1000) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 1200) {
-    		configdat.nAspect = nAspect43;
-    	}
-       break;
-    case 1920:
-    	if(configdat.uHeight == 1200) {
-    		configdat.nAspect = nAspect11;
-    	}
-    	if(configdat.uHeight == 1440) {
-    		configdat.nAspect = nAspect43;
-    	}
-    	break;
-
-    }
-    SaveCfgInt("Aspect", configdat.nAspect);
     SaveCfgBool("SMOOSING", configdat.bSmoosing);
     SaveCfgInt("RENDER", configdat.nRenderMethod);
 
@@ -943,7 +790,6 @@ void ApplyCfg(void)
     nDrawWidth = configdat.uWidth;
     nDrawFPS = configdat.nDrawFPS;
     nEmuFPS = configdat.nEmuFPS;
-    nAspect = configdat.nAspect;
 #ifdef _USE_OPENCL
     bUseOpenCL = configdat.bUseOpenCL;
 #endif

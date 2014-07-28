@@ -89,7 +89,6 @@ typedef struct {
 	WORD uHeight;	/* 表示サイズ(縦) */
 	WORD nDrawFPS; /* 描画FPS */
 	WORD nEmuFPS;    /* エミュレーションFPS */
-	WORD nAspect; /* アスペクト比 */
         WORD nBrightness; /* 明度(0-255) */
 	BOOL bUseOpenCL; /* OpenCLレンダラ(GLのみ?) */
 	BOOL bUseSIMD;   /* 描画等にSIMDを使う */

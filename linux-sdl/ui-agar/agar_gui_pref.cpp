@@ -52,7 +52,6 @@ static int EmuVMTypeSelected;
 static int EmuCyclestealMode;
 
 static int ScreenResoSelected;
-static int ScreenAspectSelected;
 
 static void OnConfigApply(AG_Event *event)
 {
@@ -255,32 +254,19 @@ static const char *ScreenSizeName[] =
 		"640x480",
 		"800x500",
 		"800x600",
-		"1024x768",
+		"960x600",
+		"960x720",
 		"1280x800",
 		"1280x960",
                 "1440x900",
                 "1440x1080",
 		"1600x1000",
                 "1600x1200",
+                "1920x1200",
+                "1920x1440",
 		NULL
 };
 
-enum ScreenSizeVal
-{
-		SC_320x200 = 0,
-		SC_320x240,
-		SC_640x400,
-		SC_640x480,
-		SC_800x500,
-		SC_800x600,
-		SC_1024x768,
-		SC_1280x800,
-		SC_1280x960,
-                SC_1440x900,
-                SC_1440x1080,
-                SC_1600x1000,
-                SC_1600x1200,
-};
 
 static const WORD ScreenSizeWidth[] = {
 		320,
@@ -289,13 +275,16 @@ static const WORD ScreenSizeWidth[] = {
 		640,
 		800,
 		800,
-		1024,
+		960,
+		960,
 		1280,
 		1280,
                 1440,
                 1440,
                 1600,
-                1600
+                1600,
+                1920,
+                1920
 };
 
 static const WORD ScreenSizeHeight[] = {
@@ -305,21 +294,16 @@ static const WORD ScreenSizeHeight[] = {
 		480,
 		500,
 		600,
-		768,
+		600,
+                720,
 		800,
 		960,
                 900,
                 1080,
                 1000,
                 1200,
-                1200
-};
-static const char *ScreenAspectName[] =
-{
-		"1:1",
-		"4:3",
-		"Free",
-		NULL
+                1200,
+                1440
 };
 
 static void OnChangeScreenReso(AG_Event *event)
@@ -337,36 +321,6 @@ static void OnChangeScreenReso(AG_Event *event)
         AG_SetVideoResizeCallback(ResizeWindow_Agar);
 }
 
-static void OnChangeScreenAspect(AG_Event *event)
-{
-	int number = AG_INT(1);
-	ScreenAspectSelected = number;
-	if(ScreenAspectSelected < 0) {
-		ScreenAspectSelected = 0;
-	}
-	if(ScreenAspectSelected > nAspectFree) {
-		ScreenAspectSelected = nAspectFree;
-	}
-	switch(ScreenAspectSelected){
-	case nAspect11:
-		if(localconfig.uWidth > localconfig.uHeight) {
-			localconfig.uHeight = (localconfig.uWidth * 5) / 8;
-		} else {
-			localconfig.uWidth = (localconfig.uHeight * 8) / 5;
-		}
-		break;
-	case nAspect43:
-		if(localconfig.uWidth > localconfig.uHeight) {
-			localconfig.uHeight = (localconfig.uWidth * 6) / 8;
-		} else {
-			localconfig.uWidth = (localconfig.uHeight * 8) / 6;
-		}
-		break;
-	}
-        AG_SetVideoResizeCallback(NULL);
-	ResizeWindow_Agar2(localconfig.uWidth, localconfig.uHeight);
-        AG_SetVideoResizeCallback(ResizeWindow_Agar);
-}
 
 static void RenderMethodSelected(AG_Event *event)
 {
@@ -409,7 +363,6 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_VFILL);
 	{
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenSizeName, OnChangeScreenReso, NULL);
-		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenAspectName, OnChangeScreenAspect, NULL);
 		AG_BindInt(radio, "value",&ScreenResoSelected);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
 //		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Display rate"), &localconfig.nDrawFPS);
@@ -493,7 +446,7 @@ void OnConfigEmulationMenu(AG_Event *event)
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
-	AG_WindowSetMinSize(win, 320, 240);
+//	AG_WindowSetMinSize(win, 320, 240);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
@@ -636,7 +589,7 @@ void OnConfigInputMenu(AG_Event *event)
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
-	AG_WindowSetMinSize(win, 320, 240);
+//	AG_WindowSetMinSize(win, 320, 240);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
@@ -828,7 +781,7 @@ void OnConfigSoundMenu(AG_Event *event)
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
-	AG_WindowSetMinSize(win, 320, 240);
+//	AG_WindowSetMinSize(win, 320, 240);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*

@@ -52,12 +52,6 @@ struct DrawPieces {
     BOOL APaletteChanged;
     BOOL ForcaReDraw;
 } ;
-/* アスペクト */
-enum {
-	nAspect43 = 0, /* 4:3 */
-	nAspect11, /* 1:1 */
-	nAspectFree
-};
 
 /*
  * グローバル変数
@@ -88,7 +82,6 @@ extern BOOL            bClearFlag;
 extern int             nOldVideoMode;
 extern WORD			nDrawFPS;   /* FPS値 20100913 */
 extern WORD        nEmuFPS; /* エミュレーションFPS 20110123 */
-extern WORD        nAspect; /* ASPECT比 20110123 */
 extern BOOL bUseOpenGL; /* OPENGLを描画に使う */
 extern BOOL bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
 extern 	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */

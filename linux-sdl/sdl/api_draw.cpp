@@ -67,7 +67,6 @@ extern "C" {
    int             nOldVideoMode;
    WORD			nDrawFPS;   /* FPS値 20100913 */
    WORD 			nEmuFPS; /* エミュレーションFPS値 20110123 */
-   WORD 			nAspect;  /* アスペクト比 20110123 */
    BOOL			bSyncToVSYNC; /* VSYNC同期(OpenGLのみ) */
    BOOL 			bSmoosing; /* スムージング処理する(GLのみ?) */
    BOOL            bOldFullScan;	/* クリアフラグ(過去) */
@@ -274,7 +273,6 @@ void	InitDraw(void)
 		nDrawWidth = 640;
 		nDrawFPS = 25;
 		nEmuFPS = 20;
-		nAspect = nAspectFree;
 		bSyncToVSYNC = TRUE;
 		bSmoosing = FALSE;
 
