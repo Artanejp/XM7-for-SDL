@@ -20,7 +20,8 @@ COMMONSRC = \
 	scaler_x3.c \
 	scaler_x4.c \
 	scaler_x45.c \
-	scaler_x5.c
+	scaler_x5.c \
+	scaler_x6.c
 
 
 .SUFFIXES: .c .cpp .asm .o
