@@ -401,7 +401,7 @@ BOOL Select640(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 640;
-   //bPaletFlag = TRUE;
+   bPaletFlag = TRUE;
    Palet640();
    
 #if defined(USE_SSE2)
@@ -450,7 +450,7 @@ BOOL Select400l(void)
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
-   //bPaletFlag = TRUE;
+   bPaletFlag = TRUE;
    Palet640();
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
@@ -493,7 +493,7 @@ BOOL Select320(void)
    nDrawLeft = 0;
    nDrawRight = 320;
    bPaletFlag = TRUE;
-   //Palet320();
+   
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram4096_sse2;
@@ -542,7 +542,7 @@ BOOL Select256k()
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 320;
-   //bPaletFlag = TRUE;
+   bPaletFlag = TRUE;
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram256k_sse2;
@@ -993,10 +993,13 @@ void	ttlpalet_notify(void)
       bNextFrameRender = TRUE;
       SetDirtyFlag(now_raster, 400, TRUE);
       SDLDrawFlag.DPaletteChanged = TRUE; // Palette changed
-      Palet640();
+      if(SDLDrawFlag.Drawn != TRUE) Palet640();
+      SDLDrawFlag.Drawn = TRUE; // Palette changed
    } else {
       SetDrawFlag(TRUE);
       SDLDrawFlag.DPaletteChanged = TRUE; // Palette changed
+      if(SDLDrawFlag.Drawn != TRUE) Palet640();
+      SDLDrawFlag.Drawn = TRUE; // Palette changed
    }
    bPaletFlag = TRUE;
    UnlockVram();
@@ -1012,10 +1015,13 @@ void 	apalet_notify(void)
       bNextFrameRender = TRUE;
       SetDirtyFlag(now_raster, 400, TRUE);
       SDLDrawFlag.APaletteChanged = TRUE; // Palette changed
-    //  Palet320();
+      if(SDLDrawFlag.Drawn != TRUE) Palet320();
+      SDLDrawFlag.Drawn = TRUE; // Palette changed
    } else {
       SetDrawFlag(TRUE);
+      if(SDLDrawFlag.Drawn != TRUE) Palet320();
       SDLDrawFlag.APaletteChanged = TRUE; // Palette changed
+      SDLDrawFlag.Drawn = TRUE; // Palette changed
    }
    bPaletFlag = TRUE;
    UnlockVram();
@@ -1037,15 +1043,16 @@ void 	display_notify(void)
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
-   bPaletFlag = TRUE;
+   //bPaletFlag = TRUE;
    if (nRenderMethod == RENDERING_RASTER) {
 	bNextFrameRender = TRUE;
 //	SetDirtyFlag(0, 400, TRUE);
-        if(bPaletFlag) {
+//        if(bPaletFlag) {
 	   Palet640();
 	   Palet320();
 	   bPaletFlag = FALSE;
-	}
+	   SDLDrawFlag.Drawn = TRUE; // Palette changed
+//	}
       
 	if (!run_flag) {
 		raster = now_raster;
@@ -1444,7 +1451,7 @@ void Draw640All(void)
     */
    if(bPaletFlag) { // 描画モードでVRAM変更
       LockVram();
-      Palet640();
+//      Palet640();
       bPaletFlag = FALSE;
       nDrawTop = 0;
       nDrawBottom = 400;
@@ -1452,6 +1459,16 @@ void Draw640All(void)
       nDrawRight = 640;
       SetDrawFlag(TRUE);
       UnlockVram();
+   }
+   if(SDLDrawFlag.APaletteChanged) {
+	 Palet320();
+         SDLDrawFlag.APaletteChanged = FALSE;
+         bPaletFlag = TRUE;
+   }
+   if(SDLDrawFlag.DPaletteChanged) {
+	 Palet640();
+         SDLDrawFlag.DPaletteChanged = FALSE;
+         bPaletFlag = TRUE;
    }
    /*
     * クリア処理
@@ -1529,10 +1546,19 @@ void Draw_1Line(int line)
    bDirtyLine[line] = FALSE;
    if(pp == NULL) return;
    if(bPaletFlag) {
-	Palet320();
-        Palet640();
+//	Palet320();
+//        Palet640();
         bPaletFlag = FALSE;
    }
+   if(SDLDrawFlag.APaletteChanged) {
+	 Palet320();
+         SDLDrawFlag.APaletteChanged = FALSE;
+   }
+   if(SDLDrawFlag.DPaletteChanged) {
+	 Palet640();
+         SDLDrawFlag.DPaletteChanged = FALSE;
+   }
+
    
    switch(bMode) {
     case SCR_200LINE:
@@ -1570,6 +1596,7 @@ void Draw_1Line(int line)
 #ifdef _USE_OPENCL
    if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
       SDLDrawFlag.Drawn = TRUE;
+      bDrawLine[line] = TRUE;
       return;
    }
 #endif
@@ -1623,9 +1650,19 @@ void Draw400l(void)
    /*
     * パレット設定
     */
+   if(SDLDrawFlag.APaletteChanged) {
+	 Palet320();
+         SDLDrawFlag.APaletteChanged = FALSE;
+         bPaletFlag = TRUE;
+   }
+   if(SDLDrawFlag.DPaletteChanged) {
+	 Palet640();
+         SDLDrawFlag.DPaletteChanged = FALSE;
+         bPaletFlag = TRUE;
+   }
    if (bPaletFlag) {
       LockVram();
-      Palet640();
+//      Palet640();
       nDrawTop = 0;
       nDrawBottom = 400;
       nDrawLeft = 0;
@@ -1715,15 +1752,25 @@ void Draw320(void)
    /*
     * パレット設定
     */
-    PutVramFunc = &PutVram_AG_SP;
+   PutVramFunc = &PutVram_AG_SP;
+   if(SDLDrawFlag.APaletteChanged) {
+	 Palet320();
+         SDLDrawFlag.APaletteChanged = FALSE;
+         bPaletFlag = TRUE;
+   }
+   if(SDLDrawFlag.DPaletteChanged) {
+	 Palet640();
+         SDLDrawFlag.DPaletteChanged = FALSE;
+         bPaletFlag = TRUE;
+   }
    if(bPaletFlag) {
       LockVram();
-      Palet320();
+//      Palet320();
       nDrawTop = 0;
       nDrawBottom = 200;
       nDrawLeft = 0;
       nDrawRight = 320;
-      SDLDrawFlag.APaletteChanged = TRUE;
+//      SDLDrawFlag.APaletteChanged = TRUE;
       SetDrawFlag(TRUE);
       bPaletFlag = FALSE;
       UnlockVram();
@@ -1823,6 +1870,16 @@ void Draw256k(void)
     */
    if (bClearFlag) {
       AllClear();
+   }
+   if(SDLDrawFlag.APaletteChanged) {
+	 Palet320();
+         SDLDrawFlag.APaletteChanged = FALSE;
+//         bPaletFlag = TRUE;
+   }
+   if(SDLDrawFlag.DPaletteChanged) {
+	 Palet640();
+         SDLDrawFlag.DPaletteChanged = FALSE;
+//         bPaletFlag = TRUE;
    }
    
    /*

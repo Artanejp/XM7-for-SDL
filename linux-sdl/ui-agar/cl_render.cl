@@ -41,7 +41,8 @@ inline uint8 putpixel(uint8 n, uint8 abuf)
 }
 
 __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
-                       __global uint *pal, __global uint *table)
+                       __global uint *pal, __global uint *table,
+		       int multithread)
 {
   int ofset = 0x4000;
   int x;
@@ -65,18 +66,23 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   __global uchar *src_g;
   __global uchar *src_b;
 
-  t = get_global_size(0);
-  gid = get_global_id(0);
-  
-  
   ww = w >> 3;
-  col = ww * h;
-  pbegin = (gid * col) / t; 
-  pb1 = ((gid + 1) * col) / t;
-  if(pb1 > col) {
-     ww = col - pbegin;
+  if(multithread != 0){
+      t = get_global_size(0);
+      gid = get_global_id(0);
+      col = ww * h;
+      pbegin = (gid * col) / t; 
+      pb1 = ((gid + 1) * col) / t;
+      if(pb1 > col) {
+         ww = col - pbegin;
+      } else {
+         ww = pb1 - pbegin;
+      }
+      addr = pbegin; 
+      addr2 = pbegin << 3;
   } else {
-     ww = pb1 - pbegin;
+      addr = addr2 = 0;
+      ww = ww * h;
   }
   
   addr = pbegin; 
@@ -125,7 +131,8 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
 
 __kernel void getvram4096(__global uchar *src, int w, int h, 
                           __global uchar4 *out, __global uint *pal,
-			  __global uint *table)
+			  __global uint *table,
+			  int multithread)
 {
   int ofset = 0x8000;
   int x;
@@ -151,17 +158,24 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   tbl8 = (__global uint8 *)table;
 
 
-  t = get_global_size(0);
-  gid = get_global_id(0);
 
   ww = w >> 3;
-  col = ww * h;
-  pbegin = (gid * col) / t; 
-  pb1 = ((gid + 1) * col) / t;
-  if(pb1 > col) {
-     ww = col - pbegin;
+  if(multithread != 0){
+      t = get_global_size(0);
+      gid = get_global_id(0);
+      col = ww * h;
+      pbegin = (gid * col) / t; 
+      pb1 = ((gid + 1) * col) / t;
+      if(pb1 > col) {
+         ww = col - pbegin;
+      } else {
+         ww = pb1 - pbegin;
+      }
+      addr = pbegin; 
+      addr2 = pbegin << 3;
   } else {
-     ww = pb1 - pbegin;
+      addr = addr2 = 0;
+      ww = ww * h;
   }
   
   addr = pbegin; 
@@ -227,7 +241,8 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	
 __kernel void getvram256k(__global uchar *src, int w, int h, 
                           __global uchar4 *out, __global uint *pal,
-			  __global uint *table, uint mpage)
+			  __global uint *table, uint mpage,
+			  int multithread)
 {
   int ofset = 0xc000;
   int x;
@@ -252,22 +267,27 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   uint col;
   uint pbegin, pb1;
 
-  t = get_global_size(0);
-  gid = get_global_id(0);
 
   
   ww = w >> 3;
-  col = ww * h;
-  pbegin = (gid * col) / t; 
-  pb1 = ((gid + 1) * col) / t;
-  if(pb1 > col) {
-     ww = col - pbegin;
+  if(multithread != 0){
+      t = get_global_size(0);
+      gid = get_global_id(0);
+      col = ww * h;
+      pbegin = (gid * col) / t; 
+      pb1 = ((gid + 1) * col) / t;
+      if(pb1 > col) {
+         ww = col - pbegin;
+      } else {
+         ww = pb1 - pbegin;
+      }
+      addr = pbegin; 
+      addr2 = pbegin << 3;
   } else {
-     ww = pb1 - pbegin;
+      addr = addr2 = 0;
+      ww = ww * h;
   }
   
-  addr = pbegin; 
-  addr2 = pbegin << 3;
   p8 = (__global uint8 *)(&(out[addr2]));
   src = &src[addr];
   prefetch(&src[0], ww);

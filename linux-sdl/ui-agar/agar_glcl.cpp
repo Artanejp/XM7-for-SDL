@@ -561,6 +561,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
       ret |= window_copy8_400l();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
@@ -577,6 +578,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
       ret |= window_copy8();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
@@ -594,6 +596,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&mpage);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&bCLSparse);
       ret |= copy256ksub(0, 0, 320, 200, 320, 200, mpage);
       break;
     case SCR_4096:
@@ -607,6 +610,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
       ret |= window_copy4096();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_FALSE, 0,
                               4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
