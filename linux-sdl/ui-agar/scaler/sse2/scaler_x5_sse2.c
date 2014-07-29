@@ -45,20 +45,22 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
       for(xx = 0; xx < ww; xx += 8) {
 	 r1 = b[0];
 	 r2 = b[1];
-	 r3v[ip + 0].uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
-	 r3v[ip + 1].uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
-	 r3v[ip + 2].uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
-	 r3v[ip + 3].uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
-	 r3v[ip + 4].uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
+	 r3v[ip + 0].uv  = __builtin_ia32_pshufd(r1.uv, 0b00000000); // 0000
+	 r3v[ip + 1].uv  = __builtin_ia32_pshufd(r1.uv, 0b01010100); // 0111
+	 r3v[ip + 2].uv  = __builtin_ia32_pshufd(r1.uv, 0b10100101); // 1122
+	 r3v[ip + 3].uv  = __builtin_ia32_pshufd(r1.uv, 0b11101010); // 2223
+	 r3v[ip + 4].uv  = __builtin_ia32_pshufd(r1.uv, 0b11111111); // 3333
 
-	 r3v[ip + 5].uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
-	 r3v[ip + 6].uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
-	 r3v[ip + 7].uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
-	 r3v[ip + 8].uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
-	 r3v[ip + 9].uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};
+	 r3v[ip + 5].uv  = __builtin_ia32_pshufd(r2.uv, 0b00000000); // 0000
+	 r3v[ip + 6].uv  = __builtin_ia32_pshufd(r2.uv, 0b01010100); // 0111
+	 r3v[ip + 7].uv  = __builtin_ia32_pshufd(r2.uv, 0b10100101); // 1122
+	 r3v[ip + 8].uv  = __builtin_ia32_pshufd(r2.uv, 0b11101010); // 2223
+	 r3v[ip + 9].uv  = __builtin_ia32_pshufd(r2.uv, 0b11111111); // 3333
+
 	 ip += 10;
 	 b += 2;
       }
+      _prefetch_data_read_l1(r3v, sizeof(r3v));
       for(yy = 0; yy < repeat; yy++) {
 	 memcpy(b2p, r3v, ip * sizeof(v4hi));
 	 b2p = b2p + pitch2;
@@ -68,20 +70,32 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
       for(xx = 0; xx < ww; xx += 8) {
 	 r1 = b[0];
 	 r2 = b[1];
-	 r3v[ip + 0].uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
-	 r3v[ip + 1].uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
-	 r3v[ip + 2].uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
-	 r3v[ip + 3].uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
-	 r3v[ip + 4].uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
+//	 r3v[ip + 0].uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
+//	 r3v[ip + 1].uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
+//	 r3v[ip + 2].uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
+//	 r3v[ip + 3].uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
+//	 r3v[ip + 4].uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
 
-	 r3v[ip + 5].uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
-	 r3v[ip + 6].uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
-	 r3v[ip + 7].uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
-	 r3v[ip + 8].uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
-	 r3v[ip + 9].uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};
+//	 r3v[ip + 5].uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
+//	 r3v[ip + 6].uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
+//	 r3v[ip + 7].uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
+//	 r3v[ip + 8].uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
+//	 r3v[ip + 9].uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};
+	 r3v[ip + 0].uv  = __builtin_ia32_pshufd(r1.uv, 0b00000000); // 0000
+	 r3v[ip + 1].uv  = __builtin_ia32_pshufd(r1.uv, 0b01010100); // 0111
+	 r3v[ip + 2].uv  = __builtin_ia32_pshufd(r1.uv, 0b10100101); // 1122
+	 r3v[ip + 3].uv  = __builtin_ia32_pshufd(r1.uv, 0b11101010); // 2223
+	 r3v[ip + 4].uv  = __builtin_ia32_pshufd(r1.uv, 0b11111111); // 3333
+
+	 r3v[ip + 5].uv  = __builtin_ia32_pshufd(r2.uv, 0b00000000); // 0000
+	 r3v[ip + 6].uv  = __builtin_ia32_pshufd(r2.uv, 0b01010100); // 0111
+	 r3v[ip + 7].uv  = __builtin_ia32_pshufd(r2.uv, 0b10100101); // 1122
+	 r3v[ip + 8].uv  = __builtin_ia32_pshufd(r2.uv, 0b11101010); // 2223
+	 r3v[ip + 9].uv  = __builtin_ia32_pshufd(r2.uv, 0b11111111); // 3333
 	 ip += 10;
 	 b += 2;
       }
+      _prefetch_data_read_l1(r3v, sizeof(r3v));
       for(yy = 0; yy < repeat - 1; yy++) {
 	 memcpy(b2p, r3v, ip * sizeof(v4hi));
 	 b2p = b2p + pitch2;
