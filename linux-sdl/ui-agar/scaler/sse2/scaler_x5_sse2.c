@@ -70,17 +70,6 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
       for(xx = 0; xx < ww; xx += 8) {
 	 r1 = b[0];
 	 r2 = b[1];
-//	 r3v[ip + 0].uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[0]};  
-//	 r3v[ip + 1].uv  = (v4ui){r1.i[0], r1.i[1], r1.i[1], r1.i[1]};  
-//	 r3v[ip + 2].uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
-//	 r3v[ip + 3].uv  = (v4ui){r1.i[2], r1.i[2], r1.i[2], r1.i[3]};  
-//	 r3v[ip + 4].uv  = (v4ui){r1.i[3], r1.i[3], r1.i[3], r1.i[3]};  
-
-//	 r3v[ip + 5].uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[0]};  
-//	 r3v[ip + 6].uv  = (v4ui){r2.i[0], r2.i[1], r2.i[1], r2.i[1]};  
-//	 r3v[ip + 7].uv = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
-//	 r3v[ip + 8].uv = (v4ui){r2.i[2], r2.i[2], r2.i[2], r2.i[3]};  
-//	 r3v[ip + 9].uv = (v4ui){r2.i[3], r2.i[3], r2.i[3], r2.i[3]};
 	 r3v[ip + 0].uv  = __builtin_ia32_pshufd(r1.uv, 0b00000000); // 0000
 	 r3v[ip + 1].uv  = __builtin_ia32_pshufd(r1.uv, 0b01010100); // 0111
 	 r3v[ip + 2].uv  = __builtin_ia32_pshufd(r1.uv, 0b10100101); // 1122

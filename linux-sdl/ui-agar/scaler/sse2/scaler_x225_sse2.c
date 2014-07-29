@@ -24,67 +24,81 @@ static void Scaler_DrawLine(Uint32 *dst, Uint32 *src, int ww, int repeat, int pi
    int yrep2;
    int yrep3;
    int blank;
-   Uint32 *b2p;
-   v4hi r1, r2;
+   v2hi *b2p;
+   register v2hi r1, r2, r3, r4;
+   v2hi r5v[(640 * 9) / 8 + 1];
    v4hi *d0;
-   v4hi *b;
+   register v2hi *b;
    int pitch2;
+   int ip = 0;
 #if AG_BIG_ENDIAN != 1
-   const Uint32 bb = 0xff000000;
+   const v2ui bb = (v2ui){0xff000000, 0xff000000};
 #else
-   const Uint32 bb = 0x000000ff;
+   const v2ui bb = (v2ui){0x000000ff, 0x000000ff};
 #endif
      
    if(repeat <= 0) return;
-   b = (v4hi *)src;
-   b2p = (Uint32 *)dst;
-   pitch2 = pitch / sizeof(Uint32);
+   b = (v2hi *)src;
+   pitch2 = pitch / sizeof(v2hi);
+
+   _prefetch_data_write_l1(r5v, sizeof(r5v));
    if((bFullScan) || (repeat < 2)) {
-      for(xx = 0; xx < ww; xx += 8) {
-	 b2p = (Uint32 *)dst;
-	 r1 = *b++;
-	 r2 = *b++;
 	 // 76543210 -> 776655444332211000
-	 for(yy = 0; yy < repeat; yy++) {
-	       b2p[0] = b2p[1] = b2p[2] = r1.i[0];
-	       b2p[3] = b2p[4] = r1.i[1];
-	       b2p[5] = b2p[6] = r1.i[2];
-	       b2p[7] = b2p[8] = r1.i[3];
-	       b2p[9] = b2p[10] = b2p[11] = r2.i[0];
-	       b2p[12] = b2p[13] = r2.i[1];
-	       b2p[14] = b2p[15] = r2.i[2];
-	       b2p[16] = b2p[17] = r2.i[3];
-	       b2p = b2p + pitch2;
-	 }
-	 dst = dst + 18;
-//	 b += 2;
+      for(xx = 0; xx < ww; xx += 8) {
+	 r1 = b[0];
+	 r2 = b[1];
+	 r3 = b[2];
+	 r4 = b[3];
+	 r5v[ip + 0].uv = (v2ui){r1.i[0], r1.i[0]}; //00
+	 r5v[ip + 1].uv = (v2ui){r1.i[0], r1.i[1]}; //01
+	 
+	 r5v[ip + 2].uv = (v2ui){r1.i[1], r2.i[0]}; //12
+	 r5v[ip + 3].uv = (v2ui){r2.i[0], r2.i[1]}; //23
+	 
+	 r5v[ip + 4].uv = (v2ui){r2.i[1], r3.i[0]}; //34
+	 r5v[ip + 5].uv = (v2ui){r3.i[0], r3.i[0]}; //44
+	 r5v[ip + 6].uv = (v2ui){r3.i[1], r3.i[1]}; //55
+
+	 r5v[ip + 7].uv = (v2ui){r4.i[0], r4.i[0]}; //66
+	 r5v[ip + 8].uv = (v2ui){r4.i[1], r4.i[1]}; //77	 
+	 ip += 9;
+	 b += 4;
+      }
+      b2p = (v2hi *)dst;      
+      _prefetch_data_read_l1(r5v, sizeof(r5v));
+      for(yy = 0; yy < repeat; yy++) {
+	 memcpy((void *)b2p, (void *)r5v, ip * sizeof(v2hi));
+	 b2p = b2p + pitch2;
       }
    } else {
-      for(xx = 0; xx < ww; xx += 8) {
-	 b2p = (Uint32 *)dst;
-	 r1 = *b++;
-	 r2 = *b++;
 	 // 76543210 -> 776655444332211000
-	 for(yy = 0; yy < repeat - 1; yy++) {
-	       b2p[0] = b2p[1] = b2p[2] = r1.i[0];
-	       b2p[3] = b2p[4] = r1.i[1];
-	       b2p[5] = b2p[6] = r1.i[2];
-	       b2p[7] = b2p[8] = r1.i[3];
-	       b2p[9] = b2p[10] = b2p[11] = r2.i[0];
-	       b2p[12] = b2p[13] = r2.i[1];
-	       b2p[14] = b2p[15] = r2.i[2];
-	       b2p[16] = b2p[17] = r2.i[3];
-	       b2p = b2p + pitch2;
-	 }
-	 b2p[0] = b2p[1] = b2p[2] = b2p[3] =
-	 b2p[4] = b2p[5] = b2p[6] = b2p[7] =
-	 b2p[8] = b2p[9] =
-	 b2p[10] = b2p[11] = b2p[12] = b2p[13] =
-	 b2p[14] = b2p[15] = b2p[16] = b2p[17] =
-	   bb;
-	 dst = dst + 18;
-//	 b += 2;
+      for(xx = 0; xx < ww; xx += 8) {
+	 r1 = b[0];
+	 r2 = b[1];
+	 r3 = b[2];
+	 r4 = b[3];
+	 r5v[ip + 0].uv = (v2ui){r1.i[0], r1.i[0]}; //00
+	 r5v[ip + 1].uv = (v2ui){r1.i[0], r1.i[1]}; //01
+	 
+	 r5v[ip + 2].uv = (v2ui){r1.i[1], r2.i[0]}; //12
+	 r5v[ip + 3].uv = (v2ui){r2.i[0], r2.i[1]}; //23
+	 
+	 r5v[ip + 4].uv = (v2ui){r2.i[1], r3.i[0]}; //34
+	 r5v[ip + 5].uv = (v2ui){r3.i[0], r3.i[0]}; //44
+	 r5v[ip + 6].uv = (v2ui){r3.i[1], r3.i[1]}; //55
+
+	 r5v[ip + 7].uv = (v2ui){r4.i[0], r4.i[0]}; //66
+	 r5v[ip + 8].uv = (v2ui){r4.i[1], r4.i[1]}; //77	 
+	 ip += 9;
+	 b += 4;
       }
+      b2p = (v2hi *)dst;      
+      _prefetch_data_read_l1(r5v, sizeof(r5v));
+      for(yy = 0; yy < repeat - 1; yy++) {
+	 memcpy((void *)b2p, (void *)r5v, ip * sizeof(v2hi));
+	 b2p = b2p + pitch2;
+      }
+      for(xx = 0; xx < ip; xx++) b2p[xx].uv = bb;
    }
    
 }
