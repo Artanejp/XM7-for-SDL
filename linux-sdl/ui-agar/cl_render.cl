@@ -85,8 +85,6 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
       ww = ww * h;
   }
   
-  addr = pbegin; 
-  addr2 = pbegin << 3;
   p8 = (__global uint8 *)(&(out[addr2]));
 
   palette = (uint8){pal[0], pal[1], pal[2], pal[3],
@@ -178,8 +176,6 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
       ww = ww * h;
   }
   
-  addr = pbegin; 
-  addr2 = pbegin << 3;
   p8 = (__global uint8 *)(&(out[addr2]));
   src = &src[addr];
   prefetch(&src[0], ww);
