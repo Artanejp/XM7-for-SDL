@@ -233,15 +233,14 @@ void OnDestroy(AG_Event *event)
 
    system_cleanup();
    AG_MutexDestroy(&VMMutex);
-   //	AG_Destroy();
+   AG_Destroy();
 #if 0 
    muntrace();
 #endif
    DiscardTextures(1, &uVramTextureID);
    uVramTextureID = 0;
    XM7_DebugLog(XM7_LOG_INFO, "All end.");
-   AG_Quit();
-
+//   AG_Quit();
 }
 
 }
@@ -475,6 +474,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
         }
     }
     OnCreate((AG_Widget *)NULL);
+    AG_AtExitFunc(OnDestroy);
     XM7_DebugLog(XM7_LOG_DEBUG, "Widget creation OK.");
    
    if(AG_UsingSDL(NULL) == 0) {
@@ -556,4 +556,8 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    }
 //  AG_EventLoop(); 
    AGDrawTaskEvent(TRUE);
+   XM7_DebugLog(XM7_LOG_INFO, "All End.");
+//   AG_QuitGUI();
+//   AG_Quit();
 }
+

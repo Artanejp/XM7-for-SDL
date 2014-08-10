@@ -52,14 +52,9 @@ extern void InitGridVertexs(void);
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
-   int w;
-   int h;
-   BOOL bi;
-   
-   bi = FALSE;
-   if(ev == NULL) return TRUE;
+//   if(ev == NULL) return TRUE;
    /* Retrieve the next queued event. */
-   if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
+//   if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
    //	if(drv == NULL) return;
    /* Forward the event to Agar. */
    return TRUE;
@@ -122,24 +117,19 @@ void AGDrawTaskEvent(BOOL flag)
       if(nDrawTick2D < nDrawTick1D) nDrawTick1D = 0; // オーバーフロー対策
       if((nDrawTick2D - nDrawTick1D) >= fps) {
 	 if(skipf != TRUE){
-
 	    AG_WindowDrawQueued();
 	    nDrawTick1D = nDrawTick2D;
 	    if(((XM7_timeGetTime() - nDrawTick2D) >= fps) && (agDriverSw != NULL)) skipf = TRUE;
-	    //	 XM7_Sleep(1);
-	    //EventSDL(NULL);
 	 } else  { 
 	    skipf = FALSE;
 	    nDrawTick1D = nDrawTick2D;
-	    //XM7_Sleep(1);
-	    //EventSDL(NULL);
 	 }
+//	 XM7_Sleep(1);
       } else
       if(AG_PendingEvents(NULL) != 0) {
 	 
 	 AG_DriverEvent dev;
-//	 if(EventSDL(NULL) == FALSE) return;
-//	 while(AG_GetNextEvent(NULL, &dev) > 0) AG_ProcessEvent(NULL, &dev);
+	 //if(EventSDL(NULL) == FALSE) return;
 	 //if((XM7_timeGetTime() - nDrawTick1D) >= fps) skipf = TRUE;
 	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
 //	 XM7_Sleep(1);
@@ -277,7 +267,8 @@ void InitInstance(void)
       MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS );
    }
    AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
-   AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+//   AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+   AG_SetEvent(MainWindow , "window-close", AG_QuitGUI, NULL);
    AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
    
    
