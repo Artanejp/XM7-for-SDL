@@ -64,14 +64,17 @@ static BOOL    bFastMode;	/* 高速実行中フラグ backup */
 static DWORD  nSpeedCheck;	/* 速度調整用カウンタ(ms) */
 static DWORD   dwChkTime;	/* 速度調整基準時間(ms) */
 static DWORD   dwSleepCount;	/* スリープ回数 */
+   
 BOOL bFullScreen = FALSE;
 
 /*
  *  プロトタイプ宣言
  */
-void *ThreadSch(void *);	/* スレッド関数 */
+static void *ThreadSch(void *);	/* スレッド関数 */
+static void *Thread1ms(void *);
 DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
 void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+void  XM7_Sync1ms(uint64_t t);	/* 1ms待つ */
 
 static AG_Thread SchThread;
 static AG_TimeOps SchTimeOps;
@@ -103,7 +106,7 @@ void  InitSch(void)
 	bAutoSpeedAdjust = FALSE;
 	uTimerResolution = 1;
 	bTapeModeType = FALSE;
-	return;
+        return;
 }
 
 
@@ -112,9 +115,12 @@ void  InitSch(void)
  */
 void CleanSch(void)
 {
-	void *ret;
+	int ret;
 	bCloseReq = TRUE; // 終了要求
-	AG_ThreadJoin(SchThread,&ret); // スケジューラが終わるのを待つ
+        AG_Delay(10);
+//	AG_ThreadJoin(&SchThread,(void *)&ret); // スケジューラが終わるのを待つ
+//	AG_ThreadCancel(SchThread); // スケジューラが終わるのを待つ
+        bCloseReq = FALSE;
 }
 /*
  *  セレクト
@@ -138,6 +144,7 @@ void vsync_notify(void)
 	bDrawVsync = TRUE;
 	bPollVsync = TRUE;
 }
+   
 /*
  *  1ms実行
  */
@@ -222,6 +229,7 @@ void ResetSpeedAdjuster(void)
 	dwSleepCount = 0;
 	dwChkTime = XM7_timeGetTime();
 }
+
 /*
  *  スレッド関数
  */
@@ -278,7 +286,7 @@ static void *ThreadSch(void *param)
 			ProcessSnd(TRUE);
 			UnlockVM();
 		        
-			XM7_Sleep(10);
+		        XM7_Sleep(10);
 			ResetSch();
 			ResetSpeedAdjuster();
 			continue;
@@ -363,15 +371,9 @@ static void *ThreadSch(void *param)
 				else {
 				   UnlockVM();
 #if 0
-				        XM7_Sleep(1); // SDL/Agar's 1ms is too long.
+				   XM7_Sleep(1); // SDL/Agar's 1ms is too long.
 #else
-				   struct timespec req, remain;
-				   req.tv_sec = 0;
-				   req.tv_nsec = 100 * 1000; // 0.1ms
-				   do {
-				      if(__builtin_expect((XM7_timeGetTime() != dwNowTime), 0)) break;
-				      nanosleep(&req, &remain); // Okay, per 0.1ms.
-				   } while(1);
+				   XM7_Sync1ms(dwNowTime);
 #endif
 				   continue;
 				}
@@ -510,13 +512,14 @@ static void *ThreadSch(void *param)
 			}
 			UnlockVM();
 		}
+	   
 
 		/*
 		 * 終了を明示するため、要求フラグを降ろす
 		 */
 		bCloseReq = FALSE;
-		AG_QuitGUI();
-	        XM7_DebugLog(XM7_LOG_INFO, "Scheduler quits gui.");
+//		AG_QuitGUI();
+//	        XM7_DebugLog(XM7_LOG_INFO, "Scheduler quits gui.");
 		retval = 0;
 	        XM7_DebugLog(XM7_LOG_INFO, "Scheduler end.");
 		AG_ThreadExit((void *)&retval);
@@ -539,6 +542,17 @@ void XM7_Sleep(DWORD t)
 {
    AG_Delay(t);
 //   SDL_Delay(t);
+}
+
+void XM7_Sync1ms(uint64_t init)
+{
+   struct timespec req, remain;
+   req.tv_sec = 0;
+   req.tv_nsec = 100 * 1000; // 0.1ms
+   do {
+      if(__builtin_expect((XM7_timeGetTime() != init), 0)) break;
+      nanosleep(&req, &remain); // Okay, per 0.1ms.
+   } while(1);
 }
    
 #ifdef __cplusplus
