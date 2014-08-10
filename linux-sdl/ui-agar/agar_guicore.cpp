@@ -37,9 +37,9 @@ extern struct XM7_CPUID *pCpuID;
 
 extern "C" {
 void InitInstance(void);
-extern void OnDestroy(AG_Event *event);
 extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
 extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
+extern void  OnDestroy(AG_Event *);
 }
 
 Uint32 nDrawTick1D;
@@ -52,10 +52,9 @@ extern void InitGridVertexs(void);
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
 {
-//   if(ev == NULL) return TRUE;
+   if(ev == NULL) return TRUE;
    /* Retrieve the next queued event. */
-//   if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
-   //	if(drv == NULL) return;
+   if (AG_ProcessEvent(drv, ev) == -1) 	return FALSE;
    /* Forward the event to Agar. */
    return TRUE;
 }
@@ -119,22 +118,27 @@ void AGDrawTaskEvent(BOOL flag)
 	 if(skipf != TRUE){
 	    AG_WindowDrawQueued();
 	    nDrawTick1D = nDrawTick2D;
-	    if(((XM7_timeGetTime() - nDrawTick2D) >= fps) && (agDriverSw != NULL)) skipf = TRUE;
-	 } else  { 
-	    skipf = FALSE;
-	    nDrawTick1D = nDrawTick2D;
+	    if(((XM7_timeGetTime() - nDrawTick2D) >= (fps / 4)) && (agDriverSw != NULL)) skipf = TRUE;
+	    XM7_Sleep(1);
+	    continue;
+	 } else {
+	      if((nDrawTick2D - nDrawTick1D) >= ((fps * 2) - 1)) {
+		 skipf = FALSE;
+		 continue;
+	      }
+	    
 	 }
 //	 XM7_Sleep(1);
-      } else
+      }
       if(AG_PendingEvents(NULL) != 0) {
-	 
 	 AG_DriverEvent dev;
-	 //if(EventSDL(NULL) == FALSE) return;
-	 //if((XM7_timeGetTime() - nDrawTick1D) >= fps) skipf = TRUE;
-	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
+//	 if(EventSDL(NULL) == FALSE) return;
+	 if(AG_GetNextEvent(NULL, &dev) > 0) AG_ProcessEvent(NULL, &dev);
 //	 XM7_Sleep(1);
-      } else
+      }
       { // Timeout
+	 src = AG_GetEventSource();
+	 if(src == NULL) return;
 	 AG_TAILQ_FOREACH(es, &src->spinners, sinks){
 	    es->fn(es, &es->fnArgs);
 	 }
@@ -239,10 +243,6 @@ BOOL LoadWindowIconPng(AG_Window *win, char *path, char *filename)
    }
 
 }
-
-
-   
-   
    
 void InitInstance(void)
 {
@@ -268,7 +268,7 @@ void InitInstance(void)
    }
    AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
 //   AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-   AG_SetEvent(MainWindow , "window-close", AG_QuitGUI, NULL);
+   AG_SetEvent(MainWindow , "window-close", AG_Quit, NULL);
    AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
    
    

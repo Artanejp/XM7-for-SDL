@@ -41,11 +41,9 @@ extern void Create_AboutMenu(AG_MenuItem *self);
 extern void OnPushCancel(AG_Event *event);
 
 extern "C" {
-extern void InitInstance(void);
-extern void OnDestroy(AG_Event *event);
-extern void OnDestroy2(void);
 AG_Window *MainWindow;
 AG_Menu *MenuBar;
+extern void OnDestroy(AG_Event *event);
 }
 
 
@@ -131,7 +129,7 @@ void Create_FileMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent, gettext("Boot Mode"), NULL, FileMenu_BootMode, NULL);
 	AG_MenuSeparator(parent);
 //	item = AG_MenuAction(parent , gettext("Quit"), NULL, OnDestroy, NULL);
-	item = AG_MenuAction(parent , gettext("Quit"), NULL, AG_QuitGUI, NULL);
+	item = AG_MenuAction(parent , gettext("Quit"), NULL, AG_Quit, NULL);
 }
 
 void Create_AGMainBar(AG_Widget *Parent)

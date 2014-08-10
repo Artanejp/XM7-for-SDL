@@ -22,7 +22,7 @@ extern BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev);
 void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 {
 //	AG_SDL_GetNextEvent(void *obj, AG_DriverEvent *dev)
-	AG_Driver *drv = obj;
+	AG_Driver *drv = AGDRIVER(obj);
 	SDL_Event ev = *event;
 //        if(drv == NULL) return;
 
@@ -33,7 +33,7 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 //	}
 
 	switch (ev.type) {
-	case SDL_MOUSEMOTION:
+	 case SDL_MOUSEMOTION:
 		if(drv != NULL) AG_MouseMotionUpdate(drv->mouse, ev.motion.x, ev.motion.y);
 		dev->type = AG_DRIVER_MOUSE_MOTION;
 		dev->win = NULL;
@@ -79,7 +79,7 @@ void ConvertSDLEvent(AG_Driver *obj, SDL_Event *event, AG_DriverEvent *dev)
 		dev->data.key.ks = (AG_KeySym)ev.key.keysym.sym;
 		dev->data.key.ucs = (Uint32)ev.key.keysym.unicode;
 		break;
-	case SDL_VIDEORESIZE:
+	 case SDL_VIDEORESIZE:
 		dev->type = AG_DRIVER_VIDEORESIZE;
 		dev->win = NULL;
 		dev->data.videoresize.x = 0;
@@ -120,6 +120,7 @@ BOOL EventSDL(AG_Driver *drv)
 //		p = SDL_GetVideoSurface();
 //		if(p == NULL) return TRUE;
 		while (SDL_PollEvent(&eventQueue))
+//		if(SDL_PollEvent(&eventQueue))
 		{
 			switch (eventQueue.type)
 			{
@@ -134,7 +135,7 @@ BOOL EventSDL(AG_Driver *drv)
 				break;
 			default:
 				ConvertSDLEvent(drv, &eventQueue, &event);
-				if(!EventGuiSingle(drv, &event)) return FALSE;
+			        if(!EventGuiSingle(drv, &event)) return FALSE;
 				break;
 			}
 		}

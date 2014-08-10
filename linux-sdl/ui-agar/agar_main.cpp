@@ -233,14 +233,14 @@ void OnDestroy(AG_Event *event)
 
    system_cleanup();
    AG_MutexDestroy(&VMMutex);
-   AG_Destroy();
+//   AG_Destroy();
 #if 0 
    muntrace();
 #endif
    DiscardTextures(1, &uVramTextureID);
    uVramTextureID = 0;
    XM7_DebugLog(XM7_LOG_INFO, "All end.");
-//   AG_Quit();
+   AG_Destroy();
 }
 
 }
