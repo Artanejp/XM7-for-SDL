@@ -39,12 +39,18 @@ link_directories(/usr/local/lib)
 
 find_package(Gettext)
 include_directories(${GETTEXT_INCLUDE_PATH})
+
 find_package(Freetype)
 include_directories(${FREETYPE_INCLUDE_PATH})
-find_package(OpenMP)
-include_directories(${OPENMP_INCLUDE_PATH})
+
+if(USE_OPENMP)
+  find_package(OpenMP)
+  include_directories(${OPENMP_INCLUDE_PATH})
+endif()
+
 find_package(Threads)
 include_directories(${THREADS_INCLUDE_PATH})
+
 find_package(SDL)
 include_directories(${SDL_INCLUDE_PATH})
 
@@ -87,10 +93,10 @@ if(USE_SSE2)
  add_subdirectory(ui-agar/scaler/sse2)
 endif()
 
-if(USE_SSE)
- set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_SSE")
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SSE")
-endif()
+#if(USE_SSE)
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_SSE")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SSE")
+#endif()
 
 if(USE_MMX)
  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_MMX")

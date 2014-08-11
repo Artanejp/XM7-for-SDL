@@ -65,6 +65,7 @@ void OnAboutDialog(AG_Event *event)
 
 
         char string[768];
+        char string2[1024];
         int l;
 	char iconpath[MAXPATHLEN];
 	char file[MAXPATHLEN];
@@ -151,46 +152,46 @@ void OnAboutDialog(AG_Event *event)
 	label = AG_LabelNew(vbox2, 0, "FM-7/77AV/SX Emulateor \"XM7\"""\n "VERSTR"%s\n", string);
         AG_LabelJustify(label, AG_TEXT_RIGHT);
    
-        strcpy(string, "SIMD Features: \n");
+        strcpy(string2, "SIMD Features: \n");
 // 以下、CPU依存なので移植の場合は同等の関数を作ること
 #if defined(__x86_64__) || defined(__i386__)
-   if(pCpuID->use_mmx) strcat(string, "MMX ");
-   if(pCpuID->use_mmxext) strcat(string, "MMXEXT ");
+   if(pCpuID->use_mmx) strcat(string2, "MMX ");
+   if(pCpuID->use_mmxext) strcat(string2, "MMXEXT ");
    strcat(string, "\n");
-   if(pCpuID->use_sse) strcat(string, "SSE ");
-   if(pCpuID->use_sse2) strcat(string, "SSE2 ");
-   if(pCpuID->use_sse3) strcat(string, "SSE3 ");
-   if(pCpuID->use_ssse3) strcat(string, "SSSE3 ");
+   if(pCpuID->use_sse) strcat(string2, "SSE ");
+   if(pCpuID->use_sse2) strcat(string2, "SSE2 ");
+   if(pCpuID->use_sse3) strcat(string2, "SSE3 ");
+   if(pCpuID->use_ssse3) strcat(string2, "SSSE3 ");
    strcat(string, "\n");
-   if(pCpuID->use_sse41) strcat(string, "SSE4.1 ");
-   if(pCpuID->use_sse42) strcat(string, "SSE4.2 ");
-   if(pCpuID->use_sse4a) strcat(string, "SSE4a ");
+   if(pCpuID->use_sse41) strcat(string2, "SSE4.1 ");
+   if(pCpuID->use_sse42) strcat(string2, "SSE4.2 ");
+   if(pCpuID->use_sse4a) strcat(string2, "SSE4a ");
    strcat(string, "\n");
-   if(pCpuID->use_3dnow) strcat(string, "3DNOW ");
-   if(pCpuID->use_3dnowp) strcat(string, "3DNOWP ");
-   if(pCpuID->use_abm) strcat(string, "ABM ");
-   if(pCpuID->use_avx) strcat(string, "AVX ");
-   if(pCpuID->use_cmov) strcat(string, "CMOV ");
+   if(pCpuID->use_3dnow) strcat(string2, "3DNOW ");
+   if(pCpuID->use_3dnowp) strcat(string2, "3DNOWP ");
+   if(pCpuID->use_abm) strcat(string2, "ABM ");
+   if(pCpuID->use_avx) strcat(string2, "AVX ");
+   if(pCpuID->use_cmov) strcat(string2, "CMOV ");
 #else
 #endif
 
-   strcat(string, "\n\nUsing SIMD:\n");
+   strcat(string2, "\n\nUsing SIMD:\n");
 // 以下、CPU依存なので移植の場合は同等の関数を作ること
 #if defined(__x86_64__) || defined(__i386__)
    if(bUseSIMD) {
       if(pCpuID->use_sse2) {
-	   strcat(string, " SSE2");
+	   strcat(string2, " SSE2");
       }
       if(pCpuID->use_mmx) {
-	   strcat(string, " MMX");
+	   strcat(string2, " MMX");
       }
       
    } else {
-     strcat(string, " NONE");
+     strcat(string2, " NONE");
    }
 #else
 #endif
-	label = AG_LabelNew(vbox1, 0, "%s\n", string);
+	label = AG_LabelNew(vbox2, 0, "%s\n", string2);
 	AG_LabelJustify(label, AG_TEXT_LEFT);
 
 	hbox = AG_HBoxNew(win, AG_HBOX_HFILL);
