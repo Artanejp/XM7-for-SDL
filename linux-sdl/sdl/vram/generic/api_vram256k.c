@@ -5,7 +5,6 @@
  */
 
 
-#include <SDL.h>
 #include "api_draw.h"
 //#include "api_scaler.h"
 #include "api_vram.h"

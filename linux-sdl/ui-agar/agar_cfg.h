@@ -7,6 +7,9 @@
 
 #ifndef AGAR_CFG_H_
 #define AGAR_CFG_H_
+
+
+#include <SDL/SDL.h>
 #include "KbdInterface.h"
 #ifdef USE_AGAR
 #include "agar_xm7.h"

@@ -6,6 +6,7 @@ message("")
 
 project (xm7)
 
+set(BUILD_SHARED_LIBS OFF)
 set(USE_SSE2 1)
 set(USE_MMX  1)
 set(USE_OPENMP 1)
@@ -20,12 +21,14 @@ set(VFD_FONT "ipagp.ttf")
 set(CMT_FONT "ipagp.ttf")
 set(AGAR_LIBS ag_core ag_dev ag_gui)
 set(AGAR_DEPLIBS m jpeg png16 z dl uim-scm uim)
-set(LOCAL_LIBS      xm7_vm
+set(LOCAL_LIBS      
+		     xm7_ui_agar
+                     xm7_vm
 		     xm7_fmgen
 		     xm7_vram-generic
 		     xm7_scaler-generic
 		     xm7_soundbuffer-generic
-		     xm7_ui_agar
+
 		     )
 
 
@@ -51,12 +54,18 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/vm)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sdl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmgen)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DXM7_VER=3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DXM7_VER=3")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFDDSND")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFDDSND")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMOUSE")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMOUSE")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMR2 -D_XWIN -DNDEBUG -D_M_IX86")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMR2 -D_XWIN -DNDEBUG -D_M_IX86")
+
 
 # GCC Only?
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flax-vector-conversions")
@@ -100,8 +109,8 @@ if(WITH_DEBUGGER)
 endif()
 
 if(USE_OPENCL)
- set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_OPENCL")
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENCL")
+ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
  set(OPENCL_LIBRARY OpenCL)
  set(USE_OPENGL 1)
 endif()

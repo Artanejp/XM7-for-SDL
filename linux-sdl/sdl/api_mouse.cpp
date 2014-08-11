@@ -12,9 +12,6 @@
 #include <agar/gui/cursors.h>
 
 #include<memory.h>
-#include <SDL.h>
-#include <SDL_syswm.h>
-
 #include "xm7.h"
 #include "mainetc.h"
 #include "keyboard.h"

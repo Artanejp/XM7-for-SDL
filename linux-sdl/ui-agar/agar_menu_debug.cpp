@@ -657,21 +657,22 @@ void Create_DebugMenu(AG_MenuItem *parent)
 	item = AG_MenuAction(parent, gettext("Dump MMR"), NULL, CreateMMRDump, NULL);
 	AG_MenuSeparator(parent);
 #endif // _WITH_DEBUGGER
-	item = AG_MenuNode(parent, gettext("Log to STDOUT"), NULL); 
-        AG_MenuToolbar(parent,  toolbar);
-        subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSTDOUT, "logger.stdout"); 
-        subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSTDOUT, "logger.stdout"); 
-        AG_MenuToolbar(item, NULL);
+//	item = AG_MenuNode(parent, gettext("Log to STDOUT"), NULL); 
+//        AG_MenuToolbar(parent,  toolbar);
+//        subitem = AG_MenuAction(item, gettext("ON"),  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSTDOUT, "logger.stdout"); 
+//        subitem = AG_MenuAction(item, gettext("OFF"), NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSTDOUT, "logger.stdout"); 
+//        AG_MenuToolbar(item, NULL);
 //        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSTDOUT);
-	AG_MenuSeparator(parent);
+//	AG_MenuSeparator(parent);
    
-	item = AG_MenuNode(parent, gettext("Log to SYSLOG"), NULL); 
-        AG_MenuToolbar(item, toolbar);
-        subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSYSLOG, "logger.syslog"); 
-        subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSYSLOG, "logger.syslog"); 
-        AG_MenuToolbar(item, NULL);
+//	item = AG_MenuNode(parent, gettext("Log to SYSLOG"), NULL); 
+//	item = AG_MenuNode(parent, "Log to SYSLOG", NULL); 
+//        AG_MenuToolbar(item, toolbar);
+//        subitem = AG_MenuAction(item, "ON",  NULL, OnChangeLogStatus, "%i%p%s", TRUE,  &bLogSYSLOG, "logger.syslog"); 
+//        subitem = AG_MenuAction(item, "OFF", NULL, OnChangeLogStatus, "%i%p%s", FALSE, &bLogSYSLOG, "logger.syslog"); 
+//        AG_MenuToolbar(item, NULL);
 //        item =AG_MenuDynamicItem(parent, "", NULL, DisplayLogStatus,"%p", &bLogSYSLOG);
-	AG_MenuSeparator(parent);
+//	AG_MenuSeparator(parent);
 }
 
 

@@ -8,9 +8,6 @@
 
 #include "xm7.h"
 #include "KbdInterface.h"
-
-#include "xm7.h"
-#include <SDL.h>
 #include "SDLKbdInterface.h"
 
 

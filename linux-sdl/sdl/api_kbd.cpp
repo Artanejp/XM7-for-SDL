@@ -7,8 +7,6 @@
  */
 extern "C" {
 #include <memory.h>
-#include <SDL.h>
-#include <SDL_syswm.h>
 
 #include "xm7.h"
 #include "mainetc.h"

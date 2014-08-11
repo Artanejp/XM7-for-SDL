@@ -20,7 +20,6 @@
 #include "mouse.h"
 #include "aluline.h"
 
-#include <SDL.h>
 #ifdef USE_AGAR
 #include "agar_xm7.h"
 #else

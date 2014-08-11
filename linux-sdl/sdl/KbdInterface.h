@@ -11,7 +11,7 @@
 #define KBDINTERFACE_H_
 
 #ifndef _WINDOWS
-#include <SDL.h>
+#include <SDL/SDL.h>
 #endif
 #include "xm7.h"
 #include "api_kbd.h"

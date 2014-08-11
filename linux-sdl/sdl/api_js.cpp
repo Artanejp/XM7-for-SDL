@@ -7,8 +7,6 @@
 
 
 #include<memory.h>
-#include <SDL.h>
-#include <SDL_syswm.h>
 #include <vector>
 #include "SDLJoyInterface.h"
 

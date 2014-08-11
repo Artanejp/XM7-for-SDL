@@ -5,7 +5,6 @@
  */
 
 
-#include <SDL.h>
 #include "xm7_types.h"
 #include "api_draw.h"
 #include "api_vram.h"

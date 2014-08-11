@@ -9,7 +9,6 @@
  *   20111009 : Separate from "api_draw.cpp"
  */
 
-#include <SDL.h>
 #include <agar/core.h>
 #include <agar/core/types.h>
 #include <agar/gui.h>

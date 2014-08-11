@@ -4,6 +4,7 @@ message("* sdl")
 
 
 add_executable(xm7
+                 api_draw.cpp
                  api_snd2.cpp api_wavwriter.cpp
 		 snd_buffer.cpp
 		 SndDrvTmpl.cpp SndDrvOpn.cpp SndDrvWav.cpp SndDrvBeep.cpp SndDrvCMT.cpp
@@ -11,6 +12,7 @@ add_executable(xm7
 		 SDLKbdInterface.cpp
 		 SDLJoyInterface.cpp
 		 KbdInterface.cpp 
+		 draw_thread.cpp
 		 sdl_cpuid.c
 		 sdl_inifile.c
 		 sdl_file.c
@@ -22,9 +24,12 @@ target_link_libraries(xm7 ${LOCAL_LIBS}
 			   ${OPENGL_LIBRARY}
 			   ${OPENCL_LIBRARY}
 			   ${GETTEXT_LIBRARY}
-			   ${FREETYPE_LIBRARY} 
 			   ${OPENMP_LIBRARY}
 			   ${SDL_LIBRARY}
 			   ${AGAR_DEPLIBS}
 			   ${THREADS_LIBRARY}
+			   fontconfig
+			   freetype
+			   X11 Xinerama
+			   fontconfig
 )

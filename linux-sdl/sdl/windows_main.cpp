@@ -5,7 +5,8 @@
  * History:
  * 2012-06-21 Moved from ui-agar/agar_main.cpp
  */
- #include <SDL.h>
+
+#include <SDL/SDL.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>

@@ -18,7 +18,7 @@
 
 #ifndef _SDL_H
 #ifndef _WINDOWS
-# include <SDL.h>
+# include <SDL/SDL.h>
 #endif
 #endif				/*  */
 

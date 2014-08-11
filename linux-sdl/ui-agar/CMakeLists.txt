@@ -52,14 +52,14 @@ endif()
 
 if(USE_OPENCL)
  add_custom_command(
-     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.c
-     COMMAND gawk -f ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk -v VARNAME=cl_render ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl > ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.c
+     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cpp
+     COMMAND gawk -f ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk -v VARNAME=cl_render ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl > ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cpp
      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR/cl_render.cl}
      )
  #ADD_CUSTOM_TARGET(cl_render.c DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl)
  set(USE_OPENGL 1)
  set(UI_AGAR_CLSRC 
-                        cl_render.c
+                        cl_render.cpp
 			agar_glcl.cpp
 			)
 endif()
