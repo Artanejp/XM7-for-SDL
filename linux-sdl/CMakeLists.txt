@@ -13,12 +13,7 @@ set(USE_OPENMP 1)
 set(USE_OPENCL 1)
 set(WITH_DEBUGGER 1)
 
-set(UI_FONT "ipagp.ttf")
-set(UI_PT 14)
-set(STAT_FONT "ipagp.ttf")
-set(STAT_PT 14)
-set(VFD_FONT "ipagp.ttf")
-set(CMT_FONT "ipagp.ttf")
+
 set(AGAR_LIBS ag_core ag_dev ag_gui)
 set(AGAR_DEPLIBS m jpeg png16 z dl uim-scm uim)
 set(LOCAL_LIBS      
@@ -60,6 +55,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/vm)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sdl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmgen)
 
+
+# Build Flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DXM7_VER=3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DXM7_VER=3")
 
@@ -72,7 +69,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMOUSE")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMR2 -D_XWIN -DNDEBUG -D_M_IX86")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMR2 -D_XWIN -DNDEBUG -D_M_IX86")
 
-
 # GCC Only?
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flax-vector-conversions")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -flax-vector-conversions")
@@ -83,9 +79,6 @@ if(USE_SSE2)
  set(LOCAL_LIBS ${LOCAL_LIBS} xm7_vram-sse2)
  set(LOCAL_LIBS ${LOCAL_LIBS} xm7_soundbuffer-sse2)
  set(LOCAL_LIBS ${LOCAL_LIBS} xm7_scaler-sse2)
-# link_directories(${CMAKE_CURRENT_BINARY_DIR}/sdl/vram/sse2)
-# link_directories(${CMAKE_CURRENT_BINARY_DIR}/sdl/vram/sse2)
-# link_directories(${CMAKE_CURRENT_BINARY_DIR}/ui-agar/scaler/sse2)
  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_SSE2")
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SSE2")
  add_subdirectory(sdl/soundbuffer/sse2)
@@ -114,24 +107,33 @@ if(WITH_DEBUGGER)
  add_subdirectory(xm7-debugger)
 endif()
 
+find_package(OpenGL)
+
 if(USE_OPENCL)
- set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
- set(OPENCL_LIBRARY OpenCL)
- set(USE_OPENGL 1)
+ if(OPENGL_FOUND)
+   include_directories(/usr/include/CL)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
+   set(OPENCL_LIBRARY OpenCL)
+   set(USE_OPENGL 1)
+ endif()
 endif()
 
 if(USE_OPENGL)
- set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -D_USE_OPENGL -DUSE_OPENGL")
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENGL -DUSE_OPENGL")
- find_package(OpenGL)
- include_directories(${OPENGL_INCLUDE_PATH})
+ if(OPENGL_FOUND)
+   include_directories(${OPENGL_INCLUDE_PATH})
+   set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -D_USE_OPENGL -DUSE_OPENGL")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENGL -DUSE_OPENGL")
+ else()
+   set(USE_OPENGL 0)
+   set(USE_OPENCL 0)
+   unset(OPENCL_LIBRARY)
+ endif()
 endif()
 
 
 
-ADD_SUBDIRECTORY(vm)
-
+add_subdirectory(vm)
 add_subdirectory(ui-agar)
 add_subdirectory(ui-agar/scaler/generic)
 add_subdirectory(fmgen)

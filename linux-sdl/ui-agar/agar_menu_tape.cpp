@@ -240,9 +240,8 @@ void Create_TapeMenu(AG_MenuItem *self)
 	 * ライトプロテクト
 	 */
         item = AG_MenuNode(self, gettext("Write Protect"), NULL); 
-        AG_MenuToolbar(self,  toolbar);
-        AG_MenuAction(item, "ON",  NULL, OnWriteProtectTape, "%i", TRUE);
-        AG_MenuAction(item, "OFF", NULL, OnWriteProtectTape, "%i", FALSE);
+        AG_MenuAction(item, gettext("ON"),  NULL, OnWriteProtectTape, "%i", TRUE);
+        AG_MenuAction(item, gettext("OFF"), NULL, OnWriteProtectTape, "%i", FALSE);
         AG_MenuToolbar(item, NULL);
 	/*
 	 * 巻き戻し

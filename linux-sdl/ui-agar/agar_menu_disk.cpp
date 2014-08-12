@@ -392,7 +392,6 @@ void CreateDiskMenu(AG_MenuItem *self, int Drive)
 	AG_MenuSeparator(self);
 
         item = AG_MenuNode(self, gettext("Write Protect"), NULL); 
-        AG_MenuToolbar(self, toolbar);
 	subitem = AG_MenuAction(item, gettext("ON"), NULL, OnWriteProtectDisk, "%i%i", Drive, TRUE);
 	subitem = AG_MenuAction(item, gettext("OFF"), NULL, OnWriteProtectDisk, "%i%i", Drive, FALSE);
         AG_MenuToolbar(item, NULL);
