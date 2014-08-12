@@ -4,6 +4,9 @@ message("")
 message("** Start of configure XM7/SDL,Agar **")
 message("")
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+
 project (xm7)
 
 set(BUILD_SHARED_LIBS OFF)
@@ -111,11 +114,14 @@ find_package(OpenGL)
 
 if(USE_OPENCL)
  if(OPENGL_FOUND)
-   include_directories(/usr/include/CL)
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
-   set(OPENCL_LIBRARY OpenCL)
-   set(USE_OPENGL 1)
+   find_package(OpenCL)
+   if(OPENCL_FOUND)
+    include_directories(${OPENCL_INCLUDE_DIRS})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_OPENCL -DUSE_OPENCL")
+    set(OPENCL_LIBRARY ${OPENCL_LIBRARIES})
+    set(USE_OPENGL 1)
+   endif()
  endif()
 endif()
 
