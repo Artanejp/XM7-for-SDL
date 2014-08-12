@@ -1,0 +1,72 @@
+* HOW TO BUILD FROM SOURCE CODES *
+                 Aug 12, 2014 K.Ohta <whatisthis.sowhat@gmail.com>
+
+※下に日本語(utf8-ja)があります
+
+ This sourcecodes are using CMAKE (Maybe 2.6 or later).
+ So, you can build below:
+  1.INSTALL SDL, FreeType, fontconfig, libpng16 , and related packages.
+    These might be install from  GNU/Linux (or MINGW) 
+    distribution you already install to this BOX :)
+    I recommand install OpenCL and OpenGL packages (and drivers).
+    
+  2.Install GNU Toolchain as C/C++.
+    (Maybe?) still unable to build libagar with llvm C/C++.
+    
+  3.INSTALL LIBAGAR GUI TOOLKIT ( http://libagar.org/ ) 1.5 or later.
+    You can get codes from libagar's SVN repository.
+    
+  4.Build this source with CMAKE.
+      mkdir linux-sdl/build
+      cd linux-sdl/build
+      cmake ..
+      make
+    But, when you don't specify CMAKE_BUILD_TYPE calling cmake,
+    will build debug build.
+    You should do below (or use ccmake :)to release build:
+      cmake -DCMAKE_BUILD_TYPE=Release ..
+      make
+      
+  5.To convert .ico file to PNG file, using ImageMagick.
+    To compile I18N definision catalogues, using GNU Gettext.
+    These are detected automatically.
+    
+Have Fun!
+ Ohta.
+ 
+--- 以下、日本語で再掲 ---
+　このソースコードは、CMAKE(多分2.6以降)を使ってビルドします。
+　なので、以下の手順を踏んで下さい。
+  1.SDL,FreeType,Fontconfig, libpng16や関連するパッケージを
+  　インストールして下さい。
+  　可能ならば、OpenGLとOpneCLもインストールして下さい。
+  　これらは、GNU/Linuxディストリビューションには標準で
+  　付いて来てますし、MinGWにもあるでしょう（外部パッケージで）
+  
+  2.GNU ToolchainをC/C++としてインストールして下さい。
+  　今のところ、libagarをコンパイルする時点でllvmが使えません。
+  　又、Visual StudioやBorland Cなどはわかりません (-_-;
+  
+  3.libagar GUIツールキット ( http://libagar.org/ )の
+    1.5以降をインストールして下さい。これは、libagarのSVN
+    リポジトリから入手できるでしょう。
+  
+  4.CMAKEでXM7/SDLをビルドします。
+  　以下の手順で：
+       mkdir linux-sdl/build
+       cd linux-sdl/build
+       cmake ..
+       make
+    ただし、CMAKEを呼ぶときにCMAKE_BUILD_TYPEを指定しないとデバッグ
+    ビルドがされるので、以下のようにするか、ccmakeを使うとよいでしょう。
+       cmake -DCMAKE_BUILD_TYPE=Release ..
+       make
+       
+   5.ビルドの時に、
+   　.icoファイルをPNGファイルへ変換するのにImageMagickを使います。
+   　I18NカタログをコンパイルするのにGNU Gettextを使います。
+   　これらは、cmakeが自動で検出して、なければやりません（凄い！）
+
+では、おたのしみあれ
+　Ohta.
+    
