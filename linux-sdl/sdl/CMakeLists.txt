@@ -26,12 +26,11 @@ target_link_libraries(xm7 ${LOCAL_LIBS}
 			   ${GETTEXT_LIBRARY}
 			   ${OPENMP_LIBRARY}
 			   ${SDL_LIBRARY}
-			   ${AGAR_DEPLIBS}
 			   ${THREADS_LIBRARY}
 			   fontconfig
 			   freetype
 			   X11 Xinerama
-			   fontconfig
+			   ${AGAR_DEPLIBS}
 )
 
 install(TARGETS xm7 DESTINATION bin)
