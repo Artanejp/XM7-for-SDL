@@ -33,3 +33,5 @@ target_link_libraries(xm7 ${LOCAL_LIBS}
 			   X11 Xinerama
 			   fontconfig
 )
+
+install(TARGETS xm7 DESTINATION bin)

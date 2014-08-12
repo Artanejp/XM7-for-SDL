@@ -142,5 +142,9 @@ add_subdirectory(sdl/vram/generic)
 
 add_subdirectory(sdl)
 
+add_subdirectory(resource)
+add_subdirectory(locales/C)
+add_subdirectory(locales/ja)
+
 #add_executable(xm7 ALIAS xm7_main)
 
