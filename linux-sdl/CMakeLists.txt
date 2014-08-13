@@ -25,8 +25,6 @@ set(WITH_DEBUGGER ON CACHE BOOL "Build witn XM7 Debugger.")
 
 include(detect_target_cpu)
 #include(windows-mingw-cross)
-include(simd-x86)
-
 # set entry
 set(CMAKE_SYSTEM_PROCESSOR ${ARCHITECTURE} CACHE STRING "Set processor to build.")
 
@@ -67,15 +65,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sdl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmgen)
 
 
-if(WITH_DEBUGGER)
- include_directories(${CMAKE_CURRENT_SOURCE_DIR}/xm7-debugger)
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_WITH_DEBUGGER")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WITH_DEBUGGER")
- add_definitions(-D_WITH_DEBUGGER)
- set(LOCAL_LIBS ${LOCAL_LIBS} xm7_debugger)
- add_subdirectory(xm7-debugger)
-endif()
-
 if(ICONV_FOUND)
  include_directories(${ICONV_INCLUDE_DIRS})
  set(LOCAL_LIBS ${LOCAL_LIBS} ${ICONV_LIBRARIES})
@@ -91,6 +80,19 @@ if(CMAKE_COMPILER_IS_GNUCXX)
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -flax-vector-conversions")
 endif()
 
+
+include(simd-x86)
+
+if(WITH_DEBUGGER)
+ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/xm7-debugger)
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_WITH_DEBUGGER")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WITH_DEBUGGER")
+ add_definitions(-D_WITH_DEBUGGER)
+ set(LOCAL_LIBS ${LOCAL_LIBS} xm7_debugger)
+ add_subdirectory(xm7-debugger)
+endif()
+
+
 add_subdirectory(vm)
 add_subdirectory(ui-agar)
 add_subdirectory(ui-agar/scaler/generic)
@@ -99,12 +101,12 @@ add_subdirectory(fmgen)
 
 add_subdirectory(sdl/soundbuffer/generic)
 add_subdirectory(sdl/vram/generic)
-
 add_subdirectory(sdl)
 
 add_subdirectory(resource)
 add_subdirectory(locales/C)
 add_subdirectory(locales/ja)
+
 
 
 

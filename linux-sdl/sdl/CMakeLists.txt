@@ -29,7 +29,6 @@ target_link_libraries(xm7 ${LOCAL_LIBS}
 			   ${THREADS_LIBRARY}
 			   fontconfig
 			   freetype
-			   X11 Xinerama
 			   ${AGAR_DEPLIBS}
 )
 

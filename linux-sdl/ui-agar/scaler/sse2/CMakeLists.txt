@@ -1,6 +1,7 @@
-message("* ui-agar/scaler/generic")
+message("* ui-agar/scaler/sse2")
 
-set(CMAKE_BUILD_SETTING_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -msse -mmmx")
+#set(CMAKE_BUILD_SETTING_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -msse -mmmx")
+add_compile_options(-msse2 -msse -mmmx) 
 add_library(xm7_scaler-sse2
 			       scaler_x1_sse2.c
 			       scaler_x125_sse2.c

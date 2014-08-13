@@ -3,10 +3,10 @@
 # This is part of XM7/SDL, but license is apache 2.2,
 # this part was written only me.
 
-if((CMAKE_SYSTEM_PROCESSOR EQUAL "x86")
-  OR (CMAKE_SYSTEM_PROCESSOR EQUAL "amd64")
-  OR (CMAKE_SYSTEM_PROCESSOR EQUAL "x86_64")
-  OR (CMAKE_SYSTEM_PROCESSOR EQUAL "ia32"))
+if((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64") OR
+   (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86") OR
+   (CMAKE_SYSTEM_PROCESSOR STREQUAL "ia32") OR
+   (CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64"))
  set(USE_SSE2 ON CACHE BOOL "Using SSE2 SIMD instructions, sometimes faster if enabled.")
  set(USE_MMX  ON CACHE BOOL "Using MMX SIMD instructions, sometimes faster if enabled.")
 endif()
