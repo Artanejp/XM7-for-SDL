@@ -5,6 +5,7 @@
 
 
 cmake_minimum_required (VERSION 2.6)
+cmake_policy(SET CMP0011 NEW)
 
 message("")
 message("** Start of configure XM7/SDL,Agar **")
@@ -40,6 +41,7 @@ link_directories(/usr/local/lib)
 
 find_package(Gettext)
 include_directories(${GETTEXT_INCLUDE_PATH})
+include(compile_gettext_catalogue)
 
 find_package(Freetype)
 include_directories(${FREETYPE_INCLUDE_PATH})

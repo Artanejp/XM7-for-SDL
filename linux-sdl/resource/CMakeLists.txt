@@ -39,19 +39,26 @@ set(XM7_RESOURCE_ICONS 2dd.ico
 		       )
 set(XM7_RESOURCE_PNGS "")
 
+
 if(ImageMagick_convert_FOUND)
    foreach(loop_var_src ${XM7_RESOURCE_ICONS})
-    string(REPLACE .ico .png loop_var_target ${loop_var_src})
-    set(XM7_RESOURCE_PNGS "${XM7_RESOURCE_PNGS} ${loop_var_target}")
+     string(REPLACE .ico .png loop_var_target ${loop_var_src})
+     set(XM7_RESOURCE_PNGS "${XM7_RESOURCE_PNGS} ${loop_var_target}")
      add_custom_target(${loop_var_target} ALL 
                      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${loop_var_src}
 		     COMMAND  ${ImageMagick_convert_EXECUTABLE}
 		     ${CMAKE_CURRENT_SOURCE_DIR}/${loop_var_src}
-		     ${CMAKE_CURRENT_BINARY_DIR}/${loop_var_target}
+		     ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${loop_var_target}
 		     )
-     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${loop_var_target} DESTINATION share/xm7)
+     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${loop_var_target} DESTINATION share/xm7)
+     set_directory_properties(PROPERTIES 
+                              ADDITIONAL_MAKE_CLEAN_FILES 
+                              ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${loop_var_target})
    endforeach(loop_var_src)
 endif()
 install(FILES xm7_mani.xml  DESTINATION share/xm7)
+
+
+
 
 add_subdirectory(F-Font)

@@ -51,17 +51,21 @@ if(WITH_DEBUGGER)
 endif()
 
 if(USE_OPENCL)
+ set(UI_AGAR_CLRENDER_CXX cl_render.cpp)
  add_custom_command(
-     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cpp
+     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${UI_AGAR_CLRENDER_CXX}
      COMMAND gawk -f ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk -v VARNAME=cl_render ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl > ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cpp
-     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR/cl_render.cl}
+     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk
      )
  #ADD_CUSTOM_TARGET(cl_render.c DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl)
  set(USE_OPENGL 1)
  set(UI_AGAR_CLSRC 
-                        cl_render.cpp
+                        ${UI_AGAR_CLRENDER_CXX}
 			agar_glcl.cpp
 			)
+ # Remove generated c/cpp file on "make clean".
+ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${UI_AGAR_CLRENDER_CXX})
+
 endif()
 
 if(USE_OPENGL)

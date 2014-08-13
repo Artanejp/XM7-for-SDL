@@ -1,14 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
+compile_i18n_po_to_mo(messages.po messages.mo)
+install_i18n_catalogue(messages.po share/xm7/C)
 
-if(GETTEXT_FOUND)
-     add_custom_target(messages.mo ALL 
-                     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/messages.po
-		     COMMAND  ${GETTEXT_MSGFMT_EXECUTABLE}
-		              ${CMAKE_CURRENT_SOURCE_DIR}/messages.po
-		              -o ${CMAKE_CURRENT_BINARY_DIR}/messages.mo
-		     )
-     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/messages.po
-                   ${CMAKE_CURRENT_BINARY_DIR}/messages.mo
-             DESTINATION share/xm7/C)
-endif()
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES messages.mo)
