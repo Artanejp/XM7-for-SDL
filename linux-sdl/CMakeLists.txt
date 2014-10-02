@@ -31,7 +31,7 @@ set(CMAKE_SYSTEM_PROCESSOR ${ARCHITECTURE} CACHE STRING "Set processor to build.
 include(config_xm7)
 
 set(AGAR_LIBS ag_core ag_dev ag_gui)
-set(AGAR_DEPLIBS m jpeg png16 z dl uim-scm uim)
+set(AGAR_DEPLIBS m jpeg png z dl uim-scm uim)
 
 
 include_directories(/usr/local/include/agar)
