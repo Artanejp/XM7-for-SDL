@@ -128,8 +128,8 @@ void Create_FileMenu(AG_MenuItem *parent)
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent, gettext("Boot Mode"), NULL, FileMenu_BootMode, NULL);
 	AG_MenuSeparator(parent);
-//	item = AG_MenuAction(parent , gettext("Quit"), NULL, OnDestroy, NULL);
-	item = AG_MenuAction(parent , gettext("Quit"), NULL, AG_Quit, NULL);
+	item = AG_MenuAction(parent , gettext("Quit"), NULL, OnDestroy, NULL);
+//	item = AG_MenuAction(parent , gettext("Quit"), NULL, AG_Quit, NULL);
 }
 
 void Create_AGMainBar(AG_Widget *Parent)

@@ -55,8 +55,7 @@ extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
 extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 extern BOOL            bLogSTDOUT;
 extern BOOL            bLogSYSLOG;
-
-
+extern AG_Window       *MainWindow;
 void OnDestroy(AG_Event *event);
 
    
@@ -76,7 +75,7 @@ int             nAppIcon;               /* アイコン番号(1,2,3) */
 BOOL            bMMXflag;               /* MMXサポートフラグ(未使用) */
 BOOL            bCMOVflag;              /* CMOVサポートフラグ(現状未使用) */
 struct  XM7_CPUID *pCpuID;           /* CPUフラグ */
-   
+BOOL            bEventRunFlag;            /* Run Flag */   
    
 #if ((XM7_VER <= 2) && defined(FMTV151))
 BOOL            bFMTV151;               /* チャンネルコールフラグ */
@@ -201,6 +200,7 @@ void OnCreate(AG_Widget *parent)
 void OnDestroy(AG_Event *event)
 {
    // 20120610 GUI関連処理
+   bEventRunFlag = FALSE; 
 #ifdef _WITH_DEBUGGER
    Detach_DebugMenu();
 #endif
@@ -219,19 +219,19 @@ void OnDestroy(AG_Event *event)
    CleanSch();
    CleanKbd();
    CleanSnd();
-   DestroyStatus();
-
    CleanDraw();
+   DestroyStatus();
 
    /*
     * 仮想マシン クリーンアップ
     */
+   system_cleanup();
    if(pCpuID != NULL) {
       detachCpuID(pCpuID);
       pCpuID = NULL;
    }
 
-   system_cleanup();
+
    AG_MutexDestroy(&VMMutex);
 //   AG_Destroy();
 #if 0 
@@ -239,8 +239,8 @@ void OnDestroy(AG_Event *event)
 #endif
    DiscardTextures(1, &uVramTextureID);
    uVramTextureID = 0;
-   XM7_DebugLog(XM7_LOG_INFO, "All end.");
-   AG_Destroy();
+   XM7_DebugLog(XM7_LOG_INFO, "All resources allocated by VM were freed.");
+//   AG_Destroy();
 }
 
 }
@@ -266,7 +266,7 @@ static void ErrorPopup(char *message)
    
 }
 
-static BOOL LoadGlobalIconPng(char *path, char *filename)
+BOOL LoadGlobalIconPng(char *path, char *filename)
 {
 	
    char fullpath[MAXPATHLEN + 1];
@@ -313,7 +313,12 @@ static BOOL LoadGlobalIconPng(char *path, char *filename)
 	    return FALSE;
 	 }
 	 
-	 SDL_WM_SetIcon(icon, NULL);
+	 if(AG_UsingSDL(NULL) && (agDriverSw != NULL)) {
+	    SDL_WM_SetIcon(icon, NULL);
+	 } else if(agDriverMw) {
+//	    AG_WindowSetIcon(MainWindow, mark);
+	 }
+	 
 	 SDL_FreeSurface(icon);
 	 AG_SurfaceFree(scaled);
 	 AG_SurfaceFree(mark);
@@ -336,8 +341,6 @@ void MainLoop(int argc, char *argv[])
    const SDL_VideoInfo *inf;
    BOOL flag;
    SDL_Surface *s;
-
-   
 
    if(AG_GetVariable(agConfig, "font.size", NULL) == NULL) { 
 	AG_SetInt(agConfig, "font.size", UI_PT);
@@ -474,15 +477,18 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
         }
     }
     OnCreate((AG_Widget *)NULL);
-    AG_AtExitFunc(OnDestroy);
+//    AG_AtExitFunc(OnDestroy);
     XM7_DebugLog(XM7_LOG_DEBUG, "Widget creation OK.");
    
-   if(AG_UsingSDL(NULL) == 0) {
+   XM7_DebugLog(XM7_LOG_INFO, "Emulate version:%d", fm7_ver);
+   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
+   XM7_DebugLog(XM7_LOG_DEBUG, "Audio and JOYSTICK subsystem was initialised.");
+
+   InitInstance();
+   XM7_DebugLog(XM7_LOG_DEBUG, "InitInstance() OK.");
+   if(agDriverSw && AG_UsingSDL(NULL)) {
       SDL_Init(SDL_INIT_VIDEO);
       XM7_DebugLog(XM7_LOG_INFO, "Start Single WM with SDL.");
-   } else { // WM function is managed by SDL, load and set icon for WM. 
-      XM7_DebugLog(XM7_LOG_INFO, "Start multi window mode.");
-
       switch(fm7_ver) {
        case 1: // FM7/77
 	 if(!(LoadGlobalIconPng(NULL, "tamori.png"))) {
@@ -503,13 +509,9 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	 LoadGlobalIconPng(NULL, "xm7.png");
 	 break;
       }
+   } else { // WM function is managed by SDL, load and set icon for WM. 
+      XM7_DebugLog(XM7_LOG_INFO, "Start multi window mode.");
    }
-   XM7_DebugLog(XM7_LOG_INFO, "Emulate version:%d", fm7_ver);
-   SDL_InitSubSystem(SDL_INIT_AUDIO | SDL_INIT_JOYSTICK);
-   XM7_DebugLog(XM7_LOG_DEBUG, "Audio and JOYSTICK subsystem was initialised.");
-
-   InitInstance();
-   XM7_DebugLog(XM7_LOG_DEBUG, "InitInstance() OK.");
        
    stopreq_flag = FALSE;
    run_flag = TRUE;
@@ -554,10 +556,8 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
       AG_RedrawOnTick(GLDrawArea, 1000 / nDrawFPS);
       XM7_DebugLog(XM7_LOG_INFO, "OpenGL mode.");
    }
-//  AG_EventLoop(); 
+   bEventRunFlag == TRUE;
    AGDrawTaskEvent(TRUE);
    XM7_DebugLog(XM7_LOG_INFO, "All End.");
-//   AG_QuitGUI();
-//   AG_Quit();
 }
 

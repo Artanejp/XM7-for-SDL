@@ -146,6 +146,7 @@ void            FASTCALL
 CleanKbd(void)
 {
    if(AGARDrv != NULL) delete AGARDrv;
+   AGARDrv = NULL;
    if(KeySem != NULL){
       SDL_DestroySemaphore(KeySem);
       KeySem = NULL;

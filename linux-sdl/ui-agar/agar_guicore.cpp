@@ -40,6 +40,8 @@ void InitInstance(void);
 extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
 extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 extern void  OnDestroy(AG_Event *);
+extern BOOL            bEventRunFlag;            /* Run Flag */   
+extern BOOL LoadWindowIconPng(AG_Window *win, char *path, char *filename);
 }
 
 Uint32 nDrawTick1D;
@@ -48,6 +50,8 @@ extern Uint32 nDrawTick1E;
 
 extern void Create_AGMainBar(AG_Widget *Parent);
 extern void InitGridVertexs(void);
+extern BOOL LoadGlobalIconPng(char *path, char *filename);
+
 
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)
@@ -86,6 +90,7 @@ void AGDrawTaskEvent(BOOL flag)
    AG_EventSink *es;
    
    bResizeGUIFlag = FALSE;
+   bEventRunFlag = TRUE;
    nDrawTick2D = XM7_timeGetTime();
 
    src = AG_GetEventSource();
@@ -101,6 +106,7 @@ void AGDrawTaskEvent(BOOL flag)
    if(fps < 10) fps = 10; // 10ms = 100fps.
    
    for(;;) {
+      if(bEventRunFlag == FALSE) return;
       if(oldfps != nDrawFPS){ // FPS Change 20120120
 	 oldfps = nDrawFPS;
 	 if(nDrawFPS > 2) {
@@ -129,28 +135,31 @@ void AGDrawTaskEvent(BOOL flag)
 	    
 	 }
 //	 XM7_Sleep(1);
-      }
+      } 
       if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
 //	 if(EventSDL(NULL) == FALSE) return;
-	 if(AG_GetNextEvent(NULL, &dev) > 0) AG_ProcessEvent(NULL, &dev);
+	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
 //	 XM7_Sleep(1);
       }
       { // Timeout
 	 src = AG_GetEventSource();
 	 if(src == NULL) return;
 	 AG_TAILQ_FOREACH(es, &src->spinners, sinks){
+	    if(bEventRunFlag == FALSE) return;
 	    es->fn(es, &es->fnArgs);
 	 }
 	 if (src->sinkFn() == -1) {
-	    return ;
+	    return;
 	 }
 	 AG_TAILQ_FOREACH(es, &src->epilogues, sinks) {
+	    if(bEventRunFlag == FALSE) return;
 	    es->fn(es, &es->fnArgs);
 	 }
-	 if (src->breakReq) break;
+	 if (src->breakReq) return;
+	 XM7_Sleep(1);
       }	// Process Event per 1Ticks;
-      XM7_Sleep(1);
+
       AG_WindowProcessQueued();
    }
    
@@ -204,7 +213,7 @@ static void InitFont(void)
 }
 
 BOOL LoadWindowIconPng(AG_Window *win, char *path, char *filename)
-     {
+{
 	
    char fullpath[MAXPATHLEN + 1];
    int len;
@@ -262,14 +271,40 @@ void InitInstance(void)
 	//  最初にカスタムウイジェットをつける
     AG_RegisterClass(&XM7_SDLViewClass);
    if(agDriverSw) {
-      MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW | AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
+      MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW 
+				| AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODKEYEVENTS);
+//      MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS | AG_WINDOW_NOTITLE | AG_WINDOW_NOCLOSE);
+      AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    } else {
-      MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS );
+      MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS | AG_WINDOW_NOCLOSE);
+      AG_WindowSetCaptionS(MainWindow, "XM7/SDL");
+#if 0
+      switch(fm7_ver) {
+       case 1: // FM7/77
+	 if(!(LoadWindowIconPng(MainWindow, NULL, "tamori.png"))) {
+	    LoadWindowIconPng(MainWindow, NULL, "xm7.png");
+	 }
+	 break;
+       case 2: // FM77AV
+	 if(!(LoadWindowIconPng(MainWindow, NULL, "fujitsu.png"))) {
+	    LoadWindowIconPng(MainWindow, NULL, "xm7.png");
+	 }
+	 break;
+       case 3: // FM77AV20/40/EX/SX
+	 if(!(LoadWindowIconPng(MainWindow, NULL, "fujitsu2.png"))) {
+	    LoadWindowIconPng(MainWindow, NULL, "xm7.png");
+	 }
+	 break;
+       default:
+	 LoadWindowIconPng(MainWindow, NULL, "xm7.png");
+	 break;
+      }
+#endif      
    }
    AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
 //   AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
-   AG_SetEvent(MainWindow , "window-close", AG_Quit, NULL);
-   AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
+//   AG_SetEvent(MainWindow , "window-close", AG_Quit, NULL);
+//   AG_WindowSetCloseAction(MainWindow, AG_WINDOW_DETACH);
    
    
    MenuBar = AG_MenuNew(AGWIDGET(MainWindow), 0);

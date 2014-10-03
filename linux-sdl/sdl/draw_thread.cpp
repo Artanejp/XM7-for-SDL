@@ -205,7 +205,8 @@ void *DrawThreadMain(void *p)
       if(DrawSHUTDOWN) {
 	 AG_DrawDetachsub();
 	 DrawSHUTDOWN = FALSE;
-	 return; /* シャットダウン期間 */
+	 AG_ThreadExit(NULL);
+	 //return; /* シャットダウン期間 */
       }
 
       if(nDrawCount > 0) {

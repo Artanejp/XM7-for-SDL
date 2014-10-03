@@ -260,12 +260,13 @@ void InitTapeOSD(AG_Widget *parent)
 void DestroyTapeOSD(void)
 {
     if(pCMTStat != NULL){
-        if(pCMTStat->pSurface != NULL) AG_SurfaceFree(pCMTStat->pSurface);
+        //if(pCMTStat->pSurface != NULL) AG_SurfaceFree(pCMTStat->pSurface);
         AG_MutexDestroy(&(pCMTStat->mutex));
         free(pCMTStat);
     }
    if(pwCMT != NULL) AG_ObjectDetach(AGOBJECT(pwCMT));
    pwCMT = NULL;
+   pCMTStat = NULL;
 }
 
 

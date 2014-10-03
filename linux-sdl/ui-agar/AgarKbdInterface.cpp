@@ -22,7 +22,7 @@ AgarKbdInterface::AgarKbdInterface() {
 AgarKbdInterface::~AgarKbdInterface() {
 	// TODO Auto-generated destructor stub
 //	AG_MutexLock(&mutex);
-	AG_MutexDestroy(&mutex);
+//	AG_MutexDestroy(&mutex);
 }
 
 

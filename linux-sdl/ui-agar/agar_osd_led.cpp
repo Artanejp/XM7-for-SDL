@@ -97,8 +97,8 @@ struct OsdLEDPack *InitLED(int w, int h, const char *str, int xoff, int yoff)
 
    p->pOFF = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
    if(p->pOFF == NULL) {
-	free(p);
         AG_SurfaceFree(p->pON);
+	free(p);
         return NULL;
    }
 
@@ -152,8 +152,9 @@ void DeleteLED(struct OsdLEDPack *p)
 {
    if(p == NULL) return;
    AG_MutexDestroy(&(p->mutex));
-   if(p->pON != NULL) AG_SurfaceFree(p->pON);
-   if(p->pOFF != NULL) AG_SurfaceFree(p->pOFF);
+   //if(p->pON != NULL) AG_SurfaceFree(p->pON);
+   //if(p->pOFF != NULL) AG_SurfaceFree(p->pOFF);
+   //p->pON = p->pOFF = NULL;
    free(p);
 }
 
@@ -353,6 +354,7 @@ void DestroyLeds(void)
    if(pWidIns != NULL) AG_ObjectDetach(AGOBJECT(pWidIns));
    if(pWidCaps != NULL) AG_ObjectDetach(AGOBJECT(pWidCaps));
    if(pWidKana != NULL) AG_ObjectDetach(AGOBJECT(pWidKana));
+   pWidIns = pWidCaps = pWidKana = NULL;
    DeleteLED(pOsdLEDIns);
    DeleteLED(pOsdLEDCAPS);
    DeleteLED(pOsdLEDKana);

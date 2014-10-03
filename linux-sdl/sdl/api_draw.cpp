@@ -346,7 +346,7 @@ void	CleanDraw(void)
 
 		DrawSHUTDOWN = TRUE;
 		AG_CondSignal(&DrawCond);
-		AG_ThreadJoin(DrawThread, NULL);
+//		AG_ThreadJoin(DrawThread, NULL);
 
 //		AG_MutexDestroy(&DrawMutex);
 //		AG_CondDestroy(&DrawCond);
