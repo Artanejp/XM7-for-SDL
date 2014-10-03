@@ -43,12 +43,13 @@ DWORD dwExecTotal;		/* 実行トータル時間(us) */
 DWORD dwDrawTotal;		/* 描画トータル回数 */
 DWORD dwSoundTotal;		/* サウンドトータル時間 */
 DWORD uTimerResolution;	/* タイマー精度 */
-BOOL bTapeFullSpeed;		/* テープ高速モードフラグ */
-BOOL bFullSpeed;		/* 全力駆動フラグ */
-BOOL bAutoSpeedAdjust;		/* 速度自動調整フラグ */
+BOOL  bTapeFullSpeed;		/* テープ高速モードフラグ */
+BOOL  bFullSpeed;		/* 全力駆動フラグ */
+BOOL  bAutoSpeedAdjust;		/* 速度自動調整フラグ */
 DWORD dwNowTime;		/* timeGetTimeの値 */
-BOOL bTapeModeType;		/* テープ高速モードタイプ */
-   
+BOOL  bTapeModeType;		/* テープ高速モードタイプ */
+BOOL  bHiresTick;               /* Hi resolution 1ms timer */
+DWORD nTickResUs;                /* Wait value for Hi-Resolution tick */
    
 /*
  *  スタティック ワーク
@@ -74,7 +75,7 @@ static void *ThreadSch(void *);	/* スレッド関数 */
 static void *Thread1ms(void *);
 DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
 void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
-void  XM7_Sync1ms(uint64_t t);	/* 1ms待つ */
+void  XM7_Sync1ms(DWORD init);	/* 1msピリオドで待つ */
 
 static AG_Thread SchThread;
 static AG_TimeOps SchTimeOps;
@@ -370,11 +371,7 @@ static void *ThreadSch(void *param)
 				}
 				else {
 				   UnlockVM();
-#if 0
-				   XM7_Sleep(1); // SDL/Agar's 1ms is too long.
-#else
 				   XM7_Sync1ms(dwNowTime);
-#endif
 				   continue;
 				}
 			}
@@ -544,14 +541,24 @@ void XM7_Sleep(DWORD t)
 //   SDL_Delay(t);
 }
 
-void XM7_Sync1ms(uint64_t init)
+void XM7_Sync1ms(DWORD init)
 {
    struct timespec req, remain;
+   int tick;
+   
+   if(!bHiresTick) { // Wait 1ms, not use nanosleep, but reduce cpu usage.
+	XM7_Sleep(1);
+        return;
+   }
+   
+   tick = nTickResUs;
+   if(tick < 20) tick = 20; // uSec
+   if(tick > 500) tick = 500; // uSec
    req.tv_sec = 0;
-   req.tv_nsec = 100 * 1000; // 0.1ms
+   req.tv_nsec = tick * 1000; 
    do {
       if(__builtin_expect((XM7_timeGetTime() != init), 0)) break;
-      nanosleep(&req, &remain); // Okay, per 0.1ms.
+      nanosleep(&req, &remain); // Okay, per tick uS.
    } while(1);
 }
    

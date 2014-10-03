@@ -32,7 +32,6 @@
 #include "agar_glutil.h"
 #include "agar_debugger.h"
 
-extern AG_Window *MainWindow;
 
 configdat_t configdat;	/* コンフィグ用データ */
 /*
@@ -69,6 +68,14 @@ static const char *InitDirStr[] =
     "WAVFileDir"
 };
 
+/*
+ * Sceduler
+ */
+extern "C" 
+{
+   extern BOOL  bHiresTick;               /* Hi resolution 1ms timer */
+   extern DWORD nTickResUs;                /* Wait value for Hi-Resolution tick */
+}
 
 /*-[ 設定データ ]-----------------------------------------------------------*/
 
@@ -497,6 +504,14 @@ void LoadCfg(void)
        configdat.nCLGlobalWorkThreads = LoadCfgInt("GWS", 10);
        if(configdat.nCLGlobalWorkThreads <= 0) configdat.nCLGlobalWorkThreads = 1; 
        if(configdat.nCLGlobalWorkThreads >= 256) configdat.nCLGlobalWorkThreads = 255;
+       /*
+	* Scheduler
+	*/
+       SetCfgSection("SCHEDULER");
+       configdat.bHiresTick = LoadCfgBool("HiresolutionTick", TRUE);
+       configdat.nTickResUs = LoadCfgInt("TickResolution", 100);
+       if(configdat.nTickResUs < 20) configdat.nTickResUs = 20;
+       if(configdat.nTickResUs > 500) configdat.nTickResUs = 500;
 }
 
 
@@ -655,7 +670,7 @@ void SaveCfg(void)
     SaveCfgInt("EmuFPS", configdat.nEmuFPS);
     SaveCfgBool("SMOOSING", configdat.bSmoosing);
     SaveCfgInt("RENDER", configdat.nRenderMethod);
-
+   
 /*
  * Optionセクション
  */
@@ -696,6 +711,14 @@ void SaveCfg(void)
     SetCfgSection("OPENCL");
     SaveCfgBool("CLSparse", configdat.bCLSparse);
     SaveCfgInt("GWS", configdat.nCLGlobalWorkThreads);
+
+    /*
+     * Scheduler
+     */
+    SetCfgSection("SCHEDULER");
+    SaveCfgBool("HiresolutionTick", configdat.bHiresTick);
+    SaveCfgInt("TickResolution", configdat.nTickResUs);
+
     SaveCfgFile();
 }
 
@@ -837,6 +860,12 @@ void ApplyCfg(void)
     bCLSparse = configdat.bCLSparse;
     nCLGlobalWorkThreads = configdat.nCLGlobalWorkThreads;
 #endif
+   /*
+    * Scheduler
+    */
+   bHiresTick = configdat.bHiresTick;
+   nTickResUs = configdat.nTickResUs;
+  
 }
 
 

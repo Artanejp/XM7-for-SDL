@@ -127,6 +127,9 @@ typedef struct {
         /* OpenCL */
         int nCLGlobalWorkThreads;
         BOOL bCLSparse; // TRUE=Multi threaded CL,FALSE = Single Thread.
+        /* Scheduler */
+        BOOL  bHiresTick;               /* Hi resolution 1ms timer */
+        DWORD nTickResUs;               /* Wait value for Hi-Resolution tick */
 } configdat_t;
 
 extern configdat_t configdat;	/* コンフィグ用データ */
