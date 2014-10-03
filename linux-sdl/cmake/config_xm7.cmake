@@ -3,6 +3,8 @@
 # This is part of XM7/SDL, but license is apache 2.2,
 # this part was written only me.
 
+include(CheckFunctionExists)
+
 set(LOCAL_LIBS      
 		     xm7_ui_agar
                      xm7_vm
@@ -23,6 +25,14 @@ add_definitions(-DMOUSE)
 
 add_definitions(-DMR2 -D_XWIN -DNDEBUG -D_M_IX86)
 
+check_function_exists("nanosleep" HAVE_NANOSLEEP)
+if(NOT HAVE_NANOSLEEP)
+  check_library_exists("rt" "nanosleep" "" LIB_RT_HAS_NANOSLEEP)
+endif(NOT HAVE_NANOSLEEP)
+
+if(HAVE_NANOSLEEP OR LIB_RT_HAS_NANOSLEEP)
+  add_definitions(-DHAVE_NANOSLEEP)
+endif(HAVE_NANOSLEEP OR LIB_RT_HAS_NANOSLEEP)
 
 find_package(OpenGL)
 

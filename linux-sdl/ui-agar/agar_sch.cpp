@@ -543,14 +543,15 @@ void XM7_Sleep(DWORD t)
 
 void XM7_Sync1ms(DWORD init)
 {
+#ifdef HAVE_NANOSLEEP
    struct timespec req, remain;
    int tick;
-   
+#endif   
    if(!bHiresTick) { // Wait 1ms, not use nanosleep, but reduce cpu usage.
 	XM7_Sleep(1);
         return;
    }
-   
+#ifdef HAVE_NANOSLEEP   
    tick = nTickResUs;
    if(tick < 20) tick = 20; // uSec
    if(tick > 500) tick = 500; // uSec
@@ -560,6 +561,7 @@ void XM7_Sync1ms(DWORD init)
       if(__builtin_expect((XM7_timeGetTime() != init), 0)) break;
       nanosleep(&req, &remain); // Okay, per tick uS.
    } while(1);
+#endif
 }
    
 #ifdef __cplusplus

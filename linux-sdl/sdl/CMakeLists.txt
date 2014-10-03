@@ -32,4 +32,8 @@ target_link_libraries(xm7 ${LOCAL_LIBS}
 			   ${AGAR_DEPLIBS}
 )
 
+if(LIB_RT_HAS_NANOSLEEP)
+  add_target_library(xm7 rt)
+endif(LIB_RT_HAS_NANOSLEEP)
+
 install(TARGETS xm7 DESTINATION bin)
