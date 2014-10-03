@@ -29,6 +29,7 @@ set(UI_AGAR_GUISRC
                        agar_gui_menu.cpp
 		       agar_gui_pref.cpp
 		       agar_gui_pref_cl.cpp
+		       agar_gui_sound.cpp
 		       agar_menu_about.cpp
 		       agar_menu_debug.cpp
 		       agar_menu_disk.cpp
