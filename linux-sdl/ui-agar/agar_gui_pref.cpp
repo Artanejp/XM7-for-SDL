@@ -77,7 +77,8 @@ void OnConfigApply(AG_Event *event)
 	 */
 	UnlockVM();
 	AG_WindowHide(self->wid.window);
-	AG_ObjectDetach(self->wid.window);
+	AG_ObjectDetach(self);
+//	AG_WindowDetach(self->wid.window);
 }
 
 
@@ -119,6 +120,7 @@ enum EmuCycleNum  {
 	EMUCYCLE_MAIN_FASTMMR,
 	EMUCYCLE_SUB
 };
+
 
 static void OnSetEmulationMode(AG_Event *event)
 {
@@ -168,39 +170,42 @@ static AG_Numerical *NumSub;
 static AG_Numerical *NumMainMMR;
 static AG_Numerical *NumMainFMMR;
 
-
-static void OnChangeCycles(AG_Event *event)
-{
-   AG_Numerical *me = (AG_Numerical *)AG_SELF();
-   double d;
-//   AG_NumericalValue d;
-   if(me == NULL) return;
-   if(me->input == NULL) return;
-//   d = AG_TextboxDbl(me->input);
-//   d.u = AG_TextboxInt(me->input);
-//   AG_NumericalSetValue(me, d);
-}
-   
    
 static void OnResetCycles(AG_Event *event)
 {
-//        double  v;
-//        AG_NumericalValue v;  
-        localconfig.main_speed = MAINCYCLES;
-	localconfig.sub_speed = SUBCYCLES;
-	localconfig.mmr_speed = MAINCYCLES_MMR;
-	localconfig.fmmr_speed = MAINCYCLES_FMMR;
+   localconfig.main_speed = MAINCYCLES;
+   localconfig.sub_speed = SUBCYCLES;
+   localconfig.mmr_speed = MAINCYCLES_MMR;
+   localconfig.fmmr_speed = MAINCYCLES_FMMR;
 
-//        v.u = MAINCYCLES;
-//	AG_NumericalSetValue(NumMain, v);
-//        v.u = SUBCYCLES;
-//	AG_NumericalSetValue(NumSub, v);
-//        v.u = MAINCYCLES_MMR;
-//	AG_NumericalSetValue(NumMainMMR, v);
-//        v.u = MAINCYCLES_FMMR;
-//	AG_NumericalSetValue(NumMainFMMR, v);
-
+//   printf("Reset!\n");
 }
+
+
+static void CheckCycleRange(AG_Event *event)
+{
+   AG_Numerical *self = AG_SELF();
+   Uint32 *bind = AG_PTR(1);
+   if(bind == NULL) return;
+   if(self == NULL) return;
+   
+   if(*bind < 2) *bind = 2;
+   if(*bind > 9999) *bind = 9999;
+   AG_NumericalUpdate(self);
+}
+
+
+static AG_Numerical *MakeCycleDialog(AG_Widget *parent, char *label, Uint32 *bind)
+{
+   AG_Numerical *r;
+   r = AG_NumericalNewUintR(parent, 
+			    AG_NUMERICAL_INT, gettext("cycles"), 
+			    label, bind, 2, 9999);
+   if(r == NULL) return NULL;
+   AG_AddEvent(r, "numerical-return", CheckCycleRange, "%p", bind);
+   AG_WidgetShow(r);
+}
+
 
 void ConfigMenuVMSpeed(AG_NotebookTab *parent)
 {
@@ -210,36 +215,12 @@ void ConfigMenuVMSpeed(AG_NotebookTab *parent)
         AG_Event *ev;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
-	NumMain = AG_NumericalNewUintR(AGWIDGET(box), 
-					0, gettext("cycles"), 
-					gettext("Main CPU"), &localconfig.main_speed, 2, 9999);
-//	AG_NumericalSetIncrement(NumMain, 1.0);
-	AG_NumericalSetWriteable(NumMain, 1);
-        ev = AG_SetEvent (AGOBJECT(NumMain), "numerical-return", OnChangeCycles, NULL);
+        NumMain     = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU"), &localconfig.main_speed);
+        NumSub      = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU"), &localconfig.sub_speed);
+        NumMainMMR  = MakeCycleDialog(AGWIDGET(box), gettext("Main MMR"), &localconfig.mmr_speed);
+        NumMainFMMR = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Fast MMR"), &localconfig.fmmr_speed);
    
-   
-	NumSub = AG_NumericalNewUintR(AGWIDGET(box), 
-				       0, NULL,
-				       gettext("Sub CPU") , &localconfig.sub_speed, 2, 9999);
-//	AG_NumericalSetIncrement(NumSub, 1.0);
-	AG_NumericalSetWriteable(NumSub, 1);
-        ev = AG_SetEvent (AGOBJECT(NumSub), "numerical-return", OnChangeCycles, NULL);
-
-	NumMainMMR = AG_NumericalNewUintR(AGWIDGET(box), 
-				       0, NULL,
-				       gettext("Main MMR") , &localconfig.mmr_speed, 2, 9999);
-//	AG_NumericalSetIncrement(NumMainMMR, 1.0);
-	AG_NumericalSetWriteable(NumMainMMR, 1);
-        ev = AG_SetEvent (AGOBJECT(NumMainMMR), "numerical-return", OnChangeCycles, NULL);
-
-	NumMainFMMR = AG_NumericalNewUintR(AGWIDGET(box),
-					   0, NULL,
-					   gettext("Main CPU Fast MMR"), &localconfig.fmmr_speed, 2, 9999);
-//	AG_NumericalSetIncrement(NumMainFMMR, 1.0);
-	AG_NumericalSetWriteable(NumMainFMMR, 1);
-        ev = AG_SetEvent (AGOBJECT(NumMainFMMR), "numerical-return", OnChangeCycles, NULL);
-
-	btn = AG_ButtonNew(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, NULL);
+	btn = AG_ButtonNewFn(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, NULL);
 }
 
 
@@ -258,8 +239,7 @@ void OnConfigEmulationMenu(AG_Event *event)
 
 	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
 
-	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
-//	AG_WindowSetMinSize(win, 320, 240);
+    win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
     {
     	/*
