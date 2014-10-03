@@ -41,25 +41,27 @@
 #include "agar_cfg.h"
 #include "xm7.h"
 
-extern configdat_t localconfig;
 
 
 #ifdef _USE_OPENCL
 static void OnChangeGWS(AG_Event *event)
 {
    AG_Numerical *me = (AG_Numerical *)AG_SELF();
+   configdat_t *cfg = AG_PTR(1);
    int i;
+   
    if(me == NULL) return;
    if(me->input == NULL) return;
+   if(cfg == NULL) return;
 
    i = AG_TextboxInt(me->input);
    if(i <= 0) i = 1;
    if(i >= 256) i = 255;
-   localconfig.nCLGlobalWorkThreads = i;
+   cfg->nCLGlobalWorkThreads = i;
 }
 
 #endif
-void ConfigMenuOpenCL(AG_NotebookTab *parent)
+void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent)
 {
 #ifdef _USE_OPENCL
    AG_Slider *slider;
@@ -73,9 +75,9 @@ void ConfigMenuOpenCL(AG_NotebookTab *parent)
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_VFILL);
 	{
 	   box2 = AG_BoxNewVert(AGWIDGET(box), AG_BOX_HFILL);
-	   check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Multi threaded OpenCL"), &localconfig.bCLSparse);
+	   check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Multi threaded OpenCL"), &(cfg->bCLSparse));
 	   gws = AG_NumericalNewS(AGWIDGET(box2), AG_NUMERICAL_HFILL, NULL ,gettext("Global Work Items"));
-	   AG_BindSint32(gws, "value", &localconfig.nCLGlobalWorkThreads);
+	   AG_BindSint32(gws, "value", &(cfg->nCLGlobalWorkThreads));
 	   AG_NumericalSetRangeInt(gws, 1, 255);
 	   AG_NumericalSetIncrement(gws, 1);
 	   AG_NumericalSetWriteable(gws, 1);

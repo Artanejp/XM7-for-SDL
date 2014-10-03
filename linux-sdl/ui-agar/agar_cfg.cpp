@@ -55,7 +55,7 @@ extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 /*
  * 追加Configエントリ
  */
-extern float fBright0;
+//extern float fBright0;
 #ifdef _USE_OPENCL
 extern BOOL bUseOpenCL;
 #endif
@@ -729,7 +729,8 @@ void SaveCfg(void)
      */
 void ApplyCfg(void)
 {
-	int i;
+   int i;
+   float fBright0;
 /*
  * Generalセクション
  */

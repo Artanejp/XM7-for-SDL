@@ -41,25 +41,17 @@
 
 configdat_t localconfig;
 
-extern void OnPushCancel(AG_Event *event);
-extern void ConfigMenuOpenCL(AG_NotebookTab *parent);
 
+extern void OnPushCancel2(AG_Event *event);
+extern void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent);
 
-static int EmuVMTypeSelected;
-static int EmuCyclestealMode;
-
-
-
-void OnConfigApply(AG_Event *event)
+void OnConfigApplyMain(configdat_t *p, AG_Button *self)
 {
-	int ver;
-        int i;
-	AG_Button *self = (AG_Button *)AG_SELF();
 
-
+        int ver;
 	LockVM();
         
-	memcpy(&configdat, &localconfig, sizeof(configdat_t));
+	memcpy(&configdat, p, sizeof(configdat_t));
 	ver = fm7_ver;
 	ApplyCfg();
 	/*
@@ -80,6 +72,32 @@ void OnConfigApply(AG_Event *event)
 	AG_ObjectDetach(self);
 //	AG_WindowDetach(self->wid.window);
 }
+
+
+void OnConfigApply(AG_Event *event)
+{
+	int ver;
+        int i;
+	AG_Button *self = (AG_Button *)AG_SELF();
+
+        OnConfigApplyMain(&localconfig, self);
+
+}
+
+
+
+void OnConfigApply2(AG_Event *event)
+{
+	int ver;
+        int i;
+	AG_Button *self = (AG_Button *)AG_SELF();
+        configdat_t *cfg = AG_PTR(1);
+
+        if(cfg == NULL) return;
+         OnConfigApplyMain(cfg, self);
+        free(cfg);
+}
+
 
 
 static const char *EmuTypeName[] =
@@ -124,59 +142,69 @@ enum EmuCycleNum  {
 
 static void OnSetEmulationMode(AG_Event *event)
 {
-	int number = AG_INT(1);
-	localconfig.fm7_ver = number + 1;
+        configdat_t *cfg = AG_PTR(1);
+	int number = AG_INT(2);
+
+        if(cfg == NULL) return;
+	cfg->fm7_ver = number + 1;
 }
 
 static void OnSetCyclestealMode(AG_Event *event)
 {
-	int number = AG_INT(1);
-	localconfig.cycle_steal = number;
+        configdat_t *cfg = AG_PTR(1);
+   	int number = AG_INT(2);
+
+        if(cfg == NULL) return;
+	cfg->cycle_steal = number;
 }
 
-void ConfigMenuEmulation(AG_NotebookTab *parent)
+void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
 	AG_Box *box;
 	AG_Label *lbl;
+        int n;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), 0);
 	{
-	EmuVMTypeSelected = localconfig.fm7_ver - 1;
+//	cfg->EmuVMTypeSelected = cfg->localconfig.fm7_ver - 1;
+	n = cfg->fm7_ver - 1;
 	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Emulation Type"));
-	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuTypeName, OnSetEmulationMode, NULL);
-	AG_BindInt(radio, "value", &EmuVMTypeSelected);
+	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuTypeName, OnSetEmulationMode, "%p", cfg);
+	AG_SetInt(radio, "value", n);
+//	AG_BindInt(radio, "value", &(cfg->EmuVMTypeSelected));
 
-	EmuCyclestealMode = localconfig.cycle_steal;
+//	cfg->EmuCyclestealMode = cfg->localconfig.cycle_steal;
+	n = cfg->cycle_steal;
 	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Cycle Steal"));
-	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuSpeedName, OnSetCyclestealMode, NULL);
-	AG_BindInt(radio, "value", &EmuCyclestealMode);
+	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuSpeedName, OnSetCyclestealMode, "%p", cfg);
+	AG_SetInt(radio, "value", n);
+//	AG_BindInt(radio, "value", &(cfg->EmuCyclestealMode));
 	}
 
 	box = AG_BoxNewVert(AGWIDGET(parent), 0);
 	{
-		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Auto Speed Adjust"), &localconfig.bSpeedAdjust);
-		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Full Speed"), &localconfig.bCPUFull);
-		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Disable Speed adjust when motor on"), &localconfig.bTapeMode);
-		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Full Speed adjust when motor on"), &localconfig.bTapeFull);
-		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Wait on accessing FDD"), &localconfig.bFddWait);
+		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Auto Speed Adjust"), &(cfg->bSpeedAdjust));
+		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Full Speed"), &(cfg->bCPUFull));
+		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Disable Speed adjust when motor on"), &(cfg->bTapeMode));
+		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Full Speed adjust when motor on"), &(cfg->bTapeFull));
+		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Wait on accessing FDD"), &(cfg->bFddWait));
 	}
 
 }
 
-static AG_Numerical *NumMain;
-static AG_Numerical *NumSub;
-static AG_Numerical *NumMainMMR;
-static AG_Numerical *NumMainFMMR;
 
-   
 static void OnResetCycles(AG_Event *event)
 {
-   localconfig.main_speed = MAINCYCLES;
-   localconfig.sub_speed = SUBCYCLES;
-   localconfig.mmr_speed = MAINCYCLES_MMR;
-   localconfig.fmmr_speed = MAINCYCLES_FMMR;
+   AG_Widget *self = AG_SELF();
+   configdat_t *cfg = AG_PTR(1);
+   
+   if(cfg == NULL) return;
+   cfg->main_speed = MAINCYCLES;
+   cfg->sub_speed = SUBCYCLES;
+   cfg->mmr_speed = MAINCYCLES_MMR;
+   cfg->fmmr_speed = MAINCYCLES_FMMR;
 
 //   printf("Reset!\n");
 }
@@ -207,37 +235,50 @@ static AG_Numerical *MakeCycleDialog(AG_Widget *parent, char *label, Uint32 *bin
 }
 
 
-void ConfigMenuVMSpeed(AG_NotebookTab *parent)
+void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
 {
 	AG_Box *box;
 	AG_Label *lbl;
 	AG_Button *btn;
         AG_Event *ev;
+        AG_Numerical *main, *sub, *mmr, *fmmr;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
-        NumMain     = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU"), &localconfig.main_speed);
-        NumSub      = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU"), &localconfig.sub_speed);
-        NumMainMMR  = MakeCycleDialog(AGWIDGET(box), gettext("Main MMR"), &localconfig.mmr_speed);
-        NumMainFMMR = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Fast MMR"), &localconfig.fmmr_speed);
+        main = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU"), &(cfg->main_speed));
+        sub  = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU"), &(cfg->sub_speed));
+        mmr  = MakeCycleDialog(AGWIDGET(box), gettext("Main MMR"), &(cfg->mmr_speed));
+        fmmr = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Fast MMR"), &(cfg->fmmr_speed));
    
-	btn = AG_ButtonNewFn(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, NULL);
+	btn = AG_ButtonNewFn(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, "%p", cfg);
 }
 
 
+void ConfigMenuVMConfig(configdat_t *cfg, AG_NotebookTab *parent)
+{
+
+   AG_Box *box;
+   AG_Label *lbl;
+   AG_Button *btn;
+   AG_Event *ev;
+   
+}
 
 void OnConfigEmulationMenu(AG_Event *event)
 {
-	AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
-	AG_Window *win;
-	AG_Notebook *note;
-	AG_Notebook *note2;
+   AG_MenuItem *self = (AG_MenuItem *)AG_SELF();
+   AG_Window *win;
+   AG_Notebook *note;
+   AG_Notebook *note2;
 
-	AG_NotebookTab *tab;
-	AG_NotebookTab *tab2;
-	AG_Box *box;
-	AG_Button *btn;
-
-	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
+   AG_NotebookTab *tab;
+   AG_NotebookTab *tab2;
+   AG_Box *box;
+   AG_Button *btn;
+   configdat_t *p;
+   
+   p = malloc(sizeof(configdat_t));
+   if(p == NULL) return;
+   memcpy(p, &configdat, sizeof(configdat_t));
 
     win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
@@ -246,22 +287,25 @@ void OnConfigEmulationMenu(AG_Event *event)
     	 * 
     	 */
     	tab = AG_NotebookAddTab(note, gettext("Emulation"), AG_BOX_HORIZ);
-    	ConfigMenuEmulation(tab);
+    	ConfigMenuEmulation(p, tab);
 
     	tab = AG_NotebookAddTab(note, gettext("Cycle"), AG_BOX_HORIZ);
-    	ConfigMenuVMSpeed(tab);
+    	ConfigMenuVMSpeed(p, tab);
 
+    	tab = AG_NotebookAddTab(note, gettext("VM"), AG_BOX_HORIZ);
+    	ConfigMenuVMConfig(p, tab);
     }
+   
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
     AG_WidgetSetSize(AGWIDGET(box), 320, 24);
     {
     	AG_Box *vbox;
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply, NULL);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply2, "%p", p);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
         AG_WidgetSetSize(AGWIDGET(vbox), 80, 24);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel, NULL);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel2, "%p", p);
     }
 	AG_WindowSetCaption(win, gettext("Preferences"));
 	AG_WindowShow(win);

@@ -39,11 +39,10 @@
 #include "agar_cfg.h"
 #include "xm7.h"
 
-extern configdat_t localconfig;
 
-extern void OnPushCancel(AG_Event *event);
-extern void ConfigMenuOpenCL(AG_NotebookTab *parent);
-extern void OnConfigApply(AG_Event *event);
+extern void OnPushCancel2(AG_Event *event);
+extern void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent);
+extern void OnConfigApply2(AG_Event *event);
 
 static int ScreenResoSelected;
 
@@ -107,17 +106,21 @@ static const WORD ScreenSizeHeight[] = {
                 1440
 };
 
+
 static void OnChangeScreenReso(AG_Event *event)
 {
-	int number = AG_INT(1);
+        configdat_t *cfg = AG_PTR(1);
+	int number = AG_INT(2);
+   
+        if(cfg == NULL) return;
 	ScreenResoSelected = number;
-	localconfig.uWidth = ScreenSizeWidth[number];
-	localconfig.uHeight = ScreenSizeHeight[number];
+	cfg->uWidth = ScreenSizeWidth[number];
+	cfg->uHeight = ScreenSizeHeight[number];
         
         AG_SetVideoResizeCallback(NULL);
 	ResizeWindow_Agar2(ScreenSizeWidth[number], ScreenSizeHeight[number]);
-	if(localconfig.nDrawFPS <= 1) {
-		localconfig.nDrawFPS = 2;
+	if(cfg->nDrawFPS <= 1) {
+		cfg->nDrawFPS = 2;
 	}
         AG_SetVideoResizeCallback(ResizeWindow_Agar);
 }
@@ -125,9 +128,12 @@ static void OnChangeScreenReso(AG_Event *event)
 
 static void RenderMethodSelected(AG_Event *event)
 {
-   AG_TlistItem *list = (AG_TlistItem *)AG_PTR(1);
+   AG_TlistItem *list = (AG_TlistItem *)AG_PTR(2);
+   configdat_t *cfg = AG_PTR(1);
    int method = -1;
+   
    if(list == NULL) return;
+   if(cfg == NULL) return;
    
    if(strcmp(gettext("Full Draw"), list->text) == 0) method = RENDERING_FULL;
    if(strcmp(gettext("Diff Block"), list->text) == 0) method = RENDERING_BLOCK;
@@ -135,12 +141,12 @@ static void RenderMethodSelected(AG_Event *event)
    
    if(method < 0) return;
    if(method >= RENDERING_END) return;
-   localconfig.nRenderMethod = method;
+   cfg->nRenderMethod = method;
    return;
 }
 
 
-void OnConfigMenuScreen(AG_NotebookTab *parent)
+static void OnConfigMenuScreen(configdat_t *cfg, AG_NotebookTab *parent)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
@@ -155,7 +161,7 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 
 	limit = sizeof(ScreenSizeHeight) / sizeof(WORD);
 	for(i = 0; i <= limit; i++){
-		if((ScreenSizeWidth[i] == localconfig.uWidth) && (ScreenSizeHeight[i] == localconfig.uHeight)) break;
+		if((ScreenSizeWidth[i] == cfg->uWidth) && (ScreenSizeHeight[i] == cfg->uHeight)) break;
 	}
 	if(i >= limit) i = 2;
 	ScreenResoSelected = i;
@@ -163,18 +169,18 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_VFILL);
 	{
-		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenSizeName, OnChangeScreenReso, NULL);
+		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenSizeName, OnChangeScreenReso, "%p", cfg);
 		AG_BindInt(radio, "value",&ScreenResoSelected);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
 //		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Display rate"), &localconfig.nDrawFPS);
 		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Display rate"));
-		AG_BindUint16(fps, "value", &localconfig.nDrawFPS);
+		AG_BindUint16(fps, "value", &(cfg->nDrawFPS));
 		AG_NumericalSetRangeInt(fps, 2, 75);
 		AG_NumericalSetIncrement(fps, 1);
 
 //		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Emulation rate"), &localconfig.nEmuFPS);
 		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Emulation rate"));
-		AG_BindUint16(fps, "value", &localconfig.nEmuFPS);
+		AG_BindUint16(fps, "value", &(cfg->nEmuFPS));
 		AG_NumericalSetRangeInt(fps, 2, 75);
 		AG_NumericalSetIncrement(fps, 1);
 	   
@@ -185,38 +191,44 @@ void OnConfigMenuScreen(AG_NotebookTab *parent)
 	        TlistItem[1] = AG_TlistAddS(combo->list, NULL, gettext("Diff Block"));
 	        TlistItem[2] = AG_TlistAddS(combo->list, NULL, gettext("Diff Raster"));
 	        for(i = RENDERING_FULL; i < RENDERING_END; i++) {
-		   if(i == localconfig.nRenderMethod) {
+		   if(i == cfg->nRenderMethod) {
 			AG_ComboSelect(combo, TlistItem[i]);
 		   }
 		}
 	   
-	        AG_SetEvent(combo, "combo-selected", RenderMethodSelected, NULL);
+	        AG_SetEvent(combo, "combo-selected", RenderMethodSelected, "%p", cfg);
 	   
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
-		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &localconfig.bFullScan);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &(cfg->bFullScan));
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
-		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("SMOOSING"), &localconfig.bSmoosing);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("SMOOSING"), &(cfg->bSmoosing));
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
-		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use OpenCL(Need REBOOT)"), &localconfig.bUseOpenCL);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use OpenCL(Need REBOOT)"), &(cfg->bUseOpenCL));
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
-		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use SIMD instructions(Need REBOOT)"), &localconfig.bUseSIMD);
+		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Use SIMD instructions(Need REBOOT)"), &(cfg->bUseSIMD));
 	}
 }
 
-float fBright0;
+
 #ifdef USE_OPENGL
 extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 static void OnChangeBright(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
-        if(fBright0 < 0.0f) fBright0 = 0.0f;
-        if(fBright0 > 1.0f) fBright0 = 1.0f;
+        configdat_t *cfg = AG_PTR(1);
+        WORD bright = AG_GetUint16(self, "value");
+        float fBright0;
+   
+        if(cfg == NULL) return;
+        if(bright < 0) bright = 0;
+        if(bright > 255) bright = 255;
+        fBright0 = (float)bright / 255.0f;
         SetBrightRGB_AG_GL2(fBright0, fBright0, fBright0);
-        localconfig.nBrightness = (Uint16)(fBright0 * 255.0f);
+        cfg->nBrightness = bright;
 }
 #endif /* USE_OPENGL */
 
-static void ConfigMenuBright(AG_NotebookTab *parent)
+static void ConfigMenuBright(configdat_t *cfg, AG_NotebookTab *parent)
 {
 	AG_Slider *slider;
 	AG_Box *box;
@@ -224,9 +236,13 @@ static void ConfigMenuBright(AG_NotebookTab *parent)
 	AG_Label *lbl;
 
 	lbl = AG_LabelNew(AGWIDGET(parent), 0, "%s", gettext("Bright"));
-	slider = AG_SliderNewFltR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &fBright0, 0.0f, 1.0f);
+//	slider = AG_SliderNewFltR(AGWIDGET(parent),AG_SLIDER_HORIZ, AG_SLIDER_HFILL, &fBright0, 0.0f, 1.0f);
+	slider = AG_SliderNew(AGWIDGET(parent), AG_SLIDER_HORIZ, AG_SLIDER_HFILL);
+        AG_SetUint16(slider, "value", cfg->nBrightness);
+        AG_SetUint16(slider, "min", 0);
+        AG_SetUint16(slider, "max", 255);
 #ifdef USE_OPENGL
-	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeBright, NULL);
+	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeBright, "%p", cfg);
 #endif /* USE_OPENGL */
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_HFILL);
 
@@ -243,22 +259,25 @@ void OnConfigDisplayMenu(AG_Event *event)
 	AG_NotebookTab *tab2;
 	AG_Box *box;
 	AG_Button *btn;
-
-	memcpy(&localconfig, &configdat, sizeof	(configdat_t));
+        configdat_t *cfg;
+   
+        cfg = malloc(sizeof(configdat_t));
+        if(cfg == NULL) return;
+	memcpy(cfg, &configdat, sizeof	(configdat_t));
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
         note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
 
         {
     	tab = AG_NotebookAddTab(note, gettext("Screen"), AG_BOX_HORIZ);
-    	OnConfigMenuScreen(tab);
+    	OnConfigMenuScreen(cfg, tab);
 #ifdef USE_OPENGL
     	tab = AG_NotebookAddTab(note, gettext("Display"), AG_BOX_HORIZ);
-    	ConfigMenuBright(tab);
+    	ConfigMenuBright(cfg, tab);
 #endif /* USE_OPENGL */
 
 #ifdef _USE_OPENCL
     	tab = AG_NotebookAddTab(note, gettext("OpenCL"), AG_BOX_HORIZ);
-    	ConfigMenuOpenCL(tab);
+    	ConfigMenuOpenCL(cfg, tab);
 #endif /* USE_OPENGL */
     }
     box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
@@ -266,11 +285,11 @@ void OnConfigDisplayMenu(AG_Event *event)
     {
     	AG_Box *vbox;
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply, NULL);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply2, "%p", cfg);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
         AG_WidgetSetSize(AGWIDGET(vbox), 80, 24);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel, NULL);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel2, "%p", cfg);
     }
    AG_WindowSetCaption(win, gettext("Display"));
    AG_WindowShow(win);

@@ -91,6 +91,16 @@ void OnPushCancel(AG_Event *event)
 	AG_ObjectDetach(self->wid.window);
 }
 
+void OnPushCancel2(AG_Event *event)
+{
+	AG_Button *self = (AG_Button *)AG_SELF();
+        void *cfg = AG_PTR(1);
+   
+        if(cfg != NULL) free(cfg);
+	AG_WindowHide(self->wid.window);
+	AG_ObjectDetach(self->wid.window);
+}
+
     /*
      *  ステートロード処理
      */
