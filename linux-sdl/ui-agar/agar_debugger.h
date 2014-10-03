@@ -16,7 +16,7 @@ extern char DebuggerSymFont[];
 
 #define DBG_TEXT_FONT "F\\-Font_400"
 #define DBG_SYM_FONT "F\\-Font_Symbol400"
-#define DBG_TEXT_PT 22
+#define DBG_TEXT_PT 16
 
 enum {
     MEM_MAIN = 0,
