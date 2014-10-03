@@ -31,6 +31,7 @@ extern "C" {
 
 extern void OnPushCancel(AG_Event *event);
 extern void OnConfigEmulationMenu(AG_Event *event);
+extern void OnConfigDisplayMenu(AG_Event *event);
 extern void OnConfigInputMenu(AG_Event *event);
 extern void OnConfigSoundMenu(AG_Event *event);
 
@@ -399,19 +400,22 @@ static void OnTimeAdjust(AG_Event *event)
 void Create_ToolsMenu(AG_MenuItem *parent)
 {
 	AG_MenuItem *item;
+   	AG_MenuItem *subitem ;
 
-	item = AG_MenuAction(parent , gettext("Capture Screen "), NULL, OnGrpCapture, NULL);
-	item = AG_MenuAction(parent , gettext("Capture Screen (Non-Scaled)"), NULL, OnGrpCapture2, NULL);
-	item = AG_MenuAction(parent , gettext("Capture WAV"), NULL, OnWavCapture, NULL);
+	item = AG_MenuNode(parent , gettext("Capture..."), NULL);
+	subitem = AG_MenuAction(item , gettext("Capture Screen "), NULL, OnGrpCapture, NULL);
+	subitem = AG_MenuAction(item , gettext("Capture Screen (Non-Scaled)"), NULL, OnGrpCapture2, NULL);
+	subitem = AG_MenuAction(item , gettext("Capture WAV"), NULL, OnWavCapture, NULL);
 	AG_MenuSeparator(parent);
 	item = AG_MenuAction(parent , gettext("Adjust Clock"), NULL, OnTimeAdjust, NULL);
 	AG_MenuSeparator(parent);
-	item = AG_MenuAction(parent , gettext("Create Virtual Disk"), NULL, OnNewDisk, NULL);
-	item = AG_MenuAction(parent , gettext("Create Virtual Tape"), NULL, OnNewTape, NULL);
-
-	AG_MenuSeparator(parent);
-	item = AG_MenuAction(parent , gettext("Configure Emulation"), NULL, OnConfigEmulationMenu, NULL);
-	item = AG_MenuAction(parent , gettext("Configure Inputs"), NULL, OnConfigInputMenu, NULL);
-	item = AG_MenuAction(parent , gettext("Configure Sound"), NULL, OnConfigSoundMenu, NULL);
+	item = AG_MenuNode(parent , gettext("Create..."), NULL);
+	subitem = AG_MenuAction(item , gettext("Create Virtual Disk"), NULL, OnNewDisk, NULL);
+	subitem = AG_MenuAction(item , gettext("Create Virtual Tape"), NULL, OnNewTape, NULL);
+	item = AG_MenuNode(parent , gettext("Configure..."), NULL);
+	subitem = AG_MenuAction(item , gettext("Configure Emulation"), NULL, OnConfigEmulationMenu, NULL);
+	subitem = AG_MenuAction(item , gettext("Configure Display"), NULL, OnConfigDisplayMenu, NULL);
+	subitem = AG_MenuAction(item , gettext("Configure Inputs"), NULL, OnConfigInputMenu, NULL);
+	subitem = AG_MenuAction(item , gettext("Configure Sound"), NULL, OnConfigSoundMenu, NULL);
 
 }
