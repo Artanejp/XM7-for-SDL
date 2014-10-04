@@ -158,7 +158,7 @@ static void OnSetCyclestealMode(AG_Event *event)
 	cfg->cycle_steal = number;
 }
 
-void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
+static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
@@ -235,7 +235,7 @@ static AG_Numerical *MakeCycleDialog(AG_Widget *parent, char *label, Uint32 *bin
 }
 
 
-void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
+static void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
 {
 	AG_Box *box;
 	AG_Label *lbl;
@@ -252,15 +252,36 @@ void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
 	btn = AG_ButtonNewFn(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, "%p", cfg);
 }
 
+static void CheckTickReso(AG_Event *event)
+{
+   AG_Numerical *self = AG_SELF();
+   Uint32 *p = AG_PTR(1);
 
-void ConfigMenuVMConfig(configdat_t *cfg, AG_NotebookTab *parent)
+   if(p == NULL) return;
+   if(*p > 750) *p = 750;
+   if(*p < 10)  *p = 10;
+}
+
+static void ConfigMenuVMConfig(configdat_t *cfg, AG_NotebookTab *parent)
 {
 
    AG_Box *box;
    AG_Label *lbl;
-   AG_Button *btn;
+   AG_Checkbox *check;
    AG_Event *ev;
-   
+   AG_Numerical *r;
+
+   box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
+   {
+     check = AG_CheckboxNewInt(AGWIDGET(box), 0, gettext("Hi resolution sync VM"), &(cfg->bHiresTick));
+     r = AG_NumericalNewUint32R(AGWIDGET(box), 
+				AG_NUMERICAL_INT, gettext("uS"), 
+				"", &(cfg->nTickResUs), 10, 750);
+     if(r != NULL) {
+       AG_SetUint32(r, "inc", 10);
+       AG_AddEvent(r, "numerical-return", CheckTickReso, "%p", &(cfg->nTickResUs));
+     }
+   }
 }
 
 void OnConfigEmulationMenu(AG_Event *event)
