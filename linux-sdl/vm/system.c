@@ -48,7 +48,10 @@ int             boot_mode;	/* 起動モード BASIC/DOS */
 #if XM7_VER == 1
 BYTE            fm_subtype;	/* ハードウェアサブバージョン
 				 */
-BOOL            lowspeed_mode;	/* 動作クロックモード */
+#endif
+BOOL            lowspeed_mode;	/* 動作クロックモード -> XM7 v3系ではXM7.INI側に */
+
+#if XM7_VER == 1
 BOOL            available_fm8roms;	/* FM-8 ROM使用可能フラグ */
 BOOL            available_fm7roms;	/* FM-7 ROM使用可能フラグ */
 #endif
@@ -88,7 +91,8 @@ system_init(void)
 #elif XM7_VER >= 2
     fm7_ver = 2;		/* FM77AV相当に設定 */
     fm_subtype = FMSUB_FM77;
-    lowspeed_mode = TRUE;
+    //    lowspeed_mode = TRUE;
+    lowspeed_mode = FALSE; /* Add low speed mode 20141004 K.Ohta */
     available_fm8roms = FALSE;
     available_fm7roms = TRUE;
     available_mmrboot = TRUE;

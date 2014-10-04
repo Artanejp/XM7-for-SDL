@@ -214,17 +214,21 @@ void LoadCfg(void)
     }
 
 #endif				/*  */
-	i = LoadCfgInt("CycleSteel", 9999);
+    i = LoadCfgInt("CycleSteel", 9999);
     if ((i < 0) || (i > 1)) {
 	configdat.cycle_steal = LoadCfgBool("CycleSteal", TRUE);
-    }
-
-    else {
+    } else {
 	configdat.cycle_steal = (BOOL) i;
     }
+    configdat.lowspeed_mode = LoadCfgInt("LowSpeedMode", 0);
+
     configdat.main_speed = LoadCfgInt("MainSpeed", MAINCYCLES);
     if ((configdat.main_speed < 1) || (configdat.main_speed > 9999)) {
 	configdat.main_speed = MAINCYCLES;
+    }
+    configdat.main_speed_low = LoadCfgInt("MainSpeedLow", MAINCYCLES_LOW);
+    if ((configdat.main_speed_low < 1) || (configdat.main_speed_low > 9999)) {
+	configdat.main_speed_low = MAINCYCLES_LOW;
     }
     configdat.mmr_speed = LoadCfgInt("MMRSpeed", MAINCYCLES_MMR);
     if ((configdat.mmr_speed < 1) || (configdat.mmr_speed > 9999)) {
@@ -238,9 +242,13 @@ void LoadCfg(void)
     }
 
 #endif				/*  */
-	configdat.sub_speed = LoadCfgInt("SubSpeed", SUBCYCLES);
+    configdat.sub_speed = LoadCfgInt("SubSpeed", SUBCYCLES);
     if ((configdat.sub_speed < 1) || (configdat.sub_speed > 9999)) {
 	configdat.sub_speed = SUBCYCLES;
+    }
+    configdat.sub_speed = LoadCfgInt("SubSpeedLow", SUBCYCLES_LOW);
+    if ((configdat.sub_speed_low < 1) || (configdat.sub_speed_low > 9999)) {
+	configdat.sub_speed_low = SUBCYCLES_LOW;
     }
     configdat.bTapeFull = LoadCfgBool("TapeFullSpeed", TRUE);
     configdat.bCPUFull = LoadCfgBool("FullSpeed", FALSE);
@@ -572,7 +580,9 @@ void SaveCfg(void)
     }
     SaveCfgInt("Version", configdat.fm7_ver);
     SaveCfgBool("CycleSteal", configdat.cycle_steal);
+    SaveCfgInt("LowSpeedMode", configdat.lowspeed_mode);
     SaveCfgInt("MainSpeed", configdat.main_speed);
+    SaveCfgInt("MainSpeedLow", configdat.main_speed_low);
     SaveCfgInt("MMRSpeed", configdat.mmr_speed);
 
 #if XM7_VER >= 3
@@ -580,6 +590,7 @@ void SaveCfg(void)
 
 #endif				/*  */
     SaveCfgInt("SubSpeed", configdat.sub_speed);
+    SaveCfgInt("SubSpeedLow", configdat.sub_speed_low);
     SaveCfgBool("TapeFullSpeed", configdat.bTapeFull);
     SaveCfgBool("TapeFullSpeedMode", configdat.bTapeMode);
     SaveCfgBool("FullSpeed", configdat.bCPUFull);
@@ -736,7 +747,9 @@ void ApplyCfg(void)
  */
     fm7_ver = configdat.fm7_ver;
     cycle_steal = configdat.cycle_steal;
+    lowspeed_mode = configdat.lowspeed_mode;
     main_speed = configdat.main_speed * 10;
+    main_speed_low = configdat.main_speed_low * 10;
     mmr_speed = configdat.mmr_speed * 10;
 
 #if XM7_VER >= 3
@@ -744,6 +757,7 @@ void ApplyCfg(void)
 
 #endif				/*  */
     sub_speed = configdat.sub_speed * 10;
+    sub_speed_low = configdat.sub_speed_low * 10;
     bTapeFullSpeed = configdat.bTapeFull;
     bFullSpeed = configdat.bCPUFull;
     bAutoSpeedAdjust = configdat.bSpeedAdjust;

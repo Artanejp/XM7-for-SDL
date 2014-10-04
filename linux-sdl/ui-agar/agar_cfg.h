@@ -48,7 +48,9 @@ typedef struct {
 	int  fm7_ver;	/* ハードウェアバージョン */
 	BOOL cycle_steal;	/* サイクルスチールフラグ
 	 */
+        int lowspeed_mode;            /* 低速モード(FM-7エミュレーション向け) */
 	DWORD main_speed;	/* メインCPUスピード */
+	DWORD main_speed_low;	/* メインCPUスピード */
 	DWORD mmr_speed;	/* メインCPU(MMR)スピード */
 
 #if XM7_VER >= 3
@@ -57,6 +59,7 @@ typedef struct {
 
 #endif				/*  */
 	DWORD sub_speed;	/* サブCPUスピード */
+	DWORD sub_speed_low;	/* サブCPUスピード(低速) */
 	DWORD uTimerResolution;	/* マルチメディアタイマー精度
 	 */
 	BOOL bTapeFull;	/* テープモータ時の速度フラグ */

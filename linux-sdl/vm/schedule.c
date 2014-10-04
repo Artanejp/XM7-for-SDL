@@ -45,7 +45,7 @@ WORD            sub_overcycles;	/* サブCPUオーバーサイクル */
 BOOL            cycle_steal;	/* サイクルスチールフラグ */
 DWORD           speed_ratio;	/* CPU動作速度(%) */
 DWORD           vmtime;		/* VM仮想時間 */
-#if XM7_VER == 1
+//#if XM7_VER == 1
 DWORD           main_speed_low;	/* メインCPUスピード(低速) */
 DWORD           sub_speed_low;	/* サブCPUスピード(低速) */
 #ifdef JSUB
@@ -55,7 +55,7 @@ WORD            jsub_overcycles;	/* 日本語サブCPUオーバーサイクル
 WORD            jsub_runadr;	/* 日本語サブCPUの前回実行アドレス
 				 */
 #endif
-#endif
+//#endif
 
 /*
  *      スタティック ワーク
@@ -97,14 +97,14 @@ schedule_init(void)
     cycle_steal = TRUE;
     main_overcycles = 0;
     sub_overcycles = 0;
-#if XM7_VER == 1
+    //#if XM7_VER == 1
     main_speed_low = MAINCYCLES_LOW * 10;
     sub_speed_low = SUBCYCLES_LOW * 10;
 #ifdef JSUB
     jsub_speed = JSUBCYCLES * 10;
     jsub_overcycles = 0;
 #endif
-#endif
+    //#endif
 
     /*
      * 仮想時間初期化
@@ -182,13 +182,13 @@ schedule_get_cycle(void)
 	tmp = fmmr_speed;
     } else
 #endif
-#if XM7_VER == 1
-    if (lowspeed_mode) {
+      //#if XM7_VER == 1
+    if (lowspeed_mode && (fm7_ver == 1)) {
 	tmp = main_speed_low;
     } else {
-#else
-    {
-#endif
+      //#else
+      //{
+      //#endif
 	if (mmr_flag || twr_flag) {
 	    tmp = mmr_speed;
 	} else {
@@ -777,15 +777,15 @@ schedule_exec(DWORD microsec)
 	 * メインCPUとサブCPUの動作速度比率を求める
 	 */
 	cycle = schedule_get_cycle();
-#if XM7_VER == 1
-	if (lowspeed_mode) {
+	//#if XM7_VER == 1
+	if (lowspeed_mode && (fm7_ver == 1)) {
 	    tmp = (sub_speed_low * speed_ratio) / 100000;
 	} else {
 	    tmp = (sub_speed * speed_ratio) / 100000;
 	}
-#else
+	//#else
 	tmp = (sub_speed * speed_ratio) / 100000;
-#endif
+	//#endif
 	if (tmp < 1) {
 	    tmp = 1;
 	}

@@ -74,15 +74,15 @@ maincpu_execline(void)
 {
     DWORD           cnt;
 
-#if XM7_VER >= 2
-    cnt = 0x100;
-#else
-    if (lowspeed_mode) {
+    //#if XM7_VER >= 2
+    //cnt = 0x100;
+    //#else
+    if (lowspeed_mode && (fm7_ver == 1)) {
 	cnt = 0x09e;
     } else {
 	cnt = 0x100;
     }
-#endif
+    //#endif
 
     /*
      * 1行実行
@@ -113,15 +113,15 @@ maincpu_exec(void)
 {
     DWORD           cnt;
 
-#if XM7_VER >= 2
-    cnt = 0x100;
-#else
-    if (lowspeed_mode) {
+    //#if XM7_VER >= 2
+    //cnt = 0x100;
+    //#else
+    if (lowspeed_mode && (fm7_ver == 1)) {
 	cnt = 0x09e;
     } else {
 	cnt = 0x100;
     }
-#endif
+    //#endif
 
     /*
      * 実行

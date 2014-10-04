@@ -296,11 +296,11 @@ BOOL FASTCALL mainetc_readb(WORD addr, BYTE * dat)
 	} else {
 	    ret = 0x7f;
 	}
-#if XM7_VER == 1
-	if (lowspeed_mode) {
+	//#if XM7_VER == 1
+	if (lowspeed_mode && (fm7_ver == 1)) { // Add clock feature for FM-7 compatible mode. 20141004 K.Ohta
 	    ret &= (BYTE) 0xfe;
 	}
-#endif
+	//#endif
 	*dat = ret;
 	return TRUE;
 

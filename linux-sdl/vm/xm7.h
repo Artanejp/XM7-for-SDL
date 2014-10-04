@@ -669,10 +669,13 @@ extern          "C" {
     /*
      * ハードウェアサブバージョン
      */
+#endif
     extern BOOL     lowspeed_mode;
     /*
-     * CPU動作クロックモード
+     * CPU動作クロックモード(FM-7モードのみ)
      */
+
+  //#if XM7_VER == 1
     extern DWORD    main_speed_low;
     /*
      * メインCPUスピード(低速)
@@ -691,7 +694,7 @@ extern          "C" {
      * 日本語サブCPUオーバーサイクル数
      */
 #endif
-#endif
+  //#endif
 
     /*
      *      メモリ
