@@ -246,7 +246,7 @@ void LoadCfg(void)
     if ((configdat.sub_speed < 1) || (configdat.sub_speed > 9999)) {
 	configdat.sub_speed = SUBCYCLES;
     }
-    configdat.sub_speed = LoadCfgInt("SubSpeedLow", SUBCYCLES_LOW);
+    configdat.sub_speed_low = LoadCfgInt("SubSpeedLow", SUBCYCLES_LOW);
     if ((configdat.sub_speed_low < 1) || (configdat.sub_speed_low > 9999)) {
 	configdat.sub_speed_low = SUBCYCLES_LOW;
     }
@@ -263,7 +263,7 @@ void LoadCfg(void)
 	/*
 	 * 全般ページ(隠し)
 	 */
-	configdat.uTimerResolution = LoadCfgInt("TimerResolution", 1);
+     configdat.uTimerResolution = LoadCfgInt("TimerResolution", 1);
     if ((configdat.uTimerResolution < 1)
 	 || (configdat.uTimerResolution > 10)) {
 	configdat.uTimerResolution = 1;

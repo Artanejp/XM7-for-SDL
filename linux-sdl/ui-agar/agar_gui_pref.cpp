@@ -38,6 +38,7 @@
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
 #include "xm7.h"
+#include "agar_logger.h"
 
 configdat_t localconfig;
 
@@ -123,21 +124,18 @@ enum EmuSpeedNum  {
 		EMUSP_SLOW=0,
 		EMUSP_FAST,
 };
-static const char *EmuCycleName[] =
+
+static const char *EmuSlowClockName[] =
 {
-		"Main CPU",
-		"Main CPU using MMR",
-		"Main CPU using MMR Fast",
-		"Sub CPU",
+		"FAST (2MHz)",
+		"SLOW (1.2MHz)",
 		NULL
 };
-
-enum EmuCycleNum  {
-	EMUCYCLE_MAIN = 0,
-	EMUCYCLE_MAIN_MMR,
-	EMUCYCLE_MAIN_FASTMMR,
-	EMUCYCLE_SUB
+enum EmuSlowClockNum  {
+		EMUCLK_FAST=0,
+		EMUCLF_SLOW,
 };
+
 
 
 static void OnSetEmulationMode(AG_Event *event)
@@ -156,6 +154,20 @@ static void OnSetCyclestealMode(AG_Event *event)
 
         if(cfg == NULL) return;
 	cfg->cycle_steal = number;
+        configdat.cycle_steal = number;
+        cycle_steal = number; // Cycle Steal : Effects immidiatery.
+}
+
+static void OnSetSlowClockMode(AG_Event *event)
+{
+        configdat_t *cfg = AG_PTR(1);
+   	int number = AG_INT(2);
+
+        if(cfg == NULL) return;
+        if(number != 0) number = TRUE;
+	cfg->lowspeed_mode = number;
+        configdat.lowspeed_mode = number;
+        lowspeed_mode = number; // Clock down effects immidiately.
 }
 
 static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
@@ -180,6 +192,12 @@ static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Cycle Steal"));
 	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuSpeedName, OnSetCyclestealMode, "%p", cfg);
 	AG_SetInt(radio, "value", n);
+	   
+	   
+	n = cfg->lowspeed_mode;
+	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Clock(FM-7 Only)"));
+	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuSlowClockName, OnSetSlowClockMode, "%p", cfg);
+	AG_SetInt(radio, "value", n);
 //	AG_BindInt(radio, "value", &(cfg->EmuCyclestealMode));
 	}
 
@@ -202,10 +220,12 @@ static void OnResetCycles(AG_Event *event)
    
    if(cfg == NULL) return;
    cfg->main_speed = MAINCYCLES;
-   cfg->sub_speed = SUBCYCLES;
-   cfg->mmr_speed = MAINCYCLES_MMR;
+   cfg->sub_speed  = SUBCYCLES;
+   cfg->mmr_speed  = MAINCYCLES_MMR;
    cfg->fmmr_speed = MAINCYCLES_FMMR;
 
+   cfg->main_speed_low = MAINCYCLES_LOW;
+   cfg->sub_speed_low  = SUBCYCLES_LOW;
 //   printf("Reset!\n");
 }
 
@@ -242,12 +262,15 @@ static void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
 	AG_Button *btn;
         AG_Event *ev;
         AG_Numerical *main, *sub, *mmr, *fmmr;
+        AG_Numerical *main_low, *sub_low;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
-        main = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU"), &(cfg->main_speed));
-        sub  = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU"), &(cfg->sub_speed));
-        mmr  = MakeCycleDialog(AGWIDGET(box), gettext("Main MMR"), &(cfg->mmr_speed));
-        fmmr = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Fast MMR"), &(cfg->fmmr_speed));
+        main     = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU"), &(cfg->main_speed));
+        sub      = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU"), &(cfg->sub_speed));
+        mmr      = MakeCycleDialog(AGWIDGET(box), gettext("Main MMR"), &(cfg->mmr_speed));
+        fmmr     = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Fast MMR"), &(cfg->fmmr_speed));
+        main_low = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Low"), &(cfg->main_speed_low));
+        sub_low  = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU Low"), &(cfg->sub_speed_low));
    
 	btn = AG_ButtonNewFn(AGWIDGET(parent), 0, gettext("Reset Default"), OnResetCycles, "%p", cfg);
 }
@@ -328,7 +351,7 @@ void OnConfigEmulationMenu(AG_Event *event)
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
     	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel2, "%p", p);
     }
-	AG_WindowSetCaption(win, gettext("Preferences"));
-	AG_WindowShow(win);
+    AG_WindowSetCaption(win, gettext("Preferences"));
+    AG_WindowShow(win);
 }
 
