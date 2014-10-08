@@ -350,7 +350,7 @@ MMRのバンクを、スロット単位で表示します。
 @subsection 標準出力に記録する
 XM7/SDLが書き出す雑多なログを、ターミナルの標準出力に記録します。
 
-@node SYSLOGに記録する,  , 標準出力に記録する, デバッグ
+@node SYSLOGに記録する, ツール , 標準出力に記録する, デバッグ
 @subsection SYSLOGに記録する
 XM7/SDLが書き出す雑多なログを、syslog(3)を使って、システムのログに記録します。
 
@@ -689,7 +689,7 @@ FDDシークやモータの音を収めたWAVファイルも、同じ所に置�
 @c @printindex fn
 @c @printindex vr
 
-@shortcontents
-@contents
+@c @shortcontents
+@c @contents
 
 @bye
