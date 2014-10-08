@@ -17,12 +17,12 @@
 @settitle XM7-SDL.ja 1.0
 @copying 
 このマニュアルは、富士通FM-7のエミュレータ、XM7/SDL　の version 1.0向けです.@*
-
+@indentedblock
 Copyright (C) 1999-2014 ＰＩ．(yasushi@@tanaka.net)@*
 Copyright (C) 2001-2014 Ryu Takegami@*
 Copyright (C) 2010-2014 Kyuma Ohta (whatisthis.sowhat@@gmail.com)@*
 Copyright (C) 2000-2014 モ〜リン　(KFD00403@@nifty.com)@*
-
+@end indentedblock
 @quotation
  このソフトは、りうたけがみ氏とPI.氏によるXM-7 (@url{http://retropc.net/ryu/xm7/}) の改良版であり、ファイル単位でライセンスが入り乱れています(^^;@*
 
@@ -97,14 +97,13 @@ Files:
 Published by Kyuma Ohta <whatisthis.sowhat@@gmail.com>
 @end titlepage
 
-@c 目次
-@contents
 
 @ifnottex
 @node Top, はじめに, (dir), (dir)
 @top XM7/SDL
-このマニュアルはXM7/SDL v1.0の日本語版です。
+@c このマニュアルはXM7/SDL v1.0の日本語版です。
 @menu
+* 目次::
 * はじめに::
 * GUI::
 * ビルド、インストール::
@@ -112,33 +111,41 @@ Published by Kyuma Ohta <whatisthis.sowhat@@gmail.com>
 @end menu
 @end ifnottex
 
-@node はじめに, GUI, Top, Top
+@insertcopying
+
+@c 目次
+
+@node 目次, はじめに, Top, Top
+@contents
+
+
+@node はじめに, GUI, 目次, Top
 @chapter はじめに
 @cindex  first
 @c @cindex chapter, first
 
 @menu
-* はじめに::
+@c * はじめに::
 * セットアップ(U*ixなど)::
 * セットアップ(Windows)::
 * 起動コマンド::
 @end menu
 
-このマニュアルは、@url{http://fm-7.com/, 富士通FM-7} のエミュレータである@url{http://retropc.net/ryu/xm7/, XM7}のU*ix等への移植である@url{http://sky.geocities.jp/artanejp/XM7-SDL/, XM7/SDL} のマニュアルです。
+このマニュアルは、@url{http://fm-7.com/, 富士通FM-7} のエミュレータである@url{http://retropc.net/ryu/xm7/, XM7}のU*ix等への移植である@url{http://sky.geocities.jp/artanejp/XM7-SDL/, XM7/SDL} のマニュアルです。@*
 動作させるには、FM-7/77AV/77AV40SXの@ref{ROM}が必要になりますが、一部のソフトは@url{http://retropc.net/apollo/download/xm7/romset/index.htm, 互換ROM} で動かすことが出来ます。
 
-@node セットアップ(U*ixなど), , はじめに, はじめに
+@node セットアップ(U*ixなど), セットアップ(Windows) , はじめに, はじめに
 @section セットアップ(U*ixなど)
 まず、ホームディレクトリに .xm7 ディレクトリを作り、そこにROMデータとWAVファイルを置きます。
 その上で、xm7を起動してください。
 
-@node セットアップ(Windows), , セットアップ(U*ixなど), はじめに
+@node セットアップ(Windows), 起動コマンド, セットアップ(U*ixなど), はじめに
 @section セットアップ(Windows)
 まず、カレントディレクトリに xm7 ディレクトリを作り、そこにROMデータとWAVファイルを置きます。
 その上で、xm7を起動して下さい。
 
 
-@node 起動コマンド,  , セットアップ(Windows), はじめに
+@node 起動コマンド, GUI , セットアップ(Windows), はじめに
 @section 起動コマンド
 @quotation
 xm7  [-v] [-f|-W] [-d driver] [-r fps] [-t fontspec]@*
@@ -347,7 +354,7 @@ XM7/SDLが書き出す雑多なログを、ターミナルの標準出力に記�
 @subsection SYSLOGに記録する
 XM7/SDLが書き出す雑多なログを、syslog(3)を使って、システムのログに記録します。
 
-@node ツール,  , デバッグ, GUI
+@node ツール, Capture , デバッグ, GUI
 @section ツール
 色々な設定などを行います
 
@@ -534,7 +541,7 @@ OpenCLを使うときのパラメータを設定します。
 @item カセットモニタ: カセットテープの音声をモニタします。@*
 @end itemize
 
-@node 音声設定→その他,  , 音声設定→レンダリング, Configure
+@node 音声設定→その他, ヘルプ , 音声設定→レンダリング, Configure
 @subsubsection 音声設定→その他
 主に、どの音源を接続するか指定します。リセットが必要になるかも知れません。
 
@@ -548,7 +555,7 @@ OpenCLを使うときのパラメータを設定します。
 @subsection ヘルプ
 この画面を表示する予定です。
 
-@node XM7について,  , ヘルプ, ツール
+@node XM7について, ビルド、インストール  , ヘルプ, ツール
 @subsection XM7について
 著作権表示やどのモードで動いているかを表示します。
 
@@ -603,9 +610,9 @@ $ sudo make install
 
 @node アイコン, フォント, 国際化, ビルド、インストール
 @section アイコン
-アイコンに関しては、Agarがico形式を読み込まないので、Image Magickで変換しています。（ない場合はアイコンなしになります)
+アイコンに関しては、Agarがico形式を読み込まないので、@url{http://www.imagemagick.org/, ImageMagick}でPNG形式に変換しています。（ない場合はアイコンなしになります)
 
-@node フォント,  , アイコン, ビルド、インストール
+@node フォント, その他 , アイコン, ビルド、インストール
 @section フォント
 GUIや表示で使われてるデフォルトのフォントは、IPA UIゴシックです。@*
 その他のフォントが必要な場合は、~/.xm7/XM7.INIを変更して下さい。@*
