@@ -5,37 +5,37 @@
 @c -- Oct 07,2014 K.Ohta <whatisthis.sowhat@gmail.com>
 @c
 @c %**end of header
+@ifinfo
 @setfilename xm7-sdl.ja.info
+@end ifinfo
+@ifhtml
+@setfilename xm7-sdl.ja.html
+@end ifhtml
+
 @documentlanguage ja
 @documentencoding UTF-8
 @settitle XM7-SDL.ja 1.0
 @copying 
-このマニュアルは、富士通FM-7のエミュレータ、XM7/SDL　の version 1.0向けです.
+このマニュアルは、富士通FM-7のエミュレータ、XM7/SDL　の version 1.0向けです.@*
 
-Copyright (C) 1999-2014 ＰＩ．(yasushi@@tanaka.net)
-
-Copyright (C) 2001-2014 Ryu Takegami
-
-Copyright (C) 2010-2014 Kyuma Ohta (whatisthis.sowhat@@gmail.com)
-
-Copyright (C) 2000-2014 モ〜リン　(KFD00403@@nifty.com)
+Copyright (C) 1999-2014 ＰＩ．(yasushi@@tanaka.net)@*
+Copyright (C) 2001-2014 Ryu Takegami@*
+Copyright (C) 2010-2014 Kyuma Ohta (whatisthis.sowhat@@gmail.com)@*
+Copyright (C) 2000-2014 モ〜リン　(KFD00403@@nifty.com)@*
 
 @quotation
- このソフトは、りうたけがみ氏とPI.氏によるXM-7 ( http://retropc.net/ryu/xm7/ ) の改良版であり、ファイル単位でライセンスが入り乱れています(^^;
+ このソフトは、りうたけがみ氏とPI.氏によるXM-7 (@url{http://retropc.net/ryu/xm7/}) の改良版であり、ファイル単位でライセンスが入り乱れています(^^;@*
 
- K.Ohtaの完全オリジナル部分は原則 CC-BY-SA 3.0で公開します。
- http://creativecommons.org/licenses/by-sa/3.0/
+ K.Ohtaの完全オリジナル部分は原則 CC-BY-SA 3.0で公開します。@*
+ @url{http://creativecommons.org/licenses/by-sa/3.0/}
  
- 6809MPUコアに関しては,MESSからの流用なので、MESSのライセンスに 準拠します(非商用での使用に限り再配布可能）
- http://www.mess.org/license
+ 6809MPUコアに関しては,MESSからの流用なので、MESSのライセンスに 準拠します(非商用での使用に限り再配布可能）@*
+ @url{http://www.mess.org/license}
 
- fmgen/ はCISC氏によるものですので、以下のページもお読みください http://retropc.net/cisc/m88/
- 
- その他のvm/のファイルはオリジナルXM7に準じます（オリジナルの著作権表示・商業利用の禁止）
-
-　オリジナルXM7からの再利用からK.Ohtaが作った部分は、元ライセンスの規制に無い限りCC-BY-NC-SA 3.0で公開します。
-
-　バイナリに関しては、オリジナルのXM-7に準じます。
+ fmgen/ はCISC氏によるものですので、以下のページもお読みください @url{http://retropc.net/cisc/m88/}@*
+ その他のvm/のファイルはオリジナルXM7に準じます（オリジナルの著作権表示・商業利用の禁止）@*
+　オリジナルXM7からの再利用からK.Ohtaが作った部分は、元ライセンスの規制に無い限りCC-BY-NC-SA 3.0で公開します。@*
+　バイナリに関しては、オリジナルのXM-7に準じます。@*
 @end quotation
 @quotation
 Files:
@@ -72,17 +72,14 @@ Files:
 @end quotation
 @quotation
 オリジナルXM7のソースコードの著作権表示より：
-□使用規定（ライセンス）
+□使用規定（ライセンス）@*
 
-  アーカイブに含まれるファイル群は、一部の例外(後述)を除き、ＰＩ．および
-たけがみりうが著作権を保有しています。
+  アーカイブに含まれるファイル群は、一部の例外(後述)を除き、ＰＩ．およびたけがみりうが著作権を保有しています。@*
   
-  ソースファイルの一部、もしくは全部を再利用する場合は、次の規則に基づくものとします。
+  ソースファイルの一部、もしくは全部を再利用する場合は、次の規則に基づくものとします。@*
       
- ・VMディレクトリ下のファイルを再利用する場合は、ドキュメントにオリジナルの
-   著作権表示を明記してください。また商用利用は禁止します。
- ・それ以外の部分の再利用は自由です。ただし前項同様、商用利用は禁止します。
-   このアーカイブの再配布はできません。無断転載を禁じます。
+ ・VMディレクトリ下のファイルを再利用する場合は、ドキュメントにオリジナルの著作権表示を明記してください。また商用利用は禁止します。@*
+ ・それ以外の部分の再利用は自由です。ただし前項同様、商用利用は禁止します。このアーカイブの再配布はできません。無断転載を禁じます。@*
 		
 @end quotation 
 @end copying
@@ -104,13 +101,11 @@ Published by Kyuma Ohta <whatisthis.sowhat@@gmail.com>
 @contents
 
 @ifnottex
-
 @node Top, はじめに, (dir), (dir)
 @top XM7/SDL
 このマニュアルはXM7/SDL v1.0の日本語版です。
 @menu
 * はじめに::
-* Index::
 * GUI::
 * ビルド、インストール::
 * その他::
@@ -129,8 +124,8 @@ Published by Kyuma Ohta <whatisthis.sowhat@@gmail.com>
 * 起動コマンド::
 @end menu
 
-このマニュアルは、富士通FM-7 @indicateurl{http://fm-7.com/} のエミュレータであるXM7 @indicateurl{http://retropc.net/ryu/xm7/}のU*ix等への移植であるXM7/SDL @indicateurl{http://sky.geocities.jp/artanejp/XM7-SDL/} のマニュアルです。
-動作させるには、FM-7/77AV/77AV40SXの@ref{ROM}が必要になりますが、一部のソフトは互換ROM @indicateurl{http://retropc.net/apollo/download/xm7/romset/index.htm} で動かすことが出来ます。
+このマニュアルは、@url{http://fm-7.com/, 富士通FM-7} のエミュレータである@url{http://retropc.net/ryu/xm7/, XM7}のU*ix等への移植である@url{http://sky.geocities.jp/artanejp/XM7-SDL/, XM7/SDL} のマニュアルです。
+動作させるには、FM-7/77AV/77AV40SXの@ref{ROM}が必要になりますが、一部のソフトは@url{http://retropc.net/apollo/download/xm7/romset/index.htm, 互換ROM} で動かすことが出来ます。
 
 @node セットアップ(U*ixなど), , はじめに, はじめに
 @section セットアップ(U*ixなど)
@@ -146,87 +141,54 @@ Published by Kyuma Ohta <whatisthis.sowhat@@gmail.com>
 @node 起動コマンド,  , セットアップ(Windows), はじめに
 @section 起動コマンド
 @quotation
-xm7  [-v] [-f|-W] [-d driver] [-r fps] [-t fontspec]
-                         [-w width] [-h height]
-                	 [-F font.face] [-S font.size]
-			 [-o osd-font.face] [-O osd-font.size]
-			 [-s SavePath] [-l LoadPath] 
-                         [-T font-path]
-                          -f : FullScreen
-                         -W:Window Mode
+xm7  [-v] [-f|-W] [-d driver] [-r fps] [-t fontspec]@*
+                         [-w width] [-h height]@*
+                	 [-F font.face] [-S font.size]@*
+			 [-o osd-font.face] [-O osd-font.size]@*
+			 [-s SavePath] [-l LoadPath] @*
+                         [-T font-path]@*
+                          -f : FullScreen@*
+                          -W : Window Mode@*
 @end quotation
 
-
-@menu
-* -tコマンド::
-* -dコマンド::
-* -fコマンド::
-* -Wコマンド::
-* -Tコマンド::
-* -Fコマンド::
-* -Sコマンド::
-* -oコマンド::
-* -Oコマンド::
-* -lコマンド::
-* -sコマンド::
-* -iコマンド::
-* -?コマンド::
-@end menu
-
-@node -tコマンド, , 起動コマンド, 起動コマンド
-@subsection -tコマンド
-デフォルトで使うフォント名を指定します。fontconfigが使える場合は、fontconfig記法で指定可能です。
-
-@node -dコマンド, , -tコマンド, 起動コマンド
-@subsection -dコマンド
-Agar GUIツールキット @indicateurl{http://libagar.org/}の表示ドライバを指定します。
-Unix系の場合、大抵は''sdlgl'' ``sdlfb'' ``glx''が使用可能です。
-MacOS系の場合は、''glx''の代わりに''cocoa''が使用可能でしょう。
-Windows系の場合は、''glx''の代わりに、''wgl''が使用可能です。
-
-@node -fコマンド, , -dコマンド, 起動コマンド
-@subsection -fコマンド
-フルスクリーンで起動します。
-
-@node -Wコマンド, , -fコマンド, 起動コマンド
-@subsection -Wコマンド
-ウィンドウモードで起動します。
-
-@node -Tコマンド, , -Wコマンド, 起動コマンド
-@subsection -Tコマンド
-システムで設定されてない場所のフォントを検索するときに使います。
-
-@node -Fコマンド, , -Tコマンド, 起動コマンド
-@subsection -Fコマンド
-AgarのGUIが使うフォントを独自に設定します。
-
-@node -Sコマンド, , -Fコマンド, 起動コマンド
-@subsection -Sコマンド
-AgarのGUIのフォントサイズをポイント単位で指定します。
-
-@node -oコマンド, , -Sコマンド, 起動コマンド
-@subsection -oコマンド
-OSDのフォント名を指定します。デフォルトは、IPA UIゴシックです。
-
-@node -Oコマンド, , -oコマンド, 起動コマンド
-@subsection -Oコマンド
-OSDのフォントの大きさを指定します。
-
-@node -lコマンド, , -Oコマンド, 起動コマンド
-@subsection -lコマンド
-システム指定外(~/.xm7/ 又は ./xm7/ 以外)から、agarの設定を読み込む場合に使います。
-
-@node -sコマンド, , -lコマンド, 起動コマンド
-@subsection -sコマンド
-システム指定外(~/.xm7/ 又は ./xm7/ 以外)に、agarの設定をセーブする場合に使います。
-
-@node -iコマンド, , -sコマンド, 起動コマンド
-@subsection -iコマンド
-システム指定外でagarの設定をロード・セーブする場合に使います。
-
-@node -?コマンド,  , -iコマンド, 起動コマンド
-@subsection -?コマンド
-コマンドヘルプを表示します。
+@itemize
+@item -t fontname
+デフォルトで使うフォント名を指定します。fontconfigが使える場合は、fontconfig記法で指定可能です。@*
+@item -d drivername
+@url{http://libagar.org/, Agar GUIツールキット}の表示ドライバを指定します。@*
+@indentedblock
+Unix系の場合、大抵は''sdlgl'' ``sdlfb'' ``glx''が使用可能です。@*
+@itemize
+@item sdlgl は、libSDLのOpenGLドライバです。
+@item sdlfb は、libSDLの非GLドライバです。
+@item glx は、XのOpenGLドライバで、マルチウインドウです。
+@end itemize
+MacOS系の場合は、''glx''の代わりに''cocoa''が使用可能でしょう。@*
+Windows系の場合は、''glx''の代わりに、''wgl''が使用可能です。@*
+@end indentedblock
+@item -f
+フルスクリーンで起動します。@*
+@item -W
+ウィンドウモードで起動します。@*
+@item -T pathspec
+システムで設定されてない場所のフォントを検索するときに使います。@*
+@item -F fontname
+AgarのGUIが使うフォントを独自に設定します。@*
+@item -S pt
+AgarのGUIのフォントサイズをポイント単位で指定します。@*
+@item -o fontname
+OSDのフォント名を指定します。デフォルトは、''IPA UI Gothic''です。@*
+@item -O pt
+OSDのフォントの大きさを指定します。@*
+@item -l path
+システム指定外(~/.xm7/ 又は ./xm7/ 以外)から、agarの設定を読み込む場合に使います。@*
+@item -s path
+システム指定外(~/.xm7/ 又は ./xm7/ 以外)に、agarの設定をセーブする場合に使います。@*
+@item -i path
+システム指定外でagarの設定をロード・セーブする場合に使います。@*
+@item -?
+コマンドヘルプを表示します。@*
+@end itemize
 
 @node GUI, ビルド、インストール, はじめに, Top
 @chapter GUI
@@ -243,82 +205,45 @@ OSDのフォントの大きさを指定します。
 @section ファイル
 雑多なシーケンスを指定します。
 
-@menu
-* ステートを保存する::
-* クイックセーブ::
-* ステートを読み込む::
-* クイックロード::
-* リセット::
-* ホットリセット::
-* ブートモード::
-* 終了::
-@end menu
-
-@node ステートを保存する, クイックセーブ, ファイル, ファイル
-@subsection ステートを保存する
-XM7形式の、仮想マシンのスナップショットを保存します。Windows版XM7と互換性があります。
-
-@node クイックセーブ, ステートを読み込む, ステートを保存する, ファイル
-@subsection クイックセーブ
-直前に保存されたスナップショットを上書きで保存します。
-
-@node ステートを読み込む, クイックロード, クイックセーブ, ファイル
-@subsection ステートを読み込む
-XM7形式の、仮想マシンのスナップショットを読み込みます。Windows版XM7と互換性があります。
-
-@node クイックロード, リセット, ステートを読み込む, ファイル
-@subsection クイックロード
-直前に書き込んだスナップショットを読み込みます。
-
-@node リセット, ホットリセット, クイックロード, ファイル
-@subsection リセット
-仮想マシンをリセットします。実機のリセットボタンを押したのとほぼ同じで、初期化をします。
-
-@node ホットリセット, ブートモード, リセット, ファイル
-@subsection ホットリセット
-仮想マシンをホットリセットします。初期化をしませんので、[BREAK]キーを押しながらリセットしたのとほぼ同じですが、一部のソフトではこのコマンドを入れるときには[BREAK]キーに相当する[ESC]キーを押しながらでないとダメな場合もあるでしょう(例えばマッピーとか)。
-
-@node ブートモード, 終了, ホットリセット, ファイル
-@subsection ブートモード
+@itemize
+@item ステートを保存する :
+XM7形式の、仮想マシンのスナップショットを保存します。Windows版XM7と互換性があります。@*
+@item クイックセーブ :
+直前に保存されたスナップショットを上書きで保存します。@*
+@item ステートを読み込む :
+XM7形式の、仮想マシンのスナップショットを読み込みます。Windows版XM7と互換性があります。@*
+@item クイックロード :
+直前に書き込んだスナップショットを読み込みます。@*
+@item リセット:
+仮想マシンを(コールド)リセットします。実機のリセットボタンを押したのとほぼ同じで、初期化をします。@*
+@item ホットリセット :
+仮想マシンをホットリセットします。初期化をしませんので、[BREAK]キーを押しながらリセットしたのとほぼ同じですが、一部のソフトではこのコマンドを入れるときには[BREAK]キーに相当する[ESC]キーを押しながらでないとダメな場合もあるでしょう(例えばマッピーとか)。@*
+@item ブートモード :
 起動モードを設定します。指定後、コールドリセットします。
-* BASIC: BASICモードを指定します。大半のソフトはこれで動くでしょう。
-* DOS: DOSモード(M$-DOSではない！)で起動します。R-DOSやOS-9、CP/M(非対応)などで必要です。
-
-@node 終了,  , ブートモード, ファイル
-@subsection 終了
-XM7/SDLを終了します
+@itemize
+@item BASIC: BASICモードを指定します。大半のソフトはこれで動くでしょう。
+@item DOS: DOSモード(M$-DOSではない！)で起動します。R-DOSやOS-9、CP/M(非対応)などで必要です。
+@end itemize
+@item 終了 :
+XM7/SDLを終了します@*
+@end itemize
 
 @node ドライブ1, ドライブ0, ファイル, GUI
 @section ドライブ1
 (仮想)フロッピーのドライブ1に関するメニューです。
 
-@menu
-* 開く::
-* 両ドライブで開く::
-* 取り出す::
-* 書き込み保護::
-* イメージの選択::
-@end menu
-
-@node 開く, 両ドライブで開く, ドライブ1, ドライブ1
-@subsection 開く
-指定した仮想ディスク(D77/D88/2Dなどの形式)を当該ドライブだけに開きます。
-
-@node 両ドライブで開く, 取り出す, 開く, ドライブ1
-@subsection 両ドライブで開く
-指定した仮想ディスクを1:と0:の両方のドライブで開きます。イメージが一つしか入ってない場合は、0:が優先されます。
-
-@node 取り出す, 書き込み保護, 両ドライブで開く, ドライブ1
-@subsection 取り出す
-開かれている仮想ディスクを取り出します。
-
-@node 書き込み保護, イメージの選択, 取り出す, ドライブ1
-@subsection 書き込み保護
-仮想ディスクの書き込み保護スイッチをON/OFFします。初期値は、開いた時のイメージファイルの設定です。
-
-@node イメージの選択,  , 書き込み保護, ドライブ1
-@subsection イメージの選択
-D77形式などで、複数のイメージを一つのファイルに入れている場合、どのイメージを読み書きするか設定します。
+@itemize
+@item 開く :
+指定した仮想ディスク(D77/D88/2Dなどの形式)を当該ドライブだけに開きます。@*
+@item 両ドライブで開く :
+指定した仮想ディスクを1:と0:の両方のドライブで開きます。イメージが一つしか入ってない場合は、0:が優先されます。@*
+@item 取り出す :
+開かれている仮想ディスクを取り出します。@*
+@item 書き込み保護 :
+仮想ディスクの書き込み保護スイッチをON/OFFします。初期値は、開いた時のイメージファイルの設定です。@*
+@item イメージの選択 :
+D77形式などで、複数のイメージを一つのファイルに入れている場合、どのイメージを読み書きするか設定します。@*
+@end itemize
 
 @node ドライブ0, テープ, ドライブ1, GUI
 @section ドライブ0
@@ -328,38 +253,20 @@ D77形式などで、複数のイメージを一つのファイルに入れて�
 @section テープ
 仮想テープに関するメニューです。
 
-@menu
-* テープを開く::
-* テープを取り出す::
-* テープの書き込み保護::
-* 巻き戻し::
-* 早送り::
-* テープに録音する::
-@end menu
-
-@node テープを開く, テープを取り出す, テープ, テープ
-@subsection 開く
-T77形式の仮想テープを開きます。
-
-@node テープを取り出す, テープの書き込み保護, テープを開く, テープ
-@subsection 取り出す
-開いてる仮想テープを取り出します。
-
-@node テープの書き込み保護, 巻き戻し, テープを取り出す, テープ
-@subsection 書き込み保護
-仮想テープの書き込み保護のON/OFFを行います。初期値はOFFです。
-
-@node 巻き戻し, 早送り, テープの書き込み保護, テープ
-@subsection 巻き戻し
-仮想テープを最初の方に巻き戻します。
-
-@node 早送り, テープに録音する, 巻き戻し, テープ
-@subsection 早送り
-仮想テープを幾らか早送りします。
-
-@node テープに録音する,  , 早送り, テープ
-@subsection テープに録音する
-テープに録音します。既に書かれているデータの今の場所から先が上書きされます。テープにセーブするソフトで必要でしょう。
+@itemize
+@item 開く :
+T77形式の仮想テープを開きます。@*
+@item 取り出す :
+開いてる仮想テープを取り出します。@*
+@item 書き込み保護 :
+仮想テープの書き込み保護のON/OFFを行います。初期値はOFFです。@*
+@item 巻き戻し :
+仮想テープを最初の方に巻き戻します。@*
+@item 早送り :
+仮想テープを幾らか早送りします。@*
+@item テープに録音する :
+テープに録音します。既に書かれているデータの今の場所から先が上書きされます。テープにセーブするソフトで必要でしょう。@*
+@end itemize
 
 @node デバッグ, ツール, テープ, GUI
 @section デバッグ
@@ -385,28 +292,31 @@ T77形式の仮想テープを開きます。
 
 @node メインメモリをダンプする , サブメモリをダンプする, 一時停止, デバッグ
 @subsection メインメモリをダンプする 
-指定番地から256バイトの、メインMPU空間のメモリを表示／変更します。
+指定番地から256バイトの、メインMPU空間のメモリを表示／変更します。@*
 又、以下のキーコマンドが使用可能です：
-* ESC: 今の番地への読書きをトグルで指定します。書き込み可能な場合、0〜Fキーを使い１６進で打ち込みます。
-* J: 表示画面からアドレスを直接指定します。
-* 左右カーソル: アドレスを1増減します。
-* 上下カーソル: アドレスを16(0x10)増減します
-* Page Up/Down: アドレスを256(0x100)増減します。
-* H: ヘルプを表示します。
+@indentedblock
+* ESC: 今の番地への読書きをトグルで指定します。書き込み可能な場合、0〜Fキーを使い１６進で打ち込みます。@*
+* J: 表示画面からアドレスを直接指定します。@*
+* 左右カーソル: アドレスを1増減します。@*
+* 上下カーソル: アドレスを16(0x10)増減します@*
+* Page Up/Down: アドレスを256(0x100)増減します。@*
+* H: ヘルプを表示します。@*
+@end indentedblock
 
 @node サブメモリをダンプする, メインメモリを逆アセンブル, メインメモリをダンプする , デバッグ
 @subsection サブメモリをダンプする
-サブMPU空間のメモリを表示／変更します。
+サブMPU空間のメモリを表示／変更します。@*
 コマンドは、@ref{メインメモリをダンプする}と同じです。
 
 @node メインメモリを逆アセンブル, サブメモリを逆アセンブル, サブメモリをダンプする, デバッグ
 @subsection メインメモリを逆アセンブル
-メインメモリの指定番地から20行分、逆アセンブルします。
+メインメモリの指定番地から20行分、逆アセンブルします。@*
 又、以下のキーコマンドが使用可能です：
-* Page Up/Down: 1ページ移動します。
-* J: 指定アドレスに移動します。
-* H: ヘルプを表示します。
-
+@indentedblock
+* Page Up/Down: 1ページ移動します。@*
+* J: 指定アドレスに移動します。@*
+* H: ヘルプを表示します。@*
+@end indentedblock
 
 @node サブメモリを逆アセンブル, メインCPUのレジスタ, メインメモリを逆アセンブル, デバッグ
 @subsection サブメモリを逆アセンブル
@@ -444,58 +354,43 @@ XM7/SDLが書き出す雑多なログを、syslog(3)を使って、システム�
 @menu
 * Capture::
 * 時計の時間合わせ::
-* Create...::
-* Configure...::
+* Create::
+* Configure::
 * ヘルプ::
 * XM7について::
 @end menu
 
 @node Capture, 時計の時間合わせ, ツール, ツール
 @subsection Capture
-色々と取り込みます
-@menu
-* 画面を取り込む::
-* 画面を取り込む(拡大なし)::
-* 音声を取り込む::
-@end menu
+色々と取り込みます。
 
-@node 画面を取り込む, 画面を取り込む(拡大なし), Capture, Capture
-@subsubsection 画面を取り込む
-現在表示してる画面を、640x400のサイズ固定のBMP形式で取り込みます。
+@itemize
+@item 画面を取り込む :
+現在表示してる画面を、640x400のサイズ固定のBMP形式で取り込みます。@*
+@item 画面を取り込む(拡大なし) :
+現在表示してる画面を、その時の表示モードのサイズのBMP形式で取り込みます。@*
+@item 音声を取り込む :
+現在の音声を、2chのWAV形式で取り込みます。@*
+@end itemize
 
-@node 画面を取り込む(拡大なし), 音声を取り込む, 画面を取り込む, Capture
-@subsubsection 画面を取り込む(拡大なし)
-現在表示してる画面を、その時の表示モードのサイズのBMP形式で取り込みます。
-
-@node 音声を取り込む,  , 画面を取り込む(拡大なし), Capture
-@subsubsection 音声を取り込む
-現在の音声を、2chのWAV形式で取り込みます。
-
-@node 時計の時間合わせ, Create..., Capture, ツール
+@node 時計の時間合わせ, Create, Capture, ツール
 @subsection 時計の時間合わせ
 内蔵RTCの時間を、現在時刻に合わせます。
 
-@node Create..., Configure..., 時計の時間合わせ, ツール
+@node Create, Configure, 時計の時間合わせ, ツール
 @subsection Create...
 仮想ディスク／テープを作ります。
 
-@menu
-* 仮想ディスクを作る::
-* 仮想テープを作る::
-@end menu
+@itemize
+@item 仮想ディスクを作る :
+D77形式かつ一枚の仮想ディスクを作成します。2D/2DDの種別やタイトルが指定可能です。@*
+@item 仮想テープを作る :
+T77形式の仮想テープを作成します。@*
+@end itemize
 
-@node 仮想ディスクを作る, 仮想テープを作る, Create..., Create...
-@subsubsection 仮想ディスクを作る
-D77形式かつ一枚の仮想ディスクを作成します。2D/2DDの種別やタイトルが指定可能です。
-
-@node 仮想テープを作る,  , 仮想ディスクを作る, Create...
-@subsubsection 仮想テープを作る
-T77形式の仮想テープを作成します。
-
-@node Configure..., ヘルプ, Create..., ツール
+@node Configure, ヘルプ, Create, ツール
 @subsection Configure...
 エミュレータの設定をします。
-
 
 @menu
 * エミュレーション設定→エミュレーション::
@@ -514,150 +409,142 @@ T77形式の仮想テープを作成します。
 * 音声設定→その他::
 @end menu
 
-@node エミュレーション設定→エミュレーション, エミュレーション設定→サイクル, Configure..., Configure...
+@node エミュレーション設定→エミュレーション, エミュレーション設定→サイクル, Configure, Configure
 @subsubsection エミュレーション設定→エミュレーション
 FM-7(FM-77)/AV/AV40EXのどのマシンをエミュレーションするか指定します。
 
-*サイクルスチール
-サイクルスチールのON(FAST)/OFF(SLOW)を設定します
+@itemize
+@item サイクルスチール :
+サイクルスチールのON(FAST)/OFF(SLOW)を設定します@*
+@item Clock :
+FM-7のクロックをSLOW(1.2MHz)/FAST(2MHz)で指定します。@*
+FM-7(FM-77)をエミュレーションするときのみ有効です。@*
+@item 速度自動調整 :
+エミュレーション速度を、なるべく実機に近づくように自動調整します。@*
+@item 全速力 :
+速度調整をせず、マシンの限界速度でエミュレーションします。@*
+@item モーターON時速度調整省略 :
+モータがONの時(=テープの読書きをする時)だけ、速度調整をしません。@*
+@item モーターON時全速力 :
+モーターがONの時だけ、全速力でエミュレーションします。@*
+@item FDDシーク時ウェイトする
+FDDのトラック変更の時に、ウェイトします。これを指定しないとシーク音が鳴りません。@*
+@end itemize
 
-*Clock
-FM-7のクロックをSLOW(1.2MHz)/FAST(2MHz)で指定します。
-FM-7(FM-77)をエミュレーションするときのみ有効です。
-
-*速度自動調整
-エミュレーション速度を、なるべく実機に近づくように自動調整します。
-
-*全速力
-速度調整をせず、マシンの限界速度でエミュレーションします。
-
-*モーターON時速度調整省略
-モータがONの時(=テープの読書きをする時)だけ、速度調整をしません。
-
-*モーターON時全速力
-モーターがONの時だけ、全速力でエミュレーションします。
-
-*FDDシーク時ウェイトする
-FDDのトラック変更の時に、ウェイトします。これを指定しないとシーク音が鳴りません。
-
-@node エミュレーション設定→サイクル, エミュレーション設定→VM, エミュレーション設定→エミュレーション, Configure...
+@node エミュレーション設定→サイクル, エミュレーション設定→VM, エミュレーション設定→エミュレーション, Configure
 @subsubsection エミュレーション設定→サイクル
 1ミリ秒に命令実行するクロック数を指定します。
 「デフォルトに戻す」ボタンで、初期値に戻せます。
 
-@node エミュレーション設定→VM, Configure Display, エミュレーション設定→サイクル, Configure...
+@node エミュレーション設定→VM, Configure Display, エミュレーション設定→サイクル, Configure
 @subsubsection エミュレーション設定→VM
 仮想マシンに関する雑多な設定をします
-
-* High resolution sync VM
-高精度の時間同期を試みます。Pulse Audioなどで音声を管理してる場合に、ブチブチ音が切れる場合はONにしてみて下さい。
-
+@itemize
+@item High resolution sync VM :
+高精度の時間同期を試みます。Pulse Audioなどで音声を管理してる場合に、ブチブチ音が切れる場合はONにしてみて下さい。@*
 下のダイアログで、マイクロ秒単位で同期誤差を指定できます。
+@end itemize
 
-@node Configure Display, Configure Display→スクリーン, エミュレーション設定→VM, Configure...
+@node Configure Display, Configure Display→スクリーン, エミュレーション設定→VM, Configure
 @subsubsection Configure Display
 画面表示に関する指定をします
 
-@node Configure Display→スクリーン, Configure Display→ディスプレイ, Configure Display, Configure...
+@node Configure Display→スクリーン, Configure Display→ディスプレイ, Configure Display, Configure
 @subsubsection Configure Display→スクリーン
 表示サイズなどを指定します
 
-* 表示レート
-GUIを含めた、全体の書き替えを１秒に何回するか指定します。
- 
-* エミュレータ側レート
-エミュレータの表示更新を１秒に何回するか指定します。
+@itemize
+@item 表示レート :
+GUIを含めた、全体の書き替えを１秒に何回するか指定します。@*
+@item エミュレータ側レート :
+エミュレータの表示更新を１秒に何回するか指定します。@*
+@item フルスキャン(15KHz) :
+インタレース縞を省きます。ベッタリとした感じの画面になります。@*
+@item ぼかす :
+ドット間のギザギザを緩和します。@*
+@item OpenCLを使用する(再起動が必要) :
+OpenGLで表示する場合に、OpenCLを使用し、画面表示の一部をGPUに負担させます。詳しくは、@ref{Configure Display→OpenCL}@*
+@item SIMD命令を使う(再起動が必要) :
+SDLFBドライバでの画面の拡大縮小や、音声のレンダリングでSSE2などのSIMD命令を使ってみます。若干の高速化が期待できます。@*
+@end itemize
 
-* フルスキャン(15KHz)
-インタレース縞を省きます。ベッタリとした感じの画面になります。
-
-* ぼかす
-ドット間のギザギザを緩和します。
-
-* OpenCLを使用する(再起動が必要)
-OpenGLで表示する場合に、OpenCLを使用し、画面表示の一部をGPUに負担させます。詳しくは、@ref{Configure Display→OpenCL}
-
-* SIMD命令を使う(再起動が必要)
-SDLFBドライバでの画面の拡大縮小や、音声のレンダリングでSSE2などのSIMD命令を使ってみます。若干の高速化が期待できます。
-
-@node Configure Display→ディスプレイ, Configure Display→OpenCL, Configure Display→スクリーン, Configure...
+@node Configure Display→ディスプレイ, Configure Display→OpenCL, Configure Display→スクリーン, Configure
 @subsubsection Configure Display→ディスプレイ
 
-* 明度
-画面の明るさを指定します。SDLFBドライバでは無効です。
+@itemize
+@item 明度 : 画面の明るさを指定します。SDLFBドライバでは無効です。
+@end itemize
 
-@node Configure Display→OpenCL, 入力設定, Configure Display→ディスプレイ, Configure...
+@node Configure Display→OpenCL, 入力設定, Configure Display→ディスプレイ, Configure
 @subsubsection Configure Display→OpenCL
-OpenCLのパラメータを設定します。
+OpenCLを使うときのパラメータを設定します。
 
-* マルチスレッド実行
-OpenCLをマルチスレッドで実行します。この方がGPUへの負担が小さくなりますが、速度が遅くなるかもしれません。
+@itemize
+@item マルチスレッド実行 : OpenCLをマルチスレッドで実行します。この方がGPUへの負担が小さくなりますが、速度が遅くなるかもしれません。@*
+@item グローバル・ワーク・アイテム : 一回のOpenCL実行で、何個スレッドを作成して並列動作するか指定します。@*
+@end itemize
 
-* グローバル・ワーク・アイテム
-一回のOpenCL実行で、何個スレッドを作成して並列動作するか指定します。
-
-@node 入力設定, 入力設定→キーボード, Configure Display→OpenCL, Configure...
+@node 入力設定, 入力設定→キーボード, Configure Display→OpenCL, Configure
 @subsubsection 入力設定
 入力(キーボード・マウス・ジョイスティック)に関する設定です。
 
-@node 入力設定→キーボード, 入力設定→ジョイスティック, 入力設定, Configure...
+@node 入力設定→キーボード, 入力設定→ジョイスティック, 入力設定, Configure
 @subsubsection 入力設定→キーボード
 
-* カーソル複数押しで斜め
-カーソルを複数押した場合に斜めに移動すると判断します。
+@itemize
+@item カーソル複数押しで斜め : カーソルを複数押した場合に斜めに移動すると判断します。@*
+@item テンキーをカーソルキーにする : テンキーにカーソルキーを割り当てます。@*
+@item 擬似リアルタイムスキャン : キーを全て離した時に、''5''キーを押したことにします。
+テンキーで動かすゲームでリアルタイムキースキャンを使わない時に有用かも知れません。@*
+@item 仮想キーボード : マウスで入力できる仮想キーボードを出します。@*
+@item キーボードの割り当て : リアルなキーボードのどのキーをXM7上のキーとしてエミュレーションするか。を設定します。@*
+@end itemize
 
-* テンキーをカーソルキーにする
-テンキーにカーソルキーを割り当てます。
-
-* 擬似リアルタイムスキャン
-キーを全て離した時に、''5''キーを押したことにします。
-テンキーで動かすゲームでリアルタイムキースキャンを使わない時に有用かも知れません。
-
-* 仮想キーボード
-マウスで入力できる仮想キーボードを出します。
-
-* キーボードの割り当て
-リアルなキーボードのどのキーをXM7上のキーとしてエミュレーションするか。を設定します。
-
-@node 入力設定→ジョイスティック, 入力設定→マウス, 入力設定→キーボード, Configure...
+@node 入力設定→ジョイスティック, 入力設定→マウス, 入力設定→キーボード, Configure
 @subsubsection 入力設定→ジョイスティック
-ジョイスティックの1番と2版をどのポートに割り当てるかを指定します
+ジョイスティックの1番と2版をどのポートに割り当てるかを指定します@*
+@indentedblock
+ None: 割り当てません@*
+ Port 1: FM音源カードや本体のジョイスティック端子のポート1に割り当てます@*
+ Port 2: FM音源カードや本体のジョイスティック端子のポート2に割り当てます @*
+ Dempa: 電波新聞社製のジョイスティックをエミュレーションします。@*
+@end indentedblock
 
-* None: 割り当てません
-* Port 1: FM音源カードや本体のジョイスティック端子のポート1に割り当てます
-* Port 2: FM音源カードや本体のジョイスティック端子のポート2に割り当てます 
-* Dempa: 電波新聞社製のジョイスティックをエミュレーションします。
-
-@node 入力設定→マウス, 音声設定→音量, 入力設定→ジョイスティック, Configure...
+@node 入力設定→マウス, 音声設定→音量, 入力設定→ジョイスティック, Configure
 @subsubsection 入力設定→マウス
+@itemize
+@item インテリジェントマウスを接続: インテリジェントマウスを接続します。@*
+@item 接続ポート: マウスを、そのジョイスティックポートに接続するか設定します。@*
+@end itemize
 
-* インテリジェントマウスを接続: インテリジェントマウスを接続します。
-* 接続ポート: マウスを、そのジョイスティックポートに接続するか設定します。
-
-@node 音声設定→音量, 音声設定→レンダリング, 入力設定→マウス, Configure...
+@node 音声設定→音量, 音声設定→レンダリング, 入力設定→マウス, Configure
 @subsubsection 音声設定→音量
 各パートの音量を設定します。内蔵FM/PSG音源とWHG,THGの音量は共通のボリュームです。
 
-@node 音声設定→レンダリング, 音声設定→その他, 音声設定→音量, Configure...
+@node 音声設定→レンダリング, 音声設定→その他, 音声設定→音量, Configure
 @subsubsection 音声設定→レンダリング
 音声レンダリングのサンプリングレートなどを設定します
 
-* サンプルレート: サンプリングレートを設定します。
-* 高品質: レンダリング時に直線補間をして、なめらかな音にしようとします。
-* サウンドバッファ: バッファをミリ秒単位で設定します。大きくすればなめらかに鳴りますが、遅れが出てきます。
-* 強制的にステレオ: 強制ステレオですが、ダミーです。
-* FDDシークとヘッド: フロッピードライブのシーク時に効果音を鳴らします。
-* カセットモニタ: カセットテープの音声をモニタします。
+@itemize
+@item サンプルレート: サンプリングレートを設定します。@*
+@item 高品質: レンダリング時に直線補間をして、なめらかな音にしようとします。@*
+@item サウンドバッファ: バッファをミリ秒単位で設定します。大きくすればなめらかに鳴りますが、遅れが出てきます。@*
+@item 強制的にステレオ: 強制ステレオですが、ダミーです。@*
+@item FDDシークとヘッド: フロッピードライブのシーク時に効果音を鳴らします。@*
+@item カセットモニタ: カセットテープの音声をモニタします。@*
+@end itemize
 
-@node 音声設定→その他,  , 音声設定→レンダリング, Configure...
+@node 音声設定→その他,  , 音声設定→レンダリング, Configure
 @subsubsection 音声設定→その他
 主に、どの音源を接続するか指定します。リセットが必要になるかも知れません。
 
-* OPNを使う: 内蔵FM/PSG音源をONにします。
-* WHGを使う: WHG拡張音源をONにします。
-* THGを使う: THG拡張音源をONにします。
+@itemize
+@item OPNを使う: 内蔵FM/PSG音源をONにします。@*
+@item WHGを使う: WHG拡張音源をONにします。@*
+@item THGを使う: THG拡張音源をONにします。@*
+@end itemize
 
-@node ヘルプ, XM7について, Configure..., ツール
+@node ヘルプ, XM7について, Configure, ツール
 @subsection ヘルプ
 この画面を表示する予定です。
 
@@ -678,37 +565,41 @@ OpenCLをマルチスレッドで実行します。この方がGPUへの負担�
 
 @node ビルド, インストール, ビルド、インストール, ビルド、インストール
 @section ビルド
-ビルドには、CMAKE @indicateurl{http://www.cmake.org/}を使っています。
-したがって、ソースコードを展開した後、ソースのトップで 
-
-$ mkdir build
-
-$ cd build
-
+ビルドには、@url{http://www.cmake.org/, CMAKE}を使っています。@*
+したがって、ソースコードを展開した後、ソースのトップで @*
+@quotation
+$ mkdir build@*
+$ cd build@*
 $ ccmake ..
+@end quotation
+でコンフィグします。@*
+ビルドには、最低でも@*
+@itemize
+@item gcc (4.7以降?)@*
+@item libSDL@*
+@item libAGAR@*
+@item iconv@*
+@end itemize
+が必要なはずです。@*
 
-でコンフィグします。
-ビルドには、最低でも
-* gcc (4.7以降?)
-* libSDL
-* libAGAR
-* iconv
-が必要なはずです。
-
-Makefileを生成させた後、
+Makefileを生成させた後、@*
+@quotation
 $ make
-でビルドされます
+@end quotation
+でビルドされます@*
 
 @node インストール, 国際化, ビルド, ビルド、インストール
 @section インストール
-同じく、buildディレクトリで、
+同じく、buildディレクトリで、@*
+@quotation
 $ sudo make install
-で、/usr/local 以下などにインストールされます。
+@end quotation
+で、/usr/local 以下などにインストールされます。@*
 
 @node 国際化, アイコン, インストール, ビルド、インストール
 @section 国際化
-このソフトでは、GNU Gettextによる国際化をサポートしています。
-カスタマイズについては、locales/ja ディレクトリを参考にして下さい。
+このソフトでは、GNU Gettextによる国際化をサポートしています。@*
+カスタマイズについては、locales/ja ディレクトリを参考にして下さい。@*
 
 @node アイコン, フォント, 国際化, ビルド、インストール
 @section アイコン
@@ -716,14 +607,14 @@ $ sudo make install
 
 @node フォント,  , アイコン, ビルド、インストール
 @section フォント
-GUIや表示で使われてるデフォルトのフォントは、IPA UIゴシックです。
-その他のフォントが必要な場合は、~/.xm7/XM7.INIを変更して下さい。
+GUIや表示で使われてるデフォルトのフォントは、IPA UIゴシックです。@*
+その他のフォントが必要な場合は、~/.xm7/XM7.INIを変更して下さい。@*
 
-又、デバッガではF-Font @indicateurl{http://fm-7.com/museum/exhibition/f-font/index.html}をUnicodeに移動させたものを使うと、半角カナやグラフィック文字などが表示されて使いやすくなります。
+又、デバッガでは@url{http://fm-7.com/museum/exhibition/f-font/index.html, F-Font}をUnicodeに移動させたものを使うと、半角カナやグラフィック文字などが表示されて使いやすくなります。@*
+@*
+ソース等のF-Font/ 以下にあるTTFファイルを~/.fonts (GNU/Linuxの場合)にコピーして下さい。@*
 
-ソース等のF-Font/ 以下にあるTTFファイルを~/.fonts (GNU/Linuxの場合)にコピーして下さい。
-
-@node その他, Index, ビルド、インストール, Top
+@node その他, , ビルド、インストール, Top
 @chapter その他
 
 @menu
@@ -732,33 +623,64 @@ GUIや表示で使われてるデフォルトのフォントは、IPA UIゴシ�
 
 @node ROM,  , その他, その他
 @section ROM
-このXM7/SDLを利用するには、FM-7/77/AV/AV40EXのROMか、もしくは互換ROMを~/.xm7に置くことが必要です。
+このXM7/SDLを利用するには、FM-7/77/AV/AV40EXのROMか、もしくは互換ROMを~/.xm7に置くことが必要です。@*
+実機からROMイメージを取り込んで下さい。
+必要なROMのMD5SUMの一例は以下のとおりです（取り込み元の機種やヴァージョンによって異なります)：@*
+@multitable @columnfractions 0.3 0.2 0.5
+@headitem NAME @tab SIZE @tab MD5
+@item   BOOT_BAS.ROM
+@tab 512
+@tab 9f9b7d5615ecdbde2cd26e9306ffef13
+@item   BOOT_DOS.ROM
+@tab 512
+@tab c6c37a57b33fee51b8cd8e8586c3f018
+@item   DICROM.ROM
+@tab 262144
+@tab 875c99f14185287544e0b61c664d6a5a
+@item   EXTSUB.ROM
+@tab 49152
+@tab 7c4fe9a0564bc636c0393deb1d19e10d
+@item   FBASIC30.ROM
+@tab 31744
+@tab 71c96a45b78e88a39cb94c1aabd23d8a
+@item   INITIATE.ROM
+@tab 8192
+@tab e0f4c0ebee60aee83e863826e59ae1de
+@item   KANJI.ROM
+@tab 131072
+@tab a330817f8f7ced752a7bcc8dfba8fd2e
+@item   KANJI1.ROM
+@tab 131072
+@tab a330817f8f7ced752a7bcc8dfba8fd2e
+@item   KANJI2.ROM
+@tab 131072
+@tab e6d19021a8df5e4d63dfd89533d29b9c
+@item   SUBSYSCG.ROM
+@tab 8192
+@tab 7db27dede3e358017d518101850bccfa
+@item   SUBSYS_A.ROM
+@tab 8192
+@tab ae945a6dfb642b0a5d0529737e8ee5cd
+@item   SUBSYS_B.ROM
+@tab 8192
+@tab fb83a1a9725c8432acef0c3ce89492e3
+@item   SUBSYS_C.ROM
+@tab 10240
+@tab d19ed5923aaae2ec43dffe7a0daa80cb
+@item   USERDIC.DAT
+@tab 8192
+@tab xxxx(可変)xxxxxxxxxxxxxxxxxxxxxx
+@end multitable
 
-必要なROMのMD5SUMは以下のとおりです：
-@quotation
-9f9b7d5615ecdbde2cd26e9306ffef13  BOOT_BAS.ROM
-c6c37a57b33fee51b8cd8e8586c3f018  BOOT_DOS.ROM
-875c99f14185287544e0b61c664d6a5a  DICROM.ROM
-7c4fe9a0564bc636c0393deb1d19e10d  EXTSUB.ROM
-71c96a45b78e88a39cb94c1aabd23d8a  FBASIC30.ROM
-e0f4c0ebee60aee83e863826e59ae1de  INITIATE.ROM
-a330817f8f7ced752a7bcc8dfba8fd2e  KANJI.ROM
-a330817f8f7ced752a7bcc8dfba8fd2e  KANJI1.ROM
-e6d19021a8df5e4d63dfd89533d29b9c  KANJI2.ROM
-7db27dede3e358017d518101850bccfa  SUBSYSCG.ROM
-ae945a6dfb642b0a5d0529737e8ee5cd  SUBSYS_A.ROM
-fb83a1a9725c8432acef0c3ce89492e3  SUBSYS_B.ROM
-d19ed5923aaae2ec43dffe7a0daa80cb  SUBSYS_C.ROM
-@end quotation
+FDDシークやモータの音を収めたWAVファイルも、同じ所に置いて下さい。@*
+もし、これらが手元にない場合は@url{http://retropc.net/apollo/download/xm7/romset/index.htm, 互換ROMのページ} でダウンロードしたファイルをunzipで解凍して~/.xm7 に置いて下さい。
 
-FDDシークやモータの音を収めたWAVファイルも、同じ所に置いて下さい。
+@c @node Index,  , その他, Top
+@c @unnumbered Index
 
-もし、これらが手元にない場合は互換ROM @indicateurl{http://retropc.net/apollo/download/xm7/romset/index.htm} でダウンロードしたファイルをunzipで解凍して~/.xm7 に置いて下さい。
-
-@node Index,  , その他, Top
-@unnumbered Index
-
-@printindex cp
+@c @printindex cp
+@c @printindex fn
+@c @printindex vr
 
 @shortcontents
 @contents
