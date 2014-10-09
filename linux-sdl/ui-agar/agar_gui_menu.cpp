@@ -33,12 +33,14 @@ void Create_FileMenu(AG_MenuItem *self);
 extern void Create_Drive0Menu(AG_MenuItem *self);
 extern void Create_Drive1Menu(AG_MenuItem *self);
 extern void Create_TapeMenu(AG_MenuItem *self);
-extern void Create_ToolsMenu(AG_MenuItem *parent);
-
 extern void Create_DebugMenu(AG_MenuItem *parent);
-
+extern void Create_ToolsMenu(AG_MenuItem *parent);
+extern void Create_HelpMenu(AG_MenuItem *self);
 extern void Create_AboutMenu(AG_MenuItem *self);
 extern void OnPushCancel(AG_Event *event);
+
+
+
 
 extern "C" {
 AG_Window *MainWindow;
@@ -157,6 +159,7 @@ void Create_AGMainBar(AG_Widget *Parent)
  	item = AG_MenuNode(MenuBar->root, gettext("Tools"), NULL);
  	Create_ToolsMenu(item);
  	item = AG_MenuNode(MenuBar->root, gettext("Help"), NULL);
+	Create_HelpMenu(item);
  	item = AG_MenuNode(MenuBar->root, gettext("About"), NULL);
  	Create_AboutMenu(item);
 	AG_UnlockVFS(AGOBJECT(MenuBar));

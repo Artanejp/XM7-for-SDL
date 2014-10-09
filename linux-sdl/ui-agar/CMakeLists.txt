@@ -37,6 +37,7 @@ set(UI_AGAR_GUISRC
 		       agar_menu_disk.cpp
 		       agar_menu_tape.cpp
 		       agar_menu_tool.cpp
+		       agar_menu_help.cpp
 		       agar_ui_vkey.cpp
 		       agar_toolbox.cpp
 		       agar_mouse.cpp
