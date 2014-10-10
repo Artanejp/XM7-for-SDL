@@ -36,6 +36,7 @@ extern "C" {
 
 struct index_list{
   int index;
+  char *buf;
   char indexname[512];
 };
 
@@ -132,9 +133,13 @@ static void OnCloseHelpViewer(AG_Event *event)
   AG_Button           *self = AG_SELF();
   Uint8               *rawdata = AG_PTR(1);
   struct index_list   *indexs = AG_PTR(2);
-  
+  int                 indexnum = AG_INT(3);
+  int i;
   if(rawdata != NULL) free(rawdata);
-  if(indexs != NULL)  free(indexs);
+  if(indexs != NULL)  {
+    for(i = 0; i < indexnum; i++) free(indexs[i].buf);
+    free(indexs);
+  }
   if(self != NULL) {
     AG_WindowHide(self->wid.window);
     AG_ObjectDetach(self);
@@ -152,7 +157,8 @@ static void OnClickNode(AG_Event *event)
   if(tbl == NULL) return;
   index = AG_TlistSelectedItemPtr(tbl);
   if((index != NULL) && (textbox != NULL)){
-    AG_TextboxSetCursorPos(textbox, index->index);
+    //    AG_TextboxSetCursorPos(textbox, index->index);
+    AG_TextboxSetString(textbox, index->buf);
   }
 }
 
@@ -170,16 +176,18 @@ static int GetIndexLines(char *begin, char *end, struct index_list **indexs)
   do {
     index1[i].index = 0;
     index1[i].indexname[0] = '\0';
-    p = strstr(p, "\nNode: ");
+    index1[i].buf = NULL;
+    p = strstr(p, "Node: ");
     if(p >= end) break;
     if(p == NULL) break;
     
     OneLineHead = p;
-    nodehead = strtok_r(OneLineHead, "\x7f\x20\n", &OneLineHead); 
-    nodename = strtok_r(OneLineHead, "\x7f\x20\n", &OneLineHead); 
-    nodepos  = strtok_r(OneLineHead, "\x7f\x20\n", &OneLineHead);
+    nodehead = strtok_r(OneLineHead, " ", &OneLineHead);
+    nodename = strtok_r(OneLineHead, "\x7f", &OneLineHead); 
+    nodepos  = strtok_r(OneLineHead, "\n", &OneLineHead);
     p = OneLineHead; 
-    if((strcmp(nodehead, "Node:") != 0) || (nodename == NULL) || (nodepos == NULL)) continue;
+    //    if((strcmp(nodehead, "Node") != 0) || (nodename == NULL) || (nodepos == NULL)) continue;
+    if((nodename == NULL) || (nodepos == NULL)) continue;
     index1[i].index = strtol(nodepos, &nodepos, 10);
     strncpy(index1[i].indexname, nodename, 511);
     index2 = realloc(index1, (i + 2) * sizeof(struct index_list));
@@ -205,7 +213,7 @@ static int GetIndexLines(char *begin, char *end, struct index_list **indexs)
   return 0;
 }
 
-static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct index_list **lines)
+static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct index_list **lines, int *num)
 {
   char *p, *q, *pp;
   int i;
@@ -216,6 +224,8 @@ static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct inde
   long pos;
   int linecnt;
   struct index_list *indexs;
+  int bufsize;
+  int len;
   
   const char *header = "\x1f\x0aTag Table:";
   const char *footer = "End Tag Table";
@@ -225,7 +235,6 @@ static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct inde
   q = strstr(p, footer);
 
   if(p != NULL) {
-    int len;
     len = p - buf;
     pp = malloc((len + 32) * sizeof(char));
     strncpy(pp, buf, len);
@@ -243,13 +252,26 @@ static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct inde
   AG_TlistSizeHint(tbl, "xxxxxxxxxxxxxxxxxx", 25);
   
   linecnt = GetIndexLines(p, q, &indexs);
+  
   i = 0;
     for(i = 0; i < linecnt; i++) {
     if((indexs != NULL) && (i <= linecnt)) {
+      bufsize = indexs[i + 1].index - indexs[i].index;
+      if(bufsize <= 0) bufsize = len - indexs[i].index;
+      if(bufsize > 0) {
+	indexs[i].buf = malloc(bufsize + 1);
+      } else {
+	indexs[i].buf = NULL;
+      }
+      if(indexs[i].buf != NULL) {
+	memcpy(indexs[i].buf, &buf[indexs[i].index], bufsize);
+	indexs[i].buf[bufsize] = '\0';
+      }
       item = AG_TlistAddPtr(tbl, NULL, indexs[i].indexname, &indexs[i]);
     }
   }
   if(lines != NULL) *lines = indexs;
+  if(num != NULL) *num = linecnt;
   return tbl;
 }
 
@@ -266,6 +288,7 @@ static void OnHelpDialog(AG_Event *event)
   Uint8 *buf2 = NULL;
   struct index_list *indexs = NULL;
   int size = 0;
+  int linecnt;
 
   win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
   box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
@@ -273,7 +296,7 @@ static void OnHelpDialog(AG_Event *event)
   fp = OpenInfoByLocale();
   buf = ReadInfoFile(fp, &size);
   if(buf != NULL) {
-    index = GenIndex(AGWIDGET(box), buf, &buf2, &indexs);
+    index = GenIndex(AGWIDGET(box), buf, &buf2, &indexs, &linecnt);
     free(buf);
   }
   
@@ -283,13 +306,14 @@ static void OnHelpDialog(AG_Event *event)
     strcpy(buf2, defaultstr);
     size = strlen(defaultstr);
   }
-//  textbox = AG_TextboxNewS(box,  AG_TEXTBOX_MULTILINE | AG_TEXTBOX_CATCH_TAB | AG_TEXTBOX_EXPAND | AG_TEXTBOX_EXCL, NULL);
   {
      char hint[256];
-     memset(hint, "x", sizeof(char) * 160);
-     hint[200] = '\0';
-     textbox = AG_TextboxNew(box,  AG_TEXTBOX_READONLY | AG_TEXTBOX_MULTILINE | AG_TEXTBOX_CATCH_TAB | AG_TEXTBOX_EXPAND, NULL);
+     memset(hint, 'X', sizeof(char) * 80);
+     hint[80] = '\0';
+     textbox = AG_TextboxNew(box,  AG_TEXTBOX_READONLY | AG_TEXTBOX_MULTILINE | 
+			           AG_TEXTBOX_CATCH_TAB | AG_TEXTBOX_EXPAND, NULL);
      AG_TextboxBindUTF8(textbox, buf2, size);
+     if(indexs != NULL) AG_TextboxSetString(textbox, indexs[0].buf);
      AG_TextboxSizeHint(textbox, hint);
      AG_TextboxSizeHintLines(textbox, 25);
   }
@@ -298,7 +322,7 @@ static void OnHelpDialog(AG_Event *event)
   {
     AG_Box *vbox;
     vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    button = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnCloseHelpViewer, "%p%p", buf2, indexs);
+    button = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnCloseHelpViewer, "%p,%p,%i", buf2, indexs, linecnt);
   }
   AG_WindowSetCaption(win, gettext("HELP"));
   AG_WindowShow(win);
