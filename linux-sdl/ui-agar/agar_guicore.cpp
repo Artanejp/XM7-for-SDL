@@ -138,7 +138,7 @@ void AGDrawTaskEvent(BOOL flag)
       } 
       if(AG_PendingEvents(NULL) != 0) {
 	 AG_DriverEvent dev;
-//	 if(EventSDL(NULL) == FALSE) return;
+	 if(EventSDL(NULL) == FALSE) return;
 	 if(AG_GetNextEvent(NULL, &dev) == 1) AG_ProcessEvent(NULL, &dev);
 //	 XM7_Sleep(1);
       }

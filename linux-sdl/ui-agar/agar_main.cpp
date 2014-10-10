@@ -510,6 +510,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
 	 break;
       }
    } else { // WM function is managed by SDL, load and set icon for WM. 
+      SDL_Init(SDL_INIT_VIDEO);
       XM7_DebugLog(XM7_LOG_INFO, "Start multi window mode.");
    }
        

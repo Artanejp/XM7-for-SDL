@@ -332,7 +332,7 @@ static void OnHelpDialog(AG_Event *event)
 void Create_HelpMenu(AG_MenuItem *self)
 {
 	AG_MenuItem *item;
-	item = AG_MenuAction(self, gettext("HELP"), NULL, OnHelpDialog, NULL);
+	item = AG_MenuAction(self, gettext("Help"), NULL, OnHelpDialog, NULL);
 }
 
   
