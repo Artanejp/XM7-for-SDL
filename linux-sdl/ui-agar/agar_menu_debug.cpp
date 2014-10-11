@@ -36,6 +36,7 @@ extern "C" {
 #include "../xm7-debugger/memread.h"
 
 extern void OnPushCancel(AG_Event *event);
+extern void OnPushCancel2(AG_Event *event);
 
 #ifdef _WITH_DEBUGGER
 
@@ -65,11 +66,12 @@ static void DbgDetachFont(void)
 }
 
 
-static Uint32 UpdateDisasm(void *obj, Uint32 ival, void *arg )
+static Uint32 UpdateDisasm(AG_Timer *timer, AG_Event *event)
 {
-   struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)arg;
+   struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
    char *str;
-   if(mp == NULL) return ival;
+   if(timer == NULL) return 0;
+   if(mp == NULL) return timer->ival;
    XM7_DbgMemDisasm(mp->disasm);
    return mp->to_tick;
 
@@ -214,7 +216,7 @@ static void CreateDump(AG_Event *event)
 
 
     BYTE (*readFunc)(WORD);
-    void FASTCALL (*writeFunc)(WORD, BYTE);
+    volatile void FASTCALL (*writeFunc)(WORD, BYTE);
     XM7_DbgDump *dump;
 
     AG_HBox *hb;
@@ -304,10 +306,13 @@ static void CreateDisasm(AG_Event *event)
     AG_VBox *vb;
     AG_Box *box;
     AG_Button *btn;
+    AG_Timer *timerhdr;
 
     mp = (XM7_DbgDisasmDesc *)malloc(sizeof(struct XM7_DbgDisasmDesc));
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_DbgDisasmDesc));
+    timerhdr = malloc(sizeof(AG_Timer));
+    if(timerhdr == NULL) return;
 
     mp->to_tick = 200;
     w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
@@ -320,12 +325,15 @@ static void CreateDisasm(AG_Event *event)
     case MEM_MAIN:
             cputype = MAINCPU;
             AG_WindowSetCaption(w, gettext("Disasm Main memory"));
+	    AG_InitTimer(timerhdr, "disasm-main", 0);
             break;
     case MEM_SUB:
             cputype = SUBCPU;
             AG_WindowSetCaption(w, gettext("Disasm Sub memory"));
+	    AG_InitTimer(timerhdr, "disasm-sub", 0);
             break;
     default:
+	    AG_InitTimer(timerhdr, "", 0);
             cputype = -1;
             break;
     }
@@ -347,6 +355,8 @@ static void CreateDisasm(AG_Event *event)
 
     box = AG_BoxNewHoriz(vb, 0);
     box = AG_BoxNewHoriz(vb, 0);
+
+    //    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel2, "%p", timerhdr);
     btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
     box = AG_BoxNewHoriz(vb, 0);
 
@@ -354,8 +364,9 @@ static void CreateDisasm(AG_Event *event)
     AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddrDisasm, "%p", mp);
     AG_SetEvent(disasm->draw, "key-down", XM7_DbgDisasmKeyPressFn, "%p", mp);
 
-    AG_SetTimeout(&(mp->to), UpdateDisasm, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    AG_AddTimer(w, timerhdr, mp->to_tick, UpdateDisasm, "%p", (void *)mp);
+    //    AG_SetTimeout(&(mp->to), UpdateDisasm, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
+    //AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
     AG_WindowShow(w);
 }
 

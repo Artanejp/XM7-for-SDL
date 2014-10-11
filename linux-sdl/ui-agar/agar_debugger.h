@@ -40,7 +40,7 @@ typedef struct  XM7_DbgDump {
     unsigned int baddr;
     unsigned int bdata;
     BYTE *buf;
-};
+} XM7_DbgDump;
 
 struct XM7_MemDumpDesc {
     XM7_DbgDump *dump;
@@ -84,7 +84,7 @@ typedef struct  XM7_DbgDisasm {
     BOOL editAddr;
     BOOL paused;
     BYTE *buf;
-};
+} XM7_DbgDisasm;
 
 
 
@@ -102,7 +102,7 @@ typedef struct  XM7_DbgRegDump {
     BOOL paused;
     char title[12];
     cpu6809_t buf;
-};
+} XM7_DbgRegDump;
 
 struct XM7_DbgRegDumpDesc {
     XM7_DbgRegDump *dump;
@@ -122,7 +122,7 @@ typedef struct  XM7_DbgFdcDump {
     BYTE fdc_sidereg[4];    /* サイドレジスタ */
     BYTE fdc_drvreg;     /* 論理ドライブ */
    
-};
+} XM7_DbgFdcDump;
 
 struct XM7_DbgFdcDumpDesc {
     XM7_DbgFdcDump *dump;
@@ -140,7 +140,7 @@ typedef struct  XM7_DbgMMRDump {
 #else
     BYTE mmr_reg[40];
 #endif
-};
+} XM7_DbgMMRDump;
 
 struct XM7_DbgMMRDumpDesc {
     XM7_DbgMMRDump *dump;
