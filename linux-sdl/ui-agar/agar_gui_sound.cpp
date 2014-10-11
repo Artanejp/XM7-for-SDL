@@ -40,11 +40,10 @@
 #include "xm7.h"
 
 extern void OnPushCancel2(AG_Event *event);
-extern void OnConfigApply2(AG_Event *event);
+
 
 extern void SetSoundVolume2(UINT uSp, int nFM, int nPSG, int nBeep, int nCMT, int nWav);
 extern void SetTotalVolume(int vol);
-
 
 static const char *SampleRateName[] = {
 		"96000",
@@ -60,9 +59,63 @@ static const int SampleRates[] ={
 		96000, 88200, 48000, 44100, 24000, 22050, 0
 };
 
+static void OnConfigApplySound(AG_Event *event)
+{
+        int ver;
+	AG_Button *self = (AG_Button *)AG_SELF();
+	struct gui_sound *cfg = AG_PTR(1);
+
+
+	LockVM();
+	if(cfg != NULL){
+	  configdat.iTotalVolume = cfg->iTotalVolume;
+	  configdat.nFMVolume = cfg->nFMVolume;
+	  configdat.nPSGVolume = cfg->nPSGVolume;
+	  configdat.nBeepVolume = cfg->nBeepVolume;
+	  configdat.nCMTVolume = cfg->nCMTVolume;
+	  configdat.nWaveVolume = cfg->nWaveVolume;
+	  configdat.uChSeparation = cfg->uChSeparation;
+	  configdat.nSampleRate = cfg->nSampleRate;
+	  configdat.nSoundBuffer = cfg->nSoundBuffer;
+	  configdat.nBeepFreq = cfg->nBeepFreq;
+	  configdat.bFMHQmode = cfg->bFMHQmode;
+	  configdat.nStereoOut = cfg->nStereoOut;
+	  configdat.bTapeMon = cfg->bTapeMon;
+	  configdat.bOPNEnable = cfg->bOPNEnable;
+	  configdat.bWHGEnable = cfg->bWHGEnable;
+	  configdat.bTHGEnable = cfg->bTHGEnable;
+#ifdef FDDSND
+	  configdat.bFddSound = cfg->bFddSound;
+#endif
+	  free(cfg);
+	}
+	ver = fm7_ver;
+	ApplyCfg();
+	/*
+	 * VMヴァージョンが違ったら強制リセット
+	 */
+	if(ver != fm7_ver){
+		system_reset();
+	}
+	/*
+	 * ここにアイコン変更入れる
+	 */
+
+	/*
+	 * 終了処理
+	 */
+	UnlockVM();
+
+	if(self != NULL) {
+	  AG_WindowHide(self->wid.window);
+	  AG_ObjectDetach(self);
+	}
+
+
+}
 static void OnChangeSampleRate(AG_Event *event)
 {
-	configdat_t *cfg = AG_PTR(1);
+	struct gui_sound *cfg = AG_PTR(1);
 	int num = AG_INT(2);
 	if(cfg == NULL) return;
 	if(num > 6 ){
@@ -71,7 +124,7 @@ static void OnChangeSampleRate(AG_Event *event)
 	cfg->nSampleRate = SampleRates[num];
 }
 
-static void SoundMenu(AG_NotebookTab *parent, configdat_t *cfg)
+static void SoundMenu(AG_NotebookTab *parent, struct gui_sound *cfg)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
@@ -106,7 +159,7 @@ static void SoundMenu(AG_NotebookTab *parent, configdat_t *cfg)
 	}
 }
 
-static void SoundMenu2(AG_NotebookTab *parent, configdat_t *cfg)
+static void SoundMenu2(AG_NotebookTab *parent, struct gui_sound *cfg)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
@@ -127,7 +180,7 @@ static void SoundMenu2(AG_NotebookTab *parent, configdat_t *cfg)
 static void OnChangeVolume(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
-	configdat_t *cfg = AG_PTR(1);
+	struct gui_sound *cfg = AG_PTR(1);
 	
 	if(cfg == NULL) return;
 	SetSoundVolume2(cfg->uChSeparation, cfg->nFMVolume,
@@ -138,13 +191,13 @@ static void OnChangeVolume(AG_Event *event)
 static void OnChangeTotalVolume(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
-	configdat_t *cfg = AG_PTR(1);
+	struct gui_sound *cfg = AG_PTR(1);
 	if(cfg == NULL) return;
 	SetTotalVolume(cfg->iTotalVolume);
 }
 
 
-static void VolumeMenu(AG_NotebookTab *parent, configdat_t *cfg)
+static void VolumeMenu(AG_NotebookTab *parent, struct gui_sound *cfg)
 {
 	AG_Slider *slider;
 	AG_Box *box;
@@ -182,7 +235,7 @@ static void VolumeMenu(AG_NotebookTab *parent, configdat_t *cfg)
 	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeVolume, "%p", cfg);
 
 }
-static void SoundMiscMenu(AG_NotebookTab *parent, configdat_t *cfg)
+static void SoundMiscMenu(AG_NotebookTab *parent, struct gui_sound *cfg)
 {
 
 }
@@ -198,34 +251,49 @@ void OnConfigSoundMenu(AG_Event *event)
 	AG_NotebookTab *tab2;
 	AG_Box *box;
 	AG_Button *btn;
-	configdat_t *cfg;
+	struct gui_sound *cfg;
 	
-	cfg = malloc(sizeof(configdat_t));
+	cfg = malloc(sizeof(struct gui_sound));
 	if(cfg == NULL) return;
-	memcpy(cfg, &configdat, sizeof(configdat_t));
+	{
+	  cfg->iTotalVolume = configdat.iTotalVolume;
+	  cfg->nFMVolume = configdat.nFMVolume;
+	  cfg->nPSGVolume = configdat.nPSGVolume;
+	  cfg->nBeepVolume = configdat.nBeepVolume;
+	  cfg->nCMTVolume = configdat.nCMTVolume;
+	  cfg->nWaveVolume = configdat.nWaveVolume;
+	  cfg->uChSeparation = configdat.uChSeparation;
+	  cfg->nSampleRate = configdat.nSampleRate;
+	  cfg->nSoundBuffer = configdat.nSoundBuffer;
+	  cfg->nBeepFreq = configdat.nBeepFreq;
+	  cfg->bFMHQmode = configdat.bFMHQmode;
+	  cfg->nStereoOut = configdat.nStereoOut;
+	  cfg->bTapeMon = configdat.bTapeMon;
+	  cfg->bOPNEnable = configdat.bOPNEnable;
+	  cfg->bWHGEnable = configdat.bWHGEnable;
+	  cfg->bTHGEnable = configdat.bTHGEnable;
+#ifdef FDDSND
+	  cfg->bFddSound = configdat.bFddSound;
+#endif
+	}
 
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
-//	AG_WindowSetMinSize(win, 320, 240);
+
 	note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
 	{
-    	/*
-    	 * 
-    	 */
-
 	  tab = AG_NotebookAddTab(note, gettext("Volume"), AG_BOX_VERT);
 	  VolumeMenu(tab, cfg);
 	  tab = AG_NotebookAddTab(note, gettext("Rendering"), AG_BOX_HORIZ);
 	  SoundMenu(tab, cfg);
 	  tab = AG_NotebookAddTab(note, gettext("Misc"), AG_BOX_HORIZ);
 	  SoundMenu2(tab, cfg);
-
 	}
 	box = AG_BoxNewHoriz(AGWIDGET(win), AG_BOX_HFILL);
 	AG_WidgetSetSize(AGWIDGET(box), 320, 24);
 	{
 	  AG_Box *vbox;
 	  vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-	  btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply2, "%p", cfg);
+	  btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApplySound, "%p", cfg);
 	  vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
 	  AG_WidgetSetSize(AGWIDGET(vbox), 80, 24);
 	  vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);

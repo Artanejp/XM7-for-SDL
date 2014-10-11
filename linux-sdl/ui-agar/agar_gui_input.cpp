@@ -52,6 +52,7 @@ static const char *JsTypeName[] = {
 };
 
 
+
 static void OnConfigApplyInput(AG_Event *event)
 {
         int ver;

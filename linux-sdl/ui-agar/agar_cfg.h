@@ -100,10 +100,11 @@ typedef struct {
 	BOOL bUseSIMD;   /* 描画等にSIMDを使う */
 	BOOL bSmoosing; /* スムージング処理する(GLのみ?) */
         unsigned int nRenderMethod;
+
+	BOOL bDigitizeEnable;	/* ディジタイズ有効フラグ */
 	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
 	BOOL bWHGEnable;	/* WHG有効フラグ */
 	BOOL bTHGEnable;	/* THG有効フラグ */
-	BOOL bDigitizeEnable;	/* ディジタイズ有効フラグ */
 #if ((XM7_VER >= 3) || defined(FMTV151))
 	BOOL bExtRAMEnable;	/* 拡張RAM有効フラグ */
 #endif				/*  */
@@ -117,7 +118,6 @@ typedef struct {
 #ifdef FDDSND
 	BOOL bFddWait;	/* FDDウェイト */
 	BOOL bFddSound;	/* FDDシークサウンド */
-
 #endif
 	int iTotalVolume;
 	int nFMVolume;  /* FM音源ボリューム */
@@ -134,6 +134,31 @@ typedef struct {
         BOOL  bHiresTick;               /* Hi resolution 1ms timer */
         DWORD nTickResUs;               /* Wait value for Hi-Resolution tick */
 } configdat_t;
+
+struct gui_sound {
+	int iTotalVolume;
+	int nFMVolume;  /* FM音源ボリューム */
+	int nPSGVolume; /* PSGボリューム */
+	int nBeepVolume;/* BEEP音ボリューム */
+	int nCMTVolume; /* CMT音モニタボリューム */
+	int nWaveVolume; /* 各種効果音ボリューム */
+	UINT uChSeparation;
+
+	int nSampleRate;	/* サンプリングレート */
+	int nSoundBuffer;	/* サウンドバッファサイズ
+	 */
+	int nBeepFreq;	/* BEEP周波数 */
+	BOOL bFMHQmode;	/* FM高品質合成 */
+	int nStereoOut;	/* 出力モード */
+	BOOL bTapeMon;	/* テープ音モニタ */
+
+	BOOL bOPNEnable;	/* OPN有効フラグ(7 only) */
+	BOOL bWHGEnable;	/* WHG有効フラグ */
+	BOOL bTHGEnable;	/* THG有効フラグ */
+#ifdef FDDSND
+	BOOL bFddSound;	/* FDDシークサウンド */
+#endif
+};
 
 struct gui_input {
   	XM7KeyCode KeyMap[256]; /* キーマップ */
