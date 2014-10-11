@@ -23,7 +23,6 @@ extern "C" {
    extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
    extern void  XM7_Sleep(DWORD t);	/* Sleep互換関数 */
 }
-extern configdat_t localconfig;
 
 struct KeyCode_Vkey {
 	const char *KeyName;
@@ -152,6 +151,7 @@ const struct KeyCode_Vkey VKeyTableAG_16[] = { { "0", 0x46 }, /* Tenkey 0 */
 
 extern void PushKeyData(Uint8, Uint8); /* Make */
 extern void OnPushCancel(AG_Event *event);
+extern void OnPushCancel2(AG_Event *event);
 
 static void OnPressVkey(AG_Event *event) {
 	AG_Button *button = (AG_Button *) AG_SELF();
@@ -180,10 +180,11 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 	AG_Box *box, *hbox, *vbox, *vbox2;
 	int i;
 	int j;
-
+        struct gui_input *cfg = AG_PTR(1);
+	
 	w = AG_WindowNew(0);
 	vbox = AG_BoxNewVert(w, 0);
-	{
+	if(cfg != NULL) {
 		vbox2 = AG_BoxNewVert(vbox, 0);
 		box = AG_BoxNewHoriz(vbox2, 0);
 		{
@@ -382,7 +383,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	p = AG_ButtonNewFn(box, 0, gettext("Cancel"), OnPushCancel, NULL);
+	p = AG_ButtonNewFn(box, 0, gettext("Cancel"), OnPushCancel2, "%p", cfg);
 
 	AG_WindowSetCaption(w, caption);
 	AG_WindowShow(w);
@@ -402,15 +403,17 @@ void BuildVkeyBoard(AG_Event *event) {
 static void OnPressSetKey(AG_Event *event)
 {
 	AG_Window *w = (AG_Window *)AG_SELF();
-	Uint keySym = AG_INT(2);
-	Uint keyMod = AG_INT(3);
 	Uint8 pushCode = AG_INT(1);
+	struct gui_input *cfg = AG_PTR(2);
+	Uint keySym = AG_INT(3);
+	Uint keyMod = AG_INT(4);
         XM7KeyCode *km;
         int i;
 
 //	printf("Pressed %02x %02x", keySym, pushCode);
 	SetKeyCodeAG((Uint8) pushCode, keySym, keyMod);
-        km = &(localconfig.KeyMap[0]);
+	if(cfg == NULL) return;
+        km = &(cfg->KeyMap[0]);
 	for(i = 0; i<256 ; i++)
 	{
 		if(pushCode == km[i].pushCode) {
@@ -425,7 +428,8 @@ static void OnPressSetKey(AG_Event *event)
 static void OnSetVkey(AG_Event *event)
 {
 	AG_Button *button = (AG_Button *) AG_SELF();
-	Uint pushCode = AG_INT(1);
+	struct gui_input *cfg = AG_PTR(1);
+	Uint pushCode = AG_INT(2);
 	AG_Window *w;
 	AG_Box *box;
 	AG_Box *box2;
@@ -442,8 +446,8 @@ static void OnSetVkey(AG_Event *event)
 	GetKeyCodeAG(pushCode, (void *)&p);
 	lbl = AG_LabelNew(box2, 0, "%s (%04x)", button->lbl->text, p.code);
 	box2 = AG_BoxNewHoriz(box, 0);
-	cbutton = AG_ButtonNewFn(box2, 0, gettext("Cancel"), OnPushCancel, NULL);
-	AG_SetEvent(AGOBJECT(w), "key-up", OnPressSetKey, "%i", pushCode);
+	cbutton = AG_ButtonNewFn(box2, 0, gettext("Close"), OnPushCancel2, "%p", cfg);
+	AG_SetEvent(AGOBJECT(w), "key-up", OnPressSetKey, "%i,%p", pushCode, cfg);
 	AG_WindowShow(w);
 }
 

@@ -135,6 +135,29 @@ typedef struct {
         DWORD nTickResUs;               /* Wait value for Hi-Resolution tick */
 } configdat_t;
 
+struct gui_input {
+  	XM7KeyCode KeyMap[256]; /* キーマップ */
+	BOOL bKbdReal;	/* 擬似リアルタイムキースキャン */
+	BOOL bTenCursor;	/* 方向キーをテンキーに対応
+	 */
+	BOOL bArrow8Dir;	/* テンキー変換
+	 * 8方向モード */
+
+	/*
+	 * JOYSTICK
+	 */
+	int nJoyType[2];
+	int nJoyRapid[2][2];
+	int nJoyCode[2][7];
+#ifdef MOUSE
+	BOOL bMouseCapture;	/* マウスキャプチャフラグ  */
+	DWORD nMousePort;	/* マウス接続ポート */
+	BYTE nMidBtnMode;	/* 中央ボタン状態取得モード */
+#endif				/*  */
+};
+
+
+
 extern configdat_t configdat;	/* コンフィグ用データ */
 
 #define BST_CHECKED     TRUE
