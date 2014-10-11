@@ -41,8 +41,7 @@
 
 
 extern void OnPushCancel2(AG_Event *event);
-extern void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent);
-extern void OnConfigApply2(AG_Event *event);
+extern void ConfigMenuOpenCL(struct gui_disp *cfg, AG_NotebookTab *parent);
 
 static const char *ScreenSizeName[] =
 {
@@ -105,9 +104,57 @@ static const WORD ScreenSizeHeight[] = {
 };
 
 
+static void OnConfigApplyDisp(AG_Event *event)
+{
+        int ver;
+	AG_Button *self = (AG_Button *)AG_SELF();
+	struct gui_disp *cfg = AG_PTR(1);
+
+	LockVM();
+	if(cfg != NULL){
+	  configdat.nDrawFPS = cfg->nDrawFPS;
+	  configdat.nEmuFPS = cfg->nEmuFPS;
+	  configdat.nBrightness = cfg->nBrightness;
+	  configdat.nRenderMethod = cfg->nRenderMethod;
+	  configdat.uWidth = cfg->uWidth;
+	  configdat.uHeight = cfg->uHeight;
+	  configdat.bFullScan = cfg->bFullScan;
+	  configdat.bFullScanFS = cfg->bFullScanFS;
+	  configdat.bSmoosing = cfg->bSmoosing;
+	  configdat.bUseSIMD = cfg->bUseSIMD; 
+#ifdef _USE_OPENCL
+	  configdat.bUseOpenCL = cfg->bUseOpenCL;
+	  configdat.nCLGlobalWorkThreads = cfg->nCLGlobalWorkThreads;
+	  configdat.bCLSparse = cfg->bCLSparse; 
+#endif
+	  free(cfg);
+	}
+	ver = fm7_ver;
+	ApplyCfg();
+	/*
+	 * VMヴァージョンが違ったら強制リセット
+	 */
+	if(ver != fm7_ver){
+		system_reset();
+	}
+	/*
+	 * ここにアイコン変更入れる
+	 */
+
+	/*
+	 * 終了処理
+	 */
+	UnlockVM();
+
+	if(self != NULL) {
+	  AG_WindowHide(self->wid.window);
+	  AG_ObjectDetach(self);
+	}
+}
+
 static void OnChangeScreenReso(AG_Event *event)
 {
-        configdat_t *cfg = AG_PTR(1);
+        struct gui_disp *cfg = AG_PTR(1);
 	int number = AG_INT(2);
    
         if(cfg == NULL) return;
@@ -127,7 +174,7 @@ static void OnChangeScreenReso(AG_Event *event)
 static void RenderMethodSelected(AG_Event *event)
 {
    AG_TlistItem *list = (AG_TlistItem *)AG_PTR(2);
-   configdat_t *cfg = AG_PTR(1);
+   struct gui_disp *cfg = AG_PTR(1);
    int method = -1;
    
    if(list == NULL) return;
@@ -144,7 +191,7 @@ static void RenderMethodSelected(AG_Event *event)
 }
 
 
-static void OnConfigMenuScreen(configdat_t *cfg, AG_NotebookTab *parent)
+static void OnConfigMenuScreen(struct gui_disp *cfg, AG_NotebookTab *parent)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
@@ -207,7 +254,7 @@ extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 static void OnChangeBright(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
-        configdat_t *cfg = AG_PTR(1);
+        struct gui_disp *cfg = AG_PTR(1);
         WORD bright = AG_GetUint16(self, "value");
         float fBright0;
    
@@ -220,7 +267,7 @@ static void OnChangeBright(AG_Event *event)
 }
 #endif /* USE_OPENGL */
 
-static void ConfigMenuBright(configdat_t *cfg, AG_NotebookTab *parent)
+static void ConfigMenuBright(struct gui_disp *cfg, AG_NotebookTab *parent)
 {
 	AG_Slider *slider;
 	AG_Box *box;
@@ -237,7 +284,6 @@ static void ConfigMenuBright(configdat_t *cfg, AG_NotebookTab *parent)
 	AG_SetEvent(AGOBJECT(slider), "slider-changed", OnChangeBright, "%p", cfg);
 #endif /* USE_OPENGL */
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_HFILL);
-
 }
 
 void OnConfigDisplayMenu(AG_Event *event)
@@ -251,11 +297,30 @@ void OnConfigDisplayMenu(AG_Event *event)
 	AG_NotebookTab *tab2;
 	AG_Box *box;
 	AG_Button *btn;
-        configdat_t *cfg;
+        struct gui_disp *cfg;
    
-        cfg = malloc(sizeof(configdat_t));
+        cfg = malloc(sizeof(struct gui_disp));
         if(cfg == NULL) return;
-	memcpy(cfg, &configdat, sizeof	(configdat_t));
+	{
+	  LockVM();
+	  cfg->nDrawFPS = configdat.nDrawFPS;
+	  cfg->nEmuFPS = configdat.nEmuFPS;
+	  cfg->nBrightness = configdat.nBrightness;
+	  cfg->nRenderMethod = configdat.nRenderMethod;
+	  cfg->uWidth = configdat.uWidth;
+	  cfg->uHeight = configdat.uHeight;
+	  cfg->bFullScan = configdat.bFullScan;
+	  cfg->bFullScanFS = configdat.bFullScanFS;
+	  cfg->bSmoosing = configdat.bSmoosing;
+	  cfg->bUseSIMD = configdat.bUseSIMD; 
+#ifdef _USE_OPENCL
+	  cfg->bUseOpenCL = configdat.bUseOpenCL;
+	  cfg->nCLGlobalWorkThreads = configdat.nCLGlobalWorkThreads;
+	  cfg->bCLSparse = configdat.bCLSparse; 
+#endif
+	  UnlockVM();
+	}
+
 	win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
         note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
 
@@ -277,7 +342,7 @@ void OnConfigDisplayMenu(AG_Event *event)
     {
     	AG_Box *vbox;
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply2, "%p", cfg);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApplyDisp, "%p", cfg);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
         AG_WidgetSetSize(AGWIDGET(vbox), 80, 24);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);

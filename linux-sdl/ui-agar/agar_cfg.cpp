@@ -855,10 +855,8 @@ void ApplyCfg(void)
 
 #if XM7_VER >= 3
     mmr_extram = configdat.bExtRAMEnable;
-
 #elif defined(FMTV151)
     bFMTV151 = configdat.bExtRAMEnable;
-
 #endif				/*  */
 #ifdef MOUSE
     mos_capture = configdat.bMouseCapture;
@@ -866,7 +864,6 @@ void ApplyCfg(void)
     if(configdat.nMousePort > 2) configdat.nMousePort = 2;
     mos_port = configdat.nMousePort;
     nMidBtnMode = configdat.nMidBtnMode;
-
 #endif				/*  */
    /*
     * OpenCL

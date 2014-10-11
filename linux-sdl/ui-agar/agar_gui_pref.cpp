@@ -40,9 +40,7 @@
 #include "xm7.h"
 #include "agar_logger.h"
 
-extern void OnConfigApply2(AG_Event *event);
 extern void OnPushCancel2(AG_Event *event);
-extern void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent);
 
 static const char *EmuTypeName[] =
 {
@@ -80,10 +78,68 @@ enum EmuSlowClockNum  {
 };
 
 
+static void OnConfigApplyVM(AG_Event *event)
+{
+        int ver;
+	AG_Button *self = (AG_Button *)AG_SELF();
+	struct gui_vm *cfg = AG_PTR(1);
+
+	LockVM();
+	ver = fm7_ver;
+	if(cfg != NULL){
+	  configdat.fm7_ver = cfg->fm7_ver;
+	  configdat.cycle_steal = cfg->cycle_steal;
+	  configdat.lowspeed_mode = cfg->lowspeed_mode;
+	  configdat.main_speed = cfg->main_speed;
+	  configdat.main_speed_low = cfg->main_speed_low;
+	  configdat.mmr_speed = cfg->mmr_speed;
+#if XM7_VER >= 3
+	  configdat.fmmr_speed = cfg->fmmr_speed;
+#endif
+	  configdat.sub_speed = cfg->sub_speed;
+	  configdat.sub_speed_low = cfg->sub_speed_low;
+	  configdat.uTimerResolution = cfg->uTimerResolution;
+	  configdat.bTapeFull = cfg->bTapeFull;
+	  configdat.bCPUFull = cfg->bCPUFull;
+	  configdat.bSpeedAdjust = cfg->bSpeedAdjust;
+	  configdat.bTapeMode = cfg->bTapeMode;
+#ifdef FDDSND
+	  configdat.bFddWait = cfg->bFddWait;
+#endif
+	  configdat.bDigitizeEnable = cfg->bDigitizeEnable;
+#if ((XM7_VER >= 3) || defined(FMTV151))
+	  configdat.bExtRAMEnable = cfg->bExtRAMEnable;
+#endif
+	  configdat.bHiresTick = cfg->bHiresTick;
+	  configdat.nTickResUs = cfg->nTickResUs;
+	  free(cfg);
+	}
+	ApplyCfg();
+	/*
+	 * VMヴァージョンが違ったら強制リセット
+	 */
+	if(ver != fm7_ver){
+		system_reset();
+	}
+	/*
+	 * ここにアイコン変更入れる
+	 */
+
+	/*
+	 * 終了処理
+	 */
+	UnlockVM();
+
+	if(self != NULL) {
+	  AG_WindowHide(self->wid.window);
+	  AG_ObjectDetach(self);
+	}
+}
+
 
 static void OnSetEmulationMode(AG_Event *event)
 {
-        configdat_t *cfg = AG_PTR(1);
+        struct gui_vm *cfg = AG_PTR(1);
 	int number = AG_INT(2);
 
         if(cfg == NULL) return;
@@ -92,28 +148,26 @@ static void OnSetEmulationMode(AG_Event *event)
 
 static void OnSetCyclestealMode(AG_Event *event)
 {
-        configdat_t *cfg = AG_PTR(1);
+        struct gui_vm *cfg = AG_PTR(1);
    	int number = AG_INT(2);
 
         if(cfg == NULL) return;
 	cfg->cycle_steal = number;
-        configdat.cycle_steal = number;
         cycle_steal = number; // Cycle Steal : Effects immidiatery.
 }
 
 static void OnSetSlowClockMode(AG_Event *event)
 {
-        configdat_t *cfg = AG_PTR(1);
+        struct gui_vm *cfg = AG_PTR(1);
    	int number = AG_INT(2);
 
         if(cfg == NULL) return;
         if(number != 0) number = TRUE;
 	cfg->lowspeed_mode = number;
-        configdat.lowspeed_mode = number;
         lowspeed_mode = number; // Clock down effects immidiately.
 }
 
-static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
+static void ConfigMenuEmulation(struct gui_vm *cfg, AG_NotebookTab *parent)
 {
 	AG_Radio *radio;
 	AG_Checkbox *check;
@@ -123,14 +177,11 @@ static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 
 	box = AG_BoxNewVert(AGWIDGET(parent), 0);
 	{
-//	cfg->EmuVMTypeSelected = cfg->localconfig.fm7_ver - 1;
 	n = cfg->fm7_ver - 1;
 	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Emulation Type"));
 	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuTypeName, OnSetEmulationMode, "%p", cfg);
 	AG_SetInt(radio, "value", n);
-//	AG_BindInt(radio, "value", &(cfg->EmuVMTypeSelected));
 
-//	cfg->EmuCyclestealMode = cfg->localconfig.cycle_steal;
 	n = cfg->cycle_steal;
 	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Cycle Steal"));
 	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuSpeedName, OnSetCyclestealMode, "%p", cfg);
@@ -141,7 +192,6 @@ static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 	lbl = AG_LabelNew(AGWIDGET(box), 0, gettext("Clock(FM-7 Only)"));
 	radio = AG_RadioNewFn(AGWIDGET(box), 0, EmuSlowClockName, OnSetSlowClockMode, "%p", cfg);
 	AG_SetInt(radio, "value", n);
-//	AG_BindInt(radio, "value", &(cfg->EmuCyclestealMode));
 	}
 
 	box = AG_BoxNewVert(AGWIDGET(parent), 0);
@@ -150,7 +200,12 @@ static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Full Speed"), &(cfg->bCPUFull));
 		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Disable Speed adjust when motor on"), &(cfg->bTapeMode));
 		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Full Speed adjust when motor on"), &(cfg->bTapeFull));
+#ifdef FDDSND
 		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Wait on accessing FDD"), &(cfg->bFddWait));
+#endif
+#if ((XM7_VER >= 3) || defined(FMTV151))
+		check = AG_CheckboxNewInt (AGWIDGET(box), 0, gettext("Use extended RAM"), &(cfg->bExtRAMEnable));
+#endif
 	}
 
 }
@@ -159,14 +214,15 @@ static void ConfigMenuEmulation(configdat_t *cfg, AG_NotebookTab *parent)
 static void OnResetCycles(AG_Event *event)
 {
    AG_Widget *self = AG_SELF();
-   configdat_t *cfg = AG_PTR(1);
+   struct gui_vm *cfg = AG_PTR(1);
    
    if(cfg == NULL) return;
    cfg->main_speed = MAINCYCLES;
    cfg->sub_speed  = SUBCYCLES;
    cfg->mmr_speed  = MAINCYCLES_MMR;
+#if XM7_VER >= 3
    cfg->fmmr_speed = MAINCYCLES_FMMR;
-
+#endif
    cfg->main_speed_low = MAINCYCLES_LOW;
    cfg->sub_speed_low  = SUBCYCLES_LOW;
 //   printf("Reset!\n");
@@ -198,7 +254,7 @@ static AG_Numerical *MakeCycleDialog(AG_Widget *parent, char *label, Uint32 *bin
 }
 
 
-static void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
+static void ConfigMenuVMSpeed(struct gui_vm *cfg, AG_NotebookTab *parent)
 {
 	AG_Box *box;
 	AG_Label *lbl;
@@ -211,7 +267,9 @@ static void ConfigMenuVMSpeed(configdat_t *cfg, AG_NotebookTab *parent)
         main     = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU"), &(cfg->main_speed));
         sub      = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU"), &(cfg->sub_speed));
         mmr      = MakeCycleDialog(AGWIDGET(box), gettext("Main MMR"), &(cfg->mmr_speed));
+#if XM7_VER >= 3
         fmmr     = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Fast MMR"), &(cfg->fmmr_speed));
+#endif
         main_low = MakeCycleDialog(AGWIDGET(box), gettext("Main CPU Low"), &(cfg->main_speed_low));
         sub_low  = MakeCycleDialog(AGWIDGET(box), gettext("Sub CPU Low"), &(cfg->sub_speed_low));
    
@@ -228,7 +286,7 @@ static void CheckTickReso(AG_Event *event)
    if(*p < 10)  *p = 10;
 }
 
-static void ConfigMenuVMConfig(configdat_t *cfg, AG_NotebookTab *parent)
+static void ConfigMenuVMConfig(struct gui_vm *cfg, AG_NotebookTab *parent)
 {
 
    AG_Box *box;
@@ -261,11 +319,37 @@ void OnConfigEmulationMenu(AG_Event *event)
    AG_NotebookTab *tab2;
    AG_Box *box;
    AG_Button *btn;
-   configdat_t *p;
+   struct gui_vm *p;
    
-   p = malloc(sizeof(configdat_t));
+   p = malloc(sizeof(struct gui_vm));
    if(p == NULL) return;
-   memcpy(p, &configdat, sizeof(configdat_t));
+   {
+	  p->fm7_ver = configdat.fm7_ver;
+	  p->cycle_steal = configdat.cycle_steal;
+	  p->lowspeed_mode = configdat.lowspeed_mode;
+	  p->main_speed = configdat.main_speed;
+	  p->main_speed_low = configdat.main_speed_low;
+	  p->mmr_speed = configdat.mmr_speed;
+#if XM7_VER >= 3
+	  p->fmmr_speed = configdat.fmmr_speed;
+#endif
+	  p->sub_speed = configdat.sub_speed;
+	  p->sub_speed_low = configdat.sub_speed_low;
+	  p->uTimerResolution = configdat.uTimerResolution;
+	  p->bTapeFull = configdat.bTapeFull;
+	  p->bCPUFull = configdat.bCPUFull;
+	  p->bSpeedAdjust = configdat.bSpeedAdjust;
+	  p->bTapeMode = configdat.bTapeMode;
+#ifdef FDDSND
+	  p->bFddWait = configdat.bFddWait;
+#endif
+	  p->bDigitizeEnable = configdat.bDigitizeEnable;
+#if ((XM7_VER >= 3) || defined(FMTV151))
+	  p->bExtRAMEnable = configdat.bExtRAMEnable;
+#endif
+	  p->bHiresTick = configdat.bHiresTick;
+	  p->nTickResUs = configdat.nTickResUs;
+    }
 
     win= AG_WindowNew(DIALOG_WINDOW_DEFAULT);
     note = AG_NotebookNew(AGWIDGET(win), AG_NOTEBOOK_HFILL);
@@ -288,7 +372,7 @@ void OnConfigEmulationMenu(AG_Event *event)
     {
     	AG_Box *vbox;
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
-    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApply2, "%p", p);
+    	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnConfigApplyVM, "%p", p);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
         AG_WidgetSetSize(AGWIDGET(vbox), 80, 24);
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);

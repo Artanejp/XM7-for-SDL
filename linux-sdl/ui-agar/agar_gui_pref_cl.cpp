@@ -47,7 +47,7 @@
 static void OnChangeGWS(AG_Event *event)
 {
    AG_Numerical *me = (AG_Numerical *)AG_SELF();
-   configdat_t *cfg = AG_PTR(1);
+   struct gui_disp *cfg = AG_PTR(1);
    int i;
    
    if(me == NULL) return;
@@ -61,7 +61,7 @@ static void OnChangeGWS(AG_Event *event)
 }
 
 #endif
-void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent)
+void ConfigMenuOpenCL(struct gui_disp *cfg, AG_NotebookTab *parent)
 {
 #ifdef _USE_OPENCL
    AG_Slider *slider;
