@@ -170,6 +170,10 @@ msgstr "モーターON時全速力"
 msgid "Wait on accessing FDD"
 msgstr "FDDシーク時ウェイトする"
 
+#: agar_gui_pref.cpp:207
+msgid "Use extended RAM"
+msgstr "拡張RAMを使う"
+
 #: agar_gui_pref.cpp:229 agar_gui_pref.cpp:218
 msgid "cycles"
 msgstr "サイクル"
