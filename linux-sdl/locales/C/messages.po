@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.4rc1\n"
-"Report-Msgid-Bugs-To: whatisthis.sowhat@gmail.com\n"
-"POT-Creation-Date: 2014-07-16 22:27+0900\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-10-12 01:31+0900\n"
 "PO-Revision-Date: 2014-07-16 22:55+0900\n"
 "Last-Translator: Kyuma Ohta <whatisthis.sowhat@gmail.com>\n"
 "Language-Team: Kyuma Ohta <whatisthis.sowhat@gmail.com>\n"
@@ -16,6 +16,62 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.5.4\n"
+
+#: agar_gui_input.cpp:161
+msgid "Bind multi-pressed cursor as oblique direction"
+msgstr ""
+
+#: agar_gui_input.cpp:162
+msgid "Bind Cursor as Ten-Key"
+msgstr ""
+
+#: agar_gui_input.cpp:163
+msgid "Pseudo Realtime Scan"
+msgstr ""
+
+#: agar_gui_input.cpp:164 agar_ui_vkey.cpp:396
+msgid "Virtual Keyboard"
+msgstr ""
+
+#: agar_gui_input.cpp:165
+msgid "Assign Keyboard"
+msgstr ""
+
+#: agar_gui_input.cpp:182
+msgid "Connect Inteligent Mouse"
+msgstr ""
+
+#: agar_gui_input.cpp:184
+msgid "Connected port"
+msgstr ""
+
+#: agar_gui_input.cpp:239
+msgid "Keyboard"
+msgstr ""
+
+#: agar_gui_input.cpp:242
+msgid "Joystick"
+msgstr ""
+
+#: agar_gui_input.cpp:246
+msgid "Mouse"
+msgstr ""
+
+#: agar_gui_input.cpp:255 agar_gui_pref.cpp:375 agar_gui_pref_disp.cpp:345
+#: agar_gui_sound.cpp:296 agar_menu_about.cpp:200 agar_menu_help.cpp:340
+#: agar_menu_tape.cpp:213
+msgid "OK"
+msgstr ""
+
+#: agar_gui_input.cpp:259 agar_gui_menu.cpp:111 agar_gui_pref.cpp:379
+#: agar_gui_pref_disp.cpp:349 agar_gui_sound.cpp:300 agar_menu_disk.cpp:367
+#: agar_menu_tape.cpp:222 agar_ui_vkey.cpp:386
+msgid "Cancel"
+msgstr ""
+
+#: agar_gui_input.cpp:263
+msgid "Configure Input"
+msgstr ""
 
 #: agar_gui_menu.cpp:98
 msgid "Select mode (Notice: If select , reboot.)"
@@ -27,12 +83,6 @@ msgstr ""
 
 #: agar_gui_menu.cpp:109
 msgid "DOS"
-msgstr ""
-
-#: agar_gui_menu.cpp:111 agar_gui_pref.cpp:529 agar_gui_pref.cpp:664
-#: agar_gui_pref.cpp:855 agar_menu_disk.cpp:367 agar_menu_tape.cpp:222
-#: agar_ui_vkey.cpp:385 agar_ui_vkey.cpp:445
-msgid "Cancel"
 msgstr ""
 
 #: agar_gui_menu.cpp:113 agar_gui_menu.cpp:131
@@ -67,335 +117,307 @@ msgstr ""
 msgid "Quit"
 msgstr ""
 
-#: agar_gui_menu.cpp:145
+#: agar_gui_menu.cpp:146
 msgid "File"
 msgstr ""
 
-#: agar_gui_menu.cpp:148
+#: agar_gui_menu.cpp:149
 msgid "Drive 1"
 msgstr ""
 
-#: agar_gui_menu.cpp:151
+#: agar_gui_menu.cpp:152
 msgid "Drive 0"
 msgstr ""
 
-#: agar_gui_menu.cpp:154
+#: agar_gui_menu.cpp:155
 msgid "Tape"
 msgstr ""
 
-#: agar_gui_menu.cpp:156
+#: agar_gui_menu.cpp:157
 msgid "Debug"
 msgstr ""
 
-#: agar_gui_menu.cpp:158
+#: agar_gui_menu.cpp:159
 msgid "Tools"
 msgstr ""
 
-#: agar_gui_menu.cpp:160
+#: agar_gui_menu.cpp:161 agar_menu_help.cpp:343 agar_menu_help.cpp:351
 msgid "Help"
 msgstr ""
 
-#: agar_gui_menu.cpp:161
+#: agar_gui_menu.cpp:163
 msgid "About"
 msgstr ""
 
-#: agar_gui_pref.cpp:149
+#: agar_gui_pref.cpp:181
 msgid "Emulation Type"
 msgstr ""
 
-#: agar_gui_pref.cpp:154
+#: agar_gui_pref.cpp:186
 msgid "Cycle Steal"
 msgstr ""
 
-#: agar_gui_pref.cpp:161
+#: agar_gui_pref.cpp:192
+msgid "Clock(FM-7 Only)"
+msgstr ""
+
+#: agar_gui_pref.cpp:199
 msgid "Auto Speed Adjust"
 msgstr ""
 
-#: agar_gui_pref.cpp:162
+#: agar_gui_pref.cpp:200
 msgid "Full Speed"
 msgstr ""
 
-#: agar_gui_pref.cpp:163
+#: agar_gui_pref.cpp:201
 msgid "Disable Speed adjust when motor on"
 msgstr ""
 
-#: agar_gui_pref.cpp:164
+#: agar_gui_pref.cpp:202
 msgid "Full Speed adjust when motor on"
 msgstr ""
 
-#: agar_gui_pref.cpp:165
+#: agar_gui_pref.cpp:204
 msgid "Wait on accessing FDD"
 msgstr ""
 
-#: agar_gui_pref.cpp:218
+#: agar_gui_pref.cpp:207
+msgid "Use extended RAM"
+msgstr ""
+
+#: agar_gui_pref.cpp:249
 msgid "cycles"
 msgstr ""
 
-#: agar_gui_pref.cpp:219
+#: agar_gui_pref.cpp:267
 msgid "Main CPU"
 msgstr ""
 
-#: agar_gui_pref.cpp:227
+#: agar_gui_pref.cpp:268
 msgid "Sub CPU"
 msgstr ""
 
-#: agar_gui_pref.cpp:234
+#: agar_gui_pref.cpp:269
 msgid "Main MMR"
 msgstr ""
 
-#: agar_gui_pref.cpp:241
+#: agar_gui_pref.cpp:271
 msgid "Main CPU Fast MMR"
 msgstr ""
 
-#: agar_gui_pref.cpp:246
+#: agar_gui_pref.cpp:273
+msgid "Main CPU Low"
+msgstr ""
+
+#: agar_gui_pref.cpp:274
+msgid "Sub CPU Low"
+msgstr ""
+
+#: agar_gui_pref.cpp:276
 msgid "Reset Default"
 msgstr ""
 
-#: agar_gui_pref.cpp:377 agar_gui_pref.cpp:430
-msgid "Full Draw"
+#: agar_gui_pref.cpp:300
+msgid "Hi resolution sync VM"
 msgstr ""
 
-#: agar_gui_pref.cpp:378 agar_gui_pref.cpp:431
-msgid "Diff Block"
+#: agar_gui_pref.cpp:302
+msgid "uS"
 msgstr ""
 
-#: agar_gui_pref.cpp:379 agar_gui_pref.cpp:432
-msgid "Diff Raster"
-msgstr ""
-
-#: agar_gui_pref.cpp:416
-msgid "Display rate"
-msgstr ""
-
-#: agar_gui_pref.cpp:422
-msgid "Emulation rate"
-msgstr ""
-
-#: agar_gui_pref.cpp:428
-msgid "Rendering Method"
-msgstr ""
-
-#: agar_gui_pref.cpp:442
-msgid "Full Scan (15KHz)"
-msgstr ""
-
-#: agar_gui_pref.cpp:444
-msgid "SMOOSING"
-msgstr ""
-
-#: agar_gui_pref.cpp:446
-msgid "Use OpenCL(Need REBOOT)"
-msgstr ""
-
-#: agar_gui_pref.cpp:448
-msgid "Use SIMD instructions(Need REBOOT)"
-msgstr ""
-
-#: agar_gui_pref.cpp:472
-msgid "Bright"
-msgstr ""
-
-#: agar_gui_pref.cpp:502
+#: agar_gui_pref.cpp:360
 msgid "Emulation"
 msgstr ""
 
-#: agar_gui_pref.cpp:505
+#: agar_gui_pref.cpp:363
 msgid "Cycle"
 msgstr ""
 
-#: agar_gui_pref.cpp:508
-msgid "Screen"
+#: agar_gui_pref.cpp:366
+msgid "VM"
 msgstr ""
 
-#: agar_gui_pref.cpp:511
-msgid "Display"
-msgstr ""
-
-#: agar_gui_pref.cpp:516
-msgid "OpenCL"
-msgstr ""
-
-#: agar_gui_pref.cpp:525 agar_gui_pref.cpp:660 agar_gui_pref.cpp:851
-#: agar_menu_about.cpp:199 agar_menu_tape.cpp:213
-msgid "OK"
-msgstr ""
-
-#: agar_gui_pref.cpp:531
+#: agar_gui_pref.cpp:382
 msgid "Preferences"
 msgstr ""
 
-#: agar_gui_pref.cpp:566
-msgid "Joystick #0"
-msgstr ""
-
-#: agar_gui_pref.cpp:574
-msgid "Joystick #1"
-msgstr ""
-
-#: agar_gui_pref.cpp:598
-msgid "Bind multi-pressed cursor as oblique direction"
-msgstr ""
-
-#: agar_gui_pref.cpp:599
-msgid "Bind Cursor as Ten-Key"
-msgstr ""
-
-#: agar_gui_pref.cpp:600
-msgid "Pseudo Realtime Scan"
-msgstr ""
-
-#: agar_gui_pref.cpp:601 agar_ui_vkey.cpp:395
-msgid "Virtual Keyboard"
-msgstr ""
-
-#: agar_gui_pref.cpp:602
-msgid "Assign Keyboard"
-msgstr ""
-
-#: agar_gui_pref.cpp:619
-msgid "Connect Inteligent Mouse"
-msgstr ""
-
-#: agar_gui_pref.cpp:620
-msgid "Connected port"
-msgstr ""
-
-#: agar_gui_pref.cpp:646
-msgid "Keyboard"
-msgstr ""
-
-#: agar_gui_pref.cpp:649
-msgid "Joystick"
-msgstr ""
-
-#: agar_gui_pref.cpp:652
-msgid "Mouse"
-msgstr ""
-
-#: agar_gui_pref.cpp:666
-msgid "Configure Input"
-msgstr ""
-
-#: agar_gui_pref.cpp:718
-msgid "Sample Rate"
-msgstr ""
-
-#: agar_gui_pref.cpp:722
-msgid "HQ Rendering"
-msgstr ""
-
-#: agar_gui_pref.cpp:726
-msgid "Per Second"
-msgstr ""
-
-#: agar_gui_pref.cpp:726
-msgid "Sound Buffer"
-msgstr ""
-
-#: agar_gui_pref.cpp:729
-msgid "Force Stereo"
-msgstr ""
-
-#: agar_gui_pref.cpp:730
-msgid "FDD Seek & Motor"
-msgstr ""
-
-#: agar_gui_pref.cpp:731
-msgid "CMT Monitor"
-msgstr ""
-
-#: agar_gui_pref.cpp:749
-msgid "Enable OPN"
-msgstr ""
-
-#: agar_gui_pref.cpp:750
-msgid "Enable WHG"
-msgstr ""
-
-#: agar_gui_pref.cpp:751
-msgid "Enable THG"
-msgstr ""
-
-#: agar_gui_pref.cpp:780
-msgid "Main Volume"
-msgstr ""
-
-#: agar_gui_pref.cpp:786
-msgid "PSG"
-msgstr ""
-
-#: agar_gui_pref.cpp:790
-msgid "FM"
-msgstr ""
-
-#: agar_gui_pref.cpp:794
-msgid "BEEP"
-msgstr ""
-
-#: agar_gui_pref.cpp:798
-msgid "CMT"
-msgstr ""
-
-#: agar_gui_pref.cpp:802
-msgid "SFX"
-msgstr ""
-
-#: agar_gui_pref.cpp:806
-msgid "Channel Separation"
-msgstr ""
-
-#: agar_gui_pref.cpp:838
-msgid "Volume"
-msgstr ""
-
-#: agar_gui_pref.cpp:840
-msgid "Rendering"
-msgstr ""
-
-#: agar_gui_pref.cpp:842
-msgid "Misc"
-msgstr ""
-
-#: agar_gui_pref.cpp:857
-msgid "Sound Preferences"
-msgstr ""
-
-#: agar_gui_pref_cl.cpp:76
+#: agar_gui_pref_cl.cpp:78
 msgid "Multi threaded OpenCL"
 msgstr ""
 
-#: agar_gui_pref_cl.cpp:77
+#: agar_gui_pref_cl.cpp:79
 msgid "Global Work Items"
 msgstr ""
 
-#: agar_main.cpp:264 agar_menu_debug.cpp:276 agar_menu_debug.cpp:350
+#: agar_gui_pref_disp.cpp:183 agar_gui_pref_disp.cpp:229
+msgid "Full Draw"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:184 agar_gui_pref_disp.cpp:230
+msgid "Diff Block"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:185 agar_gui_pref_disp.cpp:231
+msgid "Diff Raster"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:216
+msgid "Display rate"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:221
+msgid "Emulation rate"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:227
+msgid "Rendering Method"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:241
+msgid "Full Scan (15KHz)"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:243
+msgid "SMOOSING"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:245
+msgid "Use OpenCL(Need REBOOT)"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:247
+msgid "Use SIMD instructions(Need REBOOT)"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:277
+msgid "Bright"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:328
+msgid "Screen"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:331 agar_gui_pref_disp.cpp:352
+msgid "Display"
+msgstr ""
+
+#: agar_gui_pref_disp.cpp:336
+msgid "OpenCL"
+msgstr ""
+
+#: agar_gui_sound.cpp:145
+msgid "Sample Rate"
+msgstr ""
+
+#: agar_gui_sound.cpp:149
+msgid "HQ Rendering"
+msgstr ""
+
+#: agar_gui_sound.cpp:153
+msgid "Per Second"
+msgstr ""
+
+#: agar_gui_sound.cpp:153
+msgid "Sound Buffer"
+msgstr ""
+
+#: agar_gui_sound.cpp:156
+msgid "Force Stereo"
+msgstr ""
+
+#: agar_gui_sound.cpp:157
+msgid "FDD Seek & Motor"
+msgstr ""
+
+#: agar_gui_sound.cpp:158
+msgid "CMT Monitor"
+msgstr ""
+
+#: agar_gui_sound.cpp:173
+msgid "Enable OPN"
+msgstr ""
+
+#: agar_gui_sound.cpp:174
+msgid "Enable WHG"
+msgstr ""
+
+#: agar_gui_sound.cpp:175
+msgid "Enable THG"
+msgstr ""
+
+#: agar_gui_sound.cpp:207
+msgid "Main Volume"
+msgstr ""
+
+#: agar_gui_sound.cpp:213
+msgid "PSG"
+msgstr ""
+
+#: agar_gui_sound.cpp:217
+msgid "FM"
+msgstr ""
+
+#: agar_gui_sound.cpp:221
+msgid "BEEP"
+msgstr ""
+
+#: agar_gui_sound.cpp:225
+msgid "CMT"
+msgstr ""
+
+#: agar_gui_sound.cpp:229
+msgid "SFX"
+msgstr ""
+
+#: agar_gui_sound.cpp:233
+msgid "Channel Separation"
+msgstr ""
+
+#: agar_gui_sound.cpp:284
+msgid "Volume"
+msgstr ""
+
+#: agar_gui_sound.cpp:286
+msgid "Rendering"
+msgstr ""
+
+#: agar_gui_sound.cpp:288
+msgid "Misc"
+msgstr ""
+
+#: agar_gui_sound.cpp:303
+msgid "Sound Preferences"
+msgstr ""
+
+#: agar_main.cpp:263 agar_menu_debug.cpp:276 agar_menu_debug.cpp:350
 #: agar_menu_debug.cpp:424 agar_menu_debug.cpp:502 agar_menu_debug.cpp:582
+#: agar_ui_vkey.cpp:449
 msgid "Close"
 msgstr ""
 
-#: agar_main.cpp:538
+#: agar_main.cpp:541
 msgid ""
 "Error init VM.\n"
 "Please check ROMS and system-memory.\n"
 msgstr ""
 
-#: agar_main.cpp:541
+#: agar_main.cpp:544
 msgid ""
 "Error init Emulator.\n"
 "Please check window system, display and more.\n"
 msgstr ""
 
-#: agar_main.cpp:544
+#: agar_main.cpp:547
 msgid ""
 "Unknown error on setup.\n"
 "Please email to author."
 msgstr ""
 
-#: agar_menu_about.cpp:74
+#: agar_menu_about.cpp:75
 msgid "About XM7/SDL"
 msgstr ""
 
-#: agar_menu_about.cpp:207
+#: agar_menu_about.cpp:208
 msgid "About XM7"
 msgstr ""
 
@@ -480,7 +502,15 @@ msgstr ""
 msgid "Log to STDOUT"
 msgstr ""
 
-#: agar_menu_debug.cpp:668
+#: agar_menu_debug.cpp:661 agar_menu_disk.cpp:395 agar_menu_tape.cpp:243
+msgid "ON"
+msgstr ""
+
+#: agar_menu_debug.cpp:662 agar_menu_disk.cpp:396 agar_menu_tape.cpp:244
+msgid "OFF"
+msgstr ""
+
+#: agar_menu_debug.cpp:667
 msgid "Log to SYSLOG"
 msgstr ""
 
@@ -520,15 +550,7 @@ msgstr ""
 msgid "Write Protect"
 msgstr ""
 
-#: agar_menu_disk.cpp:396
-msgid "ON"
-msgstr ""
-
-#: agar_menu_disk.cpp:397
-msgid "OFF"
-msgstr ""
-
-#: agar_menu_disk.cpp:404
+#: agar_menu_disk.cpp:403
 msgid "Image Select"
 msgstr ""
 
@@ -560,102 +582,118 @@ msgstr ""
 msgid "Recording to Tape"
 msgstr ""
 
-#: agar_menu_tape.cpp:251
+#: agar_menu_tape.cpp:250
 msgid "Rewind"
 msgstr ""
 
-#: agar_menu_tape.cpp:252
+#: agar_menu_tape.cpp:251
 msgid "Fast Forward"
 msgstr ""
 
-#: agar_menu_tape.cpp:255
+#: agar_menu_tape.cpp:254
 msgid "Record Tape"
 msgstr ""
 
-#: agar_menu_tool.cpp:120 agar_menu_tool.cpp:194
+#: agar_menu_tool.cpp:121 agar_menu_tool.cpp:195
 msgid "Make Disk Image"
 msgstr ""
 
-#: agar_menu_tool.cpp:126
+#: agar_menu_tool.cpp:127
 msgid "Title"
 msgstr ""
 
-#: agar_menu_tool.cpp:133
+#: agar_menu_tool.cpp:134
 msgid "2DD"
 msgstr ""
 
-#: agar_menu_tool.cpp:134
+#: agar_menu_tool.cpp:135
 msgid "Disk Format"
 msgstr ""
 
-#: agar_menu_tool.cpp:149
+#: agar_menu_tool.cpp:150
 msgid "Create Disk "
 msgstr ""
 
-#: agar_menu_tool.cpp:206
+#: agar_menu_tool.cpp:207
 msgid "Create Tape"
 msgstr ""
 
-#: agar_menu_tool.cpp:258
+#: agar_menu_tool.cpp:259
 msgid "Capture to BMP"
 msgstr ""
 
-#: agar_menu_tool.cpp:309
+#: agar_menu_tool.cpp:310
 msgid "Capture to BMP without Scaling."
 msgstr ""
 
-#: agar_menu_tool.cpp:375
+#: agar_menu_tool.cpp:376
 msgid "Capture Sound"
 msgstr ""
 
-#: agar_menu_tool.cpp:403
+#: agar_menu_tool.cpp:405
+msgid "Capture..."
+msgstr ""
+
+#: agar_menu_tool.cpp:406
 msgid "Capture Screen "
 msgstr ""
 
-#: agar_menu_tool.cpp:404
+#: agar_menu_tool.cpp:407
 msgid "Capture Screen (Non-Scaled)"
 msgstr ""
 
-#: agar_menu_tool.cpp:405
+#: agar_menu_tool.cpp:408
 msgid "Capture WAV"
 msgstr ""
 
-#: agar_menu_tool.cpp:407
+#: agar_menu_tool.cpp:410
 msgid "Adjust Clock"
 msgstr ""
 
-#: agar_menu_tool.cpp:409
-msgid "Create Virtual Disk"
-msgstr ""
-
-#: agar_menu_tool.cpp:410
-msgid "Create Virtual Tape"
+#: agar_menu_tool.cpp:412
+msgid "Create..."
 msgstr ""
 
 #: agar_menu_tool.cpp:413
-msgid "Configure Emulation"
+msgid "Create Virtual Disk"
 msgstr ""
 
 #: agar_menu_tool.cpp:414
-msgid "Configure Inputs"
+msgid "Create Virtual Tape"
 msgstr ""
 
 #: agar_menu_tool.cpp:415
+msgid "Configure..."
+msgstr ""
+
+#: agar_menu_tool.cpp:416
+msgid "Configure Emulation"
+msgstr ""
+
+#: agar_menu_tool.cpp:417
+msgid "Configure Display"
+msgstr ""
+
+#: agar_menu_tool.cpp:418
+msgid "Configure Inputs"
+msgstr ""
+
+#: agar_menu_tool.cpp:419
 msgid "Configure Sound"
 msgstr ""
 
-#: agar_toolbox.cpp:161
+#: agar_toolbox.cpp:225
 msgid "Load status as"
 msgstr ""
 
-#: agar_toolbox.cpp:243
+#: agar_toolbox.cpp:307
 msgid "Save status as"
 msgstr ""
 
-#: agar_ui_vkey.cpp:440
+#: agar_ui_vkey.cpp:444
 msgid "Press Key"
 msgstr ""
 
-#: agar_ui_vkey.cpp:452
+#: agar_ui_vkey.cpp:456
 msgid "Assign Keycode"
 msgstr ""
