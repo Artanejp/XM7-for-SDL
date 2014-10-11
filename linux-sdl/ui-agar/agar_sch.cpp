@@ -118,7 +118,7 @@ void CleanSch(void)
 {
 	int ret;
 	bCloseReq = TRUE; // 終了要求
-        AG_Delay(10);
+        SDL_Delay(10);
 //	AG_ThreadJoin(&SchThread,(void *)&ret); // スケジューラが終わるのを待つ
 //	AG_ThreadCancel(SchThread); // スケジューラが終わるのを待つ
         bCloseReq = FALSE;
@@ -528,7 +528,8 @@ static void *ThreadSch(void *param)
 	 */
 DWORD XM7_timeGetTime(void)
 {
-   return (DWORD)AG_GetTicks();
+  //   return (DWORD)AG_GetTicks();
+   return (DWORD)SDL_GetTicks();
 }
 
 
@@ -537,8 +538,8 @@ DWORD XM7_timeGetTime(void)
  */
 void XM7_Sleep(DWORD t)
 {
-   AG_Delay(t);
-//   SDL_Delay(t);
+  //   AG_Delay(t);
+   SDL_Delay(t);
 }
 
 void XM7_Sync1ms(DWORD init)
