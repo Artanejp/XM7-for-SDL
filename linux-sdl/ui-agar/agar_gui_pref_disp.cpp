@@ -40,8 +40,16 @@
 #include "xm7.h"
 
 
+
 extern void OnPushCancel2(AG_Event *event);
 extern void ConfigMenuOpenCL(struct gui_disp *cfg, AG_NotebookTab *parent);
+
+static const int RenderMethodsList[] =
+{
+  RENDERING_FULL,
+  RENDERING_BLOCK,
+  RENDERING_RASTER
+};
 
 static const char *ScreenSizeName[] =
 {
@@ -108,7 +116,7 @@ static void OnConfigApplyDisp(AG_Event *event)
 {
         int ver;
 	AG_Button *self = (AG_Button *)AG_SELF();
-	struct gui_disp *cfg = AG_PTR(1);
+	struct gui_disp *cfg = (struct gui_disp *)AG_PTR(1);
 
 	LockVM();
 	if(cfg != NULL){
@@ -154,7 +162,7 @@ static void OnConfigApplyDisp(AG_Event *event)
 
 static void OnChangeScreenReso(AG_Event *event)
 {
-        struct gui_disp *cfg = AG_PTR(1);
+        struct gui_disp *cfg = (struct gui_disp *)AG_PTR(1);
 	int number = AG_INT(2);
    
         if(cfg == NULL) return;
@@ -173,18 +181,18 @@ static void OnChangeScreenReso(AG_Event *event)
 
 static void RenderMethodSelected(AG_Event *event)
 {
+   AG_Combo *self = (AG_Combo *)AG_SELF();
    AG_TlistItem *list = (AG_TlistItem *)AG_PTR(2);
-   struct gui_disp *cfg = AG_PTR(1);
+   struct gui_disp *cfg = (struct gui_disp *)AG_PTR(1);
    int method = -1;
    
    if(list == NULL) return;
    if(cfg == NULL) return;
-   
-   if(strcmp(gettext("Full Draw"), list->text) == 0) method = RENDERING_FULL;
-   if(strcmp(gettext("Diff Block"), list->text) == 0) method = RENDERING_BLOCK;
-   if(strcmp(gettext("Diff Raster"), list->text) == 0) method = RENDERING_RASTER;
-   
-   if(method < 0) return;
+
+   if(list->p1 != NULL) {
+     method = *(int *)(list->p1);
+   }
+   if(method < RENDERING_FULL) return;
    if(method >= RENDERING_END) return;
    cfg->nRenderMethod = method;
    return;
@@ -215,27 +223,33 @@ static void OnConfigMenuScreen(struct gui_disp *cfg, AG_NotebookTab *parent)
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
 		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Display rate"));
 		AG_BindUint16(fps, "value", &(cfg->nDrawFPS));
-		AG_NumericalSetRangeInt(fps, 2, 75);
-		AG_NumericalSetIncrement(fps, 1);
+		{
+		  AG_SetInt(fps, "min", 2);
+		  AG_SetInt(fps, "max", 75);
+		  AG_SetInt(fps, "inc", 1);
+		}
 
 		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Emulation rate"));
 		AG_BindUint16(fps, "value", &(cfg->nEmuFPS));
-		AG_NumericalSetRangeInt(fps, 2, 75);
-		AG_NumericalSetIncrement(fps, 1);
+		{
+		  AG_SetInt(fps, "min", 2);
+		  AG_SetInt(fps, "max", 75);
+		  AG_SetInt(fps, "inc", 1);
+		}
+
 	   
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
-		combo = AG_ComboNewS(AGWIDGET(box2), AG_COMBO_SCROLLTOSEL, gettext("Rendering Method"));
-	        AG_ComboSizeHint(combo, "XXXXXXXXXXXX", RENDERING_END); 
-	        TlistItem[0] = AG_TlistAddS(combo->list, NULL, gettext("Full Draw"));
-	        TlistItem[1] = AG_TlistAddS(combo->list, NULL, gettext("Diff Block"));
-	        TlistItem[2] = AG_TlistAddS(combo->list, NULL, gettext("Diff Raster"));
+		combo = AG_ComboNewS(AGWIDGET(box2), AG_COMBO_SCROLLTOSEL | AG_COMBO_HFILL, gettext("Rendering Method"));
+	        AG_ComboSizeHint(combo, "XXXXXXXXXXXXXX", RENDERING_END); 
+	        TlistItem[0] = AG_TlistAddPtrHead(combo->list, NULL, gettext("Full Draw"),   (void *)&RenderMethodsList[0]);
+	        TlistItem[1] = AG_TlistAddPtr(combo->list,     NULL, gettext("Diff Block"),  (void *)&RenderMethodsList[1]);
+	        TlistItem[2] = AG_TlistAddPtr(combo->list,     NULL, gettext("Diff Raster"), (void *)&RenderMethodsList[2]);
 	        for(i = RENDERING_FULL; i < RENDERING_END; i++) {
 		   if(i == cfg->nRenderMethod) {
 			AG_ComboSelect(combo, TlistItem[i]);
 		   }
 		}
-	   
-	        AG_SetEvent(combo, "combo-selected", RenderMethodSelected, "%p", cfg);
+		AG_SetEvent(combo, "combo-selected", RenderMethodSelected, "%p", cfg);
 	   
 		box2 = AG_BoxNewHoriz(AGWIDGET(box), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box2), AG_CHECKBOX_HFILL, gettext("Full Scan (15KHz)"), &(cfg->bFullScan));
@@ -254,7 +268,7 @@ extern void SetBrightRGB_AG_GL2(float r, float g, float b);
 static void OnChangeBright(AG_Event *event)
 {
 	AG_Slider *self = (AG_Slider *)AG_SELF();
-        struct gui_disp *cfg = AG_PTR(1);
+        struct gui_disp *cfg = (struct gui_disp *)AG_PTR(1);
         WORD bright = AG_GetUint16(self, "value");
         float fBright0;
    
@@ -299,7 +313,7 @@ void OnConfigDisplayMenu(AG_Event *event)
 	AG_Button *btn;
         struct gui_disp *cfg;
    
-        cfg = malloc(sizeof(struct gui_disp));
+        cfg = (struct gui_disp *)malloc(sizeof(struct gui_disp));
         if(cfg == NULL) return;
 	{
 	  LockVM();
