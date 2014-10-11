@@ -562,12 +562,12 @@ static void FASTCALL mainmem_iowait(void)
 {
 	BYTE tmp;
 
-#if XM7_VER == 1
+//#if XM7_VER == 1
 	/* 1.2MHzモードではI/Oウェイトがかからない */
-	if (lowspeed_mode) {
+	if (lowspeed_mode && (fm7_ver == 1)) {
 		return;
 	}
-#endif
+//#endif
 
 	/* クロック引き延ばしに必要なI/Oアクセス回数を設定 */
 #if XM7_VER >= 3

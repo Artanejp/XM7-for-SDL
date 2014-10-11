@@ -178,7 +178,7 @@ schedule_get_cycle(void)
     DWORD           tmp;
 
 #if XM7_VER >= 3
-    if (mmr_fastmode) {
+    if (mmr_fastmode && (fm7_ver != 1)) {
 	tmp = fmmr_speed;
     } else
 #endif
@@ -186,9 +186,6 @@ schedule_get_cycle(void)
     if (lowspeed_mode && (fm7_ver == 1)) {
 	tmp = main_speed_low;
     } else {
-      //#else
-      //{
-      //#endif
 	if (mmr_flag || twr_flag) {
 	    tmp = mmr_speed;
 	} else {
@@ -784,7 +781,7 @@ schedule_exec(DWORD microsec)
 	    tmp = (sub_speed * speed_ratio) / 100000;
 	}
 	//#else
-	tmp = (sub_speed * speed_ratio) / 100000;
+	//tmp = (sub_speed * speed_ratio) / 100000;
 	//#endif
 	if (tmp < 1) {
 	    tmp = 1;
