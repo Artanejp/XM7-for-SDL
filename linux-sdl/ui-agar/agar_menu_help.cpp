@@ -249,7 +249,7 @@ static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct inde
    * Parse index as right WIDGET.
    */
   tbl = AG_TlistNew(parent, AG_TLIST_TREE | AG_TLIST_VFILL);
-  AG_TlistSizeHint(tbl, "xxxxxxxxxxxxxxxxxx", 25);
+  AG_TlistSizeHint(tbl, "xxxxxxxxxxxxxxxxxxxxxxxx", 25);
   
   linecnt = GetIndexLines(p, q, &indexs);
   
@@ -264,8 +264,22 @@ static AG_Tlist *GenIndex(AG_Widget *parent, char *buf, char **buf2, struct inde
 	indexs[i].buf = NULL;
       }
       if(indexs[i].buf != NULL) {
-	memcpy(indexs[i].buf, &buf[indexs[i].index], bufsize);
+	char *pp2, *pp3;
+
+	pp2 = malloc(bufsize + 1);
+	if(pp2 == NULL) continue;
+	memcpy(pp2, &buf[indexs[i].index], bufsize);
+	pp3 = index(pp2, '\x1f');
+	if(pp3 != NULL) {
+	  pp3 += 1;
+	  if(pp3[0] == '\x0a') pp3 += 1;
+	} else {
+	  pp3 = pp2;
+	}
+	bufsize -= (pp3 - pp2);
+	memcpy(indexs[i].buf, pp3, bufsize);
 	indexs[i].buf[bufsize] = '\0';
+	free(pp2);
       }
       item = AG_TlistAddPtr(tbl, NULL, indexs[i].indexname, &indexs[i]);
     }
