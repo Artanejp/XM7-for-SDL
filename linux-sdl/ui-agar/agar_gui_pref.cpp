@@ -40,66 +40,9 @@
 #include "xm7.h"
 #include "agar_logger.h"
 
-configdat_t localconfig;
-
-
+extern void OnConfigApply2(AG_Event *event);
 extern void OnPushCancel2(AG_Event *event);
 extern void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent);
-
-void OnConfigApplyMain(configdat_t *p, AG_Button *self)
-{
-
-        int ver;
-	LockVM();
-        
-	memcpy(&configdat, p, sizeof(configdat_t));
-	ver = fm7_ver;
-	ApplyCfg();
-	/*
-	 * VMヴァージョンが違ったら強制リセット
-	 */
-	if(ver != fm7_ver){
-		system_reset();
-	}
-	/*
-	 * ここにアイコン変更入れる
-	 */
-
-	/*
-	 * 終了処理
-	 */
-	UnlockVM();
-	AG_WindowHide(self->wid.window);
-	AG_ObjectDetach(self);
-//	AG_WindowDetach(self->wid.window);
-}
-
-
-void OnConfigApply(AG_Event *event)
-{
-	int ver;
-        int i;
-	AG_Button *self = (AG_Button *)AG_SELF();
-
-        OnConfigApplyMain(&localconfig, self);
-
-}
-
-
-
-void OnConfigApply2(AG_Event *event)
-{
-	int ver;
-        int i;
-	AG_Button *self = (AG_Button *)AG_SELF();
-        configdat_t *cfg = AG_PTR(1);
-
-        if(cfg == NULL) return;
-         OnConfigApplyMain(cfg, self);
-        free(cfg);
-}
-
-
 
 static const char *EmuTypeName[] =
 {
@@ -351,6 +294,7 @@ void OnConfigEmulationMenu(AG_Event *event)
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
     	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel2, "%p", p);
     }
+    AG_SetEvent(win, "window-close", OnPushCancel2, "%p", p);
     AG_WindowSetCaption(win, gettext("Preferences"));
     AG_WindowShow(win);
 }

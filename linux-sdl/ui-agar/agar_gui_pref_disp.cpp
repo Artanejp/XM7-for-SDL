@@ -291,7 +291,8 @@ void OnConfigDisplayMenu(AG_Event *event)
         vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
     	btn = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("Cancel"), OnPushCancel2, "%p", cfg);
     }
-   AG_WindowSetCaption(win, gettext("Display"));
-   AG_WindowShow(win);
+    AG_SetEvent(win, "window-close", OnPushCancel2, "%p", cfg);
+    AG_WindowSetCaption(win, gettext("Display"));
+    AG_WindowShow(win);
 }
 
