@@ -151,12 +151,13 @@ const struct KeyCode_Vkey VKeyTableAG_16[] = { { "0", 0x46 }, /* Tenkey 0 */
 
 extern void PushKeyData(Uint8, Uint8); /* Make */
 extern void OnPushCancel(AG_Event *event);
-extern void OnPushCancel2(AG_Event *event);
+
 
 static void OnPressVkey(AG_Event *event) {
 	AG_Button *button = (AG_Button *) AG_SELF();
 	Uint code = AG_INT(1);
-	Uint state = AG_INT(2);
+	struct gui_input *cfg = AG_PTR(2);
+	//	Uint state = AG_INT(3);
 	PushKeyData(code, 0x80); /* Make */
 	XM7_Sleep(50);
 	PushKeyData(code, 0x00); /* Break */
@@ -195,7 +196,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			for (j = 0; j < i; j++) {
 				p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 						VKeyTableAG_1[j].KeyName);
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_1[j].KeyCode);
+				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_1[j].KeyCode, cfg);
 				AG_ButtonSetRepeatMode(p, 0);
 			}
 			p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
@@ -205,7 +206,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			for (j = 0; j < i; j++) {
 				p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 						VKeyTableAG_11_1[j].KeyName);
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_11_1[j].KeyCode);
+				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_11_1[j].KeyCode, cfg);
 				AG_ButtonSetRepeatMode(p, 1);
 
 			}
@@ -216,7 +217,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			for (j = 0; j < i; j++) {
 				p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 						VKeyTableAG_9[j].KeyName);
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_9[j].KeyCode);
+				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_9[j].KeyCode, cfg);
 
 				AG_ButtonSetRepeatMode(p, 1);
 			}
@@ -227,7 +228,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			for (j = 0; j < i; j++) {
 				p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 						VKeyTableAG_2[j].KeyName);
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_2[j].KeyCode);
+				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_2[j].KeyCode, cfg);
 			}
 			p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 					"    ");
@@ -236,7 +237,7 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			for (j = 0; j < i; j++) {
 				p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 						VKeyTableAG_11_2[j].KeyName);
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_11_2[j].KeyCode);
+				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_11_2[j].KeyCode, cfg);
 			}
 			p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 					"  ");
@@ -246,18 +247,18 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			for (j = 0; j < i; j++) {
 				p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 						VKeyTableAG_10[j].KeyName);
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_10[j].KeyCode);
+				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_10[j].KeyCode,cfg);
 			}
 
 		}
 
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	{
+	if(cfg != NULL) {
 		i = sizeof(VKeyTableAG_3) / sizeof(struct KeyCode_Vkey);
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT, VKeyTableAG_3[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_3[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_3[j].KeyCode, cfg);
 		}
 		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"         ");
@@ -266,21 +267,21 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 					VKeyTableAG_12[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_12[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_12[j].KeyCode, cfg);
 		}
 
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	{
+	if(cfg != NULL) {
 		i = sizeof(VKeyTableAG_4) / sizeof(struct KeyCode_Vkey);
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT, VKeyTableAG_4[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_4[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_4[j].KeyCode, cfg);
 		}
 		i = sizeof(VKeyTableAG_5) / sizeof(struct KeyCode_Vkey);
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT, VKeyTableAG_5[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_5[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_5[j].KeyCode, cfg);
 		}
 		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"            ");
@@ -289,18 +290,18 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 					VKeyTableAG_13[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_13[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_13[j].KeyCode, cfg);
 		}
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	{
+	if(cfg != NULL) {
 		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"         ");
 		AG_WidgetDisable(p);
 		i = sizeof(VKeyTableAG_6) / sizeof(struct KeyCode_Vkey);
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT, VKeyTableAG_6[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_6[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_6[j].KeyCode, cfg);
 		}
 		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"                        ");
@@ -309,12 +310,12 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 					VKeyTableAG_14[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_14[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_14[j].KeyCode, cfg);
 		}
 
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	{
+	if(cfg != NULL){
 		i = sizeof(VKeyTableAG_7) / sizeof(struct KeyCode_Vkey);
 		for (j = 0; j < i; j++) {
 			//				hbox = AG_BoxNewHoriz(box, AG_HBOX_VFILL);
@@ -324,13 +325,13 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			case 0x53:
 			case 0x54:
 			case 0x56:
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_modkey, "%i", VKeyTableAG_7[j].KeyCode);
+			  AG_SetEvent(AGWIDGET(p), "button-pushed", func_modkey, "%i,%p", VKeyTableAG_7[j].KeyCode, cfg);
 				if(vkey) {
 					AG_ButtonSetSticky(p, 0x01);
 				}
 				break;
 			default:
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_7[j].KeyCode);
+			  AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_7[j].KeyCode, cfg);
 				break;
 			}
 		}
@@ -341,12 +342,12 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 					VKeyTableAG_15[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_15[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_15[j].KeyCode, cfg);
 		}
 
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	{
+	if(cfg != NULL) {
 		p = AG_ButtonNew(box, AG_BUTTON_STICKY, "%s",
 				"  ");
 		AG_WidgetDisable(p);
@@ -359,13 +360,13 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 			case 0x53:
 			case 0x54:
 			case 0x56:
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_modkey, "%i", VKeyTableAG_8[j].KeyCode);
+			  AG_SetEvent(AGWIDGET(p), "button-pushed", func_modkey, "%i,%p", VKeyTableAG_8[j].KeyCode, cfg);
 				if(vkey) {
 					AG_ButtonSetSticky(p, 0x01);
 				}
 				break;
 			default:
-				AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_8[j].KeyCode);
+			  AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_8[j].KeyCode, cfg);
 				break;
 			}
 //			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_8[j].KeyCode);
@@ -378,12 +379,12 @@ void VkeyBoard(AG_Event *event, void (func_press)(AG_Event *), void (func_modkey
 		for (j = 0; j < i; j++) {
 			p = AG_ButtonNew(box, AG_BUTTON_REPEAT,
 					VKeyTableAG_16[j].KeyName);
-			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i", VKeyTableAG_16[j].KeyCode);
+			AG_SetEvent(AGWIDGET(p), "button-pushed", func_press, "%i,%p", VKeyTableAG_16[j].KeyCode, cfg);
 		}
 
 	}
 	box = AG_BoxNewHoriz(vbox, 0);
-	p = AG_ButtonNewFn(box, 0, gettext("Cancel"), OnPushCancel2, "%p", cfg);
+	p = AG_ButtonNewFn(box, 0, gettext("Close"), OnPushCancel, NULL);
 
 	AG_WindowSetCaption(w, caption);
 	AG_WindowShow(w);
@@ -410,11 +411,12 @@ static void OnPressSetKey(AG_Event *event)
         XM7KeyCode *km;
         int i;
 
-//	printf("Pressed %02x %02x", keySym, pushCode);
+	//	printf("Pressed %x %x %x %08x\n", keySym, keyMod, pushCode, cfg);
+#if 1
 	SetKeyCodeAG((Uint8) pushCode, keySym, keyMod);
 	if(cfg == NULL) return;
-        km = &(cfg->KeyMap[0]);
-	for(i = 0; i<256 ; i++)
+        km = cfg->KeyMap;
+	for(i = 0; i < 256 ; i++)
 	{
 		if(pushCode == km[i].pushCode) {
 			km[i].mod = keyMod;
@@ -422,14 +424,18 @@ static void OnPressSetKey(AG_Event *event)
 			break;
 		}
 	}
-	OnPushCancel(event);
+#endif
+	if(w != NULL) {
+	  AG_WindowHide(w);
+	  AG_ObjectDetach(AGOBJECT(w));
+	}
 }
 
 static void OnSetVkey(AG_Event *event)
 {
 	AG_Button *button = (AG_Button *) AG_SELF();
-	struct gui_input *cfg = AG_PTR(1);
-	Uint pushCode = AG_INT(2);
+	Uint pushCode = AG_INT(1);
+	struct gui_input *cfg = AG_PTR(2);
 	AG_Window *w;
 	AG_Box *box;
 	AG_Box *box2;
@@ -446,7 +452,7 @@ static void OnSetVkey(AG_Event *event)
 	GetKeyCodeAG(pushCode, (void *)&p);
 	lbl = AG_LabelNew(box2, 0, "%s (%04x)", button->lbl->text, p.code);
 	box2 = AG_BoxNewHoriz(box, 0);
-	cbutton = AG_ButtonNewFn(box2, 0, gettext("Close"), OnPushCancel2, "%p", cfg);
+	cbutton = AG_ButtonNewFn(box2, 0, gettext("Close"), OnPushCancel, NULL); // Not detach table(s).
 	AG_SetEvent(AGOBJECT(w), "key-up", OnPressSetKey, "%i,%p", pushCode, cfg);
 	AG_WindowShow(w);
 }
