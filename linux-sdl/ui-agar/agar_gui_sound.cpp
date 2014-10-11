@@ -42,7 +42,6 @@
 extern void OnPushCancel2(AG_Event *event);
 extern void OnConfigApply2(AG_Event *event);
 
-static int SampleRateNum;
 extern void SetSoundVolume2(UINT uSp, int nFM, int nPSG, int nBeep, int nCMT, int nWav);
 extern void SetTotalVolume(int vol);
 
@@ -87,13 +86,12 @@ static void SoundMenu(AG_NotebookTab *parent, configdat_t *cfg)
 		if(cfg->nSampleRate == SampleRates[i]) break;
 	}
 	if(i > 6) i = 6;
-	SampleRateNum = i;
 
 	box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_VFILL);
 	{
 		lbl = AG_LabelNew(AGWIDGET(box), 0, "%s", gettext("Sample Rate"));
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, SampleRateName, OnChangeSampleRate, "%p", cfg);
-		AG_BindInt(radio, "value", &SampleRateNum);
+		AG_SetInt(radio, "value", i);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
 		check = AG_CheckboxNewInt(AGWIDGET(box), AG_CHECKBOX_HFILL, gettext("HQ Rendering"), &(cfg->bFMHQmode));
 	}
