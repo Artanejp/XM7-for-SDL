@@ -135,6 +135,7 @@ static void OnCloseHelpViewer(AG_Event *event)
   struct index_list   *indexs = AG_PTR(2);
   int                 indexnum = AG_INT(3);
   int i;
+
   if(rawdata != NULL) free(rawdata);
   if(indexs != NULL)  {
     for(i = 0; i < indexnum; i++) free(indexs[i].buf);
@@ -338,7 +339,8 @@ static void OnHelpDialog(AG_Event *event)
     vbox = AG_BoxNewVert(AGWIDGET(box), AG_BOX_VFILL);
     button = AG_ButtonNewFn(AGWIDGET(box), 0, gettext("OK"), OnCloseHelpViewer, "%p,%p,%i", buf2, indexs, linecnt);
   }
-  AG_WindowSetCaption(win, gettext("HELP"));
+  AG_SetEvent(win, "window-close", OnCloseHelpViewer, "%p,%p,%i", buf2, indexs, linecnt);
+  AG_WindowSetCaption(win, gettext("Help"));
   AG_WindowShow(win);
 }
   
