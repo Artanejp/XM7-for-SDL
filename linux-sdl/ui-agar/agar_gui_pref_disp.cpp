@@ -44,8 +44,6 @@ extern void OnPushCancel2(AG_Event *event);
 extern void ConfigMenuOpenCL(configdat_t *cfg, AG_NotebookTab *parent);
 extern void OnConfigApply2(AG_Event *event);
 
-static int ScreenResoSelected;
-
 static const char *ScreenSizeName[] =
 {
 		"320x200",
@@ -113,7 +111,7 @@ static void OnChangeScreenReso(AG_Event *event)
 	int number = AG_INT(2);
    
         if(cfg == NULL) return;
-	ScreenResoSelected = number;
+
 	cfg->uWidth = ScreenSizeWidth[number];
 	cfg->uHeight = ScreenSizeHeight[number];
         
@@ -158,27 +156,21 @@ static void OnConfigMenuScreen(configdat_t *cfg, AG_NotebookTab *parent)
 	int i;
 	int limit;
 	
-
-	limit = sizeof(ScreenSizeHeight) / sizeof(WORD);
-	for(i = 0; i <= limit; i++){
-		if((ScreenSizeWidth[i] == cfg->uWidth) && (ScreenSizeHeight[i] == cfg->uHeight)) break;
-	}
-	if(i >= limit) i = 2;
-	ScreenResoSelected = i;
-
-
 	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_VFILL);
 	{
 		radio = AG_RadioNewFn(AGWIDGET(box), 0, ScreenSizeName, OnChangeScreenReso, "%p", cfg);
-		AG_BindInt(radio, "value",&ScreenResoSelected);
+		limit = sizeof(ScreenSizeHeight) / sizeof(WORD);
+		for(i = 0; i <= limit; i++){
+		  if((ScreenSizeWidth[i] == cfg->uWidth) && (ScreenSizeHeight[i] == cfg->uHeight)) break;
+		}
+		if(i >= limit) i = 2;
+		AG_SetInt(radio, "value", i);
 		box = AG_BoxNewVert(AGWIDGET(parent), AG_BOX_HFILL);
-//		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Display rate"), &localconfig.nDrawFPS);
 		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Display rate"));
 		AG_BindUint16(fps, "value", &(cfg->nDrawFPS));
 		AG_NumericalSetRangeInt(fps, 2, 75);
 		AG_NumericalSetIncrement(fps, 1);
 
-//		fps = AG_NumericalNewUint16(AGWIDGET(box), AG_NUMERICAL_HFILL, gettext("Frames per Second") ,gettext("Emulation rate"), &localconfig.nEmuFPS);
 		fps = AG_NumericalNewS(AGWIDGET(box), AG_NUMERICAL_HFILL, NULL ,gettext("Emulation rate"));
 		AG_BindUint16(fps, "value", &(cfg->nEmuFPS));
 		AG_NumericalSetRangeInt(fps, 2, 75);
