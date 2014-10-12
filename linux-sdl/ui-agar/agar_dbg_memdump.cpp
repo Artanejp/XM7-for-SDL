@@ -551,7 +551,7 @@ void XM7_DbgDumpMem(void *p)
 
 }
 
-struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE))
+struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), volatile void (*wf)(WORD, BYTE))
 {
     struct XM7_DbgDump *obj;
     XM7_SDLView *view;

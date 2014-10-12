@@ -153,7 +153,7 @@ struct XM7_DbgMMRDumpDesc {
 
 extern void XM7_DbgDumpMem(void *p);
 extern void XM7_DbgDumpMemDetach(struct XM7_DbgDump *dbg);
-extern struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), void (*wf)(WORD, BYTE));
+extern struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), volatile void (*wf)(WORD, BYTE));
 extern "C" {
    extern void XM7_DbgKeyPressFn(AG_Event *event);
 }

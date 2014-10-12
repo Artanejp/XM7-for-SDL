@@ -10,9 +10,9 @@
 #include <libintl.h>
 extern "C" {
 #include <agar/core.h>
-#include <agar/core/types.h>
-#include <agar/gui.h>
-#include <agar/gui/opengl.h>
+//#include <agar/core/types.h>
+//#include <agar/gui.h>
+//#include <agar/gui/opengl.h>
 }
 #include "xm7.h"
 #include "tapelp.h"
@@ -54,7 +54,6 @@ extern void DBG_DumpAsc(char *str, Uint8 b);
  * Fix Fonts
  */
 
-
 static void DbgInitFont(void)
 {
    
@@ -64,6 +63,7 @@ static void DbgDetachFont(void)
 {
 
 }
+
 
 
 static Uint32 UpdateDisasm(AG_Timer *timer, AG_Event *event)
@@ -101,18 +101,28 @@ static void OnChangeAddrDisasm(AG_Event *event)
 }
 
 
+static void OnClosedDisasmWindow(AG_Event *event)
+{
+    struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
+    if(mp != NULL) {
+       if(mp->disasm != NULL) XM7_DbgDisasmDetach(mp->disasm);
+       free(mp);
+    }
+}
+
+
 static void DestroyDisasmWindow(AG_Event *event)
 {
     struct XM7_DbgDisasmDesc *mp = (struct XM7_DbgDisasmDesc *)AG_PTR(1);
-    void *self = (void *)AG_SELF();
+//    AG_Timer *timer = (AG_Timer *)AG_PTR(2);
+    AG_Button *self = (AG_Button *)AG_SELF();
 
-    if(mp == NULL) return;
-    AG_LockTimeouts(self);
-    AG_DelTimeout(self, &mp->to);
-    AG_UnlockTimeouts(self);
-    if(mp->disasm != NULL) XM7_DbgDisasmDetach(mp->disasm);
-    free(mp);
-    mp = NULL;
+
+     OnClosedDisasmWindow(event);
+     if(self != NULL) {
+      AG_WindowHide(self->wid.window);
+      AG_ObjectDetach(self->wid.window);
+   }
 }
 
 
@@ -164,24 +174,19 @@ static void DestroyDumpWindow(AG_Event *event)
     struct XM7_MemDumpDesc *mp = (struct XM7_MemDumpDesc *)AG_PTR(1);
     void *self = AG_SELF();
     if(mp == NULL) return;
-//    AG_LockTimeouts(self);
-    AG_DelTimer(self, mp->to);
-//    AG_UnlockTimeouts(self);
+
     mp->to = NULL;
     if(mp->dump != NULL) XM7_DbgDumpMemDetach(mp->dump);
-
     free(mp);
-    mp = NULL;
 }
 
 
-static Uint32 UpdateRegDump(void *obj, Uint32 ival, void *arg )
+static Uint32 UpdateRegDump(AG_Timer *timer, AG_Event *event)
 {
+    struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)AG_PTR(1);
 
-    struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)arg;
-    char *str;
-
-    if(mp == NULL) return ival;
+    if(timer == NULL) return 0;
+    if(mp == NULL) return timer->ival;
     XM7_DbgDumpRegs(mp->dump);
     return mp->to_tick;
 }
@@ -192,12 +197,9 @@ static void DestroyRegDumpWindow(AG_Event *event)
     struct XM7_DbgRegDumpDesc *mp = (struct XM7_DbgRegDumpDesc *)AG_PTR(1);
     void *self = AG_SELF();
     if(mp == NULL) return;
-    AG_LockTimeouts(self);
-    AG_DelTimeout(self, &mp->to);
-    AG_UnlockTimeouts(self);
     if(mp->dump != NULL) XM7_DbgRegDumpDetach(mp->dump);
     free(mp);
-    mp = NULL;
+
 }
 
 
@@ -218,7 +220,8 @@ static void CreateDump(AG_Event *event)
     BYTE (*readFunc)(WORD);
     volatile void FASTCALL (*writeFunc)(WORD, BYTE);
     XM7_DbgDump *dump;
-
+    AG_Timer *timerhdr;
+   
     AG_HBox *hb;
     AG_VBox *vb;
     AG_Box *box;
@@ -229,7 +232,8 @@ static void CreateDump(AG_Event *event)
     memset(mp, 0x00, sizeof(struct XM7_MemDumpDesc));
 
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+//    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -271,14 +275,14 @@ static void CreateDump(AG_Event *event)
         mp->dump->edaddr = 0x0000;
     }
 
-    mp->to = AG_AddTimerAuto (AGOBJECT(w), mp->to_tick, UpdateDumpMemRead, "%p", (void *)mp);
+    timerhdr = AG_AddTimerAuto (AGOBJECT(w), mp->to_tick, UpdateDumpMemRead, "%p", (void *)mp);
 
     box = AG_BoxNewHoriz(vb, 0);
     box = AG_BoxNewHoriz(vb, 0);
     btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
     box = AG_BoxNewHoriz(vb, 0);
 
-    AG_SetEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
+    AG_AddEvent(w, "window-close", DestroyDumpWindow, "%p", mp);
     AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddr, "%p", mp);
     AG_SetEvent(dump->draw, "key-down", XM7_DbgKeyPressFn, "%p", mp);
 
@@ -311,11 +315,10 @@ static void CreateDisasm(AG_Event *event)
     mp = (XM7_DbgDisasmDesc *)malloc(sizeof(struct XM7_DbgDisasmDesc));
     if(mp == NULL) return;
     memset(mp, 0x00, sizeof(struct XM7_DbgDisasmDesc));
-    timerhdr = malloc(sizeof(AG_Timer));
-    if(timerhdr == NULL) return;
 
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+//    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -325,15 +328,12 @@ static void CreateDisasm(AG_Event *event)
     case MEM_MAIN:
             cputype = MAINCPU;
             AG_WindowSetCaption(w, gettext("Disasm Main memory"));
-	    AG_InitTimer(timerhdr, "disasm-main", 0);
             break;
     case MEM_SUB:
             cputype = SUBCPU;
             AG_WindowSetCaption(w, gettext("Disasm Sub memory"));
-	    AG_InitTimer(timerhdr, "disasm-sub", 0);
             break;
     default:
-	    AG_InitTimer(timerhdr, "", 0);
             cputype = -1;
             break;
     }
@@ -356,23 +356,21 @@ static void CreateDisasm(AG_Event *event)
     box = AG_BoxNewHoriz(vb, 0);
     box = AG_BoxNewHoriz(vb, 0);
 
-    //    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel2, "%p", timerhdr);
-    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
+    timerhdr = AG_AddTimerAuto(AGOBJECT(w), mp->to_tick, UpdateDisasm, "%p", (void *)mp);
+    //btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel2, "%p", timerhdr);
+    btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), DestroyDisasmWindow, "%p", mp);
     box = AG_BoxNewHoriz(vb, 0);
 
-    AG_SetEvent(w, "window-close", DestroyDisasmWindow, "%p", mp);
+    AG_AddEvent(w, "window-close", OnClosedDisasmWindow, "%p", mp);
     AG_SetEvent(addrVar, "textbox-postchg", OnChangeAddrDisasm, "%p", mp);
     AG_SetEvent(disasm->draw, "key-down", XM7_DbgDisasmKeyPressFn, "%p", mp);
 
-    AG_AddTimer(w, timerhdr, mp->to_tick, UpdateDisasm, "%p", (void *)mp);
-    //    AG_SetTimeout(&(mp->to), UpdateDisasm, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-    //AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
     AG_WindowShow(w);
 }
 
 static void CreateRegDump(AG_Event *event)
 {
-    AG_Window *w;
+   AG_Window *w;
 
    AG_Menu *self = (AG_Menu *)AG_SELF();
    AG_MenuItem *item = (AG_MenuItem *)AG_SENDER();
@@ -380,6 +378,7 @@ static void CreateRegDump(AG_Event *event)
    int cputype;
    const char *title;
    AG_Textbox *pollVar;
+   AG_Timer *timerhdr;
    struct XM7_DbgRegDumpDesc *mp;
    cpu6809_t *cpu;
 
@@ -395,7 +394,7 @@ static void CreateRegDump(AG_Event *event)
     memset(mp, 0x00, sizeof(struct XM7_DbgRegDumpDesc));
 
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -435,21 +434,20 @@ static void CreateRegDump(AG_Event *event)
     btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
     box = AG_BoxNewHoriz(vb, 0);
 
-    AG_SetEvent(w, "window-close", DestroyRegDumpWindow, "%p", mp);
+    AG_AddEvent(w, "window-close", DestroyRegDumpWindow, "%p", mp);
 
-    AG_SetTimeout(&(mp->to), UpdateRegDump, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    timerhdr = AG_AddTimerAuto(AGOBJECT(w), mp->to_tick, UpdateRegDump, "%p", (void *)mp);
+
     AG_WindowShow(w);
 }
 
-static Uint32 UpdateFdcDump(void *obj, Uint32 ival, void *arg )
+static Uint32 UpdateFdcDump(AG_Timer *timer, AG_Event *event)
 {
 
-    struct XM7_DbgFdcDumpDesc *mp = (struct XM7_DbgFdcDumpDesc *)arg;
-    char *str;
+    struct XM7_DbgFdcDumpDesc *mp = (struct XM7_DbgFdcDumpDesc *)AG_PTR(1);
 
-
-    if(mp == NULL) return ival;
+    if(timer == NULL) return 0;
+    if(mp == NULL) return timer->ival;
     XM7_DbgDumpFdc(mp->dump);
     return mp->to_tick;
 }
@@ -461,13 +459,8 @@ static void DestroyFdcDumpWindow(AG_Event *event)
     void *self = (void *)AG_SELF();
 
     if(mp == NULL) return;
-    AG_LockTimeouts(self);
-    AG_DelTimeout(self, &mp->to);
-    AG_UnlockTimeouts(self);
     if(mp->dump != NULL) XM7_DbgFdcDumpDetach(mp->dump);
-
     free(mp);
-    mp = NULL;
 }
 
 static void CreateFdcDump(AG_Event *event)
@@ -480,7 +473,8 @@ static void CreateFdcDump(AG_Event *event)
    struct XM7_DbgFdcDumpDesc *mp;
 
    XM7_DbgFdcDump *fdcdump;
-
+   AG_Timer *timerhdr;
+   
     AG_HBox *hb;
     AG_VBox *vb;
     AG_Box *box;
@@ -491,7 +485,7 @@ static void CreateFdcDump(AG_Event *event)
     memset(mp, 0x00, sizeof(struct XM7_DbgFdcDumpDesc));
 
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NOCLOSE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -513,22 +507,20 @@ static void CreateFdcDump(AG_Event *event)
     btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
     box = AG_BoxNewHoriz(vb, 0);
 
-    AG_SetEvent(w, "window-close", DestroyFdcDumpWindow, "%p", mp);
+    AG_AddEvent(w, "window-close", DestroyFdcDumpWindow, "%p", mp);
+    timerhdr = AG_AddTimerAuto(AGOBJECT(w), mp->to_tick, UpdateFdcDump, "%p", (void *)mp);
 
-    AG_SetTimeout(&(mp->to), UpdateFdcDump, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
     AG_WindowShow(w);
 }
 
 
 
-static Uint32 UpdateMMRDump(void *obj, Uint32 ival, void *arg )
+static Uint32 UpdateMMRDump(AG_Timer *timer, AG_Event *event)
 {
 
-    struct XM7_DbgMMRDumpDesc *mp = (struct XM7_DbgMMRDumpDesc *)arg;
-    char *str;
-
-    if(mp == NULL) return ival;
+    struct XM7_DbgMMRDumpDesc *mp = (struct XM7_DbgMMRDumpDesc *)AG_PTR(1);
+    if(timer == NULL) return 0;
+    if(mp == NULL) return timer->ival;
     XM7_DbgDumpMMR(mp->dump);
     return mp->to_tick;
 }
@@ -540,12 +532,8 @@ static void DestroyMMRDumpWindow(AG_Event *event)
     void *self = AG_SELF();
 
     if(mp == NULL) return;
-    AG_LockTimeouts(self);
-    AG_DelTimeout(self, &mp->to);
-    AG_UnlockTimeouts(self);
     if(mp->dump != NULL) XM7_DbgDumpMMRDetach(mp->dump);
     free(mp);
-    mp = NULL;
 }
 
 
@@ -560,7 +548,8 @@ static void CreateMMRDump(AG_Event *event)
    struct XM7_DbgMMRDumpDesc *mp;
 
    XM7_DbgMMRDump *mmrdump;
-
+   AG_Timer *timerhdr;
+   
     AG_HBox *hb;
     AG_VBox *vb;
     AG_Box *box;
@@ -571,7 +560,7 @@ static void CreateMMRDump(AG_Event *event)
     memset(mp, 0x00, sizeof(struct XM7_DbgMMRDumpDesc));
 
     mp->to_tick = 200;
-    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOMAXIMIZE | AG_WINDOW_NOCLOSE | FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
@@ -593,10 +582,9 @@ static void CreateMMRDump(AG_Event *event)
     btn = AG_ButtonNewFn (AGWIDGET(box), 0, gettext("Close"), OnPushCancel, NULL);
     box = AG_BoxNewHoriz(vb, 0);
 
-    AG_SetEvent(w, "window-close", DestroyMMRDumpWindow, "%p", mp);
+    AG_AddEvent(w, "window-close", DestroyMMRDumpWindow, "%p", mp);
 
-    AG_SetTimeout(&(mp->to), UpdateMMRDump, (void *)mp, AG_CANCEL_ONDETACH | AG_CANCEL_ONLOAD);
-    AG_ScheduleTimeout(AGOBJECT(w) , &(mp->to), mp->to_tick);
+    AG_AddTimerAuto(AGOBJECT(w), mp->to_tick, UpdateMMRDump, "%p", (void *)mp);
     AG_WindowShow(w);
 }
 #endif // _WITH_DEBUGGER
@@ -609,8 +597,8 @@ extern "C" {
 
 static void OnChangeLogStatus(AG_Event *event)
 {
-   AG_Menu *parent = AG_SELF();
-   AG_MenuItem *my = AG_SENDER();
+   AG_Menu *parent = (AG_Menu *)AG_SELF();
+   AG_MenuItem *my = (AG_MenuItem *)AG_SENDER();
    BOOL flag = (BOOL)AG_INT(1);
    BOOL *tg  = (BOOL *)AG_PTR(2);
    char *target = (char *)AG_STRING(3);
@@ -630,13 +618,12 @@ static void OnChangeLogStatus(AG_Event *event)
 
 static void DisplayLogStatus(AG_Event *event)
 {
-   AG_Menu *parent = AG_SELF();
-   AG_MenuItem *my = AG_SENDER();
+   AG_Menu *parent = (AG_Menu *)AG_SELF();
+   AG_MenuItem *my = (AG_MenuItem *)AG_SENDER();
    BOOL *flag = (BOOL *)AG_PTR(1);
    
    if(*flag == FALSE) {
       AG_MenuSetLabel(my, "　OFF");
-      
    } else {
       AG_MenuSetLabel(my, "■ON");
    }

@@ -342,6 +342,7 @@ void MainLoop(int argc, char *argv[])
    BOOL flag;
    SDL_Surface *s;
 
+//   mtrace();
    if(AG_GetVariable(agConfig, "font.size", NULL) == NULL) { 
 	AG_SetInt(agConfig, "font.size", UI_PT);
    }
@@ -559,6 +560,7 @@ drivers = "sdlfb:width=1280:height=880:depth=32";
    }
    bEventRunFlag == TRUE;
    AGDrawTaskEvent(TRUE);
+//   muntrace();
    XM7_DebugLog(XM7_LOG_INFO, "All End.");
 }
 

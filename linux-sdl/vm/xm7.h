@@ -438,15 +438,15 @@ extern          "C" {
     /*
      * サブCPUメモリ リセット
      */
-    BYTE FASTCALL   submem_readb(WORD addr);
+    volatile BYTE FASTCALL   submem_readb(WORD addr);
     /*
      * サブCPUメモリ 読み出し
      */
-    BYTE submem_readbnio(WORD addr);
+    volatile BYTE submem_readbnio(WORD addr);
     /*
      * サブCPUメモリ 読み出し(I/Oなし)
      */
-    void FASTCALL   submem_writeb(WORD addr, BYTE dat);
+    volatile void FASTCALL   submem_writeb(WORD addr, BYTE dat);
     /*
      * サブCPUメモリ 書き込み
      */
