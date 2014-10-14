@@ -66,7 +66,7 @@ static void cl_notify_log(const char *errinfo, const void *private_info, size_t 
    int i;
    
    dumpStr[0] = '\0';
-   XM7_DebugLog(XM7_LOG_WARN, "CL Notify: %s\n", errinfo);
+   XM7_DebugLog(XM7_LOG_WARN, "CL Notify: %s", errinfo);
 }
 
 
@@ -79,30 +79,31 @@ cl_int GLCLDraw::InitContext(void)
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
    
-//   ret = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_DEFAULT, 4, device_id,
-//                            &ret_num_devices);
    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 4, device_id,
                             &ret_num_devices);
-                            
+                        
    if(ret != CL_SUCCESS) return ret;
 
    properties[0] = CL_GL_CONTEXT_KHR;
    properties[1] = (cl_context_properties)glXGetCurrentContext();
-   XM7_DebugLog(XM7_LOG_DEBUG, "GL Context = %08x\n", glXGetCurrentContext());
+   XM7_DebugLog(XM7_LOG_DEBUG, "GL Context = %08x", glXGetCurrentContext());
    
    properties[2] = CL_GLX_DISPLAY_KHR;
    properties[3] = (cl_context_properties)glXGetCurrentDisplay();
-   XM7_DebugLog(XM7_LOG_DEBUG, "GL Display = %08x\n", glXGetCurrentDisplay());
+   XM7_DebugLog(XM7_LOG_DEBUG, "GL Display = %08x", glXGetCurrentDisplay());
    properties[4] = CL_CONTEXT_PLATFORM;
    properties[5] = (cl_context_properties)platform_id;
    properties[6] = 0;
-   if(device_id == NULL) return -1;
+//   if(device_id == NULL) return -1;
    
    context = clCreateContext(properties, 1, device_id, cl_notify_log, NULL, &ret);
    if(ret != CL_SUCCESS) return ret;
        
+//   command_queue = clCreateCommandQueue(context, device_id[0],
+//                                         CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
    command_queue = clCreateCommandQueue(context, device_id[0],
-                                         CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
+                                         0, &ret);
+   XM7_DebugLog(XM7_LOG_DEBUG, "CL: Command queue created.", glXGetCurrentDisplay());
    return ret;
 }
 
@@ -116,18 +117,18 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     codeSize = strlen(p);
     program = clCreateProgramWithSource(context, 1, (const char **)&p,
                                         (const size_t *)&codeSize, &ret);
-    XM7_DebugLog(XM7_LOG_INFO, "CL: Build Result=%d\n", ret);
+    XM7_DebugLog(XM7_LOG_INFO, "CL: Build Result=%d", ret);
 
     // Compile from source
     ret = clBuildProgram(program, 1, device_id, NULL, NULL, NULL);
-    XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d\n", ret);
+    XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
        logBuf = (char *)malloc(LOGSIZE * sizeof(char));
        memset(logBuf, 0x00, LOGSIZE * sizeof(char));
        
        ret = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
 				   LOGSIZE - 1, (void *)logBuf, NULL);
-       if(logBuf != NULL) printf("Build Log:\n%s\n", logBuf);
+       if(logBuf != NULL) printf("Build Log:\n%s", logBuf);
        free(logBuf);
        return ret;
     }
@@ -727,7 +728,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
       glGenBuffers(1, &pbo);
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
       glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-//    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x\n", pbo, size, context);
+//    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);
       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
       				    pbo, &r);
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -736,7 +737,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
      ret = CL_DEVICE_NOT_AVAILABLE;
    }
    
-   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: %d\n", ret);
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: %d", ret);
    return ret;
 }
 
