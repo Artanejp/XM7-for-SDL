@@ -1124,12 +1124,13 @@ void ProcessSnd(BOOL bZero)
         int playBank;
 	BOOL bWrite = FALSE;
 
-        dwSndCount++;
-        if(dwSndCount >= (uTick / 2)) {
-	      bWrite = TRUE;
+//        dwSndCount++;
+//        if(dwSndCount >= (uTick / 2)) {
+//	      bWrite = TRUE;
+//	}
+        if((dwSoundTotal / 1000) >= (uTick / 2)) { 
+	   bWrite = TRUE;
 	}
-   
-   
 	if (!bWrite) {
 		  /*
 		   * テープ
