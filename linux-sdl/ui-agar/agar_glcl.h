@@ -37,7 +37,7 @@ class GLCLDraw {
    
    cl_platform_id platform_id = NULL;
    cl_uint ret_num_platforms;
-   cl_device_id device_id = NULL;
+   cl_device_id device_id[4];
    cl_uint ret_num_devices;
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;

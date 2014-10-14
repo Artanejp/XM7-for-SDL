@@ -267,7 +267,7 @@ void ResizeWindow_Agar2(int w, int h)
       AG_ResizeDisplay((ww * 102)/ 100, (hh * 102) / 100);
       if(MainWindow) AG_WindowSetGeometry(MainWindow, 0, 0, ww, hh);
    }
-   AG_SetVideoResizeCallback(ResizeWindow_Agar);
+//   AG_SetVideoResizeCallback(ResizeWindow_Agar);
    UnlockVram();
    XM7_DebugLog(XM7_LOG_DEBUG, "Resize2 to %d x %d\n", w, h);
 }

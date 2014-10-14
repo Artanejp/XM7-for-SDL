@@ -79,8 +79,11 @@ cl_int GLCLDraw::InitContext(void)
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
    
-   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id,
+//   ret = clGetDeviceIDs(NULL, CL_DEVICE_TYPE_DEFAULT, 4, device_id,
+//                            &ret_num_devices);
+   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 4, device_id,
                             &ret_num_devices);
+                            
    if(ret != CL_SUCCESS) return ret;
 
    properties[0] = CL_GL_CONTEXT_KHR;
@@ -95,10 +98,10 @@ cl_int GLCLDraw::InitContext(void)
    properties[6] = 0;
    if(device_id == NULL) return -1;
    
-   context = clCreateContext(properties, 1, &device_id, cl_notify_log, NULL, &ret);
+   context = clCreateContext(properties, 1, device_id, cl_notify_log, NULL, &ret);
    if(ret != CL_SUCCESS) return ret;
        
-   command_queue = clCreateCommandQueue(context, device_id,
+   command_queue = clCreateCommandQueue(context, device_id[0],
                                          CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
    return ret;
 }
@@ -116,13 +119,13 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     XM7_DebugLog(XM7_LOG_INFO, "CL: Build Result=%d\n", ret);
 
     // Compile from source
-    ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+    ret = clBuildProgram(program, 1, device_id, NULL, NULL, NULL);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d\n", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
        logBuf = (char *)malloc(LOGSIZE * sizeof(char));
        memset(logBuf, 0x00, LOGSIZE * sizeof(char));
        
-       ret = clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 
+       ret = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
 				   LOGSIZE - 1, (void *)logBuf, NULL);
        if(logBuf != NULL) printf("Build Log:\n%s\n", logBuf);
        free(logBuf);

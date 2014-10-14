@@ -86,7 +86,7 @@ static void *XM7_SDLViewSelectScaler_Line_SSE2(int w0 ,int h0, int w1, int h1)
     int xfactor;
     int yfactor;
     int xth;
-    void (*DrawFn)(Uint32 *src, Uint32 *dst, int xbegin, int xend, int y, int yrep);
+    void (*DrawFn)(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep);
     DrawFn = NULL;
    
     xfactor = w1 % wx0;
@@ -170,7 +170,7 @@ static void *XM7_SDLViewSelectScaler_Line(int w0 ,int h0, int w1, int h1)
     int xfactor;
     int yfactor;
     int xth;
-    void (*DrawFn)(Uint32 *src, Uint32 *dst, int xbegin, int xend, int y, int yrep);
+    void (*DrawFn)(Uint32 *src, Uint8 *dst, int xbegin, int xend, int y, int yrep);
     DrawFn = NULL;
 
 #if defined(USE_SSE2)
