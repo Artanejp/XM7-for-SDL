@@ -120,11 +120,11 @@ void InitContextCL(void)
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
 	       r = cldraw->InitContext();
-	       XM7_DebugLog(XM7_LOG_DEBUG, "CL: Create CTX: STS = %d \n", r);
+	       XM7_DebugLog(XM7_LOG_DEBUG, "CL: Create CTX: STS = %d", r);
 	       if(r == CL_SUCCESS){
-		 XM7_DebugLog(XM7_LOG_DEBUG,"CL: GLCTX=%08x\n", glXGetCurrentContext());
+		 XM7_DebugLog(XM7_LOG_DEBUG,"CL: GLCTX=%08x", glXGetCurrentContext());
 		 r = cldraw->BuildFromSource(cl_render);
-		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build STS = %d \n", r);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
 	         if(r == CL_SUCCESS) {
 		    r = cldraw->SetupBuffer(&uVramTextureID);
 		    r |= cldraw->SetupTable();
