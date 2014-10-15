@@ -269,7 +269,7 @@ void ResizeWindow_Agar2(int w, int h)
    }
 //   AG_SetVideoResizeCallback(ResizeWindow_Agar);
    UnlockVram();
-   XM7_DebugLog(XM7_LOG_DEBUG, "Resize2 to %d x %d\n", w, h);
+   XM7_DebugLog(XM7_LOG_DEBUG, "Resize2 to %d x %d", w, h);
 }
 
 void AGDrawTaskMain(void)
