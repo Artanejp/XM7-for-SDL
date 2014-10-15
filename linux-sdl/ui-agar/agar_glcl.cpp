@@ -583,20 +583,24 @@ cl_int GLCLDraw::GetVram(int bmode)
    int dummy = 0;
 
    
+#if 1
+   if((kernel != NULL) && (bmode != bModeOld)) {
+     clFinish(command_queue);
+     clReleaseKernel(kernel);
+     //clFinish(command_queue);
+     kernel = NULL;
+   }
+#else
+#endif
+   bModeOld = bmode;
    if(inbuf == NULL) return -1;
    if(outbuf == NULL) return -1;
 
-   if((bModeOld != -1) && (bmode != bModeOld)) {
-     clFinish(command_queue);
-     clReleaseKernel(kernel);
-     kernel = NULL;
-   }
-   
    switch(bmode) {
     case SCR_400LINE:
       w = 640;
       h = 400;
-      gws[0] = h;
+      //gws[0] = h;
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -614,7 +618,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_200LINE:
       w = 640;
       h = 200;
-      gws[0] = h;
+      //gws[0] = h;
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -632,7 +636,7 @@ cl_int GLCLDraw::GetVram(int bmode)
     case SCR_262144:// Windowはなし
       w = 320;
       h = 200;
-      gws[0] = h;
+      //gws[0] = h;
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -650,11 +654,10 @@ cl_int GLCLDraw::GetVram(int bmode)
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[2]); 
       break;
-      break;
     case SCR_4096:
       w = 320;
       h = 200;
-      gws[0] = h;
+      //gws[0] = h;
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -670,11 +673,10 @@ cl_int GLCLDraw::GetVram(int bmode)
                               , 0, NULL, &event_uploadvram[2]);
       break;
    }
-   glFinish();
-   bModeOld = bMode;
 
    if(GetGLEnabled() != 0) {
      int need_alpha = 1;
+     glFinish();
      ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&need_alpha);
      ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
