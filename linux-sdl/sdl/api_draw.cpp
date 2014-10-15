@@ -120,8 +120,6 @@ BOOL DrawSHUTDOWN;
 BOOL DrawWaitFlag;
 
 
-AG_Cond DrawCond;
-AG_Mutex DrawMutex;
 AG_Thread DrawThread;
 
 int newDrawWidth;
@@ -319,9 +317,9 @@ void	InitDraw(void)
 		 */
 
 //        realDrawArea = GetDrawSurface();
-		AG_MutexInit(&DrawMutex);
-		AG_CondInit(&DrawCond);
-		AG_MutexUnlock(&DrawMutex);
+		//AG_MutexInit(&DrawMutex);
+		//AG_CondInit(&DrawCond);
+		//AG_MutexUnlock(&DrawMutex);
 		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
 		if(!DrawInitSem) {
 			DrawInitSem = SDL_CreateSemaphore(1);
@@ -345,11 +343,8 @@ void	CleanDraw(void)
 {
 
 		DrawSHUTDOWN = TRUE;
-		AG_CondSignal(&DrawCond);
-//		AG_ThreadJoin(DrawThread, NULL);
-
-//		AG_MutexDestroy(&DrawMutex);
-//		AG_CondDestroy(&DrawCond);
+		//		AG_CondSignal(&DrawCond);
+		AG_ThreadJoin(DrawThread, NULL);
 //                DrawThread = NULL;
 
 		if(DrawInitSem != NULL) {
@@ -737,9 +732,9 @@ void RenderSetOddLine(void)
 void OnDraw(void)
 {
    /*
-    * 描画スレッドのKICKを1/60secごとにする。
+    * 描画スレッドのKICKを(1/60sec * nFrameSkip)ごとにする。
     */
-   AG_CondSignal(&DrawCond);
+  //   AG_CondSignal(&DrawCond);
 }
 
 

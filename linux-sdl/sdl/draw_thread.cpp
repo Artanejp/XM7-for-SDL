@@ -35,11 +35,16 @@
 #include "api_draw.h"
 //#include "api_scaler.h"
 
+extern "C" {
+extern void  XM7_Sleep(DWORD init);
+extern void  XM7_Sync1ms(DWORD init);
+extern DWORD XM7_timeGetTime(void);
+};
 
 extern void AG_DrawInitsub(void);
 extern void AG_DrawDetachsub(void);
-extern AG_Mutex DrawMutex;
-extern AG_Cond DrawCond;
+//extern AG_Mutex DrawMutex;
+//extern AG_Cond DrawCond;
 
 
 extern Uint32 nDrawTick1D;
@@ -195,13 +200,15 @@ BOOL SelectDraw2(void)
 
 void *DrawThreadMain(void *p)
 {
-   //nDrawTick1D = AG_GetTicks();
+   DWORD ticks;
    AG_DrawInitsub();
-//   if(AG_UsingSDL(NULL)) InitGL(640,480);
+
    InitGL(640,480);
    nDrawCount = DrawCountSet(nDrawFPS);
    while(1) {
-      AG_CondWait(&DrawCond, &DrawMutex);
+     ticks = XM7_timeGetTime();
+     XM7_Sync1ms(ticks);
+     //AG_CondWait(&DrawCond, &DrawMutex);
       if(DrawSHUTDOWN) {
 	 AG_DrawDetachsub();
 	 DrawSHUTDOWN = FALSE;

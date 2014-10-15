@@ -118,8 +118,8 @@ void CleanSch(void)
 {
 	int ret;
 	bCloseReq = TRUE; // 終了要求
-        SDL_Delay(10);
-//	AG_ThreadJoin(&SchThread,(void *)&ret); // スケジューラが終わるのを待つ
+	SDL_Delay(10);
+	//	AG_ThreadJoin(&SchThread,(void *)&ret); // スケジューラが終わるのを待つ
 //	AG_ThreadCancel(SchThread); // スケジューラが終わるのを待つ
         bCloseReq = FALSE;
 }
@@ -128,7 +128,6 @@ void CleanSch(void)
  */
 BOOL SelectSch(void)
 {
-
 	/*
 	 * スレッド生成
 	 */
@@ -164,7 +163,6 @@ void ExecSch(void)
 
 #ifdef MOUSE
 //		PollMos();
-
 #endif				/*  */
 		bPollVsync = FALSE;
 	}
@@ -204,13 +202,17 @@ void ExecSch(void)
  */
 static void  DrawSch(void)
 {
-	OnDraw();
-	DrawStatus();
-
-	/*
-	 * カウンタアップ
-	 */
-	dwDrawTotal++;
+  /*
+   * Note: 20141016 by Ohta:
+   * This function acts only Re-Drawing OSD, not Display.
+   * Display is separated thread: DrawThreadMain()@sdl/draw_thread.cpp.
+   */ 
+  OnDraw(); // Note: This is NULL Function.
+  DrawStatus();
+  /*
+   * カウンタアップ
+   */
+  dwDrawTotal++;
 }
 /*
  *  実行リセット
@@ -240,7 +242,8 @@ static void *ThreadSch(void *param)
 	BOOL fast_mode;
 	int tmp;
 	int retval;
-
+	int n1msCount = 0;
+	int nOldTime;
 	/*
 	 * 初期化
 	 */
@@ -254,6 +257,7 @@ static void *ThreadSch(void *param)
 	/*
 	 * 無限ループ(クローズ指示があれば終了)
 	 */
+	nOldTime = XM7_timeGetTime();
 	while (!bCloseReq) {
 
 		/*
@@ -361,9 +365,7 @@ static void *ThreadSch(void *param)
 						if (tape_motor && bTapeFullSpeed
 								&& !bFullSpeed) {
 							schedule_main_fullspeed();
-						}
-
-						else {
+						} else {
 							schedule_fullspeed();
 						}
 					}
@@ -372,6 +374,7 @@ static void *ThreadSch(void *param)
 				else {
 				   UnlockVM();
 				   XM7_Sync1ms(dwNowTime);
+				   //XM7_Sleep(1);
 				   continue;
 				}
 			}
@@ -392,7 +395,20 @@ static void *ThreadSch(void *param)
 		nFrameSkip++;
 		nSpeedCheck++;
 		dwExecTime++;
-
+                n1msCount++;
+		if(n1msCount >= 1000) {
+		  DWORD n;
+		  n = XM7_timeGetTime();
+#if 0
+		  if(n < nOldTime) {
+		    XM7_DebugLog(XM7_LOG_DEBUG, "SCH: Period: 1Sec Elapsed: Tick=WRAPPED");
+		  } else {
+		    XM7_DebugLog(XM7_LOG_DEBUG, "SCH: Period: 1Sec Elapsed: Tick=%d", n - nOldTime);
+		  }
+#endif
+		  nOldTime = n;
+		  n1msCount = 0;
+		}
 		/*
 		 * 自動速度調整
 		 */
@@ -475,20 +491,20 @@ static void *ThreadSch(void *param)
 
 #endif				/*  */
 					/*
-					 * 4096色/26万色モードでは最高75fps
+					 * 4096色/26万色モードでは最高30fps
 					 */
-					if (tmp < 13) {
-						tmp = 13;
+					if (tmp < 33) {
+						tmp = 33;
 					}
 				}
 
 				else {
 
 					/*
-					 * 8色モードでは最高75fps
+					 * 8色モードでは最高30fps
 					 */
-					if (tmp < 13) {
-						tmp = 13;
+					if (tmp < 33) {
+						tmp = 33;
 					}
 				}
 				if (tmp > 500) {
