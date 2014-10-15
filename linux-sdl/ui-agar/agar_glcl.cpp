@@ -58,7 +58,7 @@ GLCLDraw::~GLCLDraw()
     if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
     if(palette != NULL) ret |= clReleaseMemObject(palette);
     if(table != NULL) ret |= clReleaseMemObject(table);
-//    if(pixelBuffer != NULL) free(pixelBuffer);
+    if(pixelBuffer != NULL) free(pixelBuffer);
 }
 
 static void cl_notify_log(const char *errinfo, const void *private_info, size_t cb, void *user_data)
@@ -702,12 +702,14 @@ cl_int GLCLDraw::GetVram(int bmode)
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
    } else {
-      pixelBuffer = clEnqueueMapBuffer(command_queue, outbuf, CL_TRUE, CL_MAP_READ,
-				       0, (size_t)(640 * 400 * sizeof(Uint32)),
-				       1, &event_exec, &event_release, &ret);
-     //ret |= clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
-     //                         w * h * sizeof(Uint32), (void *)pixelBuffer
-     //                         , 1, &event_exec, &event_release);
+//      pixelBuffer = clEnqueueMapBuffer(command_queue, outbuf, CL_TRUE, CL_MAP_READ,
+//				       0, (size_t)(640 * 400 * sizeof(Uint32)),
+//				       1, &event_exec, &event_release, &ret);
+
+      /* Mapping Buffer occures error :( */
+      ret |= clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
+                              w * h * sizeof(Uint32), (void *)pixelBuffer
+                              , 1, &event_exec, &event_release);
       //      XM7_DebugLog(XM7_LOG_DEBUG, "CL: read from result : %d", ret);
    }
 
@@ -812,7 +814,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
      }
      XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (GLCL): %d", r);
    } else { // Fallback
-//     pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
+     pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
      outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | 0,
  		  (size_t)(640 * 400 * sizeof(Uint32)), NULL, &r);
      ret |= r;
