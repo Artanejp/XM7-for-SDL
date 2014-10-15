@@ -34,10 +34,12 @@ class GLCLDraw {
    cl_int SetupTable(void);
    cl_int InitContext(void);
    GLuint GLCLDraw::GetPbo(void);
-   
+   int GetGLEnabled(void);
+   Uint32 *GetPixelBuffer(void);
+
    cl_platform_id platform_id = NULL;
    cl_uint ret_num_platforms;
-   cl_device_id device_id[4];
+   cl_device_id device_id[8];
    cl_uint ret_num_devices;
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;
@@ -46,7 +48,6 @@ class GLCLDraw {
    const char *source = NULL;
    cl_program program = NULL;
    cl_kernel kernel = NULL;
-   Uint8 *pixelBuffer;
  private:
    cl_event event_exec;
    cl_event event_uploadvram[4];
@@ -64,6 +65,10 @@ class GLCLDraw {
    cl_int copysub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
    cl_int copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
    cl_int copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
+   int using_device = 0;
+   int bCLEnableKhrGLShare = 0;
+   Uint32 *pixelBuffer = NULL;
+   int bModeOld = -1;
 };
 
 #endif /* _USE_OPENCL */

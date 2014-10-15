@@ -42,6 +42,8 @@ GLCLDraw::GLCLDraw()
 {
    cl_int ret;
    pixelBuffer = NULL;
+   bModeOld = -1;
+   kernel = NULL;
 }
 
 GLCLDraw::~GLCLDraw()
@@ -56,7 +58,7 @@ GLCLDraw::~GLCLDraw()
     if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
     if(palette != NULL) ret |= clReleaseMemObject(palette);
     if(table != NULL) ret |= clReleaseMemObject(table);
-    if(pixelBuffer != NULL) free(pixelBuffer);
+//    if(pixelBuffer != NULL) free(pixelBuffer);
 }
 
 static void cl_notify_log(const char *errinfo, const void *private_info, size_t cb, void *user_data)
@@ -69,41 +71,72 @@ static void cl_notify_log(const char *errinfo, const void *private_info, size_t 
    XM7_DebugLog(XM7_LOG_WARN, "CL Notify: %s", errinfo);
 }
 
+int GLCLDraw::GetGLEnabled(void)
+{
+  if(bCLEnableKhrGLShare != 0) return -1;
+  return 0;
+}
+
+Uint32 *GLCLDraw::GetPixelBuffer(void)
+{
+  return pixelBuffer;
+}
 
 cl_int GLCLDraw::InitContext(void)
 {
    cl_int ret;
    size_t len;
+   char extension_data[256];
+   size_t extension_len;
+   int i;
    
    properties = malloc(16 * sizeof(intptr_t));
    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
    
-   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 4, device_id,
+   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 8, device_id,
                             &ret_num_devices);
-                        
+   
    if(ret != CL_SUCCESS) return ret;
 
-   properties[0] = CL_GL_CONTEXT_KHR;
-   properties[1] = (cl_context_properties)glXGetCurrentContext();
-   XM7_DebugLog(XM7_LOG_DEBUG, "GL Context = %08x", glXGetCurrentContext());
-   
-   properties[2] = CL_GLX_DISPLAY_KHR;
-   properties[3] = (cl_context_properties)glXGetCurrentDisplay();
-   XM7_DebugLog(XM7_LOG_DEBUG, "GL Display = %08x", glXGetCurrentDisplay());
-   properties[4] = CL_CONTEXT_PLATFORM;
-   properties[5] = (cl_context_properties)platform_id;
-   properties[6] = 0;
+   for(i = 0; i < ret_num_devices; i++ ){
+     clGetDeviceInfo(device_id[i], CL_DEVICE_EXTENSIONS,
+		   255, extension_data, &extension_len);
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL Extension features(%d):%s", i, extension_data);
+     if(strcasestr(extension_data, "cl_khr_gl_sharing") != NULL) {
+       bCLEnableKhrGLShare = -1;
+     } else {
+       bCLEnableKhrGLShare = 0;
+     }
+   }
+
+   if(bCLEnableKhrGLShare != 0) { // This is only under X11. Must fix.
+     XM7_DebugLog(XM7_LOG_DEBUG, "GL Interoperability enabled.");
+     properties[0] = CL_GL_CONTEXT_KHR;
+     properties[1] = (cl_context_properties)glXGetCurrentContext();
+     XM7_DebugLog(XM7_LOG_DEBUG, "GL Context = %08x", glXGetCurrentContext());
+     properties[2] = CL_GLX_DISPLAY_KHR;
+     properties[3] = (cl_context_properties)glXGetCurrentDisplay();
+     XM7_DebugLog(XM7_LOG_DEBUG, "GL Display = %08x", glXGetCurrentDisplay());
+     properties[4] = CL_CONTEXT_PLATFORM;
+     properties[5] = (cl_context_properties)platform_id;
+     properties[6] = 0;
+   } else {
+     XM7_DebugLog(XM7_LOG_DEBUG, "GL Interoperability disabled.");
+     properties[0] = CL_CONTEXT_PLATFORM;
+     properties[1] = (cl_context_properties)platform_id;
+     properties[2] = 0;
+   }
 //   if(device_id == NULL) return -1;
    
    context = clCreateContext(properties, 1, device_id, cl_notify_log, NULL, &ret);
    if(ret != CL_SUCCESS) return ret;
        
-//   command_queue = clCreateCommandQueue(context, device_id[0],
-//                                         CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
    command_queue = clCreateCommandQueue(context, device_id[0],
-                                         0, &ret);
-   XM7_DebugLog(XM7_LOG_DEBUG, "CL: Command queue created.", glXGetCurrentDisplay());
+                                         CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
+//   command_queue = clCreateCommandQueue(context, device_id[0],
+//                                         0, &ret);
+   XM7_DebugLog(XM7_LOG_DEBUG, "CL: Command queue created.");
    return ret;
 }
 
@@ -547,18 +580,23 @@ cl_int GLCLDraw::GetVram(int bmode)
    size_t lws[] = {1}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
-	
+   int dummy = 0;
 
    
    if(inbuf == NULL) return -1;
    if(outbuf == NULL) return -1;
 
+   if((bModeOld != -1) && (bmode != bModeOld)) {
+     clReleaseKernel(kernel);
+     kernel = NULL;
+   }
+   
    switch(bmode) {
     case SCR_400LINE:
       w = 640;
       h = 400;
       gws[0] = h;
-      kernel = clCreateKernel(program, "getvram8", &ret);
+      if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -566,6 +604,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
       ret |= window_copy8_400l();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
@@ -575,7 +614,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       w = 640;
       h = 200;
       gws[0] = h;
-      kernel = clCreateKernel(program, "getvram8", &ret);
+      if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -583,6 +622,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
       ret |= window_copy8();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
@@ -592,7 +632,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       w = 320;
       h = 200;
       gws[0] = h;
-      kernel = clCreateKernel(program, "getvram256k", &ret);
+      if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -607,7 +647,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       w = 320;
       h = 200;
       gws[0] = h;
-      kernel = clCreateKernel(program, "getvram4096", &ret);
+      if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -615,6 +655,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
       ret |= window_copy4096();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_FALSE, 0,
                               4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
@@ -622,28 +663,55 @@ cl_int GLCLDraw::GetVram(int bmode)
       break;
    }
    glFinish();
-//   clFinish(command_queue);
-   ret |= clEnqueueAcquireGLObjects (command_queue,
+   bModeOld = bMode;
+
+   if(GetGLEnabled() != 0) {
+     int need_alpha = 1;
+     ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&need_alpha);
+     ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  3, event_uploadvram, &event_copytotexture);
-  
-   if(bCLSparse) {
-      ret |= clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-				    goff, gws, lws, 
-				    1, &event_copytotexture,  &event_exec);
+     if(bCLSparse) {
+       ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				     goff, gws, lws, 
+				     1, &event_copytotexture,  &event_exec);
+     } else {
+       ret = clEnqueueTask(command_queue,
+			    kernel, 1, &event_copytotexture, &event_exec);
+     }
    } else {
-      ret |= clEnqueueTask(command_queue,
-			 kernel, 1, &event_copytotexture, &event_exec);
+     int need_alpha = 0;
+     ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&need_alpha);
+     clFinish(command_queue);
+     if(bCLSparse) {
+       ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				     goff, gws, lws, 
+				     0, NULL,  &event_exec);
+     } else {
+       ret = clEnqueueTask(command_queue,
+			    kernel, 0, NULL, &event_exec);
+     }
    }
+   //XM7_DebugLog(XM7_LOG_DEBUG, "CL: execute kernel: %d", ret);
    
    
-//   clFinish(command_queue);
-   ret |= clEnqueueReleaseGLObjects (command_queue,
+   //   clFinish(command_queue);
+
+   if(GetGLEnabled() != 0) {
+     ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
+   } else {
+      pixelBuffer = clEnqueueMapBuffer(command_queue, outbuf, CL_TRUE, CL_MAP_READ,
+				       0, (size_t)(640 * 400 * sizeof(Uint32)),
+				       1, &event_exec, &event_release, &ret);
+     //ret |= clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
+     //                         w * h * sizeof(Uint32), (void *)pixelBuffer
+     //                         , 1, &event_exec, &event_release);
+      //      XM7_DebugLog(XM7_LOG_DEBUG, "CL: read from result : %d", ret);
+   }
+
    clFinish(command_queue);
-   clReleaseKernel(kernel);
-   kernel = NULL;
 //   glFinish();
    return ret;
 				   
@@ -709,35 +777,48 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    
 //   if(bCLDirectMapping) {
 //   } else {
-      inbuf = clCreateBuffer(context, CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
+   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
 			     (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
-      ret |= r;
+   ret |= r;
 //   }
    
-   
-   palette = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: inbuf : %d", r);
+
+   palette = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
    ret |= r;
-   table = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY  | CL_MEM_ALLOC_HOST_PTR,
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette : %d", r);
+
+   table = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,
  		  (size_t)(0x100 * 8 * 20 * sizeof(cl_uint)), NULL, &r);
    ret |= r;
-   
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: table : %d", r);
+
    // Texture直接からPBO使用に変更 20121102
-   if(bGL_PIXEL_UNPACK_BUFFER_BINDING && (texid != NULL)) {
-      tid = *texid;
-      glGenBuffers(1, &pbo);
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-      glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
-//    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);
-      outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
-      				    pbo, &r);
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-      ret |= r;
-   } else {
-     ret = CL_DEVICE_NOT_AVAILABLE;
+   if(GetGLEnabled() != 0) {
+     if(bGL_PIXEL_UNPACK_BUFFER_BINDING && (texid != NULL)) {
+       tid = *texid;
+       glGenBuffers(1, &pbo);
+       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+       glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+       //    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);
+       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
+				     pbo, &r);
+       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+       ret |= r;
+     } else {
+       ret = CL_DEVICE_NOT_AVAILABLE;
+       r = ret;
+     }
+     XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (GLCL): %d", r);
+   } else { // Fallback
+//     pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
+     outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | 0,
+ 		  (size_t)(640 * 400 * sizeof(Uint32)), NULL, &r);
+     ret |= r;
+     XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (CL): %d", r);
    }
    
-   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: %d", ret);
    return ret;
 }
 

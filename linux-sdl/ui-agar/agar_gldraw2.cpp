@@ -131,9 +131,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 	  }
 	  
 	  glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
+	  if(cldraw->GetGLEnabled() != 0) {
+	    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
 	  // Copy pbo to texture 
-	  glTexSubImage2D(GL_TEXTURE_2D, 
+	    glTexSubImage2D(GL_TEXTURE_2D, 
 			  0,
 			  0,
 			  0,
@@ -143,6 +144,10 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 			  GL_UNSIGNED_BYTE,
 			  NULL);
 	  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	  } else { // Not interoperability with GL
+	    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+			    w, h, GL_RGBA, GL_UNSIGNED_BYTE, cldraw->GetPixelBuffer());
+	  }
 	  glBindTexture(GL_TEXTURE_2D, 0);
 	  SDLDrawFlag.Drawn = FALSE;
 	  UnlockVram();
