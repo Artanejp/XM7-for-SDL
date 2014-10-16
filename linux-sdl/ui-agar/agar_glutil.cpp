@@ -72,7 +72,6 @@ GLuint CreateNullTextureCL(int w, int h)
 
     p =(Uint32 *)malloc((w + 2)*  (h  + 2) * sizeof(Uint32));
     if(p == NULL) return 0;
-
     memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
     glGenTextures(1, &ttid);
     glBindTexture(GL_TEXTURE_2D, ttid);
@@ -85,6 +84,7 @@ GLuint CreateNullTextureCL(int w, int h)
                  GL_RGBA_INTEGER,
                  GL_UNSIGNED_BYTE,
                  p);
+    glBindTexture(GL_TEXTURE_2D, 0);
     free(p);
     return ttid;
 }
@@ -215,6 +215,7 @@ void InitGL_AG2(int w, int h)
      */
 	InitVramSemaphore();
 	uVramTextureID = 0;
+	uNullTextureID = 0;
 	pVram2 = NULL;
 #ifdef _USE_OPENCL
         bInitCL = FALSE;

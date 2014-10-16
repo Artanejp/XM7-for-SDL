@@ -45,5 +45,6 @@ extern void AGEventKeyUpGL(AG_Event *event);
 extern void AGEventKeyDownGL(AG_Event *event);
 
 extern  GLuint uVramTextureID;
+extern  GLuint uNullTextureID;
 #endif /* USE_OPENGL */
 #endif /* AGAR_GLDRAW_H_ */

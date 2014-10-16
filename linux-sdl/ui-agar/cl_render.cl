@@ -114,16 +114,8 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   //prefetch(src_r, ww);
   //prefetch(src_g, ww);
   //prefetch(src_b, ww);
-  if(crtflag == 0) {
-    for(x = 0; x < ww; x++) {
-        av = abuf;
-	*p8 = putpixel(av, abuf);
-	p8++;
-	}
-    return;
-  } else {
-    mask = 0x07;
-    mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
+  mask = 0x07;
+  mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
     for(x = 0; x < ww; x++) {
         bc = *src_b;
 	rc = *src_r;
@@ -145,8 +137,8 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
         src_g++;
         src_b++;
 	}
+    barrier(CLK_GLOBAL_MEM_FENCE);
     return;
-    }
 }	
 	
 
@@ -230,9 +222,10 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
       ww = ww * h;
       gid = 0;
   }
-  
+#if 0
   if(gid == 0) setup_apalette(pal, palette, mpage);
   barrier(CLK_GLOBAL_MEM_FENCE);
+#endif
 
   p8 = (__global uint8 *)(&(out[addr2]));
   src = &src[addr];
@@ -250,19 +243,16 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   //prefetch(&src[0x6000 + ofset << 1], ww);
   //prefetch(pal, 4096);
   //prefetch(tbl8, 0xc00);
-  if(crtflag == 0) {
-    av = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
-    for(x = 0; x < ww; x++) {
-	*p8 = putpixel(av, abuf);
-	p8++;
-    }
-    return;
-  } else {
+#if 1
+    mask = 0x0;
+    if(!(mpage & 0x10)) mask |= 0x000f;
+    if(!(mpage & 0x20)) mask |= 0x00f0;
+    if(!(mpage & 0x40)) mask |= 0x0f00;
+//    mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
+#else
     mask = 0x0fff;
-    //if(!(mpage & 0x10)) mask |= 0x000f;
-    //if(!(mpage & 0x20)) mask |= 0x00f0;
-    //if(!(mpage & 0x40)) mask |= 0x0f00;
     mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
+#endif
     for(x = 0; x < ww; x++) {
         b = &src[0];
 	r = &src[ofset];
@@ -289,9 +279,10 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	
 	g8 =  tbl8[g0] | tbl8[g1] | tbl8[g2] | tbl8[g3];
 	
-	cv = (b8 | r8 | g8) & mask8;
-//	cv = (b8 | r8 | g8) & (uint8){0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff};
-	av.s0 = palette[cv.s0];
+//	cv = (b8 | r8 | g8) & mask8;
+	cv = (b8 | r8 | g8) & (uint8){0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff};
+#if 0
+        av.s0 = palette[cv.s0];
 	av.s1 = palette[cv.s1];
 	av.s2 = palette[cv.s2];
 	av.s3 = palette[cv.s3];
@@ -299,12 +290,22 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	av.s5 = palette[cv.s5];
 	av.s6 = palette[cv.s6];
 	av.s7 = palette[cv.s7];
-	*p8 = putpixel(av, abuf);
+#else
+        av.s0 = get_apalette(pal, cv.s0, mask);
+        av.s1 = get_apalette(pal, cv.s1, mask);
+        av.s2 = get_apalette(pal, cv.s2, mask);
+        av.s3 = get_apalette(pal, cv.s3, mask);
+        av.s4 = get_apalette(pal, cv.s4, mask);
+        av.s5 = get_apalette(pal, cv.s5, mask);
+        av.s6 = get_apalette(pal, cv.s6, mask);
+        av.s7 = get_apalette(pal, cv.s7, mask);
+#endif
+        *p8 = putpixel(av, abuf);
 	p8++;
         src++;
 	}
+    barrier(CLK_GLOBAL_MEM_FENCE);
     return;
-    }
 }	
 	
 __kernel void getvram256k(__global uchar *src, int w, int h, 
@@ -337,9 +338,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   tbl8 = (__global uint8 *)table;
   uint col;
   uint pbegin, pb1;
-
-
-  
+ 
   ww = w >> 3;
   if(multithread != 0){
       t = get_global_size(0);
@@ -381,14 +380,6 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   //prefetch(&src[0x8000 + ofset << 1], ww);
   //prefetch(&src[0xa000 + ofset << 1], ww);
   //prefetch(tbl8, 0x500);
-  if(crtflag == 0) {
-    av = abuf;
-    for(x = 0; x < ww; x++) {
-	*p8 = putpixel(av, abuf);
-	p8++;
-	}
-    return;
-  } else {
     for(x = 0; x < ww; x++) {
         b = &src[addr];
 	r = &src[addr + ofset];
@@ -451,7 +442,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	p8++;
         addr++;
 	}
+   barrier(CLK_GLOBAL_MEM_FENCE);
    return;
-   }
 }	
 	

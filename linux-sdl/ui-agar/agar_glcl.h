@@ -36,6 +36,7 @@ class GLCLDraw {
    GLuint GLCLDraw::GetPbo(void);
    int GetGLEnabled(void);
    Uint32 *GetPixelBuffer(void);
+   int ReleasePixelBuffer(Uint32 *p);
    Uint8 *GetBufPtr(void);
 
    cl_platform_id platform_id = NULL;

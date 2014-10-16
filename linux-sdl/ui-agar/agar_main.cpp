@@ -238,6 +238,7 @@ void OnDestroy(AG_Event *event)
    muntrace();
 #endif
    DiscardTextures(1, &uVramTextureID);
+   DiscardTextures(1, &uNullTextureID);
    uVramTextureID = 0;
    XM7_DebugLog(XM7_LOG_INFO, "All resources allocated by VM were freed.");
 //   AG_Destroy();
