@@ -23,6 +23,9 @@
 #include "display.h"
 #include "subctrl.h"
 #include "device.h"
+#include "multipag.h"
+#include "ttlpalet.h"
+#include "apalet.h"
 
 #include "agar_glcl.h"
 
@@ -58,6 +61,7 @@ GLCLDraw::~GLCLDraw()
     if(inbuf != NULL) ret |= clReleaseMemObject(inbuf);
     if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
     if(palette != NULL) ret |= clReleaseMemObject(palette);
+    if(internalpal != NULL) ret |= clReleaseMemObject(internalpal);
     if(table != NULL) ret |= clReleaseMemObject(table);
     if(pixelBuffer != NULL) free(pixelBuffer);
     if(TransferBuffer != NULL) free(TransferBuffer);
@@ -374,7 +378,8 @@ cl_int GLCLDraw::GetVram(int bmode)
    size_t *goff = NULL;
    int mpage = multi_page;
    int dummy = 0;
-
+   int vpage;
+   int crtflag = crt_flag;
    
 #if 1
    if((kernel != NULL) && (bmode != bModeOld)) {
@@ -395,6 +400,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       w = 640;
       h = 400;
       //gws[0] = h;
+      vpage = (~(multi_page >> 4)) & 0x07;
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -402,16 +408,22 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
-      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
-      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
+      ret |= clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&internalpal);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&crtflag);
+      ret |= clSetKernelArg(kernel, 9, sizeof(int), (void *)&vpage);
       ret |= copy8_400l();
+      //      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
+      //                        8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
+      //                        , 0, NULL, &event_uploadvram[2]);
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-                              8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
+				  8 * sizeof(Uint8), (void *)&ttl_palet[0]
                               , 0, NULL, &event_uploadvram[2]);
       break;
     case SCR_200LINE:
       w = 640;
       h = 200;
+      vpage = (~(multi_page >> 4)) & 0x07;
       //gws[0] = h;
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
@@ -420,17 +432,23 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
-      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
-      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
+      ret |= clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&internalpal);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&crtflag);
+      ret |= clSetKernelArg(kernel, 9, sizeof(int), (void *)&vpage);
       ret |= copy8();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-                              8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
+				  8 * sizeof(Uint8), (void *)&ttl_palet[0]
                               , 0, NULL, &event_uploadvram[2]);
+      //      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
+      //                        8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
+      //                        , 0, NULL, &event_uploadvram[2]);
       break;
     case SCR_262144:// Windowはなし
       w = 320;
       h = 200;
       //gws[0] = h;
+
       if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
@@ -438,15 +456,17 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
-      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&mpage);
-      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&internalpal);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&mpage);
+      ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 9, sizeof(int), (void *)&crtflag);
       ret |= copy256k();
       /*
        * Below transfer is dummy.
        */
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-                              8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
-                              , 0, NULL, &event_uploadvram[2]); 
+				  8 * sizeof(Uint8), (void *)&ttl_palet[0]
+                              , 0, NULL, &event_uploadvram[2]);
       break;
     case SCR_4096:
       w = 320;
@@ -459,19 +479,27 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
       ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette);
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
-      ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
-      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
+      ret |= clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&internalpal);
+      ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&bCLSparse);
+      ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&crtflag);
+      ret |= clSetKernelArg(kernel, 9, sizeof(int), (void *)&mpage);
       ret |= copy4096();
-      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_FALSE, 0,
-                              4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
+      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
+                              4096 * sizeof(Uint8), (void *)&apalet_b[0]
+                              , 0, NULL, NULL);
+      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 4096,
+                              4096 * sizeof(Uint8), (void *)&apalet_r[0]
+                              , 0, NULL, NULL);
+      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 4096 * 2,
+                              4096 * sizeof(Uint8), (void *)&apalet_g[0]
                               , 0, NULL, &event_uploadvram[2]);
+      clFinish(command_queue);
       break;
    }
 
    if(GetGLEnabled() != 0) {
      int need_alpha = 1;
      glFinish();
-     ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&need_alpha);
      ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  3, event_uploadvram, &event_copytotexture);
@@ -485,7 +513,6 @@ cl_int GLCLDraw::GetVram(int bmode)
      }
    } else {
      int need_alpha = 0;
-     ret |= clSetKernelArg(kernel, 8, sizeof(int), (void *)&need_alpha);
      //clFinish(command_queue);
      if(bCLSparse) {
        ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
@@ -586,9 +613,14 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: inbuf : %d", r);
 
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
- 		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
+ 		  (size_t)(4096 * 3 * sizeof(Uint8)), NULL, &r);
    ret |= r;
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette : %d", r);
+
+   internalpal = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
+ 		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
+   ret |= r;
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: Internal palette : %d", r);
 
    table = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
  		  (size_t)(0x100 * 8 * 20 * sizeof(cl_uint)), NULL, &r);
