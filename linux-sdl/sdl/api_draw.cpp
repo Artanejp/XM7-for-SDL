@@ -396,8 +396,8 @@ BOOL Select640(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 640;
-   bPaletFlag = TRUE;
-   Palet640();
+//   bPaletFlag = TRUE;
+//   Palet640();
    
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
@@ -409,9 +409,9 @@ BOOL Select640(void)
    pVirtualVramBuilder = &api_vram8_generic;
 #endif
    if(nRenderMethod == RENDERING_RASTER) {
-      SetDirtyFlag(0, 400, TRUE);
+//      SetDirtyFlag(0, 400, TRUE);
    } else {
-      SetDrawFlag(TRUE);
+//      SetDrawFlag(TRUE);
    }
    
 #if XM7_VER >= 3
@@ -425,7 +425,7 @@ BOOL Select640(void)
     */
    bAnalog = FALSE;
 #endif				/*  */
-   SDLDrawFlag.Drawn = TRUE;
+//   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -445,8 +445,8 @@ BOOL Select400l(void)
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
-   bPaletFlag = TRUE;
-   Palet640();
+//   bPaletFlag = TRUE;
+//   Palet640();
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram8_sse2;
@@ -458,15 +458,15 @@ BOOL Select400l(void)
 #endif
 
    if(nRenderMethod == RENDERING_RASTER) {
-      SetDirtyFlag(0, 400, TRUE);
+//      SetDirtyFlag(0, 400, TRUE);
    } else {
-      SetDrawFlag(TRUE);
+//      SetDrawFlag(TRUE);
    }
    /*
     * デジタル/400ラインモード
     */
    bMode = SCR_400LINE;
-   SDLDrawFlag.Drawn = TRUE;
+//   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -487,7 +487,7 @@ BOOL Select320(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 320;
-   bPaletFlag = TRUE;
+//   bPaletFlag = TRUE;
    
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
@@ -499,11 +499,11 @@ BOOL Select320(void)
    pVirtualVramBuilder = &api_vram4096_generic;
 #endif
 
-   Palet320();
+//   Palet320();
    if(nRenderMethod == RENDERING_RASTER) {
-      SetDirtyFlag(0, 400, TRUE);
+//      SetDirtyFlag(0, 400, TRUE);
    } else {
-      SetDrawFlag(TRUE);
+//      SetDrawFlag(TRUE);
    }
 #if XM7_VER >= 3
    /*
@@ -517,7 +517,7 @@ BOOL Select320(void)
     */
    bAnalog = TRUE;
 #endif				/*  */
-   SDLDrawFlag.Drawn = TRUE;
+//   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -537,7 +537,7 @@ BOOL Select256k()
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 320;
-   bPaletFlag = TRUE;
+//   bPaletFlag = TRUE;
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
        pVirtualVramBuilder = &api_vram256k_sse2;
@@ -549,17 +549,17 @@ BOOL Select256k()
 #endif
 
    if(nRenderMethod == RENDERING_RASTER) {
-      SetDirtyFlag(0, 400, TRUE);
-      Palet320();
+//      SetDirtyFlag(0, 400, TRUE);
+//      Palet320();
    } else {
-      SetDrawFlag(TRUE);
+//      SetDrawFlag(TRUE);
    }
    
    /*
     * アナログ(26万色)/200ラインモード
     */
    bMode = SCR_262144;
-   SDLDrawFlag.Drawn = TRUE;
+//   SDLDrawFlag.Drawn = TRUE;
    UnlockVram();
    return TRUE;
 }
@@ -640,7 +640,7 @@ void AllClear(void)
    AG_Widget *w;
    
    LockVram();
-   if(nRenderMethod == RENDERING_RASTER) {
+   if((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
       Palet320();
@@ -696,7 +696,7 @@ void AllClear(void)
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
-   if(nRenderMethod == RENDERING_RASTER) {
+   if((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)) {
       SetDirtyFlag(0, 400, TRUE);
       Palet640();
       Palet320();
@@ -756,7 +756,7 @@ void FASTCALL SetDirtyFlag(int top, int bottom, BOOL flag)
 {
 	int y;
 
-	if (nRenderMethod == RENDERING_RASTER) {
+	if ((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
 		for (y = top; y < bottom; y++) {
 			bDirtyLine[y] = flag;
 		}
@@ -776,7 +776,7 @@ void vram_notify(WORD addr, BYTE dat)
 	/*
 	 * y座標算出
 	 */
-   if(nRenderMethod == RENDERING_RASTER){
+	if((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
 #if XM7_VER >= 3
         switch (bMode) {
                 case SCR_400LINE        :       addr &= 0x7fff;
@@ -860,9 +860,6 @@ void vram_notify(WORD addr, BYTE dat)
                 nDrawRight = (WORD)(x + 8);
 #endif
         }
-#ifdef _USE_OPENCL
-//       if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) SDLDrawFlag.Drawn = TRUE; // OK?
-#endif	   
 	UnlockVram();
 	return;      
    } else {
@@ -984,7 +981,7 @@ void	ttlpalet_notify(void)
     * 不要なレンダリングを抑制するため、領域設定は描画時に行う
     */
    LockVram();
-   if (nRenderMethod == RENDERING_RASTER) {
+   if ((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
       bNextFrameRender = TRUE;
       SetDirtyFlag(now_raster, 400, TRUE);
       SDLDrawFlag.DPaletteChanged = TRUE; // Palette changed
@@ -1006,7 +1003,7 @@ void	ttlpalet_notify(void)
 void 	apalet_notify(void)
 {
    LockVram();
-   if (nRenderMethod == RENDERING_RASTER) {
+   if ((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
       bNextFrameRender = TRUE;
       SetDirtyFlag(now_raster, 400, TRUE);
       SDLDrawFlag.APaletteChanged = TRUE; // Palette changed
@@ -1039,7 +1036,7 @@ void 	display_notify(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    //bPaletFlag = TRUE;
-   if (nRenderMethod == RENDERING_RASTER) {
+   if ((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
 	bNextFrameRender = TRUE;
 //	SetDirtyFlag(0, 400, TRUE);
 //        if(bPaletFlag) {
@@ -1063,6 +1060,7 @@ void 	display_notify(void)
    UnlockVram();
 }
 
+static void Transfer_1Line(Uint8 *dst, int line);
    
 /*
  *	VBLANK終了要求通知
@@ -1073,7 +1071,7 @@ void FASTCALL vblankperiod_notify(void)
 	int y;
 	int ymax;
 
-	if (nRenderMethod == RENDERING_RASTER) {
+	if ((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
 		/* 次のフレームを強制的に書き換えるか */
 		if (bNextFrameRender) {
 			bNextFrameRender = FALSE;
@@ -1107,21 +1105,195 @@ void FASTCALL vblankperiod_notify(void)
 			}
 		   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 		   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
-		   for(y = 0; y < ymax; y++) {
-		      if (bDirtyLine[y]) {
+		   if(cldraw != NULL) {
+		     for(y = 0; y < ymax; y++) {
+		       if (bDirtyLine[y]) {
+			 Transfer_1Line(cldraw->GetBufPtr(), y);
+		       }
+		     }
+		   } else if(nRenderMethod == RENDERING_RASTER) {
+		     for(y = 0; y < ymax; y++) {
+		       if (bDirtyLine[y]) {
 			 Draw_1Line(y);
-		      }
-		   }
+		       }
+		     }
+		   } 
 		}
 	}
 }
 
+
+
+static inline void Transfer_Main(Uint8 *dst, int src, int mode, int w)
+{
+  int ofset;
+  int planes;
+  int i;
+  Uint8 *q;
+  Uint8 *p;
+
+  if((w <= 0) || (w > 80)) return;
+  switch(mode) {
+  case SCR_200LINE:
+    ofset = 0x4000;
+    planes = 1;
+    break;
+  case SCR_400LINE:
+    ofset = 0x8000;
+    planes = 1;
+    break;
+  case SCR_4096:
+    ofset = 0x2000;
+    planes = 4;
+    break;
+  case SCR_262144:
+    ofset = 0x2000;
+    planes = 6;
+    break;
+  default:
+    return;
+    break;
+  }
+
+  q = dst;
+ 
+  p = (Uint8 *)vram_pb;
+  p = &p[src];
+  for(i = 0; i < planes; i++){
+    memcpy(q, p, w);
+    q = &q[ofset];
+    p = &p[ofset];
+  }
+
+  p = (Uint8 *)vram_pr;
+  p = &p[src];
+  for(i = 0; i < planes; i++){
+    memcpy(q, p, w);
+    q = &q[ofset];
+    p = &p[ofset];
+  }
+    //memset(q, 0xff, w);
+  p = (Uint8 *)vram_pg;
+  p = &p[src];
+  for(i = 0; i < planes; i++){
+    memcpy(q, p, w);
+    //memset(q, 0xff, w);
+    q = &q[ofset];
+    p = &p[ofset];
+  }
+}
+
+static void Transfer_1Line(Uint8 *dst, int line)
+{
+  int top, bottom;
+  int src;
+  Uint8 *d1, *d2;
+  int wdbtm, wdtop;
+  int w, h;
+
+  if(SDLDrawFlag.APaletteChanged) {
+	 Palet320();
+         SDLDrawFlag.APaletteChanged = FALSE;
+   }
+   if(SDLDrawFlag.DPaletteChanged) {
+	 Palet640();
+         SDLDrawFlag.DPaletteChanged = FALSE;
+   }
+   switch(bMode) {
+   case SCR_200LINE:
+     w = 80;
+     h = 200;
+     break;
+   case SCR_400LINE:
+     w = 80;
+     h = 400;
+     break;
+   case SCR_4096:
+   case SCR_262144:
+     w = 40;
+     h = 200;
+     break;
+   default:
+     return;
+     break;
+   }
+   if(dst == NULL) return;
+   if(bMode == SCR_200LINE) {
+     top = nDrawTop >> 1;
+     bottom = nDrawBottom >> 1;
+   } else {
+     top = nDrawTop;
+     bottom = nDrawBottom;
+   }
+   line = line % h;
+   if((line < 0) || (line >= h)) return;
+   if(vram_dptr == NULL) return;
+   if(vram_bdptr == NULL) return;
+
+   d1 = &dst[w * line];
+   d2 = d1;
+   if((bWindowOpen) && (bMode != SCR_262144)) { // ハードウェアウインドウ開いてる
+      if((nDrawTop >= nDrawBottom) && (nDrawLeft >= nDrawRight)) return;	 /* ウィンドウ内の描画 */
+	 if (top  > window_dy1) {
+	    wdtop = top ;
+	 } else {
+	    wdtop = window_dy1;
+	 }
+	 
+	 if (bottom < window_dy2) {
+	    wdbtm = bottom ;
+	 }
+	 else {
+	    wdbtm = window_dy2;
+	 }
+         //LockVram();
+	 if ((wdbtm > wdtop) && (wdtop < line) && (wdbtm > line)) { // Inside window.
+	   /*
+	    * Outside of Window
+	    */
+	    src = line * w;
+	    SetVram_200l(vram_dptr);
+	    src = w * line;
+	    Transfer_Main(d1, src, bMode, window_dx1 >> 3);
+
+	    src = src + (window_dx2 >> 3);
+	    d1 = &d1[window_dx2 >> 3];
+	    Transfer_Main(d1, src, bMode, w - (window_dx2 >> 3));
+
+	    SetVram_200l(vram_bdptr);
+	    src = w * line + (window_dx1 >> 3);
+	    d2 = &d2[window_dx1 >> 3];
+	    Transfer_Main(d2, src, bMode, (window_dx2 >> 3) - (window_dx1 >> 3));
+	 } else if(wdbtm > wdtop) {
+	   SetVram_200l(vram_dptr);
+	   src = w * line;
+	   Transfer_Main(d1, src, bMode, w);
+	 }
+         //UnlockVram();
+      } else { // 256K Colors, not using window.
+        SetVram_200l(vram_dptr);
+        src = w * line;
+	Transfer_Main(d1, src, bMode, w);
+	 //UnlockVram();
+    }
+   SDLDrawFlag.Drawn = TRUE;
+   bDrawLine[line] = TRUE;
+   return;
+
+}
 /*
  *	HBLANK要求通知
  */
 void FASTCALL hblank_notify(void)
 {
-	if (nRenderMethod == RENDERING_RASTER) {
+           if(cldraw != NULL){
+	     if(now_raster >= 400) return;
+	     if(bDirtyLine[now_raster]) {
+	       Transfer_1Line(cldraw->GetBufPtr(), now_raster);
+	       //	       bDirtyLine[now_raster] = FALSE;
+	     }
+
+	   } else if (nRenderMethod == RENDERING_RASTER) {
 //	   LockVram();
 	   if(now_raster >= 400) return;
 
@@ -1282,7 +1454,7 @@ void window_notify(void)
 	/*
 	 * 再描画フラグを更新
 	 */
-         if(nRenderMethod == RENDERING_RASTER) {
+	if((nRenderMethod == RENDERING_RASTER) || (cldraw != NULL)){
 	    if ((nDrawLeft < nDrawRight) && (nDrawTop < nDrawBottom)) {
 	       for(y = nDrawTop; y < nDrawBottom; y++) {
 		  bDirtyLine[y] = TRUE;
@@ -1528,6 +1700,8 @@ void Draw640All(void)
    }
 }
 
+
+
 void Draw_1Line(int line)
 {
    WORD wdtop, wdbtm;
@@ -1590,7 +1764,7 @@ void Draw_1Line(int line)
    if(vram_bdptr == NULL) return;
 #ifdef _USE_OPENCL
    if((cldraw != NULL) && bGL_PIXEL_UNPACK_BUFFER_BINDING) {
-      SDLDrawFlag.Drawn = TRUE;
+//      SDLDrawFlag.Drawn = TRUE;
       bDrawLine[line] = TRUE;
       return;
    }

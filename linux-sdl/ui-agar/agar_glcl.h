@@ -36,6 +36,7 @@ class GLCLDraw {
    GLuint GLCLDraw::GetPbo(void);
    int GetGLEnabled(void);
    Uint32 *GetPixelBuffer(void);
+   Uint8 *GetBufPtr(void);
 
    cl_platform_id platform_id = NULL;
    cl_uint ret_num_platforms;
@@ -59,15 +60,15 @@ class GLCLDraw {
    cl_mem table = NULL;
    cl_context_properties *properties = NULL;	
    GLuint pbo = 0;
-   cl_int window_copy8(void);
-   cl_int window_copy8_400l(void);
-   cl_int window_copy4096(void);
-   cl_int copysub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
-   cl_int copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
-   cl_int copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage);
+   cl_int copy8(void);
+   cl_int copy8_400l(void);
+   cl_int copy4096(void);
+   cl_int copysub(int hh);
+   cl_int copy256k(void);
    int using_device = 0;
    int bCLEnableKhrGLShare = 0;
    Uint32 *pixelBuffer = NULL;
+   Uint8 *TransferBuffer = NULL;
    int bModeOld = -1;
 };
 

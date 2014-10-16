@@ -17,7 +17,7 @@
 extern "C" {
     AG_GLView *GLDrawArea;
 #ifdef _USE_OPENCL
-    extern BOOL bUseOpenCL;
+   extern BOOL bUseOpenCL;
     BOOL bInitCL = FALSE;
     int nCLGlobalWorkThreads = 10;
     BOOL bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.

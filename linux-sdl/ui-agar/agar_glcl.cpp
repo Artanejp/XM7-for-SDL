@@ -44,6 +44,7 @@ GLCLDraw::GLCLDraw()
    pixelBuffer = NULL;
    bModeOld = -1;
    kernel = NULL;
+   TransferBuffer = malloc((640 * 200 * 18 + 2) * sizeof(Uint8));
 }
 
 GLCLDraw::~GLCLDraw()
@@ -59,6 +60,7 @@ GLCLDraw::~GLCLDraw()
     if(palette != NULL) ret |= clReleaseMemObject(palette);
     if(table != NULL) ret |= clReleaseMemObject(table);
     if(pixelBuffer != NULL) free(pixelBuffer);
+    if(TransferBuffer != NULL) free(TransferBuffer);
 }
 
 static void cl_notify_log(const char *errinfo, const void *private_info, size_t cb, void *user_data)
@@ -168,206 +170,92 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
    return ret;
 }
 
-cl_int GLCLDraw::copysub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage)
+cl_int GLCLDraw::copysub(int hh)
 {
-   cl_int ret = 0;
-   Uint8 *pr, *pg, *pb;
-   Uint8 *p;
-   
-   int xb = xbegin / 8;
-   int yb = ybegin;
-   int ww = w / 8;
-   int x;
-   int y;
-   int offset = (drawwidth / 8) * ybegin;
-   int voffset = 0x4000;
-      
-   if(drawheight > 200) voffset = 0x8000;
-   
-   
-   pg = (Uint8 *)vram_pg;
-   pr = (Uint8 *)vram_pr;
-   pb = (Uint8 *)vram_pb;
-   pb = &pb[offset + xb];
-   pr = &pr[offset + xb];
-   pg = &pg[offset + xb];
-   
-   if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
-   if(drawwidth ==  w) {
-      int band = (drawwidth  / 8) * h;
-      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			     offset, voffset * 3,
-			     0, NULL, &event_uploadvram[0], &ret);
-      if(p != NULL) {
-	   memcpy(p, pb, band);  
-	   memcpy(&p[voffset], pr, band);  
-	   memcpy(&p[voffset * 2], pg, band);
-	   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-					  p, 0, NULL, &event_uploadvram[1]);
-      }
-      
-   } else {
-      int dwb = drawwidth / 8;
-      int yy;
-      int yoffset = 0;
+  Uint8 *p;
+  Uint8 *pp;
+  Uint8 *q;
+  cl_int ret;
+  int line;
+  int voffset = 0x4000;
+  if(hh > 200) voffset = 0x8000;
 
-      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			     offset + xb, voffset * 3,
-			     0, NULL, &event_uploadvram[0], &ret);
-    if(p != NULL) {
-	   for(yy = 0; yy < h; yy++) {
-	      memcpy(&p[yoffset], &pb[yoffset], ww);  
-	      memcpy(&p[voffset + yoffset], &pr[yoffset], ww);  
-	      memcpy(&p[voffset * 2 + yoffset], &pg[yoffset], ww);
-	      yoffset += dwb;
-	   }
-	 
-	   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-					  p, 0, NULL, &event_uploadvram[1]);
-      }
-//      printf("Window: %d x %d -> %d,%d inbuf=%08x STS=%d\n",ww, h, xb, ybegin, inbuf, ret);
-   }
-  
-   return ret;
+  p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			 0, voffset * 3,
+			 0, NULL, &event_uploadvram[0], &ret);
+  if(p == NULL) return ret;
+  if(ret < 0) return ret;
+  pp = p;
+  q = TransferBuffer;
+  for(line = 0;line < hh; line++) {
+    if(bDrawLine[line]) {
+      memcpy(pp, q, 80);
+      memcpy(&pp[voffset], &q[voffset], 80);
+      memcpy(&pp[voffset * 2], &q[voffset * 2], 80);
+      bDrawLine[line] = FALSE;
+    }
+    pp += 80;
+    q += 80;
+  }
+  ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+				 p, 0, NULL, &event_uploadvram[1]);
+  return ret;
 }
 
-cl_int GLCLDraw::copy4096sub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage)
+
+cl_int GLCLDraw::copy256k(void)
 {
    cl_int ret = 0;
-   Uint8 *pr, *pg, *pb;
    Uint8 *p;
-   int xb = xbegin / 8;
-   int yb = ybegin;
-   int ww = w / 8;
-   int x;
-   int y;
-   int offset = (drawwidth / 8) * ybegin + xb;
-   int vramoffset = 0x2000;   
-   
-   pg = (Uint8 *)vram_pg;
-   pr = (Uint8 *)vram_pr;
-   pb = (Uint8 *)vram_pb;
-   pb = &pb[offset];
-   pr = &pr[offset];
-   pg = &pg[offset];
-   
-   if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
-   if(drawwidth ==  w) {
-      int band = (drawwidth  / 8) * h;
-      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			     offset, vramoffset * 12,
-			     0, NULL, &event_uploadvram[0], &ret);
-      if(p != NULL) {
-	 // B
-	   memcpy(&p[0], &pb[0], band);  
-	   memcpy(&p[vramoffset], &pb[vramoffset], band);  
-	   memcpy(&p[vramoffset * 2], &pb[vramoffset * 2], band);  
-	   memcpy(&p[vramoffset * 3], &pb[vramoffset * 3], band);
-	 // R
-	   memcpy(&p[vramoffset * 4], &pr[0], band);  
-	   memcpy(&p[vramoffset * 5], &pr[vramoffset], band);  
-	   memcpy(&p[vramoffset * 6], &pr[vramoffset * 2], band);  
-	   memcpy(&p[vramoffset * 7], &pr[vramoffset * 3], band);  
-	 
-	 // G
-	   memcpy(&p[vramoffset * 8], &pg[0], band);  
-	   memcpy(&p[vramoffset * 9], &pg[vramoffset], band);  
-	   memcpy(&p[vramoffset * 10], &pg[vramoffset * 2], band);  
-	   memcpy(&p[vramoffset * 11], &pg[vramoffset * 3], band);  
-	   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-					  p, 0, NULL, &event_uploadvram[1]);
-      }
-
-   } else {
-      int dwb = drawwidth / 8;
-      int yy;
-      int yoffset = 0;
-      int band = ww;
-      p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			     offset, vramoffset * 12,
-			     0, NULL, &event_uploadvram[0], &ret);
-      if(p != NULL) {
-	 // B
-	 for(yy = 0; yy < h; yy++) {
-	   memcpy(&p[yoffset], &pb[yoffset], band);  
-	   memcpy(&p[vramoffset     + yoffset], &pb[vramoffset + yoffset], band);  
-	   memcpy(&p[vramoffset * 2 + yoffset], &pb[vramoffset * 2 + yoffset], band);  
-	   memcpy(&p[vramoffset * 3 + yoffset], &pb[vramoffset * 3 + yoffset], band);
-	 // R
-	   memcpy(&p[vramoffset * 4 + yoffset], &pr[yoffset], band);  
-	   memcpy(&p[vramoffset * 5 + yoffset], &pr[vramoffset + yoffset], band);  
-	   memcpy(&p[vramoffset * 6 + yoffset], &pr[vramoffset * 2 + yoffset], band);  
-	   memcpy(&p[vramoffset * 7 + yoffset], &pr[vramoffset * 3 + yoffset], band);  
-	 
-	 // G
-	   memcpy(&p[vramoffset * 8 + yoffset], &pg[yoffset], band);  
-	   memcpy(&p[vramoffset * 9 + yoffset], &pg[vramoffset + yoffset], band);  
-	   memcpy(&p[vramoffset * 10 + yoffset], &pg[vramoffset * 2 + yoffset], band);  
-	   memcpy(&p[vramoffset * 11 + yoffset], &pg[vramoffset * 3 + yoffset], band);
-	   yoffset += dwb;
-	 }
-	 
-	 ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-					  p, 0, NULL, &event_uploadvram[1]);
-      }
-
-
-//      printf("Window: %d x %d -> %d,%d inbuf=%08x STS=%d\n",ww, h, xb, ybegin, inbuf, ret);
-   }
-  
-   return ret;
-}
-
-cl_int GLCLDraw::copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheight, int w, int h, int mpage)
-{
-   cl_int ret = 0;
+   Uint8 *pp;
+   Uint8 *q;
    Uint8 *pr, *pg, *pb;
-   Uint8 *p;
-   int xb = xbegin / 8;
-   int yb = ybegin;
-   int ww = w / 8;
-   int x;
-   int y;
-   int offset = (drawwidth / 8) * ybegin;
-   int band = (drawwidth  / 8) * h;
-   int vramoffset = 0x2000;   
+   int line;
+   int vramoffset = 0x2000;
+   int band = 40;
+   int i, j;
    
-   pg = (Uint8 *)vram_pg;
-   pr = (Uint8 *)vram_pr;
-   pb = (Uint8 *)vram_pb;
-   
-   if((pb == NULL) || (pg == NULL) || (pr == NULL)) return -1;
-   pb = &pb[offset];
-   pr = &pr[offset];
-   pg = &pg[offset];
-      
    p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			  offset, vramoffset * 18,
+			  0, vramoffset * 18,
 			  0, NULL, &event_uploadvram[0], &ret);
+  if(ret < 0) return ret;
   if(p != NULL) {
-     // B
-     memcpy(&p[0], &pb[0], band);  
-     memcpy(&p[vramoffset], &pb[vramoffset], band);  
-     memcpy(&p[vramoffset * 2], &pb[vramoffset * 2], band);  
-     memcpy(&p[vramoffset * 3], &pb[vramoffset * 3], band);
-     memcpy(&p[vramoffset * 4], &pb[vramoffset * 4], band);  
-     memcpy(&p[vramoffset * 5], &pb[vramoffset * 5], band);
-     // R
-     memcpy(&p[vramoffset * 6], &pr[0], band);  
-     memcpy(&p[vramoffset * 7], &pr[vramoffset], band);  
-     memcpy(&p[vramoffset * 8], &pr[vramoffset * 2], band);  
-     memcpy(&p[vramoffset * 9], &pr[vramoffset * 3], band);  
-     memcpy(&p[vramoffset * 10], &pr[vramoffset * 4], band);  
-     memcpy(&p[vramoffset * 11], &pr[vramoffset * 5], band);  
+    pp = p;
+    q = TransferBuffer;
+    pb = &q[0];
+    pr = &q[vramoffset * 6];
+    pg = &q[vramoffset * 12];
+    for(line = 0; line < 200; line++) {
+      if(bDrawLine[line]) {
+	// B
+	memcpy(&pp[0], &pb[0], band);  
+	memcpy(&pp[vramoffset], &pb[vramoffset], band);  
+	memcpy(&pp[vramoffset * 2], &pb[vramoffset * 2], band);  
+	memcpy(&pp[vramoffset * 3], &pb[vramoffset * 3], band);
+	memcpy(&pp[vramoffset * 4], &pb[vramoffset * 4], band);  
+	memcpy(&pp[vramoffset * 5], &pb[vramoffset * 5], band);
+	// R
+	memcpy(&pp[vramoffset * 6], &pr[0], band);  
+	memcpy(&pp[vramoffset * 7], &pr[vramoffset], band);  
+	memcpy(&pp[vramoffset * 8], &pr[vramoffset * 2], band);  
+	memcpy(&pp[vramoffset * 9], &pr[vramoffset * 3], band);  
+	memcpy(&pp[vramoffset * 10], &pr[vramoffset * 4], band);  
+	memcpy(&pp[vramoffset * 11], &pr[vramoffset * 5], band);  
 	 
 	 // G
-     memcpy(&p[vramoffset * 12], &pg[0], band);  
-     memcpy(&p[vramoffset * 13], &pg[vramoffset], band);  
-     memcpy(&p[vramoffset * 14], &pg[vramoffset * 2], band);  
-     memcpy(&p[vramoffset * 15], &pg[vramoffset * 3], band);  
-     memcpy(&p[vramoffset * 16], &pg[vramoffset * 4], band);  
-     memcpy(&p[vramoffset * 17], &pg[vramoffset * 5], band);
-	 
+	memcpy(&pp[vramoffset * 12], &pg[0], band);  
+	memcpy(&pp[vramoffset * 13], &pg[vramoffset], band);  
+	memcpy(&pp[vramoffset * 14], &pg[vramoffset * 2], band);  
+	memcpy(&pp[vramoffset * 15], &pg[vramoffset * 3], band);  
+	memcpy(&pp[vramoffset * 16], &pg[vramoffset * 4], band);  
+	memcpy(&pp[vramoffset * 17], &pg[vramoffset * 5], band);
+	bDrawLine[line] = FALSE;
+      }
+      pg += 40;
+      pr += 40;
+      pb += 40;
+      pp += 40;
+    }
      ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
 				    p, 0, NULL, &event_uploadvram[1]);
   }
@@ -375,7 +263,7 @@ cl_int GLCLDraw::copy256ksub(int xbegin, int ybegin, int drawwidth, int drawheig
 }
 
 
-cl_int GLCLDraw::window_copy8(void)
+cl_int GLCLDraw::copy8(void)
 {
    WORD wdtop, wdbtm;
    cl_int ret = 0;
@@ -392,51 +280,10 @@ cl_int GLCLDraw::window_copy8(void)
    if (bClearFlag) {
 //      AllClear();
    }
-   
-   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(window_open) { // ハードウェアウインドウ開いてる
-	 if ((nDrawTop >> 1) < window_dy1) {
-	    //			vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-	    ret |= copysub(0, nDrawTop >> 1, 640, 200, 640, window_dy1, multi_page);
-	 }
-	 /* ウィンドウ内の描画 */
-	 if ((nDrawTop >> 1) > window_dy1) {
-	    wdtop = nDrawTop >> 1;
-	 }
-	 else {
-	    wdtop = window_dy1;
-	 }
-	 
-	 if ((nDrawBottom >> 1)< window_dy2) {
-	    wdbtm = nDrawBottom >> 1;
-	 }
-	 else {
-	    wdbtm = window_dy2;
-	 }
-	 
-	 if (wdbtm > wdtop) {
-	    //		vramhdr->SetVram(vram_bdptr, 80, 200);
-	    SetVram_200l(vram_bdptr);
-	    ret |= copysub(window_dx1, wdtop, 640, 200, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
-	 }
-	 /* ハードウェアウインドウ外下部 */
-	 if ((nDrawBottom >> 1) > window_dy2) {
-	    //	vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-			        
-	    ret |= copysub(0 , wdbtm, 640, 200, 640, (nDrawBottom >> 1) - wdbtm, multi_page);
-	 }
-      } else { // ハードウェアウィンドウ開いてない
-	 //	vramhdr->SetVram(vram_dptr, 80, 200);
-	 SetVram_200l(vram_dptr);
-	 ret |= copysub(0, 0, 640, 200, 640, 200, multi_page);
-      }
-   }
-   return ret;
+   return copysub(200);
 }
 
-cl_int GLCLDraw::window_copy8_400l(void)
+cl_int GLCLDraw::copy8_400l(void)
 {
    WORD wdtop, wdbtm;
    cl_int ret = 0;
@@ -453,49 +300,7 @@ cl_int GLCLDraw::window_copy8_400l(void)
       nDrawRight = 640;
 //      SetDrawFlag(TRUE);
    }
-//   nDrawTop = 0;
-//   nDrawBottom = 400;
-//   nDrawLeft = 0;
-//   nDrawRight = 640;
-   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(window_open) { // ハードウェアウインドウ開いてる
-	 if (nDrawTop  < window_dy1) {
-	    //			vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-	    ret |= copysub(0, nDrawTop, 640, 400, 640, window_dy1 - nDrawTop, multi_page);
-	 }
-	 /* ウィンドウ内の描画 */
-	 if (nDrawTop > window_dy1) {
-	    wdtop = nDrawTop;
-	 }
-	 else {
-	    wdtop = window_dy1;
-	 }
-	 
-	 if (nDrawBottom < window_dy2) {
-	    wdbtm = nDrawBottom;
-	 }
-	 else {
-	    wdbtm = window_dy2;
-	 }
-	 
-	 if (wdbtm > wdtop) {
-	    //		vramhdr->SetVram(vram_bdptr, 80, 200);
-	    SetVram_200l(vram_bdptr);
-	    ret |= copysub(window_dx1, wdtop, 640, 400, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
-	 }
-	 /* ハードウェアウインドウ外下部 */
-	 if (nDrawBottom > window_dy2) {
-	    //	vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-	    ret |= copysub(0 , wdbtm, 640, 400, 640, nDrawBottom - wdbtm, multi_page);
-	 }
-      } else { // ハードウェアウィンドウ開いてない
-	 //	vramhdr->SetVram(vram_dptr, 80, 200);
-	 SetVram_200l(vram_dptr);
-	 ret |= copysub(0, 0, 640, 400, 640, 400, multi_page);
-      }
-   }
+   ret = copysub(400);
    nDrawTop = 0;
    nDrawBottom = 400;
    nDrawLeft = 0;
@@ -503,10 +308,15 @@ cl_int GLCLDraw::window_copy8_400l(void)
    return ret;
 }
 
-cl_int GLCLDraw::window_copy4096(void)
+cl_int GLCLDraw::copy4096(void)
 {
-   WORD wdtop, wdbtm;
    cl_int ret = 0;
+   Uint8 *p;
+   Uint8 *pp;
+   Uint8 *q;
+   int line;
+   int voffset = 0x2000;
+   int i, j;
    
    if(bPaletFlag) { // 描画モードでVRAM変更
       Palet320();
@@ -521,52 +331,35 @@ cl_int GLCLDraw::window_copy4096(void)
 //      AllClear();
 //   }
    
-   if((nDrawTop < nDrawBottom) && (nDrawLeft < nDrawRight)) {
-      if(window_open) { // ハードウェアウインドウ開いてる
-	 if (nDrawTop < window_dy1) {
-	    //			vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-	    ret |= copy4096sub(0, nDrawTop , 320, 200, 320, window_dy1, multi_page);
-	 }
-	 /* ウィンドウ内の描画 */
-	 if (nDrawTop > window_dy1) {
-	    wdtop = nDrawTop;
-	 }
-	 else {
-	    wdtop = window_dy1;
-	 }
-	 
-	 if (nDrawBottom < window_dy2) {
-	    wdbtm = nDrawBottom;
-	 }
-	 else {
-	    wdbtm = window_dy2;
-	 }
-	 
-	 if (wdbtm > wdtop) {
-	    //		vramhdr->SetVram(vram_bdptr, 80, 200);
-	    SetVram_200l(vram_bdptr);
-	    ret |= copy4096sub(window_dx1, wdtop, 320, 200, window_dx2 - window_dx1 , wdbtm - wdtop , multi_page);
-	 }
-	 /* ハードウェアウインドウ外下部 */
-	 if (nDrawBottom  > window_dy2) {
-	    //	vramhdr->SetVram(vram_dptr, 80, 200);
-	    SetVram_200l(vram_dptr);
-			        
-	    ret |= copy4096sub(0 , wdbtm, 320, 200, 320, nDrawBottom - wdbtm, multi_page);
-	 }
-      } else { // ハードウェアウィンドウ開いてない
-	 //	vramhdr->SetVram(vram_dptr, 80, 200);
-	 SetVram_200l(vram_dptr);
-	 ret |= copy4096sub(0, 0, 320, 200, 320, 200, multi_page);
+  p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			 0, voffset * 12,
+			 0, NULL, &event_uploadvram[0], &ret);
+  if(ret < 0) return ret;
+  if(p == NULL) return ret;
+  pp = p;
+  q = TransferBuffer;
+  for(line = 0;line < 200; line++) {
+    if(bDrawLine[line]) {
+      j = 0;
+      for(i = 0; i < 12; i++) {
+	memcpy(&pp[j], &q[j], 40);
+	j += voffset;
       }
-   }
-   nDrawTop = 0;
-   nDrawBottom = 200;
-   nDrawLeft = 0;
-   nDrawRight = 320;
-   return ret;
+      bDrawLine[line] = FALSE;
+    }
+    pp += 40;
+    q += 40;
+  }
+  ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+				 p, 0, NULL, &event_uploadvram[1]);
+  return ret;
 }
+
+Uint8 *GLCLDraw::GetBufPtr(void)
+{
+  return TransferBuffer;
+}
+
 
 
 cl_int GLCLDraw::GetVram(int bmode)
@@ -595,6 +388,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    bModeOld = bmode;
    if(inbuf == NULL) return -1;
    if(outbuf == NULL) return -1;
+   if(TransferBuffer == NULL) return -1;
 
    switch(bmode) {
     case SCR_400LINE:
@@ -610,7 +404,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
       ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
-      ret |= window_copy8_400l();
+      ret |= copy8_400l();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[2]);
@@ -628,7 +422,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
       ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
-      ret |= window_copy8();
+      ret |= copy8();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
                               8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
                               , 0, NULL, &event_uploadvram[2]);
@@ -646,7 +440,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&mpage);
       ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&bCLSparse);
-      ret |= copy256ksub(0, 0, 320, 200, 320, 200, mpage);
+      ret |= copy256k();
       /*
        * Below transfer is dummy.
        */
@@ -667,7 +461,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
       ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
       ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&dummy);
-      ret |= window_copy4096();
+      ret |= copy4096();
       ret |= clEnqueueWriteBuffer(command_queue, palette, CL_FALSE, 0,
                               4096 * sizeof(Uint32), (void *)&rgbAnalogGDI[0]
                               , 0, NULL, &event_uploadvram[2]);

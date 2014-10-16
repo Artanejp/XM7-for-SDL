@@ -279,7 +279,6 @@ void AGDrawTaskMain(void)
         
 	if(nEmuFPS > 2) {
 		fps = 1000 / nEmuFPS;
-
 	} else {
 		fps = 500;
 	}
@@ -287,12 +286,36 @@ void AGDrawTaskMain(void)
 	if(nDrawTick1E > nDrawTick2E) {
 		nDrawTick1E = 0;
 	}
-	if(((nDrawTick2E - nDrawTick1E)<fps) && (bMode == oldBMode)) return;
+	if(((nDrawTick2E - nDrawTick1E) < fps) && (bMode == oldBMode)) return;
   
-	nDrawTick1E = nDrawTick2E;
+	if(oldBMode != bMode) {
+	   bClearFlag = TRUE;
+	   if(nRenderMethod == RENDERING_RASTER) {
+	      SDLDrawFlag.Drawn = TRUE;
+	      SetDirtyFlag(0, 400, TRUE);
+	   } else {
+	      SetDrawFlag(TRUE);
+	   }
+	}
+   
+        nDrawTick1E = nDrawTick2E;
 	oldBMode = bMode;
-
         SelectDraw2();
+
+#ifdef _USE_OPENCL
+        if((cldraw != NULL) && (GLDrawArea != NULL)) {
+	   SDLDrawFlag.Drawn = TRUE;
+	   if(SDLDrawFlag.APaletteChanged) {
+	      Palet320();
+	      SDLDrawFlag.APaletteChanged = FALSE;
+	   }
+	   if(SDLDrawFlag.DPaletteChanged) {
+	      Palet640();
+	      SDLDrawFlag.DPaletteChanged = FALSE;
+	   }
+	   return;
+	}
+#endif
         if(nRenderMethod == RENDERING_RASTER) return;
 #if XM7_VER >= 3
 	switch (bMode) {

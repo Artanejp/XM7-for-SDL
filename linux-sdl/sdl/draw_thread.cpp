@@ -27,6 +27,7 @@
 #ifdef USE_OPENGL
 #include "agar_gldraw.h"
 #endif /* USE_OPENGL */
+
 #include "agar_glutil.h"
 
 #include "xm7_sdl.h"
@@ -162,13 +163,7 @@ BOOL SelectDraw2(void)
        * すべてクリア
        */
       //AG_DriverClose(drv);
-      bClearFlag = TRUE;
-      if(nRenderMethod == RENDERING_RASTER) {
-//	 SDLDrawFlag.Drawn = TRUE;
-	 SetDirtyFlag(0, 400, TRUE);
-      } else {
-	 SetDrawFlag(TRUE);
-      }
+//      bClearFlag = TRUE;
       
 #ifdef USE_OPENGL
    }
