@@ -69,6 +69,8 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   uchar rc,bc,gc;
   uint8 av;
   const uint8 abuf = (uint8){amask, amask, amask, amask, amask, amask, amask, amask};
+  uint mask = 0;
+  uint8 mask8;
   __global uint8 *tbl8;
   uint8 c8;
   __global uint8 *p8;
@@ -120,12 +122,15 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
 	}
     return;
   } else {
+    mask = 0x07;
+    mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
     for(x = 0; x < ww; x++) {
         bc = *src_b;
 	rc = *src_r;
 	gc = *src_g;
         c8 = tbl8[bc] | tbl8[rc + 256] | tbl8[gc + 256 * 2];
-	c8 &= (uint8){0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f};
+	c8 &= mask8;
+
 	av.s0 = palette[c8.s0];
 	av.s1 = palette[c8.s1];
 	av.s2 = palette[c8.s2];
@@ -253,9 +258,10 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
     }
     return;
   } else {
-    if(!(mpage & 0x10)) mask |= 0x000f;
-    if(!(mpage & 0x20)) mask |= 0x00f0;
-    if(!(mpage & 0x40)) mask |= 0x0f00;
+    mask = 0x0fff;
+    //if(!(mpage & 0x10)) mask |= 0x000f;
+    //if(!(mpage & 0x20)) mask |= 0x00f0;
+    //if(!(mpage & 0x40)) mask |= 0x0f00;
     mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
     for(x = 0; x < ww; x++) {
         b = &src[0];
@@ -283,8 +289,8 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	
 	g8 =  tbl8[g0] | tbl8[g1] | tbl8[g2] | tbl8[g3];
 	
-//	cv = (b8 | r8 | g8) & mask8;
-	cv = (b8 | r8 | g8) & (uint8){0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff};
+	cv = (b8 | r8 | g8) & mask8;
+//	cv = (b8 | r8 | g8) & (uint8){0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff};
 	av.s0 = palette[cv.s0];
 	av.s1 = palette[cv.s1];
 	av.s2 = palette[cv.s2];
@@ -319,7 +325,9 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   uint r0, r1, r2, r3, r4, r5;
   uint b0, b1, b2, b3, b4, b5;
   uint g0, g1, g2, g3, g4, g5;
-  uint8 r8, g8, b8;
+  uint8 r8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
+  uint8 g8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
+  uint8 b8 = (uint8){0, 0, 0, 0, 0, 0, 0, 0};
   __global uchar *r, *g, *b;
   uint8 av;
   uint8 cv;
@@ -374,8 +382,8 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   //prefetch(&src[0xa000 + ofset << 1], ww);
   //prefetch(tbl8, 0x500);
   if(crtflag == 0) {
+    av = abuf;
     for(x = 0; x < ww; x++) {
-        av = abuf;
 	*p8 = putpixel(av, abuf);
 	p8++;
 	}

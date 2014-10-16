@@ -617,7 +617,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    ret |= r;
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette : %d", r);
 
-   internalpal = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
+   internalpal = clCreateBuffer(context, CL_MEM_WRITE_ONLY | 0,
  		  (size_t)(4096 * sizeof(Uint32)), NULL, &r);
    ret |= r;
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: Internal palette : %d", r);
@@ -635,7 +635,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
        glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
        //    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);
-       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY, 
+       outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY | 0, 
 				     pbo, &r);
        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
        ret |= r;
@@ -648,7 +648,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
      pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
      //     outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | 0,
      //                             (size_t)(640 * 400 * sizeof(Uint32)), NULL, &r);
-     outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
+     outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR ,
  		  (size_t)(640 * 400 * sizeof(Uint32)), pixelBuffer, &r);
 
      ret |= r;
