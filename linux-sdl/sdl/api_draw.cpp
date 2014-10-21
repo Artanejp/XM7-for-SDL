@@ -647,7 +647,7 @@ void AllClear(void)
    AG_Driver *drv;
    AG_Widget *w;
 
-#if 0   
+#if 1  
    LockVram();
    if((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
       SetDirtyFlag(0, 400, TRUE);
@@ -1053,7 +1053,7 @@ void 	display_notify(void)
    //bPaletFlag = TRUE;
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
 	//bNextFrameRender = TRUE;
-	//SetDirtyFlag(0, 400, TRUE);
+	SetDirtyFlag(0, 400, TRUE);
         if(bPaletFlag) {
 	  bPaletFlag = FALSE;
 	  if(bCLEnabled == FALSE) {
@@ -1061,7 +1061,7 @@ void 	display_notify(void)
 	    Palet320();
 	  }
 	}
-      
+        if(SelectCheck()) SelectDraw2();
 #if 1
         if (!run_flag) {
 		raster = now_raster;
@@ -1128,7 +1128,7 @@ void FASTCALL vblankperiod_notify(void)
 		   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 		   if((bCLEnabled) && (cldraw != NULL)) {
 		     for(y = 0; y < ymax; y++) {
-		       if (bDirtyLine[y]) {
+		       if (bDirtyLine[y] && (bDrawLine[y] != TRUE)) {
 			 Transfer_1Line(cldraw->GetBufPtr(), y);
 			 bDirtyLine[y] = FALSE;
 		       }
@@ -1340,18 +1340,21 @@ void FASTCALL hblank_notify(void)
 	     if(bDirtyLine[now_raster]) {
 	       flag = TRUE;
 	       Transfer_1Line(cldraw->GetBufPtr(), now_raster);
-	       //bDirtyLine[now_raster] = FALSE;
+	       bDirtyLine[now_raster] = FALSE;
 	     }
 	     if(flag)  SDLDrawFlag.Drawn = TRUE;
 	   } else if (nRenderMethod == RENDERING_RASTER) {
 //	   LockVram();
 	   if(now_raster >= 400) return;
-
 //	   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 	   if (bDirtyLine[now_raster]) {
+	           flag = TRUE;
 //	           _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 	           Draw_1Line(now_raster);
+	           //bDirtyLine[now_raster] = FALSE;
 		}
+	     //if(flag)  SDLDrawFlag.Drawn = TRUE;
+	      
 //	   UnlockVram();
 	}
 }
@@ -1772,11 +1775,11 @@ void Draw_1Line(int line)
      bPaletFlag = FALSE;
    }
    if(SDLDrawFlag.APaletteChanged) {
-     //	 Palet320();
+     	 Palet320();
          SDLDrawFlag.APaletteChanged = FALSE;
    }
    if(SDLDrawFlag.DPaletteChanged) {
-     //	 Palet640();
+     	 Palet640();
          SDLDrawFlag.DPaletteChanged = FALSE;
    }
 
