@@ -55,9 +55,9 @@ class GLCLDraw {
    cl_event event_copytotexture;
    cl_event event_release;
    cl_kernel kernels_array[8];
-   cl_kernel kernel_8colors = NULL;
-   cl_kernel kernel_4096colors = NULL;
-   cl_kernel kernel_256kcolors = NULL;
+   cl_kernel *kernel_8colors = NULL;
+   cl_kernel *kernel_4096colors = NULL;
+   cl_kernel *kernel_256kcolors = NULL;
    cl_uint nkernels;
 
    cl_mem inbuf = NULL;
