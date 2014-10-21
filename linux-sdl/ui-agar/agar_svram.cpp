@@ -37,11 +37,6 @@ extern struct  XM7_CPUID *pCpuID;
 }
 
 
-#ifdef USE_OPENGL
-#ifdef _USE_OPENCL
-extern class GLCLDraw *cldraw;
-#endif // _USE_OPENCL
-#endif // USE_OPENGL
 
 static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
 {

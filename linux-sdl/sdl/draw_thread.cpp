@@ -91,10 +91,13 @@ static WORD DrawCountSet(WORD fps)
 		return (WORD) wait;
 }
 
+
+extern "C" {   
+	
 /*
  *  セレクトチェック
  */
-static BOOL SelectCheck(void)
+BOOL SelectCheck(void)
 {
 
 #if XM7_VER >= 3
@@ -128,7 +131,8 @@ static BOOL SelectCheck(void)
 	}
 #endif /*  */
 }
-
+}
+   
 /*
  *  セレクト(内部向き)
  */

@@ -98,7 +98,8 @@ extern BOOL SelectDraw(void);
 extern void AllClear(void);
 extern void RenderFullScan(void);
 extern void RenderSetOddLine(void);
-
+extern BOOL SelectCheck(void);
+   
 extern void OnDraw(void);
 extern int OnPaint(void);
 

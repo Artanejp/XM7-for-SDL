@@ -303,16 +303,19 @@ void AGDrawTaskMain(void)
         SelectDraw2();
 
 #ifdef _USE_OPENCL
-        if((cldraw != NULL) && (GLDrawArea != NULL)) {
-	   SDLDrawFlag.Drawn = TRUE;
+        if(bCLEnabled) {
+#if 1
 	   if(SDLDrawFlag.APaletteChanged) {
 	      Palet320();
 	      SDLDrawFlag.APaletteChanged = FALSE;
+	      SDLDrawFlag.Drawn = TRUE;
 	   }
 	   if(SDLDrawFlag.DPaletteChanged) {
 	      Palet640();
 	      SDLDrawFlag.DPaletteChanged = FALSE;
+	      SDLDrawFlag.Drawn = TRUE;
 	   }
+#endif
 	   return;
 	}
 #endif

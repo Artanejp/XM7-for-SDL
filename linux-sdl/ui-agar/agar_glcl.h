@@ -49,12 +49,17 @@ class GLCLDraw {
    /* Program Object */
    const char *source = NULL;
    cl_program program = NULL;
-   cl_kernel kernel = NULL;
  private:
    cl_event event_exec;
    cl_event event_uploadvram[4];
    cl_event event_copytotexture;
    cl_event event_release;
+   cl_kernel kernels_array[8];
+   cl_kernel kernel_8colors = NULL;
+   cl_kernel kernel_4096colors = NULL;
+   cl_kernel kernel_256kcolors = NULL;
+   cl_uint nkernels;
+
    cl_mem inbuf = NULL;
    cl_mem outbuf = NULL;
    cl_mem palette = NULL;
@@ -72,6 +77,13 @@ class GLCLDraw {
    Uint32 *pixelBuffer = NULL;
    Uint8 *TransferBuffer = NULL;
    int bModeOld = -1;
+};
+
+enum {
+  CLKERNEL_8 = 0,
+  CLKERNEL_4096,
+  CLKERNEL_256K,
+  CLKERNEL_END
 };
 
 #endif /* _USE_OPENCL */

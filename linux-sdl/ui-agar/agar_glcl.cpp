@@ -46,25 +46,27 @@ GLCLDraw::GLCLDraw()
    cl_int ret;
    pixelBuffer = NULL;
    bModeOld = -1;
-   kernel = NULL;
    TransferBuffer = malloc((640 * 200 * 18 + 2) * sizeof(Uint8));
 }
 
 GLCLDraw::~GLCLDraw()
 {
    cl_int ret;
-    if(kernel != NULL) ret = clReleaseKernel(kernel);
-    if(program != NULL) ret |= clReleaseProgram(program);
-    if(command_queue != NULL) ret |= clReleaseCommandQueue(command_queue);
-    if(context != NULL) ret |= clReleaseContext(context);
-    if(properties != NULL) free(properties);
-    if(inbuf != NULL) ret |= clReleaseMemObject(inbuf);
-    if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
-    if(palette != NULL) ret |= clReleaseMemObject(palette);
-    if(internalpal != NULL) ret |= clReleaseMemObject(internalpal);
-    if(table != NULL) ret |= clReleaseMemObject(table);
-    if(pixelBuffer != NULL) free(pixelBuffer);
-    if(TransferBuffer != NULL) free(TransferBuffer);
+   int i;
+   if(nkernels > 0) {
+     for(i = 0; i < nkernels; i++) if(kernels_array[i] != NULL) ret = clReleaseKernel(kernels_array[i]);
+   }
+   if(program != NULL) ret |= clReleaseProgram(program);
+   if(command_queue != NULL) ret |= clReleaseCommandQueue(command_queue);
+   if(context != NULL) ret |= clReleaseContext(context);
+   if(properties != NULL) free(properties);
+   if(inbuf != NULL) ret |= clReleaseMemObject(inbuf);
+   if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
+   if(palette != NULL) ret |= clReleaseMemObject(palette);
+   if(internalpal != NULL) ret |= clReleaseMemObject(internalpal);
+   if(table != NULL) ret |= clReleaseMemObject(table);
+   if(pixelBuffer != NULL) free(pixelBuffer);
+   if(TransferBuffer != NULL) free(TransferBuffer);
 }
 
 static void cl_notify_log(const char *errinfo, const void *private_info, size_t cb, void *user_data)
@@ -79,7 +81,7 @@ static void cl_notify_log(const char *errinfo, const void *private_info, size_t 
 
 int GLCLDraw::GetGLEnabled(void)
 {
-  if(bCLEnableKhrGLShare != 0) return -1;
+  if(bCLEnableKhrGLShare != FALSE) return -1;
   return 0;
 }
 
@@ -184,7 +186,9 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     program = clCreateProgramWithSource(context, 1, (const char **)&p,
                                         (const size_t *)&codeSize, &ret);
     XM7_DebugLog(XM7_LOG_INFO, "CL: Build Result=%d", ret);
-
+    if(ret < CL_SUCCESS) {
+      return ret;
+    }
     // Compile from source
     ret = clBuildProgram(program, 1, device_id, NULL, NULL, NULL);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
@@ -194,13 +198,32 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
        
        ret = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
 				   LOGSIZE - 1, (void *)logBuf, NULL);
-       if(logBuf != NULL) printf("Build Log:\n%s", logBuf);
+       if(logBuf != NULL) XM7_DebugLog(XM7_LOG_INFO, "Build Log:\n%s", logBuf);
        free(logBuf);
        return ret;
     }
+    ret = clCreateKernelsInProgram(program, sizeof(kernels_array) / sizeof(cl_kernel),
+				   kernels_array, &nkernels);
+    if(ret < CL_SUCCESS) {
+      XM7_DebugLog(XM7_LOG_INFO, "Unable to build CL kernel. Status=%d", ret);
+    } else {
+      char funcname[128];
+      int i;
+      size_t size;
+      XM7_DebugLog(XM7_LOG_INFO, "Built %d CL kernel(s).", nkernels);
+      for(i = 0; i < nkernels; i++) {
+	funcname[0] = '\0';
+	if(clGetKernelInfo(kernels_array[i], CL_KERNEL_FUNCTION_NAME,
+			   sizeof(funcname) / sizeof(char) - 1, 
+			   funcname, size) == CL_SUCCESS){
+	  if((strncmp(funcname, "getvram8", strlen("getvram8")) == 0) && (kernel_8colors == NULL)) kernel_8colors = kernels_array[i];
+	  if((strncmp(funcname, "getvram4096", strlen("getvram4096")) == 0) && (kernel_4096colors == NULL)) kernel_4096colors = kernels_array[i];
+	  if((strncmp(funcname, "getvram256k", strlen("getvram256k")) == 0) && (kernel_256kcolors == NULL)) kernel_256kcolors = kernels_array[i];
+	}
+      }
+    }
    return ret;
 }
-
 cl_int GLCLDraw::copysub(int hh)
 {
   Uint8 *p;
@@ -398,6 +421,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 {
    cl_int ret = 0;
    cl_int r;
+   cl_kernel kernel;
    int w;
    int h;
    Uint8 *pr,*pg,*pb;
@@ -409,27 +433,21 @@ cl_int GLCLDraw::GetVram(int bmode)
    int vpage;
    int crtflag = crt_flag;
    
-#if 1
-   if((kernel != NULL) && (bmode != bModeOld)) {
-     clFinish(command_queue);
-     clReleaseKernel(kernel);
-     kernel = NULL;
-   }
-#else
-#endif
    bModeOld = bmode;
    if(inbuf == NULL) return -1;
    if(outbuf == NULL) return -1;
    if(TransferBuffer == NULL) return -1;
 
-   clFinish(command_queue);
+   //   clFinish(command_queue);
+   kernel = NULL;
    switch(bmode) {
     case SCR_400LINE:
       w = 640;
       h = 400;
       //gws[0] = h;
       vpage = (~(multi_page >> 4)) & 0x07;
-      if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
+      //if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
+      if(kernel_8colors != NULL) kernel = kernel_8colors;
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -453,7 +471,8 @@ cl_int GLCLDraw::GetVram(int bmode)
       h = 200;
       vpage = (~(multi_page >> 4)) & 0x07;
       //gws[0] = h;
-      if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
+      if(kernel_8colors != NULL) kernel = kernel_8colors;
+      //      if(kernel == NULL) kernel = clCreateKernel(program, "getvram8", &ret);
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -477,7 +496,8 @@ cl_int GLCLDraw::GetVram(int bmode)
       h = 200;
       //gws[0] = h;
 
-      if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
+      //      if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
+      if(kernel_256kcolors != NULL) kernel = kernel_256kcolors;
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -500,7 +520,8 @@ cl_int GLCLDraw::GetVram(int bmode)
       w = 320;
       h = 200;
       //gws[0] = h;
-      if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
+      //if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
+      if(kernel_4096colors != NULL) kernel = kernel_4096colors;
       ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inbuf);
       ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
       ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
@@ -530,50 +551,43 @@ cl_int GLCLDraw::GetVram(int bmode)
       break;
    }
 
-   if(GetGLEnabled() != 0) {
+   if(bCLEnableKhrGLShare != 0) {
      glFlush();
      ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  3, event_uploadvram, &event_copytotexture);
-     if(bCLSparse) {
-       ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-				     goff, gws, lws, 
-				     1, &event_copytotexture,  &event_exec);
-     } else {
-       ret = clEnqueueTask(command_queue,
-			    kernel, 1, &event_copytotexture, &event_exec);
+     if(kernel != NULL) {
+       if(bCLSparse) {
+	 ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				      goff, gws, lws, 
+				      1, &event_copytotexture,  &event_exec);
+       } else {
+	 ret = clEnqueueTask(command_queue,
+			     kernel, 1, &event_copytotexture, &event_exec);
+       }
      }
-   } else {
-     if(bCLSparse) {
-       ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
-				     goff, gws, lws, 
-				     3, event_uploadvram,  &event_exec);
-     } else {
-       ret = clEnqueueTask(command_queue,
-			    kernel, 3, event_uploadvram, &event_exec);
-     }
-   }
-   //XM7_DebugLog(XM7_LOG_DEBUG, "CL: execute kernel: %d", ret);
-
-   if(GetGLEnabled() != 0) {
      ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
      clFinish(command_queue);
      glFinish();
    } else {
-#if 1
-      ret |= clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
-                              w * h * sizeof(Uint32), (void *)pixelBuffer
-                              , 1, &event_exec, &event_release);
-#endif
-     //      XM7_DebugLog(XM7_LOG_DEBUG, "CL: read from result : %d", ret);
+     if(kernel != NULL) {
+       if(bCLSparse) {
+	 ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
+				      goff, gws, lws, 
+				      3, event_uploadvram,  &event_exec);
+       } else {
+	 ret = clEnqueueTask(command_queue,
+			     kernel, 3, event_uploadvram, &event_exec);
+       }
+     }
+     ret |= clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
+				w * h * sizeof(Uint32), (void *)pixelBuffer
+				, 1, &event_exec, &event_release);
      clFinish(command_queue);
-     // glFinish();
    }
-
    return ret;
- 
 }
 
 
@@ -631,7 +645,6 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 {
    cl_int ret = 0;
    cl_int r = 0;
-   GLuint tid;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    
    inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
@@ -657,36 +670,36 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: table : %d", r);
 
    // Texture直接からPBO使用に変更 20121102
-   if(bCLEnableKhrGLShare != 0) {
-     if(bGL_PIXEL_UNPACK_BUFFER_BINDING && (texid != NULL)) {
-       tid = *texid;
+   if((bCLEnableKhrGLShare != 0) && (bGL_PIXEL_UNPACK_BUFFER_BINDING != FALSE)){
        glGenBuffers(1, &pbo);
        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
        glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
        //    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);
        outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY | 0, 
 				     pbo, &r);
+       if(r != GL_NO_ERROR) {
+	 glDeleteBuffers(1, &pbo);
+//	 pbo = 0;
+	 bCLEnableKhrGLShare = FALSE;
+	 goto _fallback;
+       }
        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
        ret |= r;
-     } else {
-       ret = CL_DEVICE_NOT_AVAILABLE;
-       r = ret;
-     }
-     XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (GLCL): %d", r);
-   } else { // Fallback
-#if 0
-      pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
-      outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR ,
-     		  (size_t)(640 * 400 * sizeof(Uint32)), pixelBuffer, &r);
-#else
-      pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
-      outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-                                  (size_t)(640 * 400 * sizeof(Uint32)), NULL, &r);
-#endif
-     ret |= r;
-     XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (CL): %d", r);
+       XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (GLCL Interop): %d", r);
+       return ret;
    }
-   
+ _fallback:
+#if 0
+   pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
+   outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR ,
+			   (size_t)(640 * 400 * sizeof(Uint32)), pixelBuffer, &r);
+#else
+   pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
+   outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+			   (size_t)(640 * 400 * sizeof(Uint32)), NULL, &r);
+#endif
+   ret |= r;
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: outbuf (CL): %d", r);
    return ret;
 }
 

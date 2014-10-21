@@ -19,6 +19,8 @@ extern "C" {
 #ifdef _USE_OPENCL
    extern BOOL bUseOpenCL;
     BOOL bInitCL = FALSE;
+    BOOL bCLEnabled = FALSE;
+    BOOL bCLGLInterop = FALSE;
     int nCLGlobalWorkThreads = 10;
     BOOL bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.
     //BOOL bCLDirectMapping = FALSE;
@@ -122,6 +124,8 @@ void InitContextCL(void)
 	       r = cldraw->InitContext();
 	       XM7_DebugLog(XM7_LOG_DEBUG, "CL: Create CTX: STS = %d", r);
 	       if(r == CL_SUCCESS){
+		 bCLEnabled = TRUE;
+		 bCLGLInterop = FALSE;
 		 XM7_DebugLog(XM7_LOG_DEBUG,"CL: GLCTX=%08x", glXGetCurrentContext());
 		 r = cldraw->BuildFromSource(cl_render);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
@@ -131,6 +135,8 @@ void InitContextCL(void)
 		    if(r != CL_SUCCESS){
 		       delete cldraw;
 		       cldraw = NULL;
+		    } else if(cldraw->GetGLEnabled() != 0) {
+		      bCLGLInterop = TRUE;
 		    }
 		 } else {
 		    delete cldraw;
@@ -140,10 +146,16 @@ void InitContextCL(void)
 		  delete cldraw;
 		  cldraw = NULL;
 	       }
+	    } else {
+	      //bCLEnabled = FALSE;
+	      //bCLGLInterop = FALSE;
 	    }
-    }
-   bInitCL = TRUE;     
-
+     }
+   bInitCL = TRUE;
+   if(cldraw == NULL) {
+     bCLEnabled = FALSE;
+     bCLGLInterop = FALSE;
+   }
 #endif // _USE_OPENCL   
 }
 
@@ -261,6 +273,7 @@ PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
 PFNGLBINDBUFFERPROC glBindBuffer;
 PFNGLBUFFERDATAPROC glBufferData;
 PFNGLGENBUFFERSPROC glGenBuffers;
+PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 //#endif
 
 BOOL QueryGLExtensions(const char *str)
@@ -308,6 +321,8 @@ void InitGLExtensionVars(void)
     bGL_EXT_VERTEX_ARRAY = QueryGLExtensions("GL_EXT_vertex_array");
 //    bGL_PIXEL_UNPACK_BUFFER_BINDING = QueryGLExtensions("GL_pixel_unpack_buffer_binding");
     bGL_PIXEL_UNPACK_BUFFER_BINDING = TRUE;
+    bCLEnabled = FALSE;
+    bCLGLInterop = FALSE;
 }
 
    
@@ -335,6 +350,8 @@ void InitFBO(void)
        if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
        glGenBuffers = (PFNGLGENBUFFERSPROC)SDL_GL_GetProcAddress("glGenBuffers");
        if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)SDL_GL_GetProcAddress("glDeleteBuffers");
+       if(glDeleteBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
     } else { // glx, wgl
 #ifndef _WINDOWS
        glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)glXGetProcAddress((const GLubyte *)"glVertexPointerEXT");
@@ -349,6 +366,8 @@ void InitFBO(void)
        if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
        glGenBuffers = (PFNGLGENBUFFERSPROC)glXGetProcAddress((const GLubyte *)"glGenBuffers");
        if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
+       glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)glXGetProcAddress((const GLubyte *)"glDeleteBuffers");
+       if(glDeleteBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
 #else
        glVertexPointerEXT = (PFNGLVERTEXPOINTEREXTPROC)wglGetProcAddress("glVertexPointerEXT");
        if(glVertexPointerEXT == NULL) bGL_EXT_VERTEX_ARRAY = FALSE;
@@ -362,7 +381,8 @@ void InitFBO(void)
        if(glBufferData == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
        glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
        if(glGenBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
-
+       glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
+       if(glDeleteBuffers == NULL) bGL_PIXEL_UNPACK_BUFFER_BINDING = FALSE;
 #endif // _WINDOWS    
     }
    

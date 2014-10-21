@@ -7,12 +7,7 @@
 
 #include <SDL/SDL.h>
 #include <libintl.h>
-extern "C" {
 #include <agar/core.h>
-#include <agar/core/types.h>
-#include <agar/gui.h>
-#include <agar/gui/opengl.h>
-}
 #include "xm7.h"
 #include "sdl_cpuid.h"
 
@@ -28,9 +23,10 @@ extern "C" {
 #include "sdl_inifile.h"
 #include "agar_toolbox.h"
 #include "agar_cmd.h"
+#include "agar_glutil.h"
+
 #ifdef _USE_OPENCL
 #include "agar_glcl.h"
-extern class GLCLDraw *cldraw;
 #endif
 
 extern void OnPushCancel(AG_Event *event);
@@ -118,11 +114,13 @@ void OnAboutDialog(AG_Event *event)
 #ifdef USE_OPENGL   
        if(GLDrawArea != NULL) {
 #ifdef _USE_OPENCL
-	  if(cldraw != NULL) {	
-	     strcpy(string, "Render: OpenCL+OpenGL");
-	  } else {
+	 if((bCLEnabled) && (bCLGLInterop)) {	
+	     strcpy(string, "Render: OpenCL+OpenGL interoperability.");
+	 } else if(bCLEnabled == FALSE) {
 	     strcpy(string, "Render: OpenGL");
-	  }
+	 } else if(bCLEnabled != FALSE) {
+	     strcpy(string, "Render: OpenGL+OpenCL");
+	 }
 #else
 	  strcpy(string, "Render: OpenGL");
 #endif	  

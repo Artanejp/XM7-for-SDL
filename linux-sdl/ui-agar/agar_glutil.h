@@ -38,6 +38,8 @@ extern BOOL bGL_EXT_PACKED_PIXEL; // PackedPixelを使ってアップデート�
 extern BOOL bGL_EXT_VERTEX_ARRAY; // 頂点を配列化して描画を高速化
 extern BOOL bGL_EXT_PALETTED_TEXTURE; // パレットモード（更に別拡張)
 extern BOOL bGL_PIXEL_UNPACK_BUFFER_BINDING; // Pixel buffer
+extern BOOL bCLEnabled;
+extern BOOL bCLGLInterop;
 
 // FBO API
 extern PFNGLVERTEXPOINTEREXTPROC glVertexPointerEXT;
@@ -47,6 +49,7 @@ extern PFNGLTEXCOORDPOINTEREXTPROC glTexCoordPointerEXT;
 extern PFNGLBINDBUFFERPROC glBindBuffer;
 extern PFNGLBUFFERDATAPROC glBufferData;
 extern PFNGLGENBUFFERSPROC glGenBuffers;
+extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 #endif
    
 extern void InitFBO(void);

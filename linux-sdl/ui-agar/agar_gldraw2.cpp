@@ -96,7 +96,7 @@ static void drawGrids(void *pg,int w, int h)
 }
 
 
-static void drawUpdateTexture(Uint32 *p, int w, int h)
+static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 {
 //    LockVram();
    
@@ -109,7 +109,6 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
        int ww;
        int hh;
        int ofset;
-       BOOL crtflag = crt_flag;
 
 //       glPushAttrib(GL_TEXTURE_BIT);
        ww = w >> 3;
@@ -118,25 +117,24 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 #ifdef _USE_OPENCL
        if((SDLDrawFlag.Drawn == TRUE) &&
 	  (cldraw != NULL) &&
-	  bGL_PIXEL_UNPACK_BUFFER_BINDING) {
+	  (bCLEnabled)) {
 
 	  cl_int ret = CL_SUCCESS;
-
 	  LockVram();
 	  if(crtflag) {
 	     ret = cldraw->GetVram(bMode);
 	     glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-	  if(ret != CL_SUCCESS) {
-	     glBindTexture(GL_TEXTURE_2D, 0);
-	     UnlockVram();
-	     return;
-	  }
+	     if(ret != CL_SUCCESS) {
+		glBindTexture(GL_TEXTURE_2D, 0);
+		UnlockVram();
+		return;
+	     }
 	  }  
 	  
 	  
 	  SDLDrawFlag.Drawn = FALSE;
 	  if(crtflag) {
-	     if(cldraw->GetGLEnabled() != 0){
+	    if((cldraw != NULL) && (bCLGLInterop)){
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
 		// Copy pbo to texture 
 		glTexSubImage2D(GL_TEXTURE_2D, 
@@ -150,7 +148,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h)
 				NULL);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
-	     } else { // Not interoperability with GL
+	    } else if((cldraw != NULL) && (bCLEnabled)){ // Not interoperability with GL
 		Uint32 *p;
 		p = cldraw->GetPixelBuffer();
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
@@ -216,7 +214,7 @@ void AGEventDrawGL2(AG_Event *event)
    BOOL crtflag = crt_flag;
    
    p = pVram2;
-   if((p == NULL) && (cldraw == NULL)) return;
+   if((p == NULL) && (bCLEnabled == FALSE)) return;
      switch(bMode) {
         case SCR_400LINE:
             w = 640;
@@ -271,7 +269,8 @@ void AGEventDrawGL2(AG_Event *event)
     InitContextCL();   
 
     //if(!crtflag) printf("CRTFLAG disabled\n");
-    if(crtflag) drawUpdateTexture(p, w, h);
+    //if(crtflag) drawUpdateTexture(p, w, h);
+    drawUpdateTexture(p, w, h, crtflag);
    
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
