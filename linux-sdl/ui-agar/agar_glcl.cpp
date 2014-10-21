@@ -47,6 +47,7 @@ GLCLDraw::GLCLDraw()
    pixelBuffer = NULL;
    bModeOld = -1;
    TransferBuffer = malloc((640 * 200 * 18 + 2) * sizeof(Uint8));
+   
 }
 
 GLCLDraw::~GLCLDraw()
@@ -88,13 +89,29 @@ int GLCLDraw::GetGLEnabled(void)
 Uint32 *GLCLDraw::GetPixelBuffer(void)
 {
 #if 1
+   int w = w2;
+   int h = h2;
+   cl_int ret;
+   if(w == 320) {
+      if(h != 200) return NULL;
+   } else if(w == 640) {
+      if((h != 200) && (h != 400)) return NULL;
+   } else {
+      return NULL;
+   }
+	
+   ret = clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
+				w * h * sizeof(Uint32), (void *)pixelBuffer
+				, 1, &event_exec, &event_release);
+   if(ret < CL_SUCCESS) return NULL;
+   clFinish(command_queue);
    return pixelBuffer;
 #else   
     Uint32 *p;
     int ret = 0;
     p = (Uint32 *) clEnqueueMapBuffer(command_queue, outbuf, CL_TRUE, CL_MAP_READ,
 				       0, (size_t)(640 * 400 * sizeof(Uint32)),
-				       1, &event_exec, NULL, &ret);
+				       1, &event_exec, &event_release, &ret);
     if(ret < 0) return NULL;
     clFlush(command_queue);
     return p;
@@ -110,7 +127,7 @@ int GLCLDraw::ReleasePixelBuffer(Uint32 *p)
   if(p == NULL) return 0;
 //  clFlush(command_queue);
   ret |= clEnqueueUnmapMemObject(command_queue, outbuf,
-				 p, 0, NULL, NULL);
+				 p, 1, &event_release, NULL);
 //  clFlush(command_queue);
   return ret;
 #endif
@@ -422,8 +439,8 @@ cl_int GLCLDraw::GetVram(int bmode)
    cl_int ret = 0;
    cl_int r;
    cl_kernel *kernel = NULL;
-   int w;
-   int h;
+   int w = 0;
+   int h = 0;
    Uint8 *pr,*pg,*pb;
    size_t gws[] = {nCLGlobalWorkThreads}; // Parallel jobs.
    size_t lws[] = {1}; // local jobs.
@@ -535,7 +552,8 @@ cl_int GLCLDraw::GetVram(int bmode)
       }
       break;
    }
-
+   w2 = w;
+   h2 = h;
    if(bCLEnableKhrGLShare != 0) {
      glFlush();
      ret |= clEnqueueAcquireGLObjects (command_queue,
@@ -568,10 +586,6 @@ cl_int GLCLDraw::GetVram(int bmode)
 			     *kernel, 3, event_uploadvram, &event_exec);
        }
      }
-     ret |= clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
-				w * h * sizeof(Uint32), (void *)pixelBuffer
-				, 1, &event_exec, &event_release);
-     clFinish(command_queue);
    }
    return ret;
 }
@@ -675,12 +689,12 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
        return ret;
    }
  _fallback:
-#if 0
+#if 1
    pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
    outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR ,
 			   (size_t)(640 * 400 * sizeof(Uint32)), pixelBuffer, &r);
 #else
-   pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
+   //pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
    outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
 			   (size_t)(640 * 400 * sizeof(Uint32)), NULL, &r);
 #endif

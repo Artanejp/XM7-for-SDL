@@ -33,7 +33,6 @@ extern "C"{
 
 
 Uint32 nDrawTick1E;
-static BYTE oldBMode;
 static BOOL bManualScaled;
 
 extern BOOL   bResizeGUIFlag;
@@ -286,25 +285,22 @@ void AGDrawTaskMain(void)
 	if(nDrawTick1E > nDrawTick2E) {
 		nDrawTick1E = 0;
 	}
-	if(((nDrawTick2E - nDrawTick1E) < fps) && (bMode == oldBMode)) return;
+	if(((nDrawTick2E - nDrawTick1E) < fps) && SelectCheck()) return;
   
-	if(oldBMode != bMode) {
+	if(!SelectCheck()) {
 	   bClearFlag = TRUE;
-	   if(nRenderMethod == RENDERING_RASTER) {
-	      SDLDrawFlag.Drawn = TRUE;
-	      SetDirtyFlag(0, 400, TRUE);
+	   SelectDraw2();
+	   if((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
+	      //SetDirtyFlag(0, 400, TRUE);
 	   } else {
 	      SetDrawFlag(TRUE);
 	   }
 	}
    
         nDrawTick1E = nDrawTick2E;
-	oldBMode = bMode;
-        SelectDraw2();
-
 #ifdef _USE_OPENCL
         if(bCLEnabled) {
-#if 1
+#if 0
 	   if(SDLDrawFlag.APaletteChanged) {
 	      Palet320();
 	      SDLDrawFlag.APaletteChanged = FALSE;

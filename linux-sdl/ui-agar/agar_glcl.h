@@ -50,6 +50,8 @@ class GLCLDraw {
    const char *source = NULL;
    cl_program program = NULL;
  private:
+   int w2 = 0;
+   int h2 = 0;
    cl_event event_exec;
    cl_event event_uploadvram[4];
    cl_event event_copytotexture;

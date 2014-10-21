@@ -142,9 +142,9 @@ BOOL SelectDraw2(void)
    /*
     * 一致しているかチェック
     */
-   if (SelectCheck()) {
-      return TRUE;
-   }
+//   if (SelectCheck()) {
+//      return TRUE;
+//   }
 //		if(agDriverOps == NULL) return FALSE;
 #ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
