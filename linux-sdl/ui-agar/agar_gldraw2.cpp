@@ -109,21 +109,23 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
        int ww;
        int hh;
        int ofset;
-
-//       glPushAttrib(GL_TEXTURE_BIT);
+       BOOL flag;
+       int i;
+       //       glPushAttrib(GL_TEXTURE_BIT);
        ww = w >> 3;
        hh = h >> 3;
 
 #ifdef _USE_OPENCL
-       if((SDLDrawFlag.Drawn == TRUE) &&
-	  (cldraw != NULL) &&
-	  (bCLEnabled)) {
-
-	  cl_int ret = CL_SUCCESS;
+       if((cldraw != NULL) && (bCLEnabled)) {
+ 	  cl_int ret = CL_SUCCESS;
 	  LockVram();
-	  if(crtflag) {
-	     if(SDLDrawFlag.Drawn) {
-//		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	  flag = FALSE;
+	  for(i = 0; i < h; i++) {
+	    if(bDrawLine[i]) flag = TRUE;
+	  }
+	  if(crtflag){
+	    if((SDLDrawFlag.Drawn) || (flag)) {
+		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 		ret = cldraw->GetVram(bMode);
 	     }
 	     if(ret != CL_SUCCESS) {
@@ -134,9 +136,8 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 		return;
 	     }
 	  }
-	  
-	  
-	  if(crtflag && SDLDrawFlag.Drawn) {
+
+	  if(crtflag && ((SDLDrawFlag.Drawn) || flag)) {
 	    if((cldraw != NULL) && (bCLGLInterop)){
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
 	        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
@@ -172,7 +173,11 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
        } else {
 #endif
 	  LockVram();
-	  if((p != NULL) && (SDLDrawFlag.Drawn) ) {
+	  flag = FALSE;
+	  for(i = 0; i < h; i++) {
+	    if(bDrawLine[i]) flag = TRUE;
+	  }
+	  if((p != NULL) && ((SDLDrawFlag.Drawn) || (flag))) {
 	     if(crtflag != FALSE) {
 		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 		glTexSubImage2D(GL_TEXTURE_2D, 
