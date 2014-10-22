@@ -88,7 +88,7 @@ int GLCLDraw::GetGLEnabled(void)
 
 Uint32 *GLCLDraw::GetPixelBuffer(void)
 {
-#if 1
+#if 0
    int w = w2;
    int h = h2;
    cl_int ret;
@@ -120,7 +120,7 @@ Uint32 *GLCLDraw::GetPixelBuffer(void)
 
 int GLCLDraw::ReleasePixelBuffer(Uint32 *p)
 {
-#if 1
+#if 0
    return 0;
 #else
   int ret;
@@ -128,7 +128,7 @@ int GLCLDraw::ReleasePixelBuffer(Uint32 *p)
 //  clFlush(command_queue);
   ret |= clEnqueueUnmapMemObject(command_queue, outbuf,
 				 p, 1, &event_release, NULL);
-//  clFlush(command_queue);
+  clFinish(command_queue);
   return ret;
 #endif
 }
@@ -138,7 +138,7 @@ cl_int GLCLDraw::InitContext(void)
 {
    cl_int ret;
    size_t len;
-   char extension_data[256];
+   char extension_data[1024];
    size_t extension_len;
    int i;
    
@@ -153,7 +153,7 @@ cl_int GLCLDraw::InitContext(void)
 
    for(i = 0; i < ret_num_devices; i++ ){
      clGetDeviceInfo(device_id[i], CL_DEVICE_EXTENSIONS,
-		   255, extension_data, &extension_len);
+		   1024, extension_data, &extension_len);
      XM7_DebugLog(XM7_LOG_DEBUG, "CL Extension features(%d):%s", i, extension_data);
      if(strcasestr(extension_data, "cl_khr_gl_sharing") != NULL) {
        bCLEnableKhrGLShare = -1;
@@ -689,7 +689,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
        return ret;
    }
  _fallback:
-#if 1
+#if 0
    pixelBuffer = (Uint32 *)malloc(640 * 400 * sizeof(Uint32));
    outbuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR ,
 			   (size_t)(640 * 400 * sizeof(Uint32)), pixelBuffer, &r);

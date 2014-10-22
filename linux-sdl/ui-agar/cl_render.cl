@@ -4,8 +4,9 @@
 // History: Nov 01,2012 Initial.
 // License: Apache License 2.0
 
-
+#ifndef __ENDIAN_LITTLE__
 #define __ENDIAN_LITTLE__ 1
+#endif
 
 #if (__ENDIAN_LITTLE__==1)
 #define  rmask 0x000000ff

@@ -1051,9 +1051,17 @@ void 	display_notify(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    //bPaletFlag = TRUE;
+   if(SelectCheck()) {
+      SelectDraw2();
+   } else {
+      SDLDrawFlag.Drawn = TRUE;
+      UnlockVram();
+      return;
+   }
+      
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
 	//bNextFrameRender = TRUE;
-	SetDirtyFlag(0, 400, TRUE);
+	//SetDirtyFlag(0, 400, TRUE);
         if(bPaletFlag) {
 	  bPaletFlag = FALSE;
 	  if(bCLEnabled == FALSE) {
@@ -1061,7 +1069,6 @@ void 	display_notify(void)
 	    Palet320();
 	  }
 	}
-        if(SelectCheck()) SelectDraw2();
 #if 1
         if (!run_flag) {
 		raster = now_raster;
@@ -1127,6 +1134,7 @@ void FASTCALL vblankperiod_notify(void)
 		   _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 		   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 		   if((bCLEnabled) && (cldraw != NULL)) {
+		     LockVram();
 		     for(y = 0; y < ymax; y++) {
 		       if (bDirtyLine[y] && (bDrawLine[y] != TRUE)) {
 			 Transfer_1Line(cldraw->GetBufPtr(), y);
@@ -1134,6 +1142,7 @@ void FASTCALL vblankperiod_notify(void)
 		       }
 		     }
 		     SDLDrawFlag.Drawn = TRUE;
+		     UnlockVram();
 		   } else if(nRenderMethod == RENDERING_RASTER) {
 		     for(y = 0; y < ymax; y++) {
 		       if (bDirtyLine[y]) {
@@ -1337,12 +1346,14 @@ void FASTCALL hblank_notify(void)
    BOOL flag = FALSE;
            if((bCLEnabled) && (cldraw != NULL)){
 	     if(now_raster >= 400) return;
-	     if(bDirtyLine[now_raster]) {
+	      LockVram();
+	      if(bDirtyLine[now_raster]) {
 	       flag = TRUE;
 	       Transfer_1Line(cldraw->GetBufPtr(), now_raster);
 	       bDirtyLine[now_raster] = FALSE;
 	     }
 	     if(flag)  SDLDrawFlag.Drawn = TRUE;
+	     UnlockVram();
 	   } else if (nRenderMethod == RENDERING_RASTER) {
 //	   LockVram();
 	   if(now_raster >= 400) return;
