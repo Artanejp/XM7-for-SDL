@@ -38,6 +38,9 @@ extern Uint8 *vram_pg;
 }
 
 extern PFNGLBINDBUFFERPROC glBindBuffer;
+extern float fBrightR;
+extern float fBrightG;
+extern float fBrightB;
 
 
 
@@ -450,6 +453,13 @@ cl_int GLCLDraw::GetVram(int bmode)
    int dummy = 0;
    int vpage;
    int crtflag = crt_flag;
+   cl_float4 bright;
+
+   bright.s[0] = fBrightR; // R
+   bright.s[1] = fBrightG; // G
+   bright.s[2] = fBrightB; // B
+   bright.s[3] = 1.0; // A
+ 
    
    bModeOld = bmode;
    if(inbuf == NULL) return -1;
@@ -488,6 +498,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(int), (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(int), (void *)&crtflag);
 	 ret |= clSetKernelArg(*kernel, 8, sizeof(int), (void *)&vpage);
+	 ret |= clSetKernelArg(*kernel, 9, sizeof(cl_float4), (void *)&bright);
       }
       break;
     case SCR_262144:// Windowはなし
@@ -513,6 +524,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_uint), (void *)&mpage);
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
+	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
       }
       break;
     case SCR_4096:
@@ -544,6 +556,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
 	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_uint), (void *)&mpage);
+	 ret |= clSetKernelArg(*kernel, 9, sizeof(cl_float4), (void *)&bright);
       //clFinish(command_queue);
 	 clFlush(command_queue);
       }

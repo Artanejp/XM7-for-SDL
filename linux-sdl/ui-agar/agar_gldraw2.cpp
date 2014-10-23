@@ -63,6 +63,7 @@ void SetBrightRGB_AG_GL2(float r, float g, float b)
    fBrightR = r;
    fBrightG = g;
    fBrightB = b;
+   SDLDrawFlag.Drawn = TRUE; // Force draw.
 }
 
 
@@ -354,10 +355,12 @@ void AGEventDrawGL2(AG_Event *event)
     glDisable(GL_DEPTH_TEST);
 
 //    if(crtflag) {
+    if(bCLEnabled == FALSE){
        glEnable(GL_BLEND);
    
        glColor3f(fBrightR , fBrightG, fBrightB);
        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+    
        //    glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
        if(bGL_EXT_VERTEX_ARRAY) {
 	  glEnable(GL_VERTEX_ARRAY_EXT);
@@ -376,7 +379,7 @@ void AGEventDrawGL2(AG_Event *event)
        glBlendFunc(GL_ONE, GL_ZERO);
    
        glDisable(GL_BLEND);
-   
+    }
        glDisable(GL_TEXTURE_2D);
        glDisable(GL_DEPTH_TEST);
        if((glv->wid.rView.h >= (h * 2)) && (bFullScan == 0)) {
