@@ -16,15 +16,12 @@
 
 extern "C" {
     AG_GLView *GLDrawArea;
-#ifdef _USE_OPENCL
-   extern BOOL bUseOpenCL;
     BOOL bInitCL = FALSE;
     BOOL bCLEnabled = FALSE;
     BOOL bCLGLInterop = FALSE;
     int nCLGlobalWorkThreads = 10;
     BOOL bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.
-    //BOOL bCLDirectMapping = FALSE;
-#endif
+   extern BOOL bUseOpenCL;
 }
 
 GLfloat GridVertexs200l[202 * 6];
@@ -113,9 +110,12 @@ void DiscardTexture(GLuint tid)
 
 void InitContextCL(void)
 {
-      if(GLDrawArea == NULL) return; // Context not created yet.
+  if(GLDrawArea == NULL) return; // Context not created yet.
+  if(bInitCL == TRUE) return; // CL already initialized.
+
 #ifdef _USE_OPENCL
-     if(bInitCL == TRUE) return; // CL already initialized.
+     bCLEnabled = FALSE;
+     bCLGLInterop = FALSE;
      if(bUseOpenCL && (cldraw == NULL) && 
 	bGL_PIXEL_UNPACK_BUFFER_BINDING) {
 	    cl_int r;
@@ -124,8 +124,6 @@ void InitContextCL(void)
 	       r = cldraw->InitContext();
 	       XM7_DebugLog(XM7_LOG_DEBUG, "CL: Create CTX: STS = %d", r);
 	       if(r == CL_SUCCESS){
-		 bCLEnabled = TRUE;
-		 bCLGLInterop = FALSE;
 		 XM7_DebugLog(XM7_LOG_DEBUG,"CL: GLCTX=%08x", glXGetCurrentContext());
 		 r = cldraw->BuildFromSource(cl_render);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
@@ -137,6 +135,13 @@ void InitContextCL(void)
 		       cldraw = NULL;
 		    } else if(cldraw->GetGLEnabled() != 0) {
 		      bCLGLInterop = TRUE;
+		      bCLEnabled = TRUE;
+		    } else {
+		      /*
+		       *
+		       */
+		      bCLGLInterop = FALSE;
+		      bCLEnabled = TRUE;
 		    }
 		 } else {
 		    delete cldraw;
@@ -146,17 +151,13 @@ void InitContextCL(void)
 		  delete cldraw;
 		  cldraw = NULL;
 	       }
-	    } else {
-	      //bCLEnabled = FALSE;
-	      //bCLGLInterop = FALSE;
 	    }
      }
-   bInitCL = TRUE;
-   if(cldraw == NULL) {
+#else
      bCLEnabled = FALSE;
      bCLGLInterop = FALSE;
-   }
 #endif // _USE_OPENCL   
+     bInitCL = TRUE;
 }
 
 

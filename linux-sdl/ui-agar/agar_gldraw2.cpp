@@ -165,9 +165,9 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 		cldraw->ReleasePixelBuffer(p);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	        glFinish();
-	     }
-	     SDLDrawFlag.Drawn = FALSE;
-	     bPaletFlag = FALSE;
+	    }
+	    SDLDrawFlag.Drawn = FALSE;
+	    bPaletFlag = FALSE;
 	  } 
 	  UnlockVram();
        } else {

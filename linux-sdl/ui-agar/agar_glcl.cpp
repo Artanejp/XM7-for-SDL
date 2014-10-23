@@ -210,10 +210,11 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     ret = clBuildProgram(program, 1, device_id, NULL, NULL, NULL);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
+      cl_int r;
        logBuf = (char *)malloc(LOGSIZE * sizeof(char));
        memset(logBuf, 0x00, LOGSIZE * sizeof(char));
        
-       ret = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
+       r = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
 				   LOGSIZE - 1, (void *)logBuf, NULL);
        if(logBuf != NULL) XM7_DebugLog(XM7_LOG_INFO, "Build Log:\n%s", logBuf);
        free(logBuf);
@@ -664,6 +665,11 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    // Texture直接からPBO使用に変更 20121102
    if((bCLEnableKhrGLShare != 0) && (bGL_PIXEL_UNPACK_BUFFER_BINDING != FALSE)){
        glGenBuffers(1, &pbo);
+       if(pbo < 0) {
+	 bCLEnableKhrGLShare = FALSE;
+	 goto _fallback;
+       }
+
        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
        glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
        //    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);

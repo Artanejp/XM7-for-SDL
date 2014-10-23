@@ -66,6 +66,7 @@ void clearscreen(int w,  __global uint8 *out)
    }
 }
 
+
 __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
                        __global uchar *pal, __global uint8 *table,
 		       int multithread, int crtflag, uint vpage)
