@@ -21,7 +21,10 @@ extern "C" {
     BOOL bCLGLInterop = FALSE;
     int nCLGlobalWorkThreads = 10;
     BOOL bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.
-   extern BOOL bUseOpenCL;
+    int nCLPlatformNum;
+    int nCLDeviceNum;
+    BOOL bCLInteropGL;
+    extern BOOL bUseOpenCL;
 }
 
 GLfloat GridVertexs200l[202 * 6];
@@ -121,7 +124,7 @@ void InitContextCL(void)
 	    cl_int r;
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
-	      r = cldraw->InitContext(0, 0, TRUE);
+	      r = cldraw->InitContext(nCLPlatformNum, nCLDeviceNum, bCLInteropGL);
 	       if(r == CL_SUCCESS){
 		 r = cldraw->BuildFromSource(cl_render);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
@@ -232,6 +235,9 @@ void InitGL_AG2(int w, int h)
         bInitCL = FALSE;
         nCLGlobalWorkThreads = 10;
         bCLSparse = FALSE; // TRUE=Multi threaded CL,FALSE = Single Thread.
+	nCLPlatformNum = 0;
+	nCLDeviceNum = 0;
+	bCLInteropGL = FALSE;
         //bCLDirectMapping = FALSE;
 #endif
 	InitVirtualVram();

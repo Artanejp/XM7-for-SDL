@@ -203,13 +203,14 @@ cl_int GLCLDraw::InitContext(int platformnum, int processornum, int GLinterop)
    properties = malloc(16 * sizeof(intptr_t));
    ret = clGetPlatformIDs(8, platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
-   
+
    if(ret_num_platforms <= 0) return CL_INVALID_PLATFORM;
-   if(platformnum >= ret_num_platforms) platformnum = ret_num_platforms - 1;
-   if(platformnum <= 0) platformnum = 0;
-   ret = clGetDeviceIDs(platform_id[platformnum], CL_DEVICE_TYPE_ALL, 8, device_id,
+
+   platform_num = platformnum;
+   if(platform_num >= ret_num_platforms) platform_num = ret_num_platforms - 1;
+   if(platform_num <= 0) platform_num = 0;
+   ret = clGetDeviceIDs(platform_id[platform_num], CL_DEVICE_TYPE_ALL, 8, device_id,
                             &ret_num_devices);
-   
    if(ret != CL_SUCCESS) return ret;
    if(ret_num_devices <= 0) {
      XM7_DebugLog(XM7_LOG_DEBUG, "CL : Has no useful device(s).");
@@ -260,15 +261,14 @@ cl_int GLCLDraw::InitContext(int platformnum, int processornum, int GLinterop)
      XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Context = %08x", glXGetCurrentContext());
      properties[2] = CL_GLX_DISPLAY_KHR;
      properties[3] = (cl_context_properties)glXGetCurrentDisplay();
-     properties[4] = 0;
      XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Display = %08x", glXGetCurrentDisplay());
-     //properties[4] = CL_CONTEXT_PLATFORM;
-     //properties[5] = (cl_context_properties)platform_id;
-     //properties[6] = 0;
+     properties[4] = CL_CONTEXT_PLATFORM;
+     properties[5] = (cl_context_properties)platform_id[platform_num];
+     properties[6] = 0;
    } else {
      XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Interoperability disabled.");
      properties[0] = CL_CONTEXT_PLATFORM;
-     properties[1] = (cl_context_properties)platform_id;
+     properties[1] = (cl_context_properties)platform_id[platform_num];
      properties[2] = 0;
    }
 //   if(device_id == NULL) return -1;

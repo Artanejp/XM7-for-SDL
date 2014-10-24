@@ -57,7 +57,15 @@ extern void SetBrightRGB_AG_GL2(float r, float g, float b);
  */
 //extern float fBright0;
 #ifdef _USE_OPENCL
-extern BOOL bUseOpenCL;
+extern "C" {
+  extern int nCLGlobalWorkThreads;
+  extern BOOL bCLSparse; // TRUE=Multi threaded CL,FALSE = Single Thread.
+  extern int nCLPlatformNum;
+  extern int nCLDeviceNum;
+  extern BOOL bCLInteropGL;
+}
+  extern BOOL bUseOpenCL;
+
 #endif
 extern BOOL bUseSIMD;
 /*
@@ -512,6 +520,13 @@ void LoadCfg(void)
        configdat.nCLGlobalWorkThreads = LoadCfgInt("GWS", 10);
        if(configdat.nCLGlobalWorkThreads <= 0) configdat.nCLGlobalWorkThreads = 1; 
        if(configdat.nCLGlobalWorkThreads >= 256) configdat.nCLGlobalWorkThreads = 255;
+       configdat.nCLPlatformNum = LoadCfgInt("CLPlatformNum", 0);
+       if(configdat.nCLPlatformNum <  0) configdat.nCLPlatformNum = 0; 
+       if(configdat.nCLPlatformNum >= 8) configdat.nCLPlatformNum = 7;
+       configdat.nCLDeviceNum   = LoadCfgInt("CLDeviceNum", 0);
+       if(configdat.nCLDeviceNum <  0) configdat.nCLDeviceNum = 0; 
+       if(configdat.nCLDeviceNum >= 8) configdat.nCLDeviceNum = 7;
+       configdat.bCLInteropGL   = LoadCfgBool("CLInteropGL", FALSE);
        /*
 	* Scheduler
 	*/
@@ -722,6 +737,9 @@ void SaveCfg(void)
     SetCfgSection("OPENCL");
     SaveCfgBool("CLSparse", configdat.bCLSparse);
     SaveCfgInt("GWS", configdat.nCLGlobalWorkThreads);
+    SaveCfgInt("CLPlatformNum", configdat.nCLPlatformNum);
+    SaveCfgInt("CLDeviceNum",   configdat.nCLDeviceNum);
+    SaveCfgBool("CLInteropGL", configdat.bCLInteropGL);
 
     /*
      * Scheduler
@@ -871,6 +889,9 @@ void ApplyCfg(void)
 #ifdef _USE_OPENCL
     bCLSparse = configdat.bCLSparse;
     nCLGlobalWorkThreads = configdat.nCLGlobalWorkThreads;
+    nCLPlatformNum = configdat.nCLPlatformNum;
+    nCLDeviceNum = configdat.nCLDeviceNum;
+    bCLInteropGL = configdat.bCLInteropGL;
 #endif
    /*
     * Scheduler

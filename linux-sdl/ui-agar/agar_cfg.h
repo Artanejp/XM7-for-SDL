@@ -137,6 +137,9 @@ typedef struct {
         /* OpenCL */
         int nCLGlobalWorkThreads;
         BOOL bCLSparse; // TRUE=Multi threaded CL,FALSE = Single Thread.
+        int nCLPlatformNum;
+        int nCLDeviceNum;
+        BOOL bCLInteropGL;
         /* Scheduler */
         BOOL  bHiresTick;               /* Hi resolution 1ms timer */
         DWORD nTickResUs;               /* Wait value for Hi-Resolution tick */
@@ -188,6 +191,10 @@ struct gui_disp {
         /* OpenCL */
         int  nCLGlobalWorkThreads;
         BOOL bCLSparse; // TRUE=Multi threaded CL,FALSE = Single Thread.
+        int nCLPlatformNum;
+        int nCLDeviceNum;
+        BOOL bCLInteropGL;
+        char *sDeviceName[9];
 #endif
 };
 

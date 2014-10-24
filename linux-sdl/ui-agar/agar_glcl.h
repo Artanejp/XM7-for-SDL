@@ -52,6 +52,7 @@ class GLCLDraw {
    cl_program program = NULL;
    cl_int ret_num_devices;
    cl_int ret_num_platforms;
+   cl_int platform_num = 0;
    cl_platform_id platform_id[8];
    cl_device_id device_id[8];
 

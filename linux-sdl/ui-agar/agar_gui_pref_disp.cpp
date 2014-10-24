@@ -117,6 +117,7 @@ static void OnConfigApplyDisp(AG_Event *event)
         int ver;
 	AG_Button *self = (AG_Button *)AG_SELF();
 	struct gui_disp *cfg = (struct gui_disp *)AG_PTR(1);
+	int i;
 
 	LockVM();
 	if(cfg != NULL){
@@ -134,6 +135,12 @@ static void OnConfigApplyDisp(AG_Event *event)
 	  configdat.bUseOpenCL = cfg->bUseOpenCL;
 	  configdat.nCLGlobalWorkThreads = cfg->nCLGlobalWorkThreads;
 	  configdat.bCLSparse = cfg->bCLSparse; 
+	  configdat.nCLDeviceNum = cfg->nCLDeviceNum;
+	  configdat.nCLPlatformNum = cfg->nCLPlatformNum;
+	  configdat.bCLInteropGL = cfg->bCLInteropGL;
+	  for(i = 0; i < 8; i++) {
+	    if(cfg->sDeviceName[i] != NULL) free(cfg->sDeviceName[i]);
+	  }
 #endif
 	  free(cfg);
 	}
@@ -312,6 +319,7 @@ void OnConfigDisplayMenu(AG_Event *event)
 	AG_Box *box;
 	AG_Button *btn;
         struct gui_disp *cfg;
+	int i;
    
         cfg = (struct gui_disp *)malloc(sizeof(struct gui_disp));
         if(cfg == NULL) return;
@@ -330,7 +338,16 @@ void OnConfigDisplayMenu(AG_Event *event)
 #ifdef _USE_OPENCL
 	  cfg->bUseOpenCL = configdat.bUseOpenCL;
 	  cfg->nCLGlobalWorkThreads = configdat.nCLGlobalWorkThreads;
-	  cfg->bCLSparse = configdat.bCLSparse; 
+	  cfg->bCLSparse = configdat.bCLSparse;
+	  cfg->nCLDeviceNum = configdat.nCLDeviceNum;
+	  cfg->nCLPlatformNum = configdat.nCLPlatformNum;
+	  cfg->bCLInteropGL = configdat.bCLInteropGL;
+	  for(i = 0; i < 8; i++) {
+	    cfg->sDeviceName[i] = malloc(96 * sizeof(char));
+	    cfg->sDeviceName[i][0] = '\0';
+	  }
+	  cfg->sDeviceName[8] = NULL;
+
 #endif
 	  UnlockVM();
 	}
