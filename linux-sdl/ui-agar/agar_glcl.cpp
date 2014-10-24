@@ -196,11 +196,32 @@ cl_int GLCLDraw::InitContext(void)
 }
 
 
+static CL_CALLBACK GLCLDraw::LogProgramExecute(cl_program program, void *userdata)
+{
+  char *logBuf;
+  size_t length;
+  cl_int r;
+  cl_device_id *device_id = (cl_device_id *)userdata;
+
+  logBuf = (char *)malloc(LOGSIZE * sizeof(char));
+  if(logBuf == NULL) return;
+  logBuf[0] = '\0';
+  r = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
+				   LOGSIZE - 1, (void *)logBuf, &length);
+  if((length > 0) && (length <= LOGSIZE)){
+    logBuf[length] = '\0';
+    if(strlen(logBuf) > 0) XM7_DebugLog(XM7_LOG_INFO, "CL:Build Log:%s", logBuf);
+  }
+  free(logBuf);
+  return;
+}
+
 cl_int GLCLDraw::BuildFromSource(const char *p)
 {
     cl_int ret;
     size_t codeSize;
     char *logBuf;
+    void *user = NULL;
    
     codeSize = strlen(p);
     program = clCreateProgramWithSource(context, 1, (const char **)&p,
@@ -210,18 +231,11 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
       return ret;
     }
     // Compile from source
-    ret = clBuildProgram(program, 1, device_id, NULL, NULL, NULL);
+    ret = clBuildProgram(program, 1, device_id, "-cl-std=CL1.1 -cl-fast-relaxed-math", LogProgramExecute, device_id);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
-      cl_int r;
-       logBuf = (char *)malloc(LOGSIZE * sizeof(char));
-       memset(logBuf, 0x00, LOGSIZE * sizeof(char));
-       
-       r = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
-				   LOGSIZE - 1, (void *)logBuf, NULL);
-       if(logBuf != NULL) XM7_DebugLog(XM7_LOG_INFO, "Build Log:\n%s", logBuf);
-       free(logBuf);
-       return ret;
+      clReleaseProgram(program);
+      return ret;
     }
     ret = clCreateKernelsInProgram(program, sizeof(kernels_array) / sizeof(cl_kernel),
 				   kernels_array, &nkernels);
