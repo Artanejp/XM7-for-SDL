@@ -153,7 +153,11 @@ cl_int GLCLDraw::InitContext(void)
                             &ret_num_devices);
    
    if(ret != CL_SUCCESS) return ret;
-
+   if(ret_num_devices <= 0) {
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL: Has no useful device(s).");
+     return ret;
+   }
+   if(ret_num_devices > 8) ret_num_devices = 8;
    for(i = 0; i < ret_num_devices; i++ ){
      clGetDeviceInfo(device_id[i], CL_DEVICE_EXTENSIONS,
 		   1024, extension_data, &extension_len);
@@ -184,10 +188,11 @@ cl_int GLCLDraw::InitContext(void)
    }
 //   if(device_id == NULL) return -1;
    
-   context = clCreateContext(properties, 1, device_id, cl_notify_log, NULL, &ret);
+   if(using_device >= ret_num_devices) using_device = ret_num_devices - 1;
+   context = clCreateContext(properties, 1, &device_id[using_device], cl_notify_log, NULL, &ret);
    if(ret != CL_SUCCESS) return ret;
        
-   command_queue = clCreateCommandQueue(context, device_id[0],
+   command_queue = clCreateCommandQueue(context, device_id[using_device],
                                          CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
 //   command_queue = clCreateCommandQueue(context, device_id[0],
 //                                         0, &ret);
@@ -206,7 +211,7 @@ static CL_CALLBACK GLCLDraw::LogProgramExecute(cl_program program, void *userdat
   logBuf = (char *)malloc(LOGSIZE * sizeof(char));
   if(logBuf == NULL) return;
   logBuf[0] = '\0';
-  r = clGetProgramBuildInfo(program, device_id[0], CL_PROGRAM_BUILD_LOG, 
+  r = clGetProgramBuildInfo(program, *device_id, CL_PROGRAM_BUILD_LOG, 
 				   LOGSIZE - 1, (void *)logBuf, &length);
   if((length > 0) && (length <= LOGSIZE)){
     logBuf[length] = '\0';
@@ -221,7 +226,9 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     cl_int ret;
     size_t codeSize;
     char *logBuf;
-    void *user = NULL;
+    char compile_options[2048];
+    cl_bool endian_little;
+    compile_options[0] = '\0';
    
     codeSize = strlen(p);
     program = clCreateProgramWithSource(context, 1, (const char **)&p,
@@ -230,11 +237,25 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     if(ret < CL_SUCCESS) {
       return ret;
     }
+
+
     // Compile from source
-    ret = clBuildProgram(program, 1, device_id, "-cl-std=CL1.1 -cl-fast-relaxed-math", LogProgramExecute, device_id);
+    strncat(compile_options, "-cl-fast-relaxed-math ", sizeof(compile_options) - 1);
+    if(clGetDeviceInfo(device_id[using_device], CL_DEVICE_ENDIAN_LITTLE,
+		       sizeof(cl_bool), &endian_little, NULL) == CL_SUCCESS){
+      if(endian_little == CL_TRUE) {
+	strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=1 ", sizeof(compile_options) - 1);
+      } else {
+	strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=0 ", sizeof(compile_options) - 1); // Big endian
+      }
+    } else {
+      strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=1 ", sizeof(compile_options) - 1); // Assume little endian
+    }
+
+    ret = clBuildProgram(program, 1, &device_id[using_device], compile_options, LogProgramExecute, &device_id[using_device]);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
-      clReleaseProgram(program);
+      //      clReleaseProgram(program);
       return ret;
     }
     ret = clCreateKernelsInProgram(program, sizeof(kernels_array) / sizeof(cl_kernel),

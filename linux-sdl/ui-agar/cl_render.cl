@@ -4,11 +4,8 @@
 // History: Nov 01,2012 Initial.
 // License: Apache License 2.0
 
-#ifndef __ENDIAN_LITTLE__
-#define __ENDIAN_LITTLE__ 1
-#endif
 
-#if (__ENDIAN_LITTLE__==1)
+#if (_CL_KERNEL_LITTLE_ENDIAN==1)
 #define  rmask 0x000000ff
 #define  gmask 0x0000ff00
 #define  bmask 0x00ff0000
@@ -460,11 +457,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	    b8 =  tbl8[b0] | tbl8[b1] | tbl8[b2] | tbl8[b3] | tbl8[b4] | tbl8[b5];
 	    b8 <<= 2;
 	    b8 = ((b8 * bright_b8) >> 8) & mask8;
-#if (__ENDIAN_LITTLE__==1)
-            b8 <<= 16;
-#else
-            b8 <<= 8;
-#endif
+            b8 <<= bshift;
 	}
 	if(rdraw) {
 	    r5 = (uint)(r[0     ]) + 0x500;
@@ -476,11 +469,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	    r8 =  tbl8[r0] | tbl8[r1] | tbl8[r2] | tbl8[r3] | tbl8[r4] | tbl8[r5];
 	    r8 <<= 2;
 	    r8 = ((r8 * bright_r8) >> 8) & mask8;
-#if (__ENDIAN_LITTLE__==1)
-            r8 <<= 0; // 6bit -> 8bit
-#else
-            r8 <<= 24; // 6bit -> 8bit
-#endif
+            r8 <<= rshift; // 6bit -> 8bit
 	}
 	if(gdraw) {
 	    g5 = (uint)(g[0     ]) + 0x500;
@@ -492,11 +481,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
 	    g8 =  tbl8[g0] | tbl8[g1] | tbl8[g2] | tbl8[g3] | tbl8[g4] | tbl8[g5];
 	    g8 <<= 2;
 	    g8 = ((g8 * bright_g8) >> 8) & mask8;
-#if (__ENDIAN_LITTLE__==1)
-            g8 <<= 8; // 6bit -> 8bit
-#else
-            g8 <<= 16; // 6bit -> 8bit
-#endif
+            g8 <<= gshift; // 6bit -> 8bit
 	}
 	cv = b8 | r8 | g8 | bright_a8;
 	*p8++ = cv;
