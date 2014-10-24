@@ -200,26 +200,34 @@ cl_int GLCLDraw::InitContext(void)
    return ret;
 }
 
-
-static CL_CALLBACK GLCLDraw::LogProgramExecute(cl_program program, void *userdata)
+static void CL_LogProgramExecute(cl_program program, void *userdata)
 {
   char *logBuf;
   size_t length;
   cl_int r;
-  cl_device_id *device_id = (cl_device_id *)userdata;
+  cl_int n;
+  cl_int num;
+  cl_device_id *devid;
+  class GLCLDraw *t = (class GLCLDraw *)userdata;
 
   logBuf = (char *)malloc(LOGSIZE * sizeof(char));
-  if(logBuf == NULL) return;
-  logBuf[0] = '\0';
-  r = clGetProgramBuildInfo(program, *device_id, CL_PROGRAM_BUILD_LOG, 
-				   LOGSIZE - 1, (void *)logBuf, &length);
-  if((length > 0) && (length <= LOGSIZE)){
-    logBuf[length] = '\0';
-    if(strlen(logBuf) > 0) XM7_DebugLog(XM7_LOG_INFO, "CL:Build Log:%s", logBuf);
+  if((logBuf == NULL) || (t == NULL))return;
+  num = t->ret_num_devices;
+  devid = t->device_id;
+  //  printf("DBG: %08x %d\n", t, num);
+  for(n = 0; n < num; n++) {
+    logBuf[0] = '\0';
+    r = clGetProgramBuildInfo(program, devid[n],  CL_PROGRAM_BUILD_LOG, 
+			      LOGSIZE - 1, (void *)logBuf, &length);
+    if((length > 0) && (length <= LOGSIZE)){
+      logBuf[length] = '\0';
+      if(strlen(logBuf) > 0) XM7_DebugLog(XM7_LOG_INFO, "CL :Build Log of Device #%d:%s", n, logBuf);
+    }
   }
   free(logBuf);
   return;
 }
+
 
 cl_int GLCLDraw::BuildFromSource(const char *p)
 {
@@ -251,8 +259,9 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     } else {
       strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=1 ", sizeof(compile_options) - 1); // Assume little endian
     }
-
-    ret = clBuildProgram(program, 1, &device_id[using_device], compile_options, LogProgramExecute, &device_id[using_device]);
+    build_callback = CL_LogProgramExecute;
+    ret = clBuildProgram(program, ret_num_devices, device_id, compile_options,
+			 build_callback, (void *)this);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.
       //      clReleaseProgram(program);

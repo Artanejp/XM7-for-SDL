@@ -40,9 +40,9 @@ class GLCLDraw {
    Uint8 *GetBufPtr(void);
 
    cl_platform_id platform_id = NULL;
-   cl_uint ret_num_platforms;
+   cl_int ret_num_platforms;
    cl_device_id device_id[8];
-   cl_uint ret_num_devices;
+   cl_int ret_num_devices;
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;
 
@@ -50,7 +50,8 @@ class GLCLDraw {
    const char *source = NULL;
    cl_program program = NULL;
  private:
-   static CL_CALLBACK LogProgramExecute(cl_program program, void *userdata);
+   CL_CALLBACK LogProgramExecute(cl_program program, void *userdata);
+   CL_CALLBACK (*build_callback)(cl_program, void *);
    int w2 = 0;
    int h2 = 0;
    cl_event event_exec;
