@@ -60,6 +60,7 @@ class GLCLDraw {
    cl_kernel *kernel_8colors = NULL;
    cl_kernel *kernel_4096colors = NULL;
    cl_kernel *kernel_256kcolors = NULL;
+   cl_kernel *kernel_table = NULL;
    cl_uint nkernels;
 
    cl_mem inbuf = NULL;

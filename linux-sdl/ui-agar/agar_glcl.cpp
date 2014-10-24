@@ -240,6 +240,7 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
 	  if((strncmp(funcname, "getvram8", strlen("getvram8")) == 0) && (kernel_8colors == NULL)) kernel_8colors = &kernels_array[i];
 	  if((strncmp(funcname, "getvram4096", strlen("getvram4096")) == 0) && (kernel_4096colors == NULL)) kernel_4096colors = &kernels_array[i];
 	  if((strncmp(funcname, "getvram256k", strlen("getvram256k")) == 0) && (kernel_256kcolors == NULL)) kernel_256kcolors = &kernels_array[i];
+	  if((strncmp(funcname, "CreateTable", strlen("CreateTable")) == 0) && (kernel_table == NULL)) kernel_table = &kernels_array[i];
 	}
       }
     }
@@ -603,50 +604,19 @@ cl_int GLCLDraw::GetVram(int bmode)
 
 cl_int GLCLDraw::SetupTable(void)
 {
-   cl_int r = 0;
-   unsigned int i;
-   unsigned int j;
-   cl_uint *tbl;
-   cl_uint v[8];
-  
-   tbl = (cl_uint *)malloc(0x100 * 8 * 20 * sizeof(cl_uint));
-    for(j = 0; j < 256; j++) {
-       v[0] = (j & 0x80) >> 7;
-       v[1] = (j & 0x40) >> 6;
-       v[2] = (j & 0x20) >> 5;
-       v[3] = (j & 0x10) >> 4;
-       v[4] = (j & 0x08) >> 3;
-       v[5] = (j & 0x04) >> 2;
-       v[6] = (j & 0x02) >> 1;
-       v[7] = (j & 0x01);
-       for(i = 0; i < 20 ; i++) {
-	  tbl[i * 0x800 + j * 8 + 0] = v[0]; 
-	  tbl[i * 0x800 + j * 8 + 1] = v[1]; 
-	  tbl[i * 0x800 + j * 8 + 2] = v[2]; 
-	  tbl[i * 0x800 + j * 8 + 3] = v[3]; 
-	  tbl[i * 0x800 + j * 8 + 4] = v[4]; 
-	  tbl[i * 0x800 + j * 8 + 5] = v[5]; 
-	  tbl[i * 0x800 + j * 8 + 6] = v[6]; 
-	  tbl[i * 0x800 + j * 8 + 7] = v[7];
-	  v[0] = v[0] << 1;
-	  v[1] = v[1] << 1;
-	  v[2] = v[2] << 1;
-	  v[3] = v[3] << 1;
-	  v[4] = v[4] << 1;
-	  v[5] = v[5] << 1;
-	  v[6] = v[6] << 1;
-	  v[7] = v[7] << 1;
-       }
-    }
-    if(table != NULL) {
-      cl_event tbl_ev;
-      r |= clEnqueueWriteBuffer(command_queue, table, CL_TRUE, 0,
-                              0x100 * 8 * 20 * sizeof(cl_uint), (void *)tbl
-                              , 0, NULL, &tbl_ev);
-       clFinish(command_queue);
+   cl_int r = CL_INVALID_KERNEL;
+   cl_uint pages;
+   cl_event tbl_ev;
+   pages = 12;
 
+   if(kernel_table != NULL) {
+     r = 0;
+      r |= clSetKernelArg(*kernel_table, 0, sizeof(cl_mem),     (void *)&table);
+      r |= clSetKernelArg(*kernel_table, 1, sizeof(cl_uint),    (void *)&pages);
+      r |= clEnqueueTask(command_queue,
+			     *kernel_table, 0, NULL, NULL);
+      clFinish(command_queue);
     }
-   free(tbl);
    return r;
 }
 
@@ -670,8 +640,8 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette : %d", r);
 
 
-   table = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
- 		  (size_t)(0x100 * 8 * 20 * sizeof(cl_uint)), NULL, &r);
+   table = clCreateBuffer(context, CL_MEM_READ_WRITE | 0,
+ 		  (size_t)(0x100 * 8 * 12 * sizeof(cl_uint)), NULL, &r);
    ret |= r;
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: table : %d", r);
 

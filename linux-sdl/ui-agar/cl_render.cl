@@ -48,6 +48,28 @@ uchar4 ttlpalet2rgb(__global uchar *pal, uint index)
 }
 
 
+__kernel void CreateTable(__global uint8 *table, int pages)
+{
+  int i;
+  int j;
+  uint8 v;
+  for(j = 0; j < 256; j++) {
+     v.s0 = (j & 0x80) >> 7;
+     v.s1 = (j & 0x40) >> 6;
+     v.s2 = (j & 0x20) >> 5;
+     v.s3 = (j & 0x10) >> 4;
+     v.s4 = (j & 0x08) >> 3;
+     v.s5 = (j & 0x04) >> 2;
+     v.s6 = (j & 0x02) >> 1;
+     v.s7 = j & 0x01;
+     for(i = 0; i < pages; i++) {
+       table[i * 256 + j] = v;
+       v <<= 1;
+     }
+  }
+}
+
+
 void setup_ttlpalette(__global uchar *pal, __local uint *palette, float4 bright, uint vpage)
 {
    int i;
@@ -274,6 +296,13 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
     if(rr > 4096) rr = 4096;
     for(i = q; i < rr; i++) palette[i] = get_apalette(pal, i & mask, bright); // Prefetch palette
 
+    t = (4 * 256) / get_local_size(0);
+    q = t * lid;
+    rr = q + t;
+    if(q > (4 * 256)) q = 4 * 256;
+    if(rr > (4 * 256)) rr = 4 * 256;
+    for(i = q; i < rr; i++) tbl8[i] = table[i]; // Prefetch table
+
     barrier(CLK_LOCAL_MEM_FENCE);
 
     b = src;
@@ -294,7 +323,6 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	
 	r8 =  tbl8[r0] | tbl8[r1] | tbl8[r2] | tbl8[r3];
 
-	
 	g3 = (uint)(g[0x0   ]) + 0xb00;
 	g2 = (uint)(g[0x2000]) + 0xa00;
 	g1 = (uint)(g[0x4000]) + 0x900;
