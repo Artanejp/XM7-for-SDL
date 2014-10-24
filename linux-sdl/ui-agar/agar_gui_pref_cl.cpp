@@ -102,27 +102,6 @@ static void ConfigCLDevices(struct gui_disp *cfg, AG_Box *parent)
 	int numdevices;
 	int limit;
 	int num_using = 0;
-	if(cldraw == NULL) {
-	  numdevices = 8;
-	  for(i = 0; i < 8; i++) {
-	    snprintf(cfg->sDeviceName[i], 94, "Processor #%d", i);
-	  }
-	} else {
-	  char sName[64];
-	  char sType[16];
-	  numdevices = cldraw->GetDevices();
-	  if(numdevices > 8) numdevices = 8;
-	  if(numdevices < 0) numdevices = 0;
-	  for(i = 0; i < numdevices; i++) {
-	    cldraw->GetDeviceName(sName, 64, i);
-	    cldraw->GetDeviceType(sType, 16, i);
-	    snprintf(cfg->sDeviceName[i], 94, "%s(%s)", sType, sName);
-	  }
-	  for(; i < 8; i++) {
-	    free(cfg->sDeviceName[i]);
-	    cfg->sDeviceName[i] = NULL;
-	  }
-	}	  
 	num_using = cfg->nCLDeviceNum;
 	//	box = AG_BoxNewHoriz(AGWIDGET(parent), AG_BOX_VFILL);
 	{

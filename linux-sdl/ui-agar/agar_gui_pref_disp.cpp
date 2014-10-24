@@ -38,8 +38,11 @@
 #include "sdl_inifile.h"
 #include "agar_cfg.h"
 #include "xm7.h"
+#include "agar_glcl.h"
 
-
+#ifdef _USE_OPENCL
+extern class GLCLDraw *cldraw;
+#endif
 
 extern void OnPushCancel2(AG_Event *event);
 extern void ConfigMenuOpenCL(struct gui_disp *cfg, AG_NotebookTab *parent);
@@ -319,7 +322,7 @@ void OnConfigDisplayMenu(AG_Event *event)
 	AG_Box *box;
 	AG_Button *btn;
         struct gui_disp *cfg;
-	int i;
+	int i, num;
    
         cfg = (struct gui_disp *)malloc(sizeof(struct gui_disp));
         if(cfg == NULL) return;
@@ -342,12 +345,28 @@ void OnConfigDisplayMenu(AG_Event *event)
 	  cfg->nCLDeviceNum = configdat.nCLDeviceNum;
 	  cfg->nCLPlatformNum = configdat.nCLPlatformNum;
 	  cfg->bCLInteropGL = configdat.bCLInteropGL;
-	  for(i = 0; i < 8; i++) {
+	  for(i = 0; i <= 8; i++) cfg->sDeviceName[i] = NULL;
+	  if(cldraw == NULL) {
+	    num = 8;
+	  } else {
+	    num = cldraw->GetDevices();
+	  }
+	  if(num >= 8) num = 8;
+	  if(num <= 0) num = 0;
+	  for(i = 0; i < num; i++) {
 	    cfg->sDeviceName[i] = malloc(96 * sizeof(char));
 	    cfg->sDeviceName[i][0] = '\0';
+	    if(cldraw == NULL) {
+	      snprintf(cfg->sDeviceName[i], 94, "Processor #%d", i);
+	    } else {
+	      char sName[64];
+	      char sType[16];
+	      cldraw->GetDeviceName(sName, 64, i);
+	      cldraw->GetDeviceType(sType, 16, i);
+	      snprintf(cfg->sDeviceName[i], 94, "%s(%s)", sType, sName);
+	    }
 	  }
 	  cfg->sDeviceName[8] = NULL;
-
 #endif
 	  UnlockVM();
 	}
