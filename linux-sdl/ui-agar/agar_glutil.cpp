@@ -121,10 +121,8 @@ void InitContextCL(void)
 	    cl_int r;
 	    cldraw = new GLCLDraw;
 	    if(cldraw != NULL) {
-	       r = cldraw->InitContext();
-	       XM7_DebugLog(XM7_LOG_DEBUG, "CL: Create CTX: STS = %d", r);
+	      r = cldraw->InitContext(0, 0, TRUE);
 	       if(r == CL_SUCCESS){
-		 XM7_DebugLog(XM7_LOG_DEBUG,"CL: GLCTX=%08x", glXGetCurrentContext());
 		 r = cldraw->BuildFromSource(cl_render);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
 	         if(r == CL_SUCCESS) {

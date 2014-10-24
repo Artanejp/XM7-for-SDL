@@ -46,11 +46,14 @@ extern float fBrightB;
 
 GLCLDraw::GLCLDraw()
 {
-   cl_int ret;
+   int i;
    pixelBuffer = NULL;
    bModeOld = -1;
    TransferBuffer = malloc((640 * 200 * 18 + 2) * sizeof(Uint8));
-   
+   nkernels = 0;
+   using_device = 0;
+   for(i = 0; i < 8; i++) device_type[i] = 0;
+   for(i = 0; i < 8; i++) local_memsize[i] = 0;
 }
 
 GLCLDraw::~GLCLDraw()
@@ -136,67 +139,147 @@ int GLCLDraw::ReleasePixelBuffer(Uint32 *p)
 #endif
 }
 
+int GLCLDraw::GetUsingDeviceNo(void)
+{
+  return using_device;
+}
 
-cl_int GLCLDraw::InitContext(void)
+int GLCLDraw::GetDevices(void)
+{
+  return ret_num_devices;
+}
+
+int GLCLDraw::GetPlatforms(void)
+{
+  return ret_num_platforms;
+}
+
+void GLCLDraw::GetDeviceType(char *str, int maxlen, int num)
+{
+  if((str == NULL) || (maxlen < 1)) return;
+  str[0] = '\0';
+  if((num < 0) || (num >= 8) || (num >= ret_num_devices)) return;
+
+  switch(device_type[num]) {
+  case CL_DEVICE_TYPE_CPU:
+       strncpy(str, "CPU", maxlen - 1);
+       break;
+  case CL_DEVICE_TYPE_GPU:
+       strncpy(str, "GPU", maxlen - 1);
+       break;
+  case CL_DEVICE_TYPE_ACCELERATOR:
+       strncpy(str, "ACCELERATOR", maxlen - 1);
+       break;
+  case CL_DEVICE_TYPE_DEFAULT:
+       strncpy(str, "DEFAULT", maxlen - 1);
+       break;
+  default:
+       strncpy(str, "Unknown", maxlen - 1);
+       break;
+     }
+}
+
+void GLCLDraw::GetDeviceName(char *str, int maxlen, int num)
+{
+  size_t llen;
+
+  if((str == NULL) || (maxlen < 1)) return;
+  str[0] = '\0';
+  if((num < 0) || (num > 8) || (num >= ret_num_devices)) return;
+  clGetDeviceInfo(device_id[num], CL_DEVICE_NAME,
+		     maxlen - 1, str, &llen);
+  str[llen - 1] = '\0';
+}
+
+cl_int GLCLDraw::InitContext(int platformnum, int processornum, int GLinterop)
 {
    cl_int ret;
    size_t len;
    char extension_data[1024];
+   size_t llen;
    size_t extension_len;
    int i;
    
    properties = malloc(16 * sizeof(intptr_t));
-   ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+   ret = clGetPlatformIDs(8, platform_id, &ret_num_platforms);
    if(ret != CL_SUCCESS) return ret;
    
-   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 8, device_id,
+   if(ret_num_platforms <= 0) return CL_INVALID_PLATFORM;
+   if(platformnum >= ret_num_platforms) platformnum = ret_num_platforms - 1;
+   if(platformnum <= 0) platformnum = 0;
+   ret = clGetDeviceIDs(platform_id[platformnum], CL_DEVICE_TYPE_ALL, 8, device_id,
                             &ret_num_devices);
    
    if(ret != CL_SUCCESS) return ret;
    if(ret_num_devices <= 0) {
-     XM7_DebugLog(XM7_LOG_DEBUG, "CL: Has no useful device(s).");
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : Has no useful device(s).");
      return ret;
    }
    if(ret_num_devices > 8) ret_num_devices = 8;
+   if(ret_num_devices <= 0) return CL_INVALID_DEVICE_TYPE;
+   XM7_DebugLog(XM7_LOG_DEBUG, "CL : Found %d processors.", ret_num_devices);
+
+   using_device = processornum;
+   if(using_device >= ret_num_devices) using_device = ret_num_devices - 1;
+   if(using_device <= 0) using_device = 0;
+
+   bCLEnableKhrGLShare = 0;
+
    for(i = 0; i < ret_num_devices; i++ ){
+
+     extension_data[0] = '\0';
+     GetDeviceName(extension_data, sizeof(extension_data), i);
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : Processor #%d : Name = %s ", i, extension_data);
+
+     extension_data[0] = '\0';
+     clGetDeviceInfo(device_id[i], CL_DEVICE_TYPE,
+		     sizeof(cl_ulong), &(device_type[i]), &llen);
+     clGetDeviceInfo(device_id[i], CL_DEVICE_LOCAL_MEM_SIZE,
+		     sizeof(cl_ulong), &(local_memsize[i]), &llen);
+     GetDeviceType(extension_data, sizeof(extension_data), i);
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : Processor #%d : TYPE = %s / Local memory size = %d bytes", i, extension_data, local_memsize[i]);
+
+     extension_data[0] = '\0';
      clGetDeviceInfo(device_id[i], CL_DEVICE_EXTENSIONS,
 		   1024, extension_data, &extension_len);
-     XM7_DebugLog(XM7_LOG_DEBUG, "CL Extension features(%d):%s", i, extension_data);
-     if(strcasestr(extension_data, "cl_khr_gl_sharing") != NULL) {
-       bCLEnableKhrGLShare = -1;
-     } else {
-       bCLEnableKhrGLShare = 0;
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : Extension features(#%d):%s", i, extension_data);
+     if(i == using_device) {
+       if(strcasestr(extension_data, "cl_khr_gl_sharing") != NULL) {
+	 if(GLinterop != 0) bCLEnableKhrGLShare = -1;
+       } else {
+	 bCLEnableKhrGLShare = 0;
+       }
      }
    }
-
+   
+   XM7_DebugLog(XM7_LOG_DEBUG, "CL : Using device #%d", using_device);
    if(bCLEnableKhrGLShare != 0) { // This is only under X11. Must fix.
-     XM7_DebugLog(XM7_LOG_DEBUG, "GL Interoperability enabled.");
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Interoperability enabled.");
      properties[0] = CL_GL_CONTEXT_KHR;
      properties[1] = (cl_context_properties)glXGetCurrentContext();
-     XM7_DebugLog(XM7_LOG_DEBUG, "GL Context = %08x", glXGetCurrentContext());
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Context = %08x", glXGetCurrentContext());
      properties[2] = CL_GLX_DISPLAY_KHR;
      properties[3] = (cl_context_properties)glXGetCurrentDisplay();
-     XM7_DebugLog(XM7_LOG_DEBUG, "GL Display = %08x", glXGetCurrentDisplay());
-     properties[4] = CL_CONTEXT_PLATFORM;
-     properties[5] = (cl_context_properties)platform_id;
-     properties[6] = 0;
+     properties[4] = 0;
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Display = %08x", glXGetCurrentDisplay());
+     //properties[4] = CL_CONTEXT_PLATFORM;
+     //properties[5] = (cl_context_properties)platform_id;
+     //properties[6] = 0;
    } else {
-     XM7_DebugLog(XM7_LOG_DEBUG, "GL Interoperability disabled.");
+     XM7_DebugLog(XM7_LOG_DEBUG, "CL : GL Interoperability disabled.");
      properties[0] = CL_CONTEXT_PLATFORM;
      properties[1] = (cl_context_properties)platform_id;
      properties[2] = 0;
    }
 //   if(device_id == NULL) return -1;
    
-   if(using_device >= ret_num_devices) using_device = ret_num_devices - 1;
    context = clCreateContext(properties, 1, &device_id[using_device], cl_notify_log, NULL, &ret);
+   XM7_DebugLog(XM7_LOG_DEBUG, "CL : Created context : STS = %d", ret);
    if(ret != CL_SUCCESS) return ret;
        
    command_queue = clCreateCommandQueue(context, device_id[using_device],
                                          CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &ret);
-//   command_queue = clCreateCommandQueue(context, device_id[0],
-//                                         0, &ret);
-   XM7_DebugLog(XM7_LOG_DEBUG, "CL: Command queue created.");
+   XM7_DebugLog(XM7_LOG_DEBUG, "CL: Created command queue.");
    return ret;
 }
 
@@ -260,7 +343,7 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
       strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=1 ", sizeof(compile_options) - 1); // Assume little endian
     }
     build_callback = CL_LogProgramExecute;
-    ret = clBuildProgram(program, ret_num_devices, device_id, compile_options,
+    ret = clBuildProgram(program, 1, &device_id[using_device], compile_options,
 			 build_callback, (void *)this);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
     if(ret != CL_SUCCESS) {  // Printout error log.

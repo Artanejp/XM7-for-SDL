@@ -32,23 +32,29 @@ class GLCLDraw {
    cl_int BuildFromSource(const char *p);
    cl_int SetupBuffer(GLuint *texid);
    cl_int SetupTable(void);
-   cl_int InitContext(void);
+   cl_int InitContext(int platformnum, int processornum, int GLinterop);
+   int GetPlatforms(void);
+   int GetUsingDeviceNo(void);
+   int GetDevices(void);
+   void GetDeviceType(char *str, int maxlen, int num);
+   void GetDeviceName(char *str, int maxlen, int num);
    GLuint GLCLDraw::GetPbo(void);
    int GetGLEnabled(void);
    Uint32 *GetPixelBuffer(void);
    int ReleasePixelBuffer(Uint32 *p);
    Uint8 *GetBufPtr(void);
 
-   cl_platform_id platform_id = NULL;
-   cl_int ret_num_platforms;
-   cl_device_id device_id[8];
-   cl_int ret_num_devices;
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;
 
    /* Program Object */
    const char *source = NULL;
    cl_program program = NULL;
+   cl_int ret_num_devices;
+   cl_int ret_num_platforms;
+   cl_platform_id platform_id[8];
+   cl_device_id device_id[8];
+
  private:
    CL_CALLBACK LogProgramExecute(cl_program program, void *userdata);
    CL_CALLBACK (*build_callback)(cl_program, void *);
@@ -82,6 +88,8 @@ class GLCLDraw {
    Uint32 *pixelBuffer = NULL;
    Uint8 *TransferBuffer = NULL;
    int bModeOld = -1;
+   cl_device_type device_type[8];
+   cl_ulong local_memsize[8];
 };
 
 enum {
