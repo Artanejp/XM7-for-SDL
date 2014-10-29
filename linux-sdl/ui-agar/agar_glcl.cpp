@@ -49,7 +49,7 @@ GLCLDraw::GLCLDraw()
    int i;
    pixelBuffer = NULL;
    bModeOld = -1;
-   TransferBuffer = malloc((640 * 200 * 18 + 2) * sizeof(Uint8));
+   TransferBuffer = malloc((0x2000 * 18 + 2) * sizeof(Uint8));
    nkernels = 0;
    using_device = 0;
    for(i = 0; i < 8; i++) device_type[i] = 0;
@@ -378,30 +378,33 @@ cl_int GLCLDraw::copysub(int hh)
   Uint8 *p;
   Uint8 *pp;
   Uint8 *q;
-  cl_int ret;
+  cl_int ret = 0;
   int line;
   int voffset = 0x4000;
   if(hh > 200) voffset = 0x8000;
 
   p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			 0, voffset * 3,
-			 0, NULL, &event_uploadvram[0], &ret);
+  			 0, voffset * 3,
+  			 0, NULL, &event_uploadvram[0], &ret);
   if(p == NULL) return ret;
   if(ret < 0) return ret;
   pp = p;
   q = TransferBuffer;
+#ifdef _OPENMP
+#pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset) private(pp, q)
+#endif
   for(line = 0;line < hh; line++) {
     if(bDrawLine[line]) {
+      pp = &p[80 * line];
+      q = &TransferBuffer[80 * line];
       memcpy(pp, q, 80);
       memcpy(&pp[voffset], &q[voffset], 80);
       memcpy(&pp[voffset * 2], &q[voffset * 2], 80);
       bDrawLine[line] = FALSE;
     }
-    pp += 80;
-    q += 80;
   }
   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-				 p, 0, NULL, &event_uploadvram[1]);
+  				 p, 0, NULL, &event_uploadvram[1]);
   return ret;
 }
 
@@ -419,17 +422,22 @@ cl_int GLCLDraw::copy256k(void)
    int i, j;
    
    p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
-			  0, vramoffset * 18,
-			  0, NULL, &event_uploadvram[0], &ret);
+   		  0, vramoffset * 18,
+   		  0, NULL, &event_uploadvram[0], &ret);
   if(ret < 0) return ret;
   if(p != NULL) {
     pp = p;
     q = TransferBuffer;
-    pb = &q[0];
-    pr = &q[vramoffset * 6];
-    pg = &q[vramoffset * 12];
+#ifdef _OPENMP
+  #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, vramoffset) private(pp, q, pb, pr, pg)
+#endif
     for(line = 0; line < 200; line++) {
       if(bDrawLine[line]) {
+	pp = &p[line * 40];
+	q = &TransferBuffer[line * 40];
+	pb = &q[0];
+	pr = &q[vramoffset * 6];
+	pg = &q[vramoffset * 12];
 	// B
 	memcpy(&pp[0], &pb[0], band);  
 	memcpy(&pp[vramoffset], &pb[vramoffset], band);  
@@ -454,13 +462,9 @@ cl_int GLCLDraw::copy256k(void)
 	memcpy(&pp[vramoffset * 17], &pg[vramoffset * 5], band);
 	bDrawLine[line] = FALSE;
       }
-      pg += 40;
-      pr += 40;
-      pb += 40;
-      pp += 40;
     }
-     ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-				    p, 0, NULL, &event_uploadvram[1]);
+    ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
+				   p, 0, NULL, &event_uploadvram[1]);
   }
   return ret;
 }
@@ -539,10 +543,16 @@ cl_int GLCLDraw::copy4096(void)
 			 0, NULL, &event_uploadvram[0], &ret);
   if(ret < 0) return ret;
   if(p == NULL) return ret;
-  pp = p;
-  q = TransferBuffer;
+
+  // pp = p;
+  //q = TransferBuffer;
+#ifdef _OPENMP
+  #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset) private(pp, q, i, j)
+#endif
   for(line = 0;line < 200; line++) {
     if(bDrawLine[line]) {
+      q = &TransferBuffer[line * 40];
+      pp = &p[line * 40];
       j = 0;
       for(i = 0; i < 12; i++) {
 	memcpy(&pp[j], &q[j], 40);
@@ -550,12 +560,10 @@ cl_int GLCLDraw::copy4096(void)
       }
       bDrawLine[line] = FALSE;
     }
-    pp += 40;
-    q += 40;
   }
-  clFlush(command_queue);
+  //clFlush(command_queue);
   ret |= clEnqueueUnmapMemObject(command_queue, inbuf,
-				 p, 0, NULL, &event_uploadvram[1]);
+  				 p, 0, NULL, &event_uploadvram[1]);
   return ret;
 }
 
@@ -564,7 +572,45 @@ Uint8 *GLCLDraw::GetBufPtr(void)
   return TransferBuffer;
 }
 
+Uint8 *GLCLDraw::MapTransferBuffer(int bmode)
+{
+  Uint8 *p = NULL;
+  cl_int ret;
+  switch(bmode)
+  {
+  case SCR_200LINE:
+    p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			 0, 0x4000 * 3,
+			 0, NULL, &event_uploadvram[0], &ret);
+    break;
+  case SCR_400LINE:
+    p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			 0, 0x8000 * 3,
+			 0, NULL, &event_uploadvram[0], &ret);
+    break;
+  case SCR_4096:
+    p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			 0, 0x2000 * 12,
+			 0, NULL, &event_uploadvram[0], &ret);
+    break;
+  case SCR_262144:
+    p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			 0, 0x2000 * 18,
+			 0, NULL, &event_uploadvram[0], &ret);
+    break;
+  }
+  if(ret < CL_SUCCESS) p = NULL;
+  return p;
+}
 
+cl_int GLCLDraw::UnMapTransferBuffer(Uint8 *p)
+{
+  cl_int ret;
+  if(p == NULL) return CL_INVALID_MEM_OBJECT;
+  ret = clEnqueueUnmapMemObject(command_queue, inbuf,
+				 p, 0, NULL, &event_uploadvram[1]);
+  return ret;
+}
 
 cl_int GLCLDraw::GetVram(int bmode)
 {
@@ -607,9 +653,9 @@ cl_int GLCLDraw::GetVram(int bmode)
       if(kernel_8colors != NULL) kernel = kernel_8colors;
       if(kernel != NULL) {
 	 if(bmode == SCR_400LINE) {
-	    ret |= copy8_400l();
+	   ret |= copy8_400l();
 	 } else {
-	    ret |= copy8();
+	   ret |= copy8();
 	 }
 	 ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
 				  8 * sizeof(Uint8), (void *)&ttl_palet[0]
@@ -637,7 +683,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       //      if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
       if(kernel_256kcolors != NULL) kernel = kernel_256kcolors;
       if(kernel != NULL) {
-	 ret |= copy256k();
+	ret |= copy256k();
       /*
        * Below transfer is dummy.
        */
@@ -662,7 +708,7 @@ cl_int GLCLDraw::GetVram(int bmode)
       //if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
       if(kernel_4096colors != NULL) kernel = kernel_4096colors;
       if(kernel != NULL) {
-	 ret |= copy4096();
+	ret |= copy4096();
 	   {
 	      cl_event event_local[2];
 	      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
@@ -696,7 +742,7 @@ cl_int GLCLDraw::GetVram(int bmode)
      glFlush();
      ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
-				  3, event_uploadvram, &event_copytotexture);
+				  1, &event_uploadvram[2], &event_copytotexture);
      if(kernel != NULL) {
        if(bCLSparse) {
 	 ret = clEnqueueNDRangeKernel(command_queue, *kernel, 1, 
@@ -718,10 +764,10 @@ cl_int GLCLDraw::GetVram(int bmode)
        if(bCLSparse) {
 	 ret = clEnqueueNDRangeKernel(command_queue, *kernel, 1, 
 				      goff, gws, lws, 
-				      3, event_uploadvram,  &event_exec);
+				      1, &event_uploadvram[2],  &event_exec);
        } else {
 	 ret = clEnqueueTask(command_queue,
-			     *kernel, 3, event_uploadvram, &event_exec);
+			     *kernel, 1, &event_uploadvram[2], &event_exec);
        }
      }
    }
@@ -753,14 +799,34 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    cl_int ret = 0;
    cl_int r = 0;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
-   
-   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, // Reduce HOST-CPU usage.
-                            (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
-   //inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | 0, // Reduce HOST-CPU usage.
-   //                       (size_t)(0x8000 * 6 * sizeof(Uint8)), NULL, &r);
-   ret |= r;
-   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: inbuf : %d", r);
 
+   {
+      inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | 0, // Reduce HOST-CPU usage.
+                            (size_t)(0x2000 * 18 * sizeof(Uint8)), NULL, &r);
+   // Clear Buffer
+      //inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
+       //		    (size_t)(0x2000 * 18 * sizeof(Uint8)), TransferBuffer, &r);
+     ret |= r;
+     if(r == CL_SUCCESS){
+       cl_int r2;
+       cl_event cl_event_map;
+       cl_event cl_event_unmap;
+       Uint8 *p;
+
+       p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
+			      0, (size_t)(0x2000 * 18 * sizeof(Uint8)),
+			 0, NULL, &cl_event_map, &r2);
+       if((r2 >= CL_SUCCESS) && (p != NULL)) {
+	 memset(p, 0x00, (size_t)(0x2000 * 18 * sizeof(Uint8)));
+	 clEnqueueUnmapMemObject(command_queue, inbuf, 
+				 p, 1, &cl_event_map,
+				 &cl_event_unmap);
+	 clFinish(command_queue);
+       }
+     }
+     
+   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: inbuf : %d", r);
+   }
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
  		  (size_t)(4096 * 3 * sizeof(Uint8)), NULL, &r);
    ret |= r;
@@ -781,7 +847,8 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
        }
 
        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-       glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+       //glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+       glBufferData(GL_PIXEL_UNPACK_BUFFER, size, NULL, GL_STREAM_DRAW);
        //    XM7_DebugLog(XM7_LOG_DEBUG, "CL: PBO=%08x Size=%d context=%08x", pbo, size, context);
        outbuf = clCreateFromGLBuffer(context, CL_MEM_WRITE_ONLY | 0, 
 				     pbo, &r);

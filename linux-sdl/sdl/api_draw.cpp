@@ -1129,11 +1129,16 @@ void FASTCALL vblankperiod_notify(void)
 		   _prefetch_data_read_l1(aPlanes, sizeof(aPlanes));
 		   LockVram();
 		   if((bCLEnabled) && (cldraw != NULL)) {
+		     Uint8 *p;
+		     BOOL flag2 = FALSE;
+		     p = cldraw->GetBufPtr();
 		     for(y = 0; y < ymax; y++) {
-		       if (bDirtyLine[y]) {
-			 Transfer_1Line(cldraw->GetBufPtr(), y);
+		       if ((bDirtyLine[y]) && (crt_flag != 0)) {
+			 Transfer_1Line(p, y);
 			 bDirtyLine[y] = FALSE;
+			 flag2 = TRUE;
 		       }
+		       if(flag2) SDLDrawFlag.Drawn = TRUE;
 		     }
 		   } else if(nRenderMethod == RENDERING_RASTER) {
 		     for(y = 0; y < ymax; y++) {
@@ -1320,8 +1325,10 @@ void FASTCALL hblank_notify(void)
   if(now_raster >= 400) return;
   LockVram();
    if((bCLEnabled) && (cldraw != NULL)){
-     if(bDirtyLine[now_raster]) {
-       Transfer_1Line(cldraw->GetBufPtr(), now_raster);
+     Uint8 *p;
+     p = cldraw->GetBufPtr();
+     if((bDirtyLine[now_raster]) && (crt_flag != 0)) {
+       Transfer_1Line(p, now_raster);
        bDirtyLine[now_raster] = FALSE;
        SDLDrawFlag.Drawn = TRUE;
      }

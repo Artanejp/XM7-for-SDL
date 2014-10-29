@@ -38,6 +38,8 @@ class GLCLDraw {
    int GetDevices(void);
    void GetDeviceType(char *str, int maxlen, int num);
    void GetDeviceName(char *str, int maxlen, int num);
+   Uint8 *MapTransferBuffer(int bmode);
+   cl_int UnMapTransferBuffer(Uint8 *p);
    GLuint GLCLDraw::GetPbo(void);
    int GetGLEnabled(void);
    Uint32 *GetPixelBuffer(void);
