@@ -391,7 +391,7 @@ cl_int GLCLDraw::copysub(int hh)
   pp = p;
   q = TransferBuffer;
 #ifdef _OPENMP
-#pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset) private(pp, q)
+  #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset) private(pp, q)
 #endif
   for(line = 0;line < hh; line++) {
     if(bDrawLine[line]) {
@@ -429,7 +429,7 @@ cl_int GLCLDraw::copy256k(void)
     pp = p;
     q = TransferBuffer;
 #ifdef _OPENMP
-  #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, vramoffset) private(pp, q, pb, pr, pg)
+    #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, vramoffset) private(pp, q, pb, pr, pg)
 #endif
     for(line = 0; line < 200; line++) {
       if(bDrawLine[line]) {
@@ -801,11 +801,11 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
 
    {
-      inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | 0, // Reduce HOST-CPU usage.
+     inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | 0, // Reduce HOST-CPU usage.
                             (size_t)(0x2000 * 18 * sizeof(Uint8)), NULL, &r);
    // Clear Buffer
-      //inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
-       //		    (size_t)(0x2000 * 18 * sizeof(Uint8)), TransferBuffer, &r);
+   //   inbuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, // Reduce HOST-CPU usage.
+   //   		    (size_t)(0x2000 * 18 * sizeof(Uint8)), TransferBuffer, &r);
      ret |= r;
      if(r == CL_SUCCESS){
        cl_int r2;
