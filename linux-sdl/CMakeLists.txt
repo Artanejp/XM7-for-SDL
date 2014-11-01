@@ -30,16 +30,19 @@ set(CMAKE_SYSTEM_PROCESSOR ${ARCHITECTURE} CACHE STRING "Set processor to build.
 
 include(config_xm7)
 
-#set(AGAR_LIBS ag_core ag_dev ag_gui)
-set(AGAR_STATIC_LIBRARIES /usr/local/lib/libag_dev.a /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a)
+set(WITH_AGAR_STATIC ON CACHE BOOL "Link LibAgar statically.")
+set(WITH_LIBAGAR_PREFIX "/usr/local" CACHE STRING "Set prefix of LibAgar") 
+include_directories(${WITH_LIBAGAR_PREFIX}/include/agar)
 
-set(LOCAL_LIBS ${LOCAL_LIBS} ${AGAR_STATIC_LIBRARIES})
+if(WITH_AGAR_STATIC)
+  set(AGAR_LIBS ${WITH_LIBAGAR_PREFIX}/lib/libag_dev.a ${WITH_LIBAGAR_PREFIX}/lib/libag_gui.a ${WITH_LIBAGAR_PREFIX}/lib/libag_core.a)
+else(WITH_AGAR_STATIC)
+  set(AGAR_LIBS ag_core ag_dev ag_gui)
+  link_directories(${WITH_LIBAGAR_PREFIX}/lib)
+endif()
 
 set(AGAR_DEPLIBS m jpeg png z dl uim-scm uim Xinerama)
 
-
-include_directories(/usr/local/include/agar)
-link_directories(/usr/local/lib)
 
 find_package(Gettext)
 include_directories(${GETTEXT_INCLUDE_PATH})
