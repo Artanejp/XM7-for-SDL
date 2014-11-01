@@ -20,7 +20,6 @@ add_executable(xm7
 		 )
 
 target_link_libraries(xm7 ${LOCAL_LIBS}
-                           ${AGAR_LIBS}
 			   ${OPENGL_LIBRARY}
 			   ${OPENCL_LIBRARY}
 			   ${GETTEXT_LIBRARY}

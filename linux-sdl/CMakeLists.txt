@@ -30,8 +30,12 @@ set(CMAKE_SYSTEM_PROCESSOR ${ARCHITECTURE} CACHE STRING "Set processor to build.
 
 include(config_xm7)
 
-set(AGAR_LIBS ag_core ag_dev ag_gui)
-set(AGAR_DEPLIBS m jpeg png z dl uim-scm uim)
+#set(AGAR_LIBS ag_core ag_dev ag_gui)
+set(AGAR_STATIC_LIBRARIES /usr/local/lib/libag_dev.a /usr/local/lib/libag_gui.a /usr/local/lib/libag_core.a)
+
+set(LOCAL_LIBS ${LOCAL_LIBS} ${AGAR_STATIC_LIBRARIES})
+
+set(AGAR_DEPLIBS m jpeg png z dl uim-scm uim Xinerama)
 
 
 include_directories(/usr/local/include/agar)
