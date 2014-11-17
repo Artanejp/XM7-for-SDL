@@ -426,6 +426,13 @@ cl_int GLCLDraw::copy256k(void)
    		  0, NULL, &event_uploadvram[0], &ret);
   if(ret < 0) return ret;
   if(p != NULL) {
+    if (bClearFlag) {
+        LockVram();
+	SelectClear(SCR_262144);
+        SetDirtyFlag(0, 200, TRUE);
+        bClearFlag = FALSE;
+        UnlockVram();
+    }
     pp = p;
     q = TransferBuffer;
 #ifdef _OPENMP
@@ -485,7 +492,11 @@ cl_int GLCLDraw::copy8(void)
 //      SetDrawFlag(TRUE);
    }
    if (bClearFlag) {
-//      AllClear();
+        LockVram();
+	SelectClear(SCR_200LINE);
+        SetDirtyFlag(0, 200, TRUE);
+        bClearFlag = FALSE;
+        UnlockVram();
    }
    return copysub(200);
 }
@@ -496,6 +507,11 @@ cl_int GLCLDraw::copy8_400l(void)
    cl_int ret = 0;
    
    if (bClearFlag) {
+        LockVram();
+	SelectClear(SCR_400LINE);
+        SetDirtyFlag(0, 400, TRUE);
+        bClearFlag = FALSE;
+        UnlockVram();
       //AllClear();
    }
    if(bPaletFlag) { // 描画モードでVRAM変更
@@ -534,9 +550,13 @@ cl_int GLCLDraw::copy4096(void)
       nDrawRight = 320;
 //      SetDrawFlag(TRUE);
    }
-//   if (bClearFlag) {
-//      AllClear();
-//   }
+   if (bClearFlag) {
+        LockVram();
+	SelectClear(SCR_4096);
+        SetDirtyFlag(0, 200, TRUE);
+        bClearFlag = FALSE;
+        UnlockVram();
+   }
    
   p = clEnqueueMapBuffer(command_queue, inbuf, CL_TRUE, CL_MAP_WRITE,
 			 0, voffset * 12,

@@ -95,6 +95,7 @@ extern void CleanDraw(void);
 
 extern void ResizeWindow(int w, int h);
 extern BOOL SelectDraw(void);
+extern void SelectClear(int mode);
 extern void AllClear(void);
 extern void RenderFullScan(void);
 extern void RenderSetOddLine(void);
