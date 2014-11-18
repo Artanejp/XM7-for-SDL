@@ -150,7 +150,9 @@ extern BOOL SelectDraw2(void);
  * ウインドウリサイズ
  */
 extern void ResizeGL(int w, int h);
-
+  /*
+   *
+   */
 #ifdef __cplusplus
 }
 #endif

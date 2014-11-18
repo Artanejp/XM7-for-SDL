@@ -49,6 +49,16 @@ int DrawSurfaceId = 0;
 unsigned int nRenderMethod;
 }
 
+extern "C" {
+  BOOL IsUsingCL(void)
+  {
+#ifdef _USE_OPENCL    
+    if((cldraw != NULL) && (bCLEnabled != FALSE)) return TRUE;
+#endif
+    return FALSE;
+  }
+}
+
 void InitGL(int w, int h)
 {
     AG_Driver *drv;
@@ -288,10 +298,11 @@ void AGDrawTaskMain(void)
 	if(((nDrawTick2E - nDrawTick1E) < fps) && SelectCheck()) return;
   
 	if(!SelectCheck()) {
+	  //bNextFrameRender = TRUE;
 	   bClearFlag = TRUE;
 	   SelectDraw2();
 	   if((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
-	      //SetDirtyFlag(0, 400, TRUE);
+	      SetDirtyFlag(0, 400, TRUE);
 	   } else {
 	      SetDrawFlag(TRUE);
 	   }
@@ -300,18 +311,6 @@ void AGDrawTaskMain(void)
         nDrawTick1E = nDrawTick2E;
 #ifdef _USE_OPENCL
         if(bCLEnabled) {
-#if 0
-	   if(SDLDrawFlag.APaletteChanged) {
-	      Palet320();
-	      SDLDrawFlag.APaletteChanged = FALSE;
-	      SDLDrawFlag.Drawn = TRUE;
-	   }
-	   if(SDLDrawFlag.DPaletteChanged) {
-	      Palet640();
-	      SDLDrawFlag.DPaletteChanged = FALSE;
-	      SDLDrawFlag.Drawn = TRUE;
-	   }
-#endif
 	   return;
 	}
 #endif

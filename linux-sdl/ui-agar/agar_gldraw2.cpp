@@ -157,13 +157,13 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 		glBindTexture(GL_TEXTURE_2D, 0);
 	        glFinish();
 	    } else if((cldraw != NULL) && (bCLEnabled)){ // Not interoperability with GL
-		Uint32 *p;
-		p = cldraw->GetPixelBuffer();
+		Uint32 *pp;
+		pp = cldraw->GetPixelBuffer();
 	        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-		if(p != NULL) glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-					      w, h, GL_RGBA, GL_UNSIGNED_BYTE, p);
+		if(pp != NULL) glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+					      w, h, GL_RGBA, GL_UNSIGNED_BYTE, pp);
 	        glFinish();
-		cldraw->ReleasePixelBuffer(p);
+		cldraw->ReleasePixelBuffer(pp);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	        glFinish();
 	    }

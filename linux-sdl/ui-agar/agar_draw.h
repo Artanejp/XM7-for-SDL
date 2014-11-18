@@ -31,9 +31,11 @@ extern "C" {
     extern int DrawSurfaceId;
     extern AG_Surface *DrawSurface;
     extern unsigned int nRenderMethod;
+    extern BOOL IsUsingCL(void);
 #ifdef __cplusplus
 }
 #endif
+
 #ifdef __cplusplus
 extern Uint32 nDrawTick1E;
 

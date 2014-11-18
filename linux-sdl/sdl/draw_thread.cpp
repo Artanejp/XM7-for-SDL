@@ -139,12 +139,6 @@ BOOL SelectCheck(void)
 BOOL SelectDraw2(void)
 {
     AG_Widget *wid;
-   /*
-    * 一致しているかチェック
-    */
-//   if (SelectCheck()) {
-//      return TRUE;
-//   }
 //		if(agDriverOps == NULL) return FALSE;
 #ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
