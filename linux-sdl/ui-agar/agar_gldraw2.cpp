@@ -99,9 +99,6 @@ static void drawGrids(void *pg,int w, int h)
 
 static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 {
-//    LockVram();
-   
-
     if(uVramTextureID != 0){
        Uint32 *pu;
        Uint32 *pq;
@@ -121,25 +118,28 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
  	  cl_int ret = CL_SUCCESS;
 	  LockVram();
 	  flag = FALSE;
+	  //if(SDLDrawFlag.Drawn) {
+	  //  for(i = 0; i < h; i++) bDrawLine[i] = TRUE;
+	  //}
 	  for(i = 0; i < h; i++) {
-	    if(bDrawLine[i]) flag = TRUE;
+	    if(bDrawLine[i]) {
+	      flag = TRUE;
+	    }
 	  }
-	  if(crtflag){
-	    if((SDLDrawFlag.Drawn) || (flag)) {
-		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-		ret = cldraw->GetVram(bMode);
-	     }
-	     if(ret != CL_SUCCESS) {
-		SDLDrawFlag.Drawn = FALSE;
-		bPaletFlag = FALSE;
-		glBindTexture(GL_TEXTURE_2D, 0);
-		UnlockVram();
-		return;
-	     }
-	  }
-
-	  if(crtflag && ((SDLDrawFlag.Drawn) || flag)) {
-	    if((cldraw != NULL) && (bCLGLInterop)){
+	  if(SDLDrawFlag.Drawn) flag = TRUE;
+	  //if(bMode != bModeOld) flag = FALSE;
+	  //if(crtflag){
+	    if(flag) {
+		ret = cldraw->GetVram(bModeOld);
+		if(ret != CL_SUCCESS) {
+		  SDLDrawFlag.Drawn = FALSE;
+		  bPaletFlag = FALSE;
+		  glBindTexture(GL_TEXTURE_2D, 0);
+		  UnlockVram();
+		  return;
+		}
+	    }
+	    if(bCLGLInterop){
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, cldraw->GetPbo());
 	        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 		// Copy pbo to texture 
@@ -156,7 +156,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	        glFinish();
-	    } else if((cldraw != NULL) && (bCLEnabled)){ // Not interoperability with GL
+	    } else { // Not interoperability with GL
 		Uint32 *pp;
 		pp = cldraw->GetPixelBuffer();
 	        glBindTexture(GL_TEXTURE_2D, uVramTextureID);
@@ -169,17 +169,21 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 	    }
 	    SDLDrawFlag.Drawn = FALSE;
 	    bPaletFlag = FALSE;
-	  } 
+          //}
 	  UnlockVram();
        } else {
 #endif
 	  LockVram();
 	  flag = FALSE;
 	  for(i = 0; i < h; i++) {
-	    if(bDrawLine[i]) flag = TRUE;
+	    if(bDrawLine[i]) {
+	      flag = TRUE;
+	      bDrawLine[i] = FALSE;
+	    }
 	  }
-	  if((p != NULL) && ((SDLDrawFlag.Drawn) || (flag))) {
-	     if(crtflag != FALSE) {
+	  flag |= SDLDrawFlag.Drawn;
+	  if((p != NULL) && (flag)) {
+	     //if(crtflag != FALSE) {
 		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 		glTexSubImage2D(GL_TEXTURE_2D, 
 			  0,
@@ -192,7 +196,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 			  p);
 	       glFinish();
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
-	     }
+	     //}
 	     bPaletFlag = FALSE;
 	     SDLDrawFlag.Drawn = FALSE;
 	  }
@@ -232,7 +236,7 @@ void AGEventDrawGL2(AG_Event *event)
    
    p = pVram2;
    if((p == NULL) && (bCLEnabled == FALSE)) return;
-     switch(bMode) {
+     switch(bModeOld) {
         case SCR_400LINE:
             w = 640;
             h = 400;
@@ -285,9 +289,6 @@ void AGEventDrawGL2(AG_Event *event)
     glPushAttrib(GL_ENABLE_BIT);
     InitContextCL();   
 
-    //if(!crtflag) printf("CRTFLAG disabled\n");
-    //if(crtflag) drawUpdateTexture(p, w, h, crtflag);
-       
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     
@@ -300,61 +301,58 @@ void AGEventDrawGL2(AG_Event *event)
      */
      if(uVramTextureID != 0) {
 
-        if(crtflag) {
-	   drawUpdateTexture(p, w, h, crtflag);
-	   glEnable(GL_TEXTURE_2D);
-	   glBindTexture(GL_TEXTURE_2D, uVramTextureID);
-	   glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-	} else {
-	   glDisable(GL_TEXTURE_2D);
-	   glBindTexture(GL_TEXTURE_2D, uNullTextureID);
-	   //glBindTexture(GL_TEXTURE_2D, 0);
-	   glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-	}
-	
-	
-	//if(crtflag) {
-	   if(!bSmoosing) {
-	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	   } else {
-	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	   }
-	   if(bGL_EXT_VERTEX_ARRAY) {
-	      glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
-	      glEnable(GL_VERTEX_ARRAY_EXT);
+       //if((bMode == bModeOld) && (crtflag)){
+	drawUpdateTexture(p, w, h, crtflag);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, uVramTextureID);
+	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+     } else {
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+     }	//} else {
+	//   glEnable(GL_TEXTURE_2D);
+	//   glBindTexture(GL_TEXTURE_2D, uNullTextureID);
+	//   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+       //}	     
+       if(!bSmoosing) {
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+       } else {
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+       }
+       if(bGL_EXT_VERTEX_ARRAY) {
+	 glEnable(GL_TEXTURE_COORD_ARRAY_EXT);
+	 glEnable(GL_VERTEX_ARRAY_EXT);
 	      
-	      glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
-	      glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
-	      glDrawArraysEXT(GL_POLYGON, 0, 4);
-
-	      glDisable(GL_VERTEX_ARRAY_EXT);
-	      glDisable(GL_TEXTURE_COORD_ARRAY_EXT);
-	   } else {
-	      glBegin(GL_POLYGON);
-	      glTexCoord2f(TexCoords[0][0], TexCoords[0][1]);
-	      glVertex3f(Vertexs[0][0], Vertexs[0][1], Vertexs[0][2]);
+	 glTexCoordPointerEXT(2, GL_FLOAT, 0, 4, TexCoords);
+	 glVertexPointerEXT(3, GL_FLOAT, 0, 4, Vertexs);
+	 glDrawArraysEXT(GL_POLYGON, 0, 4);
+	 
+	 glDisable(GL_VERTEX_ARRAY_EXT);
+	 glDisable(GL_TEXTURE_COORD_ARRAY_EXT);
+       } else {
+	 glBegin(GL_POLYGON);
+	 glTexCoord2f(TexCoords[0][0], TexCoords[0][1]);
+	 glVertex3f(Vertexs[0][0], Vertexs[0][1], Vertexs[0][2]);
+	 
+	 glTexCoord2f(TexCoords[1][0], TexCoords[1][1]);
+	 glVertex3f(Vertexs[1][0], Vertexs[1][1], Vertexs[1][2]);
+	 
+	 glTexCoord2f(TexCoords[2][0], TexCoords[2][1]);
+	 glVertex3f(Vertexs[2][0], Vertexs[2][1], Vertexs[2][2]);
 	      
-	      glTexCoord2f(TexCoords[1][0], TexCoords[1][1]);
-	      glVertex3f(Vertexs[1][0], Vertexs[1][1], Vertexs[1][2]);
-	      
-	      glTexCoord2f(TexCoords[2][0], TexCoords[2][1]);
-	      glVertex3f(Vertexs[2][0], Vertexs[2][1], Vertexs[2][2]);
-	      
-	      glTexCoord2f(TexCoords[3][0], TexCoords[3][1]);
-	      glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
-	      glEnd();
-	   }
-      //  }
-     }
+	 glTexCoord2f(TexCoords[3][0], TexCoords[3][1]);
+	 glVertex3f(Vertexs[3][0], Vertexs[3][1], Vertexs[3][2]);
+	 glEnd();
+       }
+    // }
    
      // 20120502 輝度調整
     glBindTexture(GL_TEXTURE_2D, 0); // 20111023
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
 
-//    if(crtflag) {
     if(bCLEnabled == FALSE){
        glEnable(GL_BLEND);
    

@@ -48,7 +48,6 @@ GLCLDraw::GLCLDraw()
 {
    int i;
    pixelBuffer = NULL;
-   bModeOld = -1;
    TransferBuffer = malloc((0x2000 * 18 + 2) * sizeof(Uint8));
    nkernels = 0;
    using_device = 0;
@@ -391,10 +390,10 @@ cl_int GLCLDraw::copysub(int hh)
   pp = p;
   q = TransferBuffer;
 #ifdef _OPENMP
-  #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset) private(pp, q)
+#pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset, SDLDrawFlag) private(pp, q)
 #endif
   for(line = 0;line < hh; line++) {
-    if(bDrawLine[line]) {
+    if(bDrawLine[line] || SDLDrawFlag.Drawn) {
       pp = &p[80 * line];
       q = &TransferBuffer[80 * line];
       memcpy(pp, q, 80);
@@ -436,10 +435,10 @@ cl_int GLCLDraw::copy256k(void)
     pp = p;
     q = TransferBuffer;
 #ifdef _OPENMP
-    #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, vramoffset) private(pp, q, pb, pr, pg)
+    #pragma omp parallel for shared(bDrawLine, SDLDrawFlag, TransferBuffer, p, vramoffset) private(pp, q, pb, pr, pg)
 #endif
     for(line = 0; line < 200; line++) {
-      if(bDrawLine[line]) {
+      if(bDrawLine[line]  || SDLDrawFlag.Drawn) {
 	pp = &p[line * 40];
 	q = &TransferBuffer[line * 40];
 	pb = &q[0];
@@ -567,10 +566,10 @@ cl_int GLCLDraw::copy4096(void)
   // pp = p;
   //q = TransferBuffer;
 #ifdef _OPENMP
-  #pragma omp parallel for shared(bDrawLine, TransferBuffer, p, voffset) private(pp, q, i, j)
+  #pragma omp parallel for shared(bDrawLine, SDLDrawFlag, TransferBuffer, p, voffset) private(pp, q, i, j)
 #endif
   for(line = 0;line < 200; line++) {
-    if(bDrawLine[line]) {
+    if(bDrawLine[line]  || SDLDrawFlag.Drawn) {
       q = &TransferBuffer[line * 40];
       pp = &p[line * 40];
       j = 0;
@@ -655,7 +654,6 @@ cl_int GLCLDraw::GetVram(int bmode)
    bright.s[3] = 1.0; // A
  
    
-   bModeOld = bmode;
    if(inbuf == NULL) return -1;
    if(outbuf == NULL) return -1;
    if(TransferBuffer == NULL) return -1;

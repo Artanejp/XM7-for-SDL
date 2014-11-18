@@ -51,6 +51,7 @@ GLuint CreateNullTexture(int w, int h)
     p =(Uint32 *)malloc((w + 2)*  (h  + 2) * sizeof(Uint32));
     if(p == NULL) return 0;
 
+    //    memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
     memset(p, 0x00, (w + 2) * (h + 2) * sizeof(Uint32));
     glGenTextures(1, &ttid);
     glBindTexture(GL_TEXTURE_2D, ttid);

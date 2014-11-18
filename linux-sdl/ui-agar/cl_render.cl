@@ -153,7 +153,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
 
   if(crtflag == 0) {
     clearscreen(ww, p8, bright);
-    //barrier(CLK_GLOBAL_MEM_FENCE);
+    barrier(CLK_GLOBAL_MEM_FENCE);
     return;
   }
 
@@ -271,7 +271,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   src = &src[addr];
   if(crtflag == 0) {
      clearscreen(ww, p8, bright);
-//     barrier(CLK_GLOBAL_MEM_FENCE);
+     barrier(CLK_GLOBAL_MEM_FENCE);
      return;
   }
 
@@ -283,8 +283,8 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
       if(!(mpage & 0x20)) mask |= 0x00f0;
       if(!(mpage & 0x40)) mask |= 0x0f00;
       mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
+//    }
+//    barrier(CLK_LOCAL_MEM_FENCE);
 
     t = 4096 / get_local_size(0);
     q = t * lid;
@@ -299,9 +299,9 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
     if(q > (4 * 256)) q = 4 * 256;
     if(rr > (4 * 256)) rr = 4 * 256;
     for(i = q; i < rr; i++) tbl8[i] = table[i]; // Prefetch table
-
+    
     barrier(CLK_LOCAL_MEM_FENCE);
-
+    }
     b = src;
     r = &src[ofset];
     g = &r[ofset];
@@ -400,7 +400,7 @@ __kernel void getvram256k(__global uchar *src, int w, int h,
   p8 = (__global uint8 *)(&(out[addr2]));
   if(crtflag == 0) {
      clearscreen(ww, p8, bright);
-//     barrier(CLK_GLOBAL_MEM_FENCE);
+     barrier(CLK_GLOBAL_MEM_FENCE);
      return;
   }
 #endif

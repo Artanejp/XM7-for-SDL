@@ -51,7 +51,7 @@ static void BuildVirtualVram(Uint32 *pp, int x, int y, int w, int h, int mode)
    if(pVirtualVramBuilder == NULL) return;
    ww = (w + x) >> 3;
    hh = (h + y) >> 3;
-   if((bMode == SCR_4096) || (bMode == SCR_262144)) {
+   if((bModeOld == SCR_4096) || (bModeOld == SCR_262144)) {
 //      _prefetch_data_read_l1(rgbAnalogGDI, sizeof(Uint32) * 4096);
 //      xfactor = 40;
       xfactor = 80;
@@ -110,7 +110,7 @@ void BuildVirtualVram_RasterWindow(Uint32 *pp, int xbegin, int xend, int y, int 
 
    if(pp == NULL) return;
    if(pVirtualVramBuilder == NULL) return;
-   if((bMode == SCR_4096) || (bMode == SCR_262144)) { 
+   if((bModeOld == SCR_4096) || (bModeOld == SCR_262144)) { 
 	xwidth = 320;
    } else {
 	xwidth = 640;
@@ -130,7 +130,7 @@ void BuildVirtualVram_Raster(Uint32 *pp, int y, int mode)
 
    if(pp == NULL) return;
    if(pVirtualVramBuilder == NULL) return;
-   if((bMode == SCR_4096) || (bMode == SCR_262144)) { 
+   if((bModeOld == SCR_4096) || (bModeOld == SCR_262144)) { 
 	xwidth = 320;
    } else {
 	xwidth = 640;

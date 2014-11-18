@@ -25,6 +25,7 @@
 extern class GLCLDraw *cldraw;
 #endif // _USE_OPENCL
 extern BYTE bMode;
+extern BYTE bModeOld;
 
 extern "C"{
    extern DWORD XM7_timeGetTime(void);	/* timeGetTime互換関数 */
@@ -316,7 +317,7 @@ void AGDrawTaskMain(void)
 #endif
         if(nRenderMethod == RENDERING_RASTER) return;
 #if XM7_VER >= 3
-	switch (bMode) {
+	switch (bModeOld) {
 	case SCR_400LINE:
 		Draw400l();
 		break;

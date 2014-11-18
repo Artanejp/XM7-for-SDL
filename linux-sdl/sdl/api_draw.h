@@ -84,6 +84,8 @@ extern int newDrawWidth;
 extern int newDrawHeight;
 extern BOOL newResize;
 extern BYTE bMode;
+extern BYTE bModeOld;
+extern BOOL old_crtflag;
 
 /*
  * 初期化・終了
