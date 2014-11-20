@@ -418,9 +418,13 @@ void SelectClear(int mode)
 
    if(bCLEnabled) {
 #ifdef _USE_OPENCL
-     dst = cldraw->GetBufPtr();
-     if(dst == NULL) return;
+     dst = cldraw->GetBufPtr(0);
+     if(dst == NULL) {
+       cldraw->ReleaseBufPtr();
+       return;
+     }
      memset(dst, 0x00, size *  planes);
+     cldraw->ReleaseBufPtr();
 #endif
    } else {
      if(pVram2 == NULL) return;
@@ -1118,7 +1122,7 @@ void 	display_notify(void)
    } else {
       SetDrawFlag(TRUE);
    }
-   UnlockVram();
+   //   UnlockVram();
 }
 
 static void Transfer_1Line(Uint8 *dst, int line);
@@ -1173,7 +1177,11 @@ void FASTCALL vblankperiod_notify(void)
 		   if((bCLEnabled) && (cldraw != NULL)) {
 		     Uint8 *p;
 		     BOOL flag2 = FALSE;
-		     p = cldraw->GetBufPtr();
+		     p = cldraw->GetBufPtr(0);
+		     if(p == NULL) {
+		       cldraw->ReleaseBufPtr();
+		       return;
+		     }
 //		     if(crtflag != FALSE){
 		       if(crtflag != old_crtflag) { // OFF->ON
 			 for(y = 0; y < 400; y++) bDirtyLine[y] = TRUE;
@@ -1188,6 +1196,8 @@ void FASTCALL vblankperiod_notify(void)
 			     //flag2 = TRUE;
 			  }
 		       }
+		       cldraw->ReleaseBufPtr();
+
 		       if(bPaletFlag || SDLDrawFlag.APaletteChanged || SDLDrawFlag.DPaletteChanged) {
 			 SDLDrawFlag.APaletteChanged = FALSE;
 			 SDLDrawFlag.DPaletteChanged = FALSE;
@@ -1410,7 +1420,11 @@ void FASTCALL hblank_notify(void)
 #if _USE_OPENCL
   if((bCLEnabled) && (cldraw != NULL)){
      Uint8 *p;
-     p = cldraw->GetBufPtr();
+     p = cldraw->GetBufPtr(0);
+     if(p == NULL) {
+       cldraw->ReleaseBufPtr();
+       return;
+     }
      if(bDirtyLine[now_raster]) {
        Transfer_1Line(p, now_raster);
        bDirtyLine[now_raster] = FALSE;
@@ -1423,6 +1437,8 @@ void FASTCALL hblank_notify(void)
        bPaletFlag = FALSE;
        SDLDrawFlag.Drawn = TRUE;
      }
+     cldraw->ReleaseBufPtr();
+
 #endif
      UnlockVram();
      return;
@@ -1700,7 +1716,7 @@ void Palet320(void)
 	 if (!(multi_page & 0x40)) {
 		 amask |= 0x0f00;
 	 }
-//     LockVram();
+     LockVram();
 	 for (i = 0; i < 4096; i++) {
 		 /*
 		  * 最下位から5bitづつB,G,R
@@ -1717,7 +1733,7 @@ void Palet320(void)
 		  }
 		  Palet320Sub(i, r, g, b, 255);
 	 }
-//     UnlockVram();
+     UnlockVram();
 
 }
 

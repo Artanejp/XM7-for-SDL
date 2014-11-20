@@ -8,6 +8,8 @@
  *   Nov 01,2012: Initial.
  */
 #include <SDL/SDL.h>
+#include <agar/core.h>
+
 #ifdef _WINDOWS
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -17,9 +19,9 @@
 #endif
 
 #ifdef _USE_OPENCL
- #include <CL/cl.h>
- #include <CL/cl_gl.h>
- #include <CL/cl_gl_ext.h>
+#include <CL/cl.h>
+#include <CL/cl_gl.h>
+#include <CL/cl_gl_ext.h>
 
 
 extern GLuint uVramTextureID;
@@ -44,7 +46,8 @@ class GLCLDraw {
    int GetGLEnabled(void);
    Uint32 *GetPixelBuffer(void);
    int ReleasePixelBuffer(Uint32 *p);
-   Uint8 *GetBufPtr(void);
+   Uint8 *GetBufPtr(Uint32 timeout);
+   void ReleaseBufPtr(void);
 
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;
@@ -74,18 +77,14 @@ class GLCLDraw {
    cl_kernel *kernel_table = NULL;
    cl_uint nkernels;
 
-   cl_mem inbuf = NULL;
+   int inbuf_bank = 0;
+   cl_mem inbuf[2] = {NULL, NULL};
    cl_mem outbuf = NULL;
    cl_mem palette = NULL;
    cl_mem internalpal = NULL;
    cl_mem table = NULL;
    cl_context_properties *properties = NULL;	
    GLuint pbo = 0;
-   cl_int copy8(void);
-   cl_int copy8_400l(void);
-   cl_int copy4096(void);
-   cl_int copysub(int hh);
-   cl_int copy256k(void);
    int using_device = 0;
    int bCLEnableKhrGLShare = 0;
    Uint32 *pixelBuffer = NULL;
@@ -93,6 +92,7 @@ class GLCLDraw {
    int bModeOld = -1;
    cl_device_type device_type[8];
    cl_ulong local_memsize[8];
+   AG_Mutex mutex_buffer;
 };
 
 enum {

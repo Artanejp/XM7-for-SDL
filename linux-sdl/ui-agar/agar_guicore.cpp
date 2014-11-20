@@ -124,7 +124,7 @@ void AGDrawTaskEvent(BOOL flag)
 	 if(skipf != TRUE){
 	    AG_WindowDrawQueued();
 	    nDrawTick1D = nDrawTick2D;
-	    if(((XM7_timeGetTime() - nDrawTick2D) >= (fps / 4)) && (agDriverSw != NULL)) skipf = TRUE;
+	    //if(((XM7_timeGetTime() - nDrawTick2D) >= (fps / 4)) && (agDriverSw != NULL)) skipf = TRUE;
 	    XM7_Sleep(1);
 	    continue;
 	 } else {

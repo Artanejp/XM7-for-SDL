@@ -116,7 +116,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 #ifdef _USE_OPENCL
        if((cldraw != NULL) && (bCLEnabled)) {
  	  cl_int ret = CL_SUCCESS;
-	  LockVram();
+	  //LockVram();
 	  flag = FALSE;
 	  //if(SDLDrawFlag.Drawn) {
 	  //  for(i = 0; i < h; i++) bDrawLine[i] = TRUE;
@@ -135,7 +135,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 		  SDLDrawFlag.Drawn = FALSE;
 		  bPaletFlag = FALSE;
 		  glBindTexture(GL_TEXTURE_2D, 0);
-		  UnlockVram();
+		  //UnlockVram();
 		  return;
 		}
 	    }
@@ -170,7 +170,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 	    SDLDrawFlag.Drawn = FALSE;
 	    bPaletFlag = FALSE;
           //}
-	  UnlockVram();
+	  //UnlockVram();
        } else {
 #endif
 	  LockVram();
