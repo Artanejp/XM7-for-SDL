@@ -33,6 +33,30 @@ inline uint8 putpixel(uint8 n, uint8 abuf)
 }
 
 
+struct apalettetbl_t {
+   uchar line_h;
+   uchar line_l;
+   uchar mpage;
+   uchar r_4096[4096];
+   uchar g_4096[4096];
+   uchar b_4096[4096];
+} __attribute__((packed));
+
+struct dpalettetbl_t {
+   uchar line_h;
+   uchar line_l;
+   uchar mpage;
+   uchar tbl[8];
+}__attribute__((packed));
+
+struct palettebuf_t {
+   uchar alines_h;
+   uchar alines_l;
+   uchar dlines_h;
+   uchar dlines_l;
+   struct apalettetbl_t atbls[200];
+   struct dpalettetbl_t dtbls[400];
+}__attribute__((packed));
    
 uchar4 ttlpalet2rgb(__global uchar *pal, uint index)
 {

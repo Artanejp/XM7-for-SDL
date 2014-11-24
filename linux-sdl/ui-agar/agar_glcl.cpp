@@ -68,7 +68,10 @@ GLCLDraw::~GLCLDraw()
    if(command_queue != NULL) ret |= clReleaseCommandQueue(command_queue);
    if(context != NULL) ret |= clReleaseContext(context);
    if(properties != NULL) free(properties);
-   for(i = 0; i < 2; i++) if(inbuf[i] != NULL) ret |= clReleaseMemObject(inbuf[i]);
+   for(i = 0; i < 2; i++) {
+      if(inbuf[i] != NULL) ret |= clReleaseMemObject(inbuf[i]);
+      if(palette_buf[i] != NULL) ret |= clReleaseMemObject(palette_buf[i]);
+   }
    if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
    if(palette != NULL) ret |= clReleaseMemObject(palette);
    //   if(internalpal != NULL) ret |= clReleaseMemObject(internalpal);
@@ -427,6 +430,110 @@ cl_int GLCLDraw::UnMapTransferBuffer(Uint8 *p)
   return ret;
 }
 
+void GLCLDraw::AddPalette(int line, Uint8 mpage, BOOL analog)
+{
+   struct palettebuf_t *p;
+   
+   if(palettebuf[inbuf_bank] == NULL) return;
+   p = palettebuf[inbuf_bank];
+   if(analog) {
+      int i;
+      Uint32 lines;
+      if(line < 0) return;
+      if(line > 199) return;
+      lines = ((p->alines_h << 8) & 0xff00)| (p->alines_l & 0x00ff);
+      if((lastline != line) || ((line == 0) && (lines == 0))) {
+	 lastline = line;
+	 lines++;
+	 if(lines > 199) return;
+      }
+      p->alines_h = (lines >> 8) & 0x00ff;
+      p->alines_l = lines & 0x00ff;
+      p->atbls[lines - 1].line_h = (line >> 8) & 0x00ff;  
+      p->atbls[lines - 1].line_l = line & 0x00ff;
+      p->atbls[lines - 1].mpage = mpage;
+      for(i = 0; i < 4096; i++) {
+	 p->atbls[lines - 1].r_4096[i] = apalet_r[i];
+	 p->atbls[lines - 1].g_4096[i] = apalet_g[i];
+	 p->atbls[lines - 1].b_4096[i] = apalet_b[i];
+      }
+   } else {
+      int i;
+      Uint32 lines;
+      if(line < 0) return;
+      if(line > 399) return;
+      lines = ((p->dlines_h << 8) & 0xff00)| (p->dlines_l & 0x00ff);
+      if((lastline != line) || ((line == 0) && (lines == 0))) {
+	 lastline = line;
+	 lines++;
+	 if(lines > 399) return;
+      }
+      p->dlines_h = (lines >> 8) & 0x00ff;
+      p->dlines_l = lines & 0x00ff;
+      p->dtbls[lines - 1].line_h = (line >> 8) & 0x00ff;  
+      p->dtbls[lines - 1].line_l = line & 0x00ff;
+      p->dtbls[lines - 1].mpage = mpage;
+      for(i = 0; i < 7; i++) {
+	 p->dtbls[lines - 1].tbl[i] = ttl_palet[i];
+      }
+   }
+}
+
+void GLCLDraw::ResetPalette(void)
+{
+   struct palettebuf_t *pold, *pnew;
+   int newline;
+   int endline;
+   cl_int r;
+   cl_event ev_unmap, ev_map;
+   
+   pold = palettebuf[inbuf_bank];
+   newline = inbuf_bank + 1;
+   if(newline >= 2) newline = 0;
+   pnew = clEnqueueMapBuffer(command_queue, palette_buf[newline], CL_TRUE, CL_MAP_READ | CL_MAP_WRITE,
+			     0, (size_t)sizeof(struct palettebuf_t),
+			     0, NULL, &ev_map, &r);
+   lastline = 0;
+   if(r < CL_SUCCESS) return;
+   if(pnew != NULL) {
+	palettebuf[newline] = pnew;
+        if(pold != NULL) {
+	     {
+		endline = ((pold->alines_h << 8) & 0x00ff00) | (pold->alines_l & 0x0000ff);
+		endline = endline - 1;
+		if(endline <= 0) endline = 0;
+		if(endline >= 200) endline = 199;
+		memcpy(&(pnew->atbls[0]) , &(pold->atbls[endline]), sizeof(struct apalettetbl_t));
+		pnew->alines_h = 0;
+		pnew->alines_l = 0;
+		pnew->atbls[0].line_h = 0;
+		pnew->atbls[0].line_l = 0;
+	     }
+	     {
+		endline = ((pold->dlines_h << 8) & 0x00ff00) | (pold->dlines_l & 0x0000ff);
+		endline = endline - 1;
+		if(endline <= 0) endline = 0;
+		if(endline >= 400) endline = 399;
+		memcpy(&(pnew->dtbls[0]) , &(pold->dtbls[endline]), sizeof(struct dpalettetbl_t));
+		pnew->dlines_h = 0;
+		pnew->dlines_l = 0;
+		pnew->dtbls[0].line_h = 0;
+		pnew->dtbls[0].line_l = 0;
+	     }
+	}
+   }
+   if(pold != NULL) clEnqueueUnmapMemObject(command_queue, palette_buf[inbuf_bank], 
+			   pold, 1, &ev_map,
+			   &ev_unmap);
+   clFinish(command_queue);
+   clFlush(command_queue);
+   palettebuf[inbuf_bank] = NULL;
+}
+
+	   
+   
+
+
 cl_int GLCLDraw::GetVram(int bmode)
 {
    cl_int ret = 0;
@@ -704,6 +811,26 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
        }
      }
      XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: inbuf[%d] : %d", i, r);
+     palette_buf[i] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR | 0, // Reduce HOST-CPU usage.
+                            (size_t)sizeof(struct palettebuf_t), NULL, &r);
+     ret = r;
+     if(r == CL_SUCCESS){
+       cl_int r2;
+       cl_event cl_event_map;
+       cl_event cl_event_unmap;
+       Uint8 *p;
+       p = clEnqueueMapBuffer(command_queue, palette_buf[i], CL_TRUE, CL_MAP_WRITE,
+			      0, (size_t)sizeof(struct palettebuf_t),
+	                      0, NULL, &cl_event_map, &r2);
+       if((r2 >= CL_SUCCESS) && (p != NULL)) {
+	  memset(p, 0x00, (size_t)sizeof(struct palettebuf_t));
+	  clEnqueueUnmapMemObject(command_queue, palette_buf[i], 
+				  p, 1, &cl_event_map,
+				  &cl_event_unmap);
+	  clFinish(command_queue);
+       }
+     }
+     XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette_buf[%d] : %d", i, r);
    }
    TransferBuffer = MapTransferBuffer(SCR_262144);
    

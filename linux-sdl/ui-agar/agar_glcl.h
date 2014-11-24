@@ -23,8 +23,42 @@
 #include <CL/cl_gl.h>
 #include <CL/cl_gl_ext.h>
 
+extern "C" {
+   #include "xm7_types.h"
+   extern BYTE     ttl_palet[8];
+   extern BYTE     apalet_b[4096];
+   extern BYTE     apalet_r[4096];
+   extern BYTE     apalet_g[4096];
+   extern BYTE     multi_page;
+};
 
 extern GLuint uVramTextureID;
+
+struct apalettetbl_t {
+   Uint8 line_h;
+   Uint8 line_l;
+   Uint8 mpage;
+   Uint8 r_4096[4096];
+   Uint8 g_4096[4096];
+   Uint8 b_4096[4096];
+} __attribute__((packed));
+
+struct dpalettetbl_t {
+   Uint8 line_h;
+   Uint8 line_l;
+   Uint8 mpage;
+   Uint8 tbl[8];
+}__attribute__((packed));
+
+struct palettebuf_t {
+   Uint8 alines_h;
+   Uint8 alines_l;
+   Uint8 dlines_h;
+   Uint8 dlines_l;
+   struct apalettetbl_t atbls[200];
+   struct dpalettetbl_t dtbls[400];
+}__attribute__((packed));
+
 
 class GLCLDraw {
  public:
@@ -48,7 +82,9 @@ class GLCLDraw {
    int ReleasePixelBuffer(Uint32 *p);
    Uint8 *GetBufPtr(Uint32 timeout);
    void ReleaseBufPtr(void);
-
+   void AddPalette(int line, Uint8 mpage, BOOL analog);
+   void ResetPalette(void);
+   
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;
 
@@ -80,16 +116,19 @@ class GLCLDraw {
 
    int inbuf_bank = 0;
    cl_mem inbuf[2] = {NULL, NULL};
+   cl_mem palette_buf[2] = {NULL, NULL};
    cl_mem outbuf = NULL;
    cl_mem palette = NULL;
    cl_mem internalpal = NULL;
    cl_mem table = NULL;
    cl_context_properties *properties = NULL;	
    GLuint pbo = 0;
+   int lastline;
    int using_device = 0;
    int bCLEnableKhrGLShare = 0;
    Uint32 *pixelBuffer = NULL;
    Uint8 *TransferBuffer = NULL;
+   struct palettebuf_t *palettebuf[2] = {NULL, NULL};
    int bModeOld = -1;
    cl_device_type device_type[8];
    cl_ulong local_memsize[8];
