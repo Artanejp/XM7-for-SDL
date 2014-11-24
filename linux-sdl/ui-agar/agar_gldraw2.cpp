@@ -123,13 +123,12 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 	  //}
 	  for(i = 0; i < h; i++) {
 	    if(bDrawLine[i]) {
+	      //bDrawLine[i] = FALSE;
 	      flag = TRUE;
 	    }
 	  }
 	  if(SDLDrawFlag.Drawn) flag = TRUE;
-	  //if(bMode != bModeOld) flag = FALSE;
-	  //if(crtflag){
-	    if(flag) {
+	  if(flag) {
 		ret = cldraw->GetVram(bModeOld);
 		if(ret != CL_SUCCESS) {
 		  SDLDrawFlag.Drawn = FALSE;

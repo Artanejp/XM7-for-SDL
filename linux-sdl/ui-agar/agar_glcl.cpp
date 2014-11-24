@@ -95,25 +95,6 @@ int GLCLDraw::GetGLEnabled(void)
 
 Uint32 *GLCLDraw::GetPixelBuffer(void)
 {
-#if 0
-   int w = w2;
-   int h = h2;
-   cl_int ret;
-   if(w == 320) {
-      if(h != 200) return NULL;
-   } else if(w == 640) {
-      if((h != 200) && (h != 400)) return NULL;
-   } else {
-      return NULL;
-   }
-	
-   ret = clEnqueueReadBuffer(command_queue, outbuf, CL_TRUE, 0,
-				w * h * sizeof(Uint32), (void *)pixelBuffer
-				, 1, &event_exec, &event_release);
-   if(ret < CL_SUCCESS) return NULL;
-   clFinish(command_queue);
-   return pixelBuffer;
-#else   
     Uint32 *p;
     int ret = 0;
     p = (Uint32 *) clEnqueueMapBuffer(command_queue, outbuf, CL_TRUE, CL_MAP_READ,
@@ -122,7 +103,6 @@ Uint32 *GLCLDraw::GetPixelBuffer(void)
     if(ret < 0) return NULL;
     clFlush(command_queue);
     return p;
-#endif
 }
 
 int GLCLDraw::ReleasePixelBuffer(Uint32 *p)
@@ -369,6 +349,7 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
 	  if((strncmp(funcname, "getvram4096", strlen("getvram4096")) == 0) && (kernel_4096colors == NULL)) kernel_4096colors = &kernels_array[i];
 	  if((strncmp(funcname, "getvram256k", strlen("getvram256k")) == 0) && (kernel_256kcolors == NULL)) kernel_256kcolors = &kernels_array[i];
 	  if((strncmp(funcname, "CreateTable", strlen("CreateTable")) == 0) && (kernel_table == NULL)) kernel_table = &kernels_array[i];
+	  if((strncmp(funcname, "CopyVram", strlen("CopyVram")) == 0) && (kernel_copyvram == NULL)) kernel_copyvram = &kernels_array[i];
 	}
       }
     }
@@ -413,22 +394,22 @@ Uint8 *GLCLDraw::MapTransferBuffer(int bmode)
   switch(bmode)
   {
   case SCR_200LINE:
-    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_TRUE, CL_MAP_WRITE,
+    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_FALSE, CL_MAP_WRITE_INVALIDATE_REGION,
 			 0, 0x4000 * 3,
 			 0, NULL, &event_uploadvram[0], &ret);
     break;
   case SCR_400LINE:
-    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_TRUE, CL_MAP_WRITE,
+    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_FALSE, CL_MAP_WRITE_INVALIDATE_REGION,
 			 0, 0x8000 * 3,
 			 0, NULL, &event_uploadvram[0], &ret);
     break;
   case SCR_4096:
-    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_TRUE, CL_MAP_WRITE,
+    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_FALSE, CL_MAP_WRITE_INVALIDATE_REGION,
 			 0, 0x2000 * 12,
 			 0, NULL, &event_uploadvram[0], &ret);
     break;
   case SCR_262144:
-    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_TRUE, CL_MAP_WRITE,
+    p = clEnqueueMapBuffer(command_queue, inbuf[inbuf_bank], CL_FALSE, CL_MAP_WRITE_INVALIDATE_REGION,
 			 0, 0x2000 * 18,
 			 0, NULL, &event_uploadvram[0], &ret);
     break;
@@ -485,7 +466,7 @@ cl_int GLCLDraw::GetVram(int bmode)
      Uint8 *p;
      p = GetBufPtr(0); // Maybe okay?
      for(i = 0; i < 400 ; i++) {
-       flag |= bDrawLine[i];
+       if(bDrawLine[i]) flag = TRUE;
        bDrawLine[i] = FALSE;
     }
     if(flag) {
@@ -512,12 +493,28 @@ cl_int GLCLDraw::GetVram(int bmode)
      if((flag != FALSE) && (transfer_size > 0)){
        inbuf_bank++;
        if(inbuf_bank >= 2) inbuf_bank = 0;
+      if(kernel_copyvram != NULL) {
+	 cl_int size = transfer_size;
+	 ret |= clSetKernelArg(*kernel_copyvram, 0, sizeof(cl_mem), (void *)&(inbuf[inbuf_bank]));
+	 ret |= clSetKernelArg(*kernel_copyvram, 1, sizeof(cl_mem), (void *)&(inbuf[bank]));
+	 ret |= clSetKernelArg(*kernel_copyvram, 2, sizeof(cl_int), &size);
+	 ret |= clSetKernelArg(*kernel_copyvram, 3, sizeof(cl_int), &bCLSparse);
+	 if(bCLSparse) {
+	    ret = clEnqueueNDRangeKernel(command_queue, *kernel_copyvram, 1, 
+					 goff, gws, lws, 
+					 0, NULL,  &copy_event);
+	 } else {
+	    ret = clEnqueueTask(command_queue,
+				*kernel_copyvram, 0, NULL, &copy_event);
+	 }
+      } else {
        ret = clEnqueueCopyBuffer(command_queue, inbuf[bank], inbuf[inbuf_bank], 0,
-			       0, transfer_size, 0, NULL,
+				 0, transfer_size, 0, NULL,
 			       &copy_event);
-       clFinish(command_queue);
-       TransferBuffer = MapTransferBuffer(SCR_262144);
-       clFinish(command_queue);
+      }
+      clFinish(command_queue);
+//      TransferBuffer = MapTransferBuffer(SCR_262144);
+      TransferBuffer = MapTransferBuffer(bmode);
      }
      ReleaseBufPtr();
      if(TransferBuffer == NULL) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -686,7 +683,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 
    inbuf_bank = 0;
    for(i = 0; i < 2; i++) {
-     inbuf[i] = clCreateBuffer(context, CL_MEM_WRITE_ONLY, // Reduce HOST-CPU usage.
+     inbuf[i] = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR | 0, // Reduce HOST-CPU usage.
                             (size_t)(0x2000 * 18 * sizeof(Uint8)), NULL, &r);
      ret |= r;
      if(r == CL_SUCCESS){
@@ -724,7 +721,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
    // Texture直接からPBO使用に変更 20121102
    if((bCLEnableKhrGLShare != 0) && (bGL_PIXEL_UNPACK_BUFFER_BINDING != FALSE)){
        glGenBuffers(1, &pbo);
-       if(pbo < 0) {
+       if(pbo <= 0) {
 	 bCLEnableKhrGLShare = FALSE;
 	 goto _fallback;
        }

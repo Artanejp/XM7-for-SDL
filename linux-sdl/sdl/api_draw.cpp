@@ -1173,7 +1173,7 @@ void FASTCALL vblankperiod_notify(void)
 	      return;
 	    }
 #ifdef _USE_OPENCL
-		   LockVram();
+		   //LockVram();
 		   if((bCLEnabled) && (cldraw != NULL)) {
 		     Uint8 *p;
 		     BOOL flag2 = FALSE;
@@ -1182,13 +1182,9 @@ void FASTCALL vblankperiod_notify(void)
 		       cldraw->ReleaseBufPtr();
 		       return;
 		     }
-//		     if(crtflag != FALSE){
-		       if(crtflag != old_crtflag) { // OFF->ON
-			 for(y = 0; y < 400; y++) bDirtyLine[y] = TRUE;
-		       }
-#ifdef _OPENMP
-   #pragma omp parallel for shared(bDirtyLine, p, ymax)
-#endif
+//#ifdef _OPENMP
+//   #pragma omp parallel for shared(bDirtyLine, p, ymax)
+//#endif
 		       for(y = 0; y < ymax; y++) {
 			  if (bDirtyLine[y]) {
 			     Transfer_1Line(p, y);
@@ -1196,43 +1192,33 @@ void FASTCALL vblankperiod_notify(void)
 			     //flag2 = TRUE;
 			  }
 		       }
-		       cldraw->ReleaseBufPtr();
-
-		       if(bPaletFlag || SDLDrawFlag.APaletteChanged || SDLDrawFlag.DPaletteChanged) {
-			 SDLDrawFlag.APaletteChanged = FALSE;
-			 SDLDrawFlag.DPaletteChanged = FALSE;
-			 bPaletFlag = FALSE;
-			 flag2 = TRUE;
-		       }
+		       //if(bPaletFlag || SDLDrawFlag.APaletteChanged || SDLDrawFlag.DPaletteChanged) {
+			// SDLDrawFlag.APaletteChanged = FALSE;
+			// SDLDrawFlag.DPaletteChanged = FALSE;
+			// bPaletFlag = FALSE;
+			// flag2 = TRUE;
+		       //}
 		       if(flag2) SDLDrawFlag.Drawn = TRUE;
-//		     } else {
-		       if(old_crtflag != crtflag) { // ON -> OFF
-			 //SelectClear(SCR_262144); // All clear
-			 //for(y = 0; y < 400; y++) {
-			   //  bDirtyLine[y] = FALSE;
-			   //bDrawLine[y] = TRUE;
-			 //}
-			 //SDLDrawFlag.Drawn = TRUE;
-		       }
-//		     }
+		       cldraw->ReleaseBufPtr();
 		   } else
 #endif // _USE_OPENCL		     
 		   if(nRenderMethod == RENDERING_RASTER) {
 		     BOOL flag2 = FALSE;
-#ifdef _OPENMP
-    #pragma omp parallel for shared(bDirtyLine, p, flag2, ymax)
-#endif
+		     LockVram();
+//#ifdef _OPENMP
+//    #pragma omp parallel for shared(bDirtyLine, p, flag2, ymax)
+//#endif
 		     for(y = 0; y < ymax; y++) {
 		       if (bDirtyLine[y]) {
 			 Draw_1Line(y);
 			 bDirtyLine[y] = FALSE;
-			 flag2 = TRUE;
+			 //flag2 = TRUE;
 		       }
 		     }
-		     if(flag2) SDLDrawFlag.Drawn = TRUE;
+		     //if(flag2) SDLDrawFlag.Drawn = TRUE;
+		      UnlockVram();  
 		   }
-		   UnlockVram();  
-		}
+	  }
 	}
 	old_crtflag = crtflag;
 }
@@ -1303,7 +1289,7 @@ static void Transfer_1Line(Uint8 *dst, int line)
   Uint8 *d1, *d2;
   int wdbtm, wdtop;
   int w, h;
-#if 0  
+#if 0
   if(SDLDrawFlag.APaletteChanged) {
          SDLDrawFlag.APaletteChanged = FALSE;
 	 bDrawLine[line] = TRUE;
@@ -1413,33 +1399,33 @@ static void Transfer_1Line(Uint8 *dst, int line)
  */
 void FASTCALL hblank_notify(void)
 {
+  int y;
   if(now_raster >= 400) return;
-  //if(!old_crtflag) return;
-  //if(bModeOld != bMode) return;
+  //if((bModeOld != bMode)){
+  //   bNextFrameRender = TRUE;
+  //   return;
+  //}
   LockVram();
 #if _USE_OPENCL
   if((bCLEnabled) && (cldraw != NULL)){
      Uint8 *p;
      p = cldraw->GetBufPtr(0);
-     if(p == NULL) {
-       cldraw->ReleaseBufPtr();
-       return;
-     }
      if(bDirtyLine[now_raster]) {
+	if(p == NULL) {
+	   cldraw->ReleaseBufPtr();
+	   UnlockVram();
+	   return;
+       }
        Transfer_1Line(p, now_raster);
        bDirtyLine[now_raster] = FALSE;
-       //SDLDrawFlag.Drawn = TRUE;
      }
-#if 1
-     else if(bPaletFlag || SDLDrawFlag.APaletteChanged || SDLDrawFlag.DPaletteChanged) {
-       SDLDrawFlag.APaletteChanged = FALSE;
-       SDLDrawFlag.DPaletteChanged = FALSE;
-       bPaletFlag = FALSE;
-       SDLDrawFlag.Drawn = TRUE;
-     }
+//     if(bPaletFlag || SDLDrawFlag.APaletteChanged || SDLDrawFlag.DPaletteChanged) {
+//       SDLDrawFlag.APaletteChanged = FALSE;
+//       SDLDrawFlag.DPaletteChanged = FALSE;
+//       bPaletFlag = FALSE;
+//       SDLDrawFlag.Drawn = TRUE;
+//     }
      cldraw->ReleaseBufPtr();
-
-#endif
      UnlockVram();
      return;
    }

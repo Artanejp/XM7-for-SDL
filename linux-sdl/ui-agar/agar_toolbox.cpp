@@ -269,7 +269,7 @@ static void OnSaveStatusSub(char *filename)
     LockVM();
 //    AG_MutexLock(&nRunMutex);
     StopSnd();
-    XM7_Sleep(10);
+    //XM7_Sleep(10);
     if (!system_save(filename)) {
     } else {
     	strcpy(StatePath, filename);

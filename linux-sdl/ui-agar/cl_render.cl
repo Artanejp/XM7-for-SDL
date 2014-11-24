@@ -67,6 +67,39 @@ __kernel void CreateTable(__global uint8 *table, int pages)
 }
 
 
+__kernel void CopyVram(__global uchar *to, __global uchar *from, int size, int multithread)
+{
+  int t;
+  int gid;
+//  int lid;
+  int pbegin;
+  int pb1;
+  int ww;
+  int i;
+  __global uchar *p, *q;
+  
+  if(multithread != 0){
+      t = get_global_size(0);
+      gid = get_global_id(0);
+//      lid = get_local_id(0);
+      pbegin = (gid * size) / t; 
+      pb1 = ((gid + 1) * size) / t;
+      if(pb1 > size) {
+         ww = size - pbegin;
+      } else {
+         ww = pb1 - pbegin;
+      }
+  } else {
+      pbegin = 0;
+      ww = size;
+      gid = 0;
+  }
+  p = &from[pbegin];
+  q = &to[pbegin];
+  for(i = 0; i < ww; i++) *q++ = *p++;
+  
+}
+
 void setup_ttlpalette(__global uchar *pal, __local uint *palette, float4 bright, uint vpage)
 {
    int i;

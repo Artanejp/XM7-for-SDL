@@ -70,11 +70,12 @@ class GLCLDraw {
    cl_event event_uploadvram[4];
    cl_event event_copytotexture;
    cl_event event_release;
-   cl_kernel kernels_array[8];
+   cl_kernel kernels_array[16];
    cl_kernel *kernel_8colors = NULL;
    cl_kernel *kernel_4096colors = NULL;
    cl_kernel *kernel_256kcolors = NULL;
-   cl_kernel *kernel_table = NULL;
+   cl_kernel *kernel_table = NULL; 
+   cl_kernel *kernel_copyvram = NULL;
    cl_uint nkernels;
 
    int inbuf_bank = 0;
