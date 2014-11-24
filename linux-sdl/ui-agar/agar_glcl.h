@@ -128,7 +128,7 @@ class GLCLDraw {
    int bCLEnableKhrGLShare = 0;
    Uint32 *pixelBuffer = NULL;
    Uint8 *TransferBuffer = NULL;
-   struct palettebuf_t *palettebuf[2] = {NULL, NULL};
+   struct palettebuf_t *palettebuf = NULL;
    int bModeOld = -1;
    cl_device_type device_type[8];
    cl_ulong local_memsize[8];

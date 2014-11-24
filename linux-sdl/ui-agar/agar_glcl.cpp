@@ -434,19 +434,20 @@ void GLCLDraw::AddPalette(int line, Uint8 mpage, BOOL analog)
 {
    struct palettebuf_t *p;
    
-   if(palettebuf[inbuf_bank] == NULL) return;
-   p = palettebuf[inbuf_bank];
+   if(palettebuf == NULL) return;
+   p = palettebuf;
    if(analog) {
       int i;
       Uint32 lines;
-      if(line < 0) return;
-      if(line > 199) return;
+      if(line < 0) line = 0;
+      if(line > 199) line = 199;
       lines = ((p->alines_h << 8) & 0xff00)| (p->alines_l & 0x00ff);
-      if((lastline != line) || ((line == 0) && (lines == 0))) {
+      if((lastline != line) || (lines >= 1)) {
 	 lastline = line;
 	 lines++;
 	 if(lines > 199) return;
       }
+      //printf("AddPalette %d\n", lines);
       p->alines_h = (lines >> 8) & 0x00ff;
       p->alines_l = lines & 0x00ff;
       p->atbls[lines - 1].line_h = (line >> 8) & 0x00ff;  
@@ -460,13 +461,16 @@ void GLCLDraw::AddPalette(int line, Uint8 mpage, BOOL analog)
    } else {
       int i;
       Uint32 lines;
-      if(line < 0) return;
-      if(line > 399) return;
+      int h = 199;
+      
+      if(bMode == SCR_400LINE) h = 399;
+      if(line < 0) line = 0;
+      if(line > h) line = h;
       lines = ((p->dlines_h << 8) & 0xff00)| (p->dlines_l & 0x00ff);
-      if((lastline != line) || ((line == 0) && (lines == 0))) {
+      if((lastline != line) || (lines >= 1)) {
 	 lastline = line;
 	 lines++;
-	 if(lines > 399) return;
+	 if(lines > h) return;
       }
       p->dlines_h = (lines >> 8) & 0x00ff;
       p->dlines_l = lines & 0x00ff;
@@ -486,39 +490,46 @@ void GLCLDraw::ResetPalette(void)
    int endline;
    cl_int r;
    cl_event ev_unmap, ev_map;
+   int i;
    
-   pold = palettebuf[inbuf_bank];
+   pold = palettebuf;
    newline = inbuf_bank + 1;
    if(newline >= 2) newline = 0;
    pnew = clEnqueueMapBuffer(command_queue, palette_buf[newline], CL_TRUE, CL_MAP_READ | CL_MAP_WRITE,
 			     0, (size_t)sizeof(struct palettebuf_t),
 			     0, NULL, &ev_map, &r);
-   lastline = 0;
+   lastline = 1;
    if(r < CL_SUCCESS) return;
    if(pnew != NULL) {
-	palettebuf[newline] = pnew;
+	palettebuf = pnew;
         if(pold != NULL) {
 	     {
-		endline = ((pold->alines_h << 8) & 0x00ff00) | (pold->alines_l & 0x0000ff);
-		endline = endline - 1;
-		if(endline <= 0) endline = 0;
-		if(endline >= 200) endline = 199;
-		memcpy(&(pnew->atbls[0]) , &(pold->atbls[endline]), sizeof(struct apalettetbl_t));
+		//endline = ((pold->alines_h << 8) & 0x00ff00) | (pold->alines_l & 0x0000ff);
+		//endline = endline - 1;
+		//if(endline <= 0) endline = 0;
+		//if(endline >= 200) endline = 199;
+		//memcpy(&(pnew->atbls[0]) , &(pold->atbls[endline]), sizeof(struct apalettetbl_t));
 		pnew->alines_h = 0;
-		pnew->alines_l = 0;
+		pnew->alines_l = 1;
 		pnew->atbls[0].line_h = 0;
 		pnew->atbls[0].line_l = 0;
+		for(i = 0; i < 4096; i++) {
+		   pnew->atbls[0].r_4096[i] = apalet_r[i];
+		   pnew->atbls[0].g_4096[i] = apalet_g[i];
+		   pnew->atbls[0].b_4096[i] = apalet_b[i];
+		}
 	     }
 	     {
-		endline = ((pold->dlines_h << 8) & 0x00ff00) | (pold->dlines_l & 0x0000ff);
-		endline = endline - 1;
-		if(endline <= 0) endline = 0;
-		if(endline >= 400) endline = 399;
-		memcpy(&(pnew->dtbls[0]) , &(pold->dtbls[endline]), sizeof(struct dpalettetbl_t));
+		//endline = ((pold->dlines_h << 8) & 0x00ff00) | (pold->dlines_l & 0x0000ff);
+		//endline = endline - 1;
+		//if(endline <= 0) endline = 0;
+		//if(endline >= 400) endline = 399;
+		//memcpy(&(pnew->dtbls[0]) , &(pold->dtbls[endline]), sizeof(struct dpalettetbl_t));
 		pnew->dlines_h = 0;
-		pnew->dlines_l = 0;
+		pnew->dlines_l = 1;
 		pnew->dtbls[0].line_h = 0;
 		pnew->dtbls[0].line_l = 0;
+		for(i = 0; i < 8; i++) pnew->dtbls[0].tbl[i] = ttl_palet[i];
 	     }
 	}
    }
@@ -527,7 +538,6 @@ void GLCLDraw::ResetPalette(void)
 			   &ev_unmap);
    clFinish(command_queue);
    clFlush(command_queue);
-   palettebuf[inbuf_bank] = NULL;
 }
 
 	   
@@ -598,6 +608,7 @@ cl_int GLCLDraw::GetVram(int bmode)
        break;
      }
      if((flag != FALSE) && (transfer_size > 0)){
+       ResetPalette();
        inbuf_bank++;
        if(inbuf_bank >= 2) inbuf_bank = 0;
       if(kernel_copyvram != NULL) {
@@ -620,7 +631,6 @@ cl_int GLCLDraw::GetVram(int bmode)
 			       &copy_event);
       }
       clFinish(command_queue);
-//      TransferBuffer = MapTransferBuffer(SCR_262144);
       TransferBuffer = MapTransferBuffer(bmode);
      }
      ReleaseBufPtr();
@@ -644,22 +654,16 @@ cl_int GLCLDraw::GetVram(int bmode)
       //gws[0] = h;
       if(kernel_8colors != NULL) kernel = kernel_8colors;
       if(kernel != NULL) {
-	 ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-				  8 * sizeof(Uint8), (void *)&ttl_palet[0]
-                              , 0, NULL, &event_uploadvram[2]);
-      //      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-      //                        8 * sizeof(Uint32), (void *)&rgbTTLGDI[0]
-      //                        , 0, NULL, &event_uploadvram[2]);
 	 ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem), (void *)&(inbuf[bank]));
 	 ret |= clSetKernelArg(*kernel, 1, sizeof(int),    (void *)&w);
 	 ret |= clSetKernelArg(*kernel, 2, sizeof(int), (void *)&h);
 	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem), (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem), (void *)&palette);
+	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem), (void *)&palette_buf[bank]);
 	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_mem), (void *)&table);
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(int), (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(int), (void *)&crtflag);
-	 ret |= clSetKernelArg(*kernel, 8, sizeof(int), (void *)&vpage);
-	 ret |= clSetKernelArg(*kernel, 9, sizeof(cl_float4), (void *)&bright);
+	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
+	 clFlush(command_queue);
       }
       break;
     case SCR_262144:// Windowはなし
@@ -685,6 +689,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
 	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
+	 clFlush(command_queue);
       }
       break;
     case SCR_4096:
@@ -694,28 +699,16 @@ cl_int GLCLDraw::GetVram(int bmode)
       //if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
       if(kernel_4096colors != NULL) kernel = kernel_4096colors;
       if(kernel != NULL) {
-	   {
-	      cl_event event_local[2];
-	      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-					  4096 * sizeof(Uint8), (void *)&apalet_b[0]
-					  , 0, NULL, &event_local[0]);
-	      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 4096,
-					  4096 * sizeof(Uint8), (void *)&apalet_r[0]
-					  , 0, NULL, &event_local[1]);
-	      ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 4096 * 2,
-					  4096 * sizeof(Uint8), (void *)&apalet_g[0]
-					  , 2, event_local, &event_uploadvram[2]);
-	   }
-	   ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
+	 
+	 ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
 	 ret |= clSetKernelArg(*kernel, 1, sizeof(cl_int),  (void *)&w);
 	 ret |= clSetKernelArg(*kernel, 2, sizeof(cl_int),  (void *)&h);
 	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem),  (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem),  (void *)&palette);
+	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem),  (void *)&(palette_buf[bank]));
 	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_mem),  (void *)&table);
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
-	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_uint), (void *)&mpage);
-	 ret |= clSetKernelArg(*kernel, 9, sizeof(cl_float4), (void *)&bright);
+	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
       //clFinish(command_queue);
 	 clFlush(command_queue);
       }
@@ -727,7 +720,7 @@ cl_int GLCLDraw::GetVram(int bmode)
      glFlush();
      ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
-				  1, &event_uploadvram[2], &event_copytotexture);
+				  0, NULL, &event_copytotexture);
      if(kernel != NULL) {
        if(bCLSparse) {
 	 ret = clEnqueueNDRangeKernel(command_queue, *kernel, 1, 
@@ -785,6 +778,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 {
    cl_int ret = 0;
    cl_int r = 0;
+   cl_event ev;
    unsigned int size = 640 * 400 * sizeof(cl_uchar4);
    int i;
 
@@ -833,6 +827,11 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
      XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette_buf[%d] : %d", i, r);
    }
    TransferBuffer = MapTransferBuffer(SCR_262144);
+   palettebuf = clEnqueueMapBuffer(command_queue, palette_buf[0], CL_TRUE, CL_MAP_WRITE,
+			      0, (size_t)sizeof(struct palettebuf_t),
+	                      0, NULL, &ev, &r);
+   ResetPalette();
+   ResetPalette();
    
    palette = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
  		  (size_t)(4096 * 3 * sizeof(Uint8)), NULL, &r);

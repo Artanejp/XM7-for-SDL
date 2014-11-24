@@ -1053,7 +1053,9 @@ void	ttlpalet_notify(void)
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
       if(bPaletFlag != TRUE) {
 	bNextFrameRender = TRUE;
-	 //SetDirtyFlag(0, 400, TRUE);
+	 if(cldraw != NULL) {
+	    cldraw->AddPalette(now_raster, multi_page, FALSE);
+	 }
       }
    } else {
       if(bPaletFlag != TRUE) {
@@ -1077,7 +1079,10 @@ void 	apalet_notify(void)
       bNextFrameRender = TRUE;
       if(bPaletFlag != TRUE) {
 	  bNextFrameRender = TRUE;
-	 //SetDirtyFlag(0, 400, TRUE);
+	 if(cldraw != NULL) {
+	    cldraw->AddPalette(now_raster, multi_page, TRUE);
+	 }
+      	 //SetDirtyFlag(0, 400, TRUE);
       }
    } else {
       if(bPaletFlag != TRUE) {
@@ -1418,6 +1423,7 @@ void FASTCALL hblank_notify(void)
        }
        Transfer_1Line(p, now_raster);
        bDirtyLine[now_raster] = FALSE;
+       bPaletFlag = FALSE;
      }
 //     if(bPaletFlag || SDLDrawFlag.APaletteChanged || SDLDrawFlag.DPaletteChanged) {
 //       SDLDrawFlag.APaletteChanged = FALSE;

@@ -124,7 +124,7 @@ __kernel void CopyVram(__global uchar *to, __global uchar *from, int size, int m
   
 }
 
-void setup_ttlpalette(__global uchar *pal, __local uint *palette, float4 bright, uint vpage)
+void setup_ttlpalette(uchar *pal, uint *palette, float4 bright, uint vpage)
 {
    int i;
    uchar4 v;
@@ -159,8 +159,8 @@ void clearscreen(int w,  __global uint8 *out, float4 bright)
 
 
 __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
-                       __global uchar *pal, __global uint8 *table,
-		       int multithread, int crtflag, uint vpage, float4 bright)
+                       __global struct palettebuf_t *pal, __global uint8 *table,
+		       int multithread, int crtflag, float4 bright)
 {
   int ofset = 0x4000;
   int x;
@@ -180,11 +180,16 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   __global uchar *src_r;
   __global uchar *src_g;
   __global uchar *src_b;
-  __local uint palette[8];
-
+  uint palette[8];
+  int line;
   int lid = 0;
   int i;
-
+  int oldline = 0;
+  int lines;
+  int nextline = h;
+  int wrap;
+  uchar mpage;
+  
   ww = w >> 3;
   if(multithread != 0){
       t = get_global_size(0);
@@ -220,16 +225,32 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   src_r = (__global uchar *)&src[addr + ofset];
   src_g = (__global uchar *)&src[addr + ofset + ofset];
   src_b = (__global uchar *)&src[addr];
-  //prefetch(tbl8, 256 * 3);
-  //prefetch(src_r, ww);
-  //prefetch(src_g, ww);
-  //prefetch(src_b, ww);
-
-  if(lid == 0) {
-     mask = 0x07 & vpage;
-     setup_ttlpalette(pal, palette, bright, mask);
-     mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
+  line = addr2 / 80;
+#if 1
+  {
+       int line2;
+       lines = (pal->dlines_h << 8) | pal->dlines_l;
+       i = 0;
+      for(i = 0; i < lines; i++) {
+          line2 = (pal->dtbls[i].line_h << 8) | pal->dtbls[i].line_l;
+          if((line2 < 0) || (line2 >= h)) break;
+          if(line2 >= line) break;
+	  if(i < lines) {
+	     nextline = (pal->dtbls[i + 1].line_h << 8) | pal->dtbls[i + 1].line_l;
+	     if(nextline > h) nextline = h;
+	  } else {
+	     nextline = h;
+	  }
+       }
+       oldline = i - 1;
+       if(oldline < 0) oldline = 0;
+       mpage = pal->dtbls[oldline].mpage;
   }
+#endif
+
+  mask = (~(mpage >> 4)) & 0x07;
+  setup_ttlpalette(pal->dtbls[oldline].tbl, palette, bright, mask);
+  mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
   barrier(CLK_LOCAL_MEM_FENCE);
 
   t = (256 * 3) / get_local_size(0);
@@ -239,8 +260,22 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   if(rr > (256 * 3)) rr = 256 * 3;
   for(i = q; i < rr; i++) tbl8[i] = table[i]; // Prefetch palette
   barrier(CLK_LOCAL_MEM_FENCE);
-
+  wrap = line;
   for(x = 0; x < ww; x++) {
+      line = (x + addr2) / 80;
+      if((wrap != line) && (line >= nextline)) {
+ 	   if(oldline < (lines - 1)) {
+	        nextline = (pal->dtbls[oldline].line_h << 8) | pal->dtbls[oldline].line_l;
+		oldline++;
+		} else {
+	        nextline = h;
+	    }
+	    mpage = pal->dtbls[oldline].mpage;
+	    mask = (~(mpage >> 4)) & 0x07;
+	    setup_ttlpalette(pal->dtbls[oldline].tbl, palette, bright, mask);
+	    wrap = line;
+     }
+  
         bc = *src_b++;
 	rc = *src_r++;
 	gc = *src_g++;
@@ -260,13 +295,13 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
     return;
 }	
 	
-inline uint get_apalette(__global uchar *pal, uint col, float4 bright)
+inline uint get_apalette(__global struct apalettetbl_t *pal, uint col, float4 bright)
 {
    uint rc, gc, bc, ac;
    uint dat;
-   rc = (uint)(pal[col + 4096] * bright.s0) << (rshift + 4);
-   gc = (uint)(pal[col + 8192] * bright.s1) << (gshift + 4);
-   bc = (uint)(pal[col] * bright.s2)        << (bshift + 4);
+   rc = (uint)(pal->r_4096[col] * bright.s0) << (rshift + 4);
+   gc = (uint)(pal->g_4096[col] * bright.s1) << (gshift + 4);
+   bc = (uint)(pal->b_4096[col] * bright.s2)        << (bshift + 4);
    ac = (uint)(255 * bright.s3) << ashift;
    dat = rc | gc | bc | ac;
    return dat;
@@ -275,14 +310,14 @@ inline uint get_apalette(__global uchar *pal, uint col, float4 bright)
    
 
 __kernel void getvram4096(__global uchar *src, int w, int h, 
-                          __global uchar4 *out, __global uchar *pal,
+                          __global uchar4 *out, __global struct palettebuf_t *pal,
 			  __global uint8 *table, 
-			  uint multithread, int crtflag, int mpage, float4 bright)
+			  uint multithread, int crtflag, float4 bright)
 {
   int ofset = 0x8000;
   int x;
   int ww;
-  int t, q, rr;
+  int t;
   int gid;
   uint addr;
   uint addr2;
@@ -298,15 +333,21 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   uint pb1, pbegin, col;
   __local uint8 mask8;
   __local uint mask;
-  int lid = 0;
+//  int lid = 0;
   int i;
-  __local uint palette[4096];  
-
+  uint palette[4096];
+  int mpage;
+  int line;
+  int nextline = 200;
+  int oldline = 0;
+  int lines;
+  int wrap;
+  
   ww = w >> 3;
   if(multithread != 0){
       t = get_global_size(0);
       gid = get_global_id(0);
-      lid = get_local_id(0);
+      //lid = get_local_id(0);
       col = ww * h;
       pbegin = (gid * col) / t; 
       pb1 = ((gid + 1) * col) / t;
@@ -325,6 +366,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 
 
   p8 = (__global uint8 *)(&(out[addr2]));
+  line = addr2 / 40;
   src = &src[addr];
   if(crtflag == 0) {
      clearscreen(ww, p8, bright);
@@ -333,36 +375,55 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   }
 
 
+  {
+       int line2;
+       lines = (pal->alines_h << 8) | pal->alines_l;
+       i = 0;
+      for(i = 0; i < lines; i++) {
+          line2 = (pal->atbls[i].line_h << 8) | pal->atbls[i].line_l;
+          if((line2 < 0) || (line2 > 199)) break;
+          if(line2 >= line) break;
+	  if(i < lines) {
+	     nextline = (pal->atbls[i + 1].line_h << 8) | pal->atbls[i + 1].line_l;
+	     if(nextline > 200) nextline = 200;
+	  } else {
+	     nextline = 200;
+	  }
+       }
+       oldline = i - 1;
+       if(oldline < 0) oldline = 0;
+       mpage = pal->atbls[oldline].mpage;
+  }
 
-    if(lid == 0) {
-      mask = 0;
-      if(!(mpage & 0x10)) mask  = 0x000f;
-      if(!(mpage & 0x20)) mask |= 0x00f0;
-      if(!(mpage & 0x40)) mask |= 0x0f00;
-      mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
-//    }
-//    barrier(CLK_LOCAL_MEM_FENCE);
+  //mpage = pal->atbls[0].mpage;
+  mask = 0;
+  if(!(mpage & 0x10)) mask  = 0x000f;
+  if(!(mpage & 0x20)) mask |= 0x00f0;
+  if(!(mpage & 0x40)) mask |= 0x0f00;
+  mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
+  for(i = 0; i < 4096; i++) palette[i] = get_apalette(&(pal->atbls[oldline]), i & mask, bright); // Prefetch palette
+  b = src;
+  r = &src[ofset];
+  g = &r[ofset];
+  wrap = line;
+  for(x = 0; x < ww; x++) {
+    line = (x + addr2) / 40;
+    if((wrap != line) && (line >= nextline)) {
+	      if(oldline < (lines - 1)) {
+	        nextline = (pal->atbls[oldline].line_h << 8) | pal->atbls[oldline].line_l;
+		oldline++;
+	      } else {
+	        nextline = 200;
+	      }
+	      wrap = line;
+	      mpage = pal->atbls[oldline].mpage;
+	      mask = 0;
+	      if(!(mpage & 0x10)) mask |= 0x000f;
+	      if(!(mpage & 0x20)) mask |= 0x00f0;
+	      if(!(mpage & 0x40)) mask |= 0x0f00;
+	      for(i = 0; i < 4096; i++) palette[i] = get_apalette(&(pal->atbls[oldline]), i & mask, bright); // Prefetch palette
+     }
 
-    t = 4096 / get_local_size(0);
-    q = t * lid;
-    rr = q + t;
-    if(q > 4096) q = 4096;
-    if(rr > 4096) rr = 4096;
-    for(i = q; i < rr; i++) palette[i] = get_apalette(pal, i & mask, bright); // Prefetch palette
-
-    t = (4 * 256) / get_local_size(0);
-    q = t * lid;
-    rr = q + t;
-    if(q > (4 * 256)) q = 4 * 256;
-    if(rr > (4 * 256)) rr = 4 * 256;
-    for(i = q; i < rr; i++) tbl8[i] = table[i]; // Prefetch table
-    
-    barrier(CLK_LOCAL_MEM_FENCE);
-    }
-    b = src;
-    r = &src[ofset];
-    g = &r[ofset];
-    for(x = 0; x < ww; x++) {
 	b3 = (uint)(b[0x0   ]) + 0x300;
 	b2 = (uint)(b[0x2000]) + 0x200;
 	b1 = (uint)(b[0x4000]) + 0x100;
