@@ -516,6 +516,7 @@ void GLCLDraw::ResetPalette(void)
 		pnew->alines_l = 1;
 		pnew->atbls[0].line_h = 0;
 		pnew->atbls[0].line_l = 0;
+		pnew->atbls[0].mpage = multi_page;
 		for(i = 0; i < 4096; i++) {
 		   pnew->atbls[0].r_4096[i] = apalet_r[i];
 		   pnew->atbls[0].g_4096[i] = apalet_g[i];
@@ -527,6 +528,7 @@ void GLCLDraw::ResetPalette(void)
 		pnew->dlines_l = 1;
 		pnew->dtbls[0].line_h = 0;
 		pnew->dtbls[0].line_l = 0;
+		pnew->dtbls[0].mpage = multi_page;
 		for(i = 0; i < 8; i++) pnew->dtbls[0].tbl[i] = ttl_palet[i];
 	     }
    }

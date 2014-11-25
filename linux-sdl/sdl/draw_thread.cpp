@@ -141,6 +141,7 @@ BOOL SelectDraw2(void)
     AG_Widget *wid;
 //		if(agDriverOps == NULL) return FALSE;
    if(SelectCheck()) return FALSE;
+   now_raster = 0;
 #ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
       wid = AGWIDGET(GLDrawArea);

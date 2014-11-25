@@ -298,21 +298,22 @@ void AGEventDrawGL2(AG_Event *event)
     /*
      * VRAMの表示:テクスチャ貼った四角形
      */
-     if(uVramTextureID != 0) {
+     //if(uVramTextureID != 0) {
 
-       //if((bMode == bModeOld) && (crtflag)){
+       if((bMode == bModeOld) && (crtflag)){
 	drawUpdateTexture(p, w, h, crtflag);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+     //} else {
+//	glDisable(GL_TEXTURE_2D);
+//	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+//     }
      } else {
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-     }	//} else {
-	//   glEnable(GL_TEXTURE_2D);
-	//   glBindTexture(GL_TEXTURE_2D, uNullTextureID);
-	//   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-       //}	     
+	   glEnable(GL_TEXTURE_2D);
+	  glBindTexture(GL_TEXTURE_2D, uNullTextureID);
+	   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+     }	     
        if(!bSmoosing) {
 	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

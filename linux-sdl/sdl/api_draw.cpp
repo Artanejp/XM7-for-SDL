@@ -101,7 +101,7 @@ static BOOL     bAnalog;	/* アナログモードフラグ */
 static BYTE     bNowBPP;	/* 現在のビット深度 */
 static WORD    nOldDrawWidth;
 static WORD    nOldDrawHeight;
-
+static WORD    now_raster_old;
 
 #if XM7_VER >= 3
 static BOOL     bWindowOpen;	/* ハードウェアウィンドウ状態
@@ -1054,17 +1054,7 @@ void	ttlpalet_notify(void)
     */
 //   LockVram();
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
-      if(bPaletFlag != TRUE) {
 	bNextFrameRender = TRUE;
-	if(cldraw != NULL) {
-	   if(now_raster != 0) {
-	      cldraw->AddPalette(now_raster, multi_page, FALSE);
-	   } else {
-	      cldraw->ResetPalette();
-	   }
-	}
-	 
-      }
    } else {
       if(bPaletFlag != TRUE) {
 	 SetDrawFlag(TRUE);
@@ -1085,10 +1075,6 @@ void 	apalet_notify(void)
 {
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
       bNextFrameRender = TRUE;
-      if(bPaletFlag != TRUE) {
-	 bNextFrameRender = TRUE;
-	if(cldraw != NULL) cldraw->AddPalette(now_raster, multi_page, FALSE);
-      }
    } else {
       if(bPaletFlag != TRUE) {
 	 SetDrawFlag(TRUE);
@@ -1116,6 +1102,7 @@ void 	display_notify(void)
    nDrawLeft = 0;
    nDrawRight = 640;
    SelectDraw2();
+   now_raster_old = now_raster;
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
         if (!run_flag) {
 		raster = now_raster;
@@ -1127,6 +1114,7 @@ void 	display_notify(void)
 		now_raster = raster;
 	} else {
 	  bNextFrameRender = TRUE;
+	  if(cldraw != NULL) cldraw->ResetPalette();
 	  SetDirtyFlag(0, 400, TRUE);
 	}
    } else {
@@ -1150,12 +1138,15 @@ void FASTCALL vblankperiod_notify(void)
   bModeOld = bMode;
 
 	if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
+	 now_raster_old = -1;
+	 //bPaletFlag = FALSE;
 	  _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 		/* 次のフレームを強制的に書き換えるか */
 	  if (bNextFrameRender) {
 	    bNextFrameRender = FALSE;
 	    SetDirtyFlag(0, 400, TRUE);
 	    old_crtflag = crtflag;
+	    //if(cldraw != NULL) cldraw->ResetPalette();
 	  } else { /* 書き換えが必要かチェック */
 #if XM7_VER >= 3
 	    if (screen_mode == SCR_400LINE) {
@@ -1179,6 +1170,7 @@ void FASTCALL vblankperiod_notify(void)
 	      flag |= bDirtyLine[y];
 	    }
 	    if (!flag) {
+	      //if(cldraw != NULL) cldraw->ResetPalette();
 	      old_crtflag = crtflag;
 	      return;
 	    }
@@ -1204,6 +1196,7 @@ void FASTCALL vblankperiod_notify(void)
 			  }
 		       }
 		       if(flag2) SDLDrawFlag.Drawn = TRUE;
+		       //cldraw->ResetPalette();
 		       cldraw->ReleaseBufPtr();
 		   } else
 #endif // _USE_OPENCL		     
@@ -1294,18 +1287,6 @@ static void Transfer_1Line(Uint8 *dst, int line)
   Uint8 *d1, *d2;
   int wdbtm, wdtop;
   int w, h;
-#if 0
-  if(SDLDrawFlag.APaletteChanged) {
-         SDLDrawFlag.APaletteChanged = FALSE;
-	 bDrawLine[line] = TRUE;
-	 bPaletFlag = FALSE;
-   }
-   if(SDLDrawFlag.DPaletteChanged) {
-         SDLDrawFlag.DPaletteChanged = FALSE;
-	 bDrawLine[line] = TRUE;
-	 bPaletFlag = FALSE;
-   }
-#endif   
    switch(bModeOld) {
    case SCR_200LINE:
      w = 80;
@@ -1424,10 +1405,13 @@ void FASTCALL hblank_notify(void)
        bDirtyLine[now_raster] = FALSE;
      }
 
-     if(bPaletFlag && (now_raster != 0)) {
-//	cldraw->AddPalette(now_raster, multi_page, analog);
-     } else if(now_raster == 0) {
+     if((bPaletFlag) && (now_raster > 0)){
+	cldraw->AddPalette(now_raster - 1, multi_page, analog);
+	now_raster_old = now_raster;
+     } else
+     if((now_raster == 0) && (now_raster_old != 0)){
 	cldraw->ResetPalette();
+	now_raster_old = 0;
      }
 
      bPaletFlag = FALSE;
