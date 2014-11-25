@@ -84,7 +84,7 @@ class GLCLDraw {
    void ReleaseBufPtr(void);
    void AddPalette(int line, Uint8 mpage, BOOL analog);
    void ResetPalette(void);
-   
+   void CopyPalette(void);
    cl_context context = NULL;
    cl_command_queue command_queue = NULL;
 
@@ -115,10 +115,11 @@ class GLCLDraw {
    cl_uint nkernels;
 
    int inbuf_bank = 0;
+   int palette_bank = 0;
+   int palette_bank_old = 0;
    cl_mem inbuf[2] = {NULL, NULL};
    cl_mem palette_buf[2] = {NULL, NULL};
    cl_mem outbuf = NULL;
-   cl_mem palette = NULL;
    cl_mem internalpal = NULL;
    cl_mem table = NULL;
    cl_context_properties *properties = NULL;	
@@ -133,6 +134,7 @@ class GLCLDraw {
    cl_device_type device_type[8];
    cl_ulong local_memsize[8];
    AG_Mutex mutex_buffer;
+   AG_Mutex mutex_palette;
 };
 
 enum {

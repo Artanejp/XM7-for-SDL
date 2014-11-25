@@ -225,33 +225,35 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   src_r = (__global uchar *)&src[addr + ofset];
   src_g = (__global uchar *)&src[addr + ofset + ofset];
   src_b = (__global uchar *)&src[addr];
-  line = addr2 / 80;
+  line = addr / 80;
 #if 1
   {
        int line2;
-       lines = (pal->dlines_h << 8) | pal->dlines_l;
+       lines = pal->dlines_h * 256 + pal->dlines_l;
        i = 0;
-      for(i = 0; i < lines; i++) {
-          line2 = (pal->dtbls[i].line_h << 8) | pal->dtbls[i].line_l;
+       for(i = 0; i < lines; i++) {
+          line2 = pal->dtbls[i].line_h * 256 +  pal->dtbls[i].line_l;
           if((line2 < 0) || (line2 >= h)) break;
           if(line2 >= line) break;
-	  if(i < lines) {
-	     nextline = (pal->dtbls[i + 1].line_h << 8) | pal->dtbls[i + 1].line_l;
-	     if(nextline > h) nextline = h;
-	  } else {
-	     nextline = h;
-	  }
        }
        oldline = i - 1;
        if(oldline < 0) oldline = 0;
+       if(oldline >= lines) oldline = lines - 1; 
        mpage = pal->dtbls[oldline].mpage;
+       mask = (~(mpage >> 4)) & 0x07;
+       setup_ttlpalette(pal->dtbls[oldline].tbl, palette, bright, mask);
+       if(oldline < (lines - 1)) {
+	     nextline = pal->dtbls[oldline + 1].line_h * 256 + pal->dtbls[oldline + 1].line_l;
+	     if(nextline > h) nextline = h;
+	     oldline++;
+       } else {
+	     nextline = h;
+       }
   }
 #endif
 
-  mask = (~(mpage >> 4)) & 0x07;
-  setup_ttlpalette(pal->dtbls[oldline].tbl, palette, bright, mask);
   mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
-  barrier(CLK_LOCAL_MEM_FENCE);
+  //barrier(CLK_LOCAL_MEM_FENCE);
 
   t = (256 * 3) / get_local_size(0);
   q = t * lid;
@@ -262,18 +264,18 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   barrier(CLK_LOCAL_MEM_FENCE);
   wrap = line;
   for(x = 0; x < ww; x++) {
-      line = (x + addr2) / 80;
+      line = (x + addr) / 80;
       if((wrap != line) && (line >= nextline)) {
+	   mpage = pal->dtbls[oldline].mpage;
+	   mask = (~(mpage >> 4)) & 0x07;
+	   setup_ttlpalette(pal->dtbls[oldline].tbl, palette, bright, mask);
+	   wrap = line;
  	   if(oldline < (lines - 1)) {
-	        nextline = (pal->dtbls[oldline].line_h << 8) | pal->dtbls[oldline].line_l;
+	        nextline = pal->dtbls[oldline + 1].line_h * 256 + pal->dtbls[oldline + 1].line_l;
 		oldline++;
-		} else {
+	    } else {
 	        nextline = h;
-	    }
-	    mpage = pal->dtbls[oldline].mpage;
-	    mask = (~(mpage >> 4)) & 0x07;
-	    setup_ttlpalette(pal->dtbls[oldline].tbl, palette, bright, mask);
-	    wrap = line;
+	   }
      }
   
         bc = *src_b++;

@@ -49,6 +49,7 @@ GLCLDraw::GLCLDraw()
    int i;
    pixelBuffer = NULL;
    AG_MutexInit(&mutex_buffer);
+   AG_MutexInit(&mutex_palette);
    TransferBuffer = NULL;
    nkernels = 0;
    using_device = 0;
@@ -73,11 +74,10 @@ GLCLDraw::~GLCLDraw()
       if(palette_buf[i] != NULL) ret |= clReleaseMemObject(palette_buf[i]);
    }
    if(outbuf != NULL) ret |= clReleaseMemObject(outbuf);
-   if(palette != NULL) ret |= clReleaseMemObject(palette);
-   //   if(internalpal != NULL) ret |= clReleaseMemObject(internalpal);
    if(table != NULL) ret |= clReleaseMemObject(table);
    if(pixelBuffer != NULL) free(pixelBuffer);
    AG_MutexDestroy(&mutex_buffer);
+   AG_MutexDestroy(&mutex_palette);
 }
 
 static void cl_notify_log(const char *errinfo, const void *private_info, size_t cb, void *user_data)
@@ -436,22 +436,27 @@ void GLCLDraw::AddPalette(int line, Uint8 mpage, BOOL analog)
    
    if(palettebuf == NULL) return;
    p = palettebuf;
+   AG_MutexLock(&mutex_palette);
    if(analog) {
       int i;
       Uint32 lines;
       if(line < 0) line = 0;
       if(line > 199) line = 199;
-      lines = ((p->alines_h << 8) & 0xff00)| (p->alines_l & 0x00ff);
-      if((lastline != line) || (lines >= 1)) {
+      lines = p->alines_h * 256 + p->alines_l;
+      if((lastline != line) || (lines == 1)) {
 	 lastline = line;
 	 lines++;
-	 if(lines > 199) return;
+	 if(lines > 199) {
+	    AG_MutexUnlock(&mutex_palette);
+	    return;
+	 }
+	 
       }
       //printf("AddPalette %d\n", lines);
-      p->alines_h = (lines >> 8) & 0x00ff;
-      p->alines_l = lines & 0x00ff;
-      p->atbls[lines - 1].line_h = (line >> 8) & 0x00ff;  
-      p->atbls[lines - 1].line_l = line & 0x00ff;
+      p->alines_h = lines / 256;
+      p->alines_l = lines % 256;
+      p->atbls[lines - 1].line_h = line / 256;  
+      p->atbls[lines - 1].line_l = line % 256;
       p->atbls[lines - 1].mpage = mpage;
       for(i = 0; i < 4096; i++) {
 	 p->atbls[lines - 1].r_4096[i] = apalet_r[i];
@@ -466,21 +471,27 @@ void GLCLDraw::AddPalette(int line, Uint8 mpage, BOOL analog)
       if(bMode == SCR_400LINE) h = 399;
       if(line < 0) line = 0;
       if(line > h) line = h;
-      lines = ((p->dlines_h << 8) & 0xff00)| (p->dlines_l & 0x00ff);
-      if((lastline != line) || (lines >= 1)) {
-	 lastline = line;
+      lines = p->dlines_h * 256 + p->dlines_l;
+      if((lastline != line) || (lines == 1)) {
 	 lines++;
-	 if(lines > h) return;
+	 lastline = line;
+	 if(lines > h) {
+	    AG_MutexUnlock(&mutex_palette);
+	    return;
+	 }
+	 
       }
-      p->dlines_h = (lines >> 8) & 0x00ff;
-      p->dlines_l = lines & 0x00ff;
-      p->dtbls[lines - 1].line_h = (line >> 8) & 0x00ff;  
-      p->dtbls[lines - 1].line_l = line & 0x00ff;
+      p->dlines_h = lines / 256;
+      p->dlines_l = lines % 256;
+      p->dtbls[lines - 1].line_h = line / 256;  
+      p->dtbls[lines - 1].line_l = line % 256;
       p->dtbls[lines - 1].mpage = mpage;
       for(i = 0; i < 7; i++) {
 	 p->dtbls[lines - 1].tbl[i] = ttl_palet[i];
       }
    }
+   AG_MutexUnlock(&mutex_palette);
+
 }
 
 void GLCLDraw::ResetPalette(void)
@@ -492,23 +503,15 @@ void GLCLDraw::ResetPalette(void)
    cl_event ev_unmap, ev_map;
    int i;
    
-   pold = palettebuf;
-   newline = inbuf_bank + 1;
-   if(newline >= 2) newline = 0;
-   pnew = clEnqueueMapBuffer(command_queue, palette_buf[newline], CL_TRUE, CL_MAP_READ | CL_MAP_WRITE,
-			     0, (size_t)sizeof(struct palettebuf_t),
-			     0, NULL, &ev_map, &r);
-   lastline = 1;
-   if(r < CL_SUCCESS) return;
+
+   CopyPalette();
+   AG_MutexLock(&mutex_palette);
+   //   pold = palettebuf;
+   pnew = palettebuf;
+   lastline = 0;
    if(pnew != NULL) {
 	palettebuf = pnew;
-        if(pold != NULL) {
 	     {
-		//endline = ((pold->alines_h << 8) & 0x00ff00) | (pold->alines_l & 0x0000ff);
-		//endline = endline - 1;
-		//if(endline <= 0) endline = 0;
-		//if(endline >= 200) endline = 199;
-		//memcpy(&(pnew->atbls[0]) , &(pold->atbls[endline]), sizeof(struct apalettetbl_t));
 		pnew->alines_h = 0;
 		pnew->alines_l = 1;
 		pnew->atbls[0].line_h = 0;
@@ -520,22 +523,53 @@ void GLCLDraw::ResetPalette(void)
 		}
 	     }
 	     {
-		//endline = ((pold->dlines_h << 8) & 0x00ff00) | (pold->dlines_l & 0x0000ff);
-		//endline = endline - 1;
-		//if(endline <= 0) endline = 0;
-		//if(endline >= 400) endline = 399;
-		//memcpy(&(pnew->dtbls[0]) , &(pold->dtbls[endline]), sizeof(struct dpalettetbl_t));
 		pnew->dlines_h = 0;
 		pnew->dlines_l = 1;
 		pnew->dtbls[0].line_h = 0;
 		pnew->dtbls[0].line_l = 0;
 		for(i = 0; i < 8; i++) pnew->dtbls[0].tbl[i] = ttl_palet[i];
 	     }
-	}
    }
-   if(pold != NULL) clEnqueueUnmapMemObject(command_queue, palette_buf[inbuf_bank], 
+   AG_MutexUnlock(&mutex_palette);
+//   clFinish(command_queue);
+//   clFlush(command_queue);
+}
+
+void GLCLDraw::CopyPalette(void)
+{
+   struct palettebuf_t *pold, *pnew;
+   int newline;
+   int endline;
+   cl_int r;
+   cl_event ev_unmap, ev_map;
+   int i;
+   
+   AG_MutexLock(&mutex_palette);
+
+   pold = palettebuf;
+   newline = palette_bank + 1;
+   if(newline >= 2) newline = 0;
+   pnew = clEnqueueMapBuffer(command_queue, palette_buf[newline], CL_TRUE, CL_MAP_READ | CL_MAP_WRITE,
+			     0, (size_t)sizeof(struct palettebuf_t),
+			     0, NULL, &ev_map, &r);
+   if(r < CL_SUCCESS) {
+      AG_MutexUnlock(&mutex_palette);
+      return;
+   }
+   
+   if(pnew != NULL) {
+        if(pold != NULL) {
+	   memcpy(pnew, pold, sizeof(struct palettebuf_t));
+	}
+	palettebuf = pnew;
+   }
+   if(pold != NULL) clEnqueueUnmapMemObject(command_queue, palette_buf[palette_bank], 
 			   pold, 1, &ev_map,
 			   &ev_unmap);
+   palette_bank_old = palette_bank;
+   palette_bank = newline;
+
+   AG_MutexUnlock(&mutex_palette);
    clFinish(command_queue);
    clFlush(command_queue);
 }
@@ -608,7 +642,6 @@ cl_int GLCLDraw::GetVram(int bmode)
        break;
      }
      if((flag != FALSE) && (transfer_size > 0)){
-       ResetPalette();
        inbuf_bank++;
        if(inbuf_bank >= 2) inbuf_bank = 0;
       if(kernel_copyvram != NULL) {
@@ -644,6 +677,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    SDLDrawFlag.Drawn = FALSE;
    bPaletFlag = FALSE;
    UnlockVram();
+   CopyPalette();
    switch(bmode) {
     case SCR_400LINE:
     case SCR_200LINE:
@@ -658,7 +692,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel, 1, sizeof(int),    (void *)&w);
 	 ret |= clSetKernelArg(*kernel, 2, sizeof(int), (void *)&h);
 	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem), (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem), (void *)&palette_buf[bank]);
+	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem), (void *)&palette_buf[palette_bank_old]);
 	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_mem), (void *)&table);
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(int), (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(int), (void *)&crtflag);
@@ -677,9 +711,6 @@ cl_int GLCLDraw::GetVram(int bmode)
       /*
        * Below transfer is dummy.
        */
-	 ret |= clEnqueueWriteBuffer(command_queue, palette, CL_TRUE, 0,
-				     8 * sizeof(Uint8), (void *)&ttl_palet[0]
-				     , 0, NULL, &event_uploadvram[2]);
 	 ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
 	 ret |= clSetKernelArg(*kernel, 1, sizeof(cl_int),  (void *)&w);
 	 ret |= clSetKernelArg(*kernel, 2, sizeof(cl_int),  (void *)&h);
@@ -704,7 +735,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel, 1, sizeof(cl_int),  (void *)&w);
 	 ret |= clSetKernelArg(*kernel, 2, sizeof(cl_int),  (void *)&h);
 	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem),  (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem),  (void *)&(palette_buf[bank]));
+	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem),  (void *)&(palette_buf[palette_bank_old]));
 	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_mem),  (void *)&table);
 	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
 	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
@@ -716,6 +747,7 @@ cl_int GLCLDraw::GetVram(int bmode)
    }
    w2 = w;
    h2 = h;
+   //CopyPalette();
    if(bCLEnableKhrGLShare != 0) {
      glFlush();
      ret |= clEnqueueAcquireGLObjects (command_queue,
@@ -831,14 +863,6 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 			      0, (size_t)sizeof(struct palettebuf_t),
 	                      0, NULL, &ev, &r);
    ResetPalette();
-   ResetPalette();
-   
-   palette = clCreateBuffer(context, CL_MEM_READ_ONLY | 0,
- 		  (size_t)(4096 * 3 * sizeof(Uint8)), NULL, &r);
-   ret |= r;
-   XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: palette : %d", r);
-
-
    table = clCreateBuffer(context, CL_MEM_READ_WRITE | 0,
  		  (size_t)(0x100 * 8 * 12 * sizeof(cl_uint)), NULL, &r);
    ret |= r;
