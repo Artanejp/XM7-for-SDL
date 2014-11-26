@@ -597,8 +597,8 @@ cl_int GLCLDraw::GetVram(int bmode)
    int w = 0;
    int h = 0;
    Uint8 *pr,*pg,*pb;
+   size_t lws[] = {10}; // local jobs.
    size_t gws[] = {nCLGlobalWorkThreads}; // Parallel jobs.
-   size_t lws[] = {1}; // local jobs.
    size_t *goff = NULL;
    int mpage = multi_page;
    int dummy = 0;
@@ -655,7 +655,10 @@ cl_int GLCLDraw::GetVram(int bmode)
      if((flag != FALSE) && (transfer_size > 0)){
        inbuf_bank++;
        if(inbuf_bank >= 2) inbuf_bank = 0;
-      if(kernel_copyvram != NULL) {
+       if(kernel_copyvram != NULL) {
+	 size_t lws_copy[] = {1};
+	 size_t gws_copy[] = {gws[0]};
+	      
 	 cl_int size = transfer_size;
 	 ret |= clSetKernelArg(*kernel_copyvram, 0, sizeof(cl_mem), (void *)&(inbuf[inbuf_bank]));
 	 ret |= clSetKernelArg(*kernel_copyvram, 1, sizeof(cl_mem), (void *)&(inbuf[bank]));
@@ -663,7 +666,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 	 ret |= clSetKernelArg(*kernel_copyvram, 3, sizeof(cl_int), &bCLSparse);
 	 if(bCLSparse) {
 	    ret = clEnqueueNDRangeKernel(command_queue, *kernel_copyvram, 1, 
-					 goff, gws, lws, 
+					 goff, gws_copy, lws_copy, 
 					 0, NULL,  &copy_event);
 	 } else {
 	    ret = clEnqueueTask(command_queue,
