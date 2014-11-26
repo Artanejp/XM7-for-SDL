@@ -504,7 +504,7 @@ void GLCLDraw::ResetPalette(void)
    int i;
    
 
-   CopyPalette();
+ //  CopyPalette();
    AG_MutexLock(&mutex_palette);
    //   pold = palettebuf;
    pnew = palettebuf;
@@ -542,6 +542,8 @@ void GLCLDraw::CopyPalette(void)
    struct palettebuf_t *pold, *pnew;
    int newline;
    int endline;
+   int alines;
+   int dlines;
    cl_int r;
    cl_event ev_unmap, ev_map;
    int i;
@@ -551,6 +553,7 @@ void GLCLDraw::CopyPalette(void)
    pold = palettebuf;
    newline = palette_bank + 1;
    if(newline >= 2) newline = 0;
+   
    pnew = clEnqueueMapBuffer(command_queue, palette_buf[newline], CL_TRUE, CL_MAP_READ | CL_MAP_WRITE,
 			     0, (size_t)sizeof(struct palettebuf_t),
 			     0, NULL, &ev_map, &r);
@@ -558,21 +561,27 @@ void GLCLDraw::CopyPalette(void)
       AG_MutexUnlock(&mutex_palette);
       return;
    }
-   
-   if(pnew != NULL) {
-        if(pold != NULL) {
-	   memcpy(pnew, pold, sizeof(struct palettebuf_t));
-	}
-	palettebuf = pnew;
-   }
-   if(pold != NULL) clEnqueueUnmapMemObject(command_queue, palette_buf[palette_bank], 
-			   pold, 1, &ev_map,
-			   &ev_unmap);
-   palette_bank_old = palette_bank;
-   palette_bank = newline;
+   alines = pold->alines_h * 256 + pold->alines_l;
+   dlines = pold->dlines_h * 256 + pold->dlines_l;
+   if(alines < 0)   alines = 0;
+   if(alines > 199) alines = 199;
+   if(dlines < 0)   dlines = 0;
+   if(dlines > 399) dlines = 399;
 
+   if((pold != NULL) && (pnew != NULL)) {
+     memcpy(pnew, pold, sizeof(Uint8) * 4 + sizeof(struct apalettetbl_t) * alines); // Copy Lines + Analog Palette
+     memcpy(&(pnew->dtbls[0]), &(pold->dtbls[0]), sizeof(struct dpalettetbl_t) * dlines); // Copy Digital Palette
+     palettebuf = pnew;
+     
+     clEnqueueUnmapMemObject(command_queue, palette_buf[palette_bank], 
+			     pold, 1, &ev_map,
+			     &ev_unmap);
+     palette_bank_old = palette_bank;
+     palette_bank = newline;
+   }
+   
    AG_MutexUnlock(&mutex_palette);
-   clFinish(command_queue);
+   //clFinish(command_queue);
    clFlush(command_queue);
 }
 

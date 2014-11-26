@@ -399,11 +399,11 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
        mpage = pal->atbls[oldline].mpage;
   }
 
-  //mpage = pal->atbls[0].mpage;
-  mask = 0x0fff;
-  //if(!(mpage & 0x10)) mask  = 0x000f;
-  //if(!(mpage & 0x20)) mask |= 0x00f0;
-  //if(!(mpage & 0x40)) mask |= 0x0f00;
+  mpage = pal->atbls[0].mpage;
+  mask = 0x0000;
+  if(!(mpage & 0x10)) mask  = 0x000f;
+  if(!(mpage & 0x20)) mask |= 0x00f0;
+  if(!(mpage & 0x40)) mask |= 0x0f00;
   mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
   for(i = 0; i < 4096; i++) palette[i] = get_apalette(&(pal->atbls[oldline]), i & mask, bright); // Prefetch palette
   b = src;
@@ -421,12 +421,13 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
 	      }
 	      wrap = line;
 	      mpage = pal->atbls[oldline].mpage;
-	      //mask = 0;
-	      mask = 0x0fff;
-	      //if(!(mpage & 0x10)) mask |= 0x000f;
-	      //if(!(mpage & 0x20)) mask |= 0x00f0;
-	      //if(!(mpage & 0x40)) mask |= 0x0f00;
+	      mask = 0x0000;
+	      //mask = 0x0fff;
+	      if(!(mpage & 0x10)) mask |= 0x000f;
+	      if(!(mpage & 0x20)) mask |= 0x00f0;
+	      if(!(mpage & 0x40)) mask |= 0x0f00;
 	      for(i = 0; i < 4096; i++) palette[i] = get_apalette(&(pal->atbls[oldline]), i & mask, bright); // Prefetch palette
+	      mask8 = (uint8){mask, mask, mask, mask, mask, mask, mask, mask};
      }
 
 	b3 = (uint)(b[0x0   ]) + 0x300;
