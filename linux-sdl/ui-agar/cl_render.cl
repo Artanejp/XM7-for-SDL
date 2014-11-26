@@ -58,9 +58,9 @@ struct palettebuf_t {
    struct dpalettetbl_t dtbls[400];
 }__attribute__((packed));
    
-uchar4 ttlpalet2rgb(__global uchar *pal, uint index)
+uint4 ttlpalet2rgb(__global uchar *pal, uint index)
 {
-    uchar4 ret = {0, 0, 0, 255};
+    uint4 ret = {0, 0, 0, 255};
     uchar dat = pal[index];
     if(dat & 0x01) ret.s2 = 255;
     if(dat & 0x02) ret.s0 = 255;
@@ -144,8 +144,15 @@ __kernel void CopyVram(__global uchar *to, __global uchar *from, int size, int m
 void setup_ttlpalette(uchar *pal, uint *palette, float4 bright, uint vpage)
 {
    int i;
-   uchar4 v;
-   uint r, g, b, a;
+   uint4 v;
+   //uint r, g, b, a;
+   uint4  rgba_int;
+   uint4  palette_int[8];
+   uint8  *palette8;
+   uint8 r8, g8, b8, a8;
+   uint4 bright4 = convert_uint4((float4){255.0, 255.0, 255.0, 255.0} * bright);
+   
+#if 0
    for(i = 0; i < 8; i++) {
       v = ttlpalet2rgb(pal, i & vpage);
       r = v.s0 * bright.s0;
@@ -157,6 +164,32 @@ void setup_ttlpalette(uchar *pal, uint *palette, float4 bright, uint vpage)
 		   (b << bshift) |
 		   (a << ashift);
    }
+#else
+   for(i = 0; i < 8; i++) {
+      v = ttlpalet2rgb(pal, i & vpage);
+      rgba_int = ((v * bright4) & (uint4){0x0000ff00, 0x0000ff00, 0x0000ff00, 0x0000ff00}) >> 8;
+      palette_int[i] = rgba_int;
+   }
+   r8 = (uint8) {palette_int[0].s0, palette_int[1].s0,
+                 palette_int[2].s0, palette_int[3].s0,
+		 palette_int[4].s0, palette_int[5].s0,
+		 palette_int[6].s0, palette_int[7].s0} << rshift;
+   g8 = (uint8) {palette_int[0].s1, palette_int[1].s1,
+                 palette_int[2].s1, palette_int[3].s1,
+		 palette_int[4].s1, palette_int[5].s1,
+		 palette_int[6].s1, palette_int[7].s1} << gshift;
+   b8 = (uint8) {palette_int[0].s2, palette_int[1].s2,
+                 palette_int[2].s2, palette_int[3].s2,
+		 palette_int[4].s2, palette_int[5].s2,
+		 palette_int[6].s2, palette_int[7].s2} << bshift;
+   a8 = (uint8) {palette_int[0].s3, palette_int[1].s3,
+                 palette_int[2].s3, palette_int[3].s3,
+		 palette_int[4].s3, palette_int[5].s3,
+		 palette_int[6].s3, palette_int[7].s3} << ashift;
+   palette8 = (uint8 *)palette;
+   *palette8 = r8 | g8 | b8 | a8;
+		 
+#endif
 }
 
 void clearscreen(int w,  __global uint8 *out, float4 bright)
