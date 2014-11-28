@@ -806,7 +806,7 @@ cl_int GLCLDraw::SetupTable(void)
    cl_int r = CL_INVALID_KERNEL;
    cl_uint pages;
    cl_event tbl_ev;
-   pages = 12;
+   pages = 6;
 
    if(kernel_table != NULL) {
      r = 0;
@@ -878,7 +878,7 @@ cl_int GLCLDraw::SetupBuffer(GLuint *texid)
 	                      0, NULL, &ev, &r);
    ResetPalette();
    table = clCreateBuffer(context, CL_MEM_READ_WRITE | 0,
- 		  (size_t)(0x100 * 8 * 12 * sizeof(cl_uint)), NULL, &r);
+ 		  (size_t)(0x100 * 8 * 6 * sizeof(cl_uint)), NULL, &r);
    ret |= r;
    XM7_DebugLog(XM7_LOG_INFO, "CL: Alloc STS: table : %d", r);
 
