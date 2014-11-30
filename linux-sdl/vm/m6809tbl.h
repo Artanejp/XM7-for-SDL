@@ -382,7 +382,7 @@ static const BYTE cycles1[] =
   /*F*/  5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6
 };
 
-#if (BIG_SWITCH==0)
+#ifndef BIG_SWITCH
 static void (*const m6809_main[0x100])(cpu6809_t *) = {
 /*          0xX0,   0xX1,     0xX2,    0xX3,    0xX4,    0xX5,    0xX6,    0xX7,
             0xX8,   0xX9,     0xXA,    0xXB,    0xXC,    0xXD,    0xXE,    0xXF   */
