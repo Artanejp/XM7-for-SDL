@@ -17,15 +17,22 @@ static inline Sint16 _clamp(Sint32 b)
 }
 #if defined(__x86_64__) || defined(__i386__)
  #if defined(__MMX__)
-int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples)
+int AddSoundBuffer_MMX(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc[], int wavchannels, int samples)
 {
    int len1, len2;
    int i;
+   Sint16 *wavp[16];
+   
    if(samples <= 0) return 0;
    if(dst == NULL) return 0;
 //   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL) || (wavsrc == NULL)) return 0;
    if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
-   
+   if(wavchannels >= 16) wavchannels = 16;
+   for(i = 0; i < wavchannels; i++) {
+      wavp[i] = wavsrc[i];
+      wavp[i] = &(wavp[i][rpos]);
+   }
+
    len1 = samples / 4;
    len2 = samples % 4;
 #if (__GNUC__ >= 4)
@@ -35,13 +42,21 @@ int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmt
     v2hi *opn  = (v2hi *)opnsrc;
     v2hi *beep = (v2hi *)beepsrc;
     v2hi *cmt  = (v2hi *)cmtsrc;
-    v2hi *wav  = (v2hi *)wavsrc;
+    v2hi *wav;
+    int wavi;
     v2hi *p    = (v2hi *)dst;
    _prefetch_data_write_l1(p, sizeof(v4hi) * len1 + sizeof(Sint16) * len2);
    _prefetch_data_read_l2(opn, sizeof(Sint32) * samples);
    _prefetch_data_read_l2(beep, sizeof(Sint16) * samples);
    _prefetch_data_read_l2(cmt, sizeof(Sint16) * samples);
-//   _prefetch_data_read_l2(wav, sizeof(Sint16) * samples);
+   for(wavi = 0; wavi < wavchannels; wavi++) {
+      Sint16 *pp;
+      if(wavp[wavi] != NULL) {
+	 pp = wavp[wavi];
+	 _prefetch_data_read_l2(pp, sizeof(Sint16) * samples);
+      }
+   }
+   
    for(i = 0; i < len1; i++) {
         t1 = opn->vv;
         opn++;
@@ -53,8 +68,11 @@ int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmt
         beep++;
         tt.vv = tt.vv + cmt->vv;
         cmt++;
-//      tt.v = tt.v + *wav;
-//      wav++;
+        for(wavi = 0; wavi < wavchannels; wavi++) {
+	   wav = (v2hi *)wavp[wavi];
+	   tt.vv = tt.vv + wav->vv;
+	   wavp[wavi] += (sizeof(v2hi) / sizeof(Sint16));
+	}
         p->v = tt.v;
         p++;
    }
@@ -66,14 +84,16 @@ int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmt
       Sint32 *opn2 = (Sint32 *)opn;
       Sint16 *beep2 = (Sint16 *)beep;
       Sint16 *cmt2 = (Sint16 *)cmt;
-      Sint16 *wav2 = (Sint16 *)wav;
+      Sint16 *wav2;
       Sint16 *dst2 = (Sint16 *)p;
       for (i = 0; i < len2; i++) {
 	 tmp4 = *opn2++;
 	 tmp5 = _clamp(tmp4);
 	 tmp5 = tmp5 + *beep2++;
 	 tmp5 = tmp5 + *cmt2++;
-//	 tmp5 = tmp5 + *wav2++;
+	 for(wavi = 0; wavi < wavchannels; wavi++) {
+	    tmp5 = tmp5 + wavp[wavi][i];
+	 }
 	 *dst2++ = tmp5;
       }
    }

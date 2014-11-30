@@ -75,7 +75,7 @@ UINT                    uChSeparation;
 UINT                    uStereoOut;     /* 出力モード */
 BOOL                    bSoundDebug = FALSE;
 
-extern int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples); // バッファ転送関数
+extern int AddSoundBuffer(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc[], int wavchannels, int samples); // バッファ転送関数
 
 }
 
@@ -102,9 +102,11 @@ static Sint16 *pSoundBuf;
 static Sint16 *pOpnSndBuf;
 static Sint16 *pBeepSndBuf;
 static Sint16 *pCMTSndBuf;
+static Sint16 *pWavSndBuf[3];
 static Sint32 *pOpnSndBuf32;
 static Sint32 *pBeepSndBuf32;
 static Sint32 *pCMTSndBuf32;
+static Sint32 *pWavSndBuf32[3];
 
 
 /*
@@ -217,7 +219,11 @@ void InitSnd(void)
         pOpnSndBuf32 = NULL;
 	pBeepSndBuf32 = NULL;
 	pCMTSndBuf32 = NULL;
-      
+	for(i = 0; i < 3; i++ ) { 
+	   pWavSndBuf[i] = NULL;
+	   pWavSndBuf32[i] = NULL;
+	}
+   
 	pCaptureBuf = NULL;
 	pSoundBuf = NULL;
         nSndPos = 0;
@@ -268,6 +274,12 @@ void CleanSnd(void)
 	   pBeepSndBuf32 = NULL;
 	   if(pCMTSndBuf32 != NULL) free(pCMTSndBuf32);
 	   pCMTSndBuf32 = NULL;
+	   for(i = 0; i < 3; i++) {
+	      if(pWavSndBuf[i] != NULL) free(pWavSndBuf[i]);
+	      pWavSndBuf[i] = NULL;
+	      if(pWavSndBuf32[i] != NULL) free(pWavSndBuf32[i]);
+	      pWavSndBuf32[i] = NULL;
+	   }
 	if(applySem) {
 		SDL_DestroySemaphore(applySem);
 		applySem = NULL;
@@ -298,10 +310,11 @@ void CleanSnd(void)
 		delete DrvPSG;
 		DrvPSG = NULL;
 	}
-	if(DrvWav) {
+        if(DrvWav) {
 		delete[] DrvWav;
 		DrvWav = NULL;
 	}
+   
         nSndPos = 0;
         nSndBeforePos = 0;
         nLastTime = 0;
@@ -337,6 +350,13 @@ static void CloseSnd(void)
 	   pBeepSndBuf = NULL;
 	   if(pCMTSndBuf != NULL) free(pCMTSndBuf);
 	   pCMTSndBuf = NULL;
+	   for(i = 0; i < 3; i++) {
+	      if(pWavSndBuf[i] != NULL) free(pWavSndBuf[i]);
+	      pWavSndBuf[i] = NULL;
+	      if(pWavSndBuf32[i] != NULL) free(pWavSndBuf32[i]);
+	      pWavSndBuf32[i] = NULL;
+	   }
+	   
 	   if(pOpnSndBuf32 != NULL) free(pOpnSndBuf32);
 	   pOpnSndBuf32 = NULL;
 	   if(pBeepSndBuf32 != NULL) free(pBeepSndBuf32);
@@ -503,7 +523,10 @@ BOOL SelectSnd(void)
         if(posix_memalign((void **)&pOpnSndBuf, 32, members) < 0) pOpnSndBuf = NULL;
         if(posix_memalign((void **)&pBeepSndBuf, 32, members) < 0) pBeepSndBuf = NULL;
         if(posix_memalign((void **)&pCMTSndBuf, 32, members) < 0) pCMTSndBuf = NULL;
-
+        for(i = 0; i < 3; i++) {
+	   if(posix_memalign((void **)&pWavSndBuf[i], 32, members) < 0) pWavSndBuf[i] = NULL;
+	}
+   
 	/*
 	 * レンダリングドライバの設定
 	 */
@@ -523,7 +546,7 @@ BOOL SelectSnd(void)
 	}
     if(DrvWav == NULL) {
 	   DrvWav = new SndDrvWav[WAV_CHANNELS] ;
-	}
+    }
     if(DrvCMT == NULL) {
 	   DrvCMT= new SndDrvCMT ;
 	   if(DrvCMT) {
@@ -564,7 +587,6 @@ BOOL SelectSnd(void)
 		strcpy(WavPath, RSSDIR);
 	        strcat(WavPath, WavName[i]);
 		DrvWav[i].Setup(WavPath);
-		DrvWav[i].Enable(1);
 	   }
 	   
 	}
@@ -759,7 +781,8 @@ static void AddSnd(int pos, int samples, bool bZero)
       }
       memset(&pSoundBuf[nSndDevWritePos], 0x00, samples2 * sizeof(Sint16));
       
-      if(!bZero) AddSoundBuffer(&pSoundBuf[nSndDevWritePos], &pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], NULL, samples2);
+      if(!bZero) AddSoundBuffer(&pSoundBuf[nSndDevWritePos], rpos,
+				&pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], pWavSndBuf, 3, samples2);
       if(bWavCapture) SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], samples2 / 2, 2);
       
       if(bSoundDebug) printf("SND:Time=%d,AddSnd,bank=%d,rpos=%d,nSndDevWritePos=%d,samples2=%d\n", SDL_GetTicks(), nSndBank, rpos, nSndDevWritePos,samples2);
@@ -806,6 +829,7 @@ static DWORD RenderCommon(DWORD ttime, int samples, BOOL bZero)
    DWORD n;
    int channels = 2;
    int wpos;
+   int wavi;
    
    wpos =  0 + nSndBank * (uBufSize / (2 * sizeof(Sint16) * channels));
    if(samples <= 0) goto _end;
@@ -814,6 +838,12 @@ static DWORD RenderCommon(DWORD ttime, int samples, BOOL bZero)
    if(n > max) max = n;
    n = RenderSub(&pCMTSndBuf32[wpos],  &pCMTSndBuf[wpos], DrvCMT, samples, bZero);
    if(n > max) max = n;
+   for(wavi = 0; wavi < 3; wavi++) {
+      Sint16 *pp;
+      pp = pWavSndBuf[wavi];
+      if(DrvWav != NULL) DrvWav[wavi].Render(&pp[wpos], nSndPos, samples, TRUE, bZero);
+   }
+   
    nSamples += max;
    AddSnd(nSndPos * 2, max * 2, bZero);
    nSndPos += max;
@@ -835,18 +865,12 @@ static DWORD Render2(DWORD ttime, BOOL bZero)
    int channels = 2;
    int i;
 
-//   samples = (dwSndCount * uRate) / 1000;
    samples = ((uRate * uTick) / 1000 ) / 2;
-//   samples = uBufSize / (2 * channels * sizeof(Sint16));
    samples -= nSamples;
    if(samples <= 0) return 0;
    if(applySem) SDL_SemWait(applySem);
    max = RenderCommon(ttime, samples, bZero);
    
-//   if(DrvOPN  != NULL) DrvOPN->ResetRenderCounter();
-//   if(DrvBeep != NULL) DrvBeep->ResetRenderCounter();
-//   if(DrvCMT  != NULL) DrvCMT->ResetRenderCounter();
-//   printf("Render2: Bank = %d , Before = %d,  Pos = %d, samples = %d : Total = %d\n",nSndBank, nSndBeforePos, nSndPos, samples, nSamples);
    if(bSoundDebug)printf("SND:Time=%d,Render2,ttime=%d,samples=%d,bank=%d\n", SDL_GetTicks(), ttime, samples, nSndBank);
    if(applySem) SDL_SemPost(applySem);
    return max;
@@ -986,24 +1010,29 @@ void whg_notify(BYTE reg, BYTE dat)
 
 void wav_notify(BYTE no)
 {
+   DWORD ttime = dwSoundTotal;
 
    if(DrvWav == NULL) return;
+   Render1(ttime, FALSE);
    switch(no) 
      {
       case SOUND_CMTMOTORON:
-//	DrvWav[0].Play(CH_WAV_RELAY_ON, 0);
+	DrvWav[0].Enable(TRUE);
 	break;
       case SOUND_CMTMOTOROFF:
-//	DrvWav[1].Play(CH_WAV_RELAY_OFF, 0);
+	DrvWav[1].Enable(TRUE);
 	break;
       case SOUND_FDDSEEK:
-//	DrvWav[2].Play(CH_WAV_FDDSEEK, 0);
+	DrvWav[2].Enable(TRUE);
+	break;
+      case SOUND_STOP:
+	DrvWav[0].Enable(FALSE);
+	DrvWav[1].Enable(FALSE);
+	DrvWav[2].Enable(FALSE);
 	break;
       default:
 	break;
      }
-   
-
 }
 
 void beep_notify(void)
