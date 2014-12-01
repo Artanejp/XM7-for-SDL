@@ -63,7 +63,9 @@ void SndDrvWav::DeleteBuffer(int slot)
 
 void SndDrvWav::SetRenderVolume(int level)
 {
-	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
+   SDL_SemWait(RenderSem);
+   nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
+   SDL_SemPost(RenderSem);
 }
 
 
@@ -75,6 +77,7 @@ void SndDrvWav::Setup(void)
    int uStereo;
    UINT uChannels;
 
+   SDL_SemWait(RenderSem);
    uStereo = nStereoOut %4;
    if ((uStereo > 0) || bForceStereo) {
       uChannels = 2;
@@ -82,6 +85,7 @@ void SndDrvWav::Setup(void)
       uChannels = 1;
    }
    channels = uChannels;
+   SDL_SemPost(RenderSem);
    SetRenderVolume(nWaveVolume);
 }
 
@@ -159,14 +163,18 @@ int SndDrvWav::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZ
 	Sint16 *q;
 	Sint32 tmp;
         int ss2;
-   
+	if(channels <= 0) return 0;
         if(sSamples <= 0) return 0;
+        if(RenderSem == NULL) return 0;
+
         ss2 = sSamples;
         s = plen - ppos;
         
-        if(s <= 0) {
+        if((s <= 0) && (enable)){
 	   SDL_SemWait(RenderSem);
 	   playing = FALSE;
+	   enable = FALSE;
+	   ppos = 0;
 	   //if(enable) memset(pBuf, 0x00, ss2 * channels * sizeof(Sint16));
 	   SDL_SemPost(RenderSem);
 	   return ss2;
@@ -174,16 +182,18 @@ int SndDrvWav::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZ
         if(s >= ss2) {
 	   s = ss2;
 	}
-	if(channels <= 0) return 0;
 	if(pBuf != NULL) {
-		if(RenderSem == NULL) return 0;
 		q = (Sint16 *)pBuf;
 	        q = &q[start * channels];
-	        p = (Sint16 *)wavsrc;
-	        if(p == NULL) return 0;
-	        p = &p[ppos * channels];
 		SDL_SemWait(RenderSem);
 	        if(clear) memset(q, 0x00, ss2 * channels * sizeof(Sint16));
+	        p = (Sint16 *)wavsrc;
+	        if(p == NULL) {
+		   SDL_SemPost(RenderSem);
+		   return ss2;
+		}
+	   
+	        p = &p[ppos * channels];
 	        if(s > 0) playing = TRUE;
 	        if((bZero) && (enable)) {
 		   //memset(q, 0x00, ss2 * channels * sizeof(Sint16));

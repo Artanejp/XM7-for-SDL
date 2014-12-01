@@ -11,11 +11,11 @@ extern struct XM7_CPUID *pCpuID;
 
 #ifdef USE_SSE2
 extern void CopySoundBuffer_SSE2(DWORD *from, WORD *to, int size);
-extern int AddSoundBuffer_SSE2(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc[], int wavchannels, int samples);
+extern int AddSoundBuffer_SSE2(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples);
 #endif
 #ifdef USE_MMX
 extern void CopySoundBuffer_MMX(DWORD *from, WORD *to, int size);
-extern int AddSoundBuffer_MMX(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc[], int wavchannels, int samples);
+extern int AddSoundBuffer_MMX(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples);
 #endif
 
 
@@ -27,49 +27,31 @@ static inline Sint16 _clamp(Sint32 b)
     return (Sint16) b;
 }
 
-int AddSoundBuffer(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc[], int wavchannels, int samples)
+int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples)
 {
    int len1, len2;
    int i;
-   Sint16 *wavp[16];
 
    if(samples <= 0) return 0;
    if(dst == NULL) return 0;
    if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
-   if(wavchannels >= 16) wavchannels = 16;
-   for(i = 0; i < wavchannels; i++) {
-      wavp[i] = wavsrc[i];
-      wavp[i] = &(wavp[i][rpos]);
-   }
 
    
  if(pCpuID != NULL) {
  #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
-	   int ii;
-	   BOOL flag = TRUE;
-	   //if(((uint64_t)opnsrc  % 16) == 0) flag = FALSE;
-	   //if(((uint64_t)beepsrc % 16) == 0) flag = FALSE;
-	   //if(((uint64_t)cmtsrc % 16) == 0) flag = FALSE;
-	   //if(((uint64_t)dst % 16) == 0) flag = FALSE;
-	   //for(ii = 0; ii < wavchannels; ii++) {
-	   //	if((uint64_t)wavsrc[ii] % 16 != 0) flag = FALSE;
-	   //}
-	   if(flag == TRUE) return AddSoundBuffer_SSE2(dst, rpos, opnsrc, beepsrc, cmtsrc, wavsrc, wavchannels, samples);
+	   return AddSoundBuffer_SSE2(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
      }
  #endif
  #if defined(USE_MMX)
    if(pCpuID->use_mmx) {
-	   int ii;
 	   BOOL flag = TRUE;
 	   if(((uint64_t)opnsrc  % 8) == 0) flag = FALSE;
 	   if(((uint64_t)beepsrc % 8) == 0) flag = FALSE;
 	   if(((uint64_t)cmtsrc % 8) == 0) flag = FALSE;
 	   if(((uint64_t)dst % 8) == 0) flag = FALSE;
-	   for(ii = 0; ii < wavchannels; ii++) {
-		if((uint64_t)wavsrc[ii] % 8 != 0) flag = FALSE;
-	   }
-	   if(flag == TRUE) return AddSoundBuffer_MMX(dst, rpos, opnsrc, beepsrc, cmtsrc, wavsrc, wavchannels, samples);
+           if((uint64_t)wavsrc % 8 != 0) flag = FALSE;
+	   if(flag == TRUE) return AddSoundBuffer_MMX(dst, opnsrc, beepsrc, cmtsrc, wavsrc, samples);
    }
  #endif
  }
@@ -83,28 +65,21 @@ int AddSoundBuffer(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint1
       Sint16 *beep2 = (Sint16 *)beepsrc;
       Sint16 *cmt2 = (Sint16 *)cmtsrc;
       Sint16 *dst2 = (Sint16 *)dst;
-      Sint16 *wav2;
+      Sint16 *wav2 = (Sint16 *)wavsrc;
       int j;
-      _prefetch_data_write_l1(dst2, sizeof(Sint16) * samples);
-      _prefetch_data_read_l2(opn2, sizeof(Sint32) * samples);
-      _prefetch_data_read_l2(beep2, sizeof(Sint16) * samples);
-      _prefetch_data_read_l2(cmt2, sizeof(Sint16) * samples);
-      for(j = 0; j < wavchannels; j++) {
-	 if(wavsrc[j] != NULL ) {
-	    wav2 = wavp[j];
-	    _prefetch_data_read_l2(wav2, sizeof(Sint16) * samples);
-	 }
-      }
+      if(dst2 != NULL) _prefetch_data_write_l1(dst2, sizeof(Sint16) * samples);
+      if(opn2 != NULL) _prefetch_data_read_l2(opn2, sizeof(Sint32) * samples);
+      if(beep2 != NULL) _prefetch_data_read_l2(beep2, sizeof(Sint16) * samples);
+      if(cmt2 != NULL) _prefetch_data_read_l2(cmt2, sizeof(Sint16) * samples);
+      if(wavsrc != NULL )  _prefetch_data_read_l2(wavsrc, sizeof(Sint16) * samples);
+      
       
       for (i = 0; i < len2; i++) {
 	 tmp4 = *opn2++;
+	 tmp4 = tmp4 + (Sint32)*beep2++;
+	 tmp4 = tmp4 + (Sint32)*cmt2++;
+	 tmp4 = tmp4 + (Sint32)*wav2++;
 	 tmp5 = _clamp(tmp4);
-	 tmp5 = tmp5 + *beep2++;
-	 tmp5 = tmp5 + *cmt2++;
-	 for(j = 0; j < wavchannels; j++) {
-	    wav2 = wavp[j];
-	    if(wav2 != NULL) tmp5 = tmp5 + wav2[i];
-	 }
 	 *dst2++ = tmp5;
       }
    }

@@ -77,7 +77,7 @@ UINT                    uChSeparation;
 UINT                    uStereoOut;     /* 出力モード */
 BOOL                    bSoundDebug = FALSE;
 
-extern int AddSoundBuffer(Sint16 *dst, int rpos, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc[], int wavchannels, int samples); // バッファ転送関数
+extern int AddSoundBuffer(Sint16 *dst, Sint32 *opnsrc, Sint16 *beepsrc, Sint16 *cmtsrc, Sint16 *wavsrc, int samples); // バッファ転送関数
 
 }
 
@@ -105,11 +105,11 @@ static Sint16 *pSoundBuf;
 static Sint16 *pOpnSndBuf;
 static Sint16 *pBeepSndBuf;
 static Sint16 *pCMTSndBuf;
-static Sint16 *pWavSndBuf[SND_WAVS];
+static Sint16 *pWavSndBuf;
 static Sint32 *pOpnSndBuf32;
 static Sint32 *pBeepSndBuf32;
 static Sint32 *pCMTSndBuf32;
-static Sint32 *pWavSndBuf32[SND_WAVS];
+static Sint32 *pWavSndBuf32;
 
 static Uint8 *pWavSrcBuf[SND_WAVS];
 static Uint32 nWavSrcLength[SND_WAVS];
@@ -329,10 +329,8 @@ void InitSnd(void)
         pOpnSndBuf32 = NULL;
 	pBeepSndBuf32 = NULL;
 	pCMTSndBuf32 = NULL;
-	for(i = 0; i < SND_WAVS; i++ ) { 
-	   pWavSndBuf[i] = NULL;
-	   pWavSndBuf32[i] = NULL;
-	}
+	pWavSndBuf = NULL;
+        pWavSndBuf32 = NULL;
    
 	pCaptureBuf = NULL;
 	pSoundBuf = NULL;
@@ -384,12 +382,10 @@ void CleanSnd(void)
 	   pBeepSndBuf32 = NULL;
 	   if(pCMTSndBuf32 != NULL) free(pCMTSndBuf32);
 	   pCMTSndBuf32 = NULL;
-	   for(i = 0; i < SND_WAVS; i++) {
-	      if(pWavSndBuf[i] != NULL) free(pWavSndBuf[i]);
-	      pWavSndBuf[i] = NULL;
-	      if(pWavSndBuf32[i] != NULL) free(pWavSndBuf32[i]);
-	      pWavSndBuf32[i] = NULL;
-	   }
+           if(pWavSndBuf != NULL) free(pWavSndBuf);
+	    pWavSndBuf = NULL;
+	   if(pWavSndBuf32 != NULL) free(pWavSndBuf32);
+           pWavSndBuf32 = NULL;
 	if(applySem) {
 		SDL_DestroySemaphore(applySem);
 		applySem = NULL;
@@ -464,12 +460,10 @@ static void CloseSnd(void)
 	   pBeepSndBuf = NULL;
 	   if(pCMTSndBuf != NULL) free(pCMTSndBuf);
 	   pCMTSndBuf = NULL;
-	   for(i = 0; i < SND_WAVS; i++) {
-	      if(pWavSndBuf[i] != NULL) free(pWavSndBuf[i]);
-	      pWavSndBuf[i] = NULL;
-	      if(pWavSndBuf32[i] != NULL) free(pWavSndBuf32[i]);
-	      pWavSndBuf32[i] = NULL;
-	   }
+	   if(pWavSndBuf != NULL) free(pWavSndBuf);
+	   pWavSndBuf = NULL;
+	   if(pWavSndBuf32 != NULL) free(pWavSndBuf32);
+	   pWavSndBuf32 = NULL;
 	   
 	   if(pOpnSndBuf32 != NULL) free(pOpnSndBuf32);
 	   pOpnSndBuf32 = NULL;
@@ -640,9 +634,7 @@ BOOL SelectSnd(void)
         if(posix_memalign((void **)&pOpnSndBuf, 32, members) < 0) pOpnSndBuf = NULL;
         if(posix_memalign((void **)&pBeepSndBuf, 32, members) < 0) pBeepSndBuf = NULL;
         if(posix_memalign((void **)&pCMTSndBuf, 32, members) < 0) pCMTSndBuf = NULL;
-        for(i = 0; i < SND_WAVS; i++) {
-	   if(posix_memalign((void **)&pWavSndBuf[i], 32, members) < 0) pWavSndBuf[i] = NULL;
-	}
+        if(posix_memalign((void **)&pWavSndBuf, 32, members) < 0) pWavSndBuf = NULL;
    
 	/*
 	 * レンダリングドライバの設定
@@ -899,8 +891,8 @@ static void AddSnd(int pos, int samples, bool bZero)
       }
       memset(&pSoundBuf[nSndDevWritePos], 0x00, samples2 * sizeof(Sint16));
       
-      if(!bZero) AddSoundBuffer(&pSoundBuf[nSndDevWritePos], rpos,
-				&pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], pWavSndBuf, 1, samples2);
+      if(!bZero) AddSoundBuffer(&pSoundBuf[nSndDevWritePos], 
+				&pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], &pWavSndBuf[rpos], samples2);
       if(bWavCapture) SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], samples2 / 2, 2);
       
       if(bSoundDebug) printf("SND:Time=%d,AddSnd,bank=%d,rpos=%d,nSndDevWritePos=%d,samples2=%d\n", SDL_GetTicks(), nSndBank, rpos, nSndDevWritePos,samples2);
@@ -959,9 +951,9 @@ static DWORD RenderCommon(DWORD ttime, int samples, BOOL bZero)
    n = RenderSub(&pCMTSndBuf32[wpos],  &pCMTSndBuf[wpos], DrvCMT, samples, bZero);
    if(n > max) max = n;
    for(wavi = 0; wavi < WAV_CHANNELS; wavi++) {
-      pp = pWavSndBuf[0];
+      pp = pWavSndBuf;
       if(DrvWav != NULL) DrvWav[wavi].Render(&pp[wpos], nSndPos, samples, clear, bZero);
-      if(wavi == 0) clear = FALSE;
+      clear = FALSE;
    }
    
    nSamples += max;
