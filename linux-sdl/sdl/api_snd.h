@@ -184,7 +184,7 @@ extern UINT            uChSeparation;  /* チャンネルセパレーション *
  * 定数など
  */
 #define CHUNKS 2
-#define WAV_CHANNELS 5
+#define WAV_CHANNELS 10
 enum {
 	CH_SND_BEEP = 0,
 	CH_SND_CMT ,

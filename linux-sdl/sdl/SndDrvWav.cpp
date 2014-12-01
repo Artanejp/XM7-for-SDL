@@ -12,12 +12,12 @@
 
 #include "SndDrvWav.h"
 #include "api_snd.h"
+#include "agar_logger.h"
 
 SndDrvWav::SndDrvWav() {
 	// TODO Auto-generated constructor stub
 
 //	chunkP = NULL;
-	buf = NULL;
 	enable = FALSE;
 	bufSlot = 1;
 	ppos = 0;
@@ -26,11 +26,8 @@ SndDrvWav::SndDrvWav() {
 	volume = SDL_MIX_MAXVOLUME;
 	RenderSem = SDL_CreateSemaphore(1);
         // Load Wav
-	cvt.len = 0;
-	cvt.len_cvt = 0;
-        cvt.buf = NULL;
-        buf = NULL;
-        RawBuf = NULL;
+	wavlen = 0;
+        wavsrc = NULL;
 	SDL_SemPost(RenderSem);
 }
 
@@ -45,7 +42,6 @@ Uint8 *SndDrvWav::NewBuffer(int slot)
    int uStereo;
    
    if(slot != 0) return NULL; /* slot0以外は使わない */
-   if(buf != NULL) return NULL; /* バッファがあるよ？Deleteしましょう */
    uStereo = nStereoOut %4;
     if ((uStereo > 0) || bForceStereo) {
     	channels = 2;
@@ -53,25 +49,15 @@ Uint8 *SndDrvWav::NewBuffer(int slot)
     	channels = 1;
     }
     if(RenderSem == NULL) return NULL;
-    SDL_SemWait(RenderSem);
-    SDL_SemPost(RenderSem);
-   return (Uint8 *)buf;
+   return (Uint8 *)NULL;
 }
 
 void SndDrvWav::DeleteBuffer(int slot)
 {
 
    if(RenderSem == NULL) return;
-   SDL_SemWait(RenderSem);
-   if(RawBuf != NULL) {
-      SDL_FreeWAV(RawBuf);
-      RawBuf = NULL;
-   }
-   if(buf != NULL) {
-      free(buf);
-      buf = NULL;
-   }
-   SDL_SemPost(RenderSem);
+   SDL_DestroySemaphore(RenderSem);
+   RenderSem = NULL;
 }
 
 
@@ -80,15 +66,11 @@ void SndDrvWav::SetRenderVolume(int level)
 	nLevel = (int)(32767.0 * pow(10.0, level / 20.0));
 }
 
-Uint8 *SndDrvWav::Setup(void)
-{
-	return Setup(NULL);
-}
 
 /*
  * RAM上のWAVデータを演奏可能な形で読み込む
  */
-Uint8 *SndDrvWav::Setup(char *p)
+void SndDrvWav::Setup(void)
 {
    int uStereo;
    UINT uChannels;
@@ -100,46 +82,19 @@ Uint8 *SndDrvWav::Setup(char *p)
       uChannels = 1;
    }
    channels = uChannels;
-   if(RawBuf != NULL) return RawBuf;
-   
-   if(SDL_LoadWAV(p, &RawSpec, &RawBuf, &bufSize) == NULL) {
-      return NULL;
-   }
-   
-   SetRate(nSampleRate);
    SetRenderVolume(nWaveVolume);
 }
 
-void SndDrvWav::SetRate(int rate)
+
+void SndDrvWav::SetSrc(Uint8 *p, int len)
 {
-   ms = nSoundBuffer;
-   if(rate < 0) return;
-   srate = rate;
-
-   if(cvt.buf != NULL) {
-      free(cvt.buf);
-      cvt.buf = NULL;
-      cvt.len = 0;
-      cvt.len_cvt = 0;
-   }
-   
-   if(SDL_BuildAudioCVT(&cvt, RawSpec.format, RawSpec.channels, RawSpec.freq,
-			AUDIO_S16SYS, channels, srate) < 0) {
-        cvt.buf = NULL;
-        cvt.len = 0;
-        return;
-   }
-   if(RawBuf != NULL) {
-      cvt.buf = malloc(bufSize * cvt.len_mult);
-      cvt.len = bufSize;
-      memcpy(cvt.buf, RawBuf, bufSize);
-      SDL_ConvertAudio(&cvt);
-      ppos = 0;
-      plen = cvt.len_cvt / (sizeof(Sint16) * channels);
-   }
-   
+   SDL_SemWait(RenderSem);
+   wavsrc = p;
+   wavlen = len;
+   plen = len / (sizeof(Sint16) * channels);
+   ppos = 0;
+   SDL_SemPost(RenderSem);
 }
-
 	
    
 void SndDrvWav::Enable(BOOL flag)
@@ -164,7 +119,7 @@ BOOL SndDrvWav::IsEnabled(void)
 /*
  * BZERO : 指定領域を0x00で埋める
  */
-int SndDrvWav::BZero(int start, int uSamples, int slot, BOOL clear)
+int SndDrvWav::BZero(Sint16 *buf, int start, int uSamples, int slot, BOOL clear)
 {
    int sSamples = uSamples;
    int s;
@@ -173,7 +128,6 @@ int SndDrvWav::BZero(int start, int uSamples, int slot, BOOL clear)
    
 
    if(channels <= 0) return 0;
-   if(buf == NULL) return 0;
    if(start > s) return 0; /* 開始点にデータなし */
    if(sSamples > s) sSamples = s;
    wbuf = buf;
@@ -191,6 +145,8 @@ int SndDrvWav::BZero(int start, int uSamples, int slot, BOOL clear)
    SDL_SemPost(RenderSem);
    return ss2;
 }
+
+
 
 /*
  * レンダリング
@@ -211,7 +167,7 @@ int SndDrvWav::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZ
         if(s <= 0) {
 	   SDL_SemWait(RenderSem);
 	   playing = FALSE;
-	   memset(pBuf, 0x00, ss2 * channels * sizeof(Sint16));
+	   //if(enable) memset(pBuf, 0x00, ss2 * channels * sizeof(Sint16));
 	   SDL_SemPost(RenderSem);
 	   return ss2;
 	}
@@ -223,26 +179,39 @@ int SndDrvWav::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZ
 		if(RenderSem == NULL) return 0;
 		q = (Sint16 *)pBuf;
 	        q = &q[start * channels];
-	        p = (Sint16 *)cvt.buf;
+	        p = (Sint16 *)wavsrc;
 	        if(p == NULL) return 0;
 	        p = &p[ppos * channels];
 		SDL_SemWait(RenderSem);
 	        if(clear) memset(q, 0x00, ss2 * channels * sizeof(Sint16));
 	        if(s > 0) playing = TRUE;
-	        if((bZero) || (!enable)) {
-		   memset(q, 0x00, ss2 * channels * sizeof(Sint16));
+	        if((bZero) && (enable)) {
+		   //memset(q, 0x00, ss2 * channels * sizeof(Sint16));
+		   ppos += s;
 		   playing = FALSE;
+		   if(ppos >= plen) {
+		      enable = FALSE;
+		      ppos = 0;
+		   }
+		   
+		   SDL_SemPost(RenderSem);
+		   return ss2;
+		}
+	        if(!enable) {
+		   ppos += s;
+		   playing = TRUE;
 		   SDL_SemPost(RenderSem);
 		   return ss2;
 		}
 	   
 		for(i = 0; i < (s * channels); i++) {
-			tmp = (nLevel * *p++);
+		        tmp = (Sint32)*q;
+			tmp += (nLevel * *p++);
 			*q++ = (Sint16)(tmp >>13); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
 		}
 		ppos += s;
 		if(ss2 > s) {
-		  memset(q, 0x00, (ss2 - s) * channels * sizeof(Sint16));
+		  //memset(q, 0x00, (ss2 - s) * channels * sizeof(Sint16));
 		}
 	        if(ppos >= plen) {
 		   ppos = 0;

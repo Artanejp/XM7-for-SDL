@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
+#include <ctype.h>
 
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
@@ -38,6 +39,7 @@
 #include "api_snd.h"
 
 #include "api_wavwriter.h"
+#include "agar_logger.h"
 
 #include "SndDrvIF.h"
 #include "SndDrvBeep.h"
@@ -99,15 +101,20 @@ static BOOL             bStreamWrap;
 static Sint16 *pCaptureBuf;
 static Sint16 *pSoundBuf;
 
+#define SND_WAVS 3
 static Sint16 *pOpnSndBuf;
 static Sint16 *pBeepSndBuf;
 static Sint16 *pCMTSndBuf;
-static Sint16 *pWavSndBuf[3];
+static Sint16 *pWavSndBuf[SND_WAVS];
 static Sint32 *pOpnSndBuf32;
 static Sint32 *pBeepSndBuf32;
 static Sint32 *pCMTSndBuf32;
-static Sint32 *pWavSndBuf32[3];
+static Sint32 *pWavSndBuf32[SND_WAVS];
 
+static Uint8 *pWavSrcBuf[SND_WAVS];
+static Uint32 nWavSrcLength[SND_WAVS];
+static SDL_AudioSpec WavSrcSpec[SND_WAVS];
+static SDL_AudioCVT   WavDstCvt[SND_WAVS];
 
 /*
  * OPN内部変数
@@ -155,6 +162,109 @@ static const char     *WavName[] = {
 		"HEADDOWN.WAV"
 #endif  /* */
 };
+
+static void WavDstDelete(int num)
+{
+   if((num < 0) || (num >= SND_WAVS)) return;
+   if(WavDstCvt[num].buf != NULL) free(WavDstCvt[num].buf);
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Deleted WAV on slot %d", num);
+   WavDstCvt[num].buf = NULL;
+   WavDstCvt[num].len = 0;
+   WavDstCvt[num].len_cvt = 0;
+}
+
+
+static int WavSetRate(int num, int channels, int rate)
+{
+   if(rate <= 0) return -1;
+   if((channels <= 0) || (channels > 2)) return -1;
+   if((num < 0) || (num >= SND_WAVS)) return -1;
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Try to set rate %d to WAV on slot %d", num, rate);
+   if((pWavSrcBuf[num] == NULL) || (nWavSrcLength[num] == 0)) {
+      WavDstDelete(num);
+      return -1;
+   }
+   if(SDL_BuildAudioCVT(&(WavDstCvt[num]), WavSrcSpec[num].format, WavSrcSpec[num].channels, WavSrcSpec[num].freq,
+			AUDIO_S16SYS, channels, rate) < 0) {
+      WavDstDelete(num);
+      return -1;
+   }
+   WavDstCvt[num].buf = (uint8 *)malloc(nWavSrcLength[num] * WavDstCvt[num].len_mult);
+   WavDstCvt[num].len = nWavSrcLength[num];
+   memcpy(WavDstCvt[num].buf, pWavSrcBuf[num], WavDstCvt[num].len);
+   if(SDL_ConvertAudio(&(WavDstCvt[num])) < 0) {
+      WavDstDelete(num);
+      return 0;
+   }
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Set rate %d to WAV on slot %d", num, rate);
+   return WavDstCvt[num].len_cvt;
+}
+
+static void WavFree(int slot)
+{
+   if((slot < 0) || (slot >= SND_WAVS)) return;
+   if(pWavSrcBuf[slot] != NULL) {
+      SDL_FreeWAV(pWavSrcBuf[slot]);
+      pWavSrcBuf[slot] = NULL;
+   }
+}
+
+
+static Uint8 *WavLoad(int slot, const char *dir)
+{
+   char srcname[64];
+   char path[MAXPATHLEN];
+   char dstname[64];
+   int i;
+   int len;
+   SDL_AudioSpec *spec;
+   
+   if((slot < 0) || (slot >= SND_WAVS)) return NULL;
+   WavFree(slot);
+   
+   strncpy(srcname, WavName[slot], 63);
+   len = strlen(srcname);
+   // Lower
+   for(i = 0; i < len; i++) dstname[i] = tolower((int)srcname[i]);
+   dstname[i] = '\0';
+   len = strlen(dstname);
+   strncpy(path, dir, MAXPATHLEN - 1 - len);
+   strncat(path, dstname, len);
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Try to WAV(L) on slot %d: %s", slot, path);
+   spec = SDL_LoadWAV(path, &(WavSrcSpec[slot]), &(pWavSrcBuf[slot]), &(nWavSrcLength[slot]));
+   if((spec != NULL) && (pWavSrcBuf[slot] != NULL)) return pWavSrcBuf[slot];
+   // Upper
+   for(i = 0; i < len; i++) dstname[i] = toupper((int)srcname[i]);
+   dstname[i] = '\0';
+   len = strlen(dstname);
+   strncpy(path, dir, MAXPATHLEN - 1 - len);
+   strncat(path, dstname, len);
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Try to WAV(U) on slot %d: %s", slot, path);
+   spec = SDL_LoadWAV(path, &(WavSrcSpec[slot]), &(pWavSrcBuf[slot]), &(nWavSrcLength[slot]));
+   if((spec != NULL) && (pWavSrcBuf[slot] != NULL)) return pWavSrcBuf[slot];
+   // Upper+Lower
+   dstname[0] = toupper((int)srcname[0]);
+   for(i = 1; i < len; i++) dstname[i] = tolower((int)srcname[i]);
+   dstname[i] = '\0';
+   len = strlen(dstname);
+   strncpy(path, dir, MAXPATHLEN - 1 - len);
+   strncat(path, dstname, len);
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Try to WAV(U+L) on slot %d: %s", slot, path);
+   spec = SDL_LoadWAV(path, &(WavSrcSpec[slot]), &(pWavSrcBuf[slot]), &(nWavSrcLength[slot]));
+   if((spec != NULL) && (pWavSrcBuf[slot] != NULL)) return pWavSrcBuf[slot];
+   // raw
+   strncpy(dstname, srcname, 63);
+   len = strlen(dstname);
+   strncpy(path, dir, MAXPATHLEN - 1 - len);
+   strncat(path, dstname, len);
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Try to WAV(RAW) on slot %d: %s", slot, path);
+   spec = SDL_LoadWAV(path, &(WavSrcSpec[slot]), &(pWavSrcBuf[slot]), &(nWavSrcLength[slot]));
+   if((spec != NULL) && (pWavSrcBuf[slot] != NULL)) return pWavSrcBuf[slot];
+   // Not Found
+   XM7_DebugLog(XM7_LOG_DEBUG, "SND: Try to WAV on slot %d: failed spec=%08x pWanSrcBuf=%08x", slot, spec, pWavSrcBuf[slot]);
+   WavFree(slot);
+   return NULL;
+}
 
 
 /*
@@ -219,7 +329,7 @@ void InitSnd(void)
         pOpnSndBuf32 = NULL;
 	pBeepSndBuf32 = NULL;
 	pCMTSndBuf32 = NULL;
-	for(i = 0; i < 3; i++ ) { 
+	for(i = 0; i < SND_WAVS; i++ ) { 
 	   pWavSndBuf[i] = NULL;
 	   pWavSndBuf32[i] = NULL;
 	}
@@ -274,7 +384,7 @@ void CleanSnd(void)
 	   pBeepSndBuf32 = NULL;
 	   if(pCMTSndBuf32 != NULL) free(pCMTSndBuf32);
 	   pCMTSndBuf32 = NULL;
-	   for(i = 0; i < 3; i++) {
+	   for(i = 0; i < SND_WAVS; i++) {
 	      if(pWavSndBuf[i] != NULL) free(pWavSndBuf[i]);
 	      pWavSndBuf[i] = NULL;
 	      if(pWavSndBuf32[i] != NULL) free(pWavSndBuf32[i]);
@@ -314,6 +424,10 @@ void CleanSnd(void)
 		delete[] DrvWav;
 		DrvWav = NULL;
 	}
+        for(i = 0; i < SND_WAVS; i++) {
+	   WavDstDelete(i);
+	   WavFree(i);
+	}
    
         nSndPos = 0;
         nSndBeforePos = 0;
@@ -350,7 +464,7 @@ static void CloseSnd(void)
 	   pBeepSndBuf = NULL;
 	   if(pCMTSndBuf != NULL) free(pCMTSndBuf);
 	   pCMTSndBuf = NULL;
-	   for(i = 0; i < 3; i++) {
+	   for(i = 0; i < SND_WAVS; i++) {
 	      if(pWavSndBuf[i] != NULL) free(pWavSndBuf[i]);
 	      pWavSndBuf[i] = NULL;
 	      if(pWavSndBuf32[i] != NULL) free(pWavSndBuf32[i]);
@@ -444,6 +558,9 @@ static void AudioCallbackSDL(void *udata, Uint8 *stream, int len)
    
 }
 
+
+
+
 BOOL SelectSnd(void)
 {
 
@@ -523,7 +640,7 @@ BOOL SelectSnd(void)
         if(posix_memalign((void **)&pOpnSndBuf, 32, members) < 0) pOpnSndBuf = NULL;
         if(posix_memalign((void **)&pBeepSndBuf, 32, members) < 0) pBeepSndBuf = NULL;
         if(posix_memalign((void **)&pCMTSndBuf, 32, members) < 0) pCMTSndBuf = NULL;
-        for(i = 0; i < 3; i++) {
+        for(i = 0; i < SND_WAVS; i++) {
 	   if(posix_memalign((void **)&pWavSndBuf[i], 32, members) < 0) pWavSndBuf[i] = NULL;
 	}
    
@@ -545,7 +662,11 @@ BOOL SelectSnd(void)
 	   }
 	}
     if(DrvWav == NULL) {
-	   DrvWav = new SndDrvWav[WAV_CHANNELS] ;
+       Uint8 *p;
+       DrvWav = new SndDrvWav[WAV_CHANNELS] ;
+       for(i = 0; i < SND_WAVS; i++) {
+	  p = WavLoad(i, RSSDIR);
+       }
     }
     if(DrvCMT == NULL) {
 	   DrvCMT= new SndDrvCMT ;
@@ -581,15 +702,12 @@ BOOL SelectSnd(void)
 	    DrvCMT->SetRenderVolume(nCMTVolume);
 	}
 	if(DrvWav) {
-	   char WavPath[MAXPATHLEN+1];
-	   int i;
-	   for(i = 0; i < 3; i++) {
-		strcpy(WavPath, RSSDIR);
-	        strcat(WavPath, WavName[i]);
-		DrvWav[i].Setup(WavPath);
+	   int n;
+	   for(i = 0; i < SND_WAVS; i++) {
+		n = WavSetRate(i, channels, uRate);
 	   }
-	   
 	}
+   
         dwSoundTotal = 0;
         nLastTime = dwSoundTotal;
         nSndPos = 0;
@@ -708,7 +826,7 @@ void SetSoundVolume(void)
 	if(DrvWav) {
 		for(i = 0; i < 3; i++) {
 				DrvWav[i].SetRenderVolume(nWavVol);
-			}
+		}
 	}
 	if(DrvOPN) DrvOPN->SetLRVolume();
 	SDL_SemPost(applySem);
@@ -782,7 +900,7 @@ static void AddSnd(int pos, int samples, bool bZero)
       memset(&pSoundBuf[nSndDevWritePos], 0x00, samples2 * sizeof(Sint16));
       
       if(!bZero) AddSoundBuffer(&pSoundBuf[nSndDevWritePos], rpos,
-				&pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], pWavSndBuf, 3, samples2);
+				&pOpnSndBuf32[rpos], &pBeepSndBuf[rpos], &pCMTSndBuf[rpos], pWavSndBuf, 1, samples2);
       if(bWavCapture) SndWavWrite(WavDescCapture, &pSoundBuf[nSndDevWritePos], samples2 / 2, 2);
       
       if(bSoundDebug) printf("SND:Time=%d,AddSnd,bank=%d,rpos=%d,nSndDevWritePos=%d,samples2=%d\n", SDL_GetTicks(), nSndBank, rpos, nSndDevWritePos,samples2);
@@ -827,6 +945,8 @@ static DWORD RenderCommon(DWORD ttime, int samples, BOOL bZero)
 {
    DWORD max = 0;
    DWORD n;
+   Sint16 *pp;
+   BOOL clear = TRUE;
    int channels = 2;
    int wpos;
    int wavi;
@@ -838,10 +958,10 @@ static DWORD RenderCommon(DWORD ttime, int samples, BOOL bZero)
    if(n > max) max = n;
    n = RenderSub(&pCMTSndBuf32[wpos],  &pCMTSndBuf[wpos], DrvCMT, samples, bZero);
    if(n > max) max = n;
-   for(wavi = 0; wavi < 3; wavi++) {
-      Sint16 *pp;
-      pp = pWavSndBuf[wavi];
-      if(DrvWav != NULL) DrvWav[wavi].Render(&pp[wpos], nSndPos, samples, TRUE, bZero);
+   for(wavi = 0; wavi < WAV_CHANNELS; wavi++) {
+      pp = pWavSndBuf[0];
+      if(DrvWav != NULL) DrvWav[wavi].Render(&pp[wpos], nSndPos, samples, clear, bZero);
+      if(wavi == 0) clear = FALSE;
    }
    
    nSamples += max;
@@ -1011,28 +1131,43 @@ void whg_notify(BYTE reg, BYTE dat)
 void wav_notify(BYTE no)
 {
    DWORD ttime = dwSoundTotal;
-
+   int op;
+   
    if(DrvWav == NULL) return;
    Render1(ttime, FALSE);
-   switch(no) 
-     {
-      case SOUND_CMTMOTORON:
-	DrvWav[0].Enable(TRUE);
-	break;
-      case SOUND_CMTMOTOROFF:
-	DrvWav[1].Enable(TRUE);
-	break;
-      case SOUND_FDDSEEK:
-	DrvWav[2].Enable(TRUE);
-	break;
-      case SOUND_STOP:
-	DrvWav[0].Enable(FALSE);
-	DrvWav[1].Enable(FALSE);
-	DrvWav[2].Enable(FALSE);
-	break;
-      default:
-	break;
-     }
+   if(no == SOUND_STOP) {
+      for(op = 0; op < WAV_CHANNELS; op++) DrvWav[op].Enable(FALSE);
+      return;
+   }
+   
+   
+   for(op = 0; op < WAV_CHANNELS; op++) if(DrvWav[op].IsEnabled() == FALSE) break;
+   if(op < WAV_CHANNELS) {
+      switch(no) 
+	{
+	 case SOUND_CMTMOTORON:
+	   DrvWav[op].Setup();
+	   DrvWav[op].SetSrc(WavDstCvt[0].buf, WavDstCvt[0].len_cvt);
+	   //XM7_DebugLog(XM7_LOG_DEBUG, "Set Src WAV: Slot %d buf = %02x len = %d", op, WavDstCvt[0].buf, WavDstCvt[0].len_cvt);  
+	   DrvWav[op].Enable(TRUE);
+	   break;
+	 case SOUND_CMTMOTOROFF:
+	   DrvWav[op].Setup();
+	   DrvWav[op].SetSrc(WavDstCvt[1].buf, WavDstCvt[1].len_cvt);
+	   //XM7_DebugLog(XM7_LOG_DEBUG, "Set Src WAV: Slot %d buf = %02x len = %d", op, WavDstCvt[1].buf, WavDstCvt[1].len_cvt);  
+	   DrvWav[op].Enable(TRUE);
+	   break;
+	 case SOUND_FDDSEEK:
+	   DrvWav[op].Setup();
+	   DrvWav[op].SetSrc(WavDstCvt[2].buf, WavDstCvt[2].len_cvt);
+	   //XM7_DebugLog(XM7_LOG_DEBUG, "Set Src WAV: Slot %d buf = %02x len = %d", op, WavDstCvt[2].buf, WavDstCvt[2].len_cvt);  
+	   DrvWav[op].Enable(TRUE);
+	   break;
+	 default:
+	   break;
+	}
+   }
+   
 }
 
 void beep_notify(void)

@@ -27,20 +27,17 @@ public:
 	void DeleteBuffer(int slot);
 	void Enable(BOOL flag);
 	void SetRenderVolume(int level);
-	Uint8 *Setup(void);
-	Uint8 *Setup(char *p);
-        void SetRate(int rate);
+	void Setup(void);
         int Render(Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZero);
         int Render(Sint32 *pBuf32, Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZero);
-	int BZero(int start, int uSamples, int slot, BOOL clear);
+	int BZero(Sint16 *buf, int start, int uSamples, int slot, BOOL clear);
         BOOL IsPlaying(void);
         BOOL IsEnabled(void);
+        void SetSrc(Uint8 *p, int len);
 private:
 	void SetRenderVolume(int level, int slot);
 	Uint32 bufSize;
         SDL_AudioSpec RawSpec;
-	Sint16 *buf = NULL;
-        Uint8 *RawBuf = NULL;
 	int samples;
 	UINT channels;
 	UINT srate;
@@ -50,11 +47,11 @@ private:
 	int nLevel; /* レンダリングの音量 */
 	Uint8 volume; /* 出力する音量 */
 	BOOL enable;
-        SDL_AudioCVT cvt;
         Uint32 ppos;
         Uint32 plen;
         BOOL playing;
-   
+        Uint8 *wavsrc = NULL;
+        int wavlen;
 	SDL_sem *RenderSem;
 };
 
