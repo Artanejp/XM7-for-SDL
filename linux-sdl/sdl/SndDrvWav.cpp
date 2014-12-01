@@ -217,7 +217,7 @@ int SndDrvWav::Render(Sint16 *pBuf, int start, int sSamples, BOOL clear, BOOL bZ
 		for(i = 0; i < (s * channels); i++) {
 		        tmp = (Sint32)*q;
 			tmp += (nLevel * *p++);
-			*q++ = (Sint16)(tmp >>13); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
+			*q++ = (Sint16)(tmp >>15); // 怨霊^h^h音量が小さすぎるので補正 20101001 K.O
 		}
 		ppos += s;
 		if(ss2 > s) {
