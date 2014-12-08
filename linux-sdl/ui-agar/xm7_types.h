@@ -25,15 +25,15 @@ typedef uint32_t DWORD;
 typedef int     BOOL;
 
 // Vector
-typedef short int v2si __attribute__ ((__vector_size__(8), aligned(8)));
-typedef uint16_t v4si __attribute__ ((__vector_size__(16), aligned(16)));
-typedef uint16_t v8si __attribute__ ((__vector_size__(32), aligned(32)));
-typedef uint32_t v2ui __attribute__ ((__vector_size__(8), aligned(8)));
-typedef int32_t v2ii __attribute__ ((__vector_size__(8), aligned(8)));
-typedef int32_t v4ii __attribute__ ((__vector_size__(16), aligned(16)));
-typedef uint32_t v4ui __attribute__ ((__vector_size__(16), aligned(16)));
-typedef int32_t v8ii __attribute__ ((__vector_size__(32), aligned(32)));
-typedef uint32_t v8ui __attribute__ ((__vector_size__(32), aligned(32)));
+typedef short int v2si __attribute__ ((__vector_size__(8)));
+typedef uint16_t v4si  __attribute__ ((__vector_size__(16)));
+typedef uint16_t v8si  __attribute__ ((__vector_size__(32)));
+typedef uint32_t v2ui  __attribute__ ((__vector_size__(8)));
+typedef int32_t v2ii   __attribute__ ((__vector_size__(8)));
+typedef int32_t v4ii   __attribute__ ((__vector_size__(16)));
+typedef uint32_t v4ui  __attribute__ ((__vector_size__(16)));
+typedef int32_t v8ii   __attribute__ ((__vector_size__(32)));
+typedef uint32_t v8ui  __attribute__ ((__vector_size__(32)));
 
 typedef union 
 {
