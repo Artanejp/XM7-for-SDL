@@ -140,7 +140,9 @@ BOOL SelectDraw2(void)
 {
     AG_Widget *wid;
 //		if(agDriverOps == NULL) return FALSE;
-//   if((bCLEnabled) && SelectCheck()) return FALSE;
+//   if(bCLEnabled && SelectCheck()) return FALSE;
+   if(SelectCheck()) return FALSE;
+   bMode = screen_mode;
    now_raster = 0;
 #ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
@@ -171,7 +173,7 @@ BOOL SelectDraw2(void)
     * セレクト
     */
 #if XM7_VER >= 3
-   switch (screen_mode) {
+   switch (bMode) {
     case SCR_400LINE:
       return Select400l();
     case SCR_262144:

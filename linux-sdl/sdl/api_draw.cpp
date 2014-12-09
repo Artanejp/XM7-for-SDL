@@ -319,10 +319,6 @@ void	InitDraw(void)
 		 * 直接書き込み→間接書き込み
 		 */
 
-//        realDrawArea = GetDrawSurface();
-		//AG_MutexInit(&DrawMutex);
-		//AG_CondInit(&DrawCond);
-		//AG_MutexUnlock(&DrawMutex);
 		AG_ThreadCreate(&DrawThread, DrawThreadMain, NULL);
 		if(!DrawInitSem) {
 			DrawInitSem = SDL_CreateSemaphore(1);
@@ -332,10 +328,10 @@ void	InitDraw(void)
 		 *  VRAMテクスチャ生成
 		 */
 #ifdef USE_OPENGL
-                 uVramTextureID = 0;
+   uVramTextureID = 0;
 #endif /* USE_OPENGL */
-   //		 initvramtbl_8_vec();
-		 initvramtbl_4096_vec();
+   initvramtbl_4096_vec();
+   Select640();
 }
 
 
@@ -466,6 +462,7 @@ BOOL Select640(void)
      bPaletFlag = TRUE;
      SetDirtyFlag(0, 400, TRUE);
      Palet640();
+     Palet320();
    } else { // CL
      bNextFrameRender = TRUE;
      for(y = 0; y < 400; y++) {
@@ -519,6 +516,7 @@ BOOL Select400l(void)
    if(!bCLEnabled) {
      bPaletFlag = TRUE;
      Palet640();
+     Palet320();
    } else { // CL
      bNextFrameRender = TRUE;
      for(y = 0; y < 400; y++) {
@@ -575,6 +573,7 @@ BOOL Select320(void)
    if(!bCLEnabled) {
      bPaletFlag = TRUE;
      SetDirtyFlag(0, 400, TRUE);
+     Palet640();
      Palet320();
    } else {
      bNextFrameRender = TRUE;
@@ -628,7 +627,11 @@ BOOL Select256k()
    pVirtualVramBuilder = &api_vram256k_generic;
 #endif
 
-   if(!bCLEnabled) Palet320();
+   if(!bCLEnabled) {
+      Palet640();
+      Palet320();
+   }
+   
    LockVram();
    if((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
       bNextFrameRender = TRUE;
@@ -1110,7 +1113,6 @@ void 	display_notify(void)
    nDrawBottom = 400;
    nDrawLeft = 0;
    nDrawRight = 640;
-   SelectDraw2();
    now_raster_old = now_raster;
    if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
         if (!run_flag) {
@@ -1127,12 +1129,15 @@ void 	display_notify(void)
 	     Palet640();
 	     Palet320();
 	  } else {
+	     SelectDraw2();
 	     if(cldraw != NULL) cldraw->ResetPalette();
 	  }
 	   
 	  SetDirtyFlag(0, 400, TRUE);
 	}
    } else {
+      Palet640();
+      Palet320();
       SetDrawFlag(TRUE);
    }
    //   UnlockVram();
@@ -1704,37 +1709,35 @@ static void Palet320Sub(Uint32 i, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 
 void Palet320(void)
 {
-
-	int     i,
-	j;
-	Uint8   r,
-	g,
-	b;
-	int     amask;
-
+	Uint32  i, j;
+	Uint8   r, g, b;
+	Uint32  amask;
+        Uint8   vpage;
 	/*
 	 * アナログマスクを作成
 	 */
 	 amask = 0;
-	 if (!(multi_page & 0x10)) {
-		 amask |= 0x000f;
+         vpage = (~(multi_page >> 4)) & 0x07;
+	 if (vpage & 0x1) {
+		 amask += 15;
 	 }
-	 if (!(multi_page & 0x20)) {
-		 amask |= 0x00f0;
+	 if (vpage & 0x2) {
+		 amask += 240;
 	 }
-	 if (!(multi_page & 0x40)) {
-		 amask |= 0x0f00;
+	 if (vpage & 0x4) {
+		 amask += (256 * 15);
 	 }
-     LockVram();
+         LockVram();
 	 for (i = 0; i < 4096; i++) {
 		 /*
 		  * 最下位から5bitづつB,G,R
 		  */
 		  if (crt_flag) {
 		     j = i & amask;
-		     r = apalet_r[j] <<4;
-		     g = apalet_g[j] <<4;
-		     b = apalet_b[j] <<4;
+		     r = g = b = 0;
+		     if(vpage & 0x1) b = apalet_b[j] << 4;
+		     if(vpage & 0x2) r = apalet_r[j] << 4;
+		     if(vpage & 0x4) g = apalet_g[j] << 4;
 		  } else {
 		     r = 0;
 		     g = 0;
@@ -1742,7 +1745,7 @@ void Palet320(void)
 		  }
 		  Palet320Sub(i, r, g, b, 255);
 	 }
-     UnlockVram();
+         UnlockVram();
 
 }
 
