@@ -116,25 +116,23 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 #ifdef _USE_OPENCL
        if((cldraw != NULL) && (bCLEnabled)) {
  	  cl_int ret = CL_SUCCESS;
-	  //LockVram();
+	  LockVram();
 	  flag = FALSE;
-	  //if(SDLDrawFlag.Drawn) {
-	  //  for(i = 0; i < h; i++) bDrawLine[i] = TRUE;
-	  //}
 	  for(i = 0; i < h; i++) {
 	    if(bDrawLine[i]) {
-	      //bDrawLine[i] = FALSE;
 	      flag = TRUE;
 	    }
 	  }
 	  if(SDLDrawFlag.Drawn) flag = TRUE;
 	  if(flag) {
 		ret = cldraw->GetVram(bModeOld);
+	        for(i = 0; i < h; i++)	bDrawLine[i] = FALSE;
+
 		if(ret != CL_SUCCESS) {
 		  SDLDrawFlag.Drawn = FALSE;
 		  bPaletFlag = FALSE;
 		  glBindTexture(GL_TEXTURE_2D, 0);
-		  //UnlockVram();
+		  UnlockVram();
 		  return;
 		}
 	    }
@@ -168,8 +166,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 	    }
 	    SDLDrawFlag.Drawn = FALSE;
 	    bPaletFlag = FALSE;
-          //}
-	  //UnlockVram();
+	  UnlockVram();
        } else {
 #endif
 	  LockVram();
@@ -182,7 +179,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 	  }
 	  flag |= SDLDrawFlag.Drawn;
 	  if((p != NULL) && (flag)) {
-	     //if(crtflag != FALSE) {
+	     if(crtflag != FALSE) {
 		glBindTexture(GL_TEXTURE_2D, uVramTextureID);
 		glTexSubImage2D(GL_TEXTURE_2D, 
 			  0,
@@ -195,7 +192,7 @@ static void drawUpdateTexture(Uint32 *p, int w, int h, BOOL crtflag)
 			  p);
 	       glFinish();
 	       glBindTexture(GL_TEXTURE_2D, 0); // 20111023 チラつきなど抑止
-	     //}
+	     }
 	     bPaletFlag = FALSE;
 	     SDLDrawFlag.Drawn = FALSE;
 	  }
