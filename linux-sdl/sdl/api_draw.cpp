@@ -433,8 +433,8 @@ void SelectClear(int mode)
      switch(nRenderMethod) {
      case RENDERING_RASTER:
        memset(pVram2, 0x00, 640 * 400 * sizeof(Uint32));
-       //Palet640(); // ?
-       //Palet320();
+       Palet640(); // ?
+       Palet320();
        SetDirtyFlag(0, 400, TRUE);
        break;
      case RENDERING_FULL:
@@ -561,7 +561,6 @@ BOOL Select320(void)
    nDrawBottom = 200;
    nDrawLeft = 0;
    nDrawRight = 320;
-   //bPaletFlag = TRUE;
    
 #if defined(USE_SSE2)
     if(pCpuID->use_sse2) {
@@ -1056,16 +1055,19 @@ void	ttlpalet_notify(void)
     * 不要なレンダリングを抑制するため、領域設定は描画時に行う
     */
 //   LockVram();
-   if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
+   if(bCLEnabled) {
+	if(!bPaletFlag) bNextFrameRender = TRUE;
+   } else if(nRenderMethod == RENDERING_RASTER){
 	bNextFrameRender = TRUE;
+        if(!bPaletFlag) Palet640();
    } else {
-      if(bPaletFlag != TRUE) {
+      if(!bPaletFlag) {
 	 SetDrawFlag(TRUE);
       }
    }
-   if(bPaletFlag != TRUE) {
+   if(!bPaletFlag) {
       SDLDrawFlag.DPaletteChanged = TRUE; // Palette changed
-      if(!bCLEnabled) SDLDrawFlag.Drawn = TRUE; // Palette changed
+      //if(!bCLEnabled) SDLDrawFlag.Drawn = TRUE; // Palette changed
    }
    bPaletFlag = TRUE;
 //   UnlockVram();
@@ -1076,16 +1078,19 @@ void	ttlpalet_notify(void)
  */
 void 	apalet_notify(void)
 {
-   if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
-      bNextFrameRender = TRUE;
+   if(bCLEnabled) {
+	if(!bPaletFlag) bNextFrameRender = TRUE;
+   } else if(nRenderMethod == RENDERING_RASTER){
+	bNextFrameRender = TRUE;
+        if(!bPaletFlag) Palet320();
    } else {
-      if(bPaletFlag != TRUE) {
+      if(!bPaletFlag) {
 	 SetDrawFlag(TRUE);
       }
    }
    if(bPaletFlag != TRUE) {
       SDLDrawFlag.APaletteChanged = TRUE; // Palette changed
-      if(!bCLEnabled) SDLDrawFlag.Drawn = TRUE; // Palette changed
+      //if(!bCLEnabled) SDLDrawFlag.Drawn = TRUE; // Palette changed
    }
    bPaletFlag = TRUE;
 }
@@ -1118,7 +1123,13 @@ void 	display_notify(void)
 		now_raster = raster;
 	} else {
 	  bNextFrameRender = TRUE;
-	  if(cldraw != NULL) cldraw->ResetPalette();
+	  if(!bCLEnabled) {
+	     Palet640();
+	     Palet320();
+	  } else {
+	     if(cldraw != NULL) cldraw->ResetPalette();
+	  }
+	   
 	  SetDirtyFlag(0, 400, TRUE);
 	}
    } else {
@@ -1143,6 +1154,7 @@ void FASTCALL vblankperiod_notify(void)
 
 	if ((nRenderMethod == RENDERING_RASTER) || (bCLEnabled)){
 	 now_raster_old = -1;
+	 //bPaletFlag = FALSE;
 	 if(!bCLEnabled) bPaletFlag = FALSE;
 	  _prefetch_data_read_l1(bDirtyLine, sizeof(bDirtyLine));
 		/* 次のフレームを強制的に書き換えるか */
@@ -1387,6 +1399,7 @@ static void Transfer_1Line(Uint8 *dst, int line)
 void FASTCALL hblank_notify(void)
 {
   int y;
+  BOOL flag = false;
   if(now_raster >= 400) return;
   LockVram();
 #if _USE_OPENCL
@@ -1422,11 +1435,30 @@ void FASTCALL hblank_notify(void)
    }
 #endif  
   if(nRenderMethod == RENDERING_RASTER) {
+     if(SDLDrawFlag.APaletteChanged) {
+	Palet320();
+	SDLDrawFlag.APaletteChanged = FALSE;
+	flag = TRUE;
+     }
+     if(SDLDrawFlag.DPaletteChanged) {
+	Palet640();
+	SDLDrawFlag.DPaletteChanged = FALSE;
+	flag = TRUE;
+     }
+     if(now_raster < 0) {
+	UnlockVram();
+	return;
+     }
+     
+     if(flag) {
+	for(y = now_raster; y < 400; y++) bDirtyLine[y] = TRUE;
+     }
      if (bDirtyLine[now_raster]) {
        Draw_1Line(now_raster);
        bDirtyLine[now_raster] = FALSE;
        SDLDrawFlag.Drawn = TRUE;
      }
+     bPaletFlag = FALSE;
   }
   UnlockVram();
   return;
@@ -1837,18 +1869,13 @@ void Draw_1Line(int line)
 
    bDirtyLine[line] = FALSE;
    if(pp == NULL) return;
-   if(SDLDrawFlag.APaletteChanged) {
-     	 Palet320();
-         SDLDrawFlag.APaletteChanged = FALSE;
-         bPaletFlag = FALSE;
+#ifdef _USE_OPENCL
+   if(bCLEnabled) {
+      SDLDrawFlag.Drawn = TRUE;
+      bDrawLine[line] = TRUE;
+      return;
    }
-   if(SDLDrawFlag.DPaletteChanged) {
-     	 Palet640();
-         SDLDrawFlag.DPaletteChanged = FALSE;
-         bPaletFlag = FALSE;
-   }
-
-   
+#endif
    switch(bModeOld) {
     case SCR_200LINE:
       ww = 80;
@@ -1882,13 +1909,7 @@ void Draw_1Line(int line)
    if((line < 0) || (line >= hh)) return;
    if(vram_dptr == NULL) return;
    if(vram_bdptr == NULL) return;
-#ifdef _USE_OPENCL
-   if((bCLEnabled)) {
-      SDLDrawFlag.Drawn = TRUE;
-      bDrawLine[line] = TRUE;
-      return;
-   }
-#endif
+   
    if((bWindowOpen) && (bModeOld != SCR_262144)) { // ハードウェアウインドウ開いてる
       if((nDrawTop >= nDrawBottom) && (nDrawLeft >= nDrawRight)) return;	 /* ウィンドウ内の描画 */
 	 if (top  > window_dy1) {

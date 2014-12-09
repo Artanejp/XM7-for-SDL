@@ -311,9 +311,7 @@ void AGDrawTaskMain(void)
    
         nDrawTick1E = nDrawTick2E;
 #ifdef _USE_OPENCL
-        if(bCLEnabled) {
-	   return;
-	}
+        if(bCLEnabled) return;
 #endif
         if(nRenderMethod == RENDERING_RASTER) return;
 #if XM7_VER >= 3

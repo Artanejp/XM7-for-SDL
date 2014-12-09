@@ -140,7 +140,7 @@ BOOL SelectDraw2(void)
 {
     AG_Widget *wid;
 //		if(agDriverOps == NULL) return FALSE;
-   if((bCLEnabled) && SelectCheck()) return FALSE;
+//   if((bCLEnabled) && SelectCheck()) return FALSE;
    now_raster = 0;
 #ifdef USE_OPENGL
    if(GLDrawArea != NULL) {
@@ -163,8 +163,6 @@ BOOL SelectDraw2(void)
        * すべてクリア
        */
       //AG_DriverClose(drv);
-//      bClearFlag = TRUE;
-      
 #ifdef USE_OPENGL
    }
 #endif /* USE_OPENGL */
