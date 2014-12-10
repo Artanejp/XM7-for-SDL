@@ -1722,7 +1722,7 @@ void Palet320(void)
 		 amask += 15;
 	 }
 	 if (vpage & 0x2) {
-		 amask += 240;
+		 amask += (16 * 15);
 	 }
 	 if (vpage & 0x4) {
 		 amask += (256 * 15);
@@ -1734,10 +1734,9 @@ void Palet320(void)
 		  */
 		  if (crt_flag) {
 		     j = i & amask;
-		     r = g = b = 0;
-		     if(vpage & 0x1) b = apalet_b[j] << 4;
-		     if(vpage & 0x2) r = apalet_r[j] << 4;
-		     if(vpage & 0x4) g = apalet_g[j] << 4;
+		     b = apalet_b[j] << 4;
+		     r = apalet_r[j] << 4;
+		     g = apalet_g[j] << 4;
 		  } else {
 		     r = 0;
 		     g = 0;
