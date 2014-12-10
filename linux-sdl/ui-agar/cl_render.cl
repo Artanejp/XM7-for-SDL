@@ -60,15 +60,13 @@ struct palettebuf_t {
    
 uint4 ttlpalet2rgb(__global uchar *pal, uint index)
 {
-    uint4 ret = {255, 255, 255, 255};
-    uint4 ptbl;
     uchar dat = pal[index];
-    
-    ptbl.s2 = (dat & 0x01);      // B
-    ptbl.s0 = (dat & 0x02) >> 1; // R
-    ptbl.s1 = (dat & 0x04) >> 2; // G
-    ptbl.s3 = 1;
-    ret = ptbl * ret;
+    uint4 ret;
+
+    ret.s2 = ((dat & 0x01) == 0)?0:255; // B
+    ret.s0 = ((dat & 0x02) == 0)?0:255; // R
+    ret.s1 = ((dat & 0x04) == 0)?0:255; // G
+    ret.s3 = 255; // A
     return ret;
 }
 
@@ -272,7 +270,7 @@ __kernel void getvram8(__global uchar *src, int w, int h, __global uchar4 *out,
   rr = 256 * 3;
   if(lid == 0) {
       for(i = q; i < rr; i++) tbl8[i] = table[i]; // Prefetch palette
-      bright4 = convert_uint4((float4){256.0, 256.0, 256.0, 256.0} * bright);
+      bright4 = convert_uint4((float4){255.0, 255.0, 255.0, 255.0} * bright);
   }
   barrier(CLK_LOCAL_MEM_FENCE);
 
