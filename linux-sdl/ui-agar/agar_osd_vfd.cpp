@@ -45,7 +45,7 @@ enum {
 
 struct OsdVFDPack {
     int drive;
-    char VFDLetter[64];
+    char VFDLetter[128];
     AG_Surface *surface;
     AG_Surface *pSurface[4];
     int OldStat;
@@ -95,8 +95,8 @@ static void DrawVFDFn(AG_Event *event)
       XM7_SDLViewSetDirty(my);
       return;
    }
-   if(disp->Changed || disp->init) {
-	{
+   if(UpdateVFD(my, dst, disp)) {
+	if(disp->Changed || disp->init){
 	   AG_Color fg, bg;
 	   AG_Color r, b, n, black;
 	   AG_Surface *target;
@@ -137,11 +137,10 @@ static void DrawVFDFn(AG_Event *event)
 	   fg = black;
 	   UpdateVFDChanged(disp, &fg, &bg, OSD_VFD_WRITE);
 	} 	    // CheckDebug 20130119
-//      AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
-   }
-   if((disp->Changed) || (disp->OldStat != disp->stat) || (disp->init)) {
-      AG_SurfaceBlit(disp->pSurface[disp->stat], NULL, dst, 0, 0);
-      XM7_SDLViewLinkSurface(my, dst);
+//      AG_SurfaceBlit(disp->pSurface[disp->stat], NULL, dst, 0, 0);
+//      XM7_SDLViewLinkSurface(my, dst);
+//      printf("Disp: %s\n", disp->VFDLetter);
+      XM7_SDLViewLinkSurface(my, disp->pSurface[disp->stat]);
    }
    XM7_SDLViewSetDirty(my);
    
@@ -162,11 +161,9 @@ static void UpdateVFDChanged(struct OsdVFDPack *pStatus, AG_Color *fg, AG_Color 
    int size;
         
    if(pStatus == NULL) return;
-   if(pStatus->init != TRUE) return;
    if((status > OSD_VFD_WRITE) || (status < 0)) return;
    dst = pStatus->pSurface[status];
    if(dst == NULL) return;
-   if(dst->pixels == NULL) return;
    if(pStatusFont == NULL) return;
    
    bb.r = 0;
@@ -214,12 +211,8 @@ static BOOL UpdateVFD(XM7_SDLView *my, AG_Surface *dst, struct OsdVFDPack *pStat
       pStatus->stat = OSD_VFD_EMPTY;
    }
    if((pStatus->Changed != TRUE) && (pStatus->stat == pStatus->OldStat)) {
-       pStatus->OldStat = pStatus->stat;
-       pStatus->Changed = FALSE;
        return FALSE;
     }
-   pStatus->Changed = FALSE;
-   pStatus->OldStat = pStatus->stat;
    return TRUE;
 }
 
@@ -255,8 +248,6 @@ static void InitVFDSub(AG_Widget *parent)
    int i;
     for(i = 1; i >= 0 ;i--) {
        old_writep[i] = FALSE;
-       szOldDrive[i][0] = '\0';
-       szDrive[i][0] = '\0';
        
        pVFDStat[i] = (struct OsdVFDPack *)malloc(sizeof(struct OsdVFDPack));
        if(pVFDStat[i] == NULL) return;
@@ -276,11 +267,16 @@ static void InitVFDSub(AG_Widget *parent)
 
 void InitVFD(AG_Widget *parent)
 {
+    int i;
     if(parent == NULL) return;
     if(pVfdBox != NULL) return;
     nVFDHeight = VFD_HEIGHT;
     nVFDWidth = VFD_WIDTH;
     pVfdBox = AG_BoxNew(parent, AG_BOX_HORIZ, 0);
+    for(i = 0; i < 2; i++) {
+       szDrive[i][0] = '\0';
+       szOldDrive[i][0] = '\0';
+    }
     AG_WidgetSetSize(pVfdBox, nVFDWidth * 2, nVFDHeight);
     InitVFDSub(AGWIDGET(pVfdBox));
 }
@@ -330,8 +326,6 @@ void ClearVFD(void)
 {
    int i;
    for(i = 0; i < 2; i++) {
-	szDrive[i][0] = '\0';
-	szOldDrive[i][0] = '\0';
         if(pVFDStat[i] != NULL) {
 	   pVFDStat[i]->VFDLetter[0] = '\0';
 	   pVFDStat[i]->stat = OSD_VFD_EMPTY;
@@ -365,9 +359,6 @@ void DrawDrive(int drive, BOOL override)
         BOOL changed = override;
 
          if(pVFDStat[drive] == NULL) return;
-	memset(string, 0x00, sizeof(string));
-	memset(utf8, 0x00, sizeof(utf8));
-	memset(outstr, 0x00, sizeof(outstr));
 
 
 	ASSERT((drive >= 0) && (drive <= 1));
@@ -390,6 +381,7 @@ void DrawDrive(int drive, BOOL override)
 	  */
 	 name[0] = '\0';
 	 utf8[0] = '\0';
+         string[0] = '\0';
 	 if (fdc_ready[drive] == FDC_TYPE_D77) {
 		 strncpy(name, fdc_name[drive][fdc_media[drive]], 126);
 	 }
@@ -403,18 +395,16 @@ void DrawDrive(int drive, BOOL override)
 	 /*
 	  * 描画
 	  */
-         if(strlen(name) < 0) {
+         if(strlen(name) <= 0) {
 	    sprintf(name, "*INSERTED*");
 	 }
    
-	 memset(szDrive[drive], 0, 16);
+         memset(szDrive[drive], 0x00, 17);
 	 strncpy(szDrive[drive], name, 16);
 	 if (num == 255) {
-	         char dstr[32];
-	         dstr[0] = '\0';
-		 strcpy(string, dstr);
+	    string[0] = '\0';	    
 	 } else {
-		 strcpy(string, szDrive[drive]);
+	    strcpy(string, szDrive[drive]);
 	 }
 
          if(fdc_ready[drive] == FDC_TYPE_NOTREADY){
@@ -430,12 +420,12 @@ void DrawDrive(int drive, BOOL override)
 	 nDrive[drive] = num;
          pVFDStat[drive]->stat = stat;
 
-         if((strcmp(szDrive[drive], szOldDrive[drive]) != 0) 
+         if((strncmp(szDrive[drive], szOldDrive[drive], 16) != 0) 
 	    || (old_writep[drive] != fdc_writep[drive]) || (override == TRUE)) {
 		 /*
 		  * 過去のファイルネームと違う
 		  */
-		 memset(szOldDrive[drive], 0, 16);
+	         memset(szOldDrive[drive], 0x00, 17);
 		 strncpy(szOldDrive[drive], szDrive[drive], 16);
 		 pIn = string;
 		 pOut = utf8;
@@ -450,7 +440,7 @@ void DrawDrive(int drive, BOOL override)
 			 iconv_close(hd);
 		 }
 		 if(strlen(utf8) >0) {
-			 if(fdc_writep[drive]) {
+		       if(fdc_writep[drive]) {
 				 sprintf(outstr, "■ %d:%s", drive, utf8); // 書込み禁止
 			 } else {
 				 sprintf(outstr, "　 %d:%s", drive, utf8); // 書込み許可
@@ -470,8 +460,9 @@ void DrawDrive(int drive, BOOL override)
 		 }
 	    
 	    old_writep[drive] = fdc_writep[drive];
-	    strncpy(pVFDStat[drive]->VFDLetter, outstr, 63);
+	    strncpy(pVFDStat[drive]->VFDLetter, outstr, 127);
+	    
 	    pVFDStat[drive]->Changed = TRUE;
-//	    AG_WidgetUpdate(pwVFD[drive]);         
+	    //AG_WidgetUpdate(pwVFD[drive]);         
 	 }
 }

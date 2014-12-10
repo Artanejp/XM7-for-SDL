@@ -165,12 +165,20 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
         AG_Color fg, bg;
         AG_Surface *tmp;
         if(count < 0) count = 0; //
-        if(tape_rec) {
-	   sprintf(string, "Ｒ%04d", count % 10000);
-	} else if(tape_writep) {
-	   sprintf(string, "■%04d", count % 10000);
+        if(pStatus->stat == OSD_CMT_EMPTY) {
+	   if(tape_writep) {
+	      sprintf(string, "■EMPTY");
+	   } else {
+	      sprintf(string, "　EMPTY");
+	   }
 	} else {
-	   sprintf(string, "　%04d", count % 10000);
+	   if(tape_rec) {
+	      sprintf(string, "Ｒ%04d", count % 10000);
+	   } else if(tape_writep) {
+	      sprintf(string, "■%04d", count % 10000);
+	   } else {
+	      sprintf(string, "　%04d", count % 10000);
+	   }
 	}
        
         size = getnFontSize();
@@ -196,28 +204,18 @@ static void UpdateCMTCount(int count, struct OsdCMTPack *pStatus)
             break;
         default:
             bg = black;
-            fg = black;
+            fg = n;
             pStatus->stat = OSD_CMT_EMPTY;
             break;
         }
-        if(pStatus->stat != OSD_CMT_EMPTY){
-            AG_TextColor(fg);
-            AG_TextBGColor(bg);
-            tmp = AG_TextRender(string);
-            AG_FillRect(dst, NULL, bg);
-            AG_SurfaceBlit(tmp, NULL, dst, 0, 0);
-            AG_SurfaceFree(tmp);
-        } else {
-            AG_FillRect(dst, NULL, bg);
-	   
-            if(tape_writep) {
-	       tmp = AG_TextRender("■");
-	       AG_SurfaceBlit(tmp, NULL, dst, 0, 0);
-	       AG_SurfaceFree(tmp);
-	    }
-        }
+       AG_TextColor(fg);
+       AG_TextBGColor(bg);
+       tmp = AG_TextRender(string);
+       AG_FillRect(dst, NULL, bg);
+       AG_SurfaceBlit(tmp, NULL, dst, 0, 0);
+       AG_SurfaceFree(tmp);
 
-        AG_PopTextState();
+       AG_PopTextState();
     }
    return;
 }

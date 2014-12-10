@@ -49,7 +49,6 @@ struct OsdStatPack
 };
 static struct OsdStatPack *pOsdStat;
 static struct XM7_SDLView *pwSTAT;
-static char MsgString[OSD_STRLEN + 1];
 
 extern int getnFontSize(void);
 extern void SetPixelFormat(AG_PixelFormat *fmt);
@@ -138,6 +137,7 @@ static void DrawStatFn(AG_Event *event)
       AG_Surface *tmps;
       AG_Font *font;
 
+      AG_FillRect(dst, NULL, black);
       AG_PushTextState();
       AG_TextFont(pStatusFont);
       font = AG_TextFontPts(size);
@@ -245,6 +245,7 @@ void DrawMainCaption(BOOL redraw)
 
    string[0] = '\0';
    if(pOsdStat == NULL) return;
+   memset(string, 0x00, sizeof(string));
    /*
     * RUN MODE
     */
@@ -352,6 +353,7 @@ void DrawMainCaption(BOOL redraw)
        (redraw == TRUE)){
             AG_MutexLock(&(pOsdStat->mutex));
             pOsdStat->Changed = TRUE;
+            memset(pOsdStat->message, 0x00, OSD_STRLEN);
             strncpy(pOsdStat->message, string, OSD_STRLEN - 1);
             AG_MutexUnlock(&(pOsdStat->mutex));
     }

@@ -224,13 +224,13 @@ void DestroyStatus(void)
 
 void DrawStatus(void)
 {
-    DrawMainCaption(TRUE);
+    DrawMainCaption(FALSE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
-	DrawDrive(0, TRUE);
-	DrawDrive(1, TRUE);
-	DrawTape(TRUE);
+	DrawDrive(0, FALSE);
+	DrawDrive(1, FALSE);
+	DrawTape(FALSE);
 }
 
 
