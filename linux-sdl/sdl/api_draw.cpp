@@ -1204,9 +1204,9 @@ void FASTCALL vblankperiod_notify(void)
 		       cldraw->ReleaseBufPtr();
 		       return;
 		     }
-//#ifdef _OPENMP
-//   #pragma omp parallel for shared(bDirtyLine, p, ymax)
-//#endif
+#ifdef _OPENMP
+   #pragma omp parallel for shared(bDirtyLine, p, ymax)
+#endif
 		       for(y = 0; y < ymax; y++) {
 			  if (bDirtyLine[y]) {
 			     Transfer_1Line(p, y);
@@ -1221,9 +1221,9 @@ void FASTCALL vblankperiod_notify(void)
 		   if(nRenderMethod == RENDERING_RASTER) {
 		     BOOL flag2 = FALSE;
 		     LockVram();
-//#ifdef _OPENMP
-//    #pragma omp parallel for shared(bDirtyLine, p, flag2, ymax)
-//#endif
+#ifdef _OPENMP
+    #pragma omp parallel for shared(bDirtyLine, p, flag2, ymax)
+#endif
 		     for(y = 0; y < ymax; y++) {
 		       if (bDirtyLine[y]) {
 			 Draw_1Line(y);

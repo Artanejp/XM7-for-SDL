@@ -46,7 +46,6 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
    my->Surface = NULL;
    my->mySurface = -1;
    my->forceredraw = 1;
-
    /* Attach the object to the parent (no-op if parent is NULL) */
    AG_ObjectAttach(parent, my);
    if(__builtin_expect((src != NULL), 1)) {
@@ -164,6 +163,14 @@ void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...)
 
 }
 
+void XM7_SDLViewSetDirty(void *p)
+{
+  XM7_SDLView *my = p;
+  AG_ObjectLock(my);
+  my->dirty = 1;
+  AG_ObjectUnlock(my);
+}
+
 /*
  * This function requests a minimal geometry for displaying the widget.
  * It is expected to return the width and height in pixels into r.
@@ -240,6 +247,7 @@ static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 	  if(my->Surface == NULL) return -1;
        }
        my->forceredraw = 1;
+       my->dirty = 1;
        // Clear
        r.x = 0;
        r.y = 0;
@@ -280,17 +288,17 @@ static void Draw(void *p)
     */
 
    /* Blit the mapped surface at [0,0]. */
-   _prefetch_data_read_l2(my->Surface->pixels, sizeof(my->Surface->pixels));
-   if(my->mySurface != -1) {
-      if(AG_UsingGL(NULL) != 0) {
+   //   _prefetch_data_read_l2(my->Surface->pixels, sizeof(my->Surface->pixels));
+   if(my->dirty != 0) {
+     if(my->mySurface != -1) {
+       if(AG_UsingGL(NULL) != 0) {
 	 AG_WidgetBlit(my, my->Surface, 0, 0);
-      } else {
-//	 AG_BeginRendering(my->_inherit.drv);
+       } else {
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
-// 	 AG_EndRendering(my->_inherit.drv);
-      }
+       }
+     }
+     my->dirty = 0;
    }
-   
    AG_ObjectUnlock(my);
 }
 

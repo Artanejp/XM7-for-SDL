@@ -51,7 +51,7 @@ extern Uint32 nDrawTick1E;
 extern void Create_AGMainBar(AG_Widget *Parent);
 extern void InitGridVertexs(void);
 extern BOOL LoadGlobalIconPng(char *path, char *filename);
-
+extern void XM7_SDLViewUpdateSrc(AG_Event *ev);
 
 
 BOOL EventGuiSingle(AG_Driver *drv, AG_DriverEvent *ev)

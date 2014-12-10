@@ -306,10 +306,11 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       cc.a = 0xff;
       
       LockVram();
-      AG_ObjectLock(AGOBJECT(my));
+      //AG_ObjectLock(AGOBJECT(my));
       AG_SurfaceLock(Surface);
       AG_FillRect(Surface, NULL, cc);
-      AG_ObjectUnlock(AGOBJECT(my));
+      //AG_ObjectUnlock(AGOBJECT(my));
+      XM7_SDLViewSetDirty(my);
       UnlockVram();
       return;
    }
@@ -345,7 +346,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       yrep = 1;
    }
    
-    if(Fn == NULL) return; 
+   if(Fn == NULL) return; 
     src = pVram2;
     LockVram();
     AG_ObjectLock(AGOBJECT(my));
@@ -362,7 +363,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
        AG_SurfaceLock(Surface);
        dst = (Uint8 *)(Surface->pixels);
 #ifdef _OPENMP
-// #pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src, Surface) private(dst, y2, y3)
+#pragma omp parallel for shared(hh, bDrawLine, yrep, ww, src, Surface, flag) private(dst, y2, y3)
 #endif
       for(yy = 0 ; yy < hh; yy++) {
 /*
@@ -405,7 +406,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
    AG_SurfaceLock(Surface);
 
 #ifdef _OPENMP
- # pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src) private(disp, of, xx, lcount, xcache, y2, y3, dst)
+# pragma omp parallel for shared(pb, SDLDrawFlag, ww, hh, src, flag) private(disp, of, xx, lcount, xcache, y2, y3, dst)
 #endif
     for(yy = 0 ; yy < hh; yy += 8) {
        lcount = 0;
@@ -437,7 +438,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 		    yrep2 = y3 - y2;
 		    if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 		    DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
-		    //flag = TRUE;
+		    flag = TRUE;
 		 }
 	      }
 	      
@@ -459,7 +460,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	     yrep2 = y3 - y2;
 	     if(__builtin_expect((yrep2 < 1), 0)) yrep2 = 1;
 	     DrawFn2(src, dst, xcache, xcache + lcount, yy + yy2 , yrep2);
-	     //flag = TRUE;
+	     flag = TRUE;
 	  }
        }
 //			if(yy >= h) continue;
@@ -468,10 +469,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
       
 _end1:   
    AG_ObjectUnlock(AGOBJECT(my));
-
-//   AG_PixmapUpdateCurrentSurface(my);
-//   my->mySurface = AG_WidgetMapSurfaceNODUP(my, Surface);
-//	AG_WidgetUpdateSurface(my, my->mySurface);
+   if(flag != FALSE) XM7_SDLViewSetDirty(my);
    UnlockVram();
    return;
 }

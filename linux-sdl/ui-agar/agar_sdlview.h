@@ -50,6 +50,7 @@ typedef struct  XM7_SDLView {
 	AG_Surface *Surface;   // Internal Surface(DirectDrawing)
 	AG_Event *draw_ev;     // draw handler event
 	int forceredraw;
+        int dirty;
 	const char *param;		/* Some parameter */
 } XM7_SDLView;
 
@@ -64,17 +65,7 @@ extern AG_Surface *XM7_SDLViewGetSurface(void *p, int index);
 extern AG_Surface *XM7_SDLViewSetSurface(void *p, int index);
 
 extern void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...);
-
-extern void XM7_SDLViewUpdateSrc(AG_Event *event);
-//extern void XM7_SDLViewUpdateSrc(XM7_SDLView *my, void *fn);
-
-// 20120501 builtin functionsを使わなくても、コンパイラの最適化で十分速くなる
-//#if defined(__x86_64__) || defined(__i386__)
-//#include <x86intrin.h>
-//   #if defined(__MMX__) || defined(__SSE__) || defined(__SSE2__)
-//extern void *XM7_SDLViewSelectScaler_SSE(int w0, int h0, int w1, int h1);
-//   #endif
-//#endif
+extern void XM7_SDLViewSetDirty(void *p);
 
 #ifdef __cplusplus
 }
