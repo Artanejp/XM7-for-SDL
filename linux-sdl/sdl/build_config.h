@@ -71,7 +71,7 @@
 #define CMT_HEIGHT 20
 
 #define STAT_WIDTH 240
-#define STAT_HEIGHT 20
+#define STAT_HEIGHT 15
 
 #ifndef SHAREDIR
 #define SHAREDIR "/usr/local/share/xm7/"

@@ -41,6 +41,7 @@ struct OsdStatPack
         int Changed;
         BOOL init;
         char message[OSD_STRLEN + 1];
+        AG_Surface *surface;
         AG_Mutex mutex;
         int width;
         int height;
@@ -63,7 +64,13 @@ struct OsdStatPack *InitStat(int w,int h)
 
     SetPixelFormat(&fmt);
     p = (struct OsdStatPack *)malloc(sizeof(struct OsdStatPack));
+    
     if(p == NULL) return NULL;
+    black.r = 0;
+    black.g = 0;
+    black.b = 0;
+    black.a = 255;
+   
     memset(p, 0x00, sizeof(struct OsdStatPack));
     p->init = TRUE;
     p->Changed = FALSE;
@@ -71,6 +78,9 @@ struct OsdStatPack *InitStat(int w,int h)
     AG_MutexInit(&(p->mutex));
     p->width = w;
     p->height = h;
+    SetPixelFormat(&fmt);
+    p->surface = AG_SurfaceNew(AG_SURFACE_PACKED , w,  h, &fmt, AG_SRCALPHA);
+    AG_FillRect(p->surface, NULL, black); 
     p->mouse_capture = FALSE;
     return p;
 }
@@ -90,13 +100,14 @@ static void DrawStatFn(AG_Event *event)
    AG_Surface *dst;
    AG_Color black, n;
    AG_Rect rect;
+   char str_t[OSD_STRLEN + 1];
    int size;
    int len;
 
    if((disp == NULL)  || (my == NULL)) return;
 
-
-   dst = XM7_SDLViewGetSrcSurface(my);
+   str_t[0] = '\0';
+   dst = disp->surface;
    if(dst == NULL) return;
     n.r = 255;
     n.g = 255;
@@ -111,33 +122,36 @@ static void DrawStatFn(AG_Event *event)
    AG_MutexLock(&(disp->mutex));
    if((disp->Changed == FALSE) && (disp->init == FALSE) && (disp->mouse_capture == bMouseCaptureFlag)) {
        AG_MutexUnlock(&(disp->mutex));
+       XM7_SDLViewSetDirty(my);
        return;
    }
    rect.w = dst->w;
    rect.h = dst->h;
    rect.x = 0;
    rect.y = 0;
-   AG_FillRect(dst, NULL, black);
+   //AG_FillRect(dst, NULL, black);
    size = getnFontSize();
    len = strlen(disp->message);
-
-   if((pStatusFont != NULL) && (size > 2) & (len <= OSD_STRLEN) && (len > 0)){
+   
+   strncpy(str_t, disp->message, OSD_STRLEN);
+   if((pStatusFont != NULL) && (size > 2) && (len > 0)){
       AG_Surface *tmps;
       AG_Font *font;
 
       AG_PushTextState();
       AG_TextFont(pStatusFont);
       font = AG_TextFontPts(size);
-      //AG_TextFont(font);
       AG_TextColor(n);
       AG_TextBGColor(black);
-      tmps = AG_TextRender(disp->message);
+      tmps = AG_TextRender(str_t);
       AG_PopTextState();
       AG_SurfaceBlit(tmps, NULL, dst, 0, 0);
       AG_SurfaceFree(tmps);
-//      AG_PopTextState();
+      XM7_SDLViewLinkSurface(my, dst);
+      XM7_SDLViewSetDirty(my);
    }
-   AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
+//   XM7_SDLViewLinkSurface(my, dst);
+//   XM7_SDLViewSetDirty(my);
    disp->init = FALSE;
    disp->Changed = FALSE;
    disp->mouse_capture = bMouseCaptureFlag;
@@ -147,13 +161,12 @@ static void DrawStatFn(AG_Event *event)
 
 static void CreateStat(AG_Widget *parent, struct OsdStatPack *p)
 {
-   AG_Surface *out;
-   
+
   if(p == NULL) return;
   if(parent == NULL) return;
   pwSTAT = XM7_SDLViewNew(parent, NULL, NULL);
   if(pwSTAT == NULL) return;
-  out = XM7_SDLViewSurfaceNew(pwSTAT, STAT_WIDTH , STAT_HEIGHT);
+  XM7_SDLViewSurfaceNew(pwSTAT, STAT_WIDTH , STAT_HEIGHT);
   AG_WidgetSetSize(pwSTAT, STAT_WIDTH , STAT_HEIGHT);
   XM7_SDLViewDrawFn(pwSTAT, DrawStatFn, "%p", p);
   AG_WidgetShow(pwSTAT);
@@ -161,11 +174,13 @@ static void CreateStat(AG_Widget *parent, struct OsdStatPack *p)
 
 void InitStatOSD(AG_Widget *parent)
 {
+   AG_Box *box;
    if(parent == NULL) return;
    pOsdStat = NULL;
-   pOsdStat = InitStat(STAT_WIDTH, STAT_HEIGHT * 2);
+   pOsdStat = InitStat(STAT_WIDTH, STAT_HEIGHT);
    if(pOsdStat == NULL) return;
-   CreateStat(parent, pOsdStat);
+   box = AG_BoxNew(parent, AG_BOX_HORIZ, 0);
+   CreateStat(AGWIDGET(box), pOsdStat);
 }
 
 void DestroyStatOSD(void)
@@ -186,14 +201,21 @@ void ResizeStatOSD(AG_Widget *parent, int w, int h)
           + CMT_WIDTH + LED_WIDTH * 3;
   float ww = (float)w;
   float wSTAT = (float)STAT_WIDTH / (float)total;
+  AG_Color black;
 
   if(pwSTAT == NULL) return;
   if(pOsdStat == NULL) return;
   AG_MutexLock(&(pOsdStat->mutex));
   pOsdStat->width = (int)(ww / 640.0f * (float)STAT_WIDTH);
-  pOsdStat->height =  (int)(w / 640.0f * (float)STAT_HEIGHT);
+  pOsdStat->height =  (int)(ww / 640.0f * (float)STAT_HEIGHT);
   pOsdStat->init = TRUE;
   AG_WidgetSetSize(pwSTAT, pOsdStat->width, pOsdStat->height);
+  AG_SurfaceResize(pOsdStat->surface, pOsdStat->width, pOsdStat->height);
+  black.r = 0;
+  black.g = 0;
+  black.b = 0;
+  black.a = 255;
+  AG_FillRect(pOsdStat->surface, NULL, black); 
 
   AG_MutexUnlock(&(pOsdStat->mutex));
   {
@@ -203,8 +225,9 @@ void ResizeStatOSD(AG_Widget *parent, int w, int h)
      a.x = 0;
      a.y = 0;
      AG_WidgetSizeAlloc(pwSTAT, &a);
-  
   }
+  pOsdStat->Changed = TRUE;
+
 }
 
 void ClearStatOSD(void)

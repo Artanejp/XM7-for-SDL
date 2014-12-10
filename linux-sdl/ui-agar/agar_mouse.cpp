@@ -239,10 +239,13 @@ void OnMouseMotionSDL(AG_Event *event)
     int y = AG_INT(2);
     int w;
     int h;
+    AG_Surface *su;
+   
     if(my == NULL) return;
     if((bMouseCaptureFlag != TRUE) || (mos_capture != TRUE)) return;
-    w = my->Surface->w;
-    h = my->Surface->h;
+    su = AGWIDGET_SURFACE(my, my->mySurface);
+    w = su->w;
+    h = su->h;
     CalcMouseMove(w, h, x, y);
 }
 
@@ -254,11 +257,12 @@ void OnMouseButtonDownSDL(AG_Event *event)
    int y = AG_INT(3);
    int w;
    int h;
+   AG_Surface *su;
    if(my == NULL) return;
-
    if((bMouseCaptureFlag != TRUE) || (mos_capture != TRUE)) return;
-   w = my->Surface->w;
-   h = my->Surface->h;
+   su = AGWIDGET_SURFACE(my, my->mySurface);
+   w = su->w;
+   h = su->h;
    CalcMouseMove(w, h, x, y);
    if(button == AG_MOUSE_LEFT) {
 	nMouseButton &= ~0x10;
@@ -277,11 +281,13 @@ void OnMouseButtonUpSDL(AG_Event *event)
    int y = AG_INT(3);
    int w;
    int h;
+   AG_Surface *su;
    if(my == NULL) return;
 
    if((bMouseCaptureFlag != TRUE) || (mos_capture != TRUE)) return;
-   w = my->Surface->w;
-   h = my->Surface->h;
+   su = AGWIDGET_SURFACE(my, my->mySurface);
+   w = su->w;
+   h = su->h;
    CalcMouseMove(w, h, x, y);
    if(button == AG_MOUSE_LEFT) {
 	nMouseButton |= 0x10;

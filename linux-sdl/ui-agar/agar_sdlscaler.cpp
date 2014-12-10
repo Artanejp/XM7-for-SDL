@@ -284,7 +284,7 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 
    Fn = AG_PTR(1);
    if(my == NULL) return;
-   Surface = my->Surface;
+   Surface = XM7_SDLViewGetSrcSurface(my);
    
    if(Surface == NULL) return;
    DrawSurface = Surface;
@@ -392,7 +392,6 @@ void XM7_SDLViewUpdateSrc(AG_Event *event)
 	       SDLDrawFlag.write[xx][yy] = TRUE;
             }
 	 }
-	 my->forceredraw = 0;
       }
    }
    

@@ -63,6 +63,7 @@ static BOOL bTapeRecOld;
 static BOOL bTapeInOld;
 static BOOL bTapeWriteP;
 static struct OsdCMTPack *pCMTStat;
+static AG_Box *pCmtBox = NULL;
 
 extern int getnFontSize(void);
 extern void SetPixelFormat(AG_PixelFormat *fmt);
@@ -80,7 +81,7 @@ static void DrawCMTFn(AG_Event *event)
    int count = nTape;
 
    if((disp == NULL)  || (my == NULL)) return;
-   dst = XM7_SDLViewGetSrcSurface(my);
+   dst = disp->pSurface;
    if(dst == NULL) return;
    AG_MutexLock(&(disp->mutex));
    if((count == disp->OldCount) && (disp->stat == disp->OldStat)
@@ -89,14 +90,18 @@ static void DrawCMTFn(AG_Event *event)
       disp->OldStat = disp->stat;
       disp->OldCount = count;
       AG_MutexUnlock(&(disp->mutex));
+      XM7_SDLViewSetDirty(my);
     return;
    }
-   if(UpdateCMT(my, dst, disp) || (disp->Changed == TRUE)){
+   if(UpdateCMT(my, dst, disp) || (disp->Changed == TRUE) || (disp->init == TRUE)){
       UpdateCMTCount(count, disp);
-      AG_SurfaceBlit(disp->pSurface, NULL, dst, 0, 0);
-      AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
-      pCMTStat->Changed = FALSE;
+//      AG_SurfaceBlit(disp->pSurface, NULL, dst, 0, 0);
+//      AG_WidgetUpdateSurface(AGWIDGET(my), my->mySurface);
+      disp->Changed = FALSE;
+      disp->init = FALSE;
+      XM7_SDLViewLinkSurface(my, dst);
    }
+   XM7_SDLViewSetDirty(my);
    AG_MutexUnlock(&(disp->mutex));
 }
 
@@ -225,13 +230,14 @@ void CreateCMT(AG_Widget *parent, bool initflag)
     AG_PixelFormat fmt;
 
     SetPixelFormat(&fmt);
-
+    if(pCmtBox == NULL) pCmtBox = AG_BoxNew(parent, AG_BOX_HORIZ, 0);
+    AG_WidgetSetSize(pCmtBox, nCMTWidth, nCMTHeight);
     black.r = black.g = black.b = 0;
     black.a = 255;
-    pwCMT = XM7_SDLViewNew(parent, NULL, NULL);
+    pwCMT = XM7_SDLViewNew(AGWIDGET(pCmtBox), NULL, NULL);
     if(pwCMT == NULL) return;
-    out = XM7_SDLViewSurfaceNew(pwCMT, nCMTWidth, nCMTHeight);
-    AG_FillRect(out, NULL, black);
+    //XM7_SDLViewSurfaceNew(pwCMT, nCMTWidth, nCMTHeight);
+    AG_WidgetSetSize(pwCMT, nCMTWidth, nCMTHeight);
     pCMTStat->pSurface = AG_SurfaceStdRGBA(nCMTWidth, nCMTHeight);
     XM7_SDLViewDrawFn(pwCMT, DrawCMTFn,"%p", pCMTStat);
     AG_WidgetShow(pwCMT);
@@ -260,7 +266,7 @@ void InitTapeOSD(AG_Widget *parent)
 void DestroyTapeOSD(void)
 {
     if(pCMTStat != NULL){
-        //if(pCMTStat->pSurface != NULL) AG_SurfaceFree(pCMTStat->pSurface);
+        if(pCMTStat->pSurface != NULL) AG_SurfaceFree(pCMTStat->pSurface);
         AG_MutexDestroy(&(pCMTStat->mutex));
         free(pCMTStat);
     }
@@ -289,6 +295,7 @@ void ResizeTapeOSD(AG_Widget *parent, int w, int h)
        surface = XM7_SDLViewGetSrcSurface(pwCMT);
        AG_ObjectLock(pwCMT);
        if(surface != NULL) AG_SurfaceResize(surface, nCMTWidth, nCMTHeight);
+       AG_WidgetSetSize(pCmtBox, nCMTWidth, nCMTHeight);
        if(pCMTStat->pSurface == NULL) {
 	  pCMTStat->pSurface = AG_SurfaceStdRGBA(nCMTWidth, nCMTHeight);
        } else {

@@ -43,31 +43,25 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
    my->param = param;
    my->draw_ev = NULL;
 
-   my->Surface = NULL;
-   my->mySurface = -1;
    my->forceredraw = 1;
    /* Attach the object to the parent (no-op if parent is NULL) */
    AG_ObjectAttach(parent, my);
    if(__builtin_expect((src != NULL), 1)) {
-      AG_ObjectLock(my);
-      my->Surface = src;
-      my->mySurface = AG_WidgetMapSurface(my, src);
-      AG_ObjectUnlock(my);
+      my->mySurface = XM7_SDLViewLinkSurface(my, src);
+   } else {
+      my->mySurface = -1;
    }
    return (my);
 }
 
-void XM7_SDLViewLinkSurface(void *p, AG_Surface *src)
+int XM7_SDLViewLinkSurface(void *p, AG_Surface *src)
 {
    XM7_SDLView *my = p;
-
-   AG_ObjectLock(my);
-   my->Surface = src;
    my->mySurface = AG_WidgetMapSurface(my, src);
-   AG_ObjectUnlock(my);
+   return my->mySurface;
 }
 
-AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
+int XM7_SDLViewSurfaceNew(void *p, int w, int h)
 {
    XM7_SDLView *my = p;
    AG_Surface *src;
@@ -99,50 +93,54 @@ AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h)
 
    src = AG_SurfaceNew(AG_SURFACE_PACKED  , w, h, &fmt, 0);
    AG_ObjectLock(my);
-   my->mySurface = AG_WidgetMapSurface(my, src);
-   my->Surface = src;
+   //my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+   XM7_SDLViewLinkSurface(my, src);
    my->forceredraw = 1;
    AG_ObjectUnlock(my);
-   return src;
+   return my->mySurface;
 }
 
 
 void XM7_SDLViewSurfaceDetach(void *p)
 {
    XM7_SDLView *my = p;
-
+   int i;
+   
    AG_ObjectLock(my);
-   if(my->Surface != NULL) {
-      int i;
-      for(i = (my->_inherit.nsurfaces - 1); i >= 0; i--) {
-	 AG_WidgetUnmapSurface(my, i);
-//	 AG_SurfaceFree(my->Surface);
-      }
-      
-      my->Surface = NULL;
-      my->mySurface = -1;
+   if(my->mySurface >= 0) {
+      AG_WidgetUnmapSurface(my, my->mySurface);
    }
+   my->mySurface = -1;
    AG_ObjectUnlock(my);
    printf("XM7_SDLViewSurfaceDetach()\n");
+}
+
+AG_Surface *XM7_SDLViewGetSurface(void *p, int num)
+{
+   XM7_SDLView *my = p;
+   if(my != NULL) {
+      if(num >= 0) {
+	 if(num <= my->_inherit.nsurfaces) return my->_inherit.surfaces[num];
+      }
+   }
+   return NULL;
 }
 
 AG_Surface *XM7_SDLViewGetSrcSurface(void *p)
 {
    XM7_SDLView *my = p;
-   if(my != NULL) {
-      return my->Surface;
-   }
-   return NULL;
+   if(my == NULL) return NULL;
+   return XM7_SDLViewGetSurface(my, my->mySurface);
 }
 
-AG_Surface *XM7_SDLViewGetSurface(void *p, int index)
+void XM7_SDLViewSetSurfaceNum(void *p, int num)
 {
    XM7_SDLView *my = p;
-   if(my == NULL) return NULL;
-   if((index < 0) || (index >= my->_inherit.nsurfaces)) return NULL;
-   my->Surface = my->_inherit.surfaces[index];
-   my->mySurface = index;
-   return my->Surface;
+   if(num < -1) return;
+   
+   AG_ObjectLock(AGOBJECT(my));
+   if(num < my->_inherit.nsurfaces) my->mySurface = num;
+   AG_ObjectUnlock(AGOBJECT(my));
 }
 
 
@@ -190,13 +188,9 @@ static void SizeRequest(void *p, AG_SizeReq *r)
        * We can use AG_TextSize() to return the dimensions of rendered
        * text, without rendering it.
        */
-      if(my->Surface != NULL){
-	 r->w = my->Surface->w;
-	 r->h = my->Surface->h;
-      } else {
-	 r->w = 0;
-	 r->h = 0;
-      }
+	 r->w = my->_inherit.w;
+	 r->h = my->_inherit.w;
+         XM7_SDLViewSurfaceNew(my, r->w, r->h);
    } else {
       /*
        * We can use the geometry of the rendered surface. The
@@ -205,7 +199,7 @@ static void SizeRequest(void *p, AG_SizeReq *r)
        */
       r->w = (AGWIDGET_SURFACE(my,my->mySurface)->w / 8) * 8; // Set boundary as 32(bytes) = 8(dwords) : 256bit.
       r->h = AGWIDGET_SURFACE(my,my->mySurface)->h;
-      if(my->Surface != NULL) AG_SurfaceResize(my->Surface, r->w, r->h);
+      if(AGWIDGET_SURFACE(my,my->mySurface) != NULL) AG_SurfaceResize(AGWIDGET_SURFACE(my,my->mySurface), r->w, r->h);
    }
    AG_ObjectUnlock(my);
 }
@@ -221,44 +215,43 @@ static void Draw(void *p);
 static int SizeAllocate(void *p, const AG_SizeAlloc *a)
 {
    XM7_SDLView *my = p;
+   AG_Surface *su;
+   AG_Rect r;
+   AG_Color c;
 
     if(my == NULL) return -1;
-    if(my->Surface == NULL) return -1;
    /* If we return -1, Draw() will not be called. */
    if (a->w < 5 || a->h < 5)
      return (-1);
    
-    AG_ObjectLock(my);
-   if((my->Surface->w != a->w) || (my->Surface->h != a->h)) {
-       AG_Rect r;
-       AG_Color c;
-      if(my->Surface != NULL) {
-//	  AG_SurfaceLock(my->Surface);
-	  if(AG_SurfaceResize(my->Surface, a->w, a->h) < 0) {
-//	     AG_SurfaceUnlock(my->Surface);
+   su =  AGWIDGET_SURFACE(my, my->mySurface);
+   AG_ObjectLock(my);
+   if(su == NULL) {
+      my->mySurface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
+      su =  AGWIDGET_SURFACE(my, my->mySurface);
+   }
+   
+   if((su->w != a->w) || (su->h != a->h)) {
+       if(AG_SurfaceResize(su, a->w, a->h) < 0) {
 	     AG_ObjectUnlock(my);
 	     return (-1);
-	  }
-//	  AG_SurfaceUnlock(my->Surface);
-//	  printf("XM7_SDLView::SizeAllocate() : Resized %dx%d pixels\n", a->w, a->h);
-       } else {
-	  my->Surface = XM7_SDLViewSurfaceNew(my, a->w, a->h);
-//	  printf("XM7_SDLView::SizeAllocate() : Allocated %dx%d pixels\n", a->w, a->h);
-	  if(my->Surface == NULL) return -1;
        }
-       my->forceredraw = 1;
-       my->dirty = 1;
-       // Clear
-       r.x = 0;
-       r.y = 0;
-       r.w = a->w;
-       r.h = a->h;
-       c.a = 255;
-       c.r = 0;
-       c.g = 0;
-       c.b = 0;
-       AG_FillRect(my->Surface, &r, c);
-    }
+   }
+   
+   my->forceredraw = 1;
+   my->dirty = 1;
+   // Clear
+   r.x = 0;
+   r.y = 0;
+   r.w = a->w;
+   r.h = a->h;
+   c.a = 255;
+   c.r = 0;
+   c.g = 0;
+   c.b = 0;
+   AG_FillRect(su, &r, c);
+//   XM7_SDLViewLinkSurface(AGWIDGET(my), su);
+   AG_WidgetSetPosition(AGWIDGET(my), a->x, a->y);
    AG_ObjectUnlock(my);
    return (0);
 }
@@ -290,10 +283,12 @@ static void Draw(void *p)
    /* Blit the mapped surface at [0,0]. */
    //   _prefetch_data_read_l2(my->Surface->pixels, sizeof(my->Surface->pixels));
    if(my->dirty != 0) {
-     if(my->mySurface != -1) {
+     if(my->mySurface >= 0) {
        if(AG_UsingGL(NULL) != 0) {
-	 AG_WidgetBlit(my, my->Surface, 0, 0);
+	 AG_WidgetMapSurface(my, AGWIDGET_SURFACE(my, my->mySurface));
+	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
        } else {
+	 AG_WidgetMapSurface(my, AGWIDGET_SURFACE(my, my->mySurface));
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
        }
      }
@@ -384,7 +379,6 @@ static void Init(void *obj)
     *
     * Here we register handlers for the common AG_Window(3) events.
     */
-   my->Surface = NULL;
 
    AG_SetEvent(my, "mouse-button-up", MouseButtonUp, NULL);
    AG_SetEvent(my, "mouse-button-down", MouseButtonDown, NULL);
@@ -395,23 +389,17 @@ static void Init(void *obj)
 
 static void Detach(void *obj)
 {
-    XM7_SDLView *my = obj;
-    if(my == NULL) return;
-    if(my->Surface != NULL){
-        int i;
-        LockVram();
-       AG_ObjectLock(my);
-       for(i = (my->_inherit.nsurfaces - 1); i >= 0; i--) {
-	   AG_WidgetUnmapSurface(my, i);
-	}
-        my->Surface = NULL;
-        
-//        AG_SurfaceLock(my->Surface);
-//        AG_SurfaceFree(my->Surface);
-        my->mySurface = -1;
-       AG_ObjectUnlock(my);
-        UnlockVram();
-    }
+   XM7_SDLView *my = obj;
+   int i;
+   
+   if(my == NULL) return;
+   AG_ObjectLock(my);
+   for(i = (my->_inherit.nsurfaces - 1); i >= 0; i--) {
+      AG_WidgetUnmapSurface(my, i);
+   }
+
+   my->mySurface = -1;
+   AG_ObjectUnlock(my);
 }
 /*
  * This structure describes our widget class. It inherits from AG_ObjectClass.

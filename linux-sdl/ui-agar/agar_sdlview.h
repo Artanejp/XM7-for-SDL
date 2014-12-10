@@ -46,8 +46,7 @@ extern "C" {
 /* Structure describing an instance of the XM7_SDLView. */
 typedef struct  XM7_SDLView {
 	struct ag_widget _inherit;	/* Inherit from AG_Widget */
-	int mySurface;			/* Surface handle */
-	AG_Surface *Surface;   // Internal Surface(DirectDrawing)
+	int mySurface;			/* Surface handle : CURRENT */
 	AG_Event *draw_ev;     // draw handler event
 	int forceredraw;
         int dirty;
@@ -57,12 +56,12 @@ typedef struct  XM7_SDLView {
 extern AG_WidgetClass XM7_SDLViewClass;
 extern XM7_SDLView *XM7_SDLViewNew(void *, AG_Surface *, const char *);
 
-extern void XM7_SDLViewLinkSurface(void *p, AG_Surface *src);
-extern AG_Surface *XM7_SDLViewSurfaceNew(void *p, int w, int h);
+extern int XM7_SDLViewLinkSurface(void *p, AG_Surface *src);
+extern int XM7_SDLViewSurfaceNew(void *p, int w, int h);
 extern void XM7_SDLViewSurfaceDetach(void *p);
-extern AG_Surface *XM7_SDLViewGetSrcSurface(void *p);
 extern AG_Surface *XM7_SDLViewGetSurface(void *p, int index);
-extern AG_Surface *XM7_SDLViewSetSurface(void *p, int index);
+extern AG_Surface *XM7_SDLViewGetSrcSurface(void *p);
+extern void XM7_SDLViewSetSurfaceNum(void *p, int num);
 
 extern void XM7_SDLViewDrawFn(void *p, AG_EventFn fn, const char *fmt, ...);
 extern void XM7_SDLViewSetDirty(void *p);

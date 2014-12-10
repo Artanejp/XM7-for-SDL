@@ -224,13 +224,13 @@ void DestroyStatus(void)
 
 void DrawStatus(void)
 {
-    DrawMainCaption(FALSE);
+    DrawMainCaption(TRUE);
 	DrawCAP();
 	DrawKANA();
 	DrawINS();
-	DrawDrive(0, FALSE);
-	DrawDrive(1, FALSE);
-	DrawTape(FALSE);
+	DrawDrive(0, TRUE);
+	DrawDrive(1, TRUE);
+	DrawTape(TRUE);
 }
 
 
@@ -261,7 +261,8 @@ void ResizeStatus(AG_Widget *parent, int w, int h, int h2)
    if(h < 400) hh += 5.0f; // WORKAROUNDS 
    nFontSize = (int)((float)STAT_PT * ww / 800.0f);
 
-   AG_WidgetSetSize(parent, w - 5, hh);
+   w = w - 5;
+   AG_WidgetSetSize(parent, w, hh);
    ResizeStatOSD(parent, w, hh);
    ResizeVFD(parent, w, hh);
    ResizeTapeOSD(parent, w, hh);
