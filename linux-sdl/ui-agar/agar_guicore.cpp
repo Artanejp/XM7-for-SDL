@@ -271,37 +271,15 @@ void InitInstance(void)
 	//  最初にカスタムウイジェットをつける
     AG_RegisterClass(&XM7_SDLViewClass);
    if(agDriverSw) {
-      MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE |  AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW  | AG_WINDOW_NOBACKGROUND
+      MainWindow = AG_WindowNew(AG_WINDOW_NOTITLE | AG_WINDOW_NOBORDERS | AG_WINDOW_KEEPBELOW  | AG_WINDOW_NOBACKGROUND
 				| AG_WINDOW_MODKEYEVENTS | AG_WINDOW_NOBUTTONS | AG_WINDOW_NORESIZE | AG_WINDOW_MAIN);
-      AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+ //     AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    } else {
       MainWindow = AG_WindowNew(AG_WINDOW_MODKEYEVENTS | AG_WINDOW_NOCLOSE | AG_WINDOW_MAIN);
       AG_WindowSetCaptionS(MainWindow, "XM7/SDL");
-#if 0
-      switch(fm7_ver) {
-       case 1: // FM7/77
-	 if(!(LoadWindowIconPng(MainWindow, NULL, "tamori.png"))) {
-	    LoadWindowIconPng(MainWindow, NULL, "xm7.png");
-	 }
-	 break;
-       case 2: // FM77AV
-	 if(!(LoadWindowIconPng(MainWindow, NULL, "fujitsu.png"))) {
-	    LoadWindowIconPng(MainWindow, NULL, "xm7.png");
-	 }
-	 break;
-       case 3: // FM77AV20/40/EX/SX
-	 if(!(LoadWindowIconPng(MainWindow, NULL, "fujitsu2.png"))) {
-	    LoadWindowIconPng(MainWindow, NULL, "xm7.png");
-	 }
-	 break;
-       default:
-	 LoadWindowIconPng(MainWindow, NULL, "xm7.png");
-	 break;
-      }
-#endif      
    }
    AG_WindowSetGeometry (MainWindow, 0, 0 , nDrawWidth, nDrawHeight);
-//  AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
+   AG_SetEvent(MainWindow , "window-close", OnDestroy, NULL);
    MenuBar = AG_MenuNew(MainWindow, 0);
    vb = AG_VBoxNew(AGWIDGET(MainWindow), AG_BOX_HFILL);
    AGWIDGET(vb)->flags |= AG_WIDGET_NOSPACING;
@@ -322,7 +300,8 @@ void InitInstance(void)
          */
        
         GLDrawArea = AG_GLViewNew(AGWIDGET(vb) , 0);
-        GLDrawArea->wid.flags |= AG_WIDGET_CATCH_TAB;
+//        GLDrawArea = AG_GLViewNew(AGWIDGET(vb) , AG_GLVIEW_EXPAND);
+        GLDrawArea->wid.flags |= (AG_WIDGET_CATCH_TAB | AG_WIDGET_NOSPACING);
        
         AG_WidgetSetSize(GLDrawArea, nDrawWidth, nDrawHeight);
         AG_GLViewSizeHint(GLDrawArea, nDrawWidth, nDrawHeight);
@@ -337,7 +316,7 @@ void InitInstance(void)
         AG_GLViewButtonupFn(GLDrawArea, OnMouseButtonUpGL, NULL);
 	bUseOpenGL = TRUE;
 	DrawArea = NULL;
-	//AGWIDGET(GLDrawArea)->flags |= AG_WIDGET_NOSPACING;
+	AGWIDGET(GLDrawArea)->flags |= AG_WIDGET_NOSPACING;
 
         AG_WidgetShow(GLDrawArea);
         AG_WidgetFocus(AGWIDGET(GLDrawArea));
@@ -370,7 +349,6 @@ void InitInstance(void)
         ResizeWindow_Agar2(nDrawWidth, nDrawHeight);
     }
     {
-//       pStatusBar = AG_HBoxNew(AGWIDGET(MainWindow), AG_BOX_VFILL | AG_WIDGET_NOSPACING);
        pStatusBar = AG_HBoxNew(AGWIDGET(vb), AG_BOX_VFILL | AG_WIDGET_NOSPACING);
        AG_WidgetSetSize(pStatusBar, 640, 40);
        CreateStatus(AGWIDGET(pStatusBar));

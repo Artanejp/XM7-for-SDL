@@ -31,6 +31,7 @@ struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*w
     struct XM7_DbgDisasm *obj;
     XM7_SDLView *view;
     DumpObject  *cons;
+    AG_Box      *box;
     BYTE        *buf;
     AG_SizeAlloc a;
     AG_Surface *s;
@@ -52,7 +53,8 @@ struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*w
         return NULL;
     }
     memset(buf, 0x00, sizeof(BYTE) * 20 * 5);
-    view = XM7_SDLViewNew(parent, NULL, "");
+    box = AG_BoxNew(parent, AG_BOX_HORIZ, 0);
+    view = XM7_SDLViewNew(AGWIDGET(box), NULL, "");
     obj->addr = 0x0000;
     obj->cons = cons;
     obj->draw = view;

@@ -299,7 +299,7 @@ static void Draw(void *p)
    if((my->dirty != 0) || (my->forceredraw != 0)){
      if(my->mySurface >= 0) {
        if(AG_UsingGL(NULL) != 0) {
-	 //AG_WidgetMapSurfaceNODUP(my, AGWIDGET_SURFACE(my, my->mySurface));
+	 AG_WidgetMapSurfaceNODUP(my, AGWIDGET_SURFACE(my, my->mySurface));
 	 //AG_WidgetUpdateSurface(my, my->mySurface);
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
        } else {

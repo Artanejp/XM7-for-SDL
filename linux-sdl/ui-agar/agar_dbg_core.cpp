@@ -13,6 +13,7 @@
 
 void XM7_ConsoleUpdate(XM7_SDLView *view, DumpObject *cons, BOOL forceredraw)
 {
+//   forceredraw = TRUE;
    if(cons->Draw(forceredraw) == FALSE) return;
    if(AG_UsingGL(NULL)) {
 	 XM7_SDLViewLinkSurface(view, AGWIDGET_SURFACE(view, view->mySurface));
@@ -41,10 +42,14 @@ void XM7_ConsoleSetup(XM7_SDLView *view, DumpObject *cons, void *obj, AG_EventFn
     a.h = s->h;
     a.x = 0;
     a.y = 0;
-    XM7_SDLViewDrawFn(view, fn, "%p,%i", (void *)obj, FALSE); //
+    
+    XM7_SDLViewDrawFn(view, fn, "%p,%i", (void *)obj, TRUE); //
     XM7_SDLViewLinkSurface(view, s);
     AG_WidgetSizeAlloc(AGWIDGET(view), &a);
-    AG_SetEvent(AGOBJECT(view), "widget-moved", ForceRedraw, "%p", (void *)cons);
+//    AG_SetEvent(AGOBJECT(view), "widget-moved", ForceRedraw, "%p", (void *)cons);
     AG_RedrawOnTick(AGWIDGET(view), 100);
+//    AG_ObjectLock(AGOBJECT(view));
+//    view->forceredraw = 1;
+//    AG_ObjectUnlock(AGOBJECT(view));
     XM7_SDLViewSetDirty(view);
 }

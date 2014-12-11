@@ -233,7 +233,7 @@ static void CreateDump(AG_Event *event)
 
     mp->to_tick = 200;
 //    w = AG_WindowNew(AG_WINDOW_NOMINIMIZE | AG_WINDOW_NOCLOSE | AG_WINDOW_NOMAXIMIZE | FILEDIALOG_WINDOW_DEFAULT);
-    w = AG_WindowNew(FILEDIALOG_WINDOW_DEFAULT);
+    w = AG_WindowNew(AG_WINDOW_NOBACKGROUND | AG_WINDOW_MODAL);
     AG_WindowSetMinSize(w, 230, 80);
     vb =AG_VBoxNew(w, 0);
 
