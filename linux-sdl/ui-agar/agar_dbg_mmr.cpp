@@ -28,10 +28,7 @@ static void XM7_DbgMMRDrawFn(AG_Event *event)
     BOOL forceredraw = AG_INT(2);
 
     if(p == NULL) return;
-    if(p->cons == NULL) return;
-    p->cons->Draw(forceredraw);
-    AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
-
+    XM7_ConsoleUpdate(view, p->cons, forceredraw);
 }
 
    
@@ -145,24 +142,15 @@ XM7_DbgMMRDump *XM7_DbgDumpMMRInit(void *parent)
         free(obj);
         return NULL;
     }
-#if XM7_VER >= 3
-   dump->InitConsole(64, 11); // ステータス表示分
-#else
-   dump->InitConsole(64, 7); // ステータス表示分
-#endif
     view = XM7_SDLViewNew(parent, NULL, "");
     obj->cons = dump;
     obj->draw = view;
     obj->forceredraw = FALSE;
-   
-    s = dump->GetScreen();
-    a.w = s->w;
-    a.h = s->h;
-    a.x = 0;
-    a.y = 0;
-    AG_WidgetSizeAlloc(AGWIDGET(view), &a);
-    XM7_SDLViewDrawFn(view, XM7_DbgMMRDrawFn, "%p,%i", (void *)obj, FALSE); //
-    XM7_SDLViewLinkSurface(view, s);
+#if XM7_VER >= 3
+    XM7_ConsoleSetup(view, dump, obj, XM7_DbgMMRDrawFn, 64, 11, FALSE);
+#else
+    XM7_ConsoleSetup(view, dump, obj, XM7_DbgMMRDrawFn, 64, 7, FALSE);
+#endif
     return obj;
 }
 

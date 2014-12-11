@@ -23,13 +23,12 @@ static BOOL XM7_DbgRegCopyReg(struct XM7_DbgRegDump *p)
 static void XM7_DbgRegDumpDrawFn(AG_Event *event)
 {
    XM7_SDLView *view = (XM7_SDLView *)AG_SELF();
-    XM7_DbgRegDump *p = (XM7_DbgRegDump *)AG_PTR(1);
-    BOOL forceredraw = AG_INT(2);
+   XM7_DbgRegDump *p = (XM7_DbgRegDump *)AG_PTR(1);
+   BOOL forceredraw = AG_INT(2);
 
-    if(p == NULL) return;
-    p->cons->Draw(forceredraw);
-    AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
-
+   if(p == NULL) return;
+   XM7_ConsoleUpdate(view, p->cons, forceredraw);
+   
 }
 
 void XM7_DbgDumpRegs(XM7_DbgRegDump *dbg)
@@ -200,7 +199,6 @@ XM7_DbgRegDump *XM7_DbgRegDumpInit(void *parent, cpu6809_t *cpu, char *title)
         return NULL;
     }
     memset(&(obj->buf), 0x00, sizeof(cpu6809_t));
-    cons->InitConsole(26, 7); // ステータス表示分
     view = XM7_SDLViewNew(parent, NULL, "");
     obj->cons = cons;
     obj->draw = view;
@@ -208,14 +206,7 @@ XM7_DbgRegDump *XM7_DbgRegDumpInit(void *parent, cpu6809_t *cpu, char *title)
     obj->forceredraw = FALSE;
     memcpy(&(obj->buf), cpu, sizeof(cpu6809_t));
     if(title != NULL) strncpy(obj->title, title, 12 - 1);
-    s = cons->GetScreen();
-    a.w = s->w;
-    a.h = s->h;
-    a.x = 0;
-    a.y = 0;
-    AG_WidgetSizeAlloc(AGWIDGET(view), &a);
-    XM7_SDLViewDrawFn(view, XM7_DbgRegDumpDrawFn, "%p,%i", (void *)obj, FALSE); //
-    XM7_SDLViewLinkSurface(view, s);
+    XM7_ConsoleSetup(view, cons, obj, XM7_DbgRegDumpDrawFn, 26, 7, FALSE);
     return obj;
 }
 

@@ -28,8 +28,7 @@ static void XM7_DbgDumpDrawFn(AG_Event *event)
     BOOL forceredraw = AG_INT(2);
 
     if(p == NULL) return;
-    p->dump->Draw(forceredraw);
-    AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
+    XM7_ConsoleUpdate(view, p->dump, forceredraw);
 
 }
 
@@ -571,7 +570,6 @@ struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), volatile 
         return NULL;
     }
     buf = (BYTE *)malloc(sizeof(BYTE) * 16 * 16);
-    dump->InitConsole(80, 22); // ステータス表示分
     if(buf == NULL){
         free(obj);
         delete dump;
@@ -587,15 +585,8 @@ struct XM7_DbgDump *XM7_DbgDumpMemInit(void *parent, BYTE (*rf)(WORD), volatile 
     obj->forceredraw = FALSE;
     obj->rb = rf;
     obj->wb = wf;
+    XM7_ConsoleSetup(view, dump, obj, XM7_DbgDumpDrawFn, 80, 22, FALSE);
    
-    s = dump->GetScreen();
-    a.w = s->w;
-    a.h = s->h;
-    a.x = 0;
-    a.y = 0;
-    AG_WidgetSizeAlloc(AGWIDGET(view), &a);
-    XM7_SDLViewDrawFn(view, XM7_DbgDumpDrawFn, "%p,%i", (void *)obj, FALSE); //
-    XM7_SDLViewLinkSurface(view, s);
     return obj;
 }
 

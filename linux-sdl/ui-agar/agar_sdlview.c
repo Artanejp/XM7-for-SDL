@@ -31,6 +31,15 @@
  * customary of FooNew() functions to allocate, initialize and attach an
  * instance of the class.
  */
+static void ForceRedrawFn(AG_Event *event)
+{
+   XM7_SDLView *my = (XM7_SDLView *)AG_SELF();
+   AG_WidgetMapSurfaceNODUP(my, AGWIDGET_SURFACE(my, my->mySurface));
+
+   XM7_SDLViewSetDirty(my);
+}
+   
+
 XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
 {
    XM7_SDLView *my;
@@ -46,18 +55,23 @@ XM7_SDLView *XM7_SDLViewNew(void *parent, AG_Surface *src, const char *param)
    my->forceredraw = 1;
    /* Attach the object to the parent (no-op if parent is NULL) */
    AG_ObjectAttach(parent, my);
+   AG_ObjectLock(my);
    if(__builtin_expect((src != NULL), 1)) {
       my->mySurface = XM7_SDLViewLinkSurface(my, src);
    } else {
       my->mySurface = -1;
    }
+   AG_ObjectUnlock(my);
    return (my);
 }
+
+
 
 int XM7_SDLViewLinkSurface(void *p, AG_Surface *src)
 {
    XM7_SDLView *my = p;
-   my->mySurface = AG_WidgetMapSurface(my, src);
+   my->mySurface = AG_WidgetMapSurfaceNODUP(my, src);
+//   my->mySurface = AG_WidgetMapSurface(my, src);
    return my->mySurface;
 }
 
@@ -282,13 +296,14 @@ static void Draw(void *p)
 
    /* Blit the mapped surface at [0,0]. */
    //   _prefetch_data_read_l2(my->Surface->pixels, sizeof(my->Surface->pixels));
-   if(my->dirty != 0) {
+   if((my->dirty != 0) || (my->forceredraw != 0)){
      if(my->mySurface >= 0) {
        if(AG_UsingGL(NULL) != 0) {
-	 AG_WidgetMapSurface(my, AGWIDGET_SURFACE(my, my->mySurface));
+	 //AG_WidgetMapSurfaceNODUP(my, AGWIDGET_SURFACE(my, my->mySurface));
+	 //AG_WidgetUpdateSurface(my, my->mySurface);
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
        } else {
-	 AG_WidgetMapSurface(my, AGWIDGET_SURFACE(my, my->mySurface));
+	 //AG_WidgetMapSurface(my, AGWIDGET_SURFACE(my, my->mySurface));
 	 AG_WidgetBlitSurface(my, my->mySurface, 0, 0);
        }
      }

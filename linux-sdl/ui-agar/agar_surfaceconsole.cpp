@@ -284,15 +284,16 @@ void DumpObject::PutChar(BYTE c)
 }
 
 
-void DumpObject::Draw(BOOL redraw)
+BOOL DumpObject::Draw(BOOL redraw)
 {
     int xx;
     int yy;
     int Xb;
     int Yb;
     int pos;
+    BOOL flag = FALSE;
 
-    if(Screen == NULL) return;
+    if(Screen == NULL) return FALSE;
     // Backup X,Y
     AG_MutexLock(&mutex);
 
@@ -301,6 +302,7 @@ void DumpObject::Draw(BOOL redraw)
     AG_SurfaceLock(Screen);
     //redraw = TRUE;
     if(redraw){
+       flag = TRUE;
         for(yy = 0; yy < H; yy++){
             pos = yy * W;
             for(xx = 0; xx < W; xx++){
@@ -318,6 +320,7 @@ void DumpObject::Draw(BOOL redraw)
                     X = xx;
                     Y = yy;
                     PutCharScreen(ConsoleBuf[pos + xx]);
+		    flag = TRUE;
                 }
                 BackupConsoleBuf[pos + xx] = ConsoleBuf[pos + xx];
             }
@@ -328,7 +331,7 @@ void DumpObject::Draw(BOOL redraw)
     Y = Yb;
     AG_MutexUnlock(&mutex);
     AG_SurfaceUnlock(Screen);
-
+    return TRUE;
 }
 
 int  DumpObject::SizeAlloc(AG_SizeAlloc *a)

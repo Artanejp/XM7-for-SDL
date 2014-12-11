@@ -16,13 +16,11 @@ extern int FASTCALL disline2(int cpu, WORD pcreg, cpu6809_t *cpuset, char *buffe
 static void XM7_DbgDisasmDrawFn(AG_Event *event)
 {
    XM7_SDLView *view = (XM7_SDLView *)AG_SELF();
-    struct XM7_DbgDisasm *p = (struct XM7_DbgDisasm *)AG_PTR(1);
-    BOOL forceredraw = AG_INT(2);
+   struct XM7_DbgDisasm *p = (struct XM7_DbgDisasm *)AG_PTR(1);
+   BOOL forceredraw = AG_INT(2);
 
-    if(p == NULL) return;
-    p->cons->Draw(forceredraw);
-    AG_WidgetUpdateSurface(AGWIDGET(view), view->mySurface);
-
+   if(p == NULL) return;
+   XM7_ConsoleUpdate(view, p->cons, forceredraw);
 }
 
 }
@@ -48,7 +46,6 @@ struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*w
         return NULL;
     }
     buf = (BYTE *)malloc(sizeof(BYTE) * 20 * 5);
-    cons->InitConsole(40, 22); // ステータス表示分
     if(buf == NULL){
         free(obj);
         delete cons;
@@ -62,14 +59,7 @@ struct XM7_DbgDisasm *XM7_DbgDisasmInit(void *parent, BYTE (*rf)(WORD), void (*w
     obj->buf = buf;
     obj->forceredraw = FALSE;
    
-    s = cons->GetScreen();
-    a.w = s->w;
-    a.h = s->h;
-    a.x = 0;
-    a.y = 0;
-    AG_WidgetSizeAlloc(AGWIDGET(view), &a);
-    XM7_SDLViewDrawFn(view, XM7_DbgDisasmDrawFn, "%p,%i", (void *)obj, FALSE); //
-    XM7_SDLViewLinkSurface(view, s);
+    XM7_ConsoleSetup(view, cons, obj, XM7_DbgDisasmDrawFn, 40, 22, FALSE);
     return obj;
 }
 

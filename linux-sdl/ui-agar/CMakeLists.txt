@@ -46,6 +46,7 @@ set(UI_AGAR_GUISRC
 if(WITH_DEBUGGER)
    set(UI_AGAR_DEBUGSRC
                 	agar_surfaceconsole.cpp
+			agar_dbg_core.cpp
 			agar_dbg_disasm.cpp
 			agar_dbg_fdcdump.cpp
 			agar_dbg_memdump.cpp

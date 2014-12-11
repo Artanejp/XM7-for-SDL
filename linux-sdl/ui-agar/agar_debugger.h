@@ -175,7 +175,8 @@ extern XM7_DbgMMRDump *XM7_DbgDumpMMRInit(void *parent);
 extern void XM7_DbgDumpMMRDetach(struct XM7_DbgMMRDump *dbg);
 extern void XM7_DbgDumpMMR(void *p);
 
-
+extern void XM7_ConsoleUpdate(XM7_SDLView *view, DumpObject *cons, BOOL forceredraw);
+extern void XM7_ConsoleSetup(XM7_SDLView *view, DumpObject *cons, void *obj, AG_EventFn fn, int w, int h, int flag);
 
 static void readmem(struct XM7_MemDumpDesc *p)
 {

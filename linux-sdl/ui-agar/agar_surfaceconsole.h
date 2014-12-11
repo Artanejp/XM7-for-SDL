@@ -33,7 +33,7 @@ public:
     void ClearScreen(void);
 
 
-    void Draw(BOOL redraw);
+    BOOL Draw(BOOL redraw);
     void DrawCursor(BOOL Flag);
     int  SizeAlloc(AG_SizeAlloc *a);
    
