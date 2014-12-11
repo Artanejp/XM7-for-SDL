@@ -92,15 +92,13 @@ static void Scaler_DrawLine(Uint32 *dst, Uint32 *src, int ww, int repeat, int pi
 #else /* defined(__x86_64__) */
    /* x86_64 : Using assembly. */
       asm volatile (
-		   "movq %%rsp, %%rbp\n\t"
-		   "subq $32, %%rsp\n\t"
 		   "movl %[ww], %%edx\n\t"
 		   "shr  $3, %%edx\n\t"
 		   "movq %[src], %%rsi\n\t"
 		   "movq %[dst], %%rdi\n\t"
 		   "movl %[pitch], %%ebx\n\t"
 		   "_l3:\n\t"    
-		   "movq %%rdi, -16(%%rbp)\n\t"
+		   "movq %%rdi, %%r8\n\t"
 		   "movdqu 0(%%rsi), %%xmm0\n\t"
 		   "pshufd $0b11111010 ,%%xmm0, %%xmm1\n\t"
 		   "pshufd $0b01010000 ,%%xmm0, %%xmm2\n\t"
@@ -116,7 +114,7 @@ static void Scaler_DrawLine(Uint32 *dst, Uint32 *src, int ww, int repeat, int pi
 		   "pshufd $0b10100101, %%xmm4, %%xmm3\n\t"
 		   "movd %%xmm4, %%eax\n\t"
 		   "movl %[rep], %%ecx\n\t"
-		   "movq -16(%%rbp), %%rdi\n"
+		   "movq %%r8, %%rdi\n"
 		   "_l4:\n\t"
 		   "movdqu %%xmm2, 0(%%rdi)\n\t"
 		   "movdqu %%xmm1, 16(%%rdi)\n\t"
@@ -140,16 +138,15 @@ static void Scaler_DrawLine(Uint32 *dst, Uint32 *src, int ww, int repeat, int pi
 		   "movdqu %%xmm0, 56(%%rdi)\n\t"
 		   "_l5:\n\t"
 		   "addq $32, %%rsi\n\t"
-		   "movq -16(%%rbp), %%rdi\n\t"
+		   "movq %%r8, %%rdi\n\t"
 		   "addq $72, %%rdi\n\t"
 		   "dec %%edx\n\t"
 		   "jnz _l3\n\t"
-		   "movq %%rbp, %%rsp\n\t"
 		   :
 		   : [pitch] "rm"(pitch), [ww]"rm" (ww),
 		     [rep] "rm"(yrep2),[rep2] "rm"(yrep3),
 		     [src] "rm" (sp), [dst] "rm" (dp)
-		   : "eax","rbx","rdi", "rsi",  "ecx", "edx", "rbp", "xmm0","xmm1","xmm2","xmm3","xmm4");
+		   : "eax","rbx","rdi", "rsi",  "ecx", "edx", "r8", "xmm0","xmm1","xmm2","xmm3","xmm4");
       
 #endif      
 }

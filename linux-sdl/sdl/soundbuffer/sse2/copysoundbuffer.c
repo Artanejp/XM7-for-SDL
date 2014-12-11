@@ -39,7 +39,7 @@ static v4hi _get_unaligned_int16(Sint16 *p)
 static v4hi _get_unaligned_int32(Sint32 *p)
 {
    v4hi v __attribute__((aligned(16)));
-#if 0   
+#ifndef __x86_64__   
    if(__builtin_expect((((uint64_t)p & 0x0f) == 0), 1)){
       v = *((v4hi *)p);
    } else {
@@ -50,11 +50,12 @@ static v4hi _get_unaligned_int32(Sint32 *p)
    }
 #else
    v4hi *s = (v4hi *)p;
-   asm volatile("movdqu %[x], %%xmm0\n\t"
+   asm volatile("movq  %[x], %%rsi\n\t"
+		"movdqu 0(%%rsi), %%xmm0\n\t"
 		"movdqu %%xmm0, %[y]"
 		: [y] "=rm" (v)
-		: [x] "rm" (*s)
-		: "xmm0");
+		: [x] "rm" (s)
+		: "xmm0", "rsi");
    
 #endif
    return v;
@@ -62,7 +63,7 @@ static v4hi _get_unaligned_int32(Sint32 *p)
 
 static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
 {
-#if 0   
+#ifndef __x86_64__   
    if(__builtin_expect((((uint64_t)dst & 0x0f) == 0), 1)){
       *((v4hi *)dst) = v;
    } else {
@@ -77,10 +78,12 @@ static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
    }
 #else
    v4hi *d = (v4hi *)dst;
-   asm volatile("movdqu %[y], %%xmm0\n\t"
-		"movdqu %%xmm0, %[x]"
-		: [x] "=rm" (*d)
-		: [y] "rm" (v)
+   asm volatile("movq %[x], %%rdi\n\t"
+		"movq %[y], %%rsi\n\t"
+		"movdqu 0(%%rsi), %%xmm0\n\t"
+		"movdqu %%xmm0, 0(%%rdi)\n\t"
+		: 
+		: [y] "rm" (v), [x] "rm" (d)
 		: "xmm0"
 		);
 #endif
@@ -96,8 +99,8 @@ static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
     
    if(samples <= 0) return 0;
    if(dst == NULL) return 0;
-//   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL) || (wavsrc == NULL)) return 0;
-   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
+   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL) || (wavsrc == NULL)) return 0;
+//   if((opnsrc == NULL) || (beepsrc == NULL) || (cmtsrc == NULL)) return 0;
 
     
    len1 = samples / 8;
@@ -105,29 +108,21 @@ static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
 #if (__GNUC__ >= 4)
     v4hi t1, t2;
     v4hi tt;
-#if 0
+#ifndef __x86_64__
     Sint32 *opn  = opnsrc;
     Sint16 *beep = beepsrc;
     Sint16 *cmt  = cmtsrc;
     Sint16 *wav  = wavsrc;
     Sint16 *p    = dst;
     v4hi vtmp;
-#else
-    v4hi *opn = (v4hi *)opnsrc;
-    v4hi *beep = (v4hi *)beepsrc;
-    v4hi *cmt = (v4hi *)cmtsrc;
-    v4hi *wav = (v4hi *)wavsrc;
-    v4hi *opnb = &opn[1];
-    v4hi *p    = (v4hi *)dst;
-
 #endif
-   _prefetch_data_write_l1(p, samples * sizeof(Sint16));
-   _prefetch_data_read_l2(opn, sizeof(Sint32) * samples);
-   _prefetch_data_read_l2(beep, sizeof(Sint16) * samples);
-   _prefetch_data_read_l2(cmt, sizeof(Sint16) * samples);
-   _prefetch_data_read_l2(wav, sizeof(Sint16) * samples);
+#ifndef __x86_64__
+   _prefetch_data_write_l1(dst, samples * sizeof(Sint16));
+   _prefetch_data_read_l2(opnsrc, sizeof(Sint32) * samples);
+   _prefetch_data_read_l2(beepsrc, sizeof(Sint16) * samples);
+   _prefetch_data_read_l2(cmtsrc, sizeof(Sint16) * samples);
+   _prefetch_data_read_l2(wavsrc, sizeof(Sint16) * samples);
    for(i = 0; i < len1; i++) {
-#if 0
         t1 = _get_unaligned_int32(opn);
         t2 = _get_unaligned_int32(opn + 4);
         opn += 8;
@@ -144,44 +139,68 @@ static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
         cmt += 8;
         wav += 8;
         p += 8;
-
-#else
-      // Assembler syntax is ATT, not MS, NASM, YSAM.
-      asm volatile("movdqu %[opn1],  %%xmm1\n\t"
-		   "movdqu %[opn2],  %%xmm0\n\t"
-		   "packssdw %%xmm0, %%xmm1\n\t"
-		   "movdqu %[beep1], %%xmm0\n\t"
-		   "paddsw %%xmm0, %%xmm1\n\t"
-		   "movdqu %[cmt1],  %%xmm0\n\t"
-		   "paddsw %%xmm0, %%xmm1\n\t"
-		   "movdqu %[wav1],  %%xmm0\n\t"
-		   "paddsw %%xmm0, %%xmm1\n\t"
-		   "movdqu %%xmm1, %[dstp]"
-		   : [dstp] "=rm" (*p)
-		   : [opn1] "rm" (*opn),
-		     [opn2] "rm" (*opnb),
-		     [beep1] "rm" (*beep),
-		     [cmt1] "rm" (*cmt),
-		     [wav1] "rm" (*wav)
-		   : "xmm0", "xmm1");
-      p++;
-      opn  = &opn[2];
-      opnb = &opnb[2];
-      beep++;
-      cmt++;
-      wav++;
-#endif
    }
+   opnsrc =  (Sint32 *)opn;
+   beepsrc = (Sint16 *)beep;
+   cmtsrc =  (Sint16 *)cmt;
+   wavsrc =  (Sint16 *)wav;
+   dst    =  (Sint16 *)p;
+#else
+	 
+   _prefetch_data_write_l1(dst, samples * sizeof(Sint16));
+   _prefetch_data_read_l2(opnsrc, sizeof(Sint32) * samples);
+   _prefetch_data_read_l2(beepsrc, sizeof(Sint16) * samples);
+   _prefetch_data_read_l2(cmtsrc, sizeof(Sint16) * samples);
+   _prefetch_data_read_l2(wavsrc, sizeof(Sint16) * samples);
+      // Assembler syntax is GAS/ATT, not MS, NASM, YSAM.
+      // 
+   if(len1 > 0) {
+      asm volatile(
+		   "movl %[len], %%ecx\n\t"
+		   "movq %[dst], %%rdi\n\t"
+		   "movq %[opn1], %%r8\n\t"
+		   "movq %[beep1], %%r9\n\t"
+		   "movq %[cmt1], %%r10\n\t"
+		   "movq %[wav1], %%r11\n"
+		   "_l1:\n\t"
+		   "movdqu  0(%%r8),  %%xmm1\n\t"
+		   "movdqu 16(%%r8),  %%xmm0\n\t"
+		   "packssdw %%xmm0,  %%xmm1 ; /* OPN */\n\t"
+		   "movdqu 0(%%r9),   %%xmm0 ; /* BEEP */\n\t"
+		   "paddsw %%xmm0, %%xmm1\n\t"
+		   "movdqu 0(%%r10),  %%xmm0 ; /* CMT */\n\t"
+		   "paddsw %%xmm0, %%xmm1\n\t"
+		   "movdqu 0(%%r11),  %%xmm0 ; /* WAV */\n\t"
+		   "paddsw %%xmm0, %%xmm1\n\t"
+		   "movdqu %%xmm1, 0(%%rdi)  ; /* store */"
+		   "addq $32, %%r8\n\t"
+		   "addq $16, %%r9\n\t"
+		   "addq $16, %%r10\n\t"
+		   "addq $16, %%r11\n\t"
+		   "addq $16, %%rdi\n\t"
+		   "dec %%ecx\n\t"
+		   "jnz _l1\n\t"
+		   : 
+		   : [dst]  "rm"  (dst), [opn1] "rm" (opnsrc), [beep1] "rm" (beepsrc), 
+		     [cmt1] "rm" (cmtsrc),[wav1] "rm" (wavsrc), [len] "rm" (len1)
+		   : "xmm0", "xmm1", "rcx", "rdi", "r8", "r9", "r10", "r11");
+   }
+    dst     = &dst[len1 * 8];
+    opnsrc  = &opnsrc[len1 * 8];
+    beepsrc = &beepsrc[len1 * 8];
+    cmtsrc  = &cmtsrc[len1 * 8];
+    wavsrc  = &wavsrc[len1 * 8];
+#endif
 #endif   
 //   if(len2 <= 0) return len1 * 8;
    if(__builtin_expect((len2 > 0), 0))
    {
       Sint32 tmp4;
-      Sint32 *opn2 = (Sint32 *)opn;
-      Sint16 *beep2 = (Sint16 *)beep;
-      Sint16 *cmt2 = (Sint16 *)cmt;
-      Sint16 *wav2 = (Sint16 *)wav;
-      Sint16 *dst2 = (Sint16 *)p;
+      Sint32 *opn2 = (Sint32 *)opnsrc;
+      Sint16 *beep2 = (Sint16 *)beepsrc;
+      Sint16 *cmt2 = (Sint16 *)cmtsrc;
+      Sint16 *wav2 = (Sint16 *)wavsrc;
+      Sint16 *dst2 = (Sint16 *)dst;
       for (i = 0; i < len2; i++) {
 	 tmp4 = *opn2++;
 	 tmp4 += (Sint32)*beep2++;
