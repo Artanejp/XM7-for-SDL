@@ -358,7 +358,7 @@ void DrawDrive(int drive, BOOL override)
         int stat = OSD_VFD_EMPTY;
         BOOL changed = override;
 
-         if(pVFDStat[drive] == NULL) return;
+        if(pVFDStat[drive] == NULL) return;
 
 
 	ASSERT((drive >= 0) && (drive <= 1));
