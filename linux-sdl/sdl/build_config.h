@@ -61,16 +61,16 @@
 /*
  * Embedの場合にはサイズと表示レイアウトを変更する必要がある？
  */
-#define LED_WIDTH 30
+#define LED_WIDTH 27
 #define LED_HEIGHT 20
 
-#define VFD_WIDTH 130
+#define VFD_WIDTH 100
 #define VFD_HEIGHT 20
 
 #define CMT_WIDTH 40
 #define CMT_HEIGHT 20
 
-#define STAT_WIDTH 240
+#define STAT_WIDTH 300
 #define STAT_HEIGHT 15
 
 #ifndef SHAREDIR

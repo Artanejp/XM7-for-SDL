@@ -149,11 +149,11 @@ static void CreateLEDs(AG_Widget *parent)
    nINS = 0;
    nKANA = 0;
 
-   pOsdLEDIns = InitLED(pWidIns, nLedWidth, nLedHeight, "INS", FALSE);
+   pOsdLEDIns = InitLED(pWidIns, nLedWidth, nLedHeight, " INS", FALSE);
 
-   pOsdLEDCAPS = InitLED(pWidCaps, nLedWidth, nLedHeight, "CAP", FALSE);
+   pOsdLEDCAPS = InitLED(pWidCaps, nLedWidth, nLedHeight, " CAP", FALSE);
 
-   pOsdLEDKana = InitLED(pWidKana, nLedWidth, nLedHeight, "カナ", FALSE);
+   pOsdLEDKana = InitLED(pWidKana, nLedWidth, nLedHeight, " カナ", FALSE);
 
    AG_WidgetShow(pWidIns);
    AG_WidgetShow(pWidCaps);
