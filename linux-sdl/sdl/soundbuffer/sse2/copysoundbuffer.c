@@ -148,42 +148,77 @@ static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
 #else
 	 
    _prefetch_data_write_l1(dst, samples * sizeof(Sint16));
-   _prefetch_data_read_l2(opnsrc, sizeof(Sint32) * samples);
-   _prefetch_data_read_l2(beepsrc, sizeof(Sint16) * samples);
-   _prefetch_data_read_l2(cmtsrc, sizeof(Sint16) * samples);
-   _prefetch_data_read_l2(wavsrc, sizeof(Sint16) * samples);
+//   _prefetch_data_read_l2(opnsrc, sizeof(Sint32) * samples);
+//   _prefetch_data_read_l2(beepsrc, sizeof(Sint16) * samples);
+//   _prefetch_data_read_l2(cmtsrc, sizeof(Sint16) * samples);
+//   _prefetch_data_read_l2(wavsrc, sizeof(Sint16) * samples);
       // Assembler syntax is GAS/ATT, not MS, NASM, YSAM.
       // 
    if(len1 > 0) {
       asm volatile(
 		   "movl %[len], %%ecx\n\t"
+		   "cmpl $0, %%ecx\n\t"
+		   "movl %%ecx, %%eax\n\t"
+		   "andl $1, %%eax\n\t"
 		   "movq %[dst], %%rdi\n\t"
 		   "movq %[opn1], %%r8\n\t"
 		   "movq %[beep1], %%r9\n\t"
 		   "movq %[cmt1], %%r10\n\t"
 		   "movq %[wav1], %%r11\n"
+		   "shrl $1, %%ecx\n\t"
+		   "cmpl $0, %%ecx\n\t"
+		   "jz _l2\n\t"
+		   
 		   "_l1:\n\t"
 		   "movdqu  0(%%r8),  %%xmm1\n\t"
 		   "movdqu 16(%%r8),  %%xmm0\n\t"
 		   "packssdw %%xmm0,  %%xmm1 ; /* OPN */\n\t"
-		   "movdqu 0(%%r9),   %%xmm0 ; /* BEEP */\n\t"
-		   "paddsw %%xmm0, %%xmm1\n\t"
-		   "movdqu 0(%%r10),  %%xmm0 ; /* CMT */\n\t"
-		   "paddsw %%xmm0, %%xmm1\n\t"
-		   "movdqu 0(%%r11),  %%xmm0 ; /* WAV */\n\t"
-		   "paddsw %%xmm0, %%xmm1\n\t"
+		   "movdqu 0(%%r9),   %%xmm2 ; /* BEEP */\n\t"
+		   "paddsw %%xmm2, %%xmm1\n\t"
+		   "movdqu 0(%%r10),  %%xmm3 ; /* CMT */\n\t"
+		   "paddsw %%xmm3, %%xmm1\n\t"
+		   "movdqu 0(%%r11),  %%xmm4 ; /* WAV */\n\t"
+		   "paddsw %%xmm4, %%xmm1\n\t"
 		   "movdqu %%xmm1, 0(%%rdi)  ; /* store */"
-		   "addq $32, %%r8\n\t"
-		   "addq $16, %%r9\n\t"
-		   "addq $16, %%r10\n\t"
-		   "addq $16, %%r11\n\t"
-		   "addq $16, %%rdi\n\t"
+
+		   "movdqu 32(%%r8),  %%xmm5\n\t"
+		   "movdqu 48(%%r8),  %%xmm6\n\t"
+		   "packssdw %%xmm5,  %%xmm6 ; /* OPN */\n\t"
+		   "movdqu 16(%%r9),   %%xmm7 ; /* BEEP */\n\t"
+		   "paddsw %%xmm7, %%xmm6\n\t"
+		   "movdqu 16(%%r10),  %%xmm8 ; /* CMT */\n\t"
+		   "paddsw %%xmm8, %%xmm6\n\t"
+		   "movdqu 16(%%r11),  %%xmm9 ; /* WAV */\n\t"
+		   "paddsw %%xmm9, %%xmm6\n\t"
+		   "movdqu %%xmm6, 16(%%rdi)  ; /* store */"
+		   "addq $64, %%r8\n\t"
+		   "addq $32, %%r9\n\t"
+		   "addq $32, %%r10\n\t"
+		   "addq $32, %%r11\n\t"
+		   "addq $32, %%rdi\n\t"
 		   "dec %%ecx\n\t"
 		   "jnz _l1\n\t"
+		   
+		   "cmpl $0, %%eax\n\t"
+		   "je _l3\n\t"
+		   "_l2:\n\t"
+		   "movdqu  0(%%r8),  %%xmm1\n\t"
+		   "movdqu 16(%%r8),  %%xmm0\n\t"
+		   "packssdw %%xmm0,  %%xmm1 ; /* OPN */\n\t"
+		   "movdqu 0(%%r9),   %%xmm2 ; /* BEEP */\n\t"
+		   "paddsw %%xmm2, %%xmm1\n\t"
+		   "movdqu 0(%%r10),  %%xmm3 ; /* CMT */\n\t"
+		   "paddsw %%xmm3, %%xmm1\n\t"
+		   "movdqu 0(%%r11),  %%xmm4 ; /* WAV */\n\t"
+		   "paddsw %%xmm4, %%xmm1\n\t"
+		   "movdqu %%xmm1, 0(%%rdi)\n\t  ; /* store */"
+		   "_l3:\n\t"
 		   : 
 		   : [dst]  "rm"  (dst), [opn1] "rm" (opnsrc), [beep1] "rm" (beepsrc), 
 		     [cmt1] "rm" (cmtsrc),[wav1] "rm" (wavsrc), [len] "rm" (len1)
-		   : "xmm0", "xmm1", "rcx", "rdi", "r8", "r9", "r10", "r11");
+		   : "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", 
+		     "xmm5", "xmm6", "xmm7", "xmm8", "xmm9", 
+		     "rax", "rcx", "rdi", "r8", "r9", "r10", "r11");
    }
     dst     = &dst[len1 * 8];
     opnsrc  = &opnsrc[len1 * 8];
