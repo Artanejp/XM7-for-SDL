@@ -25,6 +25,8 @@ extern void pVram2RGB_x2(Uint32 *src, Uint32 *dst, int x, int y, int yrep);
 
 static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitch)
 {
+
+#ifndef __x86_64__
    int xx;
    int yy;
    int yrep2;
@@ -41,7 +43,6 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 #else
    const v4ui bb = {0x000000ff, 0x000000ff, 0x000000ff, 0x000000ff};
 #endif
-     
    if(repeat <= 0) return;
    b = (v4hi *)src;
    bb2.uv = bb;
@@ -99,7 +100,114 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 //	 b += 2;
       }
    }
+#else /* __x86_64__ */
+   int yrep2, yrep3;
    
+   if(repeat <= 0) return;
+   if((bFullScan) || (repeat < 2)) {
+      yrep2 = repeat;
+      if(yrep2 < 1) yrep2 = 1;
+      yrep3 = 0;
+   } else {
+      yrep2 = repeat - 1;
+      yrep3 = 1;
+   }
+   // 7766554433221100
+   asm ( "/* _dst: .equ 40 */\n\t"
+	 "/*_count0: .equ 32 */\n\t"
+	 "/*_count1: .equ 24 */\n\t"
+	 "/*_count2: .equ 16 */\n\t"
+	 "/*_yrep2:  .equ 8 */\n\t"
+	 "/*_yrep3:  .equ 0 */\n\t"
+	 "subq $64, %%rsp /* Allocate local value */\n\t"
+	 "movq %[src], %%rsi\n\t"
+	 "movq %[dst], %%rdi\n\t"
+	 "movq %%rdi, 40(%%rsp) /* _dst */\n\t"
+	 
+	 "movl %[pitch], %%eax\n\t"
+	 "movq %%rax, %%r10 /* pitch */\n\t"
+	 
+	 "movl %[ww], %%ecx \n\t"
+	 "shrl $3, %%ecx\n\t"
+	 "movl %%ecx, 32(%%rsp) /* _count0 */\n\t"
+	 
+	 "movl %[rep2], %%r11d\n\t"
+	 "movl %[rep3], %%r12d\n\t"
+	 "movl %%r12d, 0(%%rsp) /* _yrep3 */\n\t"
+	 "cmpl $0, %%r11d\n\t"
+	 "je _l2\n\t"
+	 "movl %%r11d, 8(%%rsp) /* _yrep2 */\n\t"
+	 
+	 "cmpl $0, %%ecx\n\t"
+	 "je _exit0\n\t"
+	 
+	 "_l0: \n\t"
+	 "movdqu 0(%%rsi), %%xmm0 /* 0123 */\n\t"
+	 "movdqu 16(%%rsi), %%xmm1 /* 4567 */\n\t"
+	 "pshufd $0b01010000, %%xmm0, %%xmm2 /* 2233 */\n\t"
+	 "pshufd $0b11111010, %%xmm0, %%xmm0 /* 0011 */\n\t"
+	 "pshufd $0b01010000, %%xmm1, %%xmm3 /* 6677 */\n\t"
+	 "pshufd $0b11111010, %%xmm1, %%xmm1 /* 4455 */\n\t"
+	 "addq $32, %%rsi\n\t"
+	 "movl %%r11d, %%r13d\n\t"
+	 "movq %%rdi,  %%r14\n\t"
+	 "_l0a: \n\t"
+	 "movdqu %%xmm2, 0(%%rdi)\n\t"
+	 "movdqu %%xmm0, 16(%%rdi)\n\t"
+	 "movdqu %%xmm3, 32(%%rdi)\n\t"
+	 "movdqu %%xmm1, 48(%%rdi)\n\t"
+	 "addq %%r10, %%rdi\n\t"
+	 "decl %%r13d\n\t"
+	 "jnz _l0a\n\t"
+	 "addq $64, %%r14\n\t"
+	 "movq %%r14, %%rdi\n\t"
+	 "decl %%ecx\n\t"
+	 "jnz _l0\n\t"
+
+	 "movl 0(%%rsp), %%ecx /* _yrep3 */\n\t"
+	 "cmpl $1, %%ecx\n\t"
+	 "jl _exit0\n\t"
+	 
+	 "movq 40(%%rsp), %%rdi /* _dst */\n\t"
+	 "movl 8(%%rsp), %%eax /* _yrep2 */\n\t"
+	 "mulq %%r10\n\t"
+	 "addq %%rax, %%rdi\n\t"
+	 "movq %%rdi, %%r14\n\t"
+	 
+	 "movl $0xff000000, %%eax /* ABGR */\n\t"
+	 "movd %%eax, %%xmm0\n\t"
+	 "pshufd $0b00000000, %%xmm0, %%xmm0\n\t"
+	 
+	 "_l2: \n\t"
+	 "movl 32(%%rsp), %%r8d /* _count0 */\n\t"
+	 "cmpl $1, %%r8d\n\t"
+	 "jl _exit0\n\t"
+	 
+	 "_l2a:\n\t"
+	 "movdqu %%xmm0, 0(%%rdi)\n\t"
+	 "movdqu %%xmm0, 16(%%rdi)\n\t"
+	 "movdqu %%xmm0, 32(%%rdi)\n\t"
+	 "movdqu %%xmm0, 48(%%rdi)\n\t"
+	 "addq $64, %%rdi\n\t"
+	
+	 "decl %%r8d\n\t"
+	 "jnz _l2a\n\t"
+	 
+	 "movq %%r14, %%rdi\n\t"
+	 "addq %%r10, %%rdi\n\t"
+	 "movq %%rdi, %%r14\n\t"
+	 "decl %%ecx\n\t"
+	 "jnz _l2\n\t"
+	
+	 "_exit0:\n\t"
+	 "addq $64, %%rsp /* Free local value */\n\t"
+	:
+	: [src] "rm" (src), [dst] "rm" (dst), [pitch] "rm" (pitch),
+	[ww] "rm" (ww), [rep2] "rm" (yrep2), [rep3] "rm" (yrep3)
+	: "xmm0", "xmm1", "xmm2", "xmm3",
+	"rax", "rcx", "rdi", "rsi", "r10", "r11", "r12", "r13", "r14" );
+   
+#endif
 }
 
 
