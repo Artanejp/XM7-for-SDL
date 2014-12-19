@@ -126,7 +126,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
       yrep3 = 1;
    }
    // 76543210 -> 7777 6666 6555 5444 4433 3322 2221 1110 0000
-   asm volatile(
+   asm (
 		"subq $64, %%rsp /* Allocate local value */\n\t"
 		"movq %[src], %%rsi\n\t"
 		"movq %[dst], %%rdi\n\t"

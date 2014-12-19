@@ -14,17 +14,121 @@ extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int
 
 
 #if (__GNUC__ >= 4)
+static inline void getputvram_8_vec(Uint32 addr, Uint32 *disp, Uint32 *pal)
+{
+#ifdef __x86_64__
+   asm volatile (
+	"movq %[vram_pg], %%r9\n\t"
+	"movq %[vram_pr], %%r10\n\t"
+	"movq %[vram_pb], %%r11\n\t"
+		 
+	"movb 0(%%r11), %%r13b\n\t"
+	"movb 0(%%r10), %%r14b\n\t"
+	"movb 0(%%r9), %%r15b\n\t"
+	"andq $0xff, %%r13\n\t"
+	"andq $0xff, %%r14\n\t"
+	"andq $0xff, %%r15\n\t"
+	"shlq $5, %%r13\n\t"
+	"shlq $5, %%r14\n\t"
+	"shlq $5, %%r15\n\t"
+	"addq $0x2000, %%r14 /* 256 * 32 */\n\t"
+	"addq $0x4000, %%r15 /* 512 * 32 */\n\t"
+	
+	"movq %[pal], %%r8\n\t"
+	"movq %[disp], %%rdi\n\t"
+	"movq %[aPlanes], %%r12\n\t"
+	
+	"movdqa 0(%%r12, %%r13), %%xmm0\n\t"
+	"movdqa 0(%%r12, %%r14), %%xmm1\n\t"
+	"movdqa 0(%%r12, %%r15), %%xmm2\n\t"
+	"por %%xmm1, %%xmm0\n\t"
+	"por %%xmm2, %%xmm0\n\t"
+
+	"movdqa 16(%%r12, %%r13), %%xmm1\n\t"
+	"movdqa 16(%%r12, %%r14), %%xmm4\n\t"
+	"movdqa 16(%%r12, %%r15), %%xmm5\n\t"
+	"por %%xmm4, %%xmm1\n\t"
+	"por %%xmm5, %%xmm1\n\t"
+	
+	"movl $0x07, %%eax\n\t"
+	"movd %%eax, %%xmm2\n\t"
+	"pshufd $0b00000000, %%xmm2, %%xmm2\n\t"
+	"pand %%xmm2, %%xmm0\n\t"
+	"pand %%xmm2, %%xmm1\n\t"
+	"pshufd $0b00011011, %%xmm0, %%xmm0\n\t"
+	"pshufd $0b00011011, %%xmm1, %%xmm1\n\t"
+	"pxor %%xmm2, %%xmm2\n\t"
+	"pxor %%xmm4, %%xmm4\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"movdqa %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+	
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"movdqu %%xmm3, 0(%%rdi)\n\t"
+	
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"movdqa %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+	
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"movdqu %%xmm5, 16(%%rdi)\n\t"
+	:
+	: [aPlanes] "rm" (aPlanes),
+	  [disp] "rm" (disp), 	  [pal] "rm" (pal), 
+	  [vram_pg] "rm" (&vram_pg[addr]), [vram_pr] "rm" (&vram_pr[addr]), [vram_pb] "rm" (&vram_pb[addr])
+	: "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5",
+	  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
+	  "rdi");
+	
+#else
+#endif
+}
+
+
+
 static inline v8hi_t getvram_8_vec(Uint32 addr)
 {
     register uint8_t r, g, b;
-    register v8hi_t ret;
+    v8hi_t ret;
 //    volatile v4hi cbuf __attribute__((aligned(32)));
         /*
          * R,G,Bについて8bit単位で描画する。
          * 高速化…キャッシュヒット率の向上とVector演算(MMXetc)の速度効果を考慮して、
          * ループの廃止を同時に行う
          */
-
     g = vram_pg[addr];
     r = vram_pr[addr];
     b = vram_pb[addr];
@@ -35,7 +139,7 @@ static inline v8hi_t getvram_8_vec(Uint32 addr)
    return ret;
 }
 
-static inline void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
+static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
 {
 
    v8hi_t *p = (v8hi_t *)disp;
@@ -43,14 +147,82 @@ static inline void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
    if(pal == NULL) return;
 //   if(disp == NULL) return;
 
+   // recommand -finline-loop
+#ifdef __x86_64__
+   asm ("movq %[c], %%r8\n\t"
+	"movdqa  0(%%r8), %%xmm0\n\t"
+	"movdqa 16(%%r8), %%xmm1\n\t"
+	"movq %[pal], %%r8\n\t"
+	"movq %[disp], %%rdi\n\t"
+	"movl $7, %%r9d\n\t"
+	"movd %%r9d, %%xmm2\n\t"
+	"pshufd $0b00000000, %%xmm2, %%xmm2\n\t"
+	"pand %%xmm2, %%xmm0\n\t"
+	"pand %%xmm2, %%xmm1\n\t"
+	"pshufd $0b00011011, %%xmm0, %%xmm0\n\t"
+	"pshufd $0b00011011, %%xmm1, %%xmm1\n\t"
+	
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"movdqa %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+	
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"/* psrldq $4, %%xmm0 */\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"/* pslldq $4, %%xmm3 */\n\t"
+	"movdqu %%xmm3, 0(%%rdi)\n\t"
+	
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"movdqa %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+	
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"/* psrldq $4, %%xmm1 */\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"/* pslldq $4, %%xmm5 */\n\t"
+	"movdqu %%xmm5, 16(%%rdi)\n\t"
+	:
+	: [c] "rm" (&c), [disp] "rm" (disp), [pal] "rm" (pal)
+	: "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5",
+	  "r8", "r9", "r10", "rdi");
+#else
    c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
 
-   // recommand -finline-loop
    _prefetch_data_write_l1(p, sizeof(v8hi_t) * 8); // 4 * 8 * 8 = 256bytes.
    for(j = 0; j < 8; j++) {
       p->i[j] = pal[c.i[j]]; // Converting via palette.
    }
-   
+#endif   
 }
 
 #else
@@ -156,6 +328,7 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
 //       disp++;
        return;
      } else {
+#if 0
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp, c, pal);
        addr += 80;
@@ -193,8 +366,39 @@ void CreateVirtualVram8_1Pcs_SSE2(Uint32 *p, int x, int y, int pitch, int mode)
 
        c = getvram_8_vec(addr);
        putword8_vec((Uint32 *)disp,  c, pal);
-//    addr += 80;
-//    disp++;
+#else
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+	
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+	
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+	
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+	
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+	
+	getputvram_8_vec(addr, disp, pal);
+	addr += 80;
+	disp += pitch;
+	
+	getputvram_8_vec(addr, disp, pal);
+//	addr += 80;
+//	disp += pitch;
+#endif
      }
 #else 
     Uint32 c[8];
@@ -296,6 +500,39 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
        for(yy = ybegin; yy < yend; yy++) { 
            addr = yy * 80;
 	   for(xx = 0; xx < (80 / 8); xx++) { 
+#if 1
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+	      
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+	      
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+
+	      getputvram_8_vec(addr, (Uint32 *)disp, pal);
+	      addr++;
+	      disp++;
+#else
 	      c = getvram_8_vec(addr);
 	      putword8_vec((Uint32 *)disp, c, pal);
 	      addr++;
@@ -335,6 +572,7 @@ void CreateVirtualVram8_Line_SSE2(Uint32 *p, int ybegin, int yend, int mode)
 	      putword8_vec((Uint32 *)disp,  c, pal);
 	      addr++;
 	      disp++;
+#endif
 	   }
 	  
        }
