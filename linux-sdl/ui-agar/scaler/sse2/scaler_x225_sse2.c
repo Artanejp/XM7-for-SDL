@@ -45,6 +45,7 @@ static void Scaler_DrawLine(Uint32 *dst, Uint32 *src, int ww, int repeat, int pi
    _prefetch_data_write_l1(r5v, sizeof(r5v));
    if((bFullScan) || (repeat < 2)) {
       yrep2 = repeat;
+      yrep3 = 0;
    } else {
       // 76543210 -> 776655444332211000
       yrep2 = repeat - 1;
