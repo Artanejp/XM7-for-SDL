@@ -181,8 +181,8 @@ static void  _put_unaligned_int16(Sint16 *dst, v4hi v)
 		   "paddsw %%xmm4, %%xmm1\n\t"
 		   "movdqu %%xmm1, 0(%%rdi)  ; /* store */"
 
-		   "movdqu 32(%%r8),  %%xmm5\n\t"
-		   "movdqu 48(%%r8),  %%xmm6\n\t"
+		   "movdqu 32(%%r8),  %%xmm6\n\t"
+		   "movdqu 48(%%r8),  %%xmm5\n\t"
 		   "packssdw %%xmm5,  %%xmm6 ; /* OPN */\n\t"
 		   "movdqu 16(%%r9),   %%xmm7 ; /* BEEP */\n\t"
 		   "paddsw %%xmm7, %%xmm6\n\t"
