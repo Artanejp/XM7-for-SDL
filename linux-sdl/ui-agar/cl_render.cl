@@ -143,7 +143,7 @@ __kernel void CopyVram(__global uchar *to, __global uchar *from, int size, int m
   for(i = 0; i < r_mod; i++) *q++ = *p++;
 }
 
-void setup_ttlpalette(uchar *pal, uint *palette, uint4 bright, uint vpage)
+void setup_ttlpalette(__global uchar *pal, uint *palette, uint4 bright, uint vpage)
 {
    int i;
    uint4 v;
