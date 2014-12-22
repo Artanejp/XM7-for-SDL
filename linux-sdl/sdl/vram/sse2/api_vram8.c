@@ -17,7 +17,7 @@ extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int
 static inline void getputvram_8_vec(Uint32 addr, Uint32 *disp, Uint32 *pal)
 {
 #ifdef __x86_64__
-   asm volatile (
+   asm (
 	"movq %[vram_pg], %%r9\n\t"
 	"movq %[vram_pr], %%r10\n\t"
 	"movq %[vram_pb], %%r11\n\t"
