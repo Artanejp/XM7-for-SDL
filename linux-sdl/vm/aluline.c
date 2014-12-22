@@ -31,31 +31,31 @@
 /*
  *	グローバル ワーク
  */
-BYTE alu_command;						/* 論理演算 コマンド */
-BYTE alu_color;							/* 論理演算 カラー */
-BYTE alu_mask;							/* 論理演算 マスクビット */
-BYTE alu_cmpstat;						/* 論理演算 比較ステータス */
-BYTE alu_cmpdat[8];						/* 論理演算 比較データ */
-BYTE alu_disable;						/* 論理演算 禁止バンク */
-BYTE alu_tiledat[3];					/* 論理演算 タイルパターン */
+BYTE alu_command;								/* 論理演算 コマンド */
+BYTE alu_color;									/* 論理演算 カラー */
+BYTE alu_mask;									/* 論理演算 マスクビット */
+BYTE alu_cmpstat;								/* 論理演算 比較ステータス */
+BYTE alu_cmpdat[8];							/* 論理演算 比較データ */
+BYTE alu_disable;								/* 論理演算 禁止バンク */
+BYTE alu_tiledat[3];						/* 論理演算 タイルパターン */
 
-BOOL line_busy;							/* 直線補間 BUSY */
-WORD line_offset;						/* 直線補間 アドレスオフセット */
-WORD line_style;						/* 直線補間 ラインスタイル */
-WORD line_x0;							/* 直線補間 X0 */
-WORD line_y0;							/* 直線補間 Y0 */
-WORD line_x1;							/* 直線補間 X1 */
-WORD line_y1;							/* 直線補間 Y1 */
-BOOL line_boost;						/* 直線補間 全速力描画フラグ */
+BOOL line_busy;									/* 直線補間 BUSY */
+WORD line_offset;								/* 直線補間 アドレスオフセット */
+WORD line_style;								/* 直線補間 ラインスタイル */
+WORD line_x0;										/* 直線補間 X0 */
+WORD line_y0;										/* 直線補間 Y0 */
+WORD line_x1;										/* 直線補間 X1 */
+WORD line_y1;										/* 直線補間 Y1 */
+BOOL line_boost;								/* 直線補間 全速力描画フラグ */
 
 /*
  *  スタティック ワーク
  */
-static BYTE alu_vram_bank;				/* 論理演算 処理中VRAMバンク */
-static WORD line_addr_old;				/* 直線補間 前回処理したVRAMアドレス */
+static BYTE alu_vram_bank;			/* 論理演算 処理中VRAMバンク */
+static WORD line_addr_old;			/* 直線補間 前回処理したVRAMアドレス */
 static BYTE line_mask;					/* 直線補間 マスクビット */
 static WORD line_count;					/* 直線補間 カウンタ(整数部) */
-static BYTE line_count_sub;				/* 直線補間 カウンタ(小数部) */
+static BYTE line_count_sub;			/* 直線補間 カウンタ(小数部) */
 
 /*
  *	プロトタイプ宣言
@@ -67,7 +67,8 @@ static void FASTCALL alu_cmp(WORD addr);	/* コンペア */
  *	論理演算・直線補間
  *	初期化
  */
-BOOL FASTCALL aluline_init(void)
+BOOL FASTCALL
+aluline_init(void)
 {
 	/* 直線補間処理中にBUSY状態とする */
 	line_boost = FALSE;
@@ -79,7 +80,8 @@ BOOL FASTCALL aluline_init(void)
  *	論理演算・直線補間
  *	クリーンアップ
  */
-void FASTCALL aluline_cleanup(void)
+void FASTCALL
+aluline_cleanup(void)
 {
 }
 
@@ -87,7 +89,8 @@ void FASTCALL aluline_cleanup(void)
  *	論理演算・直線補間
  *	リセット
  */
-void FASTCALL aluline_reset(void)
+void FASTCALL
+aluline_reset(void)
 {
 	/* 全てのレジスタを初期化 */
 	alu_command = 0;
@@ -119,7 +122,8 @@ void FASTCALL aluline_reset(void)
  *	論理演算
  *	VRAM読み出し
  */
-static BYTE FASTCALL alu_read(WORD addr)
+static BYTE FASTCALL
+alu_read(WORD addr)
 {
 	/* アクティブプレーンでない場合、0xFFを返す */
 	if (multi_page & (1 << alu_vram_bank)) {
@@ -148,7 +152,8 @@ static BYTE FASTCALL alu_read(WORD addr)
  *	論理演算
  *	VRAM読み出し(プレーン指定)
  */
-static BYTE FASTCALL alu_read_plane(WORD addr, int plane)
+static BYTE FASTCALL
+alu_read_plane(WORD addr, int plane)
 {
 	/* アクティブプレーンでない場合、0xFFを返す */
 	if (multi_page & (1 << plane)) {
@@ -177,7 +182,8 @@ static BYTE FASTCALL alu_read_plane(WORD addr, int plane)
  *	論理演算
  *	VRAM書き込み
  */
-static void FASTCALL alu_write(WORD addr, BYTE dat)
+static void FASTCALL
+alu_write(WORD addr, BYTE dat)
 {
 	/* アクティブプレーンでない場合NOP */
 	if (multi_page & (1 << alu_vram_bank)) {
@@ -212,7 +218,8 @@ static void FASTCALL alu_write(WORD addr, BYTE dat)
  *	論理演算
  *	書き込みサブ(比較書き込み付)
  */
-static void FASTCALL alu_writesub(WORD addr, BYTE dat)
+static void FASTCALL
+alu_writesub(WORD addr, BYTE dat)
 {
 	BYTE temp;
 
@@ -227,24 +234,25 @@ static void FASTCALL alu_writesub(WORD addr, BYTE dat)
 		/* NOTイコールで書き込む */
 		temp = alu_read(addr);
 		temp &= alu_cmpstat;
-		dat &= (BYTE)(~alu_cmpstat);
+		dat &= (BYTE) (~alu_cmpstat);
 	}
 	else {
 		/* イコールで書き込む */
 		temp = alu_read(addr);
-		temp &= (BYTE)(~alu_cmpstat);
+		temp &= (BYTE) (~alu_cmpstat);
 		dat &= alu_cmpstat;
 	}
 
 	/* データをVRAMに書き込む */
-	alu_write(addr, (BYTE)(temp | dat));
+	alu_write(addr, (BYTE) (temp | dat));
 }
 
 /*
  *	論理演算
  *	PSET
  */
-static void FASTCALL alu_pset(WORD addr)
+static void FASTCALL
+alu_pset(WORD addr)
 {
 	BYTE dat;
 	BYTE mask;
@@ -285,7 +293,7 @@ static void FASTCALL alu_pset(WORD addr)
 			mask = alu_read(addr);
 
 			/* マスクビットの処理 */
-			dat &= (BYTE)(~alu_mask);
+			dat &= (BYTE) (~alu_mask);
 			mask &= alu_mask;
 			dat |= mask;
 
@@ -294,7 +302,7 @@ static void FASTCALL alu_pset(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -303,7 +311,8 @@ static void FASTCALL alu_pset(WORD addr)
  *	論理演算
  *	コマンド1(禁止・黒色書き込み)
  */
-static void FASTCALL alu_prohibit(WORD addr)
+static void FASTCALL
+alu_prohibit(WORD addr)
 {
 	BYTE dat;
 	BYTE mask;
@@ -343,7 +352,7 @@ static void FASTCALL alu_prohibit(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -352,7 +361,8 @@ static void FASTCALL alu_prohibit(WORD addr)
  *	論理演算
  *	OR
  */
-static void FASTCALL alu_or(WORD addr)
+static void FASTCALL
+alu_or(WORD addr)
 {
 	BYTE dat;
 	BYTE mask;
@@ -395,7 +405,7 @@ static void FASTCALL alu_or(WORD addr)
 			dat |= mask;
 
 			/* マスクビットの処理 */
-			dat &= (BYTE)(~alu_mask);
+			dat &= (BYTE) (~alu_mask);
 			mask &= alu_mask;
 			dat |= mask;
 
@@ -404,7 +414,7 @@ static void FASTCALL alu_or(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -413,7 +423,8 @@ static void FASTCALL alu_or(WORD addr)
  *	論理演算
  *	AND
  */
-static void FASTCALL alu_and(WORD addr)
+static void FASTCALL
+alu_and(WORD addr)
 {
 	BYTE dat;
 	BYTE mask;
@@ -455,7 +466,7 @@ static void FASTCALL alu_and(WORD addr)
 			dat &= mask;
 
 			/* マスクビットの処理 */
-			dat &= (BYTE)(~alu_mask);
+			dat &= (BYTE) (~alu_mask);
 			mask &= alu_mask;
 			dat |= mask;
 
@@ -464,7 +475,7 @@ static void FASTCALL alu_and(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -473,7 +484,8 @@ static void FASTCALL alu_and(WORD addr)
  *	論理演算
  *	XOR
  */
-static void FASTCALL alu_xor(WORD addr)
+static void FASTCALL
+alu_xor(WORD addr)
 {
 	BYTE dat;
 	BYTE mask;
@@ -515,7 +527,7 @@ static void FASTCALL alu_xor(WORD addr)
 			dat ^= mask;
 
 			/* マスクビットの処理 */
-			dat &= (BYTE)(~alu_mask);
+			dat &= (BYTE) (~alu_mask);
 			mask &= alu_mask;
 			dat |= mask;
 
@@ -524,7 +536,7 @@ static void FASTCALL alu_xor(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -533,7 +545,8 @@ static void FASTCALL alu_xor(WORD addr)
  *	論理演算
  *	NOT
  */
-static void FASTCALL alu_not(WORD addr)
+static void FASTCALL
+alu_not(WORD addr)
 {
 	BYTE dat;
 	BYTE mask;
@@ -564,10 +577,10 @@ static void FASTCALL alu_not(WORD addr)
 		if (!(alu_disable & bit)) {
 			/* 演算(NOT) */
 			mask = alu_read(addr);
-			dat = (BYTE)(~mask);
+			dat = (BYTE) (~mask);
 
 			/* マスクビットの処理 */
-			dat &= (BYTE)(~alu_mask);
+			dat &= (BYTE) (~alu_mask);
 			mask &= alu_mask;
 			dat |= mask;
 
@@ -576,7 +589,7 @@ static void FASTCALL alu_not(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -585,7 +598,8 @@ static void FASTCALL alu_not(WORD addr)
  *	論理演算
  *	タイルペイント
  */
-static void FASTCALL alu_tile(WORD addr)
+static void FASTCALL
+alu_tile(WORD addr)
 {
 	BYTE bit;
 	BYTE mask;
@@ -600,10 +614,10 @@ static void FASTCALL alu_tile(WORD addr)
 		addr &= 0x7fff;
 	}
 	else {
-	 	addr &= 0x3fff;
+		addr &= 0x3fff;
 	}
 #else
-	 addr &= 0x3fff;
+	addr &= 0x3fff;
 #endif
 
 	/* 比較書き込み時は、先に比較データを取得 */
@@ -618,7 +632,7 @@ static void FASTCALL alu_tile(WORD addr)
 			dat = alu_tiledat[alu_vram_bank];
 
 			/* マスクビットの処理 */
-			dat &= (BYTE)(~alu_mask);
+			dat &= (BYTE) (~alu_mask);
 			mask = alu_read(addr);
 			mask &= alu_mask;
 			dat |= mask;
@@ -628,7 +642,7 @@ static void FASTCALL alu_tile(WORD addr)
 		}
 
 		/* 次のバンクへ */
-		alu_vram_bank ++;
+		alu_vram_bank++;
 		bit <<= 1;
 	}
 }
@@ -637,7 +651,8 @@ static void FASTCALL alu_tile(WORD addr)
  *	論理演算
  *	コンペア
  */
-static void FASTCALL alu_cmp(WORD addr)
+static void FASTCALL
+alu_cmp(WORD addr)
 {
 	BYTE color;
 	BYTE bit;
@@ -665,12 +680,12 @@ static void FASTCALL alu_cmp(WORD addr)
 	g = alu_read_plane(addr, 2);
 
 	/* バンクディセーブルを考慮する(女神転生対策) */
-	disflag = (BYTE)((~alu_disable) & 0x07);
+	disflag = (BYTE) ((~alu_disable) & 0x07);
 
 	/* 比較が必要 */
 	dat = 0;
 	bit = 0x80;
-	for (i=0; i<8; i++) {
+	for (i = 0; i < 8; i++) {
 		/* 色を作成 */
 		color = 0;
 		if (b & bit) {
@@ -685,7 +700,7 @@ static void FASTCALL alu_cmp(WORD addr)
 
 		/* 8つの色スロットをまわって、どれか一致するものがあるか */
 		flag = FALSE;
-		for (j=0; j<8; j++) {
+		for (j = 0; j < 8; j++) {
 			if ((alu_cmpdat[j] & 0x80) == 0) {
 				if ((alu_cmpdat[j] & disflag) == (color & disflag)) {
 					flag = TRUE;
@@ -713,7 +728,8 @@ static void FASTCALL alu_cmp(WORD addr)
  *	直線補間
  *	論理演算回路起動
  */
-void FASTCALL aluline_exec(WORD addr)
+void FASTCALL
+aluline_exec(WORD addr)
 {
 	/* アドレスチェック */
 	if (addr >= 0x8000) {
@@ -727,52 +743,53 @@ void FASTCALL aluline_exec(WORD addr)
 
 	/* 論理演算 */
 	switch (alu_command & 0x07) {
-		/* PSET */
+			/* PSET */
 		case 0:
 			alu_pset(addr);
 			break;
-		/* 禁止(黒色書き込み) */
+			/* 禁止(黒色書き込み) */
 		case 1:
 			alu_prohibit(addr);
 			break;
-		/* OR */
+			/* OR */
 		case 2:
 			alu_or(addr);
 			break;
-		/* AND */
+			/* AND */
 		case 3:
 			alu_and(addr);
 			break;
-		/* XOR */
+			/* XOR */
 		case 4:
 			alu_xor(addr);
 			break;
-		/* NOT */
+			/* NOT */
 		case 5:
 			alu_not(addr);
 			break;
-		/* タイルペイント */
+			/* タイルペイント */
 		case 6:
 			alu_tile(addr);
 			break;
-		/* コンペア */
+			/* コンペア */
 		case 7:
 			alu_cmp(addr);
 			break;
 	}
 
 	/* カウントアップ */
-	line_count ++;
+	line_count++;
 }
 
 /*
  *	直線補間
  *	点描画
  */
-static void FASTCALL aluline_pset(int x, int y)
+static void FASTCALL
+aluline_pset(int x, int y)
 {
 	WORD addr;
-	static BYTE mask[] = {0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xfe};
+	static BYTE mask[] = { 0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xfe };
 
 	/* 論理演算のデータバスに入るので、論理演算onが必要 */
 	if (!(alu_command & 0x80)) {
@@ -782,17 +799,17 @@ static void FASTCALL aluline_pset(int x, int y)
 	/* 画面モードから、アドレス算出 */
 #if XM7_VER >= 3
 	if (screen_mode & SCR_ANALOG) {
-		addr = (WORD)(y * 40 + (x >> 3));
+		addr = (WORD) (y * 40 + (x >> 3));
 	}
 	else {
-		addr = (WORD)(y * 80 + (x >> 3));
+		addr = (WORD) (y * 80 + (x >> 3));
 	}
 #else
 	if (mode320) {
-		addr = (WORD)(y * 40 + (x >> 3));
+		addr = (WORD) (y * 40 + (x >> 3));
 	}
 	else {
-		addr = (WORD)(y * 80 + (x >> 3));
+		addr = (WORD) (y * 80 + (x >> 3));
 	}
 #endif
 
@@ -824,23 +841,24 @@ static void FASTCALL aluline_pset(int x, int y)
 	}
 
 	/* ラインスタイルレジスタを左ローテート */
-	line_style = (WORD)((line_style << 1) | (line_style >> 15));
+	line_style = (WORD) ((line_style << 1) | (line_style >> 15));
 }
 
 /*
  *	直線描画(DDA)
  *	参考文献:6809機械語によるグラフィック処理の技法 第6回 (◎h!FM '86/5)
  */
-static void FASTCALL aluline_line(void)
+static void FASTCALL
+aluline_line(void)
 {
 	int x1, x2, y1, y2;
 	int dx, dy, ux, uy, r;
 
 	/* データ取得 */
-	x1 = (int)line_x0;
-	x2 = (int)line_x1;
-	y1 = (int)line_y0;
-	y2 = (int)line_y1;
+	x1 = (int) line_x0;
+	x2 = (int) line_x1;
+	y1 = (int) line_y0;
+	y2 = (int) line_y1;
 
 	/* カウンタ初期化 */
 	line_count = 0;
@@ -933,7 +951,8 @@ static void FASTCALL aluline_line(void)
  *	直線補間
  *	イベント
  */
-static BOOL FASTCALL aluline_event(void)
+static BOOL FASTCALL
+aluline_event(void)
 {
 	/* 直線補間をREADYにする */
 	line_busy = FALSE;
@@ -948,7 +967,8 @@ static BOOL FASTCALL aluline_event(void)
  *	論理演算・直線補間
  *	１バイト読み出し
  */
-BOOL FASTCALL aluline_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+aluline_readb(WORD addr, BYTE * dat)
 {
 	/* バージョンチェック */
 	if (fm7_ver < 2) {
@@ -956,27 +976,27 @@ BOOL FASTCALL aluline_readb(WORD addr, BYTE *dat)
 	}
 
 	switch (addr) {
-		/* 論理演算 コマンド */
+			/* 論理演算 コマンド */
 		case 0xd410:
 			*dat = alu_command;
 			return TRUE;
 
-		/* 論理演算 カラー */
+			/* 論理演算 カラー */
 		case 0xd411:
 			*dat = alu_color;
 			return TRUE;
 
-		/* 論理演算 マスクビット */
+			/* 論理演算 マスクビット */
 		case 0xd412:
 			*dat = alu_mask;
 			return TRUE;
 
-		/* 論理演算 比較ステータス */
+			/* 論理演算 比較ステータス */
 		case 0xd413:
 			*dat = alu_cmpstat;
 			return TRUE;
 
-		/* 論理演算 無効バンク */
+			/* 論理演算 無効バンク */
 		case 0xd41b:
 			*dat = alu_disable;
 			return TRUE;
@@ -1007,7 +1027,8 @@ BOOL FASTCALL aluline_readb(WORD addr, BYTE *dat)
  *	論理演算・直線補間
  *	１バイト書き込み
  */
-BOOL FASTCALL aluline_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+aluline_writeb(WORD addr, BYTE dat)
 {
 	DWORD tmp;
 
@@ -1017,101 +1038,101 @@ BOOL FASTCALL aluline_writeb(WORD addr, BYTE dat)
 	}
 
 	switch (addr) {
-		/* 論理演算 コマンド */
+			/* 論理演算 コマンド */
 		case 0xd410:
 			alu_command = dat;
 			return TRUE;
 
-		/* 論理演算 カラー */
+			/* 論理演算 カラー */
 		case 0xd411:
 			alu_color = dat;
 			return TRUE;
 
-		/* 論理演算 マスクビット */
+			/* 論理演算 マスクビット */
 		case 0xd412:
 			alu_mask = dat;
 			return TRUE;
 
-		/* 論理演算 無効バンク */
+			/* 論理演算 無効バンク */
 		case 0xd41b:
 			alu_disable = dat;
 			return TRUE;
 
-		/* 直線補間 アドレスオフセット(A1から注意) */
+			/* 直線補間 アドレスオフセット(A1から注意) */
 		case 0xd420:
 			line_offset &= 0x01fe;
-			line_offset |= (WORD)((dat * 512) & 0x3e00);
+			line_offset |= (WORD) ((dat * 512) & 0x3e00);
 			return TRUE;
 		case 0xd421:
 			line_offset &= 0x3e00;
-			line_offset |= (WORD)(dat * 2);
+			line_offset |= (WORD) (dat * 2);
 			return TRUE;
 
-		/* 直線補間 ラインスタイル */
+			/* 直線補間 ラインスタイル */
 		case 0xd422:
 			line_style &= 0xff;
-			line_style |= (WORD)(dat * 256);
+			line_style |= (WORD) (dat * 256);
 			return TRUE;
 		case 0xd423:
 			line_style &= 0xff00;
-			line_style |= (WORD)dat;
+			line_style |= (WORD) dat;
 			return TRUE;
 
-		/* 直線補間 X0 */
+			/* 直線補間 X0 */
 		case 0xd424:
 			line_x0 &= 0xff;
-			line_x0 |= (WORD)(dat * 256);
+			line_x0 |= (WORD) (dat * 256);
 			line_x0 &= 0x03ff;
 			return TRUE;
 		case 0xd425:
 			line_x0 &= 0xff00;
-			line_x0 |= (WORD)dat;
+			line_x0 |= (WORD) dat;
 			return TRUE;
 
-		/* 直線補間 Y0 */
+			/* 直線補間 Y0 */
 		case 0xd426:
 			line_y0 &= 0xff;
-			line_y0 |= (WORD)(dat * 256);
+			line_y0 |= (WORD) (dat * 256);
 			line_y0 &= 0x01ff;
 			return TRUE;
 		case 0xd427:
 			line_y0 &= 0xff00;
-			line_y0 |= (WORD)dat;
+			line_y0 |= (WORD) dat;
 			return TRUE;
 
-		/* 直線補間 X1 */
+			/* 直線補間 X1 */
 		case 0xd428:
 			line_x1 &= 0xff;
-			line_x1 |= (WORD)(dat * 256);
+			line_x1 |= (WORD) (dat * 256);
 			line_x1 &= 0x03ff;
 			return TRUE;
 		case 0xd429:
 			line_x1 &= 0xff00;
-			line_x1 |= (WORD)dat;
+			line_x1 |= (WORD) dat;
 			return TRUE;
 
-		/* 直線補間 Y1 */
+			/* 直線補間 Y1 */
 		case 0xd42a:
 			line_y1 &= 0xff;
-			line_y1 |= (WORD)(dat * 256);
+			line_y1 |= (WORD) (dat * 256);
 			line_y1 &= 0x01ff;
 			return TRUE;
 		case 0xd42b:
 			line_y1 &= 0xff00;
-			line_y1 |= (WORD)dat;
+			line_y1 |= (WORD) dat;
 
 			/* ここで直線補間スタート */
 			aluline_line();
 
 			/* 線は引いたが、しばらくBUSYにしておく */
 			/* BUSY状態にする時間を算出(1バイト描画=1/16μsecと仮定) */
-			tmp = (DWORD)(line_count >> 4);
+			tmp = (DWORD) (line_count >> 4);
 
 			/* BUSY時間の小数部調整を行う */
-			line_count_sub += (BYTE)(line_count & 0x0f);
+			line_count_sub += (BYTE) (line_count & 0x0f);
 			if (line_count_sub >= 0x10) {
-				tmp ++;
-				line_count_sub &= (BYTE)0x0f;
+				tmp++;
+				line_count_sub &= (BYTE) 0x0f;
 			}
 
 			/* 計算結果が1μs以上の場合はBUSYにする */
@@ -1142,41 +1163,42 @@ BOOL FASTCALL aluline_writeb(WORD addr, BYTE dat)
  *	論理演算・直線補間
  *	VRAMダミーリード
  */
-void FASTCALL aluline_extrb(WORD addr)
+void FASTCALL
+aluline_extrb(WORD addr)
 {
 	/* 論理演算が有効か */
 	if (alu_command & 0x80) {
 		/* コマンド別 */
 		switch (alu_command & 0x07) {
-			/* PSET */
+				/* PSET */
 			case 0:
 				alu_pset(addr);
 				break;
-			/* 禁止(黒色書き込み) */
+				/* 禁止(黒色書き込み) */
 			case 1:
 				alu_prohibit(addr);
 				break;
-			/* OR */
+				/* OR */
 			case 2:
 				alu_or(addr);
 				break;
-			/* AND */
+				/* AND */
 			case 3:
 				alu_and(addr);
 				break;
-			/* XOR */
+				/* XOR */
 			case 4:
 				alu_xor(addr);
 				break;
-			/* NOT */
+				/* NOT */
 			case 5:
 				alu_not(addr);
 				break;
-			/* タイルペイント */
+				/* タイルペイント */
 			case 6:
 				alu_tile(addr);
 				break;
-			/* コンペア */
+				/* コンペア */
 			case 7:
 				alu_cmp(addr);
 				break;
@@ -1190,138 +1212,138 @@ void FASTCALL aluline_extrb(WORD addr)
  *      論理演算・直線補間
  *      セーブ
  */
-BOOL            FASTCALL
-aluline_save(SDL_RWops *fileh)
+BOOL FASTCALL
+aluline_save(SDL_RWops * fileh)
 {
-    if (!file_byte_write(fileh, alu_command)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, alu_color)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, alu_mask)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, alu_cmpstat)) {
-	return FALSE;
-    }
-    if (!file_write(fileh, alu_cmpdat, sizeof(alu_cmpdat))) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, alu_disable)) {
-	return FALSE;
-    }
-    if (!file_write(fileh, alu_tiledat, sizeof(alu_tiledat))) {
-	return FALSE;
-    }
+	if (!file_byte_write(fileh, alu_command)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, alu_color)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, alu_mask)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, alu_cmpstat)) {
+		return FALSE;
+	}
+	if (!file_write(fileh, alu_cmpdat, sizeof(alu_cmpdat))) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, alu_disable)) {
+		return FALSE;
+	}
+	if (!file_write(fileh, alu_tiledat, sizeof(alu_tiledat))) {
+		return FALSE;
+	}
 
-    if (!file_bool_write(fileh, line_busy)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, line_busy)) {
+		return FALSE;
+	}
 
-    if (!file_word_write(fileh, line_offset)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, line_style)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, line_x0)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, line_y0)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, line_x1)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, line_y1)) {
-	return FALSE;
-    }
+	if (!file_word_write(fileh, line_offset)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, line_style)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, line_x0)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, line_y0)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, line_x1)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, line_y1)) {
+		return FALSE;
+	}
 
-    /*
-     * 従来バージョンとの互換用ダミー
-     */
-    if (!file_byte_write(fileh, 0)) {
-	return FALSE;
-    }
+	/*
+	 * 従来バージョンとの互換用ダミー
+	 */
+	if (!file_byte_write(fileh, 0)) {
+		return FALSE;
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 /*
  *      論理演算・直線補間
  *      ロード
  */
-BOOL            FASTCALL
-aluline_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+aluline_load(SDL_RWops * fileh, int ver)
 {
-    BYTE            tmp;
+	BYTE tmp;
 
-    /*
-     * バージョンチェック
-     */
-    if (ver < 200) {
-	return FALSE;
-    }
+	/*
+	 * バージョンチェック
+	 */
+	if (ver < 200) {
+		return FALSE;
+	}
 
-    if (!file_byte_read(fileh, &alu_command)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &alu_color)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &alu_mask)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &alu_cmpstat)) {
-	return FALSE;
-    }
-    if (!file_read(fileh, alu_cmpdat, sizeof(alu_cmpdat))) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &alu_disable)) {
-	return FALSE;
-    }
-    if (!file_read(fileh, alu_tiledat, sizeof(alu_tiledat))) {
-	return FALSE;
-    }
+	if (!file_byte_read(fileh, &alu_command)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &alu_color)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &alu_mask)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &alu_cmpstat)) {
+		return FALSE;
+	}
+	if (!file_read(fileh, alu_cmpdat, sizeof(alu_cmpdat))) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &alu_disable)) {
+		return FALSE;
+	}
+	if (!file_read(fileh, alu_tiledat, sizeof(alu_tiledat))) {
+		return FALSE;
+	}
 
-    if (!file_bool_read(fileh, &line_busy)) {
-	return FALSE;
-    }
+	if (!file_bool_read(fileh, &line_busy)) {
+		return FALSE;
+	}
 
-    if (!file_word_read(fileh, &line_offset)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &line_style)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &line_x0)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &line_y0)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &line_x1)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &line_y1)) {
-	return FALSE;
-    }
+	if (!file_word_read(fileh, &line_offset)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &line_style)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &line_x0)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &line_y0)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &line_x1)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &line_y1)) {
+		return FALSE;
+	}
 
-    /*
-     * 従来バージョンとの互換用ダミー
-     */
-    if (!file_byte_read(fileh, &tmp)) {
-	return FALSE;
-    }
+	/*
+	 * 従来バージョンとの互換用ダミー
+	 */
+	if (!file_byte_read(fileh, &tmp)) {
+		return FALSE;
+	}
 
-    /*
-     * イベント
-     */
-    schedule_handle(EVENT_LINE, aluline_event);
+	/*
+	 * イベント
+	 */
+	schedule_handle(EVENT_LINE, aluline_event);
 
-    return TRUE;
+	return TRUE;
 }
 
-#endif				/* XM7_VER >= 2 */
+#endif /* XM7_VER >= 2 */
