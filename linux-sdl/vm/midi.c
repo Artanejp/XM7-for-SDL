@@ -28,7 +28,8 @@ BYTE midi_modereg;
  *	MIDIアダプタ
  *	初期化
  */
-BOOL FASTCALL midi_init(void)
+BOOL FASTCALL
+midi_init(void)
 {
 	midi_busy = FALSE;
 
@@ -39,7 +40,8 @@ BOOL FASTCALL midi_init(void)
  *	MIDIアダプタ
  *	クリーンアップ
  */
-void FASTCALL midi_cleanup(void)
+void FASTCALL
+midi_cleanup(void)
 {
 }
 
@@ -47,7 +49,8 @@ void FASTCALL midi_cleanup(void)
  *	MIDIアダプタ
  *	リセット
  */
-void FASTCALL midi_reset(void)
+void FASTCALL
+midi_reset(void)
 {
 	midi_txenable = FALSE;
 	midi_selectmc = TRUE;
@@ -60,7 +63,8 @@ void FASTCALL midi_reset(void)
  *	MIDIアダプタ
  *	１バイト読み出し
  */
-BOOL FASTCALL midi_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+midi_readb(WORD addr, BYTE * dat)
 {
 	switch (addr) {
 		case 0xfdea:	/* USART DATA */
@@ -86,7 +90,8 @@ BOOL FASTCALL midi_readb(WORD addr, BYTE *dat)
  *	MIDIアダプタ
  *	１バイト書き込み
  */
-BOOL FASTCALL midi_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+midi_writeb(WORD addr, BYTE dat)
 {
 	switch (addr) {
 		case 0xfdea:	/* USART DATA */
@@ -131,7 +136,8 @@ BOOL FASTCALL midi_writeb(WORD addr, BYTE dat)
  *	MIDIアダプタ
  *	セーブ
  */
-BOOL FASTCALL midi_save(SDL_RWops *fileh)
+BOOL FASTCALL
+midi_save(SDL_RWops * fileh)
 {
 	if (!file_bool_write(fileh, midi_txenable)) {
 		return FALSE;
@@ -142,7 +148,7 @@ BOOL FASTCALL midi_save(SDL_RWops *fileh)
 	if (!file_byte_write(fileh, midi_modereg)) {
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
@@ -150,7 +156,8 @@ BOOL FASTCALL midi_save(SDL_RWops *fileh)
  *	MIDIアダプタ
  *	ロード
  */
-BOOL FASTCALL midi_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+midi_load(SDL_RWops * fileh, int ver)
 {
 	/* バージョンチェック */
 	if (ver < 200) {
@@ -175,8 +182,8 @@ BOOL FASTCALL midi_load(SDL_RWops *fileh, int ver)
 	if (!file_byte_read(fileh, &midi_modereg)) {
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
-#endif	/* MIDI */
+#endif /* MIDI */

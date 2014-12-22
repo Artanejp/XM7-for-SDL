@@ -20,37 +20,39 @@
 /*
  *      グローバル ワーク
  */
-BYTE            mos_port;	/* マウス接続ポート */
-BOOL            mos_capture;	/* マウスキャプチャフラグ */
+BYTE mos_port;									/* マウス接続ポート */
+BOOL mos_capture;								/* マウスキャプチャフラグ */
 
 /*
  *      スタティック ワーク
  */
-static BYTE mos_x;		/* Ｘ移動距離 (左方向:+ 右方向:-) */
-static BYTE mos_y;		/* Ｙ移動距離 (上方向:+ 下方向:-) */
-static BYTE mos_phase;	/* フェーズカウンタ */
-static BOOL mos_strobe;	/* ストローブ信号状態(保存用) */
+static BYTE mos_x;							/* Ｘ移動距離 (左方向:+ 右方向:-) */
+static BYTE mos_y;							/* Ｙ移動距離 (上方向:+ 下方向:-) */
+static BYTE mos_phase;					/* フェーズカウンタ */
+static BOOL mos_strobe;					/* ストローブ信号状態(保存用) */
 
 /*
  *      インテリジェントマウス
  *      初期化
  */
-BOOL FASTCALL mos_init(void)
+BOOL FASTCALL
+mos_init(void)
 {
-    /*
-     * マウスキャプチャを停止する
-     */
-    mos_port = 1;
-    mos_capture = FALSE;
+	/*
+	 * マウスキャプチャを停止する
+	 */
+	mos_port = 1;
+	mos_capture = FALSE;
 
-    return TRUE;
+	return TRUE;
 }
 
 /*
  *      インテリジェントマウス
  *      クリーンアップ
  */
-void FASTCALL mos_cleanup(void)
+void FASTCALL
+mos_cleanup(void)
 {
 }
 
@@ -58,7 +60,8 @@ void FASTCALL mos_cleanup(void)
  *      インテリジェントマウス
  *      リセット
  */
-void  FASTCALL mos_reset(void)
+void FASTCALL
+mos_reset(void)
 {
 	/* ワークエリア初期化 */
 	mos_x = 0;
@@ -71,7 +74,8 @@ void  FASTCALL mos_reset(void)
  *      インテリジェントマウス
  *      タイムアウト処理
  */
-static BOOL FASTCALL mos_timeout(void)
+static BOOL FASTCALL
+mos_timeout(void)
 {
 	/* タイムアウトイベントを削除 */
 	schedule_delevent(EVENT_MOUSE);
@@ -87,7 +91,8 @@ static BOOL FASTCALL mos_timeout(void)
  *      インテリジェントマウス
  *      ストローブ信号処理
  */
-void FASTCALL mos_strobe_signal(BOOL strb)
+void FASTCALL
+mos_strobe_signal(BOOL strb)
 {
 	/* ストローブ信号の状態が変化したかチェック */
 	if (strb != mos_strobe) {
@@ -99,11 +104,11 @@ void FASTCALL mos_strobe_signal(BOOL strb)
 			mospos_request(&mos_x, &mos_y);
 
 			/* タイムアウトイベントの登録 */
-			schedule_setevent(EVENT_MOUSE, 2000 , mos_timeout);
+			schedule_setevent(EVENT_MOUSE, 2000, mos_timeout);
 		}
 
 		/* フェーズカウンタを更新 */
-		mos_phase = (BYTE)((mos_phase + 1) & 0x03);
+		mos_phase = (BYTE) ((mos_phase + 1) & 0x03);
 	}
 }
 
@@ -111,28 +116,29 @@ void FASTCALL mos_strobe_signal(BOOL strb)
  *      インテリジェントマウス
  *      データ読み込み
  */
-BYTE FASTCALL mos_readdata(BYTE trigger)
+BYTE FASTCALL
+mos_readdata(BYTE trigger)
 {
 	BYTE ret;
 
 	/* フェーズカウンタに従ってデータを作成 */
 	switch (mos_phase) {
-		case 1 :	/* Ｘ上位ニブル */
-					ret = (BYTE)((mos_x >> 4) & 0x0f);
-					break;
-		case 2 :	/* Ｘ下位ニブル */
-					ret = (BYTE)(mos_x & 0x0f);
-					break;
-		case 3 :	/* Ｙ上位ニブル */
-					ret = (BYTE)((mos_y >> 4) & 0x0f);
-					break;
-		case 0 :	/* Ｙ下位ニブル */
-					ret = (BYTE)(mos_y & 0x0f);
-					break;
+		case 1:	/* Ｘ上位ニブル */
+			ret = (BYTE) ((mos_x >> 4) & 0x0f);
+			break;
+		case 2:	/* Ｘ下位ニブル */
+			ret = (BYTE) (mos_x & 0x0f);
+			break;
+		case 3:	/* Ｙ上位ニブル */
+			ret = (BYTE) ((mos_y >> 4) & 0x0f);
+			break;
+		case 0:	/* Ｙ下位ニブル */
+			ret = (BYTE) (mos_y & 0x0f);
+			break;
 	}
 
 	/* ボタン押下状態データを合成 */
-	ret |= (BYTE)((mosbtn_request() & (trigger << 4)) & 0x30);
+	ret |= (BYTE) ((mosbtn_request() & (trigger << 4)) & 0x30);
 
 	return ret;
 }
@@ -141,7 +147,8 @@ BYTE FASTCALL mos_readdata(BYTE trigger)
  *      インテリジェントマウス
  *      セーブ
  */
-BOOL FASTCALL mos_save(SDL_RWops *fileh)
+BOOL FASTCALL
+mos_save(SDL_RWops * fileh)
 {
 	if (!file_byte_write(fileh, mos_x)) {
 		return FALSE;
@@ -163,7 +170,8 @@ BOOL FASTCALL mos_save(SDL_RWops *fileh)
  *      インテリジェントマウス
  *      ロード
  */
-BOOL FASTCALL mos_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+mos_load(SDL_RWops * fileh, int ver)
 {
 	/* バージョンチェック */
 	if (ver < 200) {
@@ -200,4 +208,4 @@ BOOL FASTCALL mos_load(SDL_RWops *fileh, int ver)
 	return TRUE;
 }
 
-#endif				/* MOUSE */
+#endif /* MOUSE */

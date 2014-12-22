@@ -11,25 +11,26 @@
  *
  */
 
-void memcpy400l(void *dest, void *src, int count)
+void
+memcpy400l(void *dest, void *src, int count)
 {
-    int             i;
+	int i;
 //    uint16_t         *d = (uint16_t *) dest;
 //    uint16_t         *s = (uint16_t *) src;
 //    for(i = 0; i < count / 2; i++) {
 //        d[i] = s[i];
 //    }
-     uint8_t *d = (uint8_t *)dest;
-     uint8_t *s = (uint8_t *)src;
-   
-     _prefetch_data_read_l2(s, count);
-     _prefetch_data_write_l2(d, count);
-     count >>= 1;
-     while(count){
-	*d = *s;
-	d += 2;
-	s += 2;
-	count--;
-     }
-   
+	uint8_t *d = (uint8_t *) dest;
+	uint8_t *s = (uint8_t *) src;
+
+	_prefetch_data_read_l2(s, count);
+	_prefetch_data_write_l2(d, count);
+	count >>= 1;
+	while (count) {
+		*d = *s;
+		d += 2;
+		s += 2;
+		count--;
+	}
+
 }

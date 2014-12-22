@@ -19,13 +19,14 @@
 /*
  *	グローバル ワーク
  */
-BYTE multi_page;						/* マルチページ ワーク */
+BYTE multi_page;								/* マルチページ ワーク */
 
 /*
  *	マルチページ
  *	初期化
  */
-BOOL FASTCALL multipag_init(void)
+BOOL FASTCALL
+multipag_init(void)
 {
 	return TRUE;
 }
@@ -34,7 +35,8 @@ BOOL FASTCALL multipag_init(void)
  *	マルチページ
  *	クリーンアップ
  */
-void FASTCALL multipag_cleanup(void)
+void FASTCALL
+multipag_cleanup(void)
 {
 }
 
@@ -42,7 +44,8 @@ void FASTCALL multipag_cleanup(void)
  *	マルチページ
  *	リセット
  */
-void FASTCALL multipag_reset(void)
+void FASTCALL
+multipag_reset(void)
 {
 	multi_page = 0;
 }
@@ -51,7 +54,8 @@ void FASTCALL multipag_reset(void)
  *	マルチページ
  *	１バイト読み出し
  */
-BOOL FASTCALL multipag_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+multipag_readb(WORD addr, BYTE * dat)
 {
 #if XM7_VER == 1
 	/* FM-8モードでは無効 */
@@ -73,7 +77,8 @@ BOOL FASTCALL multipag_readb(WORD addr, BYTE *dat)
  *	マルチページ
  *	１バイト書き込み
  */
-BOOL FASTCALL multipag_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+multipag_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER == 1
 	/* FM-8モードでは無効 */
@@ -86,7 +91,7 @@ BOOL FASTCALL multipag_writeb(WORD addr, BYTE dat)
 		return FALSE;
 	}
 
-	if ((BYTE)(multi_page & 0x70) == (BYTE)(dat & 0x70)) {
+	if ((BYTE) (multi_page & 0x70) == (BYTE) (dat & 0x70)) {
 		/* 表示状態に変更がない場合はデータ記憶だけして帰る */
 		multi_page = dat;
 		return TRUE;
@@ -120,22 +125,24 @@ BOOL FASTCALL multipag_writeb(WORD addr, BYTE dat)
  *      マルチページ
  *      セーブ
  */
-BOOL FASTCALL multipag_save(SDL_RWops *fileh)
+BOOL FASTCALL
+multipag_save(SDL_RWops * fileh)
 {
-    return file_byte_write(fileh, multi_page);
+	return file_byte_write(fileh, multi_page);
 }
 
 /*
  *      マルチページ
  *      ロード
  */
-BOOL FASTCALL multipag_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+multipag_load(SDL_RWops * fileh, int ver)
 {
-    /*
-     * バージョンチェック
-     */
-    if (ver < 200) {
-	return FALSE;
-    }
-    return file_byte_read(fileh, &multi_page);
+	/*
+	 * バージョンチェック
+	 */
+	if (ver < 200) {
+		return FALSE;
+	}
+	return file_byte_read(fileh, &multi_page);
 }

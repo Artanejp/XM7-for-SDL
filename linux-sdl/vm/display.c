@@ -36,14 +36,16 @@
  * Moving memory is wrong results, yet.
  */
 #if 0
-static inline void memcpy_200l(void *to, void *from, int size)
+static inline void
+memcpy_200l(void *to, void *from, int size)
 {
-#if 0 /* Workaround of eglibc's memcpy() bug. */
-   int i;
-   uint8_t *p = (uint8_t *)to, *q = (uint8_t *)from;
-   for(i = 0; i < size; i++) *p++ = *q++;
+#if 0	/* Workaround of eglibc's memcpy() bug. */
+	int i;
+	uint8_t *p = (uint8_t *) to, *q = (uint8_t *) from;
+	for (i = 0; i < size; i++)
+		*p++ = *q++;
 #else
-   memmove(to, from, size);
+	memmove(to, from, size);
 #endif
 }
 #else
@@ -52,89 +54,89 @@ static inline void memcpy_200l(void *to, void *from, int size)
 /*
  *	グローバル ワーク
  */
-BOOL crt_flag;							/* CRT ONフラグ */
-BOOL vrama_flag;						/* VRAMアクセスフラグ */
-WORD vram_offset[2];					/* VRAMオフセットレジスタ */
-WORD crtc_offset[2];					/* CRTCオフセット */
+BOOL crt_flag;									/* CRT ONフラグ */
+BOOL vrama_flag;								/* VRAMアクセスフラグ */
+WORD vram_offset[2];						/* VRAMオフセットレジスタ */
+WORD crtc_offset[2];						/* CRTCオフセット */
 BOOL vram_offset_flag;					/* 拡張VRAMオフセットレジスタフラグ */
-BOOL vsync_flag;						/* VSYNCフラグ */
-BOOL draw_aftervsync;					/* 画面描画通知タイミング */
-int now_raster;							/* 現在ラスタ位置 */
+BOOL vsync_flag;								/* VSYNCフラグ */
+BOOL draw_aftervsync;						/* 画面描画通知タイミング */
+int now_raster;									/* 現在ラスタ位置 */
 
-BOOL blank_flag;						/* ブランキングフラグ */
+BOOL blank_flag;								/* ブランキングフラグ */
 #if XM7_VER >= 2
-BOOL subnmi_flag;						/* サブNMIイネーブルフラグ */
+BOOL subnmi_flag;								/* サブNMIイネーブルフラグ */
 
-BYTE vram_active;						/* アクティブページ */
-BYTE *vram_aptr;						/* VRAMアクティプポインタ */
-BYTE vram_display;						/* 表示ページ */
-BYTE *vram_dptr;						/* VRAM表示ポインタ */
+BYTE vram_active;								/* アクティブページ */
+BYTE *vram_aptr;								/* VRAMアクティプポインタ */
+BYTE vram_display;							/* 表示ページ */
+BYTE *vram_dptr;								/* VRAM表示ポインタ */
 #endif
 
 
 #if XM7_VER >= 3
 /* FM77AV40 */
-BYTE screen_mode;						/* 画面モード */
-BYTE subram_vrambank;					/* アクティブページ(400line/26万色) */
+BYTE screen_mode;								/* 画面モード */
+BYTE subram_vrambank;						/* アクティブページ(400line/26万色) */
 
-WORD sub_kanji_addr;					/* 漢字ROMアドレス */
-BOOL sub_kanji_bank;					/* 漢字ROM選択 */
+WORD sub_kanji_addr;						/* 漢字ROMアドレス */
+BOOL sub_kanji_bank;						/* 漢字ROM選択 */
 
 /* FM77AV40EX */
-WORD window_x1, window_dx1;				/* ウィンドウ X1 */
-WORD window_y1, window_dy1;				/* ウィンドウ Y1 */
-WORD window_x2, window_dx2;				/* ウィンドウ X2 */
-WORD window_y2, window_dy2;				/* ウィンドウ Y2 */
-BOOL window_open;						/* ウインドウオープンフラグ */
+WORD window_x1, window_dx1;			/* ウィンドウ X1 */
+WORD window_y1, window_dy1;			/* ウィンドウ Y1 */
+WORD window_x2, window_dx2;			/* ウィンドウ X2 */
+WORD window_y2, window_dy2;			/* ウィンドウ Y2 */
+BOOL window_open;								/* ウインドウオープンフラグ */
 
-BYTE block_active;						/* アクティブブロック */
-BYTE *vram_ablk;						/* アクティブブロックポインタ */
-BYTE block_display;						/* 表示ブロック */
-BYTE *vram_bdptr;						/* 裏表示ブロックポインタ */
-BYTE *vram_dblk;						/* 表示ブロックポインタ2 */
-BYTE *vram_bdblk;						/* 裏表示ブロックポインタ2 */
+BYTE block_active;							/* アクティブブロック */
+BYTE *vram_ablk;								/* アクティブブロックポインタ */
+BYTE block_display;							/* 表示ブロック */
+BYTE *vram_bdptr;								/* 裏表示ブロックポインタ */
+BYTE *vram_dblk;								/* 表示ブロックポインタ2 */
+BYTE *vram_bdblk;								/* 裏表示ブロックポインタ2 */
 #endif
 
 #if XM7_VER == 1 && defined(L4CARD)
-BOOL width40_flag;						/* width flag */
-BOOL cursor_lsb;						/* カーソルアドレスLSB */
-BOOL enable_400line;					/* 400ラインモードフラグ */
-BOOL workram_select;					/* ワークRAMセレクトフラグ */
-WORD sub_kanji_addr;					/* 漢字ROMアドレス */
+BOOL width40_flag;							/* width flag */
+BOOL cursor_lsb;								/* カーソルアドレスLSB */
+BOOL enable_400line;						/* 400ラインモードフラグ */
+BOOL workram_select;						/* ワークRAMセレクトフラグ */
+WORD sub_kanji_addr;						/* 漢字ROMアドレス */
 
 BYTE crtc_register[0x20];				/* CRTCレジスタ */
-BYTE crtc_regnum;						/* CRTCレジスタ番号レジスタ */
+BYTE crtc_regnum;								/* CRTCレジスタ番号レジスタ */
 
-WORD text_start_addr;					/* テキストスタートアドレス */
-WORD cursor_addr;						/* カーソルアドレス */
-BOOL text_blink;						/* テキストブリンク状態 */
-BOOL cursor_blink;						/* カーソルブリンク状態 */
+WORD text_start_addr;						/* テキストスタートアドレス */
+WORD cursor_addr;								/* カーソルアドレス */
+BOOL text_blink;								/* テキストブリンク状態 */
+BOOL cursor_blink;							/* カーソルブリンク状態 */
 #endif
 
 /*
  *	スタティック ワーク
  */
 static BYTE *vram_buf;					/* VRAMスクロールバッファ */
-static BYTE vram_offset_count[2];		/* VRAMオフセット設定カウンタ */
+static BYTE vram_offset_count[2];	/* VRAMオフセット設定カウンタ */
 static WORD blank_count;				/* ブランクカウンタ */
 #if XM7_VER == 1 && defined(L4CARD)
-static DWORD text_scroll_count;			/* TVRAMオフセット設定カウンタ */
-static DWORD text_cursor_count;			/* TVRAMカーソル位置設定カウンタ */
-static BYTE text_blink_count;			/* テキストブリンクカウンタ */
-static BYTE cursor_blink_count;			/* カーソルブリンクカウンタ */
+static DWORD text_scroll_count;	/* TVRAMオフセット設定カウンタ */
+static DWORD text_cursor_count;	/* TVRAMカーソル位置設定カウンタ */
+static BYTE text_blink_count;		/* テキストブリンクカウンタ */
+static BYTE cursor_blink_count;	/* カーソルブリンクカウンタ */
 #endif
 
 /*
  *	プロトタイプ宣言
  */
-static BOOL FASTCALL subcpu_event(void); /* サブCPUタイマイベント */
-static BOOL FASTCALL display_vsync(void);/* VSYNCイベント */
-static BOOL FASTCALL display_blank(void);/* VBLANK,HBLANKイベント */
-static void FASTCALL display_setup(void);/* イベントセットアップ */
-static void FASTCALL vram_scroll(WORD offset);/* VRAMスクロール */
+static BOOL FASTCALL subcpu_event(void);	/* サブCPUタイマイベント */
+static BOOL FASTCALL display_vsync(void);	/* VSYNCイベント */
+static BOOL FASTCALL display_blank(void);	/* VBLANK,HBLANKイベント */
+static void FASTCALL display_setup(void);	/* イベントセットアップ */
+static void FASTCALL vram_scroll(WORD offset);	/* VRAMスクロール */
 #if XM7_VER == 1 && defined(L4CARD)
-static BOOL FASTCALL display_text_blink(void);/* テキストブリンクイベント */
-static BOOL FASTCALL display_cursor_blink(void);/* カーソルブリンクイベント */
+static BOOL FASTCALL display_text_blink(void);	/* テキストブリンクイベント */
+static BOOL FASTCALL display_cursor_blink(void);	/* カーソルブリンクイベント */
 #endif
 
 #if (XM7_VER >= 3) && (defined(_OMF) || defined(_WIN32))
@@ -147,14 +149,14 @@ extern void memcpy400l(BYTE *, BYTE *, int);
  */
 #if XM7_VER >= 3
 const BYTE truecolorbrightness[64] = {
-	  0,	  4,	  8,	 12,	 16,	 20,	 24,	 28,
-	 32,	 36,	 40,	 45,	 49,	 53,	 57,	 61,
-	 65,	 69,	 73,	 77,	 81,	 85,	 89,	 93,
-	 97,	101,	105,	109,	113,	117,	121,	125,
-	130,	134,	138,	142,	146,	150,	154,	158,
-	162,	166,	170,	174,	178,	182,	186,	190,
-	194,	198,	202,	206,	210,	215,	219,	223,
-	227,	231,	235,	239,	243,	247,	251,	255,
+	0, 4, 8, 12, 16, 20, 24, 28,
+	32, 36, 40, 45, 49, 53, 57, 61,
+	65, 69, 73, 77, 81, 85, 89, 93,
+	97, 101, 105, 109, 113, 117, 121, 125,
+	130, 134, 138, 142, 146, 150, 154, 158,
+	162, 166, 170, 174, 178, 182, 186, 190,
+	194, 198, 202, 206, 210, 215, 219, 223,
+	227, 231, 235, 239, 243, 247, 251, 255,
 };
 #endif
 
@@ -163,13 +165,14 @@ const BYTE truecolorbrightness[64] = {
  *	ディスプレイ
  *	初期化
  */
-BOOL FASTCALL display_init(void)
+BOOL FASTCALL
+display_init(void)
 {
 	/* VRAMスクロール用バッファを確保 */
 #if XM7_VER >= 3 || (XM7_VER == 1 && defined(L4CARD))
-	vram_buf = (BYTE *)malloc(0x8000);
+	vram_buf = (BYTE *) malloc(0x8000);
 #else
-	vram_buf = (BYTE *)malloc(0x4000);
+	vram_buf = (BYTE *) malloc(0x4000);
 #endif
 	if (vram_buf == NULL) {
 		return FALSE;
@@ -193,7 +196,8 @@ BOOL FASTCALL display_init(void)
  *	ディスプレイ
  *	クリーンアップ
  */
-void FASTCALL display_cleanup(void)
+void FASTCALL
+display_cleanup(void)
 {
 	ASSERT(vram_buf);
 	if (vram_buf) {
@@ -205,7 +209,8 @@ void FASTCALL display_cleanup(void)
  *	ディスプレイ
  *	リセット
  */
-void FASTCALL display_reset(void)
+void FASTCALL
+display_reset(void)
 {
 #if XM7_VER >= 2
 	int i;
@@ -213,11 +218,11 @@ void FASTCALL display_reset(void)
 
 	/* リセット時のスクロール位置補正 */
 #if XM7_VER >= 2
-	for (i=0; i<2; i++) {
-		vram_scroll((WORD)-crtc_offset[i]);
+	for (i = 0; i < 2; i++) {
+		vram_scroll((WORD) - crtc_offset[i]);
 	}
 #else
-	vram_scroll((WORD)-crtc_offset[0]);
+	vram_scroll((WORD) - crtc_offset[0]);
 #endif
 
 	/* CRTレジスタ */
@@ -261,8 +266,8 @@ void FASTCALL display_reset(void)
 	/* サブ側漢字ROM初期化 */
 	sub_kanji_addr = 0;
 	sub_kanji_bank = FALSE;
-#endif	/* XM7_VER >= 3 */
-#endif	/* XM7_VER >= 2 */
+#endif /* XM7_VER >= 3 */
+#endif /* XM7_VER >= 2 */
 
 #if XM7_VER == 1 && defined(L4CARD)
 	/* 割り込み、イベント */
@@ -289,7 +294,7 @@ void FASTCALL display_reset(void)
 
 	/* 400ラインモード時はテキストブリンクイベントを追加 */
 	if (enable_400line && enable_400linecard) {
-		schedule_setevent(EVENT_TEXT_BLINK, 160*1000, display_text_blink);
+		schedule_setevent(EVENT_TEXT_BLINK, 160 * 1000, display_text_blink);
 	}
 	else {
 		schedule_delevent(EVENT_TEXT_BLINK);
@@ -307,7 +312,8 @@ void FASTCALL display_reset(void)
 /*
  *	テキストブリンクイベント
  */
-static BOOL FASTCALL display_text_blink(void)
+static BOOL FASTCALL
+display_text_blink(void)
 {
 	WORD addr;
 	WORD ofsaddr;
@@ -319,13 +325,13 @@ static BOOL FASTCALL display_text_blink(void)
 	}
 
 	/* テキストブリンク (320ms) */
-	if (text_blink_count ++ >= 2) {
+	if (text_blink_count++ >= 2) {
 		/* ブリンク状態を反転 */
 		text_blink = (!text_blink);
 
 		/* ブリンクキャラクタを検索 */
-		for (addr = 0; addr < 4000; addr += (WORD)2) {
-			ofsaddr = (WORD)((addr + text_start_addr) & 0xFFE);
+		for (addr = 0; addr < 4000; addr += (WORD) 2) {
+			ofsaddr = (WORD) ((addr + text_start_addr) & 0xFFE);
 			if (tvram_c[ofsaddr + 1] & 0x10) {
 				tvram_notify(ofsaddr, 0);
 			}
@@ -357,7 +363,8 @@ static BOOL FASTCALL display_text_blink(void)
 /*
  *	VSYNCイベント
  */
-static BOOL FASTCALL display_vsync(void)
+static BOOL FASTCALL
+display_vsync(void)
 {
 	if (!vsync_flag) {
 		if ((blank_count & 0xfff) > 0) {
@@ -390,7 +397,7 @@ static BOOL FASTCALL display_vsync(void)
 			}
 		}
 #else
-		blank_count ++;
+		blank_count++;
 #endif
 	}
 	else {
@@ -424,7 +431,8 @@ static BOOL FASTCALL display_vsync(void)
 /*
  *	VBLANK,HBLANKイベント
  */
-static BOOL FASTCALL display_blank(void)
+static BOOL FASTCALL
+display_blank(void)
 {
 	if ((blank_count & 0xfff) == 0) {
 		if (blank_flag) {
@@ -469,7 +477,7 @@ static BOOL FASTCALL display_blank(void)
 	else {
 		/* これから水平同期期間 */
 		hblank_notify();
-		now_raster ++;
+		now_raster++;
 		blank_flag = TRUE;
 #if (XM7_VER >= 3) || (XM7_VER == 1 && defined(L4CARD))
 		if (blank_count & 0x1000) {
@@ -492,7 +500,8 @@ static BOOL FASTCALL display_blank(void)
 /*
  *	イベントセットアップ
  */
-static void FASTCALL display_setup(void)
+static void FASTCALL
+display_setup(void)
 {
 #if (XM7_VER >= 3) || (XM7_VER == 1 && defined(L4CARD))
 	/* 200ライン,400ラインの判別 */
@@ -530,7 +539,8 @@ static void FASTCALL display_setup(void)
  *	サブCPU
  *	イベント処理
  */
-static BOOL FASTCALL subcpu_event(void)
+static BOOL FASTCALL
+subcpu_event(void)
 {
 #if XM7_VER >= 2
 	/* 念のため、チェック */
@@ -547,7 +557,8 @@ static BOOL FASTCALL subcpu_event(void)
 /*
  *	ポインタ再設定
  */
-void FASTCALL display_setpointer(BOOL redraw)
+void FASTCALL
+display_setpointer(BOOL redraw)
 {
 #if XM7_VER >= 3
 	/* 画面モード番号 */
@@ -571,29 +582,32 @@ void FASTCALL display_setpointer(BOOL redraw)
 #if XM7_VER >= 3
 	vram_ablk = vram_c;
 	switch (screen_mode) {
-		case SCR_400LINE	:	/* 640x400 8色 */
-								vram_aptr += (subram_vrambank * 0x8000);
-								if (block_active) {
-									vram_aptr += 0x18000;
-									vram_ablk += 0x18000;
-								}
-								break;
-		case SCR_262144		:	/* 320x200 262144色 */
-								switch (subram_vrambank) {
-									case	0	: break;
-									case	1	: vram_aptr += 0x4000;
-												  break;
-									case	2	: vram_aptr += 0x18000;
-												  break;
-								}
-								break;
-		default				:	/* 640x200か、320x200 4096色 */
-								if (vram_active) {
-									vram_aptr += 0x4000;
-								}
-								if (block_active) {
-									vram_aptr += 0x18000;
-								}
+		case SCR_400LINE:	/* 640x400 8色 */
+			vram_aptr += (subram_vrambank * 0x8000);
+			if (block_active) {
+				vram_aptr += 0x18000;
+				vram_ablk += 0x18000;
+			}
+			break;
+		case SCR_262144:	/* 320x200 262144色 */
+			switch (subram_vrambank) {
+				case 0:
+					break;
+				case 1:
+					vram_aptr += 0x4000;
+					break;
+				case 2:
+					vram_aptr += 0x18000;
+					break;
+			}
+			break;
+		default:	/* 640x200か、320x200 4096色 */
+			if (vram_active) {
+				vram_aptr += 0x4000;
+			}
+			if (block_active) {
+				vram_aptr += 0x18000;
+			}
 	}
 #else
 	if (vram_active) {
@@ -622,8 +636,8 @@ void FASTCALL display_setpointer(BOOL redraw)
 	if (!mode320 && vram_display) {
 		vram_dptr += 0xc000;
 	}
-#endif	/* XM7_VER >= 3 */
-#endif	/* XM7_VER >= 2 */
+#endif /* XM7_VER >= 3 */
+#endif /* XM7_VER >= 2 */
 
 	/* 必要なら再描画 */
 	if (redraw) {
@@ -636,7 +650,8 @@ void FASTCALL display_setpointer(BOOL redraw)
  *	オープンチェック・書き換え範囲決定
  */
 #if XM7_VER >= 3
-static void FASTCALL check_window_open(void)
+static void FASTCALL
+check_window_open(void)
 {
 	/* Xs<Xe and Ys<Ye であれば、ウィンドウオープン */
 	if ((window_x1 < window_x2) && (window_y1 < window_y2)) {
@@ -658,7 +673,8 @@ static void FASTCALL check_window_open(void)
  *	ハードウェアウインドウ
  *	クリッピング
  */
-void FASTCALL window_clip(int mode)
+void FASTCALL
+window_clip(int mode)
 {
 	static const WORD max_x[4] = { 640, 320, 640, 320 };
 	static const WORD max_y[4] = { 200, 200, 400, 200 };
@@ -691,14 +707,15 @@ void FASTCALL window_clip(int mode)
  *	4096色/262144色モード用 VRAMスクロール
  */
 #if XM7_VER >= 2
-static void FASTCALL vram_scroll_analog(WORD offset, DWORD addr)
+static void FASTCALL
+vram_scroll_analog(WORD offset, DWORD addr)
 {
 	int i;
 	BYTE *vram;
 
 #if XM7_VER >= 3
-	for (i=0; i<3; i++) {
-		vram = (BYTE *)((vram_c + addr) + 0x8000 * i);
+	for (i = 0; i < 3; i++) {
+		vram = (BYTE *) ((vram_c + addr) + 0x8000 * i);
 
 		/* テンポラリバッファへコピー */
 		memcpy_200l(vram_buf, vram, offset);
@@ -712,8 +729,8 @@ static void FASTCALL vram_scroll_analog(WORD offset, DWORD addr)
 		memcpy_200l(vram + (0x4000 - offset), &vram_buf[0x2000], offset);
 	}
 #else
-	for (i=0; i<6; i++) {
-		vram = (BYTE *)((vram_c + addr) + 0x2000 * i);
+	for (i = 0; i < 6; i++) {
+		vram = (BYTE *) ((vram_c + addr) + 0x2000 * i);
 
 		/* テンポラリバッファへコピー */
 		memcpy_200l(vram_buf, vram, offset);
@@ -732,14 +749,15 @@ static void FASTCALL vram_scroll_analog(WORD offset, DWORD addr)
  *	400ラインモードVRAMスクロール用メモリ転送 (C版)
  */
 #if (XM7_VER >= 3) && (!(defined(_OMF) || defined(_WIN32)))
-static void FASTCALL memcpy400l(BYTE *dest, BYTE *src, WORD siz)
+static void FASTCALL
+memcpy400l(BYTE * dest, BYTE * src, WORD siz)
 {
 	siz >>= 1;
 	while (siz) {
 		*dest = *src;
 		src += 2;
 		dest += 2;
-		siz --;
+		siz--;
 	}
 }
 #endif
@@ -747,7 +765,8 @@ static void FASTCALL memcpy400l(BYTE *dest, BYTE *src, WORD siz)
 /*
  *	VRAMスクロール
  */
-static void FASTCALL vram_scroll(WORD offset)
+static void FASTCALL
+vram_scroll(WORD offset)
 {
 	int i;
 	BYTE *vram;
@@ -765,8 +784,8 @@ static void FASTCALL vram_scroll(WORD offset)
 		offset <<= 1;
 
 		/* ループ */
-		for (i=0; i<3; i++) {
-			vram = (BYTE *)(vram_c + 0x8000 * i + vram_active);
+		for (i = 0; i < 3; i++) {
+			vram = (BYTE *) (vram_c + 0x8000 * i + vram_active);
 
 			/* テンポラリバッファへコピー */
 			memcpy400l(vram_buf, vram, offset);
@@ -810,7 +829,7 @@ static void FASTCALL vram_scroll(WORD offset)
 
 		return;
 	}
-#endif	/* XM7_VER >= 2 */
+#endif /* XM7_VER >= 2 */
 
 #if XM7_VER == 1 && defined(L4CARD)
 	if (enable_400line && enable_400linecard) {
@@ -824,19 +843,19 @@ static void FASTCALL vram_scroll(WORD offset)
 	offset &= 0x3fff;
 
 	/* ループ */
-	for (i=0; i<3; i++) {
+	for (i = 0; i < 3; i++) {
 #if XM7_VER >= 3
-		vram = (BYTE *)(vram_c + 0x8000 * i);
+		vram = (BYTE *) (vram_c + 0x8000 * i);
 		if (vram_active) {
 			vram += 0x4000;
 		}
 #elif XM7_VER >= 2
-		vram = (BYTE *)(vram_c + 0x4000 * i);
+		vram = (BYTE *) (vram_c + 0x4000 * i);
 		if (vram_active) {
 			vram += 0xc000;
 		}
 #else
-		vram = (BYTE *)(vram_c + 0x4000 * i);
+		vram = (BYTE *) (vram_c + 0x4000 * i);
 #endif
 
 		/* テンポラリバッファへコピー */
@@ -854,11 +873,12 @@ static void FASTCALL vram_scroll(WORD offset)
  *	400ラインモード用VRAM配置補正
  */
 #if XM7_VER >= 3
-BOOL FASTCALL fix_vram_address(void)
+BOOL FASTCALL
+fix_vram_address(void)
 {
-	DWORD	i;
+	DWORD i;
 
-	for (i=0; i<0x30000; i+=0x18000) {
+	for (i = 0; i < 0x30000; i += 0x18000) {
 		memcpy_200l(&vram_buf[0x00000], &vram_c[0x04000 + i], 0x4000);
 		memcpy_200l(&vram_buf[0x04000], &vram_c[0x10000 + i], 0x4000);
 		memcpy_200l(&vram_c[0x04000 + i], &vram_c[0x08000 + i], 0x4000);
@@ -875,18 +895,19 @@ BOOL FASTCALL fix_vram_address(void)
 /*
  *	カーソル 位置・ブリンク速度再設定
  */
-void FASTCALL cursor_setup(void)
+void FASTCALL
+cursor_setup(void)
 {
 	WORD cursor_addr_old;
 
 	/* カーソル移動 */
 	cursor_addr_old = cursor_addr;
-	cursor_addr  = (WORD)(crtc_register[14] << 10);
-	cursor_addr |= (WORD)(crtc_register[15] << 2);
+	cursor_addr = (WORD) (crtc_register[14] << 10);
+	cursor_addr |= (WORD) (crtc_register[15] << 2);
 	if (cursor_lsb) {
-		cursor_addr += (WORD)2;
+		cursor_addr += (WORD) 2;
 	}
-	cursor_addr &= (WORD)0xFFF;
+	cursor_addr &= (WORD) 0xFFF;
 
 	/* 旧カーソル座標と新カーソル座標をそれぞれ再描画 */
 	tvram_notify(cursor_addr_old, 0);
@@ -896,7 +917,8 @@ void FASTCALL cursor_setup(void)
 /*
  *	CRTC(HD6845) １バイト読み込み
  */
-static BYTE FASTCALL crtc_readb(BYTE reg)
+static BYTE FASTCALL
+crtc_readb(BYTE reg)
 {
 	if ((reg >= 0x0c) && (reg <= 0x11)) {
 		/* 0x0c～0x11は記憶している値を返す */
@@ -911,42 +933,43 @@ static BYTE FASTCALL crtc_readb(BYTE reg)
 /*
  *	CRTC(HD6845) １バイト書き込み
  */
-static void FASTCALL crtc_writeb(BYTE reg, BYTE dat)
+static void FASTCALL
+crtc_writeb(BYTE reg, BYTE dat)
 {
 	/* 書き込んだ値を保存 */
 	crtc_register[reg] = dat;
 
 	switch (reg) {
-		/* カーソルサイズ */
-		case 0x0a :
-		case 0x0b :
+			/* カーソルサイズ */
+		case 0x0a:
+		case 0x0b:
 			cursor_setup();
 			break;
 
-		/* テキストスタートアドレス(上位) */
-		case 0x0c :
+			/* テキストスタートアドレス(上位) */
+		case 0x0c:
 			text_start_addr &= 0x03FC;
-			text_start_addr |= (WORD)((dat & 0x03) << 10);
-			text_scroll_count ++;
+			text_start_addr |= (WORD) ((dat & 0x03) << 10);
+			text_scroll_count++;
 			if ((text_scroll_count & 1) == 0) {
 				tvram_redraw_notify();
 			}
 			break;
 
-		/* テキストスタートアドレス(下位) */
-		case 0x0d :
+			/* テキストスタートアドレス(下位) */
+		case 0x0d:
 			text_start_addr &= 0xFC00;
-			text_start_addr |= (WORD)(dat << 2);
-			text_scroll_count ++;
+			text_start_addr |= (WORD) (dat << 2);
+			text_scroll_count++;
 			if ((text_scroll_count & 1) == 0) {
 				tvram_redraw_notify();
 			}
 			break;
 
-		/* カーソルアドレス */
-		case 0x0e :
-		case 0x0f :
-			text_cursor_count ++;
+			/* カーソルアドレス */
+		case 0x0e:
+		case 0x0f:
+			text_cursor_count++;
 			if ((text_cursor_count & 1) == 0) {
 				cursor_setup();
 			}
@@ -960,23 +983,24 @@ static void FASTCALL crtc_writeb(BYTE reg, BYTE dat)
  *	１バイト読み込み
  *	※メイン－サブインタフェース信号線を含む
  */
-BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+display_readb(WORD addr, BYTE * dat)
 {
 	BYTE ret;
 #if XM7_VER >= 3 || (XM7_VER == 1 && defined(L4CARD))
 	int offset;
-#endif	/* XM7_VER >= 3 */
+#endif /* XM7_VER >= 3 */
 
 	switch (addr) {
-		/* キャンセルIRQ ACK */
-		case 0xd402: 
+			/* キャンセルIRQ ACK */
+		case 0xd402:
 			subcancel_flag = FALSE;
 			subcancel_request = FALSE;
 			subcpu_irq();
 			*dat = 0xff;
 			return TRUE;
 
-		/* BEEP */
+			/* BEEP */
 		case 0xd403:
 			beep_flag = TRUE;
 			schedule_setevent(EVENT_BEEP, 205000, mainetc_beep);
@@ -985,7 +1009,7 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			beep_notify();
 			return TRUE;
 
-		/* アテンションIRQ ON */
+			/* アテンションIRQ ON */
 		case 0xd404:
 			subattn_flag = TRUE;
 			*dat = 0xff;
@@ -993,7 +1017,7 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			return TRUE;
 
 #if XM7_VER == 1 && defined(L4CARD)
-		/* サブモードレジスタ */
+			/* サブモードレジスタ */
 		case 0xd405:
 			/* FM-77モードのみ有効 */
 			if (fm_subtype != FMSUB_FM77) {
@@ -1006,12 +1030,12 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			if (enable_400linecard) {
 				/* ブランキング */
 				if (blank_flag) {
-					ret &= (BYTE)~0x80;
+					ret &= (BYTE) ~ 0x80;
 				}
 
 				/* VSYNC */
 				if (!vsync_flag) {
-					ret &= (BYTE)~0x40;
+					ret &= (BYTE) ~ 0x40;
 				}
 
 				/* ライン数 */
@@ -1021,17 +1045,17 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 
 				/* CURSOR LSB */
 				if (!cursor_lsb) {
-					ret &= (BYTE)~0x10;
+					ret &= (BYTE) ~ 0x10;
 				}
 
 				/* WIDTH */
 				if (width40_flag) {
-					ret &= (BYTE)~0x08;
+					ret &= (BYTE) ~ 0x08;
 				}
 
 				/* ワークRAM選択 */
 				if (!workram_select) {
-					ret &= (BYTE)~0x04;
+					ret &= (BYTE) ~ 0x04;
 				}
 
 				/* 400ラインモード */
@@ -1051,9 +1075,9 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 #endif
 
 #if XM7_VER >= 3 || (XM7_VER == 1 && defined(L4CARD))
-		/* サブ漢字ROM */
-		case 0xd406:		/* サブ漢字LEFT */
-		case 0xd407:		/* サブ漢字RIGHT */
+			/* サブ漢字ROM */
+		case 0xd406:	/* サブ漢字LEFT */
+		case 0xd407:	/* サブ漢字RIGHT */
 #if XM7_VER >= 3
 			if ((fm7_ver >= 3) && subkanji_flag) {
 				/* アドレスはワード単位で、8bitのみ取得 */
@@ -1074,10 +1098,9 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			if (subkanji_flag) {
 				/* アドレスはワード単位で、8bitのみ取得 */
 				offset = sub_kanji_addr << 1;
-				if ((offset >= 0x6000) && (offset < 0x8000) &&
-					 !kanji_asis_flag) {
+				if ((offset >= 0x6000) && (offset < 0x8000) && !kanji_asis_flag) {
 					/* FM-7モード時の$6000～$7FFFは未定義領域 */
-					*dat = (BYTE)(addr & 1);
+					*dat = (BYTE) (addr & 1);
 				}
 				else {
 					/* 通常領域 */
@@ -1091,7 +1114,7 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			return TRUE;
 #endif
 
-		/* CRT ON */
+			/* CRT ON */
 		case 0xd408:
 			if (!crt_flag) {
 				crt_flag = TRUE;
@@ -1101,20 +1124,20 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			*dat = 0xff;
 			return TRUE;
 
-		/* VRAMアクセス ON */
+			/* VRAMアクセス ON */
 		case 0xd409:
 			vrama_flag = TRUE;
 			*dat = 0xff;
 			return TRUE;
 
-		/* BUSYフラグ OFF */
+			/* BUSYフラグ OFF */
 		case 0xd40a:
 			subbusy_flag = FALSE;
 			*dat = 0xff;
 			return TRUE;
 
 #if XM7_VER == 1 && defined(L4CARD)
-		/* CRTCアドレスレジスタ(400LINE CARD) */
+			/* CRTCアドレスレジスタ(400LINE CARD) */
 		case 0xd40b:
 			/* FM-77モードのみ有効 */
 			if (fm_subtype != FMSUB_FM77) {
@@ -1122,14 +1145,14 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			}
 
 			if (enable_400linecard) {
-				*dat = (BYTE)(crtc_regnum & 0x1f);
+				*dat = (BYTE) (crtc_regnum & 0x1f);
 			}
 			else {
 				*dat = 0xff;
 			}
 			return TRUE;
 
-		/* CRTCデータレジスタ(400LINE CARD) */
+			/* CRTCデータレジスタ(400LINE CARD) */
 		case 0xd40c:
 			/* FM-77モードのみ有効 */
 			if (fm_subtype != FMSUB_FM77) {
@@ -1137,7 +1160,7 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 			}
 
 			if (enable_400linecard) {
-				*dat = (BYTE)crtc_readb(crtc_regnum);
+				*dat = (BYTE) crtc_readb(crtc_regnum);
 			}
 			else {
 				*dat = 0xff;
@@ -1146,16 +1169,16 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 #endif
 
 #if XM7_VER >= 3
-		/* FM77AV40 サブRAMバンクセレクト/サブ漢字ROMセレクト */
+			/* FM77AV40 サブRAMバンクセレクト/サブ漢字ROMセレクト */
 		case 0xd42e:
 			/* fm7_verに関わらず、読み出し出来ない */
 			*dat = 0xff;
 			return TRUE;
 
-		/* FM77AV40 400ライン/26万色用VRAMバンクセレクト */
+			/* FM77AV40 400ライン/26万色用VRAMバンクセレクト */
 		case 0xd42f:
 			if (fm7_ver >= 3) {
-				*dat = (BYTE)(0xfc | (subram_vrambank & 3));
+				*dat = (BYTE) (0xfc | (subram_vrambank & 3));
 			}
 			else {
 				*dat = 0xff;
@@ -1164,19 +1187,19 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 #endif
 
 #if XM7_VER >= 2
-		/* FM77AV MISCレジスタ */
+			/* FM77AV MISCレジスタ */
 		case 0xd430:
 			if (fm7_ver >= 2) {
 				ret = 0xff;
 
 				/* ブランキング */
 				if (blank_flag) {
-					ret &= (BYTE)~0x80;
+					ret &= (BYTE) ~ 0x80;
 				}
 
 				/* 直線補間 */
 				if (line_busy) {
-					ret &= (BYTE)~0x10;
+					ret &= (BYTE) ~ 0x10;
 					/* LINE BOOST時は一回だけBUSYを見せる */
 					if (line_boost) {
 						line_busy = FALSE;
@@ -1186,12 +1209,12 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
 
 				/* VSYNC */
 				if (!vsync_flag) {
-					ret &= (BYTE)~0x04;
+					ret &= (BYTE) ~ 0x04;
 				}
 
 				/* サブRESETステータス */
 				if (!subreset_flag) {
-					ret &= (BYTE)~0x01;
+					ret &= (BYTE) ~ 0x01;
 				}
 
 				*dat = ret;
@@ -1210,7 +1233,8 @@ BOOL FASTCALL display_readb(WORD addr, BYTE *dat)
  *	１バイト書き込み
  *	※メイン－サブインタフェース信号線を含む
  */
-BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+display_writeb(WORD addr, BYTE dat)
 {
 	WORD offset;
 #if XM7_VER >= 2
@@ -1219,7 +1243,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 
 	switch (addr) {
 #if XM7_VER == 1 && defined(L4CARD)
-		/* サブモードレジスタ */
+			/* サブモードレジスタ */
 		case 0xd405:
 			/* FM-77モードのみ有効 */
 			if (fm_subtype != FMSUB_FM77) {
@@ -1285,12 +1309,12 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 #endif
 
 #if XM7_VER >= 3 || (XM7_VER == 1 && defined(L4CARD))
-		/* サブ漢字ROM アドレス上位 */
+			/* サブ漢字ROM アドレス上位 */
 		case 0xd406:
 #if XM7_VER >= 3
 			if (fm7_ver >= 3) {
-				sub_kanji_addr &= (WORD)0x00ff;
-				sub_kanji_addr |= (WORD)(dat << 8);
+				sub_kanji_addr &= (WORD) 0x00ff;
+				sub_kanji_addr |= (WORD) (dat << 8);
 			}
 #else
 			/* FM-77モードのみ有効 */
@@ -1298,17 +1322,17 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 				return FALSE;
 			}
 
-			sub_kanji_addr &= (WORD)0x00ff;
-			sub_kanji_addr |= (WORD)(dat << 8);
+			sub_kanji_addr &= (WORD) 0x00ff;
+			sub_kanji_addr |= (WORD) (dat << 8);
 #endif
 			return TRUE;
 
-		/* サブ漢字ROM アドレス下位 */
+			/* サブ漢字ROM アドレス下位 */
 		case 0xd407:
 #if XM7_VER >= 3
 			if (fm7_ver >= 3) {
-				sub_kanji_addr &= (WORD)0xff00;
-				sub_kanji_addr |= (WORD)dat;
+				sub_kanji_addr &= (WORD) 0xff00;
+				sub_kanji_addr |= (WORD) dat;
 			}
 #else
 			/* FM-77モードのみ有効 */
@@ -1316,13 +1340,13 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 				return FALSE;
 			}
 
-			sub_kanji_addr &= (WORD)0xff00;
-			sub_kanji_addr |= (WORD)dat;
+			sub_kanji_addr &= (WORD) 0xff00;
+			sub_kanji_addr |= (WORD) dat;
 #endif
 			return TRUE;
 #endif
 
-		/* CRT OFF */
+			/* CRT OFF */
 		case 0xd408:
 			if (crt_flag) {
 				/* CRT ON→OFF */
@@ -1332,17 +1356,15 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			crt_flag = FALSE;
 			return TRUE;
 
-		/* VRAMアクセス OFF */
+			/* VRAMアクセス OFF */
 		case 0xd409:
 			vrama_flag = FALSE;
 			return TRUE;
 
-		/* BUSYフラグ ON */
+			/* BUSYフラグ ON */
 		case 0xd40a:
 			/* CLR命令チェック */
-			if ((fetch_op == 0x0f) ||
-				(fetch_op == 0x6f) ||
-				(fetch_op == 0x7f)) {
+			if ((fetch_op == 0x0f) || (fetch_op == 0x6f) || (fetch_op == 0x7f)) {
 				if (fetch_op == 0x0f) {
 					busy_CLR_count = 1;
 				}
@@ -1357,7 +1379,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			return TRUE;
 
 #if XM7_VER == 1 && defined(L4CARD)
-		/* CRTCアドレスレジスタ(400LINE CARD) */
+			/* CRTCアドレスレジスタ(400LINE CARD) */
 		case 0xd40b:
 			/* FM-77モードのみ有効 */
 			if (fm_subtype != FMSUB_FM77) {
@@ -1365,11 +1387,11 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			}
 
 			if (enable_400linecard) {
-				crtc_regnum = (BYTE)(dat & 0x1f);
+				crtc_regnum = (BYTE) (dat & 0x1f);
 			}
 			return TRUE;
 
-		/* CRTCデータレジスタ(400LINE CARD) */
+			/* CRTCデータレジスタ(400LINE CARD) */
 		case 0xd40c:
 			/* FM-77モードのみ有効 */
 			if (fm_subtype != FMSUB_FM77) {
@@ -1382,7 +1404,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			return TRUE;
 #endif
 
-		/* VRAMオフセットアドレス */
+			/* VRAMオフセットアドレス */
 		case 0xd40e:
 		case 0xd40f:
 			if (addr == 0xd40e) {
@@ -1390,19 +1412,19 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 #if XM7_VER == 1 && defined(L4CARD)
 				/* 画面モードによって有効ビット数が変化する */
 				if (enable_400line && enable_400linecard) {
-					offset = (WORD)(dat & 0x7f);
+					offset = (WORD) (dat & 0x7f);
 				}
 				else {
-					offset = (WORD)(dat & 0x3f);
+					offset = (WORD) (dat & 0x3f);
 				}
 #else
-				offset = (WORD)(dat & 0x3f);
+				offset = (WORD) (dat & 0x3f);
 #endif
 				offset <<= 8;
 #if XM7_VER >= 2
-				offset |= (WORD)(vram_offset[vram_active] & 0xff);
+				offset |= (WORD) (vram_offset[vram_active] & 0xff);
 #else
-				offset |= (WORD)(vram_offset[0] & 0xff);
+				offset |= (WORD) (vram_offset[0] & 0xff);
 #endif
 			}
 			else {
@@ -1412,22 +1434,22 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 				if (!vram_offset_flag) {
 					dat &= 0xe0;
 				}
-				offset = (WORD)(vram_offset[vram_active] & 0x3f00);
-				offset |= (WORD)dat;
+				offset = (WORD) (vram_offset[vram_active] & 0x3f00);
+				offset |= (WORD) dat;
 #else
 #if XM7_VER == 1 && defined(L4CARD)
 				/* 画面モードによって有効ビット数が変化する */
 				if (enable_400line && enable_400linecard) {
-					offset = (WORD)(vram_offset[0] & 0x7f00);
-					offset |= (WORD)(dat & 0xfe);
+					offset = (WORD) (vram_offset[0] & 0x7f00);
+					offset |= (WORD) (dat & 0xfe);
 				}
 				else {
-					offset = (WORD)(vram_offset[0] & 0x3f00);
-					offset |= (WORD)(dat & 0xe0);
+					offset = (WORD) (vram_offset[0] & 0x3f00);
+					offset |= (WORD) (dat & 0xe0);
 				}
 #else
-				offset = (WORD)(vram_offset[0] & 0x3f00);
-				offset |= (WORD)(dat & 0xe0);
+				offset = (WORD) (vram_offset[0] & 0x3f00);
+				offset |= (WORD) (dat & 0xe0);
 #endif
 #endif
 			}
@@ -1437,8 +1459,8 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			/* カウントアップ、スクロール */
 			vram_offset_count[vram_active]++;
 			if ((vram_offset_count[vram_active] & 1) == 0) {
-				vram_scroll((WORD)(vram_offset[vram_active] -
-									crtc_offset[vram_active]));
+				vram_scroll((WORD) (vram_offset[vram_active] -
+														crtc_offset[vram_active]));
 				crtc_offset[vram_active] = vram_offset[vram_active];
 				display_notify();
 			}
@@ -1447,7 +1469,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			/* カウントアップ、スクロール */
 			vram_offset_count[0]++;
 			if ((vram_offset_count[0] & 1) == 0) {
-				vram_scroll((WORD)(vram_offset[0] - crtc_offset[0]));
+				vram_scroll((WORD) (vram_offset[0] - crtc_offset[0]));
 				crtc_offset[0] = vram_offset[0];
 				display_notify();
 			}
@@ -1455,14 +1477,14 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			return TRUE;
 
 #if XM7_VER >= 3
-		/* FM77AV40 サブRAMバンクセレクト/サブ漢字ROMセレクト */
+			/* FM77AV40 サブRAMバンクセレクト/サブ漢字ROMセレクト */
 		case 0xd42e:
 			if (fm7_ver >= 3) {
 				/* bit0-2:CGRAMバンクセレクト */
-				cgram_bank = (BYTE)(dat & 0x07);
+				cgram_bank = (BYTE) (dat & 0x07);
 
 				/* bit3,4:コンソールRAMバンクセレクト */
-				consram_bank = (BYTE)((dat >> 3) & 0x03);
+				consram_bank = (BYTE) ((dat >> 3) & 0x03);
 				if (consram_bank == 3) {
 					/* バンク3は存在しない */
 					ASSERT(FALSE);
@@ -1481,10 +1503,10 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			}
 			return TRUE;
 
-		/* FM77AV40 400ライン/26万色用VRAMバンクセレクト */
+			/* FM77AV40 400ライン/26万色用VRAMバンクセレクト */
 		case 0xd42f:
 			if (fm7_ver >= 3) {
-				subram_vrambank = (BYTE)(dat & 0x03);
+				subram_vrambank = (BYTE) (dat & 0x03);
 				if (subram_vrambank == 3) {
 					/* バンク3は存在しない */
 					ASSERT(FALSE);
@@ -1498,7 +1520,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 #endif
 
 #if XM7_VER >= 2
-		/* FM77AV MISCレジスタ */
+			/* FM77AV MISCレジスタ */
 		case 0xd430:
 			if (fm7_ver >= 2) {
 				redraw_flag = FALSE;
@@ -1561,7 +1583,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 				}
 
 				/* CGROMバンク */
-				cgrom_bank = (BYTE)(dat & 0x03);
+				cgrom_bank = (BYTE) (dat & 0x03);
 
 				/* ポインタ再構成・画面再描画 */
 				display_setpointer(redraw_flag);
@@ -1571,7 +1593,7 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 #endif
 
 #if XM7_VER >= 3
-		/* FM77AV40EX VRAMブロックセレクト */
+			/* FM77AV40EX VRAMブロックセレクト */
 		case 0xd433:
 			if (fm7_ver >= 3) {
 				redraw_flag = FALSE;
@@ -1607,54 +1629,54 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 			}
 			return TRUE;
 
-		/* FM77AV40EX ハードウェアウィンドウ */
-		case 0xd438:			/* Xウィンドウスタートアドレス(上位) */
-		case 0xd439:			/* Xウィンドウスタートアドレス(下位) */
-		case 0xd43a:			/* Xウィンドウエンドアドレス(上位) */
-		case 0xd43b:			/* Xウィンドウエンドアドレス(下位) */
-		case 0xd43c:			/* Yウィンドウスタートアドレス(上位) */
-		case 0xd43d:			/* Yウィンドウスタートアドレス(下位) */
-		case 0xd43e:			/* Yウィンドウエンドアドレス(上位) */
-		case 0xd43f:			/* Yウィンドウエンドアドレス(下位) */
+			/* FM77AV40EX ハードウェアウィンドウ */
+		case 0xd438:	/* Xウィンドウスタートアドレス(上位) */
+		case 0xd439:	/* Xウィンドウスタートアドレス(下位) */
+		case 0xd43a:	/* Xウィンドウエンドアドレス(上位) */
+		case 0xd43b:	/* Xウィンドウエンドアドレス(下位) */
+		case 0xd43c:	/* Yウィンドウスタートアドレス(上位) */
+		case 0xd43d:	/* Yウィンドウスタートアドレス(下位) */
+		case 0xd43e:	/* Yウィンドウエンドアドレス(上位) */
+		case 0xd43f:	/* Yウィンドウエンドアドレス(下位) */
 			if (fm7_ver <= 2) {
 				return TRUE;
 			}
 
 			switch (addr & 7) {
 				case 0:	/* Xウィンドウスタートアドレス(上位) */
-						window_x1 &= (WORD)0x00f8;
-						window_x1 |= (WORD)((dat & 0x03) << 8);
-						break;
+					window_x1 &= (WORD) 0x00f8;
+					window_x1 |= (WORD) ((dat & 0x03) << 8);
+					break;
 				case 1:	/* Xウィンドウスタートアドレス(下位) */
-						window_x1 &= (WORD)0x0300;
-						window_x1 |= (WORD)(dat & 0xf8);
-						break;
+					window_x1 &= (WORD) 0x0300;
+					window_x1 |= (WORD) (dat & 0xf8);
+					break;
 				case 2:	/* Xウィンドウエンドアドレス(上位) */
-						window_x2 &= (WORD)0x00f8;
-						window_x2 |= (WORD)((dat & 0x03) << 8);
-						break;
+					window_x2 &= (WORD) 0x00f8;
+					window_x2 |= (WORD) ((dat & 0x03) << 8);
+					break;
 				case 3:	/* Xウィンドウエンドアドレス(下位) */
-						window_x2 &= (WORD)0x0300;
-						window_x2 |= (WORD)(dat & 0xf8);
-						break;
+					window_x2 &= (WORD) 0x0300;
+					window_x2 |= (WORD) (dat & 0xf8);
+					break;
 				case 4:	/* Yウィンドウスタートアドレス(上位) */
-						window_y1 &= (WORD)0x00ff;
-						window_y1 |= (WORD)((dat & 0x01) << 8);
-						break;
+					window_y1 &= (WORD) 0x00ff;
+					window_y1 |= (WORD) ((dat & 0x01) << 8);
+					break;
 				case 5:	/* Yウィンドウスタートアドレス(下位) */
-						window_y1 &= (WORD)0x0100;
-						window_y1 |= (WORD)dat;
-						break;
+					window_y1 &= (WORD) 0x0100;
+					window_y1 |= (WORD) dat;
+					break;
 				case 6:	/* Yウィンドウエンドアドレス(上位) */
-						window_y2 &= (WORD)0x00ff;
-						window_y2 |= (WORD)((dat & 0x01) << 8);
-						break;
+					window_y2 &= (WORD) 0x00ff;
+					window_y2 |= (WORD) ((dat & 0x01) << 8);
+					break;
 				case 7:	/* Yウィンドウエンドアドレス(下位) */
-						window_y2 &= (WORD)0x0100;
-						window_y2 |= (WORD)dat;
-						break;
+					window_y2 &= (WORD) 0x0100;
+					window_y2 |= (WORD) dat;
+					break;
 				default:
-						ASSERT(FALSE);
+					ASSERT(FALSE);
 			}
 
 			check_window_open();
@@ -1664,164 +1686,164 @@ BOOL FASTCALL display_writeb(WORD addr, BYTE dat)
 
 	return FALSE;
 }
+
 /*
  *      ディスプレイ
  *      セーブ
  */
-BOOL            FASTCALL
-display_save(SDL_RWops *fileh)
+BOOL FASTCALL
+display_save(SDL_RWops * fileh)
 {
-    if (!file_bool_write(fileh, crt_flag)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, vrama_flag)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, crt_flag)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, vrama_flag)) {
+		return FALSE;
+	}
 #if XM7_VER >= 2
-    if (!file_bool_write(fileh, subnmi_flag)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, subnmi_flag)) {
+		return FALSE;
+	}
 #endif
-    if (!file_bool_write(fileh, vsync_flag)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, blank_flag)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, vsync_flag)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, blank_flag)) {
+		return FALSE;
+	}
 
-    if (!file_bool_write(fileh, vram_offset_flag)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, vram_offset_flag)) {
+		return FALSE;
+	}
 #if XM7_VER >= 2
-    if (!file_word_write(fileh, vram_offset[0])) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, vram_offset[1])) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, crtc_offset[0])) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, crtc_offset[1])) {
-	return FALSE;
-    }
+	if (!file_word_write(fileh, vram_offset[0])) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, vram_offset[1])) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, crtc_offset[0])) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, crtc_offset[1])) {
+		return FALSE;
+	}
 
-    if (!file_byte_write(fileh, vram_active)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, vram_display)) {
-	return FALSE;
-    }
+	if (!file_byte_write(fileh, vram_active)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, vram_display)) {
+		return FALSE;
+	}
 #else
-    if (!file_word_write(fileh, vram_offset[0])) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, crtc_offset[0])) {
-	return FALSE;
-    }
+	if (!file_word_write(fileh, vram_offset[0])) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, crtc_offset[0])) {
+		return FALSE;
+	}
 #endif
 
-    /*
-     * Ver6拡張
-     */
-    if (!file_word_write(fileh, blank_count)) {
-	return FALSE;
-    }
+	/*
+	 * Ver6拡張
+	 */
+	if (!file_word_write(fileh, blank_count)) {
+		return FALSE;
+	}
 #if XM7_VER >= 3
-    /*
-     * Ver8拡張
-     */
-    if (!file_byte_write(fileh, subram_vrambank)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, sub_kanji_addr)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, sub_kanji_bank)) {
-	return FALSE;
-    }
+	/*
+	 * Ver8拡張
+	 */
+	if (!file_byte_write(fileh, subram_vrambank)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, sub_kanji_addr)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, sub_kanji_bank)) {
+		return FALSE;
+	}
 
-    if (!file_word_write(fileh, window_x1)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_dx1)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_y1)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_dy1)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_x2)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_dx2)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_y2)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, window_dy2)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, window_open)) {
-	return FALSE;
-    }
+	if (!file_word_write(fileh, window_x1)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_dx1)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_y1)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_dy1)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_x2)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_dx2)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_y2)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, window_dy2)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, window_open)) {
+		return FALSE;
+	}
 
-    if (!file_byte_write(fileh, block_active)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, block_display)) {
-	return FALSE;
-    }
+	if (!file_byte_write(fileh, block_active)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, block_display)) {
+		return FALSE;
+	}
 #endif
 
 #if XM7_VER == 1 && defined(L4CARD)
-    /*
-     * XM7 V1.1 / FM-77L4テキストVRAMまわり
-     */
-    if (!file_bool_write(fileh, width40_flag)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, cursor_lsb)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, text_blink)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, cursor_blink)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, text_start_addr)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, cursor_addr)) {
-	return FALSE;
-    }
+	/*
+	 * XM7 V1.1 / FM-77L4テキストVRAMまわり
+	 */
+	if (!file_bool_write(fileh, width40_flag)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, cursor_lsb)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, text_blink)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, cursor_blink)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, text_start_addr)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, cursor_addr)) {
+		return FALSE;
+	}
 
-    if (!file_bool_write(fileh, enable_400line)) {
-	return FALSE;
-    }
-    /* 400ラインカード整合性チェック */
-    if (enable_400line && !detect_400linecard) 
-    {
-       return FALSE;
-    }
-        
-    if (!file_bool_write(fileh, workram_select)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, sub_kanji_addr)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, enable_400line)) {
+		return FALSE;
+	}
+	/* 400ラインカード整合性チェック */
+	if (enable_400line && !detect_400linecard) {
+		return FALSE;
+	}
 
-    if (!file_byte_write(fileh, crtc_regnum)) {
-	return FALSE;
-    }
-    if (!file_write(fileh, crtc_register, 0x20)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, workram_select)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, sub_kanji_addr)) {
+		return FALSE;
+	}
+
+	if (!file_byte_write(fileh, crtc_regnum)) {
+		return FALSE;
+	}
+	if (!file_write(fileh, crtc_register, 0x20)) {
+		return FALSE;
+	}
 #endif
 	/* Ver9.18/Ver7.18/Ver3.08拡張 */
 	if (!file_dword_write(fileh, now_raster)) {
@@ -1829,217 +1851,218 @@ display_save(SDL_RWops *fileh)
 	}
 
 
-    return TRUE;
+	return TRUE;
 }
 
 /*
  *      ディスプレイ
  *      ロード
  */
-BOOL            FASTCALL
-display_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+display_load(SDL_RWops * fileh, int ver)
 {
-    /*
-     * バージョンチェック
-     */
-    if (ver < 200) {
-	return FALSE;
-    }
-
-    if (!file_bool_read(fileh, &crt_flag)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &vrama_flag)) {
-	return FALSE;
-    }
-#if XM7_VER >= 2
-    if (!file_bool_read(fileh, &subnmi_flag)) {
-	return FALSE;
-    }
-#endif
-    if (!file_bool_read(fileh, &vsync_flag)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &blank_flag)) {
-	return FALSE;
-    }
-
-    if (!file_bool_read(fileh, &vram_offset_flag)) {
-	return FALSE;
-    }
-#if XM7_VER >= 2
-    if (!file_word_read(fileh, &vram_offset[0])) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &vram_offset[1])) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &crtc_offset[0])) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &crtc_offset[1])) {
-	return FALSE;
-    }
-
-    if (!file_byte_read(fileh, &vram_active)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &vram_display)) {
-	return FALSE;
-    }
-
-    /*
-     * イベント
-     */
-    schedule_handle(EVENT_SUBTIMER, subcpu_event);
-    schedule_handle(EVENT_VSYNC, display_vsync);
-    schedule_handle(EVENT_BLANK, display_blank);
-#else
-    if (!file_word_read(fileh, &vram_offset[0])) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &crtc_offset[0])) {
-	return FALSE;
-    }
-
-    /*
-     * イベント
-     */
-    schedule_handle(EVENT_SUBTIMER, subcpu_event);
-    schedule_handle(EVENT_VSYNC, display_vsync);
-#endif
-
-    /*
-     * Ver6拡張
-     */
-#if XM7_VER >= 2
-    if (ver >= 600) {
-#else
-    if (ver >= 300) {
-#endif
-	if (!file_word_read(fileh, &blank_count)) {
-	    return FALSE;
+	/*
+	 * バージョンチェック
+	 */
+	if (ver < 200) {
+		return FALSE;
 	}
-    }
+
+	if (!file_bool_read(fileh, &crt_flag)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &vrama_flag)) {
+		return FALSE;
+	}
+#if XM7_VER >= 2
+	if (!file_bool_read(fileh, &subnmi_flag)) {
+		return FALSE;
+	}
+#endif
+	if (!file_bool_read(fileh, &vsync_flag)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &blank_flag)) {
+		return FALSE;
+	}
+
+	if (!file_bool_read(fileh, &vram_offset_flag)) {
+		return FALSE;
+	}
+#if XM7_VER >= 2
+	if (!file_word_read(fileh, &vram_offset[0])) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &vram_offset[1])) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &crtc_offset[0])) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &crtc_offset[1])) {
+		return FALSE;
+	}
+
+	if (!file_byte_read(fileh, &vram_active)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &vram_display)) {
+		return FALSE;
+	}
+
+	/*
+	 * イベント
+	 */
+	schedule_handle(EVENT_SUBTIMER, subcpu_event);
+	schedule_handle(EVENT_VSYNC, display_vsync);
+	schedule_handle(EVENT_BLANK, display_blank);
+#else
+	if (!file_word_read(fileh, &vram_offset[0])) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &crtc_offset[0])) {
+		return FALSE;
+	}
+
+	/*
+	 * イベント
+	 */
+	schedule_handle(EVENT_SUBTIMER, subcpu_event);
+	schedule_handle(EVENT_VSYNC, display_vsync);
+#endif
+
+	/*
+	 * Ver6拡張
+	 */
+#if XM7_VER >= 2
+	if (ver >= 600) {
+#else
+	if (ver >= 300) {
+#endif
+		if (!file_word_read(fileh, &blank_count)) {
+			return FALSE;
+		}
+	}
 #if XM7_VER >= 3
-    /*
-     * Ver8拡張
-     */
-    if (ver >= 800) {
-	if (!file_byte_read(fileh, &subram_vrambank)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &sub_kanji_addr)) {
-	    return FALSE;
-	}
-	if (!file_bool_read(fileh, &sub_kanji_bank)) {
-	    return FALSE;
-	}
+	/*
+	 * Ver8拡張
+	 */
+	if (ver >= 800) {
+		if (!file_byte_read(fileh, &subram_vrambank)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &sub_kanji_addr)) {
+			return FALSE;
+		}
+		if (!file_bool_read(fileh, &sub_kanji_bank)) {
+			return FALSE;
+		}
 
-	if (!file_word_read(fileh, &window_x1)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_dx1)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_y1)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_dy1)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_x2)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_dx2)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_y2)) {
-	    return FALSE;
-	}
-	if (!file_word_read(fileh, &window_dy2)) {
-	    return FALSE;
-	}
-	if (!file_bool_read(fileh, &window_open)) {
-	    return FALSE;
-	}
+		if (!file_word_read(fileh, &window_x1)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_dx1)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_y1)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_dy1)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_x2)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_dx2)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_y2)) {
+			return FALSE;
+		}
+		if (!file_word_read(fileh, &window_dy2)) {
+			return FALSE;
+		}
+		if (!file_bool_read(fileh, &window_open)) {
+			return FALSE;
+		}
 
-	if (!file_byte_read(fileh, &block_active)) {
-	    return FALSE;
+		if (!file_byte_read(fileh, &block_active)) {
+			return FALSE;
+		}
+		if (!file_byte_read(fileh, &block_display)) {
+			return FALSE;
+		}
 	}
-	if (!file_byte_read(fileh, &block_display)) {
-	    return FALSE;
+	else {
+		subram_vrambank = 0;
+		sub_kanji_addr = 0;
+		sub_kanji_bank = FALSE;
+
+		window_x1 = 0;
+		window_dx1 = 0;
+		window_x2 = 0;
+		window_dx2 = 0;
+		window_y1 = 0;
+		window_dy1 = 0;
+		window_y2 = 0;
+		window_dy2 = 0;
+		window_open = FALSE;
+
+		block_active = 0;
+		block_display = 0;
 	}
-    } else {
-	subram_vrambank = 0;
-	sub_kanji_addr = 0;
-	sub_kanji_bank = FALSE;
-
-	window_x1 = 0;
-	window_dx1 = 0;
-	window_x2 = 0;
-	window_dx2 = 0;
-	window_y1 = 0;
-	window_dy1 = 0;
-	window_y2 = 0;
-	window_dy2 = 0;
-	window_open = FALSE;
-
-	block_active = 0;
-	block_display = 0;
-    }
 #endif
 
 #if XM7_VER == 1 && defined(L4CARD)
-    /*
-     * XM7 V1.1 / FM-77L4テキストVRAMまわり
-     */
-    if (!file_bool_read(fileh, &width40_flag)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &cursor_lsb)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &text_blink)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &cursor_blink)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &text_start_addr)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &cursor_addr)) {
-	return FALSE;
-    }
+	/*
+	 * XM7 V1.1 / FM-77L4テキストVRAMまわり
+	 */
+	if (!file_bool_read(fileh, &width40_flag)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &cursor_lsb)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &text_blink)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &cursor_blink)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &text_start_addr)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &cursor_addr)) {
+		return FALSE;
+	}
 
-    if (!file_bool_read(fileh, &enable_400line)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &workram_select)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &sub_kanji_addr)) {
-	return FALSE;
-    }
+	if (!file_bool_read(fileh, &enable_400line)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &workram_select)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &sub_kanji_addr)) {
+		return FALSE;
+	}
 
-    if (!file_byte_read(fileh, &crtc_regnum)) {
-	return FALSE;
-    }
-    if (!file_read(fileh, crtc_register, 0x20)) {
-	return FALSE;
-    }
+	if (!file_byte_read(fileh, &crtc_regnum)) {
+		return FALSE;
+	}
+	if (!file_read(fileh, crtc_register, 0x20)) {
+		return FALSE;
+	}
 
-    /*
-     * イベント
-     */
-    schedule_handle(EVENT_TEXT_BLINK, display_text_blink);
+	/*
+	 * イベント
+	 */
+	schedule_handle(EVENT_TEXT_BLINK, display_text_blink);
 #endif
 
-    /*
-     * ポインタを構成
-     */
-       /* Ver9.18/Ver7.18/Ver3.08拡張 */
+	/*
+	 * ポインタを構成
+	 */
+	/* Ver9.18/Ver7.18/Ver3.08拡張 */
 #if XM7_VER >= 3
 	if ((ver >= 918) || ((ver >= 718) && (ver <= 799))) {
 #elif XM7_VER >= 2
@@ -2047,7 +2070,7 @@ display_load(SDL_RWops *fileh, int ver)
 #else
 	if (ver >= 308) {
 #endif
-		if (!file_dword_read(fileh, (DWORD *)&now_raster)) {
+		if (!file_dword_read(fileh, (DWORD *) & now_raster)) {
 			return FALSE;
 		}
 	}
@@ -2055,8 +2078,8 @@ display_load(SDL_RWops *fileh, int ver)
 		now_raster = 0;
 	}
 
-    display_setpointer(TRUE);
-    display_setup();
+	display_setpointer(TRUE);
+	display_setup();
 
-    return TRUE;
+	return TRUE;
 }

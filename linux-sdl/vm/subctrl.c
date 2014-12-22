@@ -21,29 +21,29 @@
 /*
  *	グローバル ワーク
  */
-BOOL subhalt_flag;						/* サブHALTフラグ */
-BOOL subbusy_flag;						/* サブBUSYフラグ */
-BOOL subcancel_flag;					/* サブキャンセルフラグ */
-BOOL subattn_flag;						/* サブアテンションフラグ */
-BOOL subhalt_request;					/* サブHALTリクエストフラグ */
+BOOL subhalt_flag;							/* サブHALTフラグ */
+BOOL subbusy_flag;							/* サブBUSYフラグ */
+BOOL subcancel_flag;						/* サブキャンセルフラグ */
+BOOL subattn_flag;							/* サブアテンションフラグ */
+BOOL subhalt_request;						/* サブHALTリクエストフラグ */
 BOOL subcancel_request;					/* サブキャンセルリクエストフラグ */
 BYTE shared_ram[0x80];					/* 共有RAM */
-BOOL subreset_flag;						/* サブ再起動フラグ */
-BYTE busy_CLR_count;					/* BUSY($D40A) CLR命令実行時カウンタ */
+BOOL subreset_flag;							/* サブ再起動フラグ */
+BYTE busy_CLR_count;						/* BUSY($D40A) CLR命令実行時カウンタ */
 #if XM7_VER >= 2
-BOOL mode320;							/* 320x200モード */
+BOOL mode320;										/* 320x200モード */
 #if XM7_VER >= 3
-BOOL mode400l;							/* 640x400モード */
-BOOL mode256k;							/* 26万色モード */
-BOOL subram_protect;					/* サブモニタRAMプロテクト */
-BOOL subreset_halt;						/* HALT中再起動フラグ */
-BYTE subif_dat;							/* サブI/Fレジスタ 画面モード保存 */
-BOOL subkanji_flag;						/* 漢字ROM サブCPU接続フラグ */
+BOOL mode400l;									/* 640x400モード */
+BOOL mode256k;									/* 26万色モード */
+BOOL subram_protect;						/* サブモニタRAMプロテクト */
+BOOL subreset_halt;							/* HALT中再起動フラグ */
+BYTE subif_dat;									/* サブI/Fレジスタ 画面モード保存 */
+BOOL subkanji_flag;							/* 漢字ROM サブCPU接続フラグ */
 #endif
 #endif
 #if XM7_VER == 1 && defined(L4CARD)
-BOOL select_400line;					/* メイン側400ライン選択フラグ */
-BOOL subkanji_flag;						/* 漢字ROM サブCPU接続フラグ */
+BOOL select_400line;						/* メイン側400ライン選択フラグ */
+BOOL subkanji_flag;							/* 漢字ROM サブCPU接続フラグ */
 #endif
 
 
@@ -51,7 +51,8 @@ BOOL subkanji_flag;						/* 漢字ROM サブCPU接続フラグ */
  *	サブCPUコントロール
  *	初期化
  */
-BOOL FASTCALL subctrl_init(void)
+BOOL FASTCALL
+subctrl_init(void)
 {
 	return TRUE;
 }
@@ -60,7 +61,8 @@ BOOL FASTCALL subctrl_init(void)
  *	サブCPUコントロール
  *	クリーンアップ
  */
-void FASTCALL subctrl_cleanup(void)
+void FASTCALL
+subctrl_cleanup(void)
 {
 }
 
@@ -68,7 +70,8 @@ void FASTCALL subctrl_cleanup(void)
  *	サブCPUコントロール
  *	リセット
  */
-void FASTCALL subctrl_reset(void)
+void FASTCALL
+subctrl_reset(void)
 {
 	subhalt_request = FALSE;
 	subhalt_flag = FALSE;
@@ -104,7 +107,8 @@ void FASTCALL subctrl_reset(void)
  *	サブCPUコントロール
  *	HALT/CANCEL アクノリッジ
  */
-void FASTCALL subctrl_halt_ack(void)
+void FASTCALL
+subctrl_halt_ack(void)
 {
 	subhalt_flag = subhalt_request;
 	subcancel_flag = subcancel_request;
@@ -119,12 +123,13 @@ void FASTCALL subctrl_halt_ack(void)
  *	サブCPUコントロール
  *	１バイト読み出し
  */
-BOOL FASTCALL subctrl_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+subctrl_readb(WORD addr, BYTE * dat)
 {
 	BYTE ret;
 
 	switch (addr) {
-		/* サブCPU アテンション割り込み、Breakキー割り込み */
+			/* サブCPU アテンション割り込み、Breakキー割り込み */
 		case 0xfd04:
 			/* BUSYフラグ */
 			if (subbusy_flag) {
@@ -181,7 +186,7 @@ BOOL FASTCALL subctrl_readb(WORD addr, BYTE *dat)
 			maincpu_firq();
 			return TRUE;
 
-		/* サブインタフェース */
+			/* サブインタフェース */
 		case 0xfd05:
 			if (subbusy_flag) {
 				*dat = 0xfe;
@@ -192,7 +197,7 @@ BOOL FASTCALL subctrl_readb(WORD addr, BYTE *dat)
 				return TRUE;
 			}
 
-		/* サブモードステータス */
+			/* サブモードステータス */
 #if XM7_VER >= 2
 		case 0xfd12:
 			ret = 0xff;
@@ -214,7 +219,7 @@ BOOL FASTCALL subctrl_readb(WORD addr, BYTE *dat)
 			*dat = ret;
 			return TRUE;
 
-		/* サブバンク切り替え(Write Only) */
+			/* サブバンク切り替え(Write Only) */
 		case 0xfd13:
 			*dat = 0xff;
 			return TRUE;
@@ -228,11 +233,12 @@ BOOL FASTCALL subctrl_readb(WORD addr, BYTE *dat)
  *	サブCPUコントロール
  *	１バイト書き込み
  */
-BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+subctrl_writeb(WORD addr, BYTE dat)
 {
 	switch (addr) {
 #if XM7_VER >= 3
-		/* サブインタフェース AV40拡張部分 */
+			/* サブインタフェース AV40拡張部分 */
 		case 0xfd04:
 			if (fm7_ver >= 3) {
 				/* bit2:サブモニタプロテクト */
@@ -266,16 +272,16 @@ BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
 				}
 
 				/* 画面モードが切り替わった場合だけ再描画 */
-				if ((BYTE)(dat & 0x18) != subif_dat) {
+				if ((BYTE) (dat & 0x18) != subif_dat) {
 					display_setpointer(TRUE);
 				}
-				subif_dat = (BYTE)(dat & 0x18);
+				subif_dat = (BYTE) (dat & 0x18);
 			}
 			return TRUE;
 #endif
 
 #if XM7_VER == 1 && defined(L4CARD)
-		/* サブインタフェース FM-77拡張部分 */
+			/* サブインタフェース FM-77拡張部分 */
 		case 0xfd04:
 			/* 以下、FM-77モードのみ有効 */
 			if (fm_subtype == FMSUB_FM77) {
@@ -298,7 +304,7 @@ BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
 			return TRUE;
 #endif
 
-		/* サブコントロール */
+			/* サブコントロール */
 		case 0xfd05:
 			if (dat & 0x80) {
 				/* サブHALTリクエスト */
@@ -324,7 +330,7 @@ BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
 			subcpu_irq();
 			return TRUE;
 
-		/* サブモード切り替え */
+			/* サブモード切り替え */
 #if XM7_VER >= 2
 		case 0xfd12:
 			if (fm7_ver >= 2) {
@@ -344,7 +350,7 @@ BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
 			}
 			return TRUE;
 
-		/* サブバンク切り替え */
+			/* サブバンク切り替え */
 		case 0xfd13:
 			if (fm7_ver >= 2) {
 				/* バンク切り替え */
@@ -353,10 +359,10 @@ BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
 					subrom_bank = 4;
 				}
 				else {
-					subrom_bank = (BYTE)(dat & 0x03);
+					subrom_bank = (BYTE) (dat & 0x03);
 				}
 #else
-				subrom_bank = (BYTE)(dat & 0x03);
+				subrom_bank = (BYTE) (dat & 0x03);
 #endif
 
 				/* リセット */
@@ -399,7 +405,8 @@ BOOL FASTCALL subctrl_writeb(WORD addr, BYTE dat)
  *      サブCPUコントロール
  *      セーブ
  */
-BOOL FASTCALL subctrl_save(SDL_RWops *fileh)
+BOOL FASTCALL
+subctrl_save(SDL_RWops * fileh)
 {
 	if (!file_bool_write(fileh, subhalt_flag)) {
 		return FALSE;
@@ -480,7 +487,8 @@ BOOL FASTCALL subctrl_save(SDL_RWops *fileh)
  *      サブCPUコントロール
  *      ロード
  */
-BOOL FASTCALL subctrl_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+subctrl_load(SDL_RWops * fileh, int ver)
 {
 	/* バージョンチェック */
 	if (ver < 200) {
@@ -598,10 +606,10 @@ BOOL FASTCALL subctrl_load(SDL_RWops *fileh, int ver)
 	/* サブI/F Reg. 画面モード復帰 */
 	subif_dat = 0x00;
 	if (!mode400l) {
-		subif_dat |= (BYTE)0x08;
+		subif_dat |= (BYTE) 0x08;
 	}
 	if (mode256k) {
-		subif_dat |= (BYTE)0x10;
+		subif_dat |= (BYTE) 0x10;
 	}
 #endif
 

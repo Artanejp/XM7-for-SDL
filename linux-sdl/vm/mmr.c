@@ -19,29 +19,29 @@
 /*
  *	グローバル ワーク
  */
-BOOL mmr_flag;							/* MMR有効フラグ */
-BYTE mmr_seg;							/* MMRセグメント */
-BOOL mmr_modify;						/* MMR状態変更フラグ */
+BOOL mmr_flag;									/* MMR有効フラグ */
+BYTE mmr_seg;										/* MMRセグメント */
+BOOL mmr_modify;								/* MMR状態変更フラグ */
 #if XM7_VER >= 3
-BYTE mmr_reg[0x80];						/* MMRレジスタ */
-BOOL twr_flag;							/* TWR有効フラグ */
-BYTE twr_reg;							/* TWRレジスタ */
-BOOL mmr_ext;							/* 拡張MMR有効フラグ */
-BOOL mmr_fastmode;						/* MMR高速フラグ */
-BOOL mmr_extram;						/* 拡張RAM有効フラグ */
+BYTE mmr_reg[0x80];							/* MMRレジスタ */
+BOOL twr_flag;									/* TWR有効フラグ */
+BYTE twr_reg;										/* TWRレジスタ */
+BOOL mmr_ext;										/* 拡張MMR有効フラグ */
+BOOL mmr_fastmode;							/* MMR高速フラグ */
+BOOL mmr_extram;								/* 拡張RAM有効フラグ */
 BOOL mmr_fast_refresh;					/* 高速リフレッシュフラグ */
-BOOL twr_fastmode;						/* TWR高速モード */
+BOOL twr_fastmode;							/* TWR高速モード */
 #else
-BYTE mmr_reg[0x40];						/* MMRレジスタ */
-BOOL twr_flag;							/* TWR有効フラグ */
-BYTE twr_reg;							/* TWRレジスタ */
+BYTE mmr_reg[0x40];							/* MMRレジスタ */
+BOOL twr_flag;									/* TWR有効フラグ */
+BYTE twr_reg;										/* TWRレジスタ */
 #endif
 
 /* I/O型RAMディスクカード */
 #if XM7_VER >= 3
 #ifdef MR2
-BYTE mr2_nowcnt;						/* MR2 セクタカウント */
-WORD mr2_secreg;						/* MR2 セクタレジスタ */
+BYTE mr2_nowcnt;								/* MR2 セクタカウント */
+WORD mr2_secreg;								/* MR2 セクタレジスタ */
 #endif
 #endif
 
@@ -50,7 +50,8 @@ WORD mr2_secreg;						/* MR2 セクタレジスタ */
  *	MMR
  *	初期化
  */
-BOOL FASTCALL mmr_init(void)
+BOOL FASTCALL
+mmr_init(void)
 {
 	/* 初回起動時のみMMRをクリアするように変更 */
 	memset(mmr_reg, 0, sizeof(mmr_reg));
@@ -67,7 +68,8 @@ BOOL FASTCALL mmr_init(void)
  *	MMR
  *	クリーンアップ
  */
-void FASTCALL mmr_cleanup(void)
+void FASTCALL
+mmr_cleanup(void)
 {
 }
 
@@ -75,7 +77,8 @@ void FASTCALL mmr_cleanup(void)
  *	MMR
  *	リセット
  */
-void FASTCALL mmr_reset(void)
+void FASTCALL
+mmr_reset(void)
 {
 	/* MMR/TWR */
 	mmr_flag = FALSE;
@@ -104,7 +107,8 @@ void FASTCALL mmr_reset(void)
 /*
  *	TWRアドレス変換
  */
-static BOOL FASTCALL mmr_trans_twr(WORD addr, DWORD *taddr)
+static BOOL FASTCALL
+mmr_trans_twr(WORD addr, DWORD * taddr)
 {
 	/* TWR有効か */
 	if (!twr_flag) {
@@ -117,7 +121,7 @@ static BOOL FASTCALL mmr_trans_twr(WORD addr, DWORD *taddr)
 	}
 
 	/* TWRレジスタより変換 */
-	*taddr = (DWORD)twr_reg;
+	*taddr = (DWORD) twr_reg;
 	*taddr *= 256;
 	*taddr += addr;
 	*taddr &= 0xffff;
@@ -132,18 +136,19 @@ static BOOL FASTCALL mmr_trans_twr(WORD addr, DWORD *taddr)
 /*
  *	MMRアドレス変換
  */
-static DWORD FASTCALL mmr_trans_mmr(WORD addr)
+static DWORD FASTCALL
+mmr_trans_mmr(WORD addr)
 {
 	DWORD maddr;
 	int offset;
 
 	/* MMR有効か */
 	if (!mmr_flag) {
-		return (DWORD)(0x30000 | addr);
+		return (DWORD) (0x30000 | addr);
 	}
 
 	/* MMRレジスタより取得 */
-	offset = (int)addr;
+	offset = (int) addr;
 	offset >>= 12;
 
 #if XM7_VER >= 3
@@ -159,7 +164,7 @@ static DWORD FASTCALL mmr_trans_mmr(WORD addr)
 #endif
 
 	/* 拡張MMRがoffなら、6bitのみ有効 */
-	maddr = (DWORD)mmr_reg[offset];
+	maddr = (DWORD) mmr_reg[offset];
 #if XM7_VER >= 3
 	if (!mmr_ext) {
 		maddr &= 0x3f;
@@ -180,7 +185,8 @@ static DWORD FASTCALL mmr_trans_mmr(WORD addr)
  *	メインCPUバス
  *	１バイト読み出し
  */
-BOOL FASTCALL mmr_extrb(WORD *addr, BYTE *dat)
+BOOL FASTCALL
+mmr_extrb(WORD * addr, BYTE * dat)
 {
 	DWORD raddr, rsegment;
 
@@ -238,7 +244,7 @@ BOOL FASTCALL mmr_extrb(WORD *addr, BYTE *dat)
 #endif
 
 		/* $30セグメント */
-		*addr = (WORD)(raddr & 0xffff);
+		*addr = (WORD) (raddr & 0xffff);
 		return FALSE;
 	}
 
@@ -252,7 +258,7 @@ BOOL FASTCALL mmr_extrb(WORD *addr, BYTE *dat)
 	/* サブシステム */
 	if (rsegment == 0x10000) {
 		if (subhalt_flag) {
-			*dat = submem_readb((WORD)(raddr & 0xffff));
+			*dat = submem_readb((WORD) (raddr & 0xffff));
 		}
 		else {
 			*dat = 0xff;
@@ -263,7 +269,7 @@ BOOL FASTCALL mmr_extrb(WORD *addr, BYTE *dat)
 	/* 日本語カード */
 	if (rsegment == 0x20000) {
 #if XM7_VER >= 3
-		*dat = jcard_readb((WORD)(raddr & 0xffff));
+		*dat = jcard_readb((WORD) (raddr & 0xffff));
 #else
 		*dat = 0xff;
 #endif
@@ -295,7 +301,8 @@ BOOL FASTCALL mmr_extrb(WORD *addr, BYTE *dat)
  *	メインCPUバス
  *	１バイト読み出し(I/Oなし)
  */
-BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
+BOOL FASTCALL
+mmr_extbnio(WORD * addr, BYTE * dat)
 {
 	DWORD raddr, rsegment;
 
@@ -353,7 +360,7 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
 #endif
 
 		/* $30セグメント */
-		*addr = (WORD)(raddr & 0xffff);
+		*addr = (WORD) (raddr & 0xffff);
 		return FALSE;
 	}
 
@@ -367,7 +374,7 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
 	/* サブシステム */
 	if (rsegment == 0x10000) {
 		if (subhalt_flag) {
-			*dat = submem_readbnio((WORD)(raddr & 0xffff));
+			*dat = submem_readbnio((WORD) (raddr & 0xffff));
 		}
 		else {
 			*dat = 0xff;
@@ -378,7 +385,7 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
 	/* 日本語カード */
 	if (rsegment == 0x20000) {
 #if XM7_VER >= 3
-		*dat = jcard_readb((WORD)(raddr & 0xffff));
+		*dat = jcard_readb((WORD) (raddr & 0xffff));
 #else
 		*dat = 0xff;
 #endif
@@ -410,7 +417,8 @@ BOOL FASTCALL mmr_extbnio(WORD *addr, BYTE *dat)
  *	メインCPUバス
  *	１バイト書き込み
  */
-BOOL FASTCALL mmr_extwb(WORD *addr, BYTE dat)
+BOOL FASTCALL
+mmr_extwb(WORD * addr, BYTE dat)
 {
 	DWORD raddr, rsegment;
 
@@ -456,7 +464,7 @@ BOOL FASTCALL mmr_extwb(WORD *addr, BYTE dat)
 #endif
 
 		/* $30セグメント */
-		*addr = (WORD)(raddr & 0xffff);
+		*addr = (WORD) (raddr & 0xffff);
 		return FALSE;
 	}
 
@@ -470,7 +478,7 @@ BOOL FASTCALL mmr_extwb(WORD *addr, BYTE dat)
 	/* サブシステム */
 	if (rsegment == 0x10000) {
 		if (subhalt_flag) {
-			submem_writeb((WORD)(raddr & 0xffff), dat);
+			submem_writeb((WORD) (raddr & 0xffff), dat);
 		}
 		return TRUE;
 	}
@@ -478,7 +486,7 @@ BOOL FASTCALL mmr_extwb(WORD *addr, BYTE dat)
 	/* 日本語カード */
 	if (rsegment == 0x20000) {
 #if XM7_VER >= 3
-		jcard_writeb((WORD)(raddr & 0xffff), dat);
+		jcard_writeb((WORD) (raddr & 0xffff), dat);
 #endif
 		return TRUE;
 	}
@@ -509,11 +517,12 @@ BOOL FASTCALL mmr_extwb(WORD *addr, BYTE dat)
  *	MR2
  *	アドレス計算
  */
-static DWORD FASTCALL mr2_address(void)
+static DWORD FASTCALL
+mr2_address(void)
 {
 	DWORD tmp;
 
-	ASSERT (XM7_VER >= 3);
+	ASSERT(XM7_VER >= 3);
 
 	if (mr2_secreg <= 0x0bff) {
 		/* 計算方法は適当なので違っている可能性、大(^^; 2002/07/29 */
@@ -531,16 +540,17 @@ static DWORD FASTCALL mr2_address(void)
  *	MR2
  *	データリード
  */
-static BYTE FASTCALL mr2_read_data(void)
+static BYTE FASTCALL
+mr2_read_data(void)
 {
 	BYTE dat;
 
-	ASSERT (XM7_VER >= 3);
+	ASSERT(XM7_VER >= 3);
 
 	/* セクタレジスタが異常の場合は読み出せない */
 	if (mr2_secreg <= 0x0bff) {
 		dat = extram_c[mr2_address()];
-		mr2_nowcnt ++;
+		mr2_nowcnt++;
 	}
 	else {
 		dat = 0xff;
@@ -553,14 +563,15 @@ static BYTE FASTCALL mr2_read_data(void)
  *	MR2
  *	データライト
  */
-static void FASTCALL mr2_write_data(BYTE dat)
+static void FASTCALL
+mr2_write_data(BYTE dat)
 {
-	ASSERT (XM7_VER >= 3);
+	ASSERT(XM7_VER >= 3);
 
 	/* セクタレジスタが異常の場合は書き込めない */
 	if (mr2_secreg <= 0x0bff) {
 		extram_c[mr2_address()] = dat;
-		mr2_nowcnt ++;
+		mr2_nowcnt++;
 	}
 }
 
@@ -568,18 +579,19 @@ static void FASTCALL mr2_write_data(BYTE dat)
  *	MR2
  *	セクタレジスタ更新
  */
-static void FASTCALL mr2_update_sector(WORD addr, BYTE dat)
+static void FASTCALL
+mr2_update_sector(WORD addr, BYTE dat)
 {
-	ASSERT (XM7_VER >= 3);
+	ASSERT(XM7_VER >= 3);
 
 	/* セクタレジスタを更新 */
 	if (addr == 0xfd9e) {
-		mr2_secreg &= (WORD)0x00ff;
-		mr2_secreg |= (WORD)((dat & 0x0f) << 8);
+		mr2_secreg &= (WORD) 0x00ff;
+		mr2_secreg |= (WORD) ((dat & 0x0f) << 8);
 	}
 	else {
-		mr2_secreg &= (WORD)0x0f00;
-		mr2_secreg |= (WORD)dat;
+		mr2_secreg &= (WORD) 0x0f00;
+		mr2_secreg |= (WORD) dat;
 	}
 
 	/* 範囲チェック */
@@ -599,7 +611,8 @@ static void FASTCALL mr2_update_sector(WORD addr, BYTE dat)
  *	MMR
  *	１バイト読み出し
  */
-BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+mmr_readb(WORD addr, BYTE * dat)
 {
 	BYTE tmp;
 
@@ -616,7 +629,7 @@ BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
 
 	switch (addr) {
 #if XM7_VER >= 2
-		/* ブートステータス */
+			/* ブートステータス */
 		case 0xfd0b:
 			if (boot_mode == BOOT_BASIC) {
 				*dat = 0xfe;
@@ -628,32 +641,32 @@ BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
 #ifdef RSC
 			/* RS-232C CD信号 */
 			if (rs_cd) {
-				*dat &= (BYTE)~RSCB_CD;
+				*dat &= (BYTE) ~ RSCB_CD;
 			}
 #endif
 			return TRUE;
 
-		/* イニシエータROM */
+			/* イニシエータROM */
 		case 0xfd10:
 			*dat = 0xff;
 			return TRUE;
 #endif
 
-		/* MMRセグメント */
+			/* MMRセグメント */
 		case 0xfd90:
 			*dat = 0xff;
 			return TRUE;
 
-		/* TWRオフセット */
+			/* TWRオフセット */
 		case 0xfd92:
 			*dat = 0xff;
 			return TRUE;
 
-		/* モードセレクト */
+			/* モードセレクト */
 		case 0xfd93:
 			tmp = 0xff;
 			if (!mmr_flag) {
-				tmp &= (BYTE)(~0x80);
+				tmp &= (BYTE) (~0x80);
 			}
 			if (!twr_flag) {
 				tmp &= ~0x40;
@@ -665,22 +678,22 @@ BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
 			return TRUE;
 
 #if XM7_VER >= 3
-		/* 拡張MMR/CPUスピード */
+			/* 拡張MMR/CPUスピード */
 		case 0xfd94:
 			*dat = 0xff;
 			return TRUE;
 
-		/* モードセレクト２ */
+			/* モードセレクト２ */
 		case 0xfd95:
 			tmp = 0xff;
 			if (fm7_ver >= 3) {
 				/* bit7:拡張ROMセレクト */
 				if (extrom_sel) {
-					tmp &= (BYTE)~0x80;
+					tmp &= (BYTE) ~ 0x80;
 				}
 				/* bit4:MMR使用時の速度低下を抑止 */
 				if (!mmr_fastmode) {
-					tmp &= (BYTE)~0x08;
+					tmp &= (BYTE) ~ 0x08;
 				}
 				/* bit0:400ラインタイミング出力ステータス */
 				/*      XM7では1(200ライン出力)固定 */
@@ -690,7 +703,7 @@ BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
 			return TRUE;
 
 #ifdef MR2
-		/* MR2 データレジスタ */
+			/* MR2 データレジスタ */
 		case 0xfd9c:
 			if (mmr_extram) {
 				*dat = mr2_read_data();
@@ -700,7 +713,7 @@ BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
 			}
 			return TRUE;
 
-		/* MR2 セクタレジスタ(Write Only) */
+			/* MR2 セクタレジスタ(Write Only) */
 		case 0xfd9e:
 		case 0xfd9f:
 			*dat = 0xff;
@@ -734,7 +747,8 @@ BOOL FASTCALL mmr_readb(WORD addr, BYTE *dat)
  *	MMR
  *	１バイト書き込み
  */
-BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+mmr_writeb(WORD addr, BYTE dat)
 {
 	/* バージョンチェック */
 #if XM7_VER >= 2
@@ -748,7 +762,7 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
 #endif
 
 	switch (addr) {
-		/* イニシエータROM */
+			/* イニシエータROM */
 #if XM7_VER >= 2
 		case 0xfd10:
 			if (dat & 0x02) {
@@ -760,17 +774,17 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
 			return TRUE;
 #endif
 
-		/* MMRセグメント */
+			/* MMRセグメント */
 		case 0xfd90:
-			mmr_seg = (BYTE)(dat & 0x07);
+			mmr_seg = (BYTE) (dat & 0x07);
 			return TRUE;
 
-		/* TWRオフセット */
+			/* TWRオフセット */
 		case 0xfd92:
 			twr_reg = dat;
 			return TRUE;
 
-		/* モードセレクト */
+			/* モードセレクト */
 		case 0xfd93:
 			if (dat & 0x80) {
 				if (!mmr_flag) {
@@ -829,7 +843,7 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
 			return TRUE;
 
 #if XM7_VER >= 3
-		/* 拡張MMR/CPUスピード */
+			/* 拡張MMR/CPUスピード */
 		case 0xfd94:
 			if (fm7_ver >= 3) {
 				/* bit7:拡張MMR */
@@ -876,7 +890,7 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
 			}
 			return TRUE;
 
-		/* モードセレクト２ */
+			/* モードセレクト２ */
 		case 0xfd95:
 			if (fm7_ver >= 3) {
 				/* bit7:拡張ROMセレクト */
@@ -903,14 +917,14 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
 			return TRUE;
 
 #ifdef MR2
-		/* MR2 データレジスタ */
+			/* MR2 データレジスタ */
 		case 0xfd9c:
 			if (mmr_extram) {
 				mr2_write_data(dat);
 			}
 			return TRUE;
 
-		/* MR2 セクタレジスタ */
+			/* MR2 セクタレジスタ */
 		case 0xfd9e:
 		case 0xfd9f:
 			mr2_update_sector(addr, dat);
@@ -924,13 +938,13 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
 #if XM7_VER >= 3
 		/* ここでのデータは8bitすべて記憶 */
 		if (mmr_ext) {
-			mmr_reg[mmr_seg * 0x10 + (addr - 0xfd80)] = (BYTE)dat;
+			mmr_reg[mmr_seg * 0x10 + (addr - 0xfd80)] = (BYTE) dat;
 		}
 		else {
-			mmr_reg[(mmr_seg & 3) * 0x10 + (addr - 0xfd80)] = (BYTE)dat;
+			mmr_reg[(mmr_seg & 3) * 0x10 + (addr - 0xfd80)] = (BYTE) dat;
 		}
 #else
-		mmr_reg[(mmr_seg & 3) * 0x10 + (addr - 0xfd80)] = (BYTE)dat;
+		mmr_reg[(mmr_seg & 3) * 0x10 + (addr - 0xfd80)] = (BYTE) dat;
 #endif
 		return TRUE;
 	}
@@ -944,7 +958,8 @@ BOOL FASTCALL mmr_writeb(WORD addr, BYTE dat)
  *      MMR
  *      セーブ
  */
-BOOL FASTCALL mmr_save(SDL_RWops *fileh)
+BOOL FASTCALL
+mmr_save(SDL_RWops * fileh)
 {
 	if (!file_bool_write(fileh, mmr_flag)) {
 		return FALSE;
@@ -1012,7 +1027,8 @@ BOOL FASTCALL mmr_save(SDL_RWops *fileh)
  *      MMR
  *      ロード
  */
-BOOL FASTCALL mmr_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+mmr_load(SDL_RWops * fileh, int ver)
 {
 #if (XM7_VER >= 3) && !defined(MR2)
 	WORD tmp;
@@ -1059,7 +1075,7 @@ BOOL FASTCALL mmr_load(SDL_RWops *fileh, int ver)
 				return FALSE;
 			}
 #else
-			if (!file_byte_read(fileh, (BYTE *)&tmp)) {
+			if (!file_byte_read(fileh, (BYTE *) & tmp)) {
 				return FALSE;
 			}
 			if (!file_word_read(fileh, &tmp)) {

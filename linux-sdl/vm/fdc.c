@@ -24,34 +24,34 @@
 /*
  *	グローバル ワーク
  */
-BYTE fdc_command;					/* FDCコマンド */
-BYTE fdc_status;					/* FDCステータス */
-BYTE fdc_trkreg;					/* トラックレジスタ */
-BYTE fdc_secreg;					/* セクタレジスタ */
-BYTE fdc_datareg;					/* データレジスタ */
-BYTE fdc_sidereg;					/* サイドレジスタ */
-BYTE fdc_drvreg;					/* 論理ドライブ */
+BYTE fdc_command;								/* FDCコマンド */
+BYTE fdc_status;								/* FDCステータス */
+BYTE fdc_trkreg;								/* トラックレジスタ */
+BYTE fdc_secreg;								/* セクタレジスタ */
+BYTE fdc_datareg;								/* データレジスタ */
+BYTE fdc_sidereg;								/* サイドレジスタ */
+BYTE fdc_drvreg;								/* 論理ドライブ */
 #if XM7_VER >= 3
-BYTE fdc_drvregP;					/* 物理ドライブ */
+BYTE fdc_drvregP;								/* 物理ドライブ */
 #endif
-BYTE fdc_motor;						/* モータ */
-BYTE fdc_drqirq;					/* DRQおよびIRQ */
+BYTE fdc_motor;									/* モータ */
+BYTE fdc_drqirq;								/* DRQおよびIRQ */
 
-BYTE fdc_cmdtype;					/* コマンドタイプ */
-WORD fdc_totalcnt;					/* トータルカウンタ */
-WORD fdc_nowcnt;					/* カレントカウンタ */
+BYTE fdc_cmdtype;								/* コマンドタイプ */
+WORD fdc_totalcnt;							/* トータルカウンタ */
+WORD fdc_nowcnt;								/* カレントカウンタ */
 BYTE fdc_ready[FDC_DRIVES];			/* レディ状態 */
 BOOL fdc_teject[FDC_DRIVES];		/* 一時イジェクト */
 BOOL fdc_writep[FDC_DRIVES];		/* ライトプロテクト状態 */
 BYTE fdc_track[FDC_DRIVES];			/* 実トラック */
 
 #if XM7_VER >= 3
-BYTE fdc_logidrv;					/* 論理ドライブ番号 */
+BYTE fdc_logidrv;								/* 論理ドライブ番号 */
 BYTE fdc_physdrv[FDC_DRIVES];		/* 論理/物理ドライブの対応 */
-BYTE fdc_2ddmode;					/* 2Dモード選択状態 */
+BYTE fdc_2ddmode;								/* 2Dモード選択状態 */
 #endif
 
-char fdc_fname[FDC_DRIVES][256+1];	/* ファイル名 */
+char fdc_fname[FDC_DRIVES][256 + 1];	/* ファイル名 */
 char fdc_name[FDC_DRIVES][FDC_MEDIAS][17];
 BOOL fdc_fwritep[FDC_DRIVES];		/* ライトプロテクト状態(ファイルレベル) */
 BYTE fdc_header[FDC_DRIVES][0x2b0];	/* D77ファイルヘッダ */
@@ -60,25 +60,25 @@ BYTE fdc_media[FDC_DRIVES];			/* メディアセレクト状態 */
 BYTE fdc_access[FDC_DRIVES];		/* アクセスLED */
 
 #ifdef FDDSND
-BOOL fdc_waitmode;					/* FDCアクセスウェイト */
-BOOL fdc_sound;						/* FDDシーク音発生フラグ */
+BOOL fdc_waitmode;							/* FDCアクセスウェイト */
+BOOL fdc_sound;									/* FDDシーク音発生フラグ */
 #endif
 
 
 /*
  *	スタティック ワーク
  */
-static BYTE fdc_buffer[0x2000];					/* データバッファ */
-static BYTE *fdc_dataptr;						/* データポインタ */
-static DWORD fdc_seekofs[FDC_DRIVES];			/* シークオフセット */
-static DWORD fdc_secofs[FDC_DRIVES];			/* セクタオフセット */
+static BYTE fdc_buffer[0x2000];	/* データバッファ */
+static BYTE *fdc_dataptr;				/* データポインタ */
+static DWORD fdc_seekofs[FDC_DRIVES];	/* シークオフセット */
+static DWORD fdc_secofs[FDC_DRIVES];	/* セクタオフセット */
 static DWORD fdc_foffset[FDC_DRIVES][FDC_MEDIAS];
-static WORD fdc_trklen[FDC_DRIVES];				/* トラックデータ長さ */
-static BOOL fdc_seekvct;						/* シーク方向(Trk0:TRUE) */
-static BYTE fdc_indexcnt;						/* INDEXホール カウンタ */
+static WORD fdc_trklen[FDC_DRIVES];	/* トラックデータ長さ */
+static BOOL fdc_seekvct;				/* シーク方向(Trk0:TRUE) */
+static BYTE fdc_indexcnt;				/* INDEXホール カウンタ */
 #ifdef FDDSND
-static BOOL fdc_wait;							/* ウェイトモード実行フラグ */
-static int fdc_seek_track;						/* waitmode用シークカウンタ */
+static BOOL fdc_wait;						/* ウェイトモード実行フラグ */
+static int fdc_seek_track;			/* waitmode用シークカウンタ */
 #endif
 
 
@@ -94,19 +94,20 @@ static const int fdc_steprate[4] = { 6000, 12000, 20000, 30000 };
  *	プロトタイプ宣言
  */
 static void FASTCALL fdc_readbuf(int drive);	/* １トラック分読み込み */
-static BOOL FASTCALL fdc_lost_event(void);		/* LOST DATAイベント */
+static BOOL FASTCALL fdc_lost_event(void);	/* LOST DATAイベント */
 
 
 /*
  *	FDC
  *	初期化
  */
-BOOL FASTCALL fdc_init(void)
+BOOL FASTCALL
+fdc_init(void)
 {
 	int i;
 
 	/* フロッピーファイル関係をリセット */
-	for (i=0; i<FDC_DRIVES; i++) {
+	for (i = 0; i < FDC_DRIVES; i++) {
 		fdc_ready[i] = FDC_TYPE_NOTREADY;
 		fdc_teject[i] = FALSE;
 		fdc_fwritep[i] = FALSE;
@@ -130,12 +131,13 @@ BOOL FASTCALL fdc_init(void)
  *	FDC
  *	クリーンアップ
  */
-void FASTCALL fdc_cleanup(void)
+void FASTCALL
+fdc_cleanup(void)
 {
 	int i;
 
 	/* フロッピーファイル関係をリセット */
-	for (i=0; i<FDC_DRIVES; i++) {
+	for (i = 0; i < FDC_DRIVES; i++) {
 		fdc_ready[i] = FDC_TYPE_NOTREADY;
 	}
 }
@@ -144,7 +146,8 @@ void FASTCALL fdc_cleanup(void)
  *	FDC
  *	リセット
  */
-void FASTCALL fdc_reset(void)
+void FASTCALL
+fdc_reset(void)
 {
 #if XM7_VER >= 3
 	int i;
@@ -168,8 +171,8 @@ void FASTCALL fdc_reset(void)
 	fdc_2ddmode = FALSE;
 
 	/* 論理ドライブ＝物理ドライブに設定 */
-	for (i=0; i<FDC_DRIVES; i++) {
-		fdc_physdrv[i] = (BYTE)i;
+	for (i = 0; i < FDC_DRIVES; i++) {
+		fdc_physdrv[i] = (BYTE) i;
 	}
 #endif
 
@@ -189,44 +192,45 @@ void FASTCALL fdc_reset(void)
  *	CRC計算テーブル
  */
 static WORD crc_table[256] = {
-	0x0000,  0x1021,  0x2042,  0x3063,  0x4084,  0x50a5,  0x60c6,  0x70e7,
-	0x8108,  0x9129,  0xa14a,  0xb16b,  0xc18c,  0xd1ad,  0xe1ce,  0xf1ef,
-	0x1231,  0x0210,  0x3273,  0x2252,  0x52b5,  0x4294,  0x72f7,  0x62d6,
-	0x9339,  0x8318,  0xb37b,  0xa35a,  0xd3bd,  0xc39c,  0xf3ff,  0xe3de,
-	0x2462,  0x3443,  0x0420,  0x1401,  0x64e6,  0x74c7,  0x44a4,  0x5485,
-	0xa56a,  0xb54b,  0x8528,  0x9509,  0xe5ee,  0xf5cf,  0xc5ac,  0xd58d,
-	0x3653,  0x2672,  0x1611,  0x0630,  0x76d7,  0x66f6,  0x5695,  0x46b4,
-	0xb75b,  0xa77a,  0x9719,  0x8738,  0xf7df,  0xe7fe,  0xd79d,  0xc7bc,
-	0x48c4,  0x58e5,  0x6886,  0x78a7,  0x0840,  0x1861,  0x2802,  0x3823,
-	0xc9cc,  0xd9ed,  0xe98e,  0xf9af,  0x8948,  0x9969,  0xa90a,  0xb92b,
-	0x5af5,  0x4ad4,  0x7ab7,  0x6a96,  0x1a71,  0x0a50,  0x3a33,  0x2a12,
-	0xdbfd,  0xcbdc,  0xfbbf,  0xeb9e,  0x9b79,  0x8b58,  0xbb3b,  0xab1a,
-	0x6ca6,  0x7c87,  0x4ce4,  0x5cc5,  0x2c22,  0x3c03,  0x0c60,  0x1c41,
-	0xedae,  0xfd8f,  0xcdec,  0xddcd,  0xad2a,  0xbd0b,  0x8d68,  0x9d49,
-	0x7e97,  0x6eb6,  0x5ed5,  0x4ef4,  0x3e13,  0x2e32,  0x1e51,  0x0e70,
-	0xff9f,  0xefbe,  0xdfdd,  0xcffc,  0xbf1b,  0xaf3a,  0x9f59,  0x8f78,
-	0x9188,  0x81a9,  0xb1ca,  0xa1eb,  0xd10c,  0xc12d,  0xf14e,  0xe16f,
-	0x1080,  0x00a1,  0x30c2,  0x20e3,  0x5004,  0x4025,  0x7046,  0x6067,
-	0x83b9,  0x9398,  0xa3fb,  0xb3da,  0xc33d,  0xd31c,  0xe37f,  0xf35e,
-	0x02b1,  0x1290,  0x22f3,  0x32d2,  0x4235,  0x5214,  0x6277,  0x7256,
-	0xb5ea,  0xa5cb,  0x95a8,  0x8589,  0xf56e,  0xe54f,  0xd52c,  0xc50d,
-	0x34e2,  0x24c3,  0x14a0,  0x0481,  0x7466,  0x6447,  0x5424,  0x4405,
-	0xa7db,  0xb7fa,  0x8799,  0x97b8,  0xe75f,  0xf77e,  0xc71d,  0xd73c,
-	0x26d3,  0x36f2,  0x0691,  0x16b0,  0x6657,  0x7676,  0x4615,  0x5634,
-	0xd94c,  0xc96d,  0xf90e,  0xe92f,  0x99c8,  0x89e9,  0xb98a,  0xa9ab,
-	0x5844,  0x4865,  0x7806,  0x6827,  0x18c0,  0x08e1,  0x3882,  0x28a3,
-	0xcb7d,  0xdb5c,  0xeb3f,  0xfb1e,  0x8bf9,  0x9bd8,  0xabbb,  0xbb9a,
-	0x4a75,  0x5a54,  0x6a37,  0x7a16,  0x0af1,  0x1ad0,  0x2ab3,  0x3a92,
-	0xfd2e,  0xed0f,  0xdd6c,  0xcd4d,  0xbdaa,  0xad8b,  0x9de8,  0x8dc9,
-	0x7c26,  0x6c07,  0x5c64,  0x4c45,  0x3ca2,  0x2c83,  0x1ce0,  0x0cc1,
-	0xef1f,  0xff3e,  0xcf5d,  0xdf7c,  0xaf9b,  0xbfba,  0x8fd9,  0x9ff8,
-	0x6e17,  0x7e36,  0x4e55,  0x5e74,  0x2e93,  0x3eb2,  0x0ed1,  0x1ef0
+	0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
+	0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
+	0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
+	0x9339, 0x8318, 0xb37b, 0xa35a, 0xd3bd, 0xc39c, 0xf3ff, 0xe3de,
+	0x2462, 0x3443, 0x0420, 0x1401, 0x64e6, 0x74c7, 0x44a4, 0x5485,
+	0xa56a, 0xb54b, 0x8528, 0x9509, 0xe5ee, 0xf5cf, 0xc5ac, 0xd58d,
+	0x3653, 0x2672, 0x1611, 0x0630, 0x76d7, 0x66f6, 0x5695, 0x46b4,
+	0xb75b, 0xa77a, 0x9719, 0x8738, 0xf7df, 0xe7fe, 0xd79d, 0xc7bc,
+	0x48c4, 0x58e5, 0x6886, 0x78a7, 0x0840, 0x1861, 0x2802, 0x3823,
+	0xc9cc, 0xd9ed, 0xe98e, 0xf9af, 0x8948, 0x9969, 0xa90a, 0xb92b,
+	0x5af5, 0x4ad4, 0x7ab7, 0x6a96, 0x1a71, 0x0a50, 0x3a33, 0x2a12,
+	0xdbfd, 0xcbdc, 0xfbbf, 0xeb9e, 0x9b79, 0x8b58, 0xbb3b, 0xab1a,
+	0x6ca6, 0x7c87, 0x4ce4, 0x5cc5, 0x2c22, 0x3c03, 0x0c60, 0x1c41,
+	0xedae, 0xfd8f, 0xcdec, 0xddcd, 0xad2a, 0xbd0b, 0x8d68, 0x9d49,
+	0x7e97, 0x6eb6, 0x5ed5, 0x4ef4, 0x3e13, 0x2e32, 0x1e51, 0x0e70,
+	0xff9f, 0xefbe, 0xdfdd, 0xcffc, 0xbf1b, 0xaf3a, 0x9f59, 0x8f78,
+	0x9188, 0x81a9, 0xb1ca, 0xa1eb, 0xd10c, 0xc12d, 0xf14e, 0xe16f,
+	0x1080, 0x00a1, 0x30c2, 0x20e3, 0x5004, 0x4025, 0x7046, 0x6067,
+	0x83b9, 0x9398, 0xa3fb, 0xb3da, 0xc33d, 0xd31c, 0xe37f, 0xf35e,
+	0x02b1, 0x1290, 0x22f3, 0x32d2, 0x4235, 0x5214, 0x6277, 0x7256,
+	0xb5ea, 0xa5cb, 0x95a8, 0x8589, 0xf56e, 0xe54f, 0xd52c, 0xc50d,
+	0x34e2, 0x24c3, 0x14a0, 0x0481, 0x7466, 0x6447, 0x5424, 0x4405,
+	0xa7db, 0xb7fa, 0x8799, 0x97b8, 0xe75f, 0xf77e, 0xc71d, 0xd73c,
+	0x26d3, 0x36f2, 0x0691, 0x16b0, 0x6657, 0x7676, 0x4615, 0x5634,
+	0xd94c, 0xc96d, 0xf90e, 0xe92f, 0x99c8, 0x89e9, 0xb98a, 0xa9ab,
+	0x5844, 0x4865, 0x7806, 0x6827, 0x18c0, 0x08e1, 0x3882, 0x28a3,
+	0xcb7d, 0xdb5c, 0xeb3f, 0xfb1e, 0x8bf9, 0x9bd8, 0xabbb, 0xbb9a,
+	0x4a75, 0x5a54, 0x6a37, 0x7a16, 0x0af1, 0x1ad0, 0x2ab3, 0x3a92,
+	0xfd2e, 0xed0f, 0xdd6c, 0xcd4d, 0xbdaa, 0xad8b, 0x9de8, 0x8dc9,
+	0x7c26, 0x6c07, 0x5c64, 0x4c45, 0x3ca2, 0x2c83, 0x1ce0, 0x0cc1,
+	0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8,
+	0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
 /*
  *	16bit CRCを計算し、セット
  */
-static void FASTCALL calc_crc(BYTE *addr, int size)
+static void FASTCALL
+calc_crc(BYTE * addr, int size)
 {
 	WORD crc;
 
@@ -235,31 +239,33 @@ static void FASTCALL calc_crc(BYTE *addr, int size)
 
 	/* 計算 */
 	while (size > 0) {
-		crc = (WORD)((crc << 8) ^ crc_table[(BYTE)(crc >> 8) ^ (BYTE)*addr++]);
+		crc =
+			(WORD) ((crc << 8) ^ crc_table[(BYTE) (crc >> 8) ^ (BYTE) * addr++]);
 		size--;
 	}
 
 	/* 続く２バイトにセット(ビッグエンディアン) */
-	*addr++ = (BYTE)(crc >> 8);
-	*addr = (BYTE)(crc & 0xff);
+	*addr++ = (BYTE) (crc >> 8);
+	*addr = (BYTE) (crc & 0xff);
 }
 
 /*
  *	乱数を計算
  */
-static BYTE FASTCALL calc_rand(void)
+static BYTE FASTCALL
+calc_rand(void)
 {
 	static WORD rand_s = 0x7f28;
 	WORD tmp1, tmp2, tmp3;
 
 	tmp1 = rand_s;
-	tmp2 = (WORD)(tmp1 & 255);
-	tmp1 = (WORD)((tmp1 << 1) + 1 + rand_s);
-	tmp3 = (WORD)(((tmp1 >> 8) + tmp2) & 255);
+	tmp2 = (WORD) (tmp1 & 255);
+	tmp1 = (WORD) ((tmp1 << 1) + 1 + rand_s);
+	tmp3 = (WORD) (((tmp1 >> 8) + tmp2) & 255);
 	tmp1 &= 255;
-	rand_s = (WORD)((tmp3 << 8) | tmp1);
+	rand_s = (WORD) ((tmp3 << 8) | tmp1);
 
-	return (BYTE)tmp3;
+	return (BYTE) tmp3;
 }
 
 /*-[ ファイル管理 ]---------------------------------------------------------*/
@@ -267,7 +273,8 @@ static BYTE FASTCALL calc_rand(void)
 /*
  *	Read Trackデータ作成
  */
-static void FASTCALL fdc_make_track(void)
+static void FASTCALL
+fdc_make_track(void)
 {
 	int i;
 	int j;
@@ -291,7 +298,7 @@ static void FASTCALL fdc_make_track(void)
 		}
 #if XM7_VER >= 3
 		if (((fdc_ready[fdc_drvreg] != FDC_TYPE_2DD) && fdc_2ddmode) &&
-			((fdc_track[fdc_drvreg] % 2) == 1)) {
+				((fdc_track[fdc_drvreg] % 2) == 1)) {
 			/* 2Dイメージの2DDアクセス時、奇数トラックはアンフォーマット */
 			flag = TRUE;
 		}
@@ -304,7 +311,7 @@ static void FASTCALL fdc_make_track(void)
 		}
 #if XM7_VER >= 3
 		if (((fdc_header[fdc_drvreg][0x001b] == 0x00) && fdc_2ddmode) &&
-			((fdc_track[fdc_drvreg] % 2) == 1)) {
+				((fdc_track[fdc_drvreg] % 2) == 1)) {
 			/* 2Dイメージの2DDアクセス時、奇数トラックはアンフォーマット */
 			flag = TRUE;
 		}
@@ -314,7 +321,7 @@ static void FASTCALL fdc_make_track(void)
 	/* アンフォーマットなら、ランダムデータ作成 */
 	if (flag) {
 		p = fdc_buffer;
-		for (i=0; i<0x1800; i++) {
+		for (i = 0; i < 0x1800; i++) {
 			*p++ = calc_rand();
 		}
 
@@ -328,7 +335,7 @@ static void FASTCALL fdc_make_track(void)
 	/* セクタ数算出、データ移動 */
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-		(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 #else
 	if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 #endif
@@ -338,14 +345,14 @@ static void FASTCALL fdc_make_track(void)
 	}
 	else if (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD) {
 #if XM7_VER >= 3
-			if (fdc_2ddmode) {
-				/* メディアタイプ(2D) != ドライブモード(2DD) */
-				track = (fdc_track[fdc_drvreg] >> 1);
-			}
-			else {
-				/* メディアタイプ == ドライブモード 補正なし */
-				track = fdc_track[fdc_drvreg];
-			}
+		if (fdc_2ddmode) {
+			/* メディアタイプ(2D) != ドライブモード(2DD) */
+			track = (fdc_track[fdc_drvreg] >> 1);
+		}
+		else {
+			/* メディアタイプ == ドライブモード 補正なし */
+			track = fdc_track[fdc_drvreg];
+		}
 #else
 		track = fdc_track[fdc_drvreg];
 #endif
@@ -354,29 +361,29 @@ static void FASTCALL fdc_make_track(void)
 			count = 128;
 		}
 		else {
-			count *= (WORD)256;
+			count *= (WORD) 256;
 		}
-		count *= (WORD)fdc_header[fdc_drvreg][track * 6 + 5];
+		count *= (WORD) fdc_header[fdc_drvreg][track * 6 + 5];
 
 		/* データコピー */
 		q = &fdc_buffer[0x2000 - count];
-		for (j=(count-1); j>=0; j--) {
+		for (j = (count - 1); j >= 0; j--) {
 			q[j] = fdc_buffer[j];
 		}
 	}
 	else {
-		secs = (WORD)(fdc_buffer[0x0005] * 256);
-		secs += (WORD)(fdc_buffer[0x0004]);
+		secs = (WORD) (fdc_buffer[0x0005] * 256);
+		secs += (WORD) (fdc_buffer[0x0004]);
 		count = 0;
 		/* 全セクタまわって、サイズを計る */
-		for (j=0; j<secs; j++) {
+		for (j = 0; j < secs; j++) {
 			p = &fdc_buffer[count];
-			count += (WORD)((p[0x000f] * 256 + p[0x000e]));
-			count += (WORD)0x10;
+			count += (WORD) ((p[0x000f] * 256 + p[0x000e]));
+			count += (WORD) 0x10;
 		}
 		/* データコピー */
 		q = &fdc_buffer[0x2000 - count];
-		for (j=(count-1); j>=0; j--) {
+		for (j = (count - 1); j >= 0; j--) {
 			q[j] = fdc_buffer[j];
 		}
 	}
@@ -404,56 +411,56 @@ static void FASTCALL fdc_make_track(void)
 	count = 0;
 
 	/* GAP0 */
-	for (i=0; i<80; i++) {
+	for (i = 0; i < 80; i++) {
 		*p++ = 0x4e;
 	}
-	count += (WORD)80;
+	count += (WORD) 80;
 
 	/* SYNC */
-	for (i=0; i<12; i++) {
+	for (i = 0; i < 12; i++) {
 		*p++ = 0;
 	}
-	count += (WORD)12;
+	count += (WORD) 12;
 
 	/* INDEX MARK */
 	*p++ = 0xc2;
 	*p++ = 0xc2;
 	*p++ = 0xc2;
 	*p++ = 0xfc;
-	count += (WORD)4;
+	count += (WORD) 4;
 
 	/* GAP1 */
-	for (i=0; i<50; i++) {
+	for (i = 0; i < 50; i++) {
 		*p++ = 0x4e;
 	}
-	count += (WORD)50;
+	count += (WORD) 50;
 
 	/* セクタループ */
-	for (j=0; j<secs; j++) {
+	for (j = 0; j < secs; j++) {
 		/* SYNC */
-		for (i=0; i<12; i++) {
+		for (i = 0; i < 12; i++) {
 			*p++ = 0;
 		}
-		count += (WORD)12;
+		count += (WORD) 12;
 
 		/* ID ADDRESS MARK */
 		*p++ = 0xa1;
 		*p++ = 0xa1;
 		*p++ = 0xa1;
 		*p++ = 0xfe;
-		count += (WORD)4;
+		count += (WORD) 4;
 
 		/* ID */
 #if XM7_VER >= 3
 		if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+				(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 			if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
 				/* メディアタイプ(2D) != ドライブモード(2DD) */
-				p[0] = (BYTE)(fdc_track[fdc_drvreg] >> 1);
+				p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 			}
 			else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) && !fdc_2ddmode) {
 				/* メディアタイプ(2DD) != ドライブモード(2D) */
-				p[0] = (BYTE)(fdc_track[fdc_drvreg] << 1);
+				p[0] = (BYTE) (fdc_track[fdc_drvreg] << 1);
 			}
 			else {
 				/* メディアタイプ == ドライブモード 補正なし */
@@ -464,7 +471,7 @@ static void FASTCALL fdc_make_track(void)
 			p[0] = fdc_track[fdc_drvreg];
 #endif
 			p[1] = fdc_sidereg;
-			p[2] = (BYTE)(j + 1);
+			p[2] = (BYTE) (j + 1);
 			p[3] = 1;
 			size = 0x100;
 			ddm = FALSE;
@@ -473,7 +480,7 @@ static void FASTCALL fdc_make_track(void)
 #if XM7_VER >= 3
 			if (fdc_2ddmode) {
 				/* メディアタイプ(2D) != ドライブモード(2DD) */
-				p[0] = (BYTE)(fdc_track[fdc_drvreg] >> 1);
+				p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 			}
 			else {
 				/* メディアタイプ == ドライブモード 補正なし */
@@ -483,19 +490,19 @@ static void FASTCALL fdc_make_track(void)
 			p[0] = fdc_track[fdc_drvreg];
 #endif
 			p[1] = fdc_sidereg;
-			p[2] = (BYTE)(j + 1);
+			p[2] = (BYTE) (j + 1);
 			p[3] = fdc_header[fdc_drvreg][p[0] * 6 + 4];
 			if (p[3] == 0) {
 				size = 128;
 			}
 			else {
-				size = (WORD)(p[3] * 256);
+				size = (WORD) (p[3] * 256);
 			}
 			ddm = FALSE;
 		}
 		else {
 			memcpy(p, q, 4);
-			size = (WORD)(q[0x000f] * 256 + q[0x000e]);
+			size = (WORD) (q[0x000f] * 256 + q[0x000e]);
 			if (q[0x0007] != 0) {
 				ddm = TRUE;
 			}
@@ -506,19 +513,19 @@ static void FASTCALL fdc_make_track(void)
 		}
 		calc_crc(p, 4);
 		p += (4 + 2);
-		count += (WORD)(4 + 2);
+		count += (WORD) (4 + 2);
 
 		/* GAP2 */
-		for (i=0; i<22; i++) {
+		for (i = 0; i < 22; i++) {
 			*p++ = 0x4e;
 		}
-		count += (WORD)22;
+		count += (WORD) 22;
 
 		/* SYNC */
-		for (i=0; i<12; i++) {
+		for (i = 0; i < 12; i++) {
 			*p++ = 0;
 		}
-		count += (WORD)12;
+		count += (WORD) 12;
 
 		/* DATA ADDRESS MARK */
 		*p++ = 0xa1;
@@ -532,29 +539,29 @@ static void FASTCALL fdc_make_track(void)
 			/* DATA MARK */
 			*p++ = 0xfb;
 		}
-		count += (WORD)4;
+		count += (WORD) 4;
 
 		/* データ */
 		memcpy(p, q, size);
 		q += size;
 		calc_crc(p, size);
 		p += (size + 2);
-		count += (WORD)(size + 2);
+		count += (WORD) (size + 2);
 
 		/* GAP3 */
-		for (i=0; i<gap3; i++) {
+		for (i = 0; i < gap3; i++) {
 			*p++ = 0x4e;
 		}
-		count += (WORD)gap3;
+		count += (WORD) gap3;
 	}
 
 	/* GAP4 */
 	j = (0x1800 - count);
 	if (j < 0x1800) {
-		for (i=0; i<j; i++) {
+		for (i = 0; i < j; i++) {
 			*p++ = 0x4e;
 		}
-		count += (WORD)j;
+		count += (WORD) j;
 	}
 
 	/* データポインタ、カウンタ設定 */
@@ -567,7 +574,8 @@ static void FASTCALL fdc_make_track(void)
  *	IDフィールドをバッファに作る
  *	カウンタ、データポインタを設定
  */
-static void FASTCALL fdc_makeaddr(int index)
+static void FASTCALL
+fdc_makeaddr(int index)
 {
 	int i;
 	BYTE *p;
@@ -580,15 +588,15 @@ static void FASTCALL fdc_makeaddr(int index)
 
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-		(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 		/* 2D/2DDの場合、C,H,R,Nは確定する */
 		if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
 			/* メディアタイプ(2D) != ドライブモード(2DD) */
-			p[0] = (BYTE)(fdc_track[fdc_drvreg] >> 1);
+			p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 		}
 		else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) && !fdc_2ddmode) {
 			/* メディアタイプ(2DD) != ドライブモード(2D) */
-			p[0] = (BYTE)(fdc_track[fdc_drvreg] << 1);
+			p[0] = (BYTE) (fdc_track[fdc_drvreg] << 1);
 		}
 		else {
 			/* メディアタイプ == ドライブモード 補正なし */
@@ -600,7 +608,7 @@ static void FASTCALL fdc_makeaddr(int index)
 		p[0] = fdc_track[fdc_drvreg];
 #endif
 		p[1] = fdc_sidereg;
-		p[2] = (BYTE)(index + 1);
+		p[2] = (BYTE) (index + 1);
 		p[3] = 1;
 	}
 	else if (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD) {
@@ -608,7 +616,7 @@ static void FASTCALL fdc_makeaddr(int index)
 #if XM7_VER >= 3
 		if (fdc_2ddmode) {
 			/* メディアタイプ(2D) != ドライブモード(2DD) */
-			p[0] = (BYTE)(fdc_track[fdc_drvreg] >> 1);
+			p[0] = (BYTE) (fdc_track[fdc_drvreg] >> 1);
 		}
 		else {
 			/* メディアタイプ == ドライブモード 補正なし */
@@ -618,7 +626,7 @@ static void FASTCALL fdc_makeaddr(int index)
 		p[0] = fdc_track[fdc_drvreg];
 #endif
 		p[1] = fdc_sidereg;
-		p[2] = (BYTE)(index + 1);
+		p[2] = (BYTE) (index + 1);
 		p[3] = fdc_header[fdc_drvreg][p[0] * 6 + 4];
 	}
 	else {
@@ -628,12 +636,12 @@ static void FASTCALL fdc_makeaddr(int index)
 		while (i < index) {
 			/* セクタサイズを取得 */
 			size = fdc_buffer[offset + 0x000f];
-			size *= (WORD)256;
+			size *= (WORD) 256;
 			size |= fdc_buffer[offset + 0x000e];
 
 			/* 次のセクタへ進める */
 			offset += size;
-			offset += (WORD)0x10;
+			offset += (WORD) 0x10;
 
 			i++;
 		}
@@ -657,7 +665,8 @@ static void FASTCALL fdc_makeaddr(int index)
 /*
  *	インデックスカウンタを次のセクタへ移す
  */
-static int FASTCALL fdc_next_index(void)
+static int FASTCALL
+fdc_next_index(void)
 {
 	int max_track;
 	int track;
@@ -668,12 +677,12 @@ static int FASTCALL fdc_next_index(void)
 	/* ディスクタイプをチェック */
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-		(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 #else
 	if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 #endif
 		/* 2D/2DDなら16セクタ固定 */
-		fdc_indexcnt = (BYTE)((fdc_indexcnt + 1) & 0x0f);
+		fdc_indexcnt = (BYTE) ((fdc_indexcnt + 1) & 0x0f);
 #if XM7_VER >= 3
 		if (fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) {
 			max_track = 80;
@@ -691,8 +700,8 @@ static int FASTCALL fdc_next_index(void)
 	}
 
 	/* D77/VFD */
-	ASSERT( (fdc_ready[fdc_drvreg] == FDC_TYPE_D77) ||
-			(fdc_ready[fdc_drvreg] == FDC_TYPE_VFD));
+	ASSERT((fdc_ready[fdc_drvreg] == FDC_TYPE_D77) ||
+				 (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD));
 
 	if (fdc_ready[fdc_drvreg] == FDC_TYPE_VFD) {
 		track = fdc_track[fdc_drvreg];
@@ -710,7 +719,7 @@ static int FASTCALL fdc_next_index(void)
 	}
 	if (secs == 0) {
 		/* アンフォーマット */
-		fdc_indexcnt = (BYTE)((fdc_indexcnt + 1) & 0x0f);
+		fdc_indexcnt = (BYTE) ((fdc_indexcnt + 1) & 0x0f);
 		return -1;
 	}
 	else {
@@ -725,7 +734,8 @@ static int FASTCALL fdc_next_index(void)
 /*
  *	IDマークを探す
  */
-static BOOL FASTCALL fdc_idmark(WORD *p)
+static BOOL FASTCALL
+fdc_idmark(WORD * p)
 {
 	WORD offset;
 	BYTE dat;
@@ -760,7 +770,8 @@ static BOOL FASTCALL fdc_idmark(WORD *p)
 /*
  *	データマークを探す
  */
-static BOOL FASTCALL fdc_datamark(WORD *p, BOOL *deleted_mark)
+static BOOL FASTCALL
+fdc_datamark(WORD * p, BOOL * deleted_mark)
 {
 	WORD offset;
 	BYTE dat;
@@ -804,7 +815,8 @@ static BOOL FASTCALL fdc_datamark(WORD *p, BOOL *deleted_mark)
 /*
  *	トラック書き込み終了
  */
-static BOOL FASTCALL fdc_writetrk(void)
+static BOOL FASTCALL
+fdc_writetrk(void)
 {
 	int total;
 	int sectors;
@@ -827,7 +839,7 @@ static BOOL FASTCALL fdc_writetrk(void)
 			break;
 		}
 		/* C,H,R,Nの次が$F7か */
-		offset += (WORD)4;
+		offset += (WORD) 4;
 		if (offset >= fdc_totalcnt) {
 			return FALSE;
 		}
@@ -841,7 +853,7 @@ static BOOL FASTCALL fdc_writetrk(void)
 		}
 		/* レングスを計算しつつ、$F7を探す */
 		seclen = 0;
-		while(offset < fdc_totalcnt) {
+		while (offset < fdc_totalcnt) {
 			if (fdc_buffer[offset] == 0xf7) {
 				break;
 			}
@@ -860,7 +872,7 @@ static BOOL FASTCALL fdc_writetrk(void)
 	/* 2D/2DDメディアの場合、total=0x1000, sectors=0x10が必須 */
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-		(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 #else
 	if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 #endif
@@ -895,7 +907,7 @@ static BOOL FASTCALL fdc_writetrk(void)
 	/* 収まることがわかったので、データを作成する */
 	writep = 0;
 	offset = 0;
-	for (i=0; i<sectors; i++) {
+	for (i = 0; i < sectors; i++) {
 		/* IDマークを見る */
 		fdc_idmark(&offset);
 
@@ -904,8 +916,8 @@ static BOOL FASTCALL fdc_writetrk(void)
 		fdc_buffer[writep++] = fdc_buffer[offset++];
 		fdc_buffer[writep++] = fdc_buffer[offset++];
 		fdc_buffer[writep++] = fdc_buffer[offset++];
-		fdc_buffer[writep++] = (BYTE)(sectors & 0xff);
-		fdc_buffer[writep++] = (BYTE)(sectors >> 8);
+		fdc_buffer[writep++] = (BYTE) (sectors & 0xff);
+		fdc_buffer[writep++] = (BYTE) (sectors >> 8);
 		fdc_buffer[writep++] = 0x00;
 		offset++;
 
@@ -921,7 +933,7 @@ static BOOL FASTCALL fdc_writetrk(void)
 		/* リザーブエリアをクリア */
 		/* セクタレングスは後で書き込む */
 		memset(&fdc_buffer[writep], 0, 8);
-		writep += (WORD)8;
+		writep += (WORD) 8;
 
 		/* レングスを数えつつコピー */
 		seclen = 0;
@@ -932,8 +944,8 @@ static BOOL FASTCALL fdc_writetrk(void)
 		offset++;
 
 		/* セクタレングスを設定 */
-		fdc_buffer[writep - seclen - 2] = (BYTE)(seclen & 0xff);
-		fdc_buffer[writep - seclen - 1] = (BYTE)(seclen >> 8);
+		fdc_buffer[writep - seclen - 2] = (BYTE) (seclen & 0xff);
+		fdc_buffer[writep - seclen - 1] = (BYTE) (seclen >> 8);
 	}
 
 	/* ファイルにデータを書きこむ */
@@ -958,7 +970,8 @@ static BOOL FASTCALL fdc_writetrk(void)
 /*
  *	セクタ書き込み終了
  */
-static BOOL FASTCALL fdc_writesec(void)
+static BOOL FASTCALL
+fdc_writesec(void)
 {
 	DWORD offset;
 	SDL_RWops *handle;
@@ -995,10 +1008,11 @@ static BOOL FASTCALL fdc_writesec(void)
  *	トラック、セクタ、サイドと一致するセクタを検索
  *	カウンタ、データポインタを設定
  */
-static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
+static BYTE FASTCALL
+fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecmp)
 {
 	int secs;
-	int	len;
+	int len;
 	int i;
 	WORD offset;
 	WORD size;
@@ -1016,18 +1030,18 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 	/* 2D/2DDファイルの場合 */
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-		(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 		if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
 			/* メディアタイプ(2D) != ドライブモード(2DD) */
 			if ((fdctrack % 2) == 1) {
 				/* 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー */
 				return FDC_ST_RECNFND;
 			}
-			fdctrack = (BYTE)(fdctrack >> 1);
+			fdctrack = (BYTE) (fdctrack >> 1);
 		}
 		else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) && !fdc_2ddmode) {
 			/* メディアタイプ(2DD) != ドライブモード(2D) */
-			fdctrack = (BYTE)(fdctrack << 1);
+			fdctrack = (BYTE) (fdctrack << 1);
 		}
 #else
 	if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
@@ -1062,7 +1076,7 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 				/* 2Dイメージの2DDアクセス時、奇数トラックアクセスはエラー */
 				return FDC_ST_RECNFND;
 			}
-			fdctrack = (BYTE)(fdctrack >> 1);
+			fdctrack = (BYTE) (fdctrack >> 1);
 		}
 #endif
 		if (track != fdctrack) {
@@ -1073,12 +1087,12 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 		}
 
 		/* トラックへのオフセットをチェック */
-		vfdoffset  = fdc_header[fdc_drvreg][track * 6 + 3];
-		vfdoffset *= (DWORD)256;
+		vfdoffset = fdc_header[fdc_drvreg][track * 6 + 3];
+		vfdoffset *= (DWORD) 256;
 		vfdoffset |= fdc_header[fdc_drvreg][track * 6 + 2];
-		vfdoffset *= (DWORD)256;
+		vfdoffset *= (DWORD) 256;
 		vfdoffset |= fdc_header[fdc_drvreg][track * 6 + 1];
-		vfdoffset *= (DWORD)256;
+		vfdoffset *= (DWORD) 256;
 		vfdoffset |= fdc_header[fdc_drvreg][track * 6 + 0];
 		if (vfdoffset == 0) {
 			return FDC_ST_RECNFND;
@@ -1102,7 +1116,7 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 		fdc_secofs[fdc_drvreg] = (sector - 1) * len;
 
 		/* カウンタ設定 */
-		fdc_totalcnt = (WORD)len;
+		fdc_totalcnt = (WORD) len;
 		fdc_nowcnt = 0;
 
 		return 0;
@@ -1110,7 +1124,7 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 
 	/* D77ファイルの場合 */
 	secs = fdc_buffer[0x0005];
-	secs *= (WORD)256;
+	secs *= (WORD) 256;
 	secs |= fdc_buffer[0x0004];
 	if (secs == 0) {
 		return FDC_ST_RECNFND;
@@ -1127,29 +1141,29 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 
 	offset = 0;
 	/* セクタループ */
-	for (i=0; i<secs; i++) {
+	for (i = 0; i < secs; i++) {
 		/* このセクタのサイズを先に取得 */
 		size = fdc_buffer[offset + 0x000f];
-		size *= (WORD)256;
+		size *= (WORD) 256;
 		size |= fdc_buffer[offset + 0x000e];
 
 		/* C,H,Rが一致するセクタがあるか */
 		if (fdc_buffer[offset + 0] != track) {
 			offset += size;
-			offset += (WORD)0x10;
+			offset += (WORD) 0x10;
 			continue;
 		}
 		/* サイド情報のbit0以外は考慮しないように変更 */
 		if (sidecmp) {
-			if ((BYTE)(fdc_buffer[offset + 1] & 1) != side) {
+			if ((BYTE) (fdc_buffer[offset + 1] & 1) != side) {
 				offset += size;
-				offset += (WORD)0x10;
+				offset += (WORD) 0x10;
 				continue;
 			}
 		}
 		if (fdc_buffer[offset + 2] != sector) {
 			offset += size;
-			offset += (WORD)0x10;
+			offset += (WORD) 0x10;
 			continue;
 		}
 
@@ -1184,7 +1198,8 @@ static BYTE FASTCALL fdc_readsec(BYTE track, BYTE sector, BYTE side, BOOL sidecm
 /*
  *	トラック読み込み
  */
-static void FASTCALL fdc_readbuf(int drive)
+static void FASTCALL
+fdc_readbuf(int drive)
 {
 	DWORD offset;
 	DWORD len;
@@ -1214,7 +1229,7 @@ static void FASTCALL fdc_readbuf(int drive)
 	 */
 #if XM7_VER >= 3
 	if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) ||
-		(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
+			(fdc_ready[fdc_drvreg] == FDC_TYPE_2DD)) {
 		if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 			max_track = 80;
 
@@ -1247,7 +1262,7 @@ static void FASTCALL fdc_readbuf(int drive)
 #endif
 
 		/* オフセット算出 */
-		offset = (DWORD)trkside;
+		offset = (DWORD) trkside;
 		offset *= 0x1000;
 		fdc_seekofs[drive] = offset;
 		fdc_trklen[drive] = 0x1000;
@@ -1285,7 +1300,7 @@ static void FASTCALL fdc_readbuf(int drive)
 		}
 
 		/* オフセット算出 */
-		offset  = fdc_header[drive][trkside * 6 + 3];
+		offset = fdc_header[drive][trkside * 6 + 3];
 		offset *= 256;
 		offset |= fdc_header[drive][trkside * 6 + 2];
 		offset *= 256;
@@ -1294,15 +1309,15 @@ static void FASTCALL fdc_readbuf(int drive)
 		offset |= fdc_header[drive][trkside * 6 + 0];
 		fdc_seekofs[drive] = offset;
 
-		len		= fdc_header[drive][trkside * 6 + 4];
-		secs	= fdc_header[drive][trkside * 6 + 5];
+		len = fdc_header[drive][trkside * 6 + 4];
+		secs = fdc_header[drive][trkside * 6 + 5];
 		if (len == 0) {
 			len = 128;
 		}
 		else {
 			len *= 256;
 		}
-		fdc_trklen[drive] = (WORD)(len * secs);
+		fdc_trklen[drive] = (WORD) (len * secs);
 
 		/* 読み込み */
 		memset(fdc_buffer, 0, fdc_trklen[drive]);
@@ -1361,7 +1376,7 @@ static void FASTCALL fdc_readbuf(int drive)
 	}
 
 	/* ヘッダファイルに従い、オフセット・レングスを算出 */
-	offset = *(DWORD *)(&fdc_header[drive][0x0020 + trkside * 4]);
+	offset = *(DWORD *) (&fdc_header[drive][0x0020 + trkside * 4]);
 	if (offset == 0) {
 		/* 存在しないトラック */
 		fdc_buffer[4] = 0;
@@ -1369,17 +1384,17 @@ static void FASTCALL fdc_readbuf(int drive)
 		return;
 	}
 
-	len = *(DWORD *)(&fdc_header[drive][0x0020 + (trkside + 1) * 4]);
+	len = *(DWORD *) (&fdc_header[drive][0x0020 + (trkside + 1) * 4]);
 	if (len == 0) {
 		/* 最終トラック */
-		len = *(DWORD *)(&fdc_header[drive][0x0014]);
+		len = *(DWORD *) (&fdc_header[drive][0x0014]);
 	}
 	len -= offset;
 	if (len > 0x2000) {
 		len = 0x2000;
 	}
 	fdc_seekofs[drive] = offset;
-	fdc_trklen[drive] = (WORD)len;
+	fdc_trklen[drive] = (WORD) len;
 
 	/* シーク、読み込み */
 	memset(fdc_buffer, 0, 0x2000);
@@ -1398,7 +1413,8 @@ static void FASTCALL fdc_readbuf(int drive)
 /*
  *	D77ファイル ヘッダ読み込み
  */
-static BOOL FASTCALL fdc_readhead(int drive, int index)
+static BOOL FASTCALL
+fdc_readhead(int drive, int index)
 {
 	int i;
 	DWORD offset;
@@ -1430,7 +1446,7 @@ static BOOL FASTCALL fdc_readhead(int drive, int index)
 
 	/* タイプチェック、ライトプロテクト設定 */
 	if ((fdc_header[drive][0x001b] != 0x00) &&
-		(fdc_header[drive][0x001b] != 0x10)) {
+			(fdc_header[drive][0x001b] != 0x10)) {
 		/* 2D/2DDでない */
 		return FALSE;
 	}
@@ -1447,7 +1463,7 @@ static BOOL FASTCALL fdc_readhead(int drive, int index)
 	}
 
 	/* トラックオフセットを設定 */
-	for (i=0; i<164; i++) {
+	for (i = 0; i < 164; i++) {
 		temp = 0;
 		temp |= fdc_header[drive][0x0020 + i * 4 + 3];
 		temp *= 256;
@@ -1460,7 +1476,7 @@ static BOOL FASTCALL fdc_readhead(int drive, int index)
 		if (temp != 0) {
 			/* データあり */
 			temp += offset;
-			*(DWORD *)(&fdc_header[drive][0x0020 + i * 4]) = temp;
+			*(DWORD *) (&fdc_header[drive][0x0020 + i * 4]) = temp;
 		}
 	}
 
@@ -1474,7 +1490,7 @@ static BOOL FASTCALL fdc_readhead(int drive, int index)
 	temp *= 256;
 	temp |= fdc_header[drive][0x001c + 0];
 	temp += offset;
-	*(DWORD *)(&fdc_header[drive][0x0014]) = temp;
+	*(DWORD *) (&fdc_header[drive][0x0014]) = temp;
 
 	return TRUE;
 }
@@ -1482,7 +1498,8 @@ static BOOL FASTCALL fdc_readhead(int drive, int index)
 /*
  *	VFDファイル ヘッダ読み込み
  */
-static BOOL FASTCALL fdc_readhead_vfd(int drive)
+static BOOL FASTCALL
+fdc_readhead_vfd(int drive)
 {
 	SDL_RWops *handle;
 
@@ -1511,7 +1528,8 @@ static BOOL FASTCALL fdc_readhead_vfd(int drive)
 /*
  *	現在のメディアのライトプロテクトを切り替える
  */
-BOOL FASTCALL fdc_setwritep(int drive, BOOL writep)
+BOOL FASTCALL
+fdc_setwritep(int drive, BOOL writep)
 {
 	BYTE header[0x2b0];
 	DWORD offset;
@@ -1571,7 +1589,8 @@ BOOL FASTCALL fdc_setwritep(int drive, BOOL writep)
 /*
  *	メディア番号を設定
  */
-BOOL FASTCALL fdc_setmedia(int drive, int index)
+BOOL FASTCALL
+fdc_setmedia(int drive, int index)
 {
 	/* assert */
 	ASSERT((drive >= 0) && (drive < FDC_DRIVES));
@@ -1585,7 +1604,7 @@ BOOL FASTCALL fdc_setmedia(int drive, int index)
 	/* 2D/2DDファイルの場合、index = 0か */
 #if XM7_VER >= 3
 	if (((fdc_ready[drive] == FDC_TYPE_2D) ||
-		 (fdc_ready[drive] == FDC_TYPE_2DD)) && (index != 0)) {
+			 (fdc_ready[drive] == FDC_TYPE_2DD)) && (index != 0)) {
 #else
 	if ((fdc_ready[drive] == FDC_TYPE_2D) && (index != 0)) {
 #endif
@@ -1627,7 +1646,7 @@ BOOL FASTCALL fdc_setmedia(int drive, int index)
 	}
 
 	/* データバッファ読み込み、ワークセーブ */
-	fdc_media[drive] = (BYTE)index;
+	fdc_media[drive] = (BYTE) index;
 	if (drive == fdc_drvreg) {
 		/* カレントドライブと一致した場合のみバッファ読み込みを行う */
 		fdc_readbuf(drive);
@@ -1639,7 +1658,8 @@ BOOL FASTCALL fdc_setmedia(int drive, int index)
 /*
  *	D77ファイル解析、メディア数および名称取得
  */
-static int FASTCALL fdc_chkd77(int drive)
+static int FASTCALL
+fdc_chkd77(int drive)
 {
 	int i;
 	SDL_RWops *handle;
@@ -1649,7 +1669,7 @@ static int FASTCALL fdc_chkd77(int drive)
 	BYTE buf[0x20];
 
 	/* 初期化 */
-	for (i=0; i<FDC_MEDIAS; i++) {
+	for (i = 0; i < FDC_MEDIAS; i++) {
 		fdc_foffset[drive][i] = 0;
 		fdc_name[drive][i][0] = '\0';
 	}
@@ -1712,14 +1732,15 @@ static int FASTCALL fdc_chkd77(int drive)
 /*
  *	VFDファイルチェック
  */
-static int FASTCALL fdc_chkvfd(int drive)
+static int FASTCALL
+fdc_chkvfd(int drive)
 {
-	int	i;
+	int i;
 	SDL_RWops *handle;
 	BYTE buf[0x20];
 
 	/* 初期化 */
-	for (i=0; i<FDC_MEDIAS; i++) {
+	for (i = 0; i < FDC_MEDIAS; i++) {
 		fdc_foffset[drive][i] = 0;
 		fdc_name[drive][i][0] = '\0';
 	}
@@ -1741,7 +1762,7 @@ static int FASTCALL fdc_chkvfd(int drive)
 	}
 	file_close(handle);
 
-	if (	(buf[0x00] != 0xe0) || (buf[0x01] != 0x01) ||
+	if ((buf[0x00] != 0xe0) || (buf[0x01] != 0x01) ||
 			(buf[0x02] != 0x00) || (buf[0x03] != 0x00)) {
 		/* トラック0のオフセットが0x01e0以外ならVFDではない(手抜きだ…) */
 		return 0;
@@ -1753,7 +1774,8 @@ static int FASTCALL fdc_chkvfd(int drive)
 /*
  *	ディスクファイルを設定
  */
-int FASTCALL fdc_setdisk(int drive, char *fname)
+int FASTCALL
+fdc_setdisk(int drive, char *fname)
 {
 	BOOL writep;
 	SDL_RWops *handle;
@@ -1860,7 +1882,7 @@ int FASTCALL fdc_setdisk(int drive, char *fname)
 
 	/* ファイル検査 */
 	count = fdc_chkd77(drive);
-	if (count == 0){
+	if (count == 0) {
 		fdc_ready[drive] = FDC_TYPE_NOTREADY;
 		return 0;
 	}
@@ -1873,7 +1895,7 @@ int FASTCALL fdc_setdisk(int drive, char *fname)
 
 	/* 成功。一時イジェクト解除 */
 	fdc_teject[drive] = FALSE;
-	fdc_medias[drive] = (BYTE)count;
+	fdc_medias[drive] = (BYTE) count;
 	return count;
 }
 
@@ -1883,7 +1905,8 @@ int FASTCALL fdc_setdisk(int drive, char *fname)
  *	FDC DataRequestイベント (WAIT)
  */
 #ifdef FDDSND
-static BOOL FASTCALL fdc_drq_event(void)
+static BOOL FASTCALL
+fdc_drq_event(void)
 {
 	/* ロストデータチェック */
 	if (fdc_drqirq & 0x80) {
@@ -1899,7 +1922,8 @@ static BOOL FASTCALL fdc_drq_event(void)
 /*
  *	FDC シークイベント (WAIT)
  */
-static BOOL FASTCALL fdd_seek_event(void)
+static BOOL FASTCALL
+fdd_seek_event(void)
 {
 	/* シーク処理が終了したか */
 	if (fdc_seek_track < 0) {
@@ -1929,14 +1953,16 @@ static BOOL FASTCALL fdd_seek_event(void)
 /*
  *	FDC シークイベント設定 (SOUND ON)
  */
-static void FASTCALL fdc_setseekevent(BYTE track)
+static void FASTCALL
+fdc_setseekevent(BYTE track)
 {
 	/* シークするトラック数を保存 */
 	fdc_seek_track = track;
 
 	/* イベント設定 */
 	if (track > 0) {
-		schedule_setevent(EVENT_FDD_SEEK, fdc_steprate[fdc_command & 3], fdd_seek_event);
+		schedule_setevent(EVENT_FDD_SEEK, fdc_steprate[fdc_command & 3],
+											fdd_seek_event);
 	}
 	else {
 		/* ヘッド移動がなくてもしばらくの間はBUSY状態にする */
@@ -1950,7 +1976,8 @@ static void FASTCALL fdc_setseekevent(BYTE track)
 /*
  *	FDC ステータス作成
  */
-static void FASTCALL fdc_make_stat(void)
+static void FASTCALL
+fdc_make_stat(void)
 {
 	/* ドライブチェック */
 	if (fdc_drvreg >= FDC_DRIVES) {
@@ -1963,7 +1990,7 @@ static void FASTCALL fdc_make_stat(void)
 		fdc_status |= FDC_ST_NOTREADY;
 	}
 	else {
-		fdc_status &= (BYTE)(~FDC_ST_NOTREADY);
+		fdc_status &= (BYTE) (~FDC_ST_NOTREADY);
 	}
 
 	/* 一時イジェクト */
@@ -2013,7 +2040,8 @@ static void FASTCALL fdc_make_stat(void)
  *	TYPE I
  *	RESTORE
  */
-static void FASTCALL fdc_restore(void)
+static void FASTCALL
+fdc_restore(void)
 {
 #ifdef FDDSND
 	BYTE prevtrk;
@@ -2056,13 +2084,13 @@ static void FASTCALL fdc_restore(void)
 	else {
 		if (!mfd_irq_mask) {
 			mainetc_fdc();
-			fdc_drqirq |= (BYTE)0x40;
+			fdc_drqirq |= (BYTE) 0x40;
 		}
 	}
 #else
 	if (!mfd_irq_mask) {
 		mainetc_fdc();
-		fdc_drqirq |= (BYTE)0x40;
+		fdc_drqirq |= (BYTE) 0x40;
 	}
 #endif
 
@@ -2081,7 +2109,8 @@ static void FASTCALL fdc_restore(void)
  *	TYPE I
  *	SEEK
  */
-static void FASTCALL fdc_seek(void)
+static void FASTCALL
+fdc_seek(void)
 {
 	BYTE target;
 #ifdef FDDSND
@@ -2115,7 +2144,7 @@ static void FASTCALL fdc_seek(void)
 #endif
 
 	/* 相対シーク */
-	target = (BYTE)(fdc_track[fdc_drvreg] + fdc_datareg - fdc_trkreg);
+	target = (BYTE) (fdc_track[fdc_drvreg] + fdc_datareg - fdc_trkreg);
 	if (fdc_datareg > fdc_trkreg) {
 		fdc_seekvct = FALSE;
 #if XM7_VER >= 3
@@ -2156,18 +2185,18 @@ static void FASTCALL fdc_seek(void)
 	fdc_drqirq = 0x00;
 #ifdef FDDSND
 	if (fdc_wait) {
-		fdc_setseekevent((BYTE)abs(target - prevtrk));
+		fdc_setseekevent((BYTE) abs(target - prevtrk));
 	}
 	else {
 		if (!mfd_irq_mask) {
 			mainetc_fdc();
-			fdc_drqirq |= (BYTE)0x40;
+			fdc_drqirq |= (BYTE) 0x40;
 		}
 	}
 #else
 	if (!mfd_irq_mask) {
 		mainetc_fdc();
-		fdc_drqirq |= (BYTE)0x40;
+		fdc_drqirq |= (BYTE) 0x40;
 	}
 #endif
 
@@ -2186,7 +2215,8 @@ static void FASTCALL fdc_seek(void)
  *	TYPE I
  *	STEP IN
  */
-static void FASTCALL fdc_step_in(void)
+static void FASTCALL
+fdc_step_in(void)
 {
 #ifdef FDDSND
 	BYTE prevtrk;
@@ -2254,13 +2284,13 @@ static void FASTCALL fdc_step_in(void)
 	else {
 		if (!mfd_irq_mask) {
 			mainetc_fdc();
-			fdc_drqirq |= (BYTE)0x40;
+			fdc_drqirq |= (BYTE) 0x40;
 		}
 	}
 #else
 	if (!mfd_irq_mask) {
 		mainetc_fdc();
-		fdc_drqirq |= (BYTE)0x40;
+		fdc_drqirq |= (BYTE) 0x40;
 	}
 #endif
 
@@ -2279,7 +2309,8 @@ static void FASTCALL fdc_step_in(void)
  *	TYPE I
  *	STEP OUT
  */
-static void FASTCALL fdc_step_out(void)
+static void FASTCALL
+fdc_step_out(void)
 {
 #ifdef FDDSND
 	BYTE prevtrk;
@@ -2332,13 +2363,13 @@ static void FASTCALL fdc_step_out(void)
 	else {
 		if (!mfd_irq_mask) {
 			mainetc_fdc();
-			fdc_drqirq |= (BYTE)0x40;
+			fdc_drqirq |= (BYTE) 0x40;
 		}
 	}
 #else
 	if (!mfd_irq_mask) {
 		mainetc_fdc();
-		fdc_drqirq |= (BYTE)0x40;
+		fdc_drqirq |= (BYTE) 0x40;
 	}
 #endif
 
@@ -2357,7 +2388,8 @@ static void FASTCALL fdc_step_out(void)
  *	TYPE I
  *	STEP
  */
-static void FASTCALL fdc_step(void)
+static void FASTCALL
+fdc_step(void)
 {
 	if (fdc_seekvct) {
 		fdc_step_out();
@@ -2371,7 +2403,8 @@ static void FASTCALL fdc_step(void)
  *	TYPE II, III
  *	READ/WRITE サブ
  */
-static BOOL FASTCALL fdc_rw_sub(void)
+static BOOL FASTCALL
+fdc_rw_sub(void)
 {
 	fdc_status = 0;
 
@@ -2400,7 +2433,8 @@ static BOOL FASTCALL fdc_rw_sub(void)
  *	TYPE II
  *	READ DATA
  */
-static void FASTCALL fdc_read_data(void)
+static void FASTCALL
+fdc_read_data(void)
 {
 	BYTE stat;
 
@@ -2414,7 +2448,9 @@ static void FASTCALL fdc_read_data(void)
 
 	/* セクタ検索 */
 	if (fdc_command & 0x02) {
-		stat = fdc_readsec(fdc_trkreg, fdc_secreg, (BYTE)((fdc_command & 0x08) >> 3), TRUE);
+		stat =
+			fdc_readsec(fdc_trkreg, fdc_secreg, (BYTE) ((fdc_command & 0x08) >> 3),
+									TRUE);
 	}
 	else {
 		stat = fdc_readsec(fdc_trkreg, fdc_secreg, fdc_sidereg, FALSE);
@@ -2469,7 +2505,8 @@ static void FASTCALL fdc_read_data(void)
  *	TYPE II
  *	WRITE DATA
  */
-static void FASTCALL fdc_write_data(void)
+static void FASTCALL
+fdc_write_data(void)
 {
 	BYTE stat;
 
@@ -2492,7 +2529,9 @@ static void FASTCALL fdc_write_data(void)
 
 	/* セクタ検索 */
 	if (fdc_command & 0x02) {
-		stat = fdc_readsec(fdc_trkreg, fdc_secreg, (BYTE)((fdc_command & 0x08) >> 3), TRUE);
+		stat =
+			fdc_readsec(fdc_trkreg, fdc_secreg, (BYTE) ((fdc_command & 0x08) >> 3),
+									TRUE);
 	}
 	else {
 		stat = fdc_readsec(fdc_trkreg, fdc_secreg, fdc_sidereg, FALSE);
@@ -2547,7 +2586,8 @@ static void FASTCALL fdc_write_data(void)
  *	TYPE III
  *	READ ADDRESS
  */
-static void FASTCALL fdc_read_addr(void)
+static void FASTCALL
+fdc_read_addr(void)
 {
 	int idx;
 
@@ -2614,7 +2654,8 @@ static void FASTCALL fdc_read_addr(void)
  *	TYPE III
  *	READ TRACK
  */
-static void FASTCALL fdc_read_track(void)
+static void FASTCALL
+fdc_read_track(void)
 {
 	/* TYPE III, Read Track */
 	fdc_cmdtype = 6;
@@ -2664,7 +2705,8 @@ static void FASTCALL fdc_read_track(void)
  *	TYPE III
  *	WRITE TRACK
  */
-static void FASTCALL fdc_write_track(void)
+static void FASTCALL
+fdc_write_track(void)
 {
 	fdc_status = 0;
 
@@ -2725,7 +2767,8 @@ static void FASTCALL fdc_write_track(void)
  *	TYPE IV
  *	FORCE INTERRUPT
  */
-static void FASTCALL fdc_force_intr(void)
+static void FASTCALL
+fdc_force_intr(void)
 {
 	/* WRITE TRACK終了処理 */
 	if (fdc_cmdtype == 5) {
@@ -2778,7 +2821,8 @@ static void FASTCALL fdc_force_intr(void)
  *	マルチセクタ
  *	イベント
  */
-static BOOL FASTCALL fdc_multi_event(void)
+static BOOL FASTCALL
+fdc_multi_event(void)
 {
 	if (fdc_drqirq & 0x10) {
 		fdc_drqirq = 0x08;
@@ -2810,7 +2854,8 @@ static BOOL FASTCALL fdc_multi_event(void)
  *	ロストデータ
  *	イベント
  */
-static BOOL FASTCALL fdc_lost_event(void)
+static BOOL FASTCALL
+fdc_lost_event(void)
 {
 	if (fdc_dataptr && (fdc_drqirq & 0x80)) {
 		/* コマンド打ち切り、ロストデータ */
@@ -2834,11 +2879,12 @@ static BOOL FASTCALL fdc_lost_event(void)
 /*
  *	コマンド処理
  */
-static void FASTCALL fdc_process_cmd(void)
+static void FASTCALL
+fdc_process_cmd(void)
 {
 	BYTE high;
 
-	high = (BYTE)(fdc_command >> 4);
+	high = (BYTE) (fdc_command >> 4);
 
 #ifdef FDDSND
 	/* ウェイトフラグ設定 */
@@ -2850,56 +2896,56 @@ static void FASTCALL fdc_process_cmd(void)
 
 	/* 分岐 */
 	switch (high) {
-		/* restore */
+			/* restore */
 		case 0x00:
 			fdc_restore();
 			break;
-		/* seek */
+			/* seek */
 		case 0x01:
 			fdc_seek();
 			break;
-		/* step */
+			/* step */
 		case 0x02:
 		case 0x03:
 			fdc_step();
 			break;
-		/* step in */
+			/* step in */
 		case 0x04:
 		case 0x05:
 			fdc_step_in();
 			break;
-		/* step out */
+			/* step out */
 		case 0x06:
 		case 0x07:
 			fdc_step_out();
 			break;
-		/* read data */
+			/* read data */
 		case 0x08:
 		case 0x09:
 			fdc_read_data();
 			break;
-		/* write data */
+			/* write data */
 		case 0x0a:
 		case 0x0b:
 			fdc_write_data();
 			break;
-		/* read address */
+			/* read address */
 		case 0x0c:
 			fdc_read_addr();
 			break;
-		/* force interrupt */
+			/* force interrupt */
 		case 0x0d:
 			fdc_force_intr();
 			break;
-		/* read track */
+			/* read track */
 		case 0x0e:
 			fdc_read_track();
 			break;
-		/* write track */
+			/* write track */
 		case 0x0f:
 			fdc_write_track();
 			break;
-		/* それ以外 */
+			/* それ以外 */
 		default:
 			ASSERT(FALSE);
 			break;
@@ -2910,19 +2956,20 @@ static void FASTCALL fdc_process_cmd(void)
  *	FDC
  *	１バイト読み出し
  */
-BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+fdc_readb(WORD addr, BYTE * dat)
 {
 #if XM7_VER >= 3
 	BYTE tmp;
 #endif
 
 	switch (addr) {
-		/* ステータスレジスタ */
+			/* ステータスレジスタ */
 		case 0xfd18:
 			fdc_make_stat();
 			*dat = fdc_status;
 			/* ステータスをチェックした(麻雀悟空) */
-			fdc_drqirq |= (BYTE)0x20;
+			fdc_drqirq |= (BYTE) 0x20;
 			/* BUSY処理 */
 			if ((fdc_status & FDC_ST_BUSY) && (fdc_dataptr == NULL)) {
 #ifdef FDDSND
@@ -2931,7 +2978,7 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
 				if (fdc_cmdtype == 1) {
 #endif
 					/* IRQ On */
-					fdc_drqirq |= (BYTE)0x40;
+					fdc_drqirq |= (BYTE) 0x40;
 				}
 #ifdef FDDSND
 				if (!fdc_wait || (fdc_cmdtype != 1) || (fdc_drqirq & 0x40)) {
@@ -2953,17 +3000,17 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
 			maincpu_irq();
 			return TRUE;
 
-		/* トラックレジスタ */
+			/* トラックレジスタ */
 		case 0xfd19:
 			*dat = fdc_trkreg;
 			return TRUE;
 
-		/* セクタレジスタ */
+			/* セクタレジスタ */
 		case 0xfd1a:
 			*dat = fdc_secreg;
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd1b:
 			*dat = fdc_datareg;
 			/* カウンタ処理 */
@@ -2978,7 +3025,7 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
 #endif
 					fdc_status &= ~FDC_ST_BUSY;
 					fdc_status &= ~FDC_ST_DRQ;
-					fdc_drqirq &= (BYTE)~0x80;
+					fdc_drqirq &= (BYTE) ~ 0x80;
 
 					if ((fdc_cmdtype == 2) && (fdc_command & 0x10)) {
 						/* マルチセクタ処理 */
@@ -3004,44 +3051,44 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
 #ifdef FDDSND
 					if (fdc_wait) {
 						schedule_setevent(EVENT_FDC_L, FDC_LOST_TIME, fdc_drq_event);
-						fdc_status &= (BYTE)~FDC_ST_DRQ;
-						fdc_drqirq &= (BYTE)~0x80;
+						fdc_status &= (BYTE) ~ FDC_ST_DRQ;
+						fdc_drqirq &= (BYTE) ~ 0x80;
 					}
 					else {
-						fdc_drqirq |= (BYTE)0x80;
+						fdc_drqirq |= (BYTE) 0x80;
 					}
 #else
-					fdc_drqirq |= (BYTE)0x80;
+					fdc_drqirq |= (BYTE) 0x80;
 #endif
 				}
 			}
 			return TRUE;
 
-		/* ヘッドレジスタ */
+			/* ヘッドレジスタ */
 		case 0xfd1c:
-			*dat = (BYTE)(fdc_sidereg | 0xfe);
+			*dat = (BYTE) (fdc_sidereg | 0xfe);
 			return TRUE;
 
-		/* ドライブレジスタ */
+			/* ドライブレジスタ */
 		case 0xfd1d:
 #if XM7_VER >= 3
 			if (fdc_motor) {
-				*dat = (BYTE)(0xbc | fdc_drvregP);
+				*dat = (BYTE) (0xbc | fdc_drvregP);
 			}
 			else {
-				*dat = (BYTE)(0x3c | fdc_drvregP);
+				*dat = (BYTE) (0x3c | fdc_drvregP);
 			}
 #else
 			if (fdc_motor) {
-				*dat = (BYTE)(0xbc | fdc_drvreg);
+				*dat = (BYTE) (0xbc | fdc_drvreg);
 			}
 			else {
-				*dat = (BYTE)(0x3c | fdc_drvreg);
+				*dat = (BYTE) (0x3c | fdc_drvreg);
 			}
 #endif
 			return TRUE;
 
-		/* モードレジスタ */
+			/* モードレジスタ */
 		case 0xfd1e:
 #if XM7_VER >= 3
 			if (fm7_ver < 3) {
@@ -3050,24 +3097,24 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
 			}
 
 			/* 論理ドライブ・物理ドライブ対応読み出し */
-			tmp = (BYTE)(fdc_logidrv << 2) | (fdc_physdrv[fdc_logidrv]);
+			tmp = (BYTE) (fdc_logidrv << 2) | (fdc_physdrv[fdc_logidrv]);
 			/* 2DDモード読み出し */
 			if (fdc_2ddmode) {
-				*dat = (BYTE)(tmp | 0xb0);
+				*dat = (BYTE) (tmp | 0xb0);
 			}
 			else {
-				*dat = (BYTE)(tmp | 0xf0);
+				*dat = (BYTE) (tmp | 0xf0);
 			}
 #else
 			*dat = 0xFF;
 #endif
 			return TRUE;
 
-		/* DRQ,IRQ */
+			/* DRQ,IRQ */
 		case 0xfd1f:
-			*dat = (BYTE)(fdc_drqirq | 0x3f);
+			*dat = (BYTE) (fdc_drqirq | 0x3f);
 			/* DRQまたはIRQをチェックした(麻雀悟空) */
-			fdc_drqirq |= (BYTE)0x20;
+			fdc_drqirq |= (BYTE) 0x20;
 			/* データ転送中で無ければ終了(太陽の神殿) */
 			if (fdc_dataptr == NULL) {
 #ifdef FDDSND
@@ -3076,7 +3123,7 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
 				if ((fdc_cmdtype == 1) && (fdc_status & FDC_ST_BUSY)) {
 #endif
 					/* IRQ On */
-					fdc_drqirq |= (BYTE)0x40;
+					fdc_drqirq |= (BYTE) 0x40;
 				}
 #ifdef FDDSND
 				if (!fdc_wait || (fdc_cmdtype != 1) || (fdc_drqirq & 0x40)) {
@@ -3100,42 +3147,43 @@ BOOL FASTCALL fdc_readb(WORD addr, BYTE *dat)
  *	FDC
  *	１バイト書き込み
  */
-BOOL FASTCALL fdc_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+fdc_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER >= 3
 	BOOL tmp;
 #endif
 
 	switch (addr) {
-		/* コマンドレジスタ */
+			/* コマンドレジスタ */
 		case 0xfd18:
 			fdc_command = dat;
 			fdc_process_cmd();
 			return TRUE;
 
-		/* トラックレジスタ */
+			/* トラックレジスタ */
 		case 0xfd19:
 			fdc_trkreg = dat;
 			/* コマンド発行後のトラックレジスタ書き換え対策 */
 			/* (F-BASIC V3.3L3x/V3.4L2x VOLCOPY/SUBSET(VCOPYEB)) */
 			if (((fdc_status & FDC_ST_BUSY) && (fdc_nowcnt == 0)) &&
-				((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
+					((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
 				fdc_process_cmd();
 			}
 			return TRUE;
 
-		/* セクタレジスタ */
+			/* セクタレジスタ */
 		case 0xfd1a:
 			fdc_secreg = dat;
 			/* コマンド発行後のセクタレジスタ書き換え対策 */
 			/* (F-BASIC V3.3L3x/V3.4L2x VOLCOPY/SUBSET(VCOPYEB)) */
 			if (((fdc_status & FDC_ST_BUSY) && (fdc_nowcnt == 0)) &&
-				((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
+					((fdc_cmdtype == 2) || (fdc_cmdtype == 3))) {
 				fdc_process_cmd();
 			}
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd1b:
 			fdc_datareg = dat;
 			/* カウンタ処理 */
@@ -3150,7 +3198,7 @@ BOOL FASTCALL fdc_writeb(WORD addr, BYTE dat)
 					}
 #endif
 					fdc_status &= ~FDC_ST_DRQ;
-					fdc_drqirq &= (BYTE)(~0x80);
+					fdc_drqirq &= (BYTE) (~0x80);
 					fdc_status &= ~FDC_ST_BUSY;
 
 					if (fdc_cmdtype == 3) {
@@ -3182,50 +3230,50 @@ BOOL FASTCALL fdc_writeb(WORD addr, BYTE dat)
 #ifdef FDDSND
 					if (fdc_wait) {
 						schedule_setevent(EVENT_FDC_L, FDC_LOST_TIME, fdc_drq_event);
-						fdc_status &= (BYTE)~FDC_ST_DRQ;
-						fdc_drqirq &= (BYTE)~0x80;
+						fdc_status &= (BYTE) ~ FDC_ST_DRQ;
+						fdc_drqirq &= (BYTE) ~ 0x80;
 					}
 					else {
-						fdc_drqirq |= (BYTE)0x80;
+						fdc_drqirq |= (BYTE) 0x80;
 					}
 #else
-					fdc_drqirq |= (BYTE)0x80;
+					fdc_drqirq |= (BYTE) 0x80;
 #endif
 				}
 			}
 			return TRUE;
 
-		/* ヘッドレジスタ */
+			/* ヘッドレジスタ */
 		case 0xfd1c:
 			if ((dat & 0x01) != fdc_sidereg) {
-				fdc_sidereg = (BYTE)(dat & 0x01);
+				fdc_sidereg = (BYTE) (dat & 0x01);
 				fdc_readbuf(fdc_drvreg);
 			}
 			return TRUE;
 
-		/* ドライブレジスタ */
+			/* ドライブレジスタ */
 		case 0xfd1d:
 			/* ドライブ変更なら、fdc_readbuf */
 #if XM7_VER >= 3
 			if (fdc_drvregP != (dat & 0x03)) {
-				fdc_drvregP = (BYTE)(dat & 0x03);
-				fdc_drvreg = (BYTE)fdc_physdrv[fdc_drvregP];
+				fdc_drvregP = (BYTE) (dat & 0x03);
+				fdc_drvreg = (BYTE) fdc_physdrv[fdc_drvregP];
 				fdc_readbuf(fdc_drvreg);
 			}
 #else
 			if (fdc_drvreg != (dat & 0x03)) {
-				fdc_drvreg = (BYTE)(dat & 0x03);
+				fdc_drvreg = (BYTE) (dat & 0x03);
 				fdc_readbuf(fdc_drvreg);
 			}
 #endif
-			fdc_motor = (BYTE)(dat & 0x80);
+			fdc_motor = (BYTE) (dat & 0x80);
 			/* ドライブ無しなら、モータ止める */
 			if (fdc_drvreg >= FDC_DRIVES) {
 				fdc_motor = 0;
 			}
 			return TRUE;
 
-		/* モードレジスタ */
+			/* モードレジスタ */
 		case 0xfd1e:
 #if XM7_VER >= 3
 			if (fm7_ver < 3) {
@@ -3243,14 +3291,14 @@ BOOL FASTCALL fdc_writeb(WORD addr, BYTE dat)
 			}
 
 			/* 論理ドライブと物理ドライブの対応変更 */
-			fdc_logidrv = (BYTE)((dat & 0x0c) >> 2);
+			fdc_logidrv = (BYTE) ((dat & 0x0c) >> 2);
 			if (dat & 0x10) {
 				/* 書き込み */
-				fdc_physdrv[fdc_logidrv] = (BYTE)(dat & 0x03);
+				fdc_physdrv[fdc_logidrv] = (BYTE) (dat & 0x03);
 
 				/* カレントドライブの設定が変更された場合の処理 */
 				if (fdc_logidrv == fdc_drvregP) {
-					fdc_drvreg = (BYTE)fdc_physdrv[fdc_logidrv];
+					fdc_drvreg = (BYTE) fdc_physdrv[fdc_logidrv];
 					fdc_readbuf(fdc_drvreg);
 					return TRUE;
 				}
@@ -3271,187 +3319,190 @@ BOOL FASTCALL fdc_writeb(WORD addr, BYTE dat)
  *      FDC
  *      セーブ
  */
-BOOL fdc_save(SDL_RWops *fileh)
+BOOL
+fdc_save(SDL_RWops * fileh)
 {
-    int             i;
+	int i;
 
-    /*
-     * ファイル関係を先に持ってくる
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_write(fileh, fdc_ready[i])) {
-	    return FALSE;
+	/*
+	 * ファイル関係を先に持ってくる
+	 */
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_write(fileh, fdc_ready[i])) {
+			return FALSE;
+		}
 	}
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_write(fileh, (BYTE *) fdc_fname[i], 256 + 1)) {
-	    return FALSE;
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_write(fileh, (BYTE *) fdc_fname[i], 256 + 1)) {
+			return FALSE;
+		}
 	}
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_write(fileh, fdc_media[i])) {
-	    return FALSE;
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_write(fileh, fdc_media[i])) {
+			return FALSE;
+		}
 	}
-    }
 
-    /*
-     * Ver4拡張
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_bool_write(fileh, fdc_teject[i]));
-    }
-
-    /*
-     * ファイルステータス
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_write(fileh, fdc_track[i])) {
-	    return FALSE;
+	/*
+	 * Ver4拡張
+	 */
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_bool_write(fileh, fdc_teject[i]));
 	}
-    }
-    if (!file_write(fileh, fdc_buffer, 0x2000)) {
-	return FALSE;
-    }
 
-    /*
-     * fdc_dataptrは環境に依存するデータポインタ
-     */
-    if (!fdc_dataptr) {
-	if (!file_word_write(fileh, 0x2000)) {
-	    return FALSE;
+	/*
+	 * ファイルステータス
+	 */
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_write(fileh, fdc_track[i])) {
+			return FALSE;
+		}
 	}
-    } else {
-	if (!file_word_write(fileh, (WORD) (fdc_dataptr - &fdc_buffer[0]))) {
-	    return FALSE;
+	if (!file_write(fileh, fdc_buffer, 0x2000)) {
+		return FALSE;
 	}
-    }
 
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_dword_write(fileh, fdc_seekofs[i])) {
-	    return FALSE;
+	/*
+	 * fdc_dataptrは環境に依存するデータポインタ
+	 */
+	if (!fdc_dataptr) {
+		if (!file_word_write(fileh, 0x2000)) {
+			return FALSE;
+		}
 	}
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_dword_write(fileh, fdc_secofs[i])) {
-	    return FALSE;
+	else {
+		if (!file_word_write(fileh, (WORD) (fdc_dataptr - &fdc_buffer[0]))) {
+			return FALSE;
+		}
 	}
-    }
 
-    /*
-     * I/O
-     */
-    if (!file_byte_write(fileh, fdc_command)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_status)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_trkreg)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_secreg)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_datareg)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_sidereg)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_drvreg)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_motor)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_drqirq)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_cmdtype)) {
-	return FALSE;
-    }
-
-    /*
-     * その他
-     */
-    if (!file_word_write(fileh, fdc_totalcnt)) {
-	return FALSE;
-    }
-    if (!file_word_write(fileh, fdc_nowcnt)) {
-	return FALSE;
-    }
-    if (!file_bool_write(fileh, fdc_seekvct)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_indexcnt)) {
-	return FALSE;
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_write(fileh, fdc_access[i])) {
-	    return FALSE;
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_dword_write(fileh, fdc_seekofs[i])) {
+			return FALSE;
+		}
 	}
-    }
-    if (!file_bool_write(fileh, TRUE)) {
-	return FALSE;
-    }
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_dword_write(fileh, fdc_secofs[i])) {
+			return FALSE;
+		}
+	}
 
-    /*
-     * Ver9.05/7.05拡張
-     */
+	/*
+	 * I/O
+	 */
+	if (!file_byte_write(fileh, fdc_command)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_status)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_trkreg)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_secreg)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_datareg)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_sidereg)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_drvreg)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_motor)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_drqirq)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_cmdtype)) {
+		return FALSE;
+	}
+
+	/*
+	 * その他
+	 */
+	if (!file_word_write(fileh, fdc_totalcnt)) {
+		return FALSE;
+	}
+	if (!file_word_write(fileh, fdc_nowcnt)) {
+		return FALSE;
+	}
+	if (!file_bool_write(fileh, fdc_seekvct)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_indexcnt)) {
+		return FALSE;
+	}
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_write(fileh, fdc_access[i])) {
+			return FALSE;
+		}
+	}
+	if (!file_bool_write(fileh, TRUE)) {
+		return FALSE;
+	}
+
+	/*
+	 * Ver9.05/7.05拡張
+	 */
 #ifdef FDDSND
-    if (!file_bool_write(fileh, fdc_wait)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, fdc_wait)) {
+		return FALSE;
+	}
 #else
-    if (!file_bool_write(fileh, FALSE)) {
-	return FALSE;
-    }
+	if (!file_bool_write(fileh, FALSE)) {
+		return FALSE;
+	}
 #endif
 
 #if XM7_VER >= 3
-    /*
-     * Ver8拡張
-     */
-    if (!file_byte_write(fileh, fdc_2ddmode)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_logidrv)) {
-	return FALSE;
-    }
-    if (!file_byte_write(fileh, fdc_drvregP)) {
-	return FALSE;
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_write(fileh, fdc_physdrv[i])) {
-	    return FALSE;
+	/*
+	 * Ver8拡張
+	 */
+	if (!file_byte_write(fileh, fdc_2ddmode)) {
+		return FALSE;
 	}
-    }
+	if (!file_byte_write(fileh, fdc_logidrv)) {
+		return FALSE;
+	}
+	if (!file_byte_write(fileh, fdc_drvregP)) {
+		return FALSE;
+	}
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_write(fileh, fdc_physdrv[i])) {
+			return FALSE;
+		}
+	}
 #endif
 
-    return TRUE;
+	return TRUE;
 }
 
 /*
  *      FDC
  *      ロード
  */
-BOOL fdc_load(SDL_RWops *fileh, int ver)
+BOOL
+fdc_load(SDL_RWops * fileh, int ver)
 {
-    int             i;
-    BYTE            ready[FDC_DRIVES];
-    char            fname[FDC_DRIVES][256 + 1];
-    BYTE            media[FDC_DRIVES];
-    WORD            offset;
-    int             pathlen;
-    BOOL            tmp;
+	int i;
+	BYTE ready[FDC_DRIVES];
+	char fname[FDC_DRIVES][256 + 1];
+	BYTE media[FDC_DRIVES];
+	WORD offset;
+	int pathlen;
+	BOOL tmp;
 
-    /*
-     * バージョンチェック
-     */
-    if (ver < 200) {
-	return FALSE;
-    }
-   /* ファイル名の最大文字数を決定 */
+	/*
+	 * バージョンチェック
+	 */
+	if (ver < 200) {
+		return FALSE;
+	}
+	/* ファイル名の最大文字数を決定 */
 #if XM7_VER >= 3
 	if (((ver >= 715) && (ver <= 799)) || (ver >= 915)) {
 #elif XM7_VER >= 2
@@ -3459,221 +3510,222 @@ BOOL fdc_load(SDL_RWops *fileh, int ver)
 #else
 	if ((ver >= 305) && (ver <= 499)) {
 #endif
-	   pathlen = 256;
+		pathlen = 256;
 	}
 	else {
 		pathlen = 128;
 	}
-    /*
-     * ファイル関係を先に持ってくる
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_read(fileh, &ready[i])) {
-	    return FALSE;
-	}
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_read(fileh, (BYTE *) fname[i], pathlen + 1)) {
-	    return FALSE;
-	}
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_read(fileh, &media[i])) {
-	    return FALSE;
-	}
-    }
-
-    /*
-     * 再マウントを試みる
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	fdc_setdisk(i, NULL);
-	if (ready[i] != FDC_TYPE_NOTREADY) {
-	    fdc_setdisk(i, fname[i]);
-	    if (fdc_ready[i] != FDC_TYPE_NOTREADY) {
-		if (fdc_medias[i] >= (media[i] + 1)) {
-		    fdc_setmedia(i, media[i]);
-		}
-	    }
-	}
-    }
-
-    /*
-     * Ver4拡張
-     * …ってチェック入れる意味がないんでは(汁
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_bool_read(fileh, &fdc_teject[i])) {
-	    return FALSE;
-	}
-    }
-
-    /*
-     * ファイルステータス
-     */
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_read(fileh, &fdc_track[i])) {
-	    return FALSE;
-	}
-    }
-    if (!file_read(fileh, fdc_buffer, 0x2000)) {
-	return FALSE;
-    }
-
-    /*
-     * fdc_dataptrは環境に依存するデータポインタ
-     */
-    if (!file_word_read(fileh, &offset)) {
-	return FALSE;
-    }
-    if (offset >= 0x2000) {
-	fdc_dataptr = NULL;
-    } else {
-	fdc_dataptr = &fdc_buffer[offset];
-    }
-
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_dword_read(fileh, &fdc_seekofs[i])) {
-	    return FALSE;
-	}
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_dword_read(fileh, &fdc_secofs[i])) {
-	    return FALSE;
-	}
-    }
-
-    /*
-     * I/O
-     */
-    if (!file_byte_read(fileh, &fdc_command)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_status)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_trkreg)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_secreg)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_datareg)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_sidereg)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_drvreg)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_motor)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_drqirq)) {
-	return FALSE;
-    }
-    if (ver < 600) {
-	fdc_drqirq |= (BYTE) 0x20;
-    }
-    if (!file_byte_read(fileh, &fdc_cmdtype)) {
-	return FALSE;
-    }
-
-    /*
-     * その他
-     */
-    if (!file_word_read(fileh, &fdc_totalcnt)) {
-	return FALSE;
-    }
-    if (!file_word_read(fileh, &fdc_nowcnt)) {
-	return FALSE;
-    }
-    if (!file_bool_read(fileh, &fdc_seekvct)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_indexcnt)) {
-	return FALSE;
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_read(fileh, &fdc_access[i])) {
-	    return FALSE;
-	}
-    }
-	   /* 旧バージョンとの互換用(ブートフラグ) */
-    if (!file_bool_read(fileh, &tmp)) {
-	return FALSE;
-    }
-
-    /*
-     * イベント
-     */
-    schedule_handle(EVENT_FDC_M, fdc_multi_event);
-    schedule_handle(EVENT_FDC_L, fdc_lost_event);
-#if XM7_VER >= 3
-    if ((ver >= 905) || ((ver >= 705) && (ver <= 799))) {
-#elif XM7_VER >= 2
-    if (ver >= 705) {
-#else
-    if (ver >= 300) {
-#endif
 	/*
-	 * Ver9.05/7.05拡張
-	 */
-#ifdef FDDSND
-	if (!file_bool_read(fileh, &fdc_wait)) {
-	    return FALSE;
-	}
-	schedule_handle(EVENT_FDD_SEEK, fdd_seek_event);
-#else
-	if (!file_bool_read(fileh, &tmp)) {
-	    return FALSE;
-	}
-#endif
-    }
-#ifdef FDDSND
-    else {
-	/*
-	 * ウェイトモードはFALSE
-	 */
-	fdc_wait = FALSE;
-	/* シークイベント(旧ホットリセットイベント)を削除 */
-	schedule_delevent(EVENT_FDD_SEEK);
-    }
-#endif
-
-#if XM7_VER >= 3
-    /*
-     * Ver8拡張
-     */
-    if (ver < 800) {
-	fdc_2ddmode = FALSE;
-	fdc_logidrv = 0;
-	fdc_drvregP = fdc_drvreg;
-	/*
-	 * 論理ドライブ＝物理ドライブに設定
+	 * ファイル関係を先に持ってくる
 	 */
 	for (i = 0; i < FDC_DRIVES; i++) {
-	    fdc_physdrv[i] = (BYTE) i;
+		if (!file_byte_read(fileh, &ready[i])) {
+			return FALSE;
+		}
 	}
-	return TRUE;
-    }
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_read(fileh, (BYTE *) fname[i], pathlen + 1)) {
+			return FALSE;
+		}
+	}
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_read(fileh, &media[i])) {
+			return FALSE;
+		}
+	}
 
-    if (!file_byte_read(fileh, &fdc_2ddmode)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_logidrv)) {
-	return FALSE;
-    }
-    if (!file_byte_read(fileh, &fdc_drvregP)) {
-	return FALSE;
-    }
-    for (i = 0; i < FDC_DRIVES; i++) {
-	if (!file_byte_read(fileh, &fdc_physdrv[i])) {
-	    return FALSE;
+	/*
+	 * 再マウントを試みる
+	 */
+	for (i = 0; i < FDC_DRIVES; i++) {
+		fdc_setdisk(i, NULL);
+		if (ready[i] != FDC_TYPE_NOTREADY) {
+			fdc_setdisk(i, fname[i]);
+			if (fdc_ready[i] != FDC_TYPE_NOTREADY) {
+				if (fdc_medias[i] >= (media[i] + 1)) {
+					fdc_setmedia(i, media[i]);
+				}
+			}
+		}
 	}
-    }
+
+	/*
+	 * Ver4拡張
+	 * …ってチェック入れる意味がないんでは(汁
+	 */
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_bool_read(fileh, &fdc_teject[i])) {
+			return FALSE;
+		}
+	}
+
+	/*
+	 * ファイルステータス
+	 */
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_read(fileh, &fdc_track[i])) {
+			return FALSE;
+		}
+	}
+	if (!file_read(fileh, fdc_buffer, 0x2000)) {
+		return FALSE;
+	}
+
+	/*
+	 * fdc_dataptrは環境に依存するデータポインタ
+	 */
+	if (!file_word_read(fileh, &offset)) {
+		return FALSE;
+	}
+	if (offset >= 0x2000) {
+		fdc_dataptr = NULL;
+	}
+	else {
+		fdc_dataptr = &fdc_buffer[offset];
+	}
+
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_dword_read(fileh, &fdc_seekofs[i])) {
+			return FALSE;
+		}
+	}
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_dword_read(fileh, &fdc_secofs[i])) {
+			return FALSE;
+		}
+	}
+
+	/*
+	 * I/O
+	 */
+	if (!file_byte_read(fileh, &fdc_command)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_status)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_trkreg)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_secreg)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_datareg)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_sidereg)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_drvreg)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_motor)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_drqirq)) {
+		return FALSE;
+	}
+	if (ver < 600) {
+		fdc_drqirq |= (BYTE) 0x20;
+	}
+	if (!file_byte_read(fileh, &fdc_cmdtype)) {
+		return FALSE;
+	}
+
+	/*
+	 * その他
+	 */
+	if (!file_word_read(fileh, &fdc_totalcnt)) {
+		return FALSE;
+	}
+	if (!file_word_read(fileh, &fdc_nowcnt)) {
+		return FALSE;
+	}
+	if (!file_bool_read(fileh, &fdc_seekvct)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_indexcnt)) {
+		return FALSE;
+	}
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_read(fileh, &fdc_access[i])) {
+			return FALSE;
+		}
+	}
+	/* 旧バージョンとの互換用(ブートフラグ) */
+	if (!file_bool_read(fileh, &tmp)) {
+		return FALSE;
+	}
+
+	/*
+	 * イベント
+	 */
+	schedule_handle(EVENT_FDC_M, fdc_multi_event);
+	schedule_handle(EVENT_FDC_L, fdc_lost_event);
+#if XM7_VER >= 3
+	if ((ver >= 905) || ((ver >= 705) && (ver <= 799))) {
+#elif XM7_VER >= 2
+	if (ver >= 705) {
+#else
+	if (ver >= 300) {
+#endif
+		/*
+		 * Ver9.05/7.05拡張
+		 */
+#ifdef FDDSND
+		if (!file_bool_read(fileh, &fdc_wait)) {
+			return FALSE;
+		}
+		schedule_handle(EVENT_FDD_SEEK, fdd_seek_event);
+#else
+		if (!file_bool_read(fileh, &tmp)) {
+			return FALSE;
+		}
+#endif
+	}
+#ifdef FDDSND
+	else {
+		/*
+		 * ウェイトモードはFALSE
+		 */
+		fdc_wait = FALSE;
+		/* シークイベント(旧ホットリセットイベント)を削除 */
+		schedule_delevent(EVENT_FDD_SEEK);
+	}
 #endif
 
-    return TRUE;
+#if XM7_VER >= 3
+	/*
+	 * Ver8拡張
+	 */
+	if (ver < 800) {
+		fdc_2ddmode = FALSE;
+		fdc_logidrv = 0;
+		fdc_drvregP = fdc_drvreg;
+		/*
+		 * 論理ドライブ＝物理ドライブに設定
+		 */
+		for (i = 0; i < FDC_DRIVES; i++) {
+			fdc_physdrv[i] = (BYTE) i;
+		}
+		return TRUE;
+	}
+
+	if (!file_byte_read(fileh, &fdc_2ddmode)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_logidrv)) {
+		return FALSE;
+	}
+	if (!file_byte_read(fileh, &fdc_drvregP)) {
+		return FALSE;
+	}
+	for (i = 0; i < FDC_DRIVES; i++) {
+		if (!file_byte_read(fileh, &fdc_physdrv[i])) {
+			return FALSE;
+		}
+	}
+#endif
+
+	return TRUE;
 }
