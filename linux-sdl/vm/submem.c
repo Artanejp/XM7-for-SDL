@@ -26,43 +26,43 @@
 /*
  *      グローバル ワーク
  */
-BYTE*           vram_c;		/* VRAM(タイプC)
-				 * $C000(裏バンク有り) */
-BYTE*           subrom_c;	/* ROM (タイプC) $2800 */
-BYTE*           sub_ram;	/* コンソールRAM $1680 */
-BYTE*           sub_io;		/* サブCPU I/O $0100 */
+BYTE *vram_c;										/* VRAM(タイプC)
+																 * $C000(裏バンク有り) */
+BYTE *subrom_c;									/* ROM (タイプC) $2800 */
+BYTE *sub_ram;									/* コンソールRAM $1680 */
+BYTE *sub_io;										/* サブCPU I/O $0100 */
 #if XM7_VER >= 3
-BYTE*           subramde;	/* RAM (TypeD/E) $2000 */
-BYTE*           subramcg;	/* RAM (フォント)$4000 */
-BYTE*           subramcn;	/* 裏コンソール $2000 */
+BYTE *subramde;									/* RAM (TypeD/E) $2000 */
+BYTE *subramcg;									/* RAM (フォント)$4000 */
+BYTE *subramcn;									/* 裏コンソール $2000 */
 #endif
 
 #if XM7_VER >= 2
-BYTE*           vram_b;		/* VRAM(タイプB)
-				 * $C000(裏バンク有り) */
-BYTE*           subrom_a;	/* ROM (タイプA) $2000 */
-BYTE*           subrom_b;	/* ROM (タイプB) $2000 */
-BYTE*           subromcg;	/* ROM (フォント)$2000 */
+BYTE *vram_b;										/* VRAM(タイプB)
+																 * $C000(裏バンク有り) */
+BYTE *subrom_a;									/* ROM (タイプA) $2000 */
+BYTE *subrom_b;									/* ROM (タイプB) $2000 */
+BYTE *subromcg;									/* ROM (フォント)$2000 */
 
-BYTE            subrom_bank;	/* サブシステムROMバンク */
-BYTE            cgrom_bank;	/* CGROMバンク */
+BYTE subrom_bank;								/* サブシステムROMバンク */
+BYTE cgrom_bank;								/* CGROMバンク */
 #if XM7_VER >= 3
-BYTE            cgram_bank;	/* CGRAMバンク */
-BYTE            consram_bank;	/* コンソールRAMバンク */
-#endif				/* XM7_VER >= 3 */
-#endif				/* XM7_VER >= 2 */
+BYTE cgram_bank;								/* CGRAMバンク */
+BYTE consram_bank;							/* コンソールRAMバンク */
+#endif /* XM7_VER >= 3 */
+#endif /* XM7_VER >= 2 */
 
 #if XM7_VER == 1
-BYTE*           subrom_8;	/* ROM (FM-8) $2800 */
+BYTE *subrom_8;									/* ROM (FM-8) $2800 */
 #ifdef L4CARD
-BYTE*           tvram_c;	/* Text VRAM $1000 */
-BYTE*           subrom_l4;	/* ROM (400ライン)$4800 */
-BYTE*           subcg_l4;	/* CG (400ライン)$1000 */
-BOOL            enable_400linecard;	/* 400ラインカードイネーブル
-					 */
-BOOL            detect_400linecard;	/* 400ラインカード発見フラグ
-					 */
-BOOL detect_400linecard_tmp;           /* 400ラインカード発見フラグ */
+BYTE *tvram_c;									/* Text VRAM $1000 */
+BYTE *subrom_l4;								/* ROM (400ライン)$4800 */
+BYTE *subcg_l4;									/* CG (400ライン)$1000 */
+BOOL enable_400linecard;				/* 400ラインカードイネーブル
+																 */
+BOOL detect_400linecard;				/* 400ラインカード発見フラグ
+																 */
+BOOL detect_400linecard_tmp;		/* 400ラインカード発見フラグ */
 BOOL ankcg_force_internal = FALSE;	/* 内蔵フォント強制使用フラグ */
 #endif
 #endif
@@ -107,21 +107,24 @@ BOOL FASTCALL submem_init(void)
 	 */
 #if XM7_VER >= 3
 	vram_c = (BYTE *) malloc(0x30000);
-        {
-	   int i;
-	   for(i = 0; i < 0x30000; i++) __builtin_prefetch(&vram_c[i], 1, 0);
+	{
+		int i;
+		for (i = 0; i < 0x30000; i++)
+			__builtin_prefetch(&vram_c[i], 1, 0);
 	}
 #elif XM7_VER >= 2
 	vram_c = (BYTE *) malloc(0x18000);
-        {
-	   int i;
-	   for(i = 0; i < 0x18000; i++) __builtin_prefetch(&vram_c[i], 1, 0);
+	{
+		int i;
+		for (i = 0; i < 0x18000; i++)
+			__builtin_prefetch(&vram_c[i], 1, 0);
 	}
 #else
 	vram_c = (BYTE *) malloc(0xc000);
-        {
-	   int i;
-	   for(i = 0; i < 0xc000; i++) __builtin_prefetch(&vram_c[i], 1, 0);
+	{
+		int i;
+		for (i = 0; i < 0xc000; i++)
+			__builtin_prefetch(&vram_c[i], 1, 0);
 	}
 #endif
 	if (vram_c == NULL) {
@@ -233,15 +236,16 @@ BOOL FASTCALL submem_init(void)
 	/*
 	 * 400ライン対応処理
 	 */
-        detect_400linecard_tmp = FALSE;
+	detect_400linecard_tmp = FALSE;
 	if (!file_load(SUBSYSL4_ROM, subrom_l4, 0x4800)) {
 		enable_400linecard = FALSE;
 		detect_400linecard = FALSE;
-	} else {
+	}
+	else {
 		enable_400linecard = TRUE;
 		detect_400linecard = TRUE;
 
-	        /* ANKCG16.ROM,EXTSUB.ROMのどちらもない場合内蔵フォントを使用 */
+		/* ANKCG16.ROM,EXTSUB.ROMのどちらもない場合内蔵フォントを使用 */
 		if (ankcg_force_internal) {
 			memcpy(subcg_l4, subcg_internal, 4096);
 		}
@@ -258,11 +262,11 @@ BOOL FASTCALL submem_init(void)
 	if (!available_fm8roms && !available_fm7roms) {
 		return FALSE;
 	}
-        /* FM-8のROMイメージしかない場合のドライブ番号表示等への対処 */
-        /* 本来、先頭の2048バイトのみコピーすればよいが念のため全体をコピー */
-        if (available_fm8roms && !available_fm7roms) {
-                memcpy(subrom_c, subrom_8, 0x2800);
-        }
+	/* FM-8のROMイメージしかない場合のドライブ番号表示等への対処 */
+	/* 本来、先頭の2048バイトのみコピーすればよいが念のため全体をコピー */
+	if (available_fm8roms && !available_fm7roms) {
+		memcpy(subrom_c, subrom_8, 0x2800);
+	}
 #endif
 
 	return TRUE;
@@ -357,7 +361,7 @@ void FASTCALL submem_cleanup(void)
  *      サブCPUメモリ
  *      リセット
  */
-void  FASTCALL submem_reset(void)
+void FASTCALL submem_reset(void)
 {
 #if XM7_VER >= 2
 	/*
@@ -389,7 +393,7 @@ void  FASTCALL submem_reset(void)
  */
 volatile BYTE FASTCALL submem_readb(WORD addr)
 {
-	BYTE            dat;
+	BYTE dat;
 
 #if XM7_VER == 1 && defined(L4CARD)
 	/*
@@ -460,17 +464,20 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 
 			if (multi_page & (1 << subram_vrambank)) {
 				return 0xff;
-			} else {
+			}
+			else {
 				return vram_aptr[addr];
 			}
-		} else {
+		}
+		else {
 			/*
 			 * 200ライン
 			 */
 			aluline_extrb(addr);
 			if (multi_page & (1 << (addr >> 14))) {
 				return 0xff;
-			} else {
+			}
+			else {
 				return vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)];
 			}
 		}
@@ -481,7 +488,8 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 		aluline_extrb(addr);
 		if (multi_page & (1 << (addr >> 14))) {
 			return 0xff;
-		} else {
+		}
+		else {
 			return vram_aptr[addr];
 		}
 #else
@@ -490,7 +498,8 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 		 */
 		if (multi_page & (1 << (addr >> 14))) {
 			return 0xff;
-		} else {
+		}
+		else {
 			return vram_c[addr];
 		}
 #endif
@@ -563,7 +572,8 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 			 * サブRAM バンク
 			 */
 			return subramcg[cgram_bank * 0x0800 + (addr - 0xd800)];
-		} else if (fm7_ver >= 2) {
+		}
+		else if (fm7_ver >= 2) {
 			/*
 			 * サブROM バンク
 			 */
@@ -573,7 +583,7 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 			/* サブROM Type-C */
 			return subrom_c[addr - 0xd800];
 		}
-	   
+
 #else
 		/*
 		 * サブROM バンク
@@ -593,7 +603,7 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 	 * ワークRAM
 	 */
 //    if (addr >= 0xd500) {
-//	return sub_ram[(addr - 0xd500) + 0x1380];
+//  return sub_ram[(addr - 0xd500) + 0x1380];
 	if (fm7_ver >= 2) {
 		if (addr >= 0xd500) {
 			return sub_ram[(addr - 0xd500) + 0x1380];
@@ -606,7 +616,8 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 			 * FM-8サブモニタ
 			 */
 			return subrom_8[addr - 0xd800];
-		} else {
+		}
+		else {
 			/*
 			 * タイプC
 			 */
@@ -625,11 +636,11 @@ volatile BYTE FASTCALL submem_readb(WORD addr)
 	if (fm7_ver == 1) {
 		/* $D410〜$D7FFは$D400〜$D40Fのミラー */
 		addr &= 0xfc0f;
-	} else
-		if (fm7_ver == 2) {
-			/* $D440〜$D4FFは$D400〜$D43Fのミラー */
-			addr &= 0xff3f;
-		}
+	}
+	else if (fm7_ver == 2) {
+		/* $D440〜$D4FFは$D400〜$D43Fのミラー */
+		addr &= 0xff3f;
+	}
 #endif
 
 	/*
@@ -727,10 +738,12 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 			 */
 			if (addr < 0x8000) {
 				return vram_aptr[addr];
-			} else {
+			}
+			else {
 				return 0xff;
 			}
-		} else {
+		}
+		else {
 			/*
 			 * 200ライン
 			 */
@@ -775,7 +788,7 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 //    * サブI/O
 //    */
 //   if (addr < 0xd500) {
-//	return sub_io[addr - 0xd400];
+//  return sub_io[addr - 0xd400];
 //    }
 	/* ワークRAM */
 #if XM7_VER >= 2
@@ -791,7 +804,7 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 //     * ワークRAM
 //     */
 //    if (addr < 0xd800) {
-//	return sub_ram[(addr - 0xd500) + 0x1380];
+//  return sub_ram[(addr - 0xd500) + 0x1380];
 	/* サブI/O */
 	if (addr < 0xd800) {
 #if XM7_VER == 1
@@ -801,11 +814,11 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 		if (fm7_ver == 1) {
 			/* $D410〜$D7FFは$D400〜$D40Fのミラー */
 			addr &= 0xfc0f;
-		} else
-			if (fm7_ver == 2) {
-				/* $D440〜$D4FFは$D400〜$D43Fのミラー */
-				addr &= 0xff3f;
-			}
+		}
+		else if (fm7_ver == 2) {
+			/* $D440〜$D4FFは$D400〜$D43Fのミラー */
+			addr &= 0xff3f;
+		}
 #endif
 		return sub_io[addr - 0xd400];
 
@@ -857,7 +870,8 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 			 * サブRAM バンク
 			 */
 			return subramcg[cgram_bank * 0x0800 + (addr - 0xd800)];
-		} else if (fm7_ver >= 2) {
+		}
+		else if (fm7_ver >= 2) {
 			/*
 			 * サブROM バンク
 			 */
@@ -888,7 +902,8 @@ volatile BYTE FASTCALL submem_readbnio(WORD addr)
 			 * FM-8サブモニタ
 			 */
 			return subrom_8[addr - 0xd800];
-		} else {
+		}
+		else {
 			/*
 			 * タイプC
 			 */
@@ -924,8 +939,7 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 			 */
 			if (workram_select) {
 				if (!(multi_page & 4)) {
-					vram_c[0x8000 + ((addr + vram_offset[0]) & 0x3fff)] =
-					    dat;
+					vram_c[0x8000 + ((addr + vram_offset[0]) & 0x3fff)] = dat;
 				}
 				return;
 			}
@@ -990,7 +1004,8 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 					vram_notify(addr, dat);
 				}
 			}
-		} else {
+		}
+		else {
 			if (alu_command & 0x80) {
 				aluline_extrb(addr);
 				return;
@@ -999,10 +1014,8 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 				/*
 				 * 同じデータを書き込むなら、Notifyしない
 				 */
-			        if (vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] !=
-				        dat) {
-					vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] =
-					    dat;
+				if (vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] != dat) {
+					vram_aptr[((addr & 0xc000) << 1) | (addr & 0x3fff)] = dat;
 					vram_notify(addr, dat);
 				}
 			}
@@ -1065,8 +1078,8 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 	 */
 #if XM7_VER >= 2
 //    if ((addr >= 0xd500) && (addr < 0xd800)) {
-//	sub_ram[(addr - 0xd500) + 0x1380] = dat;
-//	return;
+//  sub_ram[(addr - 0xd500) + 0x1380] = dat;
+//  return;
 	if (fm7_ver >= 2) {
 		if ((addr >= 0xd500) && (addr < 0xd800)) {
 			sub_ram[(addr - 0xd500) + 0x1380] = dat;
@@ -1119,11 +1132,11 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
 	if (fm7_ver == 1) {
 		/* $D410〜$D7FFは$D400〜$D40Fのミラー */
 		addr &= 0xfc0f;
-	} else
-		if (fm7_ver == 2) {
-			/* $D440〜$D4FFは$D400〜$D43Fのミラー */
-			addr &= 0xff3f;
-		}
+	}
+	else if (fm7_ver == 2) {
+		/* $D440〜$D4FFは$D400〜$D43Fのミラー */
+		addr &= 0xff3f;
+	}
 #endif
 
 	sub_io[addr - 0xd400] = dat;
@@ -1154,7 +1167,7 @@ volatile void FASTCALL submem_writeb(WORD addr, BYTE dat)
  *      サブCPUメモリ
  *      セーブ
  */
-BOOL FASTCALL submem_save(SDL_RWops *fileh)
+BOOL FASTCALL submem_save(SDL_RWops * fileh)
 {
 #if XM7_VER >= 3
 	/*
@@ -1164,7 +1177,8 @@ BOOL FASTCALL submem_save(SDL_RWops *fileh)
 		if (!file_write(fileh, vram_c, 0x18000)) {
 			return FALSE;
 		}
-	} else {
+	}
+	else {
 		if (!file_write(fileh, vram_c, 0x4000)) {
 			return FALSE;
 		}
@@ -1223,7 +1237,8 @@ BOOL FASTCALL submem_save(SDL_RWops *fileh)
 		if (!file_write(fileh, &vram_c[0x18000], 0x18000)) {
 			return FALSE;
 		}
-	} else {
+	}
+	else {
 		if (!file_write(fileh, &vram_c[0x18000], 0x4000)) {
 			return FALSE;
 		}
@@ -1269,19 +1284,20 @@ BOOL FASTCALL submem_save(SDL_RWops *fileh)
 	if (!file_bool_write(fileh, detect_400linecard)) {
 		return FALSE;
 	}
-       if (!file_bool_write(fileh, enable_400linecard)) {
-               return FALSE;
-       }
+	if (!file_bool_write(fileh, enable_400linecard)) {
+		return FALSE;
+	}
 #endif
 
 	return TRUE;
 }
 
+
 /*
  *      サブCPUメモリ
  *      ロード
  */
-BOOL FASTCALL submem_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL submem_load(SDL_RWops * fileh, int ver)
 {
 
 	/*
@@ -1397,15 +1413,15 @@ BOOL FASTCALL submem_load(SDL_RWops *fileh, int ver)
 	if (!file_read(fileh, tvram_c, 0x1000)) {
 		return FALSE;
 	}
-        if (!file_bool_read(fileh, &detect_400linecard_tmp)) {
+	if (!file_bool_read(fileh, &detect_400linecard_tmp)) {
 		return FALSE;
 	}
 
-        /* Ver3.06拡張 */
-        if (ver >= 306) {
-               if (!file_bool_read(fileh, &enable_400linecard)) {
-                       return FALSE;
-               }
+	/* Ver3.06拡張 */
+	if (ver >= 306) {
+		if (!file_bool_read(fileh, &enable_400linecard)) {
+			return FALSE;
+		}
 #endif
 
 	return TRUE;

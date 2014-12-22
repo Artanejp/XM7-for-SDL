@@ -44,11 +44,6 @@
 #include "agar_cmd.h"
 #include "agar_toolbox.h"
 
-//#include "sdl_snd.h"
-//#include "sdl_sch.h"
-//#include "api_kbd.h"
-//#include "api_js.h"
-
 
 #ifdef USE_GTK
 #include "gtk_toolbox.h"
@@ -230,114 +225,7 @@ void OnChgSound(AG_Event *event)
 }
 
 
-    /*
-     *  ファイルドロップサブ
-     */
-void OnDropSub(char *path)
-{
-    char           InitDir[MAXPATHLEN];
-    char          *ext = NULL;
-    char          *p = NULL;
 
-    /*
-     * 拡張子だけ分離
-     */
-    p = strrchr(path, '.');
-    if (p != NULL) {
-	ext = p;
-    }
-    strcpy(InitDir, path);
-    p = strrchr(InitDir, '/');
-    if (p != NULL) {
-	p[1] = '\0';
-    } else {
-	InitDir[0] = '\0';
-    }
-    if (ext != NULL) {
-
-	    /*
-	     * D77
-	     */
-	    if (stricmp(ext, ".D77") == 0) {
-	    strcpy(InitialDir[0], InitDir);
-	    LockVM();
-	    StopSnd();
-	    fdc_setdisk(0, path);
-	    fdc_setdisk(1, NULL);
-	    if ((fdc_ready[0] != FDC_TYPE_NOTREADY)
-		 && (fdc_medias[0] >= 2)) {
-		fdc_setdisk(1, path);
-		fdc_setmedia(1, 1);
-	    }
-	    system_reset();
-	    PlaySnd();
-	    ResetSch();
-	    UnlockVM();
-	}
-
-	    /*
-	     * 2D/VFD
-	     */
-	    if ((stricmp(ext, ".2D") == 0) || (stricmp(ext, ".VFD") == 0)) {
-	    strcpy(InitialDir[0], InitDir);
-	    LockVM();
-	    StopSnd();
-	    fdc_setdisk(0, path);
-	    fdc_setdisk(1, NULL);
-	    system_reset();
-	    PlaySnd();
-	    ResetSch();
-	    UnlockVM();
-	}
-
-	    /*
-	     * T77
-	     */
-	    if (stricmp(ext, ".T77") == 0) {
-	    strcpy(InitialDir[1], InitDir);
-	    LockVM();
-	    tape_setfile(path);
-	    UnlockVM();
-	}
-
-	    /*
-	     * XM7
-	     */
-	    if (stricmp(ext, ".XM7") == 0) {
-	    strcpy(InitialDir[2], InitDir);
-	    LockVM();
-	    StopSnd();
-	    StateLoad(path);
-	    PlaySnd();
-	    ResetSch();
-	    UnlockVM();
-	}
-    }
-}
-
-
-/*
- *  ファイルドロップ
- */
-void OnDropFiles(void)
-{
-    char           path[MAXPATHLEN];
-
-	/*
-	 * 処理
-	 */
-	OnDropSub(path);
-}
-    /*
-     *  コマンドライン処理
-     */
-void OnCmdLine(char *arg)
-{
-/*
- * 処理
- */
-        OnDropSub(arg);
-}
 
 
 #ifdef __cplusplus

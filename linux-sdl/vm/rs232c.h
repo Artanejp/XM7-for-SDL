@@ -65,66 +65,67 @@
 #ifdef RSC
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 /*
  *	主要エントリ
  */
-BOOL FASTCALL rs232c_init(void);
-										/* 初期化 */
-void FASTCALL rs232c_cleanup(void);
-										/* クリーンアップ */
-void FASTCALL rs232c_reset(void);
-										/* リセット */
-void FASTCALL rs232c_txrdy(BOOL flag);
-										/* TxRDY/TxEMPTY信号変化 */
-void FASTCALL rs232c_txempty_request(void);
-										/* TxEMPTYイベント登録 */
-void FASTCALL rs232c_rxrdy(BOOL flag);
-										/* RxRDY信号変化 */
-void FASTCALL rs232c_rxrdy_request(void);
-										/* RxRDYイベント登録 */
-void FASTCALL rs232c_syndet(BOOL flag);
-										/* SYNDET信号変化 */
-void FASTCALL rs232c_calc_timing(void);
-										/* 送受信タイミング計算 */
-BOOL FASTCALL rs232c_readb(WORD addr, BYTE *dat);
-										/* 1バイト読み出し */
-BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat);
-										/* 1バイト書き込み */
-BOOL FASTCALL rs232c_save(SDL_RWops *fileh);
-										/* セーブ */
-BOOL FASTCALL rs232c_load(SDL_RWops *fileh, int ver);
-										/* ロード */
+	BOOL FASTCALL rs232c_init(void);
+	/* 初期化 */
+	void FASTCALL rs232c_cleanup(void);
+	/* クリーンアップ */
+	void FASTCALL rs232c_reset(void);
+	/* リセット */
+	void FASTCALL rs232c_txrdy(BOOL flag);
+	/* TxRDY/TxEMPTY信号変化 */
+	void FASTCALL rs232c_txempty_request(void);
+	/* TxEMPTYイベント登録 */
+	void FASTCALL rs232c_rxrdy(BOOL flag);
+	/* RxRDY信号変化 */
+	void FASTCALL rs232c_rxrdy_request(void);
+	/* RxRDYイベント登録 */
+	void FASTCALL rs232c_syndet(BOOL flag);
+	/* SYNDET信号変化 */
+	void FASTCALL rs232c_calc_timing(void);
+	/* 送受信タイミング計算 */
+	BOOL FASTCALL rs232c_readb(WORD addr, BYTE * dat);
+	/* 1バイト読み出し */
+	BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat);
+	/* 1バイト書き込み */
+	BOOL FASTCALL rs232c_save(SDL_RWops * fileh);
+	/* セーブ */
+	BOOL FASTCALL rs232c_load(SDL_RWops * fileh, int ver);
+	/* ロード */
 
 /*
  *	主要ワーク
  */
-extern BOOL	rs_use;
-										/* RS-232C使用フラグ */
-extern BOOL	rs_mask;
-										/* RS-232C機能マスク */
-extern BOOL	rs_enable;
-										/* RS-232C有効 */
-extern BOOL	rs_selectmc;
-										/* モードコマンド選択状態 */
-extern BYTE	rs_modecmd;
-										/* モードコマンドレジスタ */
-extern BYTE	rs_command;
-										/* コマンドレジスタ */
-extern BYTE	rs_baudrate;
-										/* ボーレート設定レジスタ */
-extern BYTE	rs_baudrate_v2;
-										/* ボーレート設定(V1/V2用) */
-extern BOOL rs_dtrmask;
-										/* DTR信号マスクフラグ */
-extern BOOL rs_cd;
-										/* CD信号 */
-extern BOOL rs_cts;
-										/* CTS信号 */
+	extern BOOL rs_use;
+	/* RS-232C使用フラグ */
+	extern BOOL rs_mask;
+	/* RS-232C機能マスク */
+	extern BOOL rs_enable;
+	/* RS-232C有効 */
+	extern BOOL rs_selectmc;
+	/* モードコマンド選択状態 */
+	extern BYTE rs_modecmd;
+	/* モードコマンドレジスタ */
+	extern BYTE rs_command;
+	/* コマンドレジスタ */
+	extern BYTE rs_baudrate;
+	/* ボーレート設定レジスタ */
+	extern BYTE rs_baudrate_v2;
+	/* ボーレート設定(V1/V2用) */
+	extern BOOL rs_dtrmask;
+	/* DTR信号マスクフラグ */
+	extern BOOL rs_cd;
+	/* CD信号 */
+	extern BOOL rs_cts;
+	/* CTS信号 */
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* XM7_VER >= 3 */
-#endif	/* _rs232c_h_ */
+#endif													/* XM7_VER >= 3 */
+#endif													/* _rs232c_h_ */

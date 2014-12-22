@@ -35,3 +35,4 @@ add_library(xm7_vm
 		  vm_sub.c
 		  m6809.c
 )
+

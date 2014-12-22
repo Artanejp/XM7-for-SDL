@@ -18,31 +18,31 @@
 /*
  *	グローバル ワーク
  */
-BOOL opn_enable;						/* OPN有効・無効フラグ(7 only) */
-BOOL opn_use;                                                  /* OPN使用フラグ */
-BOOL whg_enable;						/* WHG有効・無効フラグ */
-BOOL whg_use;							/* WHG使用フラグ */
-BOOL thg_enable;						/* THG有効・無効フラグ */
-BOOL thg_use;							/* THG使用フラグ */
+BOOL opn_enable;								/* OPN有効・無効フラグ(7 only) */
+BOOL opn_use;										/* OPN使用フラグ */
+BOOL whg_enable;								/* WHG有効・無効フラグ */
+BOOL whg_use;										/* WHG使用フラグ */
+BOOL thg_enable;								/* THG有効・無効フラグ */
+BOOL thg_use;										/* THG使用フラグ */
 
-BYTE opn_reg[3][256];					/* OPNレジスタ */
-BOOL opn_key[3][4];						/* OPNキーオンフラグ */
-BOOL opn_timera[3];						/* タイマーA動作フラグ */
-BOOL opn_timerb[3];						/* タイマーB動作フラグ */
+BYTE opn_reg[3][256];						/* OPNレジスタ */
+BOOL opn_key[3][4];							/* OPNキーオンフラグ */
+BOOL opn_timera[3];							/* タイマーA動作フラグ */
+BOOL opn_timerb[3];							/* タイマーB動作フラグ */
 DWORD opn_timera_tick[3];				/* タイマーA間隔 */
 DWORD opn_timerb_tick[3];				/* タイマーB間隔 */
-BYTE opn_scale[3];						/* プリスケーラ */
+BYTE opn_scale[3];							/* プリスケーラ */
 
 /*
  *	スタティック ワーク
  */
-static BYTE opn_pstate[3];				/* ポート状態 */
-static BYTE opn_selreg[3];				/* セレクトレジスタ */
-static BYTE opn_seldat[3];				/* セレクトデータ */
-static BOOL opn_timera_int[3];			/* タイマーAオーバーフロー */
-static BOOL opn_timerb_int[3];			/* タイマーBオーバーフロー */
-static BOOL opn_timera_en[3];			/* タイマーAイネーブル */
-static BOOL opn_timerb_en[3];			/* タイマーBイネーブル */
+static BYTE opn_pstate[3];			/* ポート状態 */
+static BYTE opn_selreg[3];			/* セレクトレジスタ */
+static BYTE opn_seldat[3];			/* セレクトデータ */
+static BOOL opn_timera_int[3];	/* タイマーAオーバーフロー */
+static BOOL opn_timerb_int[3];	/* タイマーBオーバーフロー */
+static BOOL opn_timera_en[3];		/* タイマーAイネーブル */
+static BOOL opn_timerb_en[3];		/* タイマーBイネーブル */
 
 /*
  *	プロトタイプ宣言
@@ -65,22 +65,24 @@ static void FASTCALL opn_timerb_calc(int no);
  *	OPN
  *	初期化
  */
-BOOL FASTCALL opn_init(void)
+BOOL FASTCALL
+opn_init(void)
 {
 	memset(opn_reg, 0, sizeof(opn_reg));
 
 	/* デフォルトはOPN有効 */
 	opn_enable = TRUE;
 #if XM7_VER == 1
-        opn_use = FALSE;
+	opn_use = FALSE;
 #else
-        if (fm7_ver >= 2) {
-            opn_use = TRUE;
-        } else {
-            opn_use = FALSE;
-        }
+	if (fm7_ver >= 2) {
+		opn_use = TRUE;
+	}
+	else {
+		opn_use = FALSE;
+	}
 #endif
-     
+
 	return TRUE;
 }
 
@@ -88,7 +90,8 @@ BOOL FASTCALL opn_init(void)
  *	OPN
  *	クリーンアップ
  */
-void FASTCALL opn_cleanup(void)
+void FASTCALL
+opn_cleanup(void)
 {
 	opn_cleanup_common(OPN_STD);
 }
@@ -97,20 +100,21 @@ void FASTCALL opn_cleanup(void)
  *	OPN
  *	リセット
  */
-void FASTCALL opn_reset(void)
+void FASTCALL
+opn_reset(void)
 {
-     /* 動作モードによって使用フラグを設定する */
+	/* 動作モードによって使用フラグを設定する */
 #if XM7_VER == 1
-        opn_use = FALSE;
+	opn_use = FALSE;
 #else
-        if (fm7_ver >= 2) {
-                opn_use = TRUE;
-        }
-        else {
-                opn_use = FALSE;
-        }
+	if (fm7_ver >= 2) {
+		opn_use = TRUE;
+	}
+	else {
+		opn_use = FALSE;
+	}
 #endif
-     /* リセット */
+	/* リセット */
 	opn_reset_common(OPN_STD);
 }
 
@@ -118,7 +122,8 @@ void FASTCALL opn_reset(void)
  *	WHG
  *	初期化
  */
-BOOL FASTCALL whg_init(void)
+BOOL FASTCALL
+whg_init(void)
 {
 	/* WHG有効 */
 	whg_enable = TRUE;
@@ -131,7 +136,8 @@ BOOL FASTCALL whg_init(void)
  *	WHG
  *	クリーンアップ
  */
-void FASTCALL whg_cleanup(void)
+void FASTCALL
+whg_cleanup(void)
 {
 	opn_cleanup_common(OPN_WHG);
 }
@@ -140,7 +146,8 @@ void FASTCALL whg_cleanup(void)
  *	WHG
  *	リセット
  */
-void FASTCALL whg_reset(void)
+void FASTCALL
+whg_reset(void)
 {
 	/* 使用フラグを下げる */
 	whg_use = FALSE;
@@ -153,7 +160,8 @@ void FASTCALL whg_reset(void)
  *	THG
  *	初期化
  */
-BOOL FASTCALL thg_init(void)
+BOOL FASTCALL
+thg_init(void)
 {
 	/* THG有効 */
 	thg_enable = FALSE;
@@ -166,7 +174,8 @@ BOOL FASTCALL thg_init(void)
  *	THG
  *	クリーンアップ
  */
-void FASTCALL thg_cleanup(void)
+void FASTCALL
+thg_cleanup(void)
 {
 	opn_cleanup_common(OPN_THG);
 }
@@ -175,7 +184,8 @@ void FASTCALL thg_cleanup(void)
  *	THG
  *	リセット
  */
-void FASTCALL thg_reset(void)
+void FASTCALL
+thg_reset(void)
 {
 	/* 使用フラグを下げる */
 	thg_use = FALSE;
@@ -190,18 +200,19 @@ void FASTCALL thg_reset(void)
  *	OPN
  *	クリーンアップ共通処理
  */
-static void FASTCALL opn_cleanup_common(int no)
+static void FASTCALL
+opn_cleanup_common(int no)
 {
 	BYTE i;
 
 	/* PSG */
-	for (i=0; i<6; i++) {
+	for (i = 0; i < 6; i++) {
 		opn_notify_no(no, i, 0);
 	}
 	opn_notify_no(no, 7, 0xff);
 
 	/* TL=$7F */
-	for (i=0x40; i<0x50; i++) {
+	for (i = 0x40; i < 0x50; i++) {
 		if ((i & 0x03) == 3) {
 			continue;
 		}
@@ -209,7 +220,7 @@ static void FASTCALL opn_cleanup_common(int no)
 	}
 
 	/* キーオフ */
-	for (i=0; i<3; i++) {
+	for (i = 0; i < 3; i++) {
 		opn_notify_no(no, 0x28, i);
 		opn_key[no][i] = FALSE;
 	}
@@ -219,7 +230,8 @@ static void FASTCALL opn_cleanup_common(int no)
  *	OPN
  *	リセット共通処理
  */
-static void FASTCALL opn_reset_common(int no)
+static void FASTCALL
+opn_reset_common(int no)
 {
 	BYTE i;
 
@@ -245,7 +257,7 @@ static void FASTCALL opn_reset_common(int no)
 	opn_scale[no] = 3;
 
 	/* PSG初期化 */
-	for (i=0; i<14;i++) {
+	for (i = 0; i < 14; i++) {
 		if (i == 7) {
 			opn_notify_no(no, i, 0xff);
 			opn_reg[no][i] = 0xff;
@@ -256,7 +268,7 @@ static void FASTCALL opn_reset_common(int no)
 	}
 
 	/* MUL,DT */
-	for (i=0x30; i<0x40; i++) {
+	for (i = 0x30; i < 0x40; i++) {
 		if ((i & 0x03) == 3) {
 			continue;
 		}
@@ -264,7 +276,7 @@ static void FASTCALL opn_reset_common(int no)
 	}
 
 	/* TL=$7F */
-	for (i=0x40; i<0x50; i++) {
+	for (i = 0x40; i < 0x50; i++) {
 		if ((i & 0x03) == 3) {
 			continue;
 		}
@@ -273,7 +285,7 @@ static void FASTCALL opn_reset_common(int no)
 	}
 
 	/* AR=$1F */
-	for (i=0x50; i<0x60; i++) {
+	for (i = 0x50; i < 0x60; i++) {
 		if ((i & 0x03) == 3) {
 			continue;
 		}
@@ -282,7 +294,7 @@ static void FASTCALL opn_reset_common(int no)
 	}
 
 	/* その他 */
-	for (i=0x60; i<0xb4; i++) {
+	for (i = 0x60; i < 0xb4; i++) {
 		if ((i & 0x03) == 3) {
 			continue;
 		}
@@ -290,7 +302,7 @@ static void FASTCALL opn_reset_common(int no)
 	}
 
 	/* SL,RR */
-	for (i=0x80; i<0x90; i++) {
+	for (i = 0x80; i < 0x90; i++) {
 		if ((i & 0x03) == 3) {
 			continue;
 		}
@@ -299,7 +311,7 @@ static void FASTCALL opn_reset_common(int no)
 	}
 
 	/* キーオフ */
-	for (i=0; i<3; i++) {
+	for (i = 0; i < 3; i++) {
 		opn_notify_no(no, 0x28, i);
 		opn_key[no][i] = FALSE;
 	}
@@ -314,7 +326,8 @@ static void FASTCALL opn_reset_common(int no)
  *	OPN
  *	レジスタ書き込み通知
  */
-static void FASTCALL opn_notify_no(int no, BYTE reg, BYTE dat)
+static void FASTCALL
+opn_notify_no(int no, BYTE reg, BYTE dat)
 {
 	/* 各音源の通知関数を呼ぶだけ */
 	switch (no) {
@@ -339,7 +352,8 @@ static void FASTCALL opn_notify_no(int no, BYTE reg, BYTE dat)
  *	OPN
  *	IRQフラグ共通処理
  */
-static void FASTCALL opn_set_irq_flag(int no, BOOL flag)
+static void FASTCALL
+opn_set_irq_flag(int no, BOOL flag)
 {
 	switch (no) {
 		case OPN_STD:
@@ -358,8 +372,8 @@ static void FASTCALL opn_set_irq_flag(int no, BOOL flag)
 
 #if XM7_VER == 1
 	if (fm_subtype == FMSUB_FM8) {
-             /* ありえないが */
-	     return;
+		/* ありえないが */
+		return;
 	}
 #endif
 	maincpu_irq();
@@ -369,9 +383,10 @@ static void FASTCALL opn_set_irq_flag(int no, BOOL flag)
  *	OPN
  *	タイマーAオーバフロー共通処理
  */
-static BOOL FASTCALL opn_timera_event_main(int no)
+static BOOL FASTCALL
+opn_timera_event_main(int no)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	/* イネーブルか */
 	if (opn_timera_en[no]) {
@@ -399,9 +414,10 @@ static BOOL FASTCALL opn_timera_event_main(int no)
  *	OPN
  *	タイマーBオーバフロー共通処理
  */
-static BOOL FASTCALL opn_timerb_event_main(int no)
+static BOOL FASTCALL
+opn_timerb_event_main(int no)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	/* イネーブルか */
 	if (opn_timerb_en[no]) {
@@ -427,16 +443,17 @@ static BOOL FASTCALL opn_timerb_event_main(int no)
  *	OPN
  *	タイマーAインターバル算出共通処理
  */
-static void FASTCALL opn_timera_calc(int no)
+static void FASTCALL
+opn_timera_calc(int no)
 {
 	DWORD t;
 	BYTE temp;
 
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	t = opn_reg[no][0x24];
 	t *= 4;
-	temp = (BYTE)(opn_reg[no][0x25] & 3);
+	temp = (BYTE) (opn_reg[no][0x25] & 3);
 	t |= temp;
 	t &= 0x3ff;
 	t = (1024 - t);
@@ -451,15 +468,15 @@ static void FASTCALL opn_timera_calc(int no)
 		switch (no) {
 			case OPN_STD:
 				schedule_setevent(EVENT_OPN_A, opn_timera_tick[OPN_STD],
-					opn_timera_event);
+													opn_timera_event);
 				break;
 			case OPN_WHG:
 				schedule_setevent(EVENT_WHG_A, opn_timera_tick[OPN_WHG],
-					whg_timera_event);
+													whg_timera_event);
 				break;
 			case OPN_THG:
 				schedule_setevent(EVENT_THG_A, opn_timera_tick[OPN_THG],
-					thg_timera_event);
+													thg_timera_event);
 				break;
 			default:
 				ASSERT(FALSE);
@@ -472,11 +489,12 @@ static void FASTCALL opn_timera_calc(int no)
  *	OPN
  *	タイマーBインターバル算出共通処理
  */
-static void FASTCALL opn_timerb_calc(int no)
+static void FASTCALL
+opn_timerb_calc(int no)
 {
 	DWORD t;
 
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	t = opn_reg[no][0x26];
 	t = (256 - t);
@@ -491,15 +509,15 @@ static void FASTCALL opn_timerb_calc(int no)
 		switch (no) {
 			case OPN_STD:
 				schedule_setevent(EVENT_OPN_B, opn_timerb_tick[OPN_STD],
-					opn_timerb_event);
+													opn_timerb_event);
 				break;
 			case OPN_WHG:
 				schedule_setevent(EVENT_WHG_B, opn_timerb_tick[OPN_WHG],
-					whg_timerb_event);
+													whg_timerb_event);
 				break;
 			case OPN_THG:
 				schedule_setevent(EVENT_THG_B, opn_timerb_tick[OPN_THG],
-					thg_timerb_event);
+													thg_timerb_event);
 				break;
 			default:
 				ASSERT(FALSE);
@@ -514,43 +532,45 @@ static void FASTCALL opn_timerb_calc(int no)
  *	OPN
  *	レジスタアレイより読み出し
  */
-static BYTE FASTCALL opn_readreg(int no, BYTE reg)
+static BYTE FASTCALL
+opn_readreg(int no, BYTE reg)
 {
 	/* レジスタビットマスクデータ(PSG) */
 	static const BYTE opn_bitmask[16] = {
-		0xff,	0x0f,	0xff,	0x0f,
-		0xff,	0x0f,	0x1f,	0xff,
-		0x1f,	0x1f,	0x1f,	0xff,
-		0xff,	0x0f,	0xff,	0xff,
+		0xff, 0x0f, 0xff, 0x0f,
+		0xff, 0x0f, 0x1f, 0xff,
+		0x1f, 0x1f, 0x1f, 0xff,
+		0xff, 0x0f, 0xff, 0xff,
 	};
 
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	/* FM音源部は読み出せない */
 	if (reg >= 0x10) {
 		return 0xff;
 	}
 
-	return (BYTE)(opn_reg[no][reg] & opn_bitmask[reg]);
+	return (BYTE) (opn_reg[no][reg] & opn_bitmask[reg]);
 }
 
 /*
  *	OPN
  *	レジスタアレイへ書き込み
  */
-static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
+static void FASTCALL
+opn_writereg(int no, BYTE reg, BYTE dat)
 {
 #ifdef MOUSE
 	BOOL strobe;
 	BYTE mask;
 #endif
 
-	ASSERT ((no >= 0) && (no <= 2));
-        if (no == OPN_STD) {
-	
-              /* 標準OPNフラグオン */
-              opn_use = TRUE;
-        }
+	ASSERT((no >= 0) && (no <= 2));
+	if (no == OPN_STD) {
+
+		/* 標準OPNフラグオン */
+		opn_use = TRUE;
+	}
 
 	if (no == OPN_WHG) {
 		/* WHGフラグオン */
@@ -618,11 +638,11 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
 		}
 
 		/* データ記憶 */
-//		opn_reg[no][reg] = dat;
+//    opn_reg[no][reg] = dat;
 
 		/* モードのみ出力 */
-//		opn_notify_no(no, 0x27, (BYTE)(dat & 0xc0));
-//		return;
+//    opn_notify_no(no, 0x27, (BYTE)(dat & 0xc0));
+//    return;
 	}
 
 	/* データ記憶 */
@@ -630,7 +650,7 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
 
 	switch (reg) {
 #ifdef MOUSE
-		/* 出力ポート */
+			/* 出力ポート */
 		case 0x0f:
 			/* マウスエミュレーションは標準OPNのみ有効 */
 			if ((no == OPN_STD) && mos_capture) {
@@ -652,7 +672,7 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
 			return;
 #endif
 
-		/* プリスケーラ１ */
+			/* プリスケーラ１ */
 		case 0x2d:
 			if (opn_scale[no] != 3) {
 				opn_scale[no] = 6;
@@ -661,27 +681,27 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
 			}
 			return;
 
-		/* プリスケーラ２ */
+			/* プリスケーラ２ */
 		case 0x2e:
 			opn_scale[no] = 3;
 			opn_timera_calc(no);
 			opn_timerb_calc(no);
 			return;
 
-		/* プリスケーラ３ */
+			/* プリスケーラ３ */
 		case 0x2f:
 			opn_scale[no] = 2;
 			opn_timera_calc(no);
 			opn_timerb_calc(no);
 			return;
 
-		/* タイマーA */
+			/* タイマーA */
 		case 0x24:
 		case 0x25:
 			opn_timera_tick[no] = 0;
 			return;
 
-		/* タイマーB */
+			/* タイマーB */
 		case 0x26:
 			opn_timerb_tick[no] = 0;
 			return;
@@ -715,16 +735,17 @@ static void FASTCALL opn_writereg(int no, BYTE reg, BYTE dat)
  *	OPN
  *	データレジスタ読み込み共通処理
  */
-static void FASTCALL opn_read_data_reg(int no, BYTE *dat)
+static void FASTCALL
+opn_read_data_reg(int no, BYTE * dat)
 {
 #ifdef MOUSE
 	BYTE port, trigger;
 #endif
 
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	switch (opn_pstate[no]) {
-		/* 通常コマンド */
+			/* 通常コマンド */
 		case OPN_INACTIVE:
 		case OPN_READDAT:
 		case OPN_WRITEDAT:
@@ -732,7 +753,7 @@ static void FASTCALL opn_read_data_reg(int no, BYTE *dat)
 			*dat = opn_seldat[no];
 			break;
 
-		/* ステータス読み出し */
+			/* ステータス読み出し */
 		case OPN_READSTAT:
 			*dat = 0;
 			if (opn_timera_int[no]) {
@@ -743,7 +764,7 @@ static void FASTCALL opn_read_data_reg(int no, BYTE *dat)
 			}
 			break;
 
-		/* ジョイスティック読み取り */
+			/* ジョイスティック読み取り */
 		case OPN_JOYSTICK:
 			if (opn_selreg[no] == 14) {
 				/* ジョイスティックポートエミュレーションは標準OPNのみ */
@@ -753,27 +774,27 @@ static void FASTCALL opn_read_data_reg(int no, BYTE *dat)
 						/* マウス */
 						if (mos_port == 1) {
 							port = 0x00;
-							trigger = (BYTE)(opn_reg[no][15] & 0x03);
+							trigger = (BYTE) (opn_reg[no][15] & 0x03);
 						}
 						else {
 							port = 0x40;
-							trigger = (BYTE)((opn_reg[no][15] >> 2) & 0x03);
+							trigger = (BYTE) ((opn_reg[no][15] >> 2) & 0x03);
 						}
 
 						if ((opn_reg[no][15] & 0xc0) == port) {
-							*dat = (BYTE)(mos_readdata(trigger) | 0xc0);
+							*dat = (BYTE) (mos_readdata(trigger) | 0xc0);
 							break;
 						}
 					}
 #endif
 					if ((opn_reg[no][15] & 0xf0) == 0x20) {
 						/* ジョイスティック１ */
-						*dat = (BYTE)(~joy_request(0) | 0xc0);
+						*dat = (BYTE) (~joy_request(0) | 0xc0);
 						break;
 					}
 					if ((opn_reg[no][15] & 0xf0) == 0x50) {
 						/* ジョイスティック２ */
-						*dat = (BYTE)(~joy_request(1) | 0xc0);
+						*dat = (BYTE) (~joy_request(1) | 0xc0);
 						break;
 					}
 				}
@@ -794,9 +815,10 @@ static void FASTCALL opn_read_data_reg(int no, BYTE *dat)
  *	OPN
  *	割り込みステータス読み込み共通処理
  */
-static void FASTCALL opn_read_interrupt_reg(int no, BYTE *dat)
+static void FASTCALL
+opn_read_interrupt_reg(int no, BYTE * dat)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	if (opn_timera_int[no] || opn_timerb_int[no]) {
 		*dat = 0xf7;
@@ -810,26 +832,27 @@ static void FASTCALL opn_read_interrupt_reg(int no, BYTE *dat)
  *	OPN
  *	コマンドレジスタ書き込み共通処理
  */
-static void FASTCALL opn_write_command_reg(int no, BYTE dat)
+static void FASTCALL
+opn_write_command_reg(int no, BYTE dat)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	switch (dat & 0x0f) {
-		/* インアクティブ(動作定義なし、データレジスタ書き換え可) */
+			/* インアクティブ(動作定義なし、データレジスタ書き換え可) */
 		case OPN_INACTIVE:
 			opn_pstate[no] = OPN_INACTIVE;
 			break;
-		/* データ読み出し */
+			/* データ読み出し */
 		case OPN_READDAT:
 			opn_pstate[no] = OPN_READDAT;
 			opn_seldat[no] = opn_readreg(no, opn_selreg[no]);
 			break;
-		/* データ書き込み */
+			/* データ書き込み */
 		case OPN_WRITEDAT:
 			opn_pstate[no] = OPN_WRITEDAT;
 			opn_writereg(no, opn_selreg[no], opn_seldat[no]);
 			break;
-		/* ラッチアドレス */
+			/* ラッチアドレス */
 		case OPN_ADDRESS:
 			opn_pstate[no] = OPN_ADDRESS;
 			opn_selreg[no] = opn_seldat[no];
@@ -840,11 +863,11 @@ static void FASTCALL opn_write_command_reg(int no, BYTE dat)
 				opn_writereg(no, opn_selreg[no], opn_seldat[no]);
 			}
 			break;
-		/* リードステータス */
+			/* リードステータス */
 		case OPN_READSTAT:
 			opn_pstate[no] = OPN_READSTAT;
 			break;
-		/* ジョイスティック読み取り */
+			/* ジョイスティック読み取り */
 		case OPN_JOYSTICK:
 			opn_pstate[no] = OPN_JOYSTICK;
 			break;
@@ -855,20 +878,21 @@ static void FASTCALL opn_write_command_reg(int no, BYTE dat)
  *	OPN
  *	データレジスタ書き込み共通処理
  */
-static void FASTCALL opn_write_data_reg(int no, BYTE dat)
+static void FASTCALL
+opn_write_data_reg(int no, BYTE dat)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	/* データを記憶 */
 	opn_seldat[no] = dat;
 
 	/* インアクティブ以外の場合は、所定の動作を行う */
 	switch (opn_pstate[no]) {
-		/* データ書き込み */
+			/* データ書き込み */
 		case OPN_WRITEDAT:
 			opn_writereg(no, opn_selreg[no], opn_seldat[no]);
 			break;
-		/* ラッチアドレス */
+			/* ラッチアドレス */
 		case OPN_ADDRESS:
 			opn_selreg[no] = opn_seldat[no];
 
@@ -887,9 +911,10 @@ static void FASTCALL opn_write_data_reg(int no, BYTE dat)
  *	OPN
  *	ステートセーブ共通処理
  */
-static BOOL FASTCALL opn_save_common(int no, SDL_RWops *fileh)
+static BOOL FASTCALL
+opn_save_common(int no, SDL_RWops * fileh)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	if (!file_write(fileh, opn_reg[no], 256)) {
 		return FALSE;
@@ -939,9 +964,10 @@ static BOOL FASTCALL opn_save_common(int no, SDL_RWops *fileh)
  *	OPN
  *	ステートロード共通処理
  */
-static BOOL FASTCALL opn_load_common(int no, SDL_RWops *fileh)
+static BOOL FASTCALL
+opn_load_common(int no, SDL_RWops * fileh)
 {
-	ASSERT ((no >= 0) && (no <= 2));
+	ASSERT((no >= 0) && (no <= 2));
 
 	if (!file_read(fileh, opn_reg[no], 256)) {
 		return FALSE;
@@ -993,7 +1019,8 @@ static BOOL FASTCALL opn_load_common(int no, SDL_RWops *fileh)
  *	OPN
  *	タイマーAオーバフロー
  */
-static BOOL FASTCALL opn_timera_event(void)
+static BOOL FASTCALL
+opn_timera_event(void)
 {
 	return opn_timera_event_main(OPN_STD);
 }
@@ -1002,7 +1029,8 @@ static BOOL FASTCALL opn_timera_event(void)
  *	OPN
  *	タイマーBオーバフロー
  */
-static BOOL FASTCALL opn_timerb_event(void)
+static BOOL FASTCALL
+opn_timerb_event(void)
 {
 	return opn_timerb_event_main(OPN_STD);
 }
@@ -1011,7 +1039,8 @@ static BOOL FASTCALL opn_timerb_event(void)
  *	OPN
  *	１バイト読み出し
  */
-BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+opn_readb(WORD addr, BYTE * dat)
 {
 	/* FM-7モード時OPN有効チェック */
 #if XM7_VER >= 2
@@ -1023,7 +1052,7 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
 	}
 
 	switch (addr) {
-		/* コマンドレジスタは読み出し禁止 */
+			/* コマンドレジスタは読み出し禁止 */
 		case 0xfd0d:
 			/* FM-7モードではTHG SSGを使用するため無効 */
 			if (fm7_ver == 1) {
@@ -1038,7 +1067,7 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
 			*dat = 0xff;
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd0e:
 			/* FM-7モードではTHG SSGを使用するため無効 */
 			if (fm7_ver == 1) {
@@ -1053,7 +1082,7 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
 			opn_read_data_reg(OPN_STD, dat);
 			return TRUE;
 
-		/* 拡張割り込みステータス */
+			/* 拡張割り込みステータス */
 		case 0xfd17:
 #if XM7_VER == 1
 			if (fm_subtype == FMSUB_FM8) {
@@ -1071,7 +1100,8 @@ BOOL FASTCALL opn_readb(WORD addr, BYTE *dat)
  *	OPN
  *	１バイト書き込み
  */
-BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+opn_writeb(WORD addr, BYTE dat)
 {
 	/* FM-7モード時OPN有効チェック */
 #if XM7_VER >= 2
@@ -1083,7 +1113,7 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
 	}
 
 	switch (addr) {
-		/* OPNコマンドレジスタ */
+			/* OPNコマンドレジスタ */
 		case 0xfd0d:
 			/* FM-7モードではTHG SSGを使用するため無効 */
 			if (fm7_ver == 1) {
@@ -1100,7 +1130,7 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
 			opn_write_command_reg(OPN_STD, dat);
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd0e:
 			/* FM-7モードではTHG SSGを使用するため無効 */
 			if (fm7_ver == 1) {
@@ -1123,25 +1153,27 @@ BOOL FASTCALL opn_writeb(WORD addr, BYTE dat)
  *	OPN
  *	セーブ
  */
-BOOL FASTCALL opn_save(SDL_RWops *fileh)
+BOOL FASTCALL
+opn_save(SDL_RWops * fileh)
 {
-   if (!file_bool_write(fileh, opn_enable)) {
-               return FALSE;
-   }
-   if (!file_bool_write(fileh, opn_use)) {
-                return FALSE;
-   }
-   if (!opn_save_common(OPN_STD, fileh)) {
+	if (!file_bool_write(fileh, opn_enable)) {
 		return FALSE;
-   }
-   return TRUE;
+	}
+	if (!file_bool_write(fileh, opn_use)) {
+		return FALSE;
+	}
+	if (!opn_save_common(OPN_STD, fileh)) {
+		return FALSE;
+	}
+	return TRUE;
 }
 
 /*
  *	OPN
  *	ロード
  */
-BOOL FASTCALL opn_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+opn_load(SDL_RWops * fileh, int ver)
 {
 	int i;
 
@@ -1149,49 +1181,46 @@ BOOL FASTCALL opn_load(SDL_RWops *fileh, int ver)
 	if (ver < 200) {
 		return FALSE;
 	}
-       /* Ver9.16/7.16/3.06拡張 */
+	/* Ver9.16/7.16/3.06拡張 */
 #if XM7_VER >= 3
-      if ((ver >= 916) || ((ver >= 716) && (ver <= 799))) 
-      {
+	if ((ver >= 916) || ((ver >= 716) && (ver <= 799))) {
 #elif XM7_VER >= 2
-      if (ver >= 716) 
-      {
+	if (ver >= 716) {
 #else
-      if (ver >= 306) 
-      {
+	if (ver >= 306) {
 #endif
-           if (!file_bool_read(fileh, &opn_enable)) {
-                       return FALSE;
-           }
-			
-           if (!file_bool_read(fileh, &opn_use)) {
-                       return FALSE;
-	   }
-			
-        }
+		if (!file_bool_read(fileh, &opn_enable)) {
+			return FALSE;
+		}
+
+		if (!file_bool_read(fileh, &opn_use)) {
+			return FALSE;
+		}
+
+	}
 	if (!opn_load_common(OPN_STD, fileh)) {
 		return FALSE;
 	}
 
 	/* OPNレジスタ復旧 */
-	opn_notify(0x27, (BYTE)opn_reg[OPN_STD][0x27] );
+	opn_notify(0x27, (BYTE) opn_reg[OPN_STD][0x27]);
 
-	for (i=0; i<3; i++) {
-		opn_notify(0x28, (BYTE)i);
+	for (i = 0; i < 3; i++) {
+		opn_notify(0x28, (BYTE) i);
 		opn_key[OPN_STD][i] = FALSE;
 	}
 
-	for (i=0; i<13; i++) {
+	for (i = 0; i < 13; i++) {
 		if ((i < 8) || (i > 10)) {
-			opn_notify((BYTE)i, opn_reg[OPN_STD][i]);
+			opn_notify((BYTE) i, opn_reg[OPN_STD][i]);
 		}
 		else {
-			opn_notify((BYTE)i, 0);
+			opn_notify((BYTE) i, 0);
 		}
 	}
 
-	for (i=0x30; i<0xb4; i++) {
-		opn_notify((BYTE)i, opn_reg[OPN_STD][i]);
+	for (i = 0x30; i < 0xb4; i++) {
+		opn_notify((BYTE) i, opn_reg[OPN_STD][i]);
 	}
 
 	/* イベント */
@@ -1207,7 +1236,8 @@ BOOL FASTCALL opn_load(SDL_RWops *fileh, int ver)
  *	WHG
  *	タイマーAオーバフロー
  */
-static BOOL FASTCALL whg_timera_event(void)
+static BOOL FASTCALL
+whg_timera_event(void)
 {
 	return opn_timera_event_main(OPN_WHG);
 }
@@ -1216,7 +1246,8 @@ static BOOL FASTCALL whg_timera_event(void)
  *	WHG
  *	タイマーBオーバフロー
  */
-static BOOL FASTCALL whg_timerb_event(void)
+static BOOL FASTCALL
+whg_timerb_event(void)
 {
 	return opn_timerb_event_main(OPN_WHG);
 }
@@ -1225,7 +1256,8 @@ static BOOL FASTCALL whg_timerb_event(void)
  *	WHG
  *	１バイト読み出し
  */
-BOOL FASTCALL whg_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+whg_readb(WORD addr, BYTE * dat)
 {
 	/* 有効フラグをチェック、無効なら何もしない */
 	if (!whg_enable) {
@@ -1238,17 +1270,17 @@ BOOL FASTCALL whg_readb(WORD addr, BYTE *dat)
 #endif
 
 	switch (addr) {
-		/* コマンドレジスタは読み出し禁止 */
+			/* コマンドレジスタは読み出し禁止 */
 		case 0xfd45:
 			*dat = 0xff;
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd46:
 			opn_read_data_reg(OPN_WHG, dat);
 			return TRUE;
 
-		/* 拡張割り込みステータス */
+			/* 拡張割り込みステータス */
 		case 0xfd47:
 			opn_read_interrupt_reg(OPN_WHG, dat);
 			return TRUE;
@@ -1261,7 +1293,8 @@ BOOL FASTCALL whg_readb(WORD addr, BYTE *dat)
  *	WHG
  *	１バイト書き込み
  */
-BOOL FASTCALL whg_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+whg_writeb(WORD addr, BYTE dat)
 {
 	/* 有効フラグをチェック、無効なら何もしない */
 	if (!whg_enable) {
@@ -1274,12 +1307,12 @@ BOOL FASTCALL whg_writeb(WORD addr, BYTE dat)
 #endif
 
 	switch (addr) {
-		/* WHG コマンドレジスタ */
+			/* WHG コマンドレジスタ */
 		case 0xfd45:
 			opn_write_command_reg(OPN_WHG, dat);
 			return TRUE;
 
-		/* WHG データレジスタ */
+			/* WHG データレジスタ */
 		case 0xfd46:
 			opn_write_data_reg(OPN_WHG, dat);
 			return TRUE;
@@ -1292,7 +1325,8 @@ BOOL FASTCALL whg_writeb(WORD addr, BYTE dat)
  *	WHG
  *	セーブ
  */
-BOOL FASTCALL whg_save(SDL_RWops *fileh)
+BOOL FASTCALL
+whg_save(SDL_RWops * fileh)
 {
 	if (!file_bool_write(fileh, whg_enable)) {
 		return FALSE;
@@ -1311,7 +1345,8 @@ BOOL FASTCALL whg_save(SDL_RWops *fileh)
  *	WHG
  *	ロード
  */
-BOOL FASTCALL whg_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+whg_load(SDL_RWops * fileh, int ver)
 {
 	int i;
 
@@ -1332,24 +1367,24 @@ BOOL FASTCALL whg_load(SDL_RWops *fileh, int ver)
 	}
 
 	/* WHGレジスタ復旧 */
-	whg_notify(0x27, (BYTE)opn_reg[OPN_WHG][0x27]);
+	whg_notify(0x27, (BYTE) opn_reg[OPN_WHG][0x27]);
 
-	for (i=0; i<3; i++) {
-		whg_notify(0x28, (BYTE)i);
+	for (i = 0; i < 3; i++) {
+		whg_notify(0x28, (BYTE) i);
 		opn_key[OPN_WHG][i] = FALSE;
 	}
 
-	for (i=0; i<13; i++) {
+	for (i = 0; i < 13; i++) {
 		if ((i < 8) || (i > 10)) {
-			whg_notify((BYTE)i, opn_reg[OPN_WHG][i]);
+			whg_notify((BYTE) i, opn_reg[OPN_WHG][i]);
 		}
 		else {
-			whg_notify((BYTE)i, 0);
+			whg_notify((BYTE) i, 0);
 		}
 	}
 
-	for (i=0x30; i<0xb4; i++) {
-		whg_notify((BYTE)i, opn_reg[OPN_WHG][i]);
+	for (i = 0x30; i < 0xb4; i++) {
+		whg_notify((BYTE) i, opn_reg[OPN_WHG][i]);
 	}
 
 	/* イベント */
@@ -1365,7 +1400,8 @@ BOOL FASTCALL whg_load(SDL_RWops *fileh, int ver)
  *	THG
  *	タイマーAオーバフロー
  */
-static BOOL FASTCALL thg_timera_event(void)
+static BOOL FASTCALL
+thg_timera_event(void)
 {
 	return opn_timera_event_main(OPN_THG);
 }
@@ -1374,7 +1410,8 @@ static BOOL FASTCALL thg_timera_event(void)
  *	THG
  *	タイマーBオーバフロー
  */
-static BOOL FASTCALL thg_timerb_event(void)
+static BOOL FASTCALL
+thg_timerb_event(void)
 {
 	return opn_timerb_event_main(OPN_THG);
 }
@@ -1383,10 +1420,11 @@ static BOOL FASTCALL thg_timerb_event(void)
  *	THG
  *	１バイト読み出し
  */
-BOOL FASTCALL thg_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+thg_readb(WORD addr, BYTE * dat)
 {
 	switch (addr) {
-		/* コマンドレジスタは読み出し禁止 */
+			/* コマンドレジスタは読み出し禁止 */
 		case 0xfd0d:
 #if XM7_VER >= 2
 			/* FM-7モードのみ有効 */
@@ -1408,7 +1446,7 @@ BOOL FASTCALL thg_readb(WORD addr, BYTE *dat)
 			*dat = 0xff;
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd0e:
 #if XM7_VER >= 2
 			/* FM-7モードのみ有効 */
@@ -1430,7 +1468,7 @@ BOOL FASTCALL thg_readb(WORD addr, BYTE *dat)
 			opn_read_data_reg(OPN_THG, dat);
 			return TRUE;
 
-		/* 拡張割り込みステータス */
+			/* 拡張割り込みステータス */
 		case 0xfd53:
 #if XM7_VER == 1
 			if (fm_subtype == FMSUB_FM8) {
@@ -1448,10 +1486,11 @@ BOOL FASTCALL thg_readb(WORD addr, BYTE *dat)
  *	THG
  *	１バイト書き込み
  */
-BOOL FASTCALL thg_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+thg_writeb(WORD addr, BYTE dat)
 {
 	switch (addr) {
-		/* THGコマンドレジスタ */
+			/* THGコマンドレジスタ */
 		case 0xfd0d:
 #if XM7_VER >= 2
 			/* FM-7モードのみ有効 */
@@ -1487,7 +1526,7 @@ BOOL FASTCALL thg_writeb(WORD addr, BYTE dat)
 			opn_write_command_reg(OPN_THG, dat);
 			return TRUE;
 
-		/* データレジスタ */
+			/* データレジスタ */
 		case 0xfd0e:
 #if XM7_VER >= 2
 			/* FM-7モードのみ有効 */
@@ -1529,7 +1568,8 @@ BOOL FASTCALL thg_writeb(WORD addr, BYTE dat)
  *	THG
  *	セーブ
  */
-BOOL FASTCALL thg_save(SDL_RWops *fileh)
+BOOL FASTCALL
+thg_save(SDL_RWops * fileh)
 {
 	if (!file_bool_write(fileh, thg_enable)) {
 		return FALSE;
@@ -1548,7 +1588,8 @@ BOOL FASTCALL thg_save(SDL_RWops *fileh)
  *	THG
  *	ロード
  */
-BOOL FASTCALL thg_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+thg_load(SDL_RWops * fileh, int ver)
 {
 	int i;
 
@@ -1574,24 +1615,24 @@ BOOL FASTCALL thg_load(SDL_RWops *fileh, int ver)
 	}
 
 	/* THGレジスタ復旧 */
-	thg_notify(0x27, (BYTE)opn_reg[OPN_THG][0x27]);
+	thg_notify(0x27, (BYTE) opn_reg[OPN_THG][0x27]);
 
-	for (i=0; i<3; i++) {
-		thg_notify(0x28, (BYTE)i);
+	for (i = 0; i < 3; i++) {
+		thg_notify(0x28, (BYTE) i);
 		opn_key[OPN_THG][i] = FALSE;
 	}
 
-	for (i=0; i<13; i++) {
+	for (i = 0; i < 13; i++) {
 		if ((i < 8) || (i > 10)) {
-			thg_notify((BYTE)i, opn_reg[OPN_THG][i]);
+			thg_notify((BYTE) i, opn_reg[OPN_THG][i]);
 		}
 		else {
-			thg_notify((BYTE)i, 0);
+			thg_notify((BYTE) i, 0);
 		}
 	}
 
-	for (i=0x30; i<0xb4; i++) {
-		thg_notify((BYTE)i, opn_reg[OPN_THG][i]);
+	for (i = 0x30; i < 0xb4; i++) {
+		thg_notify((BYTE) i, opn_reg[OPN_THG][i]);
 	}
 
 	/* イベント */

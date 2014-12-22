@@ -21,30 +21,31 @@
 /*
  *	グローバル ワーク
  */
-BOOL	rs_use;						/* RS-232C使用フラグ */
-BOOL	rs_mask;					/* RS-232C機能マスク */
-BOOL	rs_enable;					/* RS-232C有効化フラグ(AV40/20以降) */
-BOOL	rs_selectmc;				/* モードコマンド選択状態 */
-BYTE	rs_modecmd;					/* モードコマンドレジスタ */
-BYTE	rs_command;					/* コマンドレジスタ */
-BYTE	rs_status;					/* ステータスレジスタ */
-BYTE	rs_baudrate;				/* ボーレート設定レジスタ */
-BYTE	rs_baudrate_v2;				/* ボーレート設定(V1/V2用) */
-BOOL	rs_dtrmask;					/* DTR信号マスクフラグ */
-BOOL	rs_cd;						/* CD信号 */
-BOOL	rs_cts;						/* CTS信号 */
+BOOL rs_use;										/* RS-232C使用フラグ */
+BOOL rs_mask;										/* RS-232C機能マスク */
+BOOL rs_enable;									/* RS-232C有効化フラグ(AV40/20以降) */
+BOOL rs_selectmc;								/* モードコマンド選択状態 */
+BYTE rs_modecmd;								/* モードコマンドレジスタ */
+BYTE rs_command;								/* コマンドレジスタ */
+BYTE rs_status;									/* ステータスレジスタ */
+BYTE rs_baudrate;								/* ボーレート設定レジスタ */
+BYTE rs_baudrate_v2;						/* ボーレート設定(V1/V2用) */
+BOOL rs_dtrmask;								/* DTR信号マスクフラグ */
+BOOL rs_cd;											/* CD信号 */
+BOOL rs_cts;										/* CTS信号 */
 
 /*
  *	スタティック ワーク
  */
-static DWORD	sndrcv_timing;		/* データ送受信タイミング(us) */
+static DWORD sndrcv_timing;			/* データ送受信タイミング(us) */
 
 
 /*
  *	RS-232C
  *	初期化
  */
-BOOL FASTCALL rs232c_init(void)
+BOOL FASTCALL
+rs232c_init(void)
 {
 	rs_use = FALSE;
 	rs_mask = TRUE;
@@ -57,7 +58,8 @@ BOOL FASTCALL rs232c_init(void)
  *	RS-232C
  *	クリーンアップ
  */
-void FASTCALL rs232c_cleanup(void)
+void FASTCALL
+rs232c_cleanup(void)
 {
 }
 
@@ -65,20 +67,21 @@ void FASTCALL rs232c_cleanup(void)
  *	RS-232C
  *	リセット
  */
-void FASTCALL rs232c_reset(void)
+void FASTCALL
+rs232c_reset(void)
 {
 	/* ワークエリア初期化 */
 	rs_enable = FALSE;
 	rs_selectmc = TRUE;
 #if XM7_VER >= 3
 	if (fm7_ver <= 2) {
-		rs_baudrate = (BYTE)(rs_baudrate_v2 << 2);
+		rs_baudrate = (BYTE) (rs_baudrate_v2 << 2);
 	}
 	else {
 		rs_baudrate = 0x00;
 	}
 #else
-	rs_baudrate = (BYTE)(rs_baudrate_v2 << 2);
+	rs_baudrate = (BYTE) (rs_baudrate_v2 << 2);
 #endif
 	rs_modecmd = 0x0c;
 	rs_command = 0x40;
@@ -100,24 +103,25 @@ void FASTCALL rs232c_reset(void)
  *	RS-232C
  *	TxRDY信号変化
  */
-void FASTCALL rs232c_txrdy(BOOL flag)
+void FASTCALL
+rs232c_txrdy(BOOL flag)
 {
 	/* ステータス更新 */
 	if (flag) {
 		rs_status |= RSS_TXRDY;
 	}
 	else {
-		rs_status &= (BYTE)~(RSS_TXRDY | RSS_TXEMPTY);
+		rs_status &= (BYTE) ~ (RSS_TXRDY | RSS_TXEMPTY);
 	}
 
 	/* 割り込み */
 #if XM7_VER == 1
-        if ((fm_subtype == FMSUB_FM8 || !txrdy_irq_mask) &&
-               !rs_cts && (rs_status & RSS_TXEMPTY)) {
+	if ((fm_subtype == FMSUB_FM8 || !txrdy_irq_mask) &&
+			!rs_cts && (rs_status & RSS_TXEMPTY)) {
 #else
-        if (!txrdy_irq_mask && !rs_cts && (rs_status & RSS_TXEMPTY)) {
+	if (!txrdy_irq_mask && !rs_cts && (rs_status & RSS_TXEMPTY)) {
 #endif
-	        txrdy_irq_flag = TRUE;
+		txrdy_irq_flag = TRUE;
 	}
 	else {
 		txrdy_irq_flag = FALSE;
@@ -129,7 +133,8 @@ void FASTCALL rs232c_txrdy(BOOL flag)
  *	RS-232C
  *	TxEMPTYイベント
  */
-BOOL FASTCALL rs232c_txempty_event(void)
+BOOL FASTCALL
+rs232c_txempty_event(void)
 {
 	/* TxEMPTY ON */
 	rs_status |= RSS_TXEMPTY;
@@ -147,7 +152,8 @@ BOOL FASTCALL rs232c_txempty_event(void)
  *	RS-232C
  *	TxEMPTYイベント登録
  */
-void FASTCALL rs232c_txempty_request(void)
+void FASTCALL
+rs232c_txempty_request(void)
 {
 	/* TxRDY ON */
 	rs232c_txrdy(TRUE);
@@ -160,24 +166,24 @@ void FASTCALL rs232c_txempty_request(void)
  *	RS-232C
  *	RxRDY信号変化
  */
-void FASTCALL rs232c_rxrdy(BOOL flag)
+void FASTCALL
+rs232c_rxrdy(BOOL flag)
 {
 	/* ステータス更新 */
 	if (flag) {
 		rs_status |= RSS_RXRDY;
 	}
 	else {
-		rs_status &= (BYTE)~RSS_RXRDY;
+		rs_status &= (BYTE) ~ RSS_RXRDY;
 	}
 
 	/* 割り込み */
 #if XM7_VER == 1
-          if ((fm_subtype == FMSUB_FM8 || !rxrdy_irq_mask) &&
-              (rs_status & RSS_RXRDY)) {
+	if ((fm_subtype == FMSUB_FM8 || !rxrdy_irq_mask) && (rs_status & RSS_RXRDY)) {
 #else
-	  if (!rxrdy_irq_mask && (rs_status & RSS_RXRDY)) {
+	if (!rxrdy_irq_mask && (rs_status & RSS_RXRDY)) {
 #endif
-	     rxrdy_irq_flag = TRUE;
+		rxrdy_irq_flag = TRUE;
 	}
 	else {
 		rxrdy_irq_flag = FALSE;
@@ -189,7 +195,8 @@ void FASTCALL rs232c_rxrdy(BOOL flag)
  *	RS-232C
  *	RxRDYイベント
  */
-BOOL FASTCALL rs232c_rxrdy_event(void)
+BOOL FASTCALL
+rs232c_rxrdy_event(void)
 {
 	/* RxRDY ON/割り込み */
 	rs232c_rxrdy(TRUE);
@@ -204,7 +211,8 @@ BOOL FASTCALL rs232c_rxrdy_event(void)
  *	RS-232C
  *	RxRDYイベント登録
  */
-void FASTCALL rs232c_rxrdy_request(void)
+void FASTCALL
+rs232c_rxrdy_request(void)
 {
 	/* イベント登録…だけ */
 	schedule_setevent(EVENT_RS_RXTIMING, sndrcv_timing, rs232c_rxrdy_event);
@@ -214,24 +222,25 @@ void FASTCALL rs232c_rxrdy_request(void)
  *	RS-232C
  *	SYNDET信号変化
  */
-void FASTCALL rs232c_syndet(BOOL flag)
+void FASTCALL
+rs232c_syndet(BOOL flag)
 {
 	/* ステータス更新 */
 	if (flag) {
 		rs_status |= RSS_SYNDET;
 	}
 	else {
-		rs_status &= (BYTE)~RSS_SYNDET;
+		rs_status &= (BYTE) ~ RSS_SYNDET;
 	}
 
 	/* 割り込み */
 #if XM7_VER == 1
-          if ((fm_subtype == FMSUB_FM8 || !syndet_irq_mask) &&
-              (rs_status & RSS_SYNDET)) {
+	if ((fm_subtype == FMSUB_FM8 || !syndet_irq_mask) &&
+			(rs_status & RSS_SYNDET)) {
 #else
-	  if (!syndet_irq_mask && (rs_status & RSS_SYNDET)) {
+	if (!syndet_irq_mask && (rs_status & RSS_SYNDET)) {
 #endif
-	     syndet_irq_flag = TRUE;
+		syndet_irq_flag = TRUE;
 	}
 	else {
 		syndet_irq_flag = FALSE;
@@ -243,7 +252,8 @@ void FASTCALL rs232c_syndet(BOOL flag)
  *	RS-232C
  *	送受信タイミング計算
  */
-void FASTCALL rs232c_calc_timing(void)
+void FASTCALL
+rs232c_calc_timing(void)
 {
 	DWORD baudrate;
 	BYTE databits;
@@ -257,22 +267,26 @@ void FASTCALL rs232c_calc_timing(void)
 
 	/* キャラクタ長を取得 */
 	switch (rs_modecmd & RSM_CHARLENM) {
-		case RSM_CHARLEN5	:	databits = 5;
-								break;
-		case RSM_CHARLEN6	:	databits = 6;
-								break;
-		case RSM_CHARLEN7	:	databits = 7;
-								break;
-		case RSM_CHARLEN8	:	databits = 8;
-								break;
+		case RSM_CHARLEN5:
+			databits = 5;
+			break;
+		case RSM_CHARLEN6:
+			databits = 6;
+			break;
+		case RSM_CHARLEN7:
+			databits = 7;
+			break;
+		case RSM_CHARLEN8:
+			databits = 8;
+			break;
 	}
 
 	/* スタート/ストップビット分を加算 */
 	if ((rs_modecmd & RSM_STOPBITM) == RSM_STOPBIT1) {
-		databits += (BYTE)2;
+		databits += (BYTE) 2;
 	}
 	else {
-		databits += (BYTE)3;
+		databits += (BYTE) 3;
 	}
 
 	/* 1バイトあたりの送出時間をμs単位で求める */
@@ -285,10 +299,11 @@ void FASTCALL rs232c_calc_timing(void)
  *	RS-232C
  *	１バイト読み込み
  */
-BOOL FASTCALL rs232c_readb(WORD addr, BYTE *dat)
+BOOL FASTCALL
+rs232c_readb(WORD addr, BYTE * dat)
 {
 	switch (addr) {
-		case 0xfd06 :	/* USARTデータレジスタ */
+		case 0xfd06:	/* USARTデータレジスタ */
 #if XM7_VER >= 3
 			if (rs_use && ((fm7_ver <= 2) || rs_enable) && !rs_mask) {
 #else
@@ -304,7 +319,7 @@ BOOL FASTCALL rs232c_readb(WORD addr, BYTE *dat)
 			}
 			break;
 
-		case 0xfd07 :	/* USARTステータスレジスタ */
+		case 0xfd07:	/* USARTステータスレジスタ */
 #if XM7_VER >= 3
 			if (rs_use && ((fm7_ver <= 2) || rs_enable) && !rs_mask) {
 #else
@@ -334,17 +349,17 @@ BOOL FASTCALL rs232c_readb(WORD addr, BYTE *dat)
  *	RS-232C
  *	１バイト書き込み
  */
-BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
+BOOL FASTCALL
+rs232c_writeb(WORD addr, BYTE dat)
 {
 #if XM7_VER >= 3
 	BOOL flag;
 #endif
-   
+
 	switch (addr) {
-		case 0xfd06 :	/* USARTデータレジスタ */
+		case 0xfd06:	/* USARTデータレジスタ */
 #if XM7_VER >= 3
-			if (rs_use && ((fm7_ver <= 2) || rs_enable) && !rs_selectmc &&
-				!rs_mask) {
+			if (rs_use && ((fm7_ver <= 2) || rs_enable) && !rs_selectmc && !rs_mask) {
 #else
 			if (rs_use && !rs_selectmc && !rs_mask) {
 #endif
@@ -353,7 +368,7 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
 			}
 			break;
 
-		case 0xfd07 :	/* USARTコマンドレジスタ */
+		case 0xfd07:	/* USARTコマンドレジスタ */
 #if XM7_VER >= 3
 			if (rs_use && ((fm7_ver <= 2) || rs_enable) && !rs_mask) {
 #else
@@ -381,7 +396,7 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
 			break;
 
 #if XM7_VER >= 3
-		case 0xfd0b :	/* FM77AV40/20 クロック・ボーレート設定レジスタ */
+		case 0xfd0b:	/* FM77AV40/20 クロック・ボーレート設定レジスタ */
 			if ((fm7_ver >= 3) && !rs_mask) {
 				rs232c_setbaudrate(dat);
 				rs_baudrate = dat;
@@ -392,7 +407,7 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
 
 			return TRUE;
 
-		case 0xfd0c :	/* FM77AV40/20 拡張DTRレジスタ */
+		case 0xfd0c:	/* FM77AV40/20 拡張DTRレジスタ */
 			if (fm7_ver >= 3) {
 				/* bit0:RS-232C有効 */
 				if (dat & RSEX_RSENABLE) {
@@ -417,7 +432,7 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
 				return TRUE;
 			}
 #endif
-		 default:
+		default:
 			return FALSE;
 	}
 
@@ -428,7 +443,8 @@ BOOL FASTCALL rs232c_writeb(WORD addr, BYTE dat)
  *	RS-232C
  *	セーブ
  */
-BOOL FASTCALL rs232c_save(SDL_RWops *fileh)
+BOOL FASTCALL
+rs232c_save(SDL_RWops * fileh)
 {
 	if (!file_bool_write(fileh, rs_mask)) {
 		return FALSE;
@@ -468,7 +484,8 @@ BOOL FASTCALL rs232c_save(SDL_RWops *fileh)
  *	RS-232C
  *	ロード
  */
-BOOL FASTCALL rs232c_load(SDL_RWops *fileh, int ver)
+BOOL FASTCALL
+rs232c_load(SDL_RWops * fileh, int ver)
 {
 	/* バージョンチェック */
 	if (ver < 200) {
@@ -528,4 +545,4 @@ BOOL FASTCALL rs232c_load(SDL_RWops *fileh, int ver)
 	return TRUE;
 }
 
-#endif		/* RSC */
+#endif /* RSC */

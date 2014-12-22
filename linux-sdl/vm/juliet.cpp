@@ -640,7 +640,7 @@ void juliet_YMF288A_B(BYTE addr, BYTE data)
 			break;
 		case 0xff:
 			if (CSMmode) {
-				/* Ch3 KeyOff→KeyOn  うわぁぁぁぁん、滅殺〜 */
+				/* Ch3 KeyOff→KeyOn  うわぁぁぁぁん、滅殺～ */
 				juliet_YMF288WriteReg(0x28, 0x02);
 				juliet_YMF288WriteReg(0x28, 0xf2);
 			}

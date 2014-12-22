@@ -52,9 +52,6 @@ typedef struct {
  *  主要エントリ 
  */            
 
-        extern void OnDropFiles(void);	/* ファイルドロップ */
-        extern void OnCmdLine(char *arg);	/* コマンドライン処理 
-							 */
         extern void OnExec(void);
         extern void OnBreak(void);
         extern void OnReset(AG_Event *);
