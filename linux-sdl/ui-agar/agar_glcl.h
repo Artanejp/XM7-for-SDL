@@ -23,6 +23,13 @@
 #include <CL/cl_gl.h>
 #include <CL/cl_gl_ext.h>
 
+#if 1
+#define CL_USE_DEPRECATED_OPENCL_1_0_APIS
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+#endif
+
 extern "C" {
    #include "xm7_types.h"
    extern BYTE     ttl_palet[8];
@@ -65,7 +72,7 @@ class GLCLDraw {
    GLCLDraw();
    ~GLCLDraw();
    cl_int GetVram(int bmode);
-   cl_int BuildFromSource(const char *p);
+   cl_int BuildFromSource(cl_program *program, const char *p);
    cl_int SetupBuffer(GLuint *texid);
    cl_int SetupTable(void);
    cl_int InitContext(int platformnum, int processornum, int GLinterop);
@@ -90,7 +97,11 @@ class GLCLDraw {
 
    /* Program Object */
    const char *source = NULL;
-   cl_program program = NULL;
+   cl_program program_8 = NULL;
+   cl_program program_4096 = NULL;
+   cl_program program_256k = NULL;
+   cl_program program_copyvram = NULL;
+   cl_program program_tables = NULL;
    cl_int ret_num_devices;
    cl_int ret_num_platforms;
    cl_int platform_num = 0;
@@ -107,11 +118,11 @@ class GLCLDraw {
    cl_event event_copytotexture;
    cl_event event_release;
    cl_kernel kernels_array[16];
-   cl_kernel *kernel_8colors = NULL;
-   cl_kernel *kernel_4096colors = NULL;
-   cl_kernel *kernel_256kcolors = NULL;
-   cl_kernel *kernel_table = NULL; 
-   cl_kernel *kernel_copyvram = NULL;
+   cl_kernel kernel_8colors;
+   cl_kernel kernel_4096colors;
+   cl_kernel kernel_256kcolors;
+   cl_kernel kernel_table; 
+   cl_kernel kernel_copyvram;
    cl_uint nkernels;
 
    int inbuf_bank = 0;

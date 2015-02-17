@@ -65,7 +65,11 @@ GLCLDraw::~GLCLDraw()
      for(i = 0; i < nkernels; i++) if(kernels_array[i] != NULL) ret = clReleaseKernel(kernels_array[i]);
    }
    
-   if(program != NULL) ret |= clReleaseProgram(program);
+   if(program_8 != NULL) ret |= clReleaseProgram(program_8);
+   if(program_4096 != NULL) ret |= clReleaseProgram(program_4096);
+   if(program_256k != NULL) ret |= clReleaseProgram(program_256k);
+   if(program_copyvram != NULL) ret |= clReleaseProgram(program_copyvram);
+   if(program_tables != NULL) ret |= clReleaseProgram(program_tables);
    if(command_queue != NULL) ret |= clReleaseCommandQueue(command_queue);
    if(context != NULL) ret |= clReleaseContext(context);
    if(properties != NULL) free(properties);
@@ -267,7 +271,7 @@ cl_int GLCLDraw::InitContext(int platformnum, int processornum, int GLinterop)
    return ret;
 }
 
-static void CL_LogProgramExecute(cl_program program, void *userdata)
+static void CL_LogProgramExecute(cl_program program_b, void *userdata)
 {
   char *logBuf;
   size_t length;
@@ -284,7 +288,7 @@ static void CL_LogProgramExecute(cl_program program, void *userdata)
   //  printf("DBG: %08x %d\n", t, num);
   for(n = 0; n < num; n++) {
     logBuf[0] = '\0';
-    r = clGetProgramBuildInfo(program, devid[n],  CL_PROGRAM_BUILD_LOG, 
+    r = clGetProgramBuildInfo(program_b, devid[n],  CL_PROGRAM_BUILD_LOG, 
 			      LOGSIZE - 1, (void *)logBuf, &length);
     if((length > 0) && (length <= LOGSIZE)){
       logBuf[length] = '\0';
@@ -295,8 +299,7 @@ static void CL_LogProgramExecute(cl_program program, void *userdata)
   return;
 }
 
-
-cl_int GLCLDraw::BuildFromSource(const char *p)
+cl_int GLCLDraw::BuildFromSource(cl_program *program, const char *p)
 {
     cl_int ret;
     size_t codeSize;
@@ -306,55 +309,57 @@ cl_int GLCLDraw::BuildFromSource(const char *p)
     compile_options[0] = '\0';
    
     codeSize = strlen(p);
-    program = clCreateProgramWithSource(context, 1, (const char **)&p,
+    *program = clCreateProgramWithSource(context, 1, (const char **)&p,
                                         (const size_t *)&codeSize, &ret);
     XM7_DebugLog(XM7_LOG_INFO, "CL: Build Result=%d", ret);
     if(ret < CL_SUCCESS) {
       return ret;
     }
-
-
     // Compile from source
-    strncat(compile_options, "-cl-fast-relaxed-math ", sizeof(compile_options) - 1);
+    //strncat(compile_options, "-cl-fast-relaxed-math ", sizeof(compile_options) - 1);
     if(clGetDeviceInfo(device_id[using_device], CL_DEVICE_ENDIAN_LITTLE,
 		       sizeof(cl_bool), &endian_little, NULL) == CL_SUCCESS){
       if(endian_little == CL_TRUE) {
 	strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=1 ", sizeof(compile_options) - 1);
-      } else {
+      } else { // BIG
 	strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=0 ", sizeof(compile_options) - 1); // Big endian
       }
     } else {
       strncat(compile_options, "-D_CL_KERNEL_LITTLE_ENDIAN=1 ", sizeof(compile_options) - 1); // Assume little endian
     }
-    build_callback = CL_LogProgramExecute;
-    ret = clBuildProgram(program, 1, &device_id[using_device], compile_options,
-			 build_callback, (void *)this);
+//    build_callback = CL_LogProgramExecute;
+//    ret = clBuildProgram(*program, 1, &device_id[using_device], compile_options,
+//			 build_callback, (void *)this);
+    ret = clBuildProgram(*program, 1, &device_id[using_device], compile_options,
+			 NULL, NULL);
     XM7_DebugLog(XM7_LOG_INFO, "Compile Result=%d", ret);
+    CL_LogProgramExecute(*program, (void *)this);
     if(ret != CL_SUCCESS) {  // Printout error log.
       //      clReleaseProgram(program);
       return ret;
     }
-    ret = clCreateKernelsInProgram(program, sizeof(kernels_array) / sizeof(cl_kernel),
+    ret = clCreateKernelsInProgram(*program, 1,
 				   kernels_array, &nkernels);
     if(ret < CL_SUCCESS) {
       XM7_DebugLog(XM7_LOG_INFO, "Unable to build CL kernel. Status=%d", ret);
     } else {
       char funcname[128];
-      int i;
+      int i = 0;
       size_t size;
       XM7_DebugLog(XM7_LOG_INFO, "Built %d CL kernel(s).", nkernels);
-      for(i = 0; i < nkernels; i++) {
+//      for(i = 0; i < nkernels; i++) {
 	funcname[0] = '\0';
-	if(clGetKernelInfo(kernels_array[i], CL_KERNEL_FUNCTION_NAME,
+	if(clGetKernelInfo(kernels_array[0], CL_KERNEL_FUNCTION_NAME,
 			   sizeof(funcname) / sizeof(char) - 1, 
 			   funcname, size) == CL_SUCCESS){
-	  if((strncmp(funcname, "getvram8", strlen("getvram8")) == 0) && (kernel_8colors == NULL)) kernel_8colors = &kernels_array[i];
-	  if((strncmp(funcname, "getvram4096", strlen("getvram4096")) == 0) && (kernel_4096colors == NULL)) kernel_4096colors = &kernels_array[i];
-	  if((strncmp(funcname, "getvram256k", strlen("getvram256k")) == 0) && (kernel_256kcolors == NULL)) kernel_256kcolors = &kernels_array[i];
-	  if((strncmp(funcname, "CreateTable", strlen("CreateTable")) == 0) && (kernel_table == NULL)) kernel_table = &kernels_array[i];
-	  if((strncmp(funcname, "CopyVram", strlen("CopyVram")) == 0) && (kernel_copyvram == NULL)) kernel_copyvram = &kernels_array[i];
+	  printf("Kernel Name: %s\n", funcname); 
+	  if((strncmp(funcname, "getvram8", strlen("getvram8")) == 0)) kernel_8colors = kernels_array[i];
+	  if((strncmp(funcname, "getvram4096", strlen("getvram4096")) == 0)) kernel_4096colors = kernels_array[i];
+	  if((strncmp(funcname, "getvram256k", strlen("getvram256k")) == 0)) kernel_256kcolors = kernels_array[i];
+	  if((strncmp(funcname, "CreateTable", strlen("CreateTable")) == 0)) kernel_table = kernels_array[i];
+	  if((strncmp(funcname, "CopyVram", strlen("CopyVram")) == 0)) kernel_copyvram = kernels_array[i];
 	}
-      }
+//      }
     }
    return ret;
 }
@@ -593,7 +598,7 @@ cl_int GLCLDraw::GetVram(int bmode)
 {
    cl_int ret = 0;
    cl_int r;
-   cl_kernel *kernel = NULL;
+   cl_kernel kernel;
    int w = 0;
    int h = 0;
    Uint8 *pr,*pg,*pb;
@@ -615,7 +620,6 @@ cl_int GLCLDraw::GetVram(int bmode)
    bright.s[2] = fBrightB; // B
    bright.s[3] = 1.0; // A
  
-   
    //if(inbuf == NULL) return -1;
    if(outbuf == NULL) return -1;
    //if(TransferBuffer == NULL) return -1;
@@ -652,34 +656,34 @@ cl_int GLCLDraw::GetVram(int bmode)
        transfer_size = 0x2000 * 18;
        break;
      }
-     if((flag != FALSE) && (transfer_size > 0)){
+//     if((flag != FALSE) && (transfer_size > 0)){
        inbuf_bank++;
        if(inbuf_bank >= 2) inbuf_bank = 0;
-       if(kernel_copyvram != NULL) {
-	 size_t lws_copy[] = {1};
+#if 0
+         size_t lws_copy[] = {1};
 	 size_t gws_copy[] = {gws[0]};
 	      
 	 cl_int size = transfer_size;
-	 ret |= clSetKernelArg(*kernel_copyvram, 0, sizeof(cl_mem), (void *)&(inbuf[inbuf_bank]));
-	 ret |= clSetKernelArg(*kernel_copyvram, 1, sizeof(cl_mem), (void *)&(inbuf[bank]));
-	 ret |= clSetKernelArg(*kernel_copyvram, 2, sizeof(cl_int), &size);
-	 ret |= clSetKernelArg(*kernel_copyvram, 3, sizeof(cl_int), &bCLSparse);
+	 ret |= clSetKernelArg(kernel_copyvram, 0, sizeof(cl_mem), (void *)&(inbuf[inbuf_bank]));
+	 ret |= clSetKernelArg(kernel_copyvram, 1, sizeof(cl_mem), (void *)&(inbuf[bank]));
+	 ret |= clSetKernelArg(kernel_copyvram, 2, sizeof(cl_int), &size);
+	 ret |= clSetKernelArg(kernel_copyvram, 3, sizeof(cl_int), &bCLSparse);
 	 if(bCLSparse) {
-	    ret = clEnqueueNDRangeKernel(command_queue, *kernel_copyvram, 1, 
+	    ret = clEnqueueNDRangeKernel(command_queue, kernel_copyvram, 1, 
 					 goff, gws_copy, lws_copy, 
 					 0, NULL,  &copy_event);
 	 } else {
 	    ret = clEnqueueTask(command_queue,
-				*kernel_copyvram, 0, NULL, &copy_event);
+				kernel_copyvram, 0, NULL, &copy_event);
 	 }
       } else {
+#endif
        ret = clEnqueueCopyBuffer(command_queue, inbuf[bank], inbuf[inbuf_bank], 0,
 				 0, transfer_size, 0, NULL,
 			       &copy_event);
-      }
+//      }
       clFinish(command_queue);
       TransferBuffer = MapTransferBuffer(bmode);
-     }
      ReleaseBufPtr();
      if(TransferBuffer == NULL) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
    }
@@ -700,63 +704,61 @@ cl_int GLCLDraw::GetVram(int bmode)
       if(bmode == SCR_400LINE) h = 400;
       vpage = (~(multi_page >> 4)) & 0x07;
       //gws[0] = h;
-      if(kernel_8colors != NULL) kernel = kernel_8colors;
-      if(kernel != NULL) {
-	 ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem), (void *)&(inbuf[bank]));
-	 ret |= clSetKernelArg(*kernel, 1, sizeof(int),    (void *)&w);
-	 ret |= clSetKernelArg(*kernel, 2, sizeof(int), (void *)&h);
-	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem), (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem), (void *)&palette_buf[palette_bank_old]);
-	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_mem), (void *)&table);
-	 ret |= clSetKernelArg(*kernel, 6, sizeof(int), (void *)&bCLSparse);
-	 ret |= clSetKernelArg(*kernel, 7, sizeof(int), (void *)&crtflag);
-	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
+      kernel = kernel_8colors;
+//      if(kernel != NULL) {
+	 ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&(inbuf[bank]));
+	 ret |= clSetKernelArg(kernel, 1, sizeof(int),    (void *)&w);
+	 ret |= clSetKernelArg(kernel, 2, sizeof(int), (void *)&h);
+	 ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&outbuf);
+	 ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&palette_buf[palette_bank_old]);
+	 ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&table);
+	 ret |= clSetKernelArg(kernel, 6, sizeof(int), (void *)&bCLSparse);
+	 ret |= clSetKernelArg(kernel, 7, sizeof(int), (void *)&crtflag);
+	 ret |= clSetKernelArg(kernel, 8, sizeof(cl_float4), (void *)&bright);
 	 clFlush(command_queue);
-      }
+//      }
       break;
     case SCR_262144:// Windowはなし
       w = 320;
       h = 200;
       //gws[0] = h;
 
-      //      if(kernel == NULL) kernel = clCreateKernel(program, "getvram256k", &ret);
-      if(kernel_256kcolors != NULL) kernel = kernel_256kcolors;
-      if(kernel != NULL) {
+      kernel = kernel_256kcolors;
+//      if(kernel != NULL) {
       /*
        * Below transfer is dummy.
        */
-	 ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
-	 ret |= clSetKernelArg(*kernel, 1, sizeof(cl_int),  (void *)&w);
-	 ret |= clSetKernelArg(*kernel, 2, sizeof(cl_int),  (void *)&h);
-	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem),  (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem),  (void *)&table);
-	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_uint), (void *)&mpage);
-	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
-	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
-	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
+	 ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
+	 ret |= clSetKernelArg(kernel, 1, sizeof(cl_int),  (void *)&w);
+	 ret |= clSetKernelArg(kernel, 2, sizeof(cl_int),  (void *)&h);
+	 ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem),  (void *)&outbuf);
+	 ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem),  (void *)&table);
+	 ret |= clSetKernelArg(kernel, 5, sizeof(cl_uint), (void *)&mpage);
+	 ret |= clSetKernelArg(kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
+	 ret |= clSetKernelArg(kernel, 7, sizeof(cl_int),  (void *)&crtflag);
+	 ret |= clSetKernelArg(kernel, 8, sizeof(cl_float4), (void *)&bright);
 	 clFlush(command_queue);
-      }
+//      }
       break;
     case SCR_4096:
       w = 320;
       h = 200;
       //gws[0] = h;
-      //if(kernel == NULL) kernel = clCreateKernel(program, "getvram4096", &ret);
-      if(kernel_4096colors != NULL) kernel = kernel_4096colors;
-      if(kernel != NULL) {
+      kernel = kernel_4096colors;
+//      if(kernel != NULL) {
 	 
-	 ret |= clSetKernelArg(*kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
-	 ret |= clSetKernelArg(*kernel, 1, sizeof(cl_int),  (void *)&w);
-	 ret |= clSetKernelArg(*kernel, 2, sizeof(cl_int),  (void *)&h);
-	 ret |= clSetKernelArg(*kernel, 3, sizeof(cl_mem),  (void *)&outbuf);
-	 ret |= clSetKernelArg(*kernel, 4, sizeof(cl_mem),  (void *)&(palette_buf[palette_bank_old]));
-	 ret |= clSetKernelArg(*kernel, 5, sizeof(cl_mem),  (void *)&table);
-	 ret |= clSetKernelArg(*kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
-	 ret |= clSetKernelArg(*kernel, 7, sizeof(cl_int),  (void *)&crtflag);
-	 ret |= clSetKernelArg(*kernel, 8, sizeof(cl_float4), (void *)&bright);
+	 ret |= clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *)&(inbuf[bank]));
+	 ret |= clSetKernelArg(kernel, 1, sizeof(cl_int),  (void *)&w);
+	 ret |= clSetKernelArg(kernel, 2, sizeof(cl_int),  (void *)&h);
+	 ret |= clSetKernelArg(kernel, 3, sizeof(cl_mem),  (void *)&outbuf);
+	 ret |= clSetKernelArg(kernel, 4, sizeof(cl_mem),  (void *)&(palette_buf[palette_bank_old]));
+	 ret |= clSetKernelArg(kernel, 5, sizeof(cl_mem),  (void *)&table);
+	 ret |= clSetKernelArg(kernel, 6, sizeof(cl_int),  (void *)&bCLSparse);
+	 ret |= clSetKernelArg(kernel, 7, sizeof(cl_int),  (void *)&crtflag);
+	 ret |= clSetKernelArg(kernel, 8, sizeof(cl_float4), (void *)&bright);
       //clFinish(command_queue);
 	 clFlush(command_queue);
-      }
+//      }
       break;
    }
    w2 = w;
@@ -767,33 +769,31 @@ cl_int GLCLDraw::GetVram(int bmode)
      ret |= clEnqueueAcquireGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  0, NULL, &event_copytotexture);
-     if(kernel != NULL) {
        if(bCLSparse) {
-	 ret = clEnqueueNDRangeKernel(command_queue, *kernel, 1, 
+	 ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
 				      goff, gws, lws, 
 				      1, &event_copytotexture,  &event_exec);
        } else {
 	 ret = clEnqueueTask(command_queue,
-			     *kernel, 1, &event_copytotexture, &event_exec);
+			     kernel, 1, &event_copytotexture, &event_exec);
        }
-     }
-      
      ret |= clEnqueueReleaseGLObjects (command_queue,
 				  1, (cl_mem *)&outbuf,
 				  1, &event_exec, &event_release);
      clFinish(command_queue);
 //     glFinish();
    } else {
-     if(kernel != NULL) {
+//       printf("00\n");
        if(bCLSparse) {
-	 ret = clEnqueueNDRangeKernel(command_queue, *kernel, 1, 
+	 ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
 				      goff, gws, lws, 
-				      1, &event_uploadvram[2],  &event_exec);
+				      1, &copy_event,  &event_exec);
        } else {
 	 ret = clEnqueueTask(command_queue,
-			     *kernel, 1, &event_uploadvram[2], &event_exec);
+			     kernel, 1, &copy_event, &event_exec);
        }
-     }
+     clFinish(command_queue);
+//       printf("RET=%d\n", ret);
    }
    }
    
@@ -807,15 +807,47 @@ cl_int GLCLDraw::SetupTable(void)
    cl_uint pages;
    cl_event tbl_ev;
    pages = 6;
-
-   if(kernel_table != NULL) {
+#if 1
+//   if(kernel_table != NULL) {
      r = 0;
-      r |= clSetKernelArg(*kernel_table, 0, sizeof(cl_mem),     (void *)&table);
-      r |= clSetKernelArg(*kernel_table, 1, sizeof(cl_uint),    (void *)&pages);
+      r |= clSetKernelArg(kernel_table, 0, sizeof(cl_mem),     (void *)&table);
+      r |= clSetKernelArg(kernel_table, 1, sizeof(cl_uint),    (void *)&pages);
       r |= clEnqueueTask(command_queue,
-			     *kernel_table, 0, NULL, NULL);
+			     kernel_table, 0, NULL, NULL);
       clFinish(command_queue);
-    }
+//    }
+#else 
+     {
+	int i, j, k;
+	uint32_t data[8];
+	uint32_t *p;
+        p = (uint32_t *)clEnqueueMapBuffer(command_queue, table, CL_TRUE, CL_MAP_WRITE,
+					   0, (size_t)(256 * 8 * pages * sizeof(uint32_t)),
+					   0, NULL, NULL, NULL);
+	if(p == NULL) return r;
+	r = 0;
+	for(i = 0; i < 256; i++) {
+	   data[0] = ((i & 0x80) != 0) ? 0x01 : 0x00;
+	   data[1] = ((i & 0x40) != 0) ? 0x01 : 0x00;
+	   data[2] = ((i & 0x20) != 0) ? 0x01 : 0x00;
+	   data[3] = ((i & 0x10) != 0) ? 0x01 : 0x00;
+	   data[4] = ((i & 0x08) != 0) ? 0x01 : 0x00;
+	   data[5] = ((i & 0x04) != 0) ? 0x01 : 0x00;
+	   data[6] = ((i & 0x02) != 0) ? 0x01 : 0x00;
+	   data[7] = ((i & 0x01) != 0) ? 0x01 : 0x00;
+	   for(j = 0; j < pages; j++) {
+		memcpy(&p[j * 256 * 8 + i * 8], data, 8 * sizeof(uint32_t));
+	        for(k = 0; k < 8; k++) data[k] <<= 1;
+	   }
+	   
+	}
+       clEnqueueUnmapMemObject(command_queue, table, 
+				 p, 0, NULL,
+				 NULL);
+	printf("done\n");
+     }
+   
+#endif
    return r;
 }
 

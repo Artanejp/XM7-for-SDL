@@ -34,7 +34,11 @@ GLfloat GridVertexs400l[402 * 6];
 extern float fBrightR;
 extern float fBrightG;
 extern float fBrightB;
-extern const char *cl_render;
+extern const char *cl_render_8;
+extern const char *cl_render_4096;
+extern const char *cl_render_256k;
+extern const char *cl_render_copyvram;
+extern const char *cl_render_tables;
 extern GLuint uVramTextureID;
 
 #ifdef _USE_OPENCL
@@ -127,7 +131,15 @@ void InitContextCL(void)
 	    if(cldraw != NULL) {
 	      r = cldraw->InitContext(nCLPlatformNum, nCLDeviceNum, bCLInteropGL);
 	       if(r == CL_SUCCESS){
-		 r = cldraw->BuildFromSource(cl_render);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_8), cl_render_8);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_4096), cl_render_4096);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_256k), cl_render_256k);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_copyvram), cl_render_copyvram);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_tables), cl_render_tables);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
 	         if(r == CL_SUCCESS) {
 		    r = cldraw->SetupBuffer(&uVramTextureID);

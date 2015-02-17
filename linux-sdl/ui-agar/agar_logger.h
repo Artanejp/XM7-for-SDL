@@ -18,7 +18,7 @@
 extern "C" {
 #endif
    extern void XM7_OpenLog(int syslog, int cons);
-   extern void XM7_DebugLog(int level, char *fmt, ...);
+   extern void XM7_DebugLog(int level, const char *fmt, ...);
    extern void XM7_CloseLog(void);
    extern void XM7_SetLogStatus(int sw);
    extern void XM7_SetLogSysLog(int sw);

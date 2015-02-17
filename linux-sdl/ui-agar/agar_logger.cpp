@@ -34,7 +34,7 @@ void XM7_OpenLog(int syslog, int cons)
      }
    
    
-void XM7_DebugLog(int level, char *fmt, ...)
+void XM7_DebugLog(int level, const char *fmt, ...)
      {
 	va_list ap;
 	struct tm *timedat;

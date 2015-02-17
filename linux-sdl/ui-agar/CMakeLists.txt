@@ -56,20 +56,25 @@ if(WITH_DEBUGGER)
 endif()
 
 if(USE_OPENCL)
- set(UI_AGAR_CLRENDER_CXX cl_render.cpp)
- add_custom_command(
-     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${UI_AGAR_CLRENDER_CXX}
-     COMMAND gawk -f ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk -v VARNAME=cl_render ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl > ${CMAKE_CURRENT_BINARY_DIR}/cl_render.cpp
-     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk
+#  set(UI_AGAR_CLSRC_RENDER )
+  function(convert_cl2cpp cl_arg)
+     add_custom_command(
+       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${cl_arg}.cpp 
+       COMMAND gawk -f ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk -v VARNAME=${cl_arg} ${CMAKE_CURRENT_SOURCE_DIR}/${cl_arg}.cl > ${CMAKE_CURRENT_BINARY_DIR}/${cl_arg}.cpp
+       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${cl_arg}.cl ${CMAKE_CURRENT_SOURCE_DIR}/cl2cpp.awk
      )
- #ADD_CUSTOM_TARGET(cl_render.c DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cl_render.cl)
- set(USE_OPENGL 1)
- set(UI_AGAR_CLSRC 
-                        ${CMAKE_CURRENT_BINARY_DIR}/${UI_AGAR_CLRENDER_CXX}
-			agar_glcl.cpp
-			)
+  endfunction(convert_cl2cpp)
+  foreach(clname cl_render_8 cl_render_4096 cl_render_256k cl_render_copyvram cl_render_tables)
+       convert_cl2cpp(${clname})
+       set(UI_AGAR_CLSRC_RENDER  ${UI_AGAR_CLSRC_RENDER}
+	    ${CMAKE_CURRENT_BINARY_DIR}/${clname}.cpp
+           )
+  endforeach(clname)
+   set(UI_AGAR_CLSRC ${UI_AGAR_CLSRC_RENDER}
+      agar_glcl.cpp
+      )
  # Remove generated c/cpp file on "make clean".
- set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/${UI_AGAR_CLRENDER_CXX})
+ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${UI_AGAR_CLSRC_RENDER})
 
 endif()
 

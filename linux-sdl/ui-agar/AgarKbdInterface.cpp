@@ -316,6 +316,7 @@ void AgarKbdInterface::OnRelease(int sym, int mod, Uint32 unicode)
     Uint32 code = (Uint32)sym;
     struct XM7KeyCode *p = KeyCodeTable2;
 
+    printf("Key: OnRelease() sym = %03x mode = 08x\n", sym, mod);
     AG_MutexLock(&mutex);
     for (i = 0; i < 255; i++) {
     	if (p[i].code == 0xffff)   break;

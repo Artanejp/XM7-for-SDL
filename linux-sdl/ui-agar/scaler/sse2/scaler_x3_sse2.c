@@ -16,7 +16,7 @@ extern struct XM7_CPUID *pCpuID;
 extern void pVram2RGB_x3_Line(Uint32 *src, Uint32 *dst, int x, int y, int yrep);
 
 #if defined(__SSE2__)
-static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitch)
+static inline void  Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitch)
 {
    int xx;
    int yy;
@@ -35,36 +35,19 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 #endif
      
    if(repeat <= 0) return;
+   if((bFullScan) || (repeat < 2)) {
+      yrep2 = repeat;
+      yrep3 = 0;
+   } else {
+      yrep2 = repeat - 1;
+      yrep3 = 1;
+   }
+   
+   
    b = (v4hi *)src;
    b2p = dst;
    pitch2 = pitch / sizeof(v4hi);
-   if((bFullScan) || (repeat < 2)) {
-      v4hi r3, r4, r5, r6, r7, r8;
-      for(xx = 0; xx < ww; xx += 8) {
-	 b2p = dst;
-	 r1 = *b++;
-	 r2 = *b++;
-	 // 76543210 -> 7776666555444333222111000
-	 r3.uv  = (v4ui){r1.i[0], r1.i[0], r1.i[0], r1.i[1]};  
-	 r4.uv  = (v4ui){r1.i[1], r1.i[1], r1.i[2], r1.i[2]};  
-	 r5.uv  = (v4ui){r1.i[2], r1.i[3], r1.i[3], r1.i[3]};  
-
-	 r6.uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[1]};  
-	 r7.uv  = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
-	 r8.uv  = (v4ui){r2.i[2], r2.i[3], r2.i[3], r2.i[3]};  
-	 for(yy = 0; yy < repeat; yy++) {
-	    b2p[0] = r3;
-	    b2p[1] = r4;
-	    b2p[2] = r5;
-	    b2p[3] = r6;
-	    b2p[4] = r7;
-	    b2p[5] = r8;
-	    b2p = b2p + pitch2;
-	 }
-	 dst += 6;
-//	 b += 2;
-      }
-   } else {
+   {
       v4hi r3, r4, r5, r6, r7, r8;
       for(xx = 0; xx < ww; xx += 8) {
 	 b2p = dst;
@@ -78,7 +61,7 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 	 r6.uv  = (v4ui){r2.i[0], r2.i[0], r2.i[0], r2.i[1]};  
 	 r7.uv  = (v4ui){r2.i[1], r2.i[1], r2.i[2], r2.i[2]};  
 	 r8.uv  = (v4ui){r2.i[2], r2.i[3], r2.i[3], r2.i[3]};  
-	 for(yy = 0; yy < repeat - 1; yy++) {
+	 for(yy = 0; yy < yrep2; yy++) {
 	    b2p[0] = r3;
 	    b2p[1] = r4;
 	    b2p[2] = r5;
@@ -87,18 +70,22 @@ static void Scaler_DrawLine(v4hi *dst, Uint32 *src, int ww, int repeat, int pitc
 	    b2p[5] = r8;
 	    b2p = b2p + pitch2;
 	 }
-	 b2p[0].uv = 
-	 b2p[1].uv = 
-	 b2p[2].uv = 
-	 b2p[3].uv = 
-	 b2p[4].uv = 
-	 b2p[5].uv = bb;
+	 for(yy = 0; yy < yrep3; yy++) {
+	    b2p[0].uv = 
+	      b2p[1].uv = 
+	      b2p[2].uv = 
+	      b2p[3].uv = 
+	      b2p[4].uv = 
+	      b2p[5].uv = bb;
+	      b2p = b2p + pitch2;
+	 }
 	 dst += 6;
-//	 b += 2;
       }
+      
    }
    
 }
+
 
 
 
