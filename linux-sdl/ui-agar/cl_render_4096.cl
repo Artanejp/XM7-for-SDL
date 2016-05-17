@@ -111,6 +111,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   uint8 av;
   ushort8 cv;
   __global uint8 *p8;
+  __global uint *p;
   __local  ushort8 tbl8[256 * 4];
   uint pb1, pbegin, col;
   ushort8 mask8;
@@ -143,6 +144,7 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
       }
       addr = pbegin; 
       addr2 = pbegin << 3;
+      if(ww <= 0) return;
   } else {
       addr = addr2 = 0;
       ww = ww * h;
@@ -151,7 +153,9 @@ __kernel void getvram4096(__global uchar *src, int w, int h,
   }
 
 
-  p8 = (__global uint8 *)(&(out[addr2]));
+  p8 = (__global uint8 *)out;
+  p8 += addr;
+  
   line = addr2 / 40;
   src = &src[addr];
   if(crtflag == 0) {

@@ -14,9 +14,119 @@ extern void CreateVirtualVram8_WindowedLine(Uint32 *p, int ybegin, int yend, int
 
 
 #if (__GNUC__ >= 4)
-static inline void getputvram_8_vec(Uint32 addr, Uint32 *disp, Uint32 *pal)
+
+static inline v8hi_t getvram_8_vec(Uint32 addr)
+{
+    register uint8_t r, g, b;
+    v8hi_t ret;
+//    volatile v4hi cbuf __attribute__((aligned(32)));
+        /*
+         * R,G,Bについて8bit単位で描画する。
+         * 高速化…キャッシュヒット率の向上とVector演算(MMXetc)の速度効果を考慮して、
+         * ループの廃止を同時に行う
+         */
+    g = vram_pg[addr];
+    r = vram_pr[addr];
+    b = vram_pb[addr];
+
+   ret.v   = aPlanes[B0 + b] |
+              aPlanes[B1 + r] |
+              aPlanes[B2 + g];
+   return ret;
+}
+
+static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
+{
+   v8hi_t *p = (v8hi_t *)disp;
+   register int j;
+
+//   if(disp == NULL) return;
+
+   // recommand -finline-loop
+#ifdef __x86_64__
+   if((pal == NULL) || (disp == NULL))return;
+   asm ("movq %[c], %%r8\n\t"
+	"movdqa  0(%%r8), %%xmm0\n\t"
+	"movdqa 16(%%r8), %%xmm1\n\t"
+	"movq %[pal], %%r8\n\t"
+	"movq %[disp], %%rdi\n\t"
+	"movl $7, %%r9d\n\t"
+	"movd %%r9d, %%xmm2\n\t"
+	"pshufd $0b00000000, %%xmm2, %%xmm2\n\t"
+	"pand %%xmm2, %%xmm0\n\t"
+	"pand %%xmm2, %%xmm1\n\t"
+	"pshufd $0b00011011, %%xmm0, %%xmm0\n\t"
+	"pshufd $0b00011011, %%xmm1, %%xmm1\n\t"
+	
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"movdqa %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+	
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"psrldq $4, %%xmm0\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"pslldq $4, %%xmm3\n\t"
+
+	"movd %%xmm0, %%r9d\n\t"
+	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
+	"/* psrldq $4, %%xmm0 */\n\t"
+	"por    %%xmm2, %%xmm3\n\t"
+	"/* pslldq $4, %%xmm3 */\n\t"
+	"movdqu %%xmm3, 0(%%rdi)\n\t"
+	
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"movdqa %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+	
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"psrldq $4, %%xmm1\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"pslldq $4, %%xmm5\n\t"
+
+	"movd %%xmm1, %%r10d\n\t"
+	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
+	"/* psrldq $4, %%xmm1 */\n\t"
+	"por    %%xmm4, %%xmm5\n\t"
+	"/* pslldq $4, %%xmm5 */\n\t"
+	"movdqu %%xmm5, 16(%%rdi)\n\t"
+	:
+	: [c] "rm" (&c), [disp] "rm" (disp), [pal] "rm" (pal)
+	: "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5",
+	  "r8", "r9", "r10", "rdi");
+#else
+   v8hi_t tmp;
+   if((pal == NULL) || (disp == NULL))return;
+   c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
+   for(j = 0; j < 8; j++) {
+      tmp.i[j] = pal[c.i[j]];
+   }
+   *p = tmp;
+#endif   
+}
+
+
+static  void getputvram_8_vec(Uint32 addr, Uint32 *disp, Uint32 *pal)
 {
 #ifdef __x86_64__
+   if((pal == NULL) || (disp == NULL)) return;
    asm (
 	"movq %[vram_pg], %%r9\n\t"
 	"movq %[vram_pr], %%r10\n\t"
@@ -112,118 +222,32 @@ static inline void getputvram_8_vec(Uint32 addr, Uint32 *disp, Uint32 *pal)
 	: "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5",
 	  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
 	  "rdi");
-	
 #else
+   v8hi_t c;
+   register uint8_t g, r, b;
+   int j;
+   v8hi_t *p = (v8hi_t *)disp;
+   v8hi_t tmp;
+   
+   if((pal == NULL) || (p == NULL))return;
+   
+   g = vram_pg[addr];
+   r = vram_pr[addr];
+   b = vram_pb[addr];
+
+   c.v   = aPlanes[B0 + b] |
+           aPlanes[B1 + r] |
+           aPlanes[B2 + g];
+   c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
+   for(j = 0; j < 8; j++) {
+      tmp.i[j] = pal[c.i[j]];
+   }
+   *p = tmp;
 #endif
 }
 
 
 
-static inline v8hi_t getvram_8_vec(Uint32 addr)
-{
-    register uint8_t r, g, b;
-    v8hi_t ret;
-//    volatile v4hi cbuf __attribute__((aligned(32)));
-        /*
-         * R,G,Bについて8bit単位で描画する。
-         * 高速化…キャッシュヒット率の向上とVector演算(MMXetc)の速度効果を考慮して、
-         * ループの廃止を同時に行う
-         */
-    g = vram_pg[addr];
-    r = vram_pr[addr];
-    b = vram_pb[addr];
-
-   ret.v   = aPlanes[B0 + b] |
-              aPlanes[B1 + r] |
-              aPlanes[B2 + g];
-   return ret;
-}
-
-static void  putword8_vec(Uint32 *disp, v8hi_t c, Uint32 *pal)
-{
-
-   v8hi_t *p = (v8hi_t *)disp;
-   register int j;
-   if(pal == NULL) return;
-//   if(disp == NULL) return;
-
-   // recommand -finline-loop
-#ifdef __x86_64__
-   asm ("movq %[c], %%r8\n\t"
-	"movdqa  0(%%r8), %%xmm0\n\t"
-	"movdqa 16(%%r8), %%xmm1\n\t"
-	"movq %[pal], %%r8\n\t"
-	"movq %[disp], %%rdi\n\t"
-	"movl $7, %%r9d\n\t"
-	"movd %%r9d, %%xmm2\n\t"
-	"pshufd $0b00000000, %%xmm2, %%xmm2\n\t"
-	"pand %%xmm2, %%xmm0\n\t"
-	"pand %%xmm2, %%xmm1\n\t"
-	"pshufd $0b00011011, %%xmm0, %%xmm0\n\t"
-	"pshufd $0b00011011, %%xmm1, %%xmm1\n\t"
-	
-	"movd %%xmm0, %%r9d\n\t"
-	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
-	"psrldq $4, %%xmm0\n\t"
-	"movdqa %%xmm2, %%xmm3\n\t"
-	"pslldq $4, %%xmm3\n\t"
-	
-	"movd %%xmm0, %%r9d\n\t"
-	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
-	"psrldq $4, %%xmm0\n\t"
-	"por    %%xmm2, %%xmm3\n\t"
-	"pslldq $4, %%xmm3\n\t"
-
-	"movd %%xmm0, %%r9d\n\t"
-	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
-	"psrldq $4, %%xmm0\n\t"
-	"por    %%xmm2, %%xmm3\n\t"
-	"pslldq $4, %%xmm3\n\t"
-
-	"movd %%xmm0, %%r9d\n\t"
-	"movd 0(%%r8, %%r9, 4), %%xmm2\n\t"
-	"/* psrldq $4, %%xmm0 */\n\t"
-	"por    %%xmm2, %%xmm3\n\t"
-	"/* pslldq $4, %%xmm3 */\n\t"
-	"movdqu %%xmm3, 0(%%rdi)\n\t"
-	
-	"movd %%xmm1, %%r10d\n\t"
-	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
-	"psrldq $4, %%xmm1\n\t"
-	"movdqa %%xmm4, %%xmm5\n\t"
-	"pslldq $4, %%xmm5\n\t"
-	
-	"movd %%xmm1, %%r10d\n\t"
-	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
-	"psrldq $4, %%xmm1\n\t"
-	"por    %%xmm4, %%xmm5\n\t"
-	"pslldq $4, %%xmm5\n\t"
-
-	"movd %%xmm1, %%r10d\n\t"
-	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
-	"psrldq $4, %%xmm1\n\t"
-	"por    %%xmm4, %%xmm5\n\t"
-	"pslldq $4, %%xmm5\n\t"
-
-	"movd %%xmm1, %%r10d\n\t"
-	"movd 0(%%r8, %%r10, 4), %%xmm4\n\t"
-	"/* psrldq $4, %%xmm1 */\n\t"
-	"por    %%xmm4, %%xmm5\n\t"
-	"/* pslldq $4, %%xmm5 */\n\t"
-	"movdqu %%xmm5, 16(%%rdi)\n\t"
-	:
-	: [c] "rm" (&c), [disp] "rm" (disp), [pal] "rm" (pal)
-	: "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5",
-	  "r8", "r9", "r10", "rdi");
-#else
-   c.vv &= (v8ii){7, 7, 7, 7, 7, 7, 7, 7,};
-
-   _prefetch_data_write_l1(p, sizeof(v8hi_t) * 8); // 4 * 8 * 8 = 256bytes.
-   for(j = 0; j < 8; j++) {
-      p->i[j] = pal[c.i[j]]; // Converting via palette.
-   }
-#endif   
-}
 
 #else
 static inline void planeto8(Uint32 *c, uint8_t r, unit8_t g, uint8_t b)
