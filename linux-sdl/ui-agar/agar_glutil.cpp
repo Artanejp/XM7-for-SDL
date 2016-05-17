@@ -131,6 +131,7 @@ void InitContextCL(void)
 	    if(cldraw != NULL) {
 	      r = cldraw->InitContext(nCLPlatformNum, nCLDeviceNum, bCLInteropGL);
 	       if(r == CL_SUCCESS){
+#if 0
 		 r |= cldraw->BuildFromSource(&(cldraw->program_8), cl_render_8);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
 		 r |= cldraw->BuildFromSource(&(cldraw->program_4096), cl_render_4096);
@@ -141,7 +142,19 @@ void InitContextCL(void)
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
 		 r |= cldraw->BuildFromSource(&(cldraw->program_tables), cl_render_tables);
 		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
-	         if(r == CL_SUCCESS) {
+#else
+		 r |= cldraw->BuildFromSource(&(cldraw->program_8), cl_render_8);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_4096), cl_render_4096);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_256k), cl_render_256k);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_copyvram), cl_render_copyvram);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+		 r |= cldraw->BuildFromSource(&(cldraw->program_tables), cl_render_tables);
+		 XM7_DebugLog(XM7_LOG_DEBUG, "CL: Build KERNEL: STS = %d", r);
+#endif
+		  if(r == CL_SUCCESS) {
 		    r = cldraw->SetupBuffer(&uVramTextureID);
 		    r |= cldraw->SetupTable();
 		    if(r != CL_SUCCESS){

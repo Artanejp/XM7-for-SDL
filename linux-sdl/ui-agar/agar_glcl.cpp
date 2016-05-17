@@ -106,9 +106,9 @@ Uint32 *GLCLDraw::GetPixelBuffer(void)
     int ret = 0;
     p = (Uint32 *) clEnqueueMapBuffer(command_queue, outbuf, CL_TRUE, CL_MAP_READ,
 				       0, (size_t)(640 * 400 * sizeof(Uint32)),
-				       1, &event_exec, &event_release, &ret);
+				       0, NULL, &event_release, &ret);
     if(ret < 0) return NULL;
-    clFlush(command_queue);
+    //clFlush(command_queue);
     return p;
 }
 
@@ -340,6 +340,7 @@ cl_int GLCLDraw::BuildFromSource(cl_program *program, const char *p)
     }
     ret = clCreateKernelsInProgram(*program, 1,
 				   kernels_array, &nkernels);
+
     if(ret < CL_SUCCESS) {
       XM7_DebugLog(XM7_LOG_INFO, "Unable to build CL kernel. Status=%d", ret);
     } else {
@@ -347,19 +348,21 @@ cl_int GLCLDraw::BuildFromSource(cl_program *program, const char *p)
       int i = 0;
       size_t size;
       XM7_DebugLog(XM7_LOG_INFO, "Built %d CL kernel(s).", nkernels);
-//      for(i = 0; i < nkernels; i++) {
+#if 1
+      for(i = 0; i < nkernels; i++) {
 	funcname[0] = '\0';
-	if(clGetKernelInfo(kernels_array[0], CL_KERNEL_FUNCTION_NAME,
+	if(clGetKernelInfo(kernels_array[i], CL_KERNEL_FUNCTION_NAME,
 			   sizeof(funcname) / sizeof(char) - 1, 
 			   funcname, size) == CL_SUCCESS){
-	  printf("Kernel Name: %s\n", funcname); 
+	  XM7_DebugLog(XM7_LOG_INFO, "Kernel name:%s.", funcname);
 	  if((strncmp(funcname, "getvram8", strlen("getvram8")) == 0)) kernel_8colors = kernels_array[i];
 	  if((strncmp(funcname, "getvram4096", strlen("getvram4096")) == 0)) kernel_4096colors = kernels_array[i];
 	  if((strncmp(funcname, "getvram256k", strlen("getvram256k")) == 0)) kernel_256kcolors = kernels_array[i];
 	  if((strncmp(funcname, "CreateTable", strlen("CreateTable")) == 0)) kernel_table = kernels_array[i];
 	  if((strncmp(funcname, "CopyVram", strlen("CopyVram")) == 0)) kernel_copyvram = kernels_array[i];
 	}
-//      }
+      }
+#endif
     }
    return ret;
 }
@@ -656,7 +659,7 @@ cl_int GLCLDraw::GetVram(int bmode)
        transfer_size = 0x2000 * 18;
        break;
      }
-//     if((flag != FALSE) && (transfer_size > 0)){
+     //if((flag != FALSE) && (transfer_size > 0)){
        inbuf_bank++;
        if(inbuf_bank >= 2) inbuf_bank = 0;
 #if 0
@@ -681,7 +684,7 @@ cl_int GLCLDraw::GetVram(int bmode)
        ret = clEnqueueCopyBuffer(command_queue, inbuf[bank], inbuf[inbuf_bank], 0,
 				 0, transfer_size, 0, NULL,
 			       &copy_event);
-//      }
+     // }
       clFinish(command_queue);
       TransferBuffer = MapTransferBuffer(bmode);
      ReleaseBufPtr();
@@ -783,7 +786,7 @@ cl_int GLCLDraw::GetVram(int bmode)
      clFinish(command_queue);
 //     glFinish();
    } else {
-//       printf("00\n");
+       //printf("goff=%d, gws=%d, lws=%d\n", goff, gws[0], lws[0]);
        if(bCLSparse) {
 	 ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, 
 				      goff, gws, lws, 

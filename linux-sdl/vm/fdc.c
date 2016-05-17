@@ -7,7 +7,7 @@
  *      [ フロッピーディスク コントローラ(MB8877A) ]
  */
 
-//#define FDC_DEBUG 1
+#define FDC_DEBUG 1
 
 #include <string.h>
 #include <stdlib.h>
@@ -287,12 +287,24 @@ fdc_make_track(void)
 	BYTE *p;
 	BYTE *q;
 	BOOL ddm;
+	int max_track;
 
 	/* アンフォーマットチェック */
 	flag = FALSE;
 	if (fdc_ready[fdc_drvreg] != FDC_TYPE_D77) {
-		/* 2D/VFDファイルのアンフォーマットチェック処理は共通 */
-		if (fdc_track[fdc_drvreg] > 79) {
+		/* 2D/2DD/VFDファイルのアンフォーマットチェック処理は共通 */
+#if XM7_VER >= 3
+		if (fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) {
+			max_track = 80;
+		}
+		else {
+			max_track = 40;
+		}
+#else
+		max_track = 40;
+#endif
+
+		if (fdc_track[fdc_drvreg] >= max_track) {
 			/* アンフォーマット */
 			flag = TRUE;
 		}
@@ -682,9 +694,19 @@ fdc_next_index(void)
 	if (fdc_ready[fdc_drvreg] == FDC_TYPE_2D) {
 #endif
 		/* 2D/2DDなら16セクタ固定 */
-		fdc_indexcnt = (BYTE) ((fdc_indexcnt + 1) & 0x0f);
+		fdc_indexcnt = (BYTE)((fdc_indexcnt + 1) & 0x0f);
+		track = fdc_track[fdc_drvreg];
 #if XM7_VER >= 3
-		if (fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) {
+		if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2D) && fdc_2ddmode) {
+			/* メディアタイプ(2D) && ドライブモード(2DD) */
+			track >>= 1;
+		}
+		else if ((fdc_ready[fdc_drvreg] == FDC_TYPE_2DD) && !fdc_2ddmode) {
+			/* メディアタイプ(2DD) && ドライブモード(2D) */
+			track <<= 1;
+		}
+
+		if (fdc_2ddmode) {
 			max_track = 80;
 		}
 		else {
@@ -1202,11 +1224,13 @@ static void FASTCALL
 fdc_readbuf(int drive)
 {
 	DWORD offset;
+	DWORD min_offset;
 	DWORD len;
 	DWORD secs;
 	int trkside;
 	SDL_RWops *handle;
 	int max_track;
+	int trk;
 
 	/* ドライブチェック */
 	if ((drive < 0) || (drive >= FDC_DRIVES)) {
@@ -1344,6 +1368,31 @@ fdc_readbuf(int drive)
 	else {
 		max_track = 164;
 	}
+#else
+	max_track = 84;
+#endif
+ 
+	/* アクセスしてもいい最終トラックの算出 */
+	min_offset = (0x0020 + max_track * 4);
+	for (trk = 0; trk < max_track; trk++) {
+		if ((DWORD)(0x0020 + trk * 4) >= min_offset) {
+			break;
+		}
+
+		offset  = fdc_header[drive][0x0020 + trk * 4 + 3];
+		offset *= 256;
+		offset |= fdc_header[drive][0x0020 + trk * 4 + 2];
+		offset *= 256;
+		offset |= fdc_header[drive][0x0020 + trk * 4 + 1];
+		offset *= 256;
+		offset |= fdc_header[drive][0x0020 + trk * 4 + 0];
+		if ((offset < min_offset) && (offset >= 0x20)) {
+			min_offset = offset;
+		}
+	}
+	max_track = (min_offset - 0x20) / 4;
+
+#if XM7_VER >= 3
 
 	if (fdc_2ddmode) {
 		/* 2Dファイルを2DD読みした場合、ここで補正 */
@@ -1363,8 +1412,6 @@ fdc_readbuf(int drive)
 			trkside = fdc_track[drive] * 4 + fdc_sidereg;
 		}
 	}
-#else
-	max_track = 84;
 #endif
 
 	/* オーバーチェック */
@@ -1385,7 +1432,7 @@ fdc_readbuf(int drive)
 	}
 
 	len = *(DWORD *) (&fdc_header[drive][0x0020 + (trkside + 1) * 4]);
-	if (len == 0) {
+	if ((len == 0) || ((trkside + 1) >= max_track)) {
 		/* 最終トラック */
 		len = *(DWORD *) (&fdc_header[drive][0x0014]);
 	}
@@ -2646,7 +2693,7 @@ fdc_read_addr(void)
 		schedule_setevent(EVENT_FDC_L, 10 * 1000, fdc_lost_event);
 	}
 #else
-	schedule_setevent(EVENT_FDC_L, 10 * 1000, fdc_lost_event);
+//	schedule_setevent(EVENT_FDC_L, 10 * 1000, fdc_lost_event);
 #endif
 }
 
@@ -3025,7 +3072,7 @@ fdc_readb(WORD addr, BYTE * dat)
 #endif
 					fdc_status &= ~FDC_ST_BUSY;
 					fdc_status &= ~FDC_ST_DRQ;
-					fdc_drqirq &= (BYTE) ~ 0x80;
+					fdc_drqirq &= (BYTE)~0x80;
 
 					if ((fdc_cmdtype == 2) && (fdc_command & 0x10)) {
 						/* マルチセクタ処理 */
@@ -3051,8 +3098,8 @@ fdc_readb(WORD addr, BYTE * dat)
 #ifdef FDDSND
 					if (fdc_wait) {
 						schedule_setevent(EVENT_FDC_L, FDC_LOST_TIME, fdc_drq_event);
-						fdc_status &= (BYTE) ~ FDC_ST_DRQ;
-						fdc_drqirq &= (BYTE) ~ 0x80;
+						fdc_status &= (BYTE)~FDC_ST_DRQ;
+						fdc_drqirq &= (BYTE)~0x80;
 					}
 					else {
 						fdc_drqirq |= (BYTE) 0x80;
@@ -3230,8 +3277,8 @@ fdc_writeb(WORD addr, BYTE dat)
 #ifdef FDDSND
 					if (fdc_wait) {
 						schedule_setevent(EVENT_FDC_L, FDC_LOST_TIME, fdc_drq_event);
-						fdc_status &= (BYTE) ~ FDC_ST_DRQ;
-						fdc_drqirq &= (BYTE) ~ 0x80;
+						fdc_status &= (BYTE) ~FDC_ST_DRQ;
+						fdc_drqirq &= (BYTE) ~0x80;
 					}
 					else {
 						fdc_drqirq |= (BYTE) 0x80;
